@@ -109,18 +109,21 @@ async def get_self_activity_session_impact(
                     detail="Activity unavailable in self scope.",
                 )
             rows = (
-                await session.execute(
-                    _SESSION_IMPACT,
-                    {"actor": context.self_person_ref, "activity": activity_ref},
+                (
+                    await session.execute(
+                        _SESSION_IMPACT,
+                        {"actor": context.self_person_ref, "activity": activity_ref},
+                    )
                 )
-            ).mappings().all()
+                .mappings()
+                .all()
+            )
     except SQLAlchemyError as exc:
         raise _unavailable() from exc
     attempts = [ActivitySessionAttemptImpact.model_validate(dict(row)) for row in rows]
     digest = hashlib.sha256(
         ";".join(
-            f"{row.session_ref}:{row.timing_material_state_ref}:{row.status}"
-            for row in attempts
+            f"{row.session_ref}:{row.timing_material_state_ref}:{row.status}" for row in attempts
         ).encode("utf-8")
     ).hexdigest()
     return ActivitySessionImpactResponse(
@@ -351,15 +354,27 @@ async def delete_self_activity_hard(
         constraint = getattr(getattr(exc.orig, "diag", None), "constraint_name", None)
         if constraint == "activity_lifecycle_unavailable":
             raise ProblemError(
-                status=404, code="temporal.activity_lifecycle.not_found",
-                category="not_found", title="Activity unavailable",
+                status=404,
+                code="temporal.activity_lifecycle.not_found",
+                category="not_found",
+                title="Activity unavailable",
                 detail="L'attività non è più disponibile.",
             ) from exc
         if constraint in {"activity_lifecycle_stale", "activity_lifecycle_named_unavailable"}:
             raise ProblemError(
-                status=409, code="temporal.activity_lifecycle.stale",
-                category="conflict", title="Session state changed",
+                status=409,
+                code="temporal.activity_lifecycle.stale",
+                category="conflict",
+                title="Session state changed",
                 detail="Le Sessioni sono cambiate: ricarica prima di confermare.",
+            ) from exc
+        if constraint == "activity_lifecycle_recurring_scope_required":
+            raise ProblemError(
+                status=409,
+                code="temporal.activity_lifecycle.recurring_scope_required",
+                category="conflict",
+                title="Recurring Activity scope required",
+                detail="Questa attività appartiene a una ricorrenza. Scegli l'istanza o la serie nella modifica della ricorrenza.",
             ) from exc
         raise _unavailable() from exc
     except SQLAlchemyError as exc:

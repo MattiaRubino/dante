@@ -15,7 +15,7 @@ pytestmark = pytest.mark.postgres
 
 # The current head is forward-only; the earlier B01/B02 downgrade guard
 # fixtures intentionally exercise the last historically reversible snapshot.
-_CURRENT_HEAD = "20261014_146"
+_CURRENT_HEAD = "20261014_148"
 _HISTORICAL_REVERSIBLE_HEAD = "20260917_29"
 _B02_REVISION_PARENT = "20260909_21"
 _B02_SCHEMA_HEAD = "20260909_20"
@@ -26,6 +26,34 @@ _CP6_HEAD = "20260826_08"
 _RECOVERY_HEAD = "20260830_09"
 _ACCESS_HEAD = "20260904_16"
 _TRUSTED_SEARCH_PATH = "pg_catalog,dante,pg_temp"
+
+
+def test_activity_lifecycle_functions_expose_only_bounded_runtime_capabilities(
+    migrated_database: Any,
+) -> None:
+    with psycopg.connect(
+        **migrated_database.connection_kwargs(
+            "dante_migrator", migrated_database.cluster.migrator_password
+        )
+    ) as connection:
+        connection.execute("SET ROLE dante_owner")
+        grants = connection.execute("""
+            SELECT has_function_privilege(
+                       'dante_runtime',
+                       'dante.delete_self_activity_lifecycle_graph(uuid,uuid,text,uuid)',
+                       'EXECUTE'),
+                   has_function_privilege(
+                       'dante_runtime',
+                       'dante.delete_self_activity_sessions(uuid,uuid,text)',
+                       'EXECUTE'),
+                   has_function_privilege(
+                       'dante_runtime',
+                       'dante.delete_self_activity_hard(uuid,uuid,text)',
+                       'EXECUTE'),
+                   has_table_privilege('dante_runtime','dante.session','DELETE'),
+                   has_table_privilege('dante_runtime','dante.activity','DELETE')
+        """).fetchone()
+        assert grants == (False, True, True, False, False)
 
 
 def _floating_local(year: int, month: int, day: int, hour: int, minute: int) -> datetime:

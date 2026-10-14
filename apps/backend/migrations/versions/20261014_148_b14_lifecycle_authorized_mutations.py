@@ -154,6 +154,17 @@ BEGIN
     END IF;
     PERFORM 1 FROM dante.native_address AS address
      WHERE address.native_ref=requested_activity FOR UPDATE;
+    -- The recurring source can rematerialize this instance after a bare
+    -- Activity delete. Require an explicit Occurrence-scoped operation.
+    IF EXISTS (
+        SELECT 1 FROM dante.routine_occurrence_activity_instance AS link
+         WHERE link.activity_ref=requested_activity
+           AND link.self_person_ref=requested_actor
+    ) THEN
+        RAISE EXCEPTION USING ERRCODE='23514',
+            CONSTRAINT='activity_lifecycle_recurring_scope_required',
+            MESSAGE='Recurring Activity requires an Occurrence-scoped deletion';
+    END IF;
     current_fingerprint := dante.get_self_activity_session_impact_hash(
         requested_actor,requested_activity
     );

@@ -548,8 +548,8 @@ export function TimelineSurface({
                 : 'Unlock placement before changing the time.'
               : intervalConflict
                 ? i18n.language.startsWith('it')
-                  ? 'Per spostare questa fascia serve modificare insieme gli intervalli dell’attività.'
-                  : 'Moving this interval requires a coordinated Activity replan.'
+                  ? 'Apri Modifica per coordinare il piano e scegliere se mantenere o eliminare le Sessioni.'
+                  : 'Open Edit to coordinate the plan and choose whether to keep or delete Sessions.'
                 : conflict
                   ? t(
                       ($) =>
@@ -622,8 +622,8 @@ export function TimelineSurface({
             kind: 'error',
             message: intervalConflict
               ? i18n.language.startsWith('it')
-                ? 'Per rimuovere questa fascia serve modificare insieme gli intervalli dell’attività.'
-                : 'Removing this interval requires a coordinated Activity replan.'
+                ? 'Apri Modifica per coordinare il piano e scegliere se mantenere o eliminare le Sessioni.'
+                : 'Open Edit to coordinate the plan and choose whether to keep or delete Sessions.'
               : conflict
                 ? t(
                     ($) =>

@@ -47,7 +47,7 @@ def upgrade() -> None:
     ).scalar_one()
     if definition.count(_GUARD) != 1:
         raise RuntimeError("Unexpected named Session start guard at lifecycle v2")
-    bind.exec_driver_sql(definition.replace(_GUARD, ""))
+    bind.exec_driver_sql(definition.replace(_GUARD, "").replace("%", "%%"))
     signature = "dante.start_self_planned_activity_session(uuid,text,text,uuid,uuid,uuid,uuid)"
     bind.exec_driver_sql(f"ALTER FUNCTION {signature} OWNER TO dante_owner")
     bind.exec_driver_sql(

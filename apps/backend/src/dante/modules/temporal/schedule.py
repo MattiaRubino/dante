@@ -511,16 +511,22 @@ async def _requires_coordinated_activity_interval_change(
     self_person_ref: NativeRef,
     schedule_ref: ScopedRecordRef,
 ) -> bool:
-    """Keep an Activity's interval set and envelope coherent on direct edits."""
+    """Require coordinated edits for intervals and Activity execution history."""
     return bool(
         (
             await database_session.execute(
                 text("""
                     SELECT purpose.role_code = 'interval' OR
-                           (purpose.role_code = 'envelope' AND EXISTS (
-                               SELECT 1 FROM dante.get_self_activity_schedule_roles(
-                                   :actor, ARRAY[activity.activity_ref]
-                               ) AS sibling WHERE sibling.role_code = 'interval'
+                           (purpose.role_code = 'envelope' AND (
+                               EXISTS (
+                                   SELECT 1 FROM dante.get_self_activity_schedule_roles(
+                                       :actor, ARRAY[activity.activity_ref]
+                                   ) AS sibling WHERE sibling.role_code = 'interval'
+                               ) OR EXISTS (
+                                   SELECT 1 FROM dante.list_self_subject_sessions(
+                                       :actor, activity.activity_ref
+                                   )
+                               )
                            ))
                       FROM dante.schedule AS schedule
                       JOIN dante.activity_intention AS activity

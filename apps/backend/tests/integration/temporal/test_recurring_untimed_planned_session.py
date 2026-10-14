@@ -3,21 +3,30 @@
 from __future__ import annotations
 
 from datetime import date
-from typing import Any
+from types import SimpleNamespace
+from typing import Any, cast
 
 import pytest
+from fastapi import Request, Response
 from sqlalchemy import text
 from tests.integration.temporal.test_objective_recurring_instance_scope import _read_checkpoint_refs
 from tests.integration.temporal.test_primary_life_area_assignment import _seed_self
 from tests.integration.temporal.test_recurring_event_create import _daily_named_zone
 
+from dante.context.contracts import DanteContext
 from dante.modules.temporal.activity_edit_snapshot_api import _SNAPSHOT, ActivityEditSnapshot
+from dante.modules.temporal.activity_inspector_api import (
+    ActivityHardDeleteCommand,
+    delete_self_activity_hard,
+    get_self_activity_session_impact,
+)
 from dante.modules.temporal.recurring_authoring import RecurringAuthoringApplication
 from dante.modules.temporal.routine_occurrence_materialization import (
     RoutineOccurrenceMaterializationApplication,
 )
 from dante.modules.temporal.routine_occurrence_policy import RoutineOccurrencePolicyApplication
 from dante.platform.database.runtime import create_database_runtime
+from dante.platform.http.problem import ProblemError
 
 pytestmark = pytest.mark.postgres
 
@@ -89,5 +98,31 @@ async def test_recurring_activity_keeps_untimed_planned_session(
         assert len(planned) == 1
         assert planned[0].display_name == "Cernita"
         assert planned[0].placement_material_state_ref is None
+        request = cast(
+            Request,
+            SimpleNamespace(app=SimpleNamespace(state=SimpleNamespace(database_runtime=runtime))),
+        )
+        context = cast(DanteContext, SimpleNamespace(self_person_ref=actor))
+        impact = await get_self_activity_session_impact(activity, context, request, Response())
+        with pytest.raises(ProblemError) as recurring_scope:
+            await delete_self_activity_hard(
+                activity,
+                ActivityHardDeleteCommand(expected_session_fingerprint=impact.fingerprint),
+                context,
+                request,
+                Response(),
+            )
+        assert recurring_scope.value.status == 409
+        assert recurring_scope.value.code == "temporal.activity_lifecycle.recurring_scope_required"
+        async with runtime.session_factory() as session, session.begin():
+            assert (
+                await session.scalar(
+                    text(
+                        "SELECT activity_ref FROM dante.get_self_activity_profile(:actor,:activity)"
+                    ),
+                    {"actor": actor, "activity": activity},
+                )
+                == activity
+            )
     finally:
         await runtime.dispose()

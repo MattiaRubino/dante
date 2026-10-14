@@ -21,11 +21,13 @@ from dante.modules.temporal.activity_edit_snapshot_api import (
     EditReminderChange,
     revise_activity_core,
 )
+from dante.modules.temporal.activity_inspector_api import get_self_activity_session_impact
 from dante.modules.temporal.authoring import TemporalAuthoringApplication
 from dante.modules.temporal.schedule import (
     FloatingLocalIntervalPlacement,
     NamedZoneLocalIntervalPlacement,
 )
+from dante.modules.temporal.session_runtime import SessionApplication
 from dante.platform.database.runtime import create_database_runtime
 from dante.platform.http.problem import ProblemError
 
@@ -39,6 +41,68 @@ def _request(runtime: Any) -> Request:
             "app": SimpleNamespace(state=SimpleNamespace(database_runtime=runtime)),
         }
     )
+
+
+@pytest.mark.asyncio
+async def test_delete_session_choice_rolls_back_with_stale_profile_then_commits_atomically(
+    migrated_database: Any,
+) -> None:
+    actor = _seed_self(migrated_database)
+    runtime = create_database_runtime(migrated_database.runtime_settings())
+    try:
+        created = await TemporalAuthoringApplication(runtime.session_factory).create_activity(
+            self_person_ref=actor,
+            operation_id="core-lifecycle:create",
+            title="Prima",
+            session_capture_mode="live",
+        )
+        activity = created.item.subject_native_ref
+        started = await SessionApplication(runtime.session_factory).start(
+            self_person_ref=actor,
+            operation_id="core-lifecycle:start",
+            subject_kind="activity",
+            subject_native_ref=activity,
+        )
+        context = _context(actor)
+        request = _request(runtime)
+        impact = await get_self_activity_session_impact(activity, context, request, Response())
+        with pytest.raises(ProblemError) as stale:
+            await revise_activity_core(
+                activity,
+                ActivityCoreEditCommand(
+                    operation_id="core-lifecycle:stale",
+                    profile=EditProfileChange(expected_revision=9, title="Dopo"),
+                    session_disposition="delete",
+                    expected_session_fingerprint=impact.fingerprint,
+                ),
+                context,
+                request,
+                Response(),
+            )
+        assert stale.value.status == 409
+        after_rollback = await get_self_activity_session_impact(
+            activity, context, request, Response()
+        )
+        assert after_rollback.fingerprint == impact.fingerprint
+        assert [row.session_ref for row in after_rollback.attempts] == [started.session_ref]
+        changed = await revise_activity_core(
+            activity,
+            ActivityCoreEditCommand(
+                operation_id="core-lifecycle:valid",
+                profile=EditProfileChange(expected_revision=0, title="Dopo"),
+                session_disposition="delete",
+                expected_session_fingerprint=impact.fingerprint,
+            ),
+            context,
+            request,
+            Response(),
+        )
+        assert changed.profile.title == "Dopo"
+        assert (
+            await get_self_activity_session_impact(activity, context, request, Response())
+        ).attempts == []
+    finally:
+        await runtime.dispose()
 
 
 @pytest.mark.asyncio

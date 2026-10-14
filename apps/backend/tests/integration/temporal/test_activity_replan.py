@@ -12,6 +12,7 @@ from tests.integration.temporal.test_activity_quick_authoring_metadata import _s
 
 from dante.context.contracts import DanteContext
 from dante.modules.temporal.activity_edit_snapshot_api import _SNAPSHOT, ActivityEditSnapshot
+from dante.modules.temporal.activity_inspector_api import get_self_activity_session_impact
 from dante.modules.temporal.activity_replan_api import (
     ActivityReplanCommand,
     DeletePlannedRow,
@@ -24,7 +25,13 @@ from dante.modules.temporal.activity_replan_api import (
 )
 from dante.modules.temporal.authoring import TemporalAuthoringApplication
 from dante.modules.temporal.decomposition_api import ActivityScheduleResponse
-from dante.modules.temporal.schedule import NamedZoneLocalIntervalPlacement
+from dante.modules.temporal.schedule import (
+    NamedZoneLocalIntervalPlacement,
+    ScheduleActivityIntervalConflictError,
+    TemporalScheduleApplication,
+)
+from dante.modules.temporal.session_runtime import SessionApplication
+from dante.platform.database.references import MaterialStateRef, NativeRef, ScopedRecordRef
 from dante.platform.database.runtime import create_database_runtime
 from dante.platform.http.problem import ProblemError
 
@@ -329,5 +336,167 @@ async def test_placement_lock_allows_new_unplaced_named_session_but_blocks_movem
                 Response(),
             )
         assert locked.value.status == 409
+    finally:
+        await runtime.dispose()
+
+
+@pytest.mark.asyncio
+async def test_keep_preserves_running_attempts_when_moving_and_named_x_deletes_only_its_attempt(
+    migrated_database: Any,
+) -> None:
+    actor = _seed_self(migrated_database)
+    runtime = create_database_runtime(migrated_database.runtime_settings())
+    try:
+        created = await TemporalAuthoringApplication(runtime.session_factory).create_activity(
+            self_person_ref=actor,
+            operation_id="lifecycle:keep:create",
+            title="Studio",
+            placement=_window(9, 12),
+            activity_intervals=(_window(9, 12),),
+            planned_slices=(None,),
+            planned_slice_names=("Ripasso",),
+            session_capture_mode="live",
+        )
+        activity = created.item.subject_native_ref
+        sessions = SessionApplication(runtime.session_factory)
+        main = await sessions.start(
+            self_person_ref=actor,
+            subject_kind="activity",
+            subject_native_ref=activity,
+            operation_id="lifecycle:keep:main",
+        )
+        child = await sessions.start_planned(
+            self_person_ref=actor,
+            operation_id="lifecycle:keep:child",
+            activity_ref=activity,
+            schedule_ref=created.planned_slices[0].schedule_ref,
+        )
+        before = await _snapshot(runtime, actor, activity)
+        interval = next(row for row in before.schedules if row.role_code == "interval")
+        named = next(row for row in before.schedules if row.role_code == "planned")
+        impact = await get_self_activity_session_impact(
+            activity, _context(actor), _request(runtime), Response()
+        )
+        with pytest.raises(ProblemError) as confirmation:
+            await apply_activity_replan(
+                activity,
+                ActivityReplanCommand(
+                    operation_id="lifecycle:keep:unconfirmed",
+                    intervals=[_move(interval, 10, 13)],
+                    planned_sessions=[_retain(named)],
+                ),
+                _context(actor),
+                _request(runtime),
+                Response(),
+            )
+        assert confirmation.value.status == 409
+        moved = await apply_activity_replan(
+            activity,
+            ActivityReplanCommand(
+                operation_id="lifecycle:keep:move",
+                intervals=[_move(interval, 10, 13)],
+                planned_sessions=[_retain(named)],
+                session_disposition="keep",
+                expected_session_fingerprint=impact.fingerprint,
+            ),
+            _context(actor),
+            _request(runtime),
+            Response(),
+        )
+        assert next(
+            r for r in moved.schedules if r.role_code == "interval"
+        ).starts_local_at == datetime(2026, 10, 9, 10)  # noqa: DTZ001
+        after_keep = await get_self_activity_session_impact(
+            activity, _context(actor), _request(runtime), Response()
+        )
+        assert after_keep.fingerprint == impact.fingerprint
+        assert {row.session_ref for row in after_keep.attempts} == {
+            main.session_ref,
+            child.session_ref,
+        }
+
+        current_interval = next(r for r in moved.schedules if r.role_code == "interval")
+        without_named = await apply_activity_replan(
+            activity,
+            ActivityReplanCommand(
+                operation_id="lifecycle:keep:remove-named",
+                intervals=[_move(current_interval, 10, 13)],
+                delete_planned_sessions=[
+                    DeletePlannedRow(
+                        schedule_ref=named.schedule_ref,
+                        expected_material_state_ref=named.placement_material_state_ref,
+                    )
+                ],
+                session_disposition="keep",
+                expected_session_fingerprint=after_keep.fingerprint,
+            ),
+            _context(actor),
+            _request(runtime),
+            Response(),
+        )
+        assert not any(row.role_code == "planned" for row in without_named.schedules)
+        remaining = await get_self_activity_session_impact(
+            activity, _context(actor), _request(runtime), Response()
+        )
+        assert [row.session_ref for row in remaining.attempts] == [main.session_ref]
+    finally:
+        await runtime.dispose()
+
+
+@pytest.mark.asyncio
+async def test_direct_activity_envelope_revision_with_attempt_requires_confirmed_replan(
+    migrated_database: Any,
+) -> None:
+    actor = _seed_self(migrated_database)
+    runtime = create_database_runtime(migrated_database.runtime_settings())
+    try:
+        created = await TemporalAuthoringApplication(runtime.session_factory).create_activity(
+            self_person_ref=actor,
+            operation_id="lifecycle:direct:create",
+            title="Studio",
+            placement=_window(9, 12),
+            session_capture_mode="live",
+        )
+        activity = created.item.subject_native_ref
+        await SessionApplication(runtime.session_factory).start(
+            self_person_ref=actor,
+            operation_id="lifecycle:direct:start",
+            subject_kind="activity",
+            subject_native_ref=activity,
+        )
+        before = await _snapshot(runtime, actor, activity)
+        envelope = next(row for row in before.schedules if row.role_code == "envelope")
+        assert envelope.placement_material_state_ref is not None
+        with pytest.raises(ScheduleActivityIntervalConflictError):
+            await TemporalScheduleApplication(runtime.session_factory).revise_schedule(
+                self_person_ref=NativeRef(actor),
+                operation_id="lifecycle:direct:forbidden",
+                schedule_ref=ScopedRecordRef(envelope.schedule_ref),
+                expected_material_state_ref=MaterialStateRef(envelope.placement_material_state_ref),
+                placement=_window(10, 13),
+            )
+        impact = await get_self_activity_session_impact(
+            activity, _context(actor), _request(runtime), Response()
+        )
+        after = await apply_activity_replan(
+            activity,
+            ActivityReplanCommand(
+                operation_id="lifecycle:direct:confirmed",
+                envelope=_move(envelope, 10, 13),
+                session_disposition="keep",
+                expected_session_fingerprint=impact.fingerprint,
+            ),
+            _context(actor),
+            _request(runtime),
+            Response(),
+        )
+        assert next(
+            row for row in after.schedules if row.role_code == "envelope"
+        ).starts_local_at == datetime(2026, 10, 9, 10)  # noqa: DTZ001
+        assert (
+            await get_self_activity_session_impact(
+                activity, _context(actor), _request(runtime), Response()
+            )
+        ).fingerprint == impact.fingerprint
     finally:
         await runtime.dispose()

@@ -31,7 +31,7 @@ SET search_path=pg_catalog,dante,pg_temp
 AS $lifecycle$
 #variable_conflict error
 DECLARE
-    owned dante.activity_intention%ROWTYPE;
+    owned record;
     dependency record;
     source_table record;
     address_table record;
@@ -323,7 +323,9 @@ $lifecycle$;
 
 def upgrade() -> None:
     bind = op.get_bind()
-    bind.exec_driver_sql(_GRAPH_DELETE)
+    # Psycopg parses percent tokens even inside the PL/pgSQL dollar body.
+    # Preserve format('%s'/'%I') for PostgreSQL by escaping at the driver edge.
+    bind.exec_driver_sql(_GRAPH_DELETE.replace("%", "%%"))
     signature = "dante.delete_self_activity_lifecycle_graph(uuid,uuid,text,uuid)"
     bind.exec_driver_sql(f"ALTER FUNCTION {signature} OWNER TO dante_owner")
     bind.exec_driver_sql(

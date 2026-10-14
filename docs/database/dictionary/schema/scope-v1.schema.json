@@ -124,7 +124,7 @@
       "properties": {
         "completed_stages": {
           "type": "array",
-          "maxItems": 61,
+          "maxItems": 62,
           "uniqueItems": true,
           "items": {
             "enum": [
@@ -188,7 +188,8 @@
               "B14-OBJECTIVE-INPUT",
               "B14-HOME-WORKSPACE-READS",
               "B14-INDEPENDENT-PLANNED-SESSION",
-              "B14-PAST-ACTIVITY-REVIEW"
+              "B14-PAST-ACTIVITY-REVIEW",
+              "B14-ACTIVITY-SESSION-LIFECYCLE"
             ]
           }
         },
@@ -488,7 +489,8 @@
                   "B14-OBJECTIVE-INPUT",
                   "B14-HOME-WORKSPACE-READS",
                   "B14-INDEPENDENT-PLANNED-SESSION",
-                  "B14-PAST-ACTIVITY-REVIEW"
+                  "B14-PAST-ACTIVITY-REVIEW",
+                  "B14-ACTIVITY-SESSION-LIFECYCLE"
                 ]
               }
             }

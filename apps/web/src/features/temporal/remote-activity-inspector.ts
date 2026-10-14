@@ -51,11 +51,13 @@ function parseSessionImpact(value: unknown): ActivitySessionImpact {
     ) {
       throw new Error('Tentativo Sessione non valido.');
     }
+    const status: ActivitySessionImpact['attempts'][number]['status'] =
+      row.status;
     return {
       sessionRef: row.session_ref,
       plannedScheduleRef: row.planned_schedule_ref,
       timingMaterialStateRef: row.timing_material_state_ref,
-      status: row.status,
+      status,
     };
   });
   return { fingerprint: record.fingerprint, attempts };

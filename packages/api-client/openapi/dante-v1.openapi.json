@@ -1005,6 +1005,18 @@
               }
             ]
           },
+          "expected_session_fingerprint": {
+            "anyOf": [
+              {
+                "pattern": "^[a-f0-9]{64}$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Expected Session Fingerprint"
+          },
           "operation_id": {
             "maxLength": 200,
             "minLength": 1,
@@ -1040,6 +1052,18 @@
                 "type": "null"
               }
             ]
+          },
+          "session_disposition": {
+            "anyOf": [
+              {
+                "enum": ["keep", "delete"],
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Session Disposition"
           }
         },
         "required": ["operation_id"],
@@ -1149,6 +1173,36 @@
           "reminder"
         ],
         "title": "ActivityEditSnapshot",
+        "type": "object"
+      },
+      "ActivityHardDeleteCommand": {
+        "additionalProperties": false,
+        "description": "One confirmed, irreversible lifecycle delete with an attempts CAS token.",
+        "properties": {
+          "expected_session_fingerprint": {
+            "pattern": "^[0-9a-f]{64}$",
+            "title": "Expected Session Fingerprint",
+            "type": "string"
+          }
+        },
+        "required": ["expected_session_fingerprint"],
+        "title": "ActivityHardDeleteCommand",
+        "type": "object"
+      },
+      "ActivityHardDeleteResponse": {
+        "properties": {
+          "activity_ref": {
+            "format": "uuid",
+            "title": "Activity Ref",
+            "type": "string"
+          },
+          "deleted_rows": {
+            "title": "Deleted Rows",
+            "type": "integer"
+          }
+        },
+        "required": ["activity_ref", "deleted_rows"],
+        "title": "ActivityHardDeleteResponse",
         "type": "object"
       },
       "ActivityObjectiveBatchCommand": {
@@ -1324,6 +1378,18 @@
               }
             ]
           },
+          "expected_session_fingerprint": {
+            "anyOf": [
+              {
+                "pattern": "^[a-f0-9]{64}$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Expected Session Fingerprint"
+          },
           "intervals": {
             "items": {
               "$ref": "#/components/schemas/ReplanRow"
@@ -1385,6 +1451,18 @@
             "maxItems": 0,
             "title": "Remove Planned Sessions",
             "type": "array"
+          },
+          "session_disposition": {
+            "anyOf": [
+              {
+                "enum": ["keep", "delete"],
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Session Disposition"
           }
         },
         "required": ["operation_id"],
@@ -1716,6 +1794,67 @@
           "period_code"
         ],
         "title": "ActivityScheduleResponse",
+        "type": "object"
+      },
+      "ActivitySessionAttemptImpact": {
+        "properties": {
+          "planned_schedule_ref": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Planned Schedule Ref"
+          },
+          "session_ref": {
+            "format": "uuid",
+            "title": "Session Ref",
+            "type": "string"
+          },
+          "status": {
+            "title": "Status",
+            "type": "string"
+          },
+          "timing_material_state_ref": {
+            "format": "uuid",
+            "title": "Timing Material State Ref",
+            "type": "string"
+          }
+        },
+        "required": [
+          "session_ref",
+          "planned_schedule_ref",
+          "timing_material_state_ref",
+          "status"
+        ],
+        "title": "ActivitySessionAttemptImpact",
+        "type": "object"
+      },
+      "ActivitySessionImpactResponse": {
+        "properties": {
+          "activity_ref": {
+            "format": "uuid",
+            "title": "Activity Ref",
+            "type": "string"
+          },
+          "attempts": {
+            "items": {
+              "$ref": "#/components/schemas/ActivitySessionAttemptImpact"
+            },
+            "title": "Attempts",
+            "type": "array"
+          },
+          "fingerprint": {
+            "title": "Fingerprint",
+            "type": "string"
+          }
+        },
+        "required": ["activity_ref", "fingerprint", "attempts"],
+        "title": "ActivitySessionImpactResponse",
         "type": "object"
       },
       "ActualRealizationCommand": {
@@ -27467,6 +27606,55 @@
       }
     },
     "/api/v1/temporal/activities/{activity_ref}": {
+      "delete": {
+        "operationId": "temporal_delete_self_activity_hard",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "activity_ref",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Activity Ref",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ActivityHardDeleteCommand"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ActivityHardDeleteResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Delete Self Activity Hard",
+        "tags": ["temporal"]
+      },
       "get": {
         "operationId": "get_activity_api_v1_temporal_activities__activity_ref__get",
         "parameters": [
@@ -28531,6 +28719,48 @@
           }
         },
         "summary": "Establish Activity Schedule",
+        "tags": ["temporal"]
+      }
+    },
+    "/api/v1/temporal/activities/{activity_ref}/session-impact": {
+      "get": {
+        "description": "Authoritative attempt snapshot for a future Keep/Delete/Cancel admission.\n\nThis read does not authorize mutations: the write must verify the token\nagain inside its transaction against the same owner-scoped Session rows.",
+        "operationId": "temporal_get_self_activity_session_impact",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "activity_ref",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Activity Ref",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ActivitySessionImpactResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Get Self Activity Session Impact",
         "tags": ["temporal"]
       }
     },

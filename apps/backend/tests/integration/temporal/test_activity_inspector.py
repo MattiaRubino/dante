@@ -8,17 +8,22 @@ from typing import Any, cast
 import psycopg
 import pytest
 from fastapi import Request, Response
+from psycopg import sql
 from sqlalchemy import text
 from tests.integration.temporal.test_activity_quick_authoring_metadata import _seed_self
 
 from dante.context.contracts import DanteContext
-from dante.modules.temporal.activity_inspector_api import get_self_activity_session_impact
+from dante.modules.temporal.activity_inspector_api import (
+    ActivityHardDeleteCommand,
+    delete_self_activity_hard,
+    get_self_activity_session_impact,
+)
 from dante.modules.temporal.authoring import TemporalAuthoringApplication
 from dante.modules.temporal.session_runtime import SessionApplication
 from dante.platform.database.runtime import create_database_runtime
+from dante.platform.http.problem import ProblemError
 
 pytestmark = pytest.mark.postgres
-
 
 
 @pytest.mark.asyncio
@@ -41,9 +46,7 @@ async def test_session_impact_lists_only_owned_attempts_and_changes_token_on_tra
         )
         context = cast(DanteContext, SimpleNamespace(self_person_ref=actor))
         other_context = cast(DanteContext, SimpleNamespace(self_person_ref=other))
-        initial = await get_self_activity_session_impact(
-            activity, context, request, Response()
-        )
+        initial = await get_self_activity_session_impact(activity, context, request, Response())
         assert initial.activity_ref == activity
         assert initial.attempts == []
         assert len(initial.fingerprint) == 64
@@ -55,9 +58,7 @@ async def test_session_impact_lists_only_owned_attempts_and_changes_token_on_tra
             subject_native_ref=activity,
             operation_id="inspector:impact:start",
         )
-        active = await get_self_activity_session_impact(
-            activity, context, request, Response()
-        )
+        active = await get_self_activity_session_impact(activity, context, request, Response())
         assert active.fingerprint != initial.fingerprint
         assert len(active.attempts) == 1
         assert active.attempts[0].session_ref == started.session_ref
@@ -76,10 +77,8 @@ async def test_session_impact_lists_only_owned_attempts_and_changes_token_on_tra
         assert pause_impact.attempts[0].timing_material_state_ref == (
             paused.timing_material_state_ref
         )
-        with pytest.raises(Exception) as error:
-            await get_self_activity_session_impact(
-                activity, other_context, request, Response()
-            )
+        with pytest.raises(ProblemError) as error:
+            await get_self_activity_session_impact(activity, other_context, request, Response())
         assert getattr(error.value, "status", None) == 404
     finally:
         await runtime.dispose()
@@ -182,5 +181,103 @@ async def test_profile_revision_and_retirement_are_guarded_and_replayable(
                     {"actor": actor, "activity": activity},
                 )
             ).first() is None
+    finally:
+        await runtime.dispose()
+
+
+@pytest.mark.asyncio
+async def test_hard_delete_requires_fresh_owner_confirmation_and_removes_execution_graph(
+    migrated_database: Any,
+) -> None:
+    actor, other = _seed_self(migrated_database), _seed_self(migrated_database)
+    runtime = create_database_runtime(migrated_database.runtime_settings())
+    try:
+        authoring = TemporalAuthoringApplication(runtime.session_factory)
+        created = await authoring.create_activity(
+            self_person_ref=actor,
+            operation_id="hard-delete:created",
+            title="Da eliminare",
+            session_capture_mode="live",
+            planned_slices=(None,),
+            planned_slice_names=("Fase interna",),
+        )
+        retained = await authoring.create_activity(
+            self_person_ref=other,
+            operation_id="hard-delete:retained",
+            title="Di un'altra persona",
+        )
+        activity = created.item.subject_native_ref
+        request = cast(
+            Request,
+            SimpleNamespace(app=SimpleNamespace(state=SimpleNamespace(database_runtime=runtime))),
+        )
+        context = cast(DanteContext, SimpleNamespace(self_person_ref=actor))
+        other_context = cast(DanteContext, SimpleNamespace(self_person_ref=other))
+        before = await get_self_activity_session_impact(activity, context, request, Response())
+        sessions = SessionApplication(runtime.session_factory)
+        main = await sessions.start(
+            self_person_ref=actor,
+            subject_kind="activity",
+            subject_native_ref=activity,
+            operation_id="hard-delete:main",
+        )
+        named = await sessions.start_planned(
+            self_person_ref=actor,
+            operation_id="hard-delete:named",
+            activity_ref=activity,
+            schedule_ref=created.planned_slices[0].schedule_ref,
+        )
+        impact = await get_self_activity_session_impact(activity, context, request, Response())
+        assert {row.session_ref for row in impact.attempts} == {main.session_ref, named.session_ref}
+        with pytest.raises(ProblemError) as stale:
+            await delete_self_activity_hard(
+                activity,
+                ActivityHardDeleteCommand(expected_session_fingerprint=before.fingerprint),
+                context,
+                request,
+                Response(),
+            )
+        assert stale.value.status == 409
+        with pytest.raises(ProblemError) as unauthorized:
+            await delete_self_activity_hard(
+                activity,
+                ActivityHardDeleteCommand(expected_session_fingerprint=impact.fingerprint),
+                other_context,
+                request,
+                Response(),
+            )
+        assert unauthorized.value.status == 404
+        result = await delete_self_activity_hard(
+            activity,
+            ActivityHardDeleteCommand(expected_session_fingerprint=impact.fingerprint),
+            context,
+            request,
+            Response(),
+        )
+        assert result.deleted_rows > 0
+        with psycopg.connect(
+            **migrated_database.connection_kwargs(
+                "dante_migrator",
+                migrated_database.cluster.migrator_password,
+            )
+        ) as connection:
+            connection.execute("SET ROLE dante_owner")
+            for table, ref_column, ref in (
+                ("activity", "activity_ref", activity),
+                ("native_address", "native_ref", activity),
+                ("session", "session_ref", main.session_ref),
+                ("session", "session_ref", named.session_ref),
+                ("schedule", "schedule_ref", created.planned_slices[0].schedule_ref),
+            ):
+                assert connection.execute(
+                    sql.SQL("SELECT count(*) FROM {} WHERE {}=%s").format(
+                        sql.Identifier("dante", table), sql.Identifier(ref_column)
+                    ),
+                    (ref,),
+                ).fetchone() == (0,)
+            assert connection.execute(
+                "SELECT count(*) FROM dante.activity WHERE activity_ref=%s",
+                (retained.item.subject_native_ref,),
+            ).fetchone() == (1,)
     finally:
         await runtime.dispose()

@@ -9,6 +9,8 @@ import type {
   ActivityCoreEditCommand,
   ActivityCoreEditResponse,
   ActivityEditSnapshot,
+  ActivityHardDeleteCommand,
+  ActivityHardDeleteResponse,
   ActivityObjectiveBatchCommand,
   ActivityProfileChange,
   ActivityProfileResponse,
@@ -17,6 +19,7 @@ import type {
   ActivityResponse,
   ActivityRetirementCommand,
   ActivityRetirementResponse,
+  ActivitySessionImpactResponse,
   ActualRealizationCommand,
   ActualRealizationConditionRequest,
   ActualRealizationConditionResponse,
@@ -4004,6 +4007,75 @@ export const listUnplacedActivitiesApiV1TemporalActivitiesUnplacedGet = async (
   } as listUnplacedActivitiesApiV1TemporalActivitiesUnplacedGetResponse;
 };
 
+export type temporalDeleteSelfActivityHardResponse200 = {
+  data: ActivityHardDeleteResponse;
+  status: 200;
+};
+
+export type temporalDeleteSelfActivityHardResponse422 = {
+  data: HTTPValidationError;
+  status: 422;
+};
+
+export type temporalDeleteSelfActivityHardResponseSuccess =
+  temporalDeleteSelfActivityHardResponse200 & {
+    headers: Headers;
+  };
+export type temporalDeleteSelfActivityHardResponseError =
+  temporalDeleteSelfActivityHardResponse422 & {
+    headers: Headers;
+  };
+
+export type temporalDeleteSelfActivityHardResponse =
+  | temporalDeleteSelfActivityHardResponseSuccess
+  | temporalDeleteSelfActivityHardResponseError;
+
+export const getTemporalDeleteSelfActivityHardUrl = (activityRef: string) => {
+  return `/api/v1/temporal/activities/${activityRef}`;
+};
+
+/**
+ * @summary Delete Self Activity Hard
+ */
+export const temporalDeleteSelfActivityHard = async (
+  activityRef: string,
+  activityHardDeleteCommand: ActivityHardDeleteCommand,
+  options?: RequestInit,
+  fetchFn?: typeof globalThis.fetch,
+): Promise<temporalDeleteSelfActivityHardResponse> => {
+  const getHeaders = (
+    h?: NonNullable<RequestInit['headers']>,
+  ): Record<string, string | readonly string[]> => {
+    if (!h) return {};
+    if (h instanceof Headers) return Object.fromEntries(h.entries());
+    if (Array.isArray(h)) return Object.fromEntries(h);
+    return h;
+  };
+  const res = await (fetchFn ?? fetch)(
+    getTemporalDeleteSelfActivityHardUrl(activityRef),
+    {
+      ...options,
+      method: 'DELETE',
+      headers: {
+        'Content-Type': 'application/json',
+        ...getHeaders(options?.headers),
+      },
+      body: JSON.stringify(activityHardDeleteCommand),
+    },
+  );
+
+  const body = [204, 205, 304].includes(res.status) ? null : await res.text();
+
+  const data: temporalDeleteSelfActivityHardResponse['data'] = body
+    ? JSON.parse(body)
+    : {};
+  return {
+    data,
+    status: res.status,
+    headers: res.headers,
+  } as temporalDeleteSelfActivityHardResponse;
+};
+
 export type getActivityApiV1TemporalActivitiesActivityRefGetResponse200 = {
   data: ActivityResponse;
   status: 200;
@@ -5435,6 +5507,67 @@ export const establishActivityScheduleApiV1TemporalActivitiesActivityRefSchedule
       headers: res.headers,
     } as establishActivityScheduleApiV1TemporalActivitiesActivityRefSchedulePostResponse;
   };
+
+export type temporalGetSelfActivitySessionImpactResponse200 = {
+  data: ActivitySessionImpactResponse;
+  status: 200;
+};
+
+export type temporalGetSelfActivitySessionImpactResponse422 = {
+  data: HTTPValidationError;
+  status: 422;
+};
+
+export type temporalGetSelfActivitySessionImpactResponseSuccess =
+  temporalGetSelfActivitySessionImpactResponse200 & {
+    headers: Headers;
+  };
+export type temporalGetSelfActivitySessionImpactResponseError =
+  temporalGetSelfActivitySessionImpactResponse422 & {
+    headers: Headers;
+  };
+
+export type temporalGetSelfActivitySessionImpactResponse =
+  | temporalGetSelfActivitySessionImpactResponseSuccess
+  | temporalGetSelfActivitySessionImpactResponseError;
+
+export const getTemporalGetSelfActivitySessionImpactUrl = (
+  activityRef: string,
+) => {
+  return `/api/v1/temporal/activities/${activityRef}/session-impact`;
+};
+
+/**
+ * Authoritative attempt snapshot for a future Keep/Delete/Cancel admission.
+ *
+ * This read does not authorize mutations: the write must verify the token
+ * again inside its transaction against the same owner-scoped Session rows.
+ * @summary Get Self Activity Session Impact
+ */
+export const temporalGetSelfActivitySessionImpact = async (
+  activityRef: string,
+  options?: RequestInit,
+  fetchFn?: typeof globalThis.fetch,
+): Promise<temporalGetSelfActivitySessionImpactResponse> => {
+  const res = await (fetchFn ?? fetch)(
+    getTemporalGetSelfActivitySessionImpactUrl(activityRef),
+    {
+      ...options,
+      method: 'GET',
+    },
+  );
+
+  const body = [204, 205, 304].includes(res.status) ? null : await res.text();
+
+  const data: temporalGetSelfActivitySessionImpactResponse['data'] = body
+    ? JSON.parse(body)
+    : {};
+  return {
+    data,
+    status: res.status,
+    headers: res.headers,
+  } as temporalGetSelfActivitySessionImpactResponse;
+};
 
 export type temporalListActivitySessionsResponse200 = {
   data: SessionResponse[];

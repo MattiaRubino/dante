@@ -8,7 +8,7 @@
 - **Protected-main topology:** `89|5|18|77|173|91|272|0|0|0`
 - **Current candidate branch:** `feature/timeline-temporal-operational`
 - **Current candidate Alembic source head:** `20261011_142` (derived past Activity review query; cumulative PostgreSQL gate green, real-app acceptance open)
-- **Measured whole-catalog topology:** `20261011_142` / `238|5|228|103|486|421|596|0|0|0`
+- **Measured whole-catalog topology:** `20261011_142` / `238|5|228|103|486|421|596|0|0|0`. **Current unverified `_148` candidate:** `238|5|233|103|486|421|596|0|0|0` (five new lifecycle routines); this is not a PostgreSQL measurement.
 - **Frozen CP6 head:** `20260826_08`
 - **Last exact Dictionary/catalog gate:** B14 `_142` / 2026-10-11 (cumulative user-local gate; final current-catalog test 1 PASS)
 
