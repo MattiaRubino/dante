@@ -22,44 +22,49 @@ type U2DraftContextValue = Readonly<{
 
 const U2DraftContext = createContext<U2DraftContextValue | null>(null);
 
-export function TemporalCreateU2DraftProvider({
-  fields,
-  resetKey,
-  initialDraft,
-  onDraftChange,
-  children,
-}: Readonly<{
+type TemporalCreateU2DraftProviderProps = Readonly<{
   fields: TemporalCreateFields;
   resetKey: string | number;
   initialDraft?: TemporalCreateU2AuthoringDraft;
   onDraftChange: (draft: TemporalCreateU2AuthoringDraft) => void;
   children: ReactNode;
-}>) {
+}>;
+
+export function TemporalCreateU2DraftProvider(props: TemporalCreateU2DraftProviderProps) {
+  // Reset only on a true baseline transition. Ordinary field edits must not
+  // discard staged Life Area, color, or activity structure intentions.
+  return <TemporalCreateU2DraftProviderInstance key={props.resetKey} {...props} />;
+}
+
+function TemporalCreateU2DraftProviderInstance({
+  fields,
+  initialDraft,
+  onDraftChange,
+  children,
+}: TemporalCreateU2DraftProviderProps) {
   const [state, setState] = useState(
     () => initialDraft ?? createTemporalCreateU2AuthoringDraft(fields),
   );
 
-  useEffect(() => {
-    const next = initialDraft ?? createTemporalCreateU2AuthoringDraft(fields);
-    setState(next);
-    onDraftChange(next);
-    // resetKey intentionally owns lifecycle boundaries; ordinary field edits
-    // must not erase staged Life Area/color intent.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [resetKey]);
+  const [previousDate, setPreviousDate] = useState(fields.date);
 
+  // React's guarded render-time adjustment keeps the draft's end date in
+  // sync with an externally reseeded start date without the extra effect
+  // render. It never resets Life Area or other authored draft fields.
+  if (previousDate !== fields.date) {
+    setPreviousDate(fields.date);
+    const endDate = normalizeTemporalCreateU2EndDate(fields.date, state.endDate);
+    if (endDate !== state.endDate) {
+      setState(patchTemporalCreateU2AuthoringDraft(state, { endDate }));
+    }
+  }
+
+  // Communicate the committed draft (including the initial keyed mount and
+  // date normalization) only after render. The patch callback below still
+  // notifies synchronously for user edits before a subsequent Submit click.
   useEffect(() => {
-    setState((current) => {
-      const endDate = normalizeTemporalCreateU2EndDate(
-        fields.date,
-        current.endDate,
-      );
-      if (endDate === current.endDate) return current;
-      const next = patchTemporalCreateU2AuthoringDraft(current, { endDate });
-      onDraftChange(next);
-      return next;
-    });
-  }, [fields.date, onDraftChange]);
+    onDraftChange(state);
+  }, [state, onDraftChange]);
 
   const value = useMemo<U2DraftContextValue>(
     () => ({
