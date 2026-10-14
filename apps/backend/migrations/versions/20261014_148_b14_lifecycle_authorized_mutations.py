@@ -42,7 +42,7 @@ AS $lifecycle$
         requested_actor,requested_activity
     ) AS sessions
     LEFT JOIN LATERAL dante.get_self_session_runtime_metrics(
-        requested_actor,sessions.session_ref
+        requested_actor,sessions.session_ref,sessions.timing_material_state_ref
     ) AS runtime ON true
     WHERE EXISTS (
         SELECT 1 FROM dante.get_self_activity_profile(

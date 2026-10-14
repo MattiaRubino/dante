@@ -35,7 +35,13 @@ Timeline, review rail and browser must agree before a row is accepted.
   and `git diff --check` passed before the recurrence guard was added.
 - New PostgreSQL scenarios cover graph deletion, owner isolation, stale
   confirmation, Keep with a running attempt, named X, and rollback after a
-  stale profile. They have **not** run against PostgreSQL.
+  stale profile. Their test bodies have **not** executed against PostgreSQL.
+- The first WSL run on `3c0ddeb` stopped while creating `_148`: both the
+  database hash and Inspector read passed two arguments to the three-argument
+  runtime metrics capability. All eight selected cases were blocked at
+  migration setup (one failure and seven errors), so none supplies acceptance
+  evidence. The corrected candidate passes the existing timing state ref as
+  the third argument and needs a fresh PostgreSQL run.
 - Intended `_148` Dictionary topology: `238|5|233|103|486|421|596`.
   This is a computed expectation, **not** a measured live catalog.
 - This environment has no Docker, PostgreSQL 18/PostGIS or real-app browser

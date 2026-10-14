@@ -71,7 +71,7 @@ _SESSION_IMPACT = text("""
       JOIN LATERAL dante.list_self_subject_sessions(:actor,owned.activity_ref)
            AS sessions ON true
       LEFT JOIN LATERAL dante.get_self_session_runtime_metrics(
-          :actor,sessions.session_ref
+          :actor,sessions.session_ref,sessions.timing_material_state_ref
       ) AS runtime ON true
      ORDER BY sessions.session_ref
 """)
