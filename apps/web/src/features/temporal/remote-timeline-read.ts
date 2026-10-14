@@ -433,9 +433,11 @@ function parseOwnerIdentity(
 function publicIdentity(identity: ParsedOwnerIdentity) {
   if (identity.kind === 'scheduled_activity') {
     const { wireRefKey: _wireRefKey, ...result } = identity;
+    void _wireRefKey;
     return result;
   }
   const { wireRefKey: _wireRefKey, ...result } = identity;
+  void _wireRefKey;
   return result;
 }
 
