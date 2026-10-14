@@ -215,19 +215,30 @@ export function TimeControl({
     parsedValue === null ? '00:00' : minuteToTime(parsedValue);
   const [hourDraft, setHourDraft] = useState(normalizedValue.slice(0, 2));
   const [minuteDraft, setMinuteDraft] = useState(normalizedValue.slice(3, 5));
+  const [committedValue, setCommittedValue] = useState(normalizedValue);
+  const [previousValue, setPreviousValue] = useState(value);
   const [pickerOpen, setPickerOpen] = useState(false);
   const rootRef = useRef<HTMLDivElement | null>(null);
   const listRef = useRef<HTMLDivElement | null>(null);
   const minuteRef = useRef<HTMLInputElement | null>(null);
   const lastValidRef = useRef(normalizedValue);
 
+  // A controlled value may change externally (date/reseed/Inspector edit).
+  // Synchronize the visible segmented draft during render only when that
+  // prop actually changes. This guarded update avoids an extra effect render
+  // and does not remount the inputs while the user types.
+  if (previousValue !== value) {
+    setPreviousValue(value);
+    if (parsedValue !== null) {
+      setCommittedValue(normalizedValue);
+      setHourDraft(normalizedValue.slice(0, 2));
+      setMinuteDraft(normalizedValue.slice(3, 5));
+    }
+  }
+
   useEffect(() => {
     const parsed = timeToMinute(value);
-    if (parsed === null) return;
-    const next = minuteToTime(parsed);
-    lastValidRef.current = next;
-    setHourDraft(next.slice(0, 2));
-    setMinuteDraft(next.slice(3, 5));
+    if (parsed !== null) lastValidRef.current = minuteToTime(parsed);
   }, [value]);
 
   useEffect(() => {
@@ -260,6 +271,7 @@ export function TimeControl({
 
   const syncDraft = (next: string) => {
     lastValidRef.current = next;
+    setCommittedValue(next);
     setHourDraft(next.slice(0, 2));
     setMinuteDraft(next.slice(3, 5));
     onChange(next);
@@ -312,7 +324,7 @@ export function TimeControl({
         type="text"
         tabIndex={-1}
         aria-hidden="true"
-        value={lastValidRef.current}
+        value={committedValue}
         onChange={(event) => {
           const parsed = timeToMinute(event.currentTarget.value);
           if (parsed !== null) syncDraft(minuteToTime(parsed));
@@ -434,7 +446,7 @@ export function TimeControl({
                 type="button"
                 data-time-value={option}
                 className={
-                  nearestQuarter(lastValidRef.current) === option
+                  nearestQuarter(committedValue) === option
                     ? 'is-selected'
                     : ''
                 }
