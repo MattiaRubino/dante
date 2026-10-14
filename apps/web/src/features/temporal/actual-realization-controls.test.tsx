@@ -71,7 +71,7 @@ describe('Actual realization controls', () => {
         current = actual(STATE_1, true);
         return resolvedJson(current, { status: 201 });
       }
-      return current === null ? notFound() : resolvedJson(current);
+      return current === null ? Promise.resolve(notFound()) : resolvedJson(current);
     });
     vi.stubGlobal('fetch', fetchFn);
 
