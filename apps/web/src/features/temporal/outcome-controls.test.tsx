@@ -69,6 +69,10 @@ function outcomeNotFound() {
   );
 }
 
+function resolvedJson(value: unknown, init?: ResponseInit): Promise<Response> {
+  return Promise.resolve(Response.json(value, init));
+}
+
 describe('Outcome controls', () => {
   afterEach(() => {
     cleanup();
@@ -91,13 +95,13 @@ describe('Outcome controls', () => {
   it('keeps absence unknown then records and corrects one Outcome pinned to the Actual state', async () => {
     const bodies: Array<Record<string, unknown>> = [];
     let current: ReturnType<typeof outcome> | null = null;
-    const fetchFn = vi.fn<Fetch>(async (input, init) => {
+    const fetchFn = vi.fn<Fetch>((input, init) => {
       const url = fetchRequestUrl(input);
       if (url.endsWith('/api/v1/auth/session')) {
-        return Response.json({ authenticated: true, csrf_token: 'csrf' });
+        return resolvedJson({ authenticated: true, csrf_token: 'csrf' });
       }
       if (url.endsWith(`/events/${SUBJECT}/actual`)) {
-        return Response.json(actual());
+        return resolvedJson(actual());
       }
       if (
         init?.method === 'POST' &&
@@ -112,10 +116,10 @@ describe('Outcome controls', () => {
           bodies.length === 1 ? OUTCOME_STATE_1 : OUTCOME_STATE_2,
           String(body.disposition_code),
         );
-        return Response.json(current, { status: 201 });
+        return resolvedJson(current, { status: 201 });
       }
       if (url.endsWith(`/actuals/${ACTUAL}/outcome`)) {
-        return current === null ? outcomeNotFound() : Response.json(current);
+        return current === null ? Promise.resolve(outcomeNotFound()) : resolvedJson(current);
       }
       throw new Error(`Unexpected fetch ${url}`);
     });
