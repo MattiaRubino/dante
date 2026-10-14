@@ -37,20 +37,21 @@ describe('remote Plan work structure', () => {
   it('reads accepted order and uses the authenticated mutation boundary', async () => {
     const calls: Array<{ url: string; init?: RequestInit }> = [];
     const fetchFn = vi.fn(
-      async (url: RequestInfo | URL, init?: RequestInit) => {
+      (url: RequestInfo | URL, init?: RequestInit) => {
         calls.push({
           url: fetchRequestUrl(url),
           ...(init === undefined ? {} : { init }),
         });
         if (fetchRequestUrl(url) === '/api/v1/auth/session') {
-          return new Response(
-            JSON.stringify({ authenticated: true, csrf_token: 'csrf' }),
+          return Promise.resolve(
+            new Response(JSON.stringify({ authenticated: true, csrf_token: 'csrf' })),
           );
         }
-        if (init?.method === 'PUT') return new Response(JSON.stringify(item));
+        if (init?.method === 'PUT')
+          return Promise.resolve(new Response(JSON.stringify(item)));
         if (init?.method === 'POST')
-          return new Response(JSON.stringify({ ...item, steps: [] }));
-        return new Response(JSON.stringify([item]));
+          return Promise.resolve(new Response(JSON.stringify({ ...item, steps: [] })));
+        return Promise.resolve(new Response(JSON.stringify([item])));
       },
     ) as typeof globalThis.fetch;
     const source = createRemotePlanWorkDataSource(fetchFn);
@@ -83,12 +84,12 @@ describe('remote Plan work structure', () => {
 
   it('rejects a response whose order is not contiguous', async () => {
     const fetchFn = vi.fn(
-      async () =>
-        new Response(
+      () =>
+        Promise.resolve(new Response(
           JSON.stringify([
             { ...item, steps: [{ ...item.steps[0], position: 2 }] },
           ]),
-        ),
+        )),
     ) as typeof globalThis.fetch;
     await expect(
       createRemotePlanWorkDataSource(fetchFn).list(),
