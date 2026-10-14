@@ -66,7 +66,7 @@ describe('Actual realization controls', () => {
         return resolvedJson({ authenticated: true, csrf_token: 'csrf' });
       }
       if (init?.method === 'POST') {
-        const body = JSON.parse(fetchRequestBody(init.body));
+        const body: unknown = JSON.parse(fetchRequestBody(init.body));
         bodies.push(body);
         current = actual(STATE_1, true);
         return resolvedJson(current, { status: 201 });
@@ -90,9 +90,9 @@ describe('Actual realization controls', () => {
     fireEvent.click(screen.getByText('Segna avvenuto'));
     await screen.findByText('Stato reale: avvenuto');
 
+    expect(typeof (bodies[0] as Record<string, unknown>).operation_id).toBe('string');
     expect(bodies).toEqual([
       {
-        operation_id: expect.any(String),
         expected_material_state_ref: null,
         realization_occurred: true,
         timing: null,
