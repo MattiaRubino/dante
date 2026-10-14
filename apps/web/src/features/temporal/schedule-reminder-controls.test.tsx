@@ -101,8 +101,8 @@ describe('Schedule Reminder controls', () => {
 
     await waitFor(() => expect(writes).toHaveLength(2));
     expect(writes[0]).toEqual(writes[1]);
+    expect(typeof writes[1]?.operation_id).toBe('string');
     expect(writes[1]).toMatchObject({
-      operation_id: expect.any(String),
       expected_material_state_ref: STATE_1,
       enabled: true,
       lead_minutes: 30,
