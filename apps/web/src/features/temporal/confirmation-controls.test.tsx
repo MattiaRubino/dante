@@ -79,6 +79,10 @@ function notFound(code: string, title: string, detail: string) {
   );
 }
 
+function resolvedJson(value: unknown, init?: ResponseInit): Promise<Response> {
+  return Promise.resolve(Response.json(value, init));
+}
+
 describe('Confirmation controls', () => {
   afterEach(() => {
     cleanup();
@@ -86,14 +90,14 @@ describe('Confirmation controls', () => {
   });
 
   it('does not manufacture a Confirmation when no Outcome exists', async () => {
-    const fetchFn = vi.fn<Fetch>(async (input) => {
+    const fetchFn = vi.fn<Fetch>((input) => {
       const url = fetchRequestUrl(input);
       if (url.endsWith(`/events/${SUBJECT}/actual`)) {
-        return notFound(
+        return Promise.resolve(notFound(
           'temporal.actual.not_found',
           'Actual unavailable',
           'No Actual is established for this subject.',
-        );
+        ));
       }
       throw new Error(`Unexpected fetch ${url}`);
     });
@@ -112,16 +116,16 @@ describe('Confirmation controls', () => {
   it('keeps absence unknown then records and corrects an explicit Confirmation', async () => {
     const bodies: Array<Record<string, unknown>> = [];
     let current: ReturnType<typeof confirmation> | null = null;
-    const fetchFn = vi.fn<Fetch>(async (input, init) => {
+    const fetchFn = vi.fn<Fetch>((input, init) => {
       const url = fetchRequestUrl(input);
       if (url.endsWith('/api/v1/auth/session')) {
-        return Response.json({ authenticated: true, csrf_token: 'csrf' });
+        return resolvedJson({ authenticated: true, csrf_token: 'csrf' });
       }
       if (url.endsWith(`/events/${SUBJECT}/actual`)) {
-        return Response.json(actual());
+        return resolvedJson(actual());
       }
       if (url.endsWith(`/actuals/${ACTUAL}/outcome`)) {
-        return Response.json(outcome());
+        return resolvedJson(outcome());
       }
       if (
         init?.method === 'POST' &&
@@ -136,10 +140,10 @@ describe('Confirmation controls', () => {
           bodies.length === 1 ? CONFIRMATION_STATE_1 : CONFIRMATION_STATE_2,
           String(body.stance_code),
         );
-        return Response.json({ ...current, replayed: false }, { status: 201 });
+        return resolvedJson({ ...current, replayed: false }, { status: 201 });
       }
       if (url.endsWith(`/outcomes/${OUTCOME}/confirmations`)) {
-        return Response.json(current === null ? [] : [current]);
+        return resolvedJson(current === null ? [] : [current]);
       }
       throw new Error(`Unexpected fetch ${url}`);
     });
@@ -191,16 +195,16 @@ describe('Confirmation controls', () => {
   });
 
   it('shows other actors’ Confirmation without treating it as universal truth', async () => {
-    const fetchFn = vi.fn<Fetch>(async (input) => {
+    const fetchFn = vi.fn<Fetch>((input) => {
       const url = fetchRequestUrl(input);
       if (url.endsWith(`/events/${SUBJECT}/actual`)) {
-        return Response.json(actual());
+        return resolvedJson(actual());
       }
       if (url.endsWith(`/actuals/${ACTUAL}/outcome`)) {
-        return Response.json(outcome());
+        return resolvedJson(outcome());
       }
       if (url.endsWith(`/outcomes/${OUTCOME}/confirmations`)) {
-        return Response.json([
+        return resolvedJson([
           confirmation(CONFIRMATION_STATE_1, 'disputed', {
             confirmation_ref: OTHER_CONFIRMATION,
             confirmer_person_ref: OTHER_PERSON,
