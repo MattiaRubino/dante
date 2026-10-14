@@ -1166,3 +1166,21 @@ git pull --ff-only origin feature/timeline-temporal-operational || exit 1
 pnpm --filter @dante/web exec vitest run src/features/temporal-create/ui/temporal-create-entry-authoring.test.tsx
 ```
 Only when all 16 pass, run `bash tooling/testing/verify_work_handoff_20261014.sh`, then `bash tooling/testing/run_full_gate_adaptive.sh` with log archives and provenance. If targeted tests still fail, inspect actual U2 create validation and stage/edit source before modifying more logic.
+
+
+## 2026-10-14 — 15/16 Quick Create focused PASS; final Session error rendering
+
+New uploaded log `CREATE_SESSION_FOCUSED_VITEST(1).log` confirms **15 PASS / 1 FAIL** in the full 16-case Quick Create U2 authoring test file (Vitest v4.1.11; started at 13:16:52, duration 3.95s). Both newly broken Life Area tests from the prior attempt now PASS: new area with orange `#EA5C12` and preserving selected blue `#4285F4`. The sole remaining failure is the valid product contract `shows an out-of-range Session error in Italian on its time controls`: the Session's `.temporal-create-tree-time-editor` lacked `data-create-invalid="true"`; expected the exact Italian alert `La Sessione deve rientrare nell’orario dell’attività.`. User's local run stopped before the full static and 27-group gate; no subsequent green claims are justified.
+
+Review confirms domain mapping is correct: `validateTemporalCreateU6StructureIssue` resolves the invalid planned Session to `plannedSession:<slice.id>`, and the corresponding child editor renders `data-create-path="plannedSession:<slice.id>"`. The weakness was **imperative visual error marking** in `TemporalCreateComposer.useLayoutEffect` (querySelector/dataset mutating DOM, cleanup unsetting it) coupled with a separate requestAnimationFrame-based host lookup to portal the Italian text. These can be lost across U2 provider child rerenders/DOM replacement and are harder to test than a declarative React error.
+
+New direct UI implementation published, **not yet verified**: `TemporalCreateAdvancedActivityStructure` receives optional `validationTarget`/`validationMessage`; for the targeted enabled planned Session it directly renders `data-create-invalid="true"` and `aria-invalid="true"` on the exact time editor and the translated error as a child `role="alert"`. `TemporalCreateComposer` routes targets beginning `plannedSession:` to the component, preserving the prior generic error portal and DOM annotation for other fields, but skipping imperative annotation and duplicate global/portal error for the handled session. No tests were removed/changed; Session editing and other controls are untouched.
+
+Verification next:
+```bash
+cd ~/projects/dante || exit 1
+git pull --ff-only origin feature/timeline-temporal-operational || exit 1
+mkdir -p temp
+pnpm --filter @dante/web exec vitest run src/features/temporal-create/ui/temporal-create-entry-authoring.test.tsx 2>&1 | tee temp/CREATE_SESSION_FOCUSED_VITEST.log
+```
+On **16/16 PASS** proceed to `bash tooling/testing/verify_work_handoff_20261014.sh` (all static + full Web Vitest) and only then `bash tooling/testing/run_full_gate_adaptive.sh` (all 27 PostgreSQL/browser groups). If it remains red, capture whether the parent `failureTarget` and `failureMessage` were produced before changing any domain validation.
