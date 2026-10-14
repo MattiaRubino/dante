@@ -502,25 +502,26 @@ describe('Temporal Create U2 entry', () => {
   });
 
   it('configures B11 reminder only after accepted scheduled U2 authoring', async () => {
-    const fetchMock = vi.fn(
-      (input: RequestInfo | URL, init?: RequestInit) => {
-        const url = fetchRequestUrl(input);
-        if (url.endsWith('/api/v1/auth/session')) {
-          return Promise.resolve(new Response(
+    const fetchMock = vi.fn((input: RequestInfo | URL, init?: RequestInit) => {
+      const url = fetchRequestUrl(input);
+      if (url.endsWith('/api/v1/auth/session')) {
+        return Promise.resolve(
+          new Response(
             JSON.stringify({ authenticated: true, csrf_token: 'csrf-test' }),
             { status: 200, headers: { 'Content-Type': 'application/json' } },
-          ));
-        }
-        if (
-          url.includes(`/api/v1/temporal/schedules/${SCHEDULE_REF}/reminder`)
-        ) {
-          expect(init?.method).toBe('PUT');
-          const body = JSON.parse(
-            fetchRequestBody(init?.body ?? '{}'),
-          ) as Record<string, unknown>;
-          expect(body.enabled).toBe(true);
-          expect(body.lead_minutes).toBe(15);
-          return Promise.resolve(new Response(
+          ),
+        );
+      }
+      if (url.includes(`/api/v1/temporal/schedules/${SCHEDULE_REF}/reminder`)) {
+        expect(init?.method).toBe('PUT');
+        const body = JSON.parse(fetchRequestBody(init?.body ?? '{}')) as Record<
+          string,
+          unknown
+        >;
+        expect(body.enabled).toBe(true);
+        expect(body.lead_minutes).toBe(15);
+        return Promise.resolve(
+          new Response(
             JSON.stringify({
               reminder_ref: '0199a111-1111-7111-8111-111111111122',
               schedule_ref: SCHEDULE_REF,
@@ -533,11 +534,11 @@ describe('Temporal Create U2 entry', () => {
               replayed: false,
             }),
             { status: 200, headers: { 'Content-Type': 'application/json' } },
-          ));
-        }
-        throw new Error(`Unexpected fetch ${url}`);
-      },
-    );
+          ),
+        );
+      }
+      throw new Error(`Unexpected fetch ${url}`);
+    });
     vi.stubGlobal('fetch', fetchMock);
 
     const { activityRequests } = renderEntry([], true);
@@ -578,32 +579,37 @@ describe('Temporal Create U2 entry', () => {
   it('persists Event expected participation through the proven B09 vertical', async () => {
     const eventRef = '0199a111-1111-7111-8111-111111111111';
     const participationBodies: Record<string, unknown>[] = [];
-    const fetchMock = vi.fn(
-      (input: RequestInfo | URL, init?: RequestInit) => {
-        const url = fetchRequestUrl(input);
-        if (url.endsWith('/api/v1/temporal/person-referents')) {
-          return Promise.resolve(new Response(JSON.stringify([]), {
+    const fetchMock = vi.fn((input: RequestInfo | URL, init?: RequestInit) => {
+      const url = fetchRequestUrl(input);
+      if (url.endsWith('/api/v1/temporal/person-referents')) {
+        return Promise.resolve(
+          new Response(JSON.stringify([]), {
             status: 200,
             headers: { 'Content-Type': 'application/json' },
-          }));
-        }
-        if (url.endsWith('/api/v1/auth/session')) {
-          return Promise.resolve(new Response(
+          }),
+        );
+      }
+      if (url.endsWith('/api/v1/auth/session')) {
+        return Promise.resolve(
+          new Response(
             JSON.stringify({ authenticated: true, csrf_token: 'csrf-test' }),
             { status: 200, headers: { 'Content-Type': 'application/json' } },
-          ));
-        }
-        if (
-          url.endsWith(
-            `/api/v1/temporal/events/${eventRef}/expected-participation`,
-          )
-        ) {
-          expect(init?.method).toBe('PUT');
-          const body = JSON.parse(
-            fetchRequestBody(init?.body ?? '{}'),
-          ) as Record<string, unknown>;
-          participationBodies.push(body);
-          return Promise.resolve(new Response(
+          ),
+        );
+      }
+      if (
+        url.endsWith(
+          `/api/v1/temporal/events/${eventRef}/expected-participation`,
+        )
+      ) {
+        expect(init?.method).toBe('PUT');
+        const body = JSON.parse(fetchRequestBody(init?.body ?? '{}')) as Record<
+          string,
+          unknown
+        >;
+        participationBodies.push(body);
+        return Promise.resolve(
+          new Response(
             JSON.stringify({
               event_ref: eventRef,
               participant_person_ref: eventRef,
@@ -613,11 +619,11 @@ describe('Temporal Create U2 entry', () => {
               replayed: false,
             }),
             { status: 200, headers: { 'Content-Type': 'application/json' } },
-          ));
-        }
-        throw new Error(`Unexpected fetch ${url}`);
-      },
-    );
+          ),
+        );
+      }
+      throw new Error(`Unexpected fetch ${url}`);
+    });
     vi.stubGlobal('fetch', fetchMock);
 
     const { eventRequests } = renderEntry();

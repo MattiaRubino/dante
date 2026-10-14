@@ -90,7 +90,9 @@ describe('Actual realization controls', () => {
     fireEvent.click(screen.getByText('Segna avvenuto'));
     await screen.findByText('Stato reale: avvenuto');
 
-    expect(typeof (bodies[0] as Record<string, unknown>).operation_id).toBe('string');
+    expect(typeof (bodies[0] as Record<string, unknown>).operation_id).toBe(
+      'string',
+    );
     expect(bodies).toMatchObject([
       {
         expected_material_state_ref: null,

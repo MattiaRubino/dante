@@ -105,7 +105,9 @@ export function TemporalCreateLifeAreaField({
     text: selectedLabel(draft),
   }));
   const query =
-    queryEdit.selectionKey === selectionKey ? queryEdit.text : selectedLabel(draft);
+    queryEdit.selectionKey === selectionKey
+      ? queryEdit.text
+      : selectedLabel(draft);
   const setQuery = (text: string) => setQueryEdit({ selectionKey, text });
 
   // Keep remotely accepted organization options associated with the exact
@@ -115,7 +117,9 @@ export function TemporalCreateLifeAreaField({
     options: readonly TemporalCreateContextOption[];
   }> | null>(null);
   const availableContexts =
-    canonical?.origin === contexts ? canonical.options : authorableContexts(contexts);
+    canonical?.origin === contexts
+      ? canonical.options
+      : authorableContexts(contexts);
   const sourceRef = useRef<ReturnType<
     typeof createRemoteTemporalOrganizationDataSource
   > | null>(null);
@@ -127,7 +131,10 @@ export function TemporalCreateLifeAreaField({
     void sourceRef.current.load().then(
       (snapshot) => {
         if (!cancelled) {
-          setCanonical({ origin: contexts, options: canonicalOptions(contexts, snapshot.areas) });
+          setCanonical({
+            origin: contexts,
+            options: canonicalOptions(contexts, snapshot.areas),
+          });
         }
       },
       () => undefined,

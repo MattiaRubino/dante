@@ -105,7 +105,6 @@ function PlannedSessionCardContent({
   const [rows, setRows] = useState<readonly PlannedSession[] | null>(null);
 
   useEffect(() => {
-
     let cancelled = false;
     const controller = new AbortController();
     const webFetch = createWebFetch(globalThis.fetch);

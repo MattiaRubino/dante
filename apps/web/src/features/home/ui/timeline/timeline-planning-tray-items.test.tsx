@@ -56,8 +56,8 @@ const items = Object.freeze([
 
 describe('TimelinePlanningTrayB01 unified product tray', () => {
   it('shows Activity, never-placed Event and postponed Event in the separate existing-items placement surface', async () => {
-    const listItems = vi.fn<TemporalPlanningTrayDataSource['listItems']>(
-      () => Promise.resolve(items),
+    const listItems = vi.fn<TemporalPlanningTrayDataSource['listItems']>(() =>
+      Promise.resolve(items),
     );
     const source: TemporalPlanningTrayDataSource = {
       listItems,
@@ -103,8 +103,8 @@ describe('TimelinePlanningTrayB01 unified product tray', () => {
 
   it('opens legacy placement only through the explicit vault handoff when trigger is hidden', async () => {
     const source: TemporalPlanningTrayDataSource = {
-      listItems: vi.fn<TemporalPlanningTrayDataSource['listItems']>(
-        () => Promise.resolve(items),
+      listItems: vi.fn<TemporalPlanningTrayDataSource['listItems']>(() =>
+        Promise.resolve(items),
       ),
       placeItem: vi.fn(),
     };

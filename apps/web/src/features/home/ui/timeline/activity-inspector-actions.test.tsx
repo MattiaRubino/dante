@@ -212,9 +212,7 @@ describe('Recurring Activity profile scope', () => {
     );
     expect(saveCore).not.toHaveBeenCalled();
     await waitFor(() =>
-      expect(onSaved).toHaveBeenCalledWith(
-        containing({ title: 'Dopo' }),
-      ),
+      expect(onSaved).toHaveBeenCalledWith(containing({ title: 'Dopo' })),
     );
   });
 });

@@ -63,7 +63,9 @@ describe('Conditional temporal controls', () => {
         return resolvedJson({ authenticated: true, csrf_token: 'csrf' });
       }
       if (url.includes('/conditions/actual-realization?')) {
-        return created ? resolvedJson(condition()) : Promise.resolve(unavailable());
+        return created
+          ? resolvedJson(condition())
+          : Promise.resolve(unavailable());
       }
       if (
         init?.method === 'POST' &&
