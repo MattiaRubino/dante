@@ -894,6 +894,7 @@ export function createRemoteActivityEditSettings(
         reminderLeadMinutes?: number | null;
       }>,
       operationId: string,
+      disposition?: ActivitySessionDisposition,
     ): Promise<{ profile: ActivityProfile; settings: ActivityEditSettings }> {
       const controller = new AbortController();
       let timer: ReturnType<typeof setTimeout> | undefined;
@@ -955,6 +956,12 @@ export function createRemoteActivityEditSettings(
                       enabled: changes.reminderLeadMinutes !== null,
                       lead_minutes: changes.reminderLeadMinutes ?? 0,
                     },
+                  }
+                : {}),
+              ...(disposition
+                ? {
+                    session_disposition: disposition.mode,
+                    expected_session_fingerprint: disposition.expectedFingerprint,
                   }
                 : {}),
             }),
