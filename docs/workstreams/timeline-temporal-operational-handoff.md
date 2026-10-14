@@ -1077,3 +1077,21 @@ Chat-side GitHub changes after `38e1813c`, not yet verified: preserving defensiv
 React product-safety fixes carefully isolate asynchronous results by canonical subject identity rather than calling setState synchronously in effects. Applied to Inspector Reality, Activity Structure readback, Placement Lock, Event Agenda Editor, Advanced Recurrence Controls and Schedule Reminder Controls. The renamed source-specific editor inner components are keyed by Event/owner/Schedule so switching selection discards stale unsubmitted edits. Kept existing real UI components and test assertions; did not remove tests or apply global ESLint auto-fix. Tests were also made type-aware for Plan mock invocations, actual fetch Promise behavior and Activity/Timeline readbacks. The React Create core time-picker/ref/validation and other hook findings need careful source review; do not auto-remove behavior to silence rules.
 
 Added `tooling/testing/verify_work_handoff_20261014.sh`: clean branch + pull, Ruff/Prettier format, full Python bytecode compilation, generated drift and whole-repo TS gate **before push** of any formatting, then concurrent Ruff, mypy, ESLint and **all Web Vitest**, producing `temp/WORK_HANDOFF_CHECK_LOGS.tar.gz` and `temp/WORK_HANDOFF_CHECK_SUMMARY.txt`. These diagnostics are pending; no new green status should be claimed for mypy/ESLint/Vitest. Only rerun the 27-group PostgreSQL/browser full acceptance gate after static and frontend unit correction. Never weaken browser/auth outage, historical guard or UI behavior assertions to achieve green.
+
+
+
+## 2026-10-14 — Latest full static + Web Vitest evidence (fa272269)
+
+User uploaded `WORK_HANDOFF_CHECK_LOGS.tar.gz` generated from `START_HEAD=3c580b755732d55aaed9ea30c65e22c9c6fa0da7` and formatted/pushed `HEAD=fa272269496e6caea563adcc54cff82f3913ee8e`. **Verified on that exact SHA:** `PYTHON_COMPILE=0`, `REPO_TYPECHECK=0`, `GENERATED_DRIFT=0`, `PYTHON_FORMAT=0`, `REPO_FORMAT=0`, **WEB_VITEST=0: 225 test files / 1,055 tests PASS in 18.19s**, `RUFF=1` (one import-order I001), `MYPY=1` (**3 errors**), `ESLINT=1` (**107 errors + 3 warnings**). Neither PostgreSQL nor browser Playwright was included in this check. Do not conflate its green Web Vitest with full acceptance.
+
+The 3 mypy defects on `fa272269`: (a) `session_runtime._duration_evaluations` expected mapping but was passed `list[RowMapping]`; repaired via read-only `Sequence[RowMapping | Mapping[str, object]]`, admitting both real SQL rows and test dictionaries; (b) two integration test helpers imported `httpx.Response`, not visible to mypy in this isolated backend environment; replaced with local minimal status/json `Protocol` return contract, preserving live TestClient responses. Also sorted the sole Ruff import block. All subsequent changes are still **unverified**.
+
+ESLint issues on `fa272269` were dominated by `@typescript-eslint/require-await` and `no-unsafe-*` in test HTTP mocks, plus actual React hooks/ref rules in Create, Timeline, and planning UI. Since the user requires current functional UI, patches preserve expected HTTP payloads, CSRF, 404/409 behavior, and tests rather than removing test assertions. Replaced unnecessary `async` fetch mocks with explicit `Promise<Response>` paths in Responsibility, Actual, Outcome, Confirmation, Reconciliation, Reminder, Plan and Draft Vault tests; strongly scoped changed callbacks; set aside any mock/React test where a safe transformation is not yet validated. Event Agenda and Planning Tray initial fetch effects now enter an async continuation rather than causing state writes synchronously in `useEffect`; require Vitest/browser proof before declaring correctness. Sensitive Quick Create time/ref localization is intentionally **not** changed automatically.
+
+The single next local diagnostic remains:
+```bash
+cd ~/projects/dante || exit 1
+git pull --ff-only origin feature/timeline-temporal-operational || exit 1
+bash tooling/testing/verify_work_handoff_20261014.sh
+```
+It formats on the clean checkout, verifies Python compilation, generated drift, and full TypeScript **before** commit/push, then runs Ruff, mypy, ESLint, all 1,055+ Web Vitest. Attach `temp/WORK_HANDOFF_CHECK_LOGS.tar.gz` to measure actual residual issues. Do not rerun 27-group PostgreSQL/Playwright until the static/frontend suite is stable. Nothing is skipped/disabled.
