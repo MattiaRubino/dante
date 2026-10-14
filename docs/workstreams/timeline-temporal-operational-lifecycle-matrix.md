@@ -39,3 +39,32 @@ ledgers. Its `retire_self_planned_schedule` rejects linked execution and its
 `retire_self_activity` rejects both open and recorded facts. Hard deletion is a
 cross-family migration and security-definer capability, not a client-side
 filter or a silent rollback of recorded truth.
+
+
+## Post-candidate focused test additions (pending PostgreSQL execution)
+
+On 2026-10-14, new branch-local changes after the candidate SHA `ae8621ed`
+added two PostgreSQL scenarios to the existing
+`apps/backend/tests/integration/temporal/test_session_panel.py`:
+- two simultaneous Activities with independent named rows: starting and stopping
+  one must not remove the still-ready other Activity from the Session panel;
+- named Session directly started two hours before its Activity interval,
+  without generic capture: original accepted Activity plan remains unchanged,
+  and the opened execution becomes independently actionable.
+
+The backend error classifier in `session_runtime.py` now distinguishes a
+configured generic Session that is not running from the obsolete pre-_146
+internal-clock constraint. The existing Session authority unit test file has
+a focused two-case regression for the actual PostgreSQL constraint names.
+
+**Evidence:** the GitHub commits contain code/tests, not execution evidence.
+PostgreSQL 18.6, Alembic `_146` and all changed files remain **NOT_RUN** in
+this assistant environment (no checked-out WSL or PostgreSQL/Docker). The
+user-side initial targeted gate is `temp/LIFECYCLE_POSTGRES_BASELINE.log`;
+its results must be reviewed before new destructive migrations are written.
+
+The remaining matrix rows (authoritative Keep/Delete/Cancel admission,
+transactional history cascade and dependent facts, expiration to actionable
+review queue, X + Save, Activity hard-delete, concurrency and recurrence
+boundaries) remain **MISSING**, not accepted. Do not give the frontend the
+appearance of working Delete until its database capability is correct.
