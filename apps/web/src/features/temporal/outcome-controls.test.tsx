@@ -76,7 +76,7 @@ describe('Outcome controls', () => {
   });
 
   it('does not manufacture an Outcome when no Actual exists', async () => {
-    const fetchFn = vi.fn<Fetch>(async () => actualNotFound());
+    const fetchFn = vi.fn<Fetch>(() => Promise.resolve(actualNotFound()));
     vi.stubGlobal('fetch', fetchFn);
 
     render(<OutcomeControls kind="event" subjectRef={SUBJECT} />);
