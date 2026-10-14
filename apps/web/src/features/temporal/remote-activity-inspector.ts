@@ -13,6 +13,54 @@ export type ActivityProfile = Readonly<{
   revision: number;
 }>;
 
+export type ActivitySessionImpact = Readonly<{
+  fingerprint: string;
+  attempts: readonly Readonly<{
+    sessionRef: string;
+    plannedScheduleRef: string | null;
+    timingMaterialStateRef: string;
+    status: 'in corso' | 'in pausa' | 'conclusa';
+  }>[];
+}>;
+
+function parseSessionImpact(value: unknown): ActivitySessionImpact {
+  if (!value || typeof value !== 'object' || Array.isArray(value)) {
+    throw new Error('Stato delle Sessioni non valido.');
+  }
+  const record = value as Record<string, unknown>;
+  if (
+    typeof record.fingerprint !== 'string' ||
+    !/^[a-f0-9]{64}$/.test(record.fingerprint) ||
+    !Array.isArray(record.attempts)
+  ) {
+    throw new Error('Stato delle Sessioni non valido.');
+  }
+  const attempts = record.attempts.map((item: unknown) => {
+    if (!item || typeof item !== 'object' || Array.isArray(item)) {
+      throw new Error('Tentativo Sessione non valido.');
+    }
+    const row = item as Record<string, unknown>;
+    if (
+      typeof row.session_ref !== 'string' ||
+      typeof row.timing_material_state_ref !== 'string' ||
+      (row.planned_schedule_ref !== null &&
+        typeof row.planned_schedule_ref !== 'string') ||
+      (row.status !== 'in corso' &&
+        row.status !== 'in pausa' &&
+        row.status !== 'conclusa')
+    ) {
+      throw new Error('Tentativo Sessione non valido.');
+    }
+    return {
+      sessionRef: row.session_ref,
+      plannedScheduleRef: row.planned_schedule_ref,
+      timingMaterialStateRef: row.timing_material_state_ref,
+      status: row.status,
+    };
+  });
+  return { fingerprint: record.fingerprint, attempts };
+}
+
 export function parseProfile(value: unknown): ActivityProfile {
   if (!value || typeof value !== 'object' || Array.isArray(value))
     throw new Error('Risposta non valida.');
@@ -111,6 +159,28 @@ export function createRemoteActivityInspector(
       invalidateTemporalTimelineRead();
       invalidateTemporalPlanningRead();
       return next;
+    },
+    async sessionImpact(ref: string): Promise<ActivitySessionImpact> {
+      return parseSessionImpact(
+        await checked(await request(`${url(ref)}/session-impact`)),
+      );
+    },
+    async deleteHard(ref: string, expectedSessionFingerprint: string) {
+      const token = await csrf();
+      await checked(
+        await request(url(ref), {
+          method: 'DELETE',
+          headers: {
+            'Content-Type': 'application/json',
+            'X-Dante-CSRF': token,
+          },
+          body: JSON.stringify({
+            expected_session_fingerprint: expectedSessionFingerprint,
+          }),
+        }),
+      );
+      invalidateTemporalTimelineRead();
+      invalidateTemporalPlanningRead();
     },
     async retire(ref: string) {
       const token = await csrf();
