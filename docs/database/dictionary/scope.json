@@ -85,16 +85,17 @@
       "B14-HOME-WORKSPACE-READS",
       "B14-INDEPENDENT-PLANNED-SESSION",
       "B14-PAST-ACTIVITY-REVIEW",
-      "B14-ACTIVITY-SESSION-LIFECYCLE"
+      "B14-ACTIVITY-SESSION-LIFECYCLE",
+      "B14-RECURRING-LIFECYCLE-GUARD"
     ],
     "standalone_entries": {
       "tables": 238,
       "views": 5,
-      "routines": 233,
-      "total": 476
+      "routines": 234,
+      "total": 477
     },
     "embedded_objects": {
-      "triggers": 103,
+      "triggers": 104,
       "physical_indexes": 486
     },
     "constraints": {
