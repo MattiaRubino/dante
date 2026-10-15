@@ -1510,7 +1510,7 @@
     {
       "path": "apps/backend/tests/integration/temporal/test_recurring_admission_guard.py",
       "suite": "temporal-postgresql-integration",
-      "contract_id": "T07",
+      "contract_id": "T05",
       "candidate_behavior": "guarded recurring Activity creation after Occurrence skip",
       "purpose": "Verify generated Activity authoring and final binding refuse skipped Routine Occurrences without retaining a create receipt; ordinary Activity authoring remains permitted.",
       "invariant": "An already-skipped recurring Occurrence cannot produce an Activity create receipt or bind another Activity, while unrelated self-owned Activity authoring still works.",
