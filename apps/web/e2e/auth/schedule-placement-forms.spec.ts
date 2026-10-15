@@ -6,20 +6,21 @@ import { expect, test, type Page, type TestInfo } from '@playwright/test';
 const password = 'correct horse battery staple';
 const E2E_RESPONSE_TIMEOUT_MS = 10_000;
 
-const projectEmail: Readonly<Record<string, string>> = {
-  chromium: 'synthetic.user+e2e-58@example.com',
-  firefox: 'synthetic.user+e2e-59@example.com',
-  webkit: 'synthetic.user+e2e-60@example.com',
+// Dedicated accounts per scenario keep the two-sign-in limit active.
+const projectEmailOffset: Readonly<Record<string, number>> = {
+  chromium: 64,
+  firefox: 68,
+  webkit: 72,
 };
 
-function emailFor(testInfo: TestInfo): string {
-  const email = projectEmail[testInfo.project.name];
-  if (!email) {
+function emailFor(testInfo: TestInfo, slot: 1 | 2 | 3 | 4): string {
+  const offset = projectEmailOffset[testInfo.project.name];
+  if (offset === undefined) {
     throw new Error(
       `Unsupported temporal B02 browser project: ${testInfo.project.name}`,
     );
   }
-  return email;
+  return `synthetic.user+e2e-${offset + slot}@example.com`;
 }
 
 async function useItalianLocale(page: Page): Promise<void> {
@@ -259,7 +260,7 @@ test.describe('Timeline B02-E full-stack Schedule forms', () => {
     try {
       const page = await context.newPage();
       await useItalianLocale(page);
-      await signIn(page, emailFor(testInfo));
+      await signIn(page, emailFor(testInfo, 1));
       const day = Temporal.Now.plainDateISO('Europe/Rome')
         .add({ days: 1 })
         .toString();
@@ -279,7 +280,7 @@ test.describe('Timeline B02-E full-stack Schedule forms', () => {
       expect((await freshRead).status()).toBe(200);
       const card = page.locator(`[data-timeline-event="${scheduleRef}"]`);
       await expect(card).toHaveCount(1);
-      await card.getByRole('button', { name: title }).click();
+      await card.getByRole('button', { name: title, exact: true }).click();
       const inspector = page.getByRole('dialog', { name: title });
       await inspector
         .getByRole('button', { name: 'Elimina', exact: true })
@@ -351,7 +352,7 @@ test.describe('Timeline B02-E full-stack Schedule forms', () => {
     try {
       const page = await context.newPage();
       await useItalianLocale(page);
-      await signIn(page, emailFor(testInfo));
+      await signIn(page, emailFor(testInfo, 2));
       const day = Temporal.Now.plainDateISO('Europe/Rome')
         .add({ days: 1 })
         .toString();
@@ -423,7 +424,7 @@ test.describe('Timeline B02-E full-stack Schedule forms', () => {
     try {
       const page = await context.newPage();
       await useItalianLocale(page);
-      await signIn(page, emailFor(testInfo));
+      await signIn(page, emailFor(testInfo, 3));
       await openHome(page);
 
       const title = `B02 E4 governed loop ${testInfo.project.name}`;
@@ -572,7 +573,7 @@ test.describe('Timeline B02-E full-stack Schedule forms', () => {
     try {
       const page = await context.newPage();
       await useItalianLocale(page);
-      await signIn(page, emailFor(testInfo));
+      await signIn(page, emailFor(testInfo, 4));
       await openHome(page);
       const today = Temporal.Now.plainDateISO('Europe/Rome')
         .add({ days: 1 })

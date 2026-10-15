@@ -13,7 +13,21 @@ import { setTimedDuration } from '../helpers/create-time';
 
 const password = 'correct horse battery staple';
 const E2E_RESPONSE_TIMEOUT_MS = 10_000;
-const B03_E2E_EMAIL = 'synthetic.user+e2e-64@example.com';
+// Separate scenarios and browsers without relaxing the sign-in rate limit.
+const projectEmailOffset: Readonly<Record<string, number>> = {
+  chromium: 76,
+  firefox: 78,
+};
+
+function emailFor(testInfo: TestInfo, slot: 1 | 2): string {
+  const offset = projectEmailOffset[testInfo.project.name];
+  if (offset === undefined) {
+    throw new Error(
+      `Unsupported Event closure browser project: ${testInfo.project.name}`,
+    );
+  }
+  return `synthetic.user+e2e-${offset + slot}@example.com`;
+}
 
 function requireClosureProject(testInfo: TestInfo): void {
   test.skip(
@@ -33,12 +47,12 @@ async function useItalianLocale(page: Page): Promise<void> {
   });
 }
 
-async function signIn(page: Page): Promise<void> {
+async function signIn(page: Page, email: string): Promise<void> {
   await page.goto('/');
   await expect(
     page.getByRole('heading', { level: 1, name: 'Accedi a DANTE' }),
   ).toBeVisible();
-  await page.getByLabel('Email').fill(B03_E2E_EMAIL);
+  await page.getByLabel('Email').fill(email);
   await page.getByLabel('Password', { exact: true }).fill(password);
 
   const responsePromise = page.waitForResponse(
@@ -235,7 +249,7 @@ test.describe('Timeline B03-E real-stack Event closure', () => {
     try {
       const page = await context.newPage();
       await useItalianLocale(page);
-      await signIn(page);
+      await signIn(page, emailFor(testInfo, 1));
       const day = Temporal.Now.plainDateISO('Europe/Rome')
         .add({ days: 1 })
         .toString();
@@ -253,7 +267,7 @@ test.describe('Timeline B03-E real-stack Event closure', () => {
       const scheduleRef = uuidField(created, 'schedule_ref');
       const card = page.locator(`[data-timeline-event="${scheduleRef}"]`);
       await expect(card).toHaveCount(1);
-      await card.getByRole('button', { name: title }).click();
+      await card.getByRole('button', { name: title, exact: true }).click();
       const inspector = page.getByRole('dialog', { name: title });
       await expect(
         inspector.getByRole('button', {
@@ -315,7 +329,7 @@ test.describe('Timeline B03-E real-stack Event closure', () => {
     try {
       const page = await context.newPage();
       await useItalianLocale(page);
-      await signIn(page);
+      await signIn(page, emailFor(testInfo, 2));
       // A future date keeps the accepted Schedule outside the historical
       // past-authoring policies while testing the same real DB contracts.
       const today = Temporal.Now.plainDateISO('Europe/Rome')
