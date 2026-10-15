@@ -25,6 +25,16 @@ Timeline, review rail and browser must agree before a row is accepted.
 | Direct Timeline drag, time edit, unschedule and undo | same Keep/Delete/Cancel authority and coherent interval move | Candidate coordinates exact floating/named-zone Activity revisions, including Keep/Delete/Cancel and plan Undo with fresh Session choice. Targeted Web 14/14 and full Web 1,061/1,061 passed locally on `c298769`; a later browser real-stack case checks the card mutation and persistence but has not run in WSL. Unschedule still uses generic Schedule boundary and cannot remove a governed Activity interval |
 | Recurring instance versus future series | explicit scope, no rematerialization or unrelated loss | Timeline move/Undo now prompts for the scope of a recurring instance; its focused UI test passed 6/6 and full Web suite 1,062/1,062 in this later local candidate. **Missing** atomic hard deletion: Solo questa must skip the selected occurrence while cascading its Activity graph; Tutta la serie must delete source, all materialized/future instances and their graphs. Bare hard deletion remains fail-closed until that command exists. Browser and full gate pending |
 
+## Event and Activity recurring deletion parity (accepted, unimplemented)
+
+| Scenario | Required evidence | Current state |
+| --- | --- | --- |
+| One-off Event hard deletion | Full owner-specific Event graph, negative foreign-owner refs, rollback, no shared-entity loss | **NOT IMPLEMENTED/NOT RUN** |
+| Recurring Event — Solo questa istanza | Delete selected Occurrence-owned records; retain series/siblings; skip/exclude prevents rematerialization; concurrent checkpoint refusal | **NOT IMPLEMENTED/NOT RUN** |
+| Recurring Event — Tutta la serie | Delete Event source, all generated/materialized Occurrences and linked records, future generation disabled; atomic rollback and race tests | **NOT IMPLEMENTED/NOT RUN** |
+| Activity recurring hard delete — both scopes | Existing Activity graph + Occurrence exclusion / Routine series disposal, CAS and concurrent checkpoint | **NOT IMPLEMENTED/NOT RUN** |
+| Event/Activity remove placement and Undo | Change accepted Schedule only, keep factual history, reversible with fresh CAS; never silently hard-delete | **Event parity pending; Activity coordinated unschedule pending** |
+
 ## Evidence on this checkout
 
 - The published baseline audited was `1eae6ff8`. Local changes correct the
