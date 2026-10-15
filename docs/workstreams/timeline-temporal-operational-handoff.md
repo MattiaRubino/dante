@@ -7,8 +7,8 @@ collected all 27 groups with a stable source tree: **18 PASS, 9 FAIL**.
 Ruff/format, Mypy, Dictionary schema and Temporal OpenAPI inventory expose
 deterministic source/test drift; Web lint found one unused function. The
 authenticated real-stack browser could not start because the required
-`dante-postgres-local:18.6` Docker image was absent. Four PostgreSQL cases
-failed or errored in five cases, but the uploaded summary lacks their tracebacks, so their
+`dante-postgres-local:18.6` Docker image was absent. Five PostgreSQL cases
+failed or errored, but the uploaded summary lacks their tracebacks, so their
 causes are not yet established. OpenAPI snapshot and generated client are
 behind the eight newly added Temporal routes.
 
