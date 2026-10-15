@@ -1590,3 +1590,46 @@ async def apply_temporal_hard_deletion(
     return TemporalHardDeleteResult(
         requested_ref=requested_ref, scope=body.scope, deleted_rows=deleted_rows or 0
     )
+
+
+class EventDeletionOccurrenceChoice(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    occurrence_ref: UUID
+    schedule_ref: UUID | None
+    display_label: str
+
+
+@router.get(
+    "/events/{event_ref}/deletion-occurrences",
+    response_model=list[EventDeletionOccurrenceChoice],
+    operation_id="temporal_list_event_deletion_occurrences",
+)
+async def list_event_deletion_occurrences(
+    event_ref: UUID,
+    context: Context,
+    request: Request,
+    response: Response,
+) -> list[EventDeletionOccurrenceChoice]:
+    response.headers["Cache-Control"] = "no-store"
+    try:
+        async with request.app.state.database_runtime.session_factory() as session, session.begin():
+            rows = (
+                await session.execute(
+                    text(
+                        "SELECT * FROM dante.list_self_event_deletion_occurrences("
+                        ":actor,:event)"
+                    ),
+                    {"actor": context.self_person_ref, "event": event_ref},
+                )
+            ).mappings().all()
+    except SQLAlchemyError as exc:
+        raise ProblemError(
+            status=503,
+            code="temporal.event_deletion.unavailable",
+            category="service",
+            title="Occorrenze non disponibili",
+            detail="Non è possibile selezionare con sicurezza un'istanza Event.",
+            retryable=True,
+        ) from exc
+    return [EventDeletionOccurrenceChoice.model_validate(dict(row)) for row in rows]
