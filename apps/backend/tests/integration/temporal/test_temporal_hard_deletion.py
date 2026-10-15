@@ -22,6 +22,7 @@ from dante.modules.temporal.reality_objective_api import (
     TemporalHardDeleteCommand,
     apply_temporal_hard_deletion,
     preview_temporal_hard_deletion,
+    list_event_deletion_occurrences,
 )
 from dante.modules.temporal.recurring_authoring import RecurringAuthoringApplication
 from dante.modules.temporal.routine_occurrence_materialization import (
@@ -249,6 +250,11 @@ async def test_recurring_event_single_occurrence_then_full_series(
             effective_zone_id="Europe/Rome",
         )
         first, second = _occurrences(migrated_database, created.source_ref)
+        selectable = await list_event_deletion_occurrences(
+            created.source_ref, _context(actor), _request(runtime), Response()
+        )
+        assert {row.occurrence_ref for row in selectable} == {first, second}
+        assert all(row.schedule_ref is not None for row in selectable)
         fingerprint = await _preview(runtime, actor, first, "event_instance")
         await _delete(runtime, actor, first, "event_instance", fingerprint)
         assert _exists(
@@ -256,6 +262,10 @@ async def test_recurring_event_single_occurrence_then_full_series(
             "SELECT EXISTS(SELECT 1 FROM dante.occurrence_skip WHERE occurrence_ref=%s)",
             first,
         )
+        selectable = await list_event_deletion_occurrences(
+            created.source_ref, _context(actor), _request(runtime), Response()
+        )
+        assert {row.occurrence_ref for row in selectable} == {second}
         assert not _exists(
             migrated_database,
             "SELECT EXISTS(SELECT 1 FROM dante.schedule WHERE subject_native_ref=%s)",
