@@ -117,9 +117,10 @@ causing cross-owner data deletion. The API and UI may offer the action only
 after the database provides this guarantee. Passage of time and scheduling
 changes do not manufacture Actual, Outcome, attendance or Confirmation.
 
-**Implementation/evidence status:** this is accepted behavior, not a claim
-that Event deletion or recurring Activity deletion is implemented; both
-require their own PostgreSQL/API/Web/browser acceptance and the same-SHA gate.
+**Implementation/evidence status:** the scoped deletion and Timeline operations
+are present as an integration candidate through `_158`; this does not prove
+their PostgreSQL/API/Web/browser acceptance or a same-SHA full gate. Do not
+apply the destructive operations to real data until those checks pass.
 
 ## Review queue
 

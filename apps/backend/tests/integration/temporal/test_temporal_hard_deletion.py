@@ -18,11 +18,15 @@ from dante.modules.temporal.authoring import TemporalAuthoringApplication
 from dante.modules.temporal.event_occurrence_policy import EventOccurrencePolicyApplication
 from dante.modules.temporal.reality_objective_api import (
     ObjectiveCreateCommand,
-    create_activity_objective,
+    RealityPolicyCommand,
     TemporalHardDeleteCommand,
     apply_temporal_hard_deletion,
-    preview_temporal_hard_deletion,
+    create_activity_objective,
     list_event_deletion_occurrences,
+    preview_temporal_hard_deletion,
+    set_activity_reality_policy,
+    set_event_reality_policy,
+    set_occurrence_reality_policy,
 )
 from dante.modules.temporal.recurring_authoring import RecurringAuthoringApplication
 from dante.modules.temporal.routine_occurrence_materialization import (
@@ -71,9 +75,7 @@ async def _delete(runtime: Any, actor: Any, ref: Any, scope: str, fingerprint: s
 def _owner_sql(database: Any, sql_text: str, args: tuple[Any, ...]) -> list[tuple[Any, ...]]:
     # Introspection is exclusively for the test owner role, never runtime DML.
     with psycopg.connect(
-        **database.connection_kwargs(
-            "dante_migrator", database.cluster.migrator_password
-        )
+        **database.connection_kwargs("dante_migrator", database.cluster.migrator_password)
     ) as connection:
         connection.execute("SET ROLE dante_owner")
         return list(connection.execute(sql_text, args).fetchall())
@@ -144,7 +146,24 @@ async def test_recurring_activity_instance_skip_and_whole_series_no_regeneration
         first, second = occurrences
         first_activity = await _activity_for(runtime, actor, first)
         second_activity = await _activity_for(runtime, actor, second)
-        assert first_activity is not None and second_activity is not None
+        assert first_activity is not None
+        assert second_activity is not None
+        await set_activity_reality_policy(
+            first_activity,
+            RealityPolicyCommand(operation_id="hard:activity:policy", mode_code="review_on_end"),
+            _context(actor),
+            _request(runtime),
+            Response(),
+        )
+        await set_activity_reality_policy(
+            second_activity,
+            RealityPolicyCommand(
+                operation_id="hard:activity:sibling-policy", mode_code="review_on_end"
+            ),
+            _context(actor),
+            _request(runtime),
+            Response(),
+        )
 
         with pytest.raises(ProblemError) as foreign:
             await _preview(runtime, stranger, first_activity, "activity_instance")
@@ -177,6 +196,18 @@ async def test_recurring_activity_instance_skip_and_whole_series_no_regeneration
         await _delete(runtime, actor, first_activity, "activity_instance", fingerprint)
         assert await _activity_for(runtime, actor, first) is None
         assert await _activity_for(runtime, actor, second) == second_activity
+        assert not _exists(
+            migrated_database,
+            "SELECT EXISTS(SELECT 1 FROM dante.reality_review_policy "
+            "WHERE subject_kind='activity' AND subject_native_ref=%s)",
+            first_activity,
+        )
+        assert _exists(
+            migrated_database,
+            "SELECT EXISTS(SELECT 1 FROM dante.reality_review_policy "
+            "WHERE subject_kind='activity' AND subject_native_ref=%s)",
+            second_activity,
+        )
 
         assert _exists(
             migrated_database,
@@ -200,6 +231,12 @@ async def test_recurring_activity_instance_skip_and_whole_series_no_regeneration
         series = await _preview(runtime, actor, second_activity, "activity_series")
         await _delete(runtime, actor, second_activity, "activity_series", series)
         assert _occurrences(migrated_database, routine.source_ref) == []
+        assert not _exists(
+            migrated_database,
+            "SELECT EXISTS(SELECT 1 FROM dante.reality_review_policy "
+            "WHERE subject_kind='activity' AND subject_native_ref=%s)",
+            second_activity,
+        )
         with psycopg.connect(
             **migrated_database.connection_kwargs(
                 "dante_migrator", migrated_database.cluster.migrator_password
@@ -250,6 +287,31 @@ async def test_recurring_event_single_occurrence_then_full_series(
             effective_zone_id="Europe/Rome",
         )
         first, second = _occurrences(migrated_database, created.source_ref)
+        await set_occurrence_reality_policy(
+            first,
+            RealityPolicyCommand(operation_id="hard:event:first-policy", mode_code="review_on_end"),
+            _context(actor),
+            _request(runtime),
+            Response(),
+        )
+        await set_occurrence_reality_policy(
+            second,
+            RealityPolicyCommand(
+                operation_id="hard:event:second-policy", mode_code="review_on_end"
+            ),
+            _context(actor),
+            _request(runtime),
+            Response(),
+        )
+        await set_event_reality_policy(
+            created.source_ref,
+            RealityPolicyCommand(
+                operation_id="hard:event:source-policy", mode_code="review_on_end"
+            ),
+            _context(actor),
+            _request(runtime),
+            Response(),
+        )
         selectable = await list_event_deletion_occurrences(
             created.source_ref, _context(actor), _request(runtime), Response()
         )
@@ -276,6 +338,18 @@ async def test_recurring_event_single_occurrence_then_full_series(
             "SELECT EXISTS(SELECT 1 FROM dante.schedule WHERE subject_native_ref=%s)",
             second,
         )
+        assert not _exists(
+            migrated_database,
+            "SELECT EXISTS(SELECT 1 FROM dante.reality_review_policy "
+            "WHERE subject_kind='occurrence' AND subject_native_ref=%s)",
+            first,
+        )
+        assert _exists(
+            migrated_database,
+            "SELECT EXISTS(SELECT 1 FROM dante.reality_review_policy "
+            "WHERE subject_kind='occurrence' AND subject_native_ref=%s)",
+            second,
+        )
         await materializer.checkpoint_window(
             self_person_ref=actor,
             operation_id="hard:event:after-single",
@@ -297,6 +371,13 @@ async def test_recurring_event_single_occurrence_then_full_series(
             "SELECT EXISTS(SELECT 1 FROM dante.event WHERE event_ref=%s)",
             created.source_ref,
         )
+        for removed_ref in (created.source_ref, second):
+            assert not _exists(
+                migrated_database,
+                "SELECT EXISTS(SELECT 1 FROM dante.reality_review_policy "
+                "WHERE subject_native_ref=%s)",
+                removed_ref,
+            )
     finally:
         await runtime.dispose()
 
@@ -322,14 +403,36 @@ async def test_single_event_delete_keeps_unrelated_actors(
         )
         ref = selected.item.subject_native_ref
         impact = await _preview(runtime, actor, ref, "event_once")
+        await set_event_reality_policy(
+            ref,
+            RealityPolicyCommand(operation_id="hard:oneoff:policy", mode_code="review_on_end"),
+            _context(actor),
+            _request(runtime),
+            Response(),
+        )
+        with pytest.raises(ProblemError) as stale:
+            await _delete(runtime, actor, ref, "event_once", impact)
+        assert stale.value.status == 409
+        assert _exists(
+            migrated_database, "SELECT EXISTS(SELECT 1 FROM dante.event WHERE event_ref=%s)", ref
+        )
+        impact = await _preview(runtime, actor, ref, "event_once")
         await _delete(runtime, actor, ref, "event_once", impact)
         assert not _exists(
-            migrated_database, "SELECT EXISTS(SELECT 1 FROM dante.event WHERE event_ref=%s)",
+            migrated_database,
+            "SELECT EXISTS(SELECT 1 FROM dante.event WHERE event_ref=%s)",
             ref,
         )
         assert _exists(
-            migrated_database, "SELECT EXISTS(SELECT 1 FROM dante.event WHERE event_ref=%s)",
+            migrated_database,
+            "SELECT EXISTS(SELECT 1 FROM dante.event WHERE event_ref=%s)",
             retained.item.subject_native_ref,
+        )
+        assert not _exists(
+            migrated_database,
+            "SELECT EXISTS(SELECT 1 FROM dante.reality_review_policy "
+            "WHERE subject_kind='event' AND subject_native_ref=%s)",
+            ref,
         )
     finally:
         await runtime.dispose()

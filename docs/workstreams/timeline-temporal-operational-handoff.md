@@ -1,5 +1,25 @@
 # Timeline / Temporal-Operational — Workstream Handoff
 
+## 2026-10-15 — Review after Event Timeline candidate (`_158` pending PostgreSQL)
+
+The branch reached `_157` with Event/Occurrence non-destructive Timeline
+placement reads, removal and Undo, but no fresh same-SHA WSL gate. The latest
+new PostgreSQL test file was missing from the registry; it is now registered.
+An ownership audit found that `reality_review_policy` has a polymorphic
+subject key without a NativeRef FK: the existing hard-deletion graph did not
+select it. Forward-only `_158` adds the owned policy roots for Activity, Event
+and Event Occurrence, including their FK descendants, and adds the policy's
+current revision to recurring/Event deletion preview CAS. Focused PostgreSQL
+regressions now check no retained policy, sibling preservation and stale
+Event confirmation. Expected topology remains `238|5|244|104|486|421|596`.
+
+Locally the test registry, Python compilation, Ruff and diff check pass.
+PostgreSQL 18/PostGIS, generated API drift, the full 27-group gate and real-app
+visual checks have **not** run on this candidate. Earlier `4ad30f90` 27/27
+evidence does not cover `_150`–`_158`. Do not accept or apply destructive
+operations to real user data until the new database graph and concurrency
+scenarios pass in the user's isolated WSL fixtures.
+
 ## 2026-10-15 — Complete deletion candidate published (implementation; WSL verification required)
 
 **Current forward migration head `20261015_156`**, exact expected catalog

@@ -8,7 +8,7 @@
     "name": "delete_self_temporal_root_graph",
     "ownership_class": "dante_owned"
   },
-  "purpose": "Owner-only graph deletion helper for one-off Event, whole Routine/Event series or selected Event Occurrence content, including polymorphically owned Objectives; no direct runtime execution.",
+  "purpose": "Owner-only graph deletion helper for one-off Event, whole Routine/Event series or selected Event Occurrence content, including polymorphically owned Objectives and Reality policies; no direct runtime execution.",
   "classification": {
     "persistence_role": "temporal_hard_deletion_capability",
     "canonicality": "capability_surface",

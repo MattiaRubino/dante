@@ -8,7 +8,7 @@
     "name": "delete_self_activity_lifecycle_graph",
     "ownership_class": "dante_owned"
   },
-  "purpose": "Delete a bounded owner-owned Activity or Session FK graph atomically, explicitly seeding polymorphically owned Activity Objectives before FK closure.",
+  "purpose": "Delete a bounded owner-owned Activity or Session graph atomically, explicitly seeding polymorphically owned Activity Objectives and Reality policy before FK closure.",
   "classification": {
     "persistence_role": "activity_lifecycle_capability",
     "canonicality": "capability_surface",
@@ -96,7 +96,7 @@
       "Self scope",
       "Current Session fingerprint CAS",
       "Atomic rollback and owner isolation",
-      "Hard deletion of an Activity removes its polymorphically related temporal_objective records and owned descendants, without affecting foreign-owner Objectives."
+      "Hard deletion of an Activity removes its polymorphically related temporal_objective and reality_review_policy records and owned descendants, without affecting foreign-owner data."
     ],
     "test_refs": [
       "apps/backend/tests/integration/temporal/test_activity_inspector.py",

@@ -8,7 +8,7 @@
     "name": "get_self_temporal_hard_delete_fingerprint",
     "ownership_class": "dante_owned"
   },
-  "purpose": "Read a self-scoped fingerprint for the selected Activity or Event deletion scope, preventing stale confirmations.",
+  "purpose": "Read a self-scoped fingerprint for the selected Activity or Event deletion scope, including current Reality policy revisions to prevent stale confirmations.",
   "classification": {
     "persistence_role": "temporal_hard_deletion_capability",
     "canonicality": "capability_surface",

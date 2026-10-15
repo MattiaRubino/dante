@@ -27,9 +27,10 @@ Timeline, review rail and browser must agree before a row is accepted.
 
 ## 2026-10-15 current integration candidate
 
-The forward-only migrations now extend through `20261015_156`. The public
+The forward-only migrations now extend through `20261015_158`. The public
 API and Activity/Event Inspector contain the scope choices, confirmation,
-non-destructive Activity unplace/Undo, and safe Event Occurrence selection.
+non-destructive Activity and Event unplace/Undo, and safe Event Occurrence selection.
+`_158` includes polymorphic Reality policy roots in all hard-delete scopes.
 All new code is **unverified** until the user's WSL gate, including generated
 OpenAPI/Orval drift reconciliation and authenticated Chromium regression,
 runs successfully on one final commit. Never treat implementation status as
@@ -51,7 +52,7 @@ test evidence. Event Schedule Undo series parity must be separately checked.
 | Recurring Event — Tutta la serie | Delete Event source, all generated/materialized Occurrences and linked records, future generation disabled; atomic rollback and race tests | **IMPLEMENTED CANDIDATE**: `_152`, API/Inspector; **NOT RUN** |
 | Activity recurring hard delete — both scopes | Existing Activity graph + Occurrence exclusion / Routine series disposal, child-tree sharing guard, CAS and concurrent checkpoint | **IMPLEMENTED CANDIDATE**: `_150`–`_153` / `_155`, API/UI and PostgreSQL regressions; **NOT RUN** |
 | Activity Timeline unplace and Undo | Modify only Schedule, retain factual history under Keep, check fresh fingerprint and exact receipt | **IMPLEMENTED CANDIDATE**: `_154`, API/UI and PostgreSQL regression; **NOT RUN** |
-| Event Timeline removal and Undo | Non-destructive temporal placement, correct Occurrence vs shared source identity, guarded history | **PARTIAL**: existing generic Event Schedule operations; new Event hard delete is separate. Dedicated Event-series Undo parity remains to be proven |
+| Event Timeline removal and Undo | Non-destructive temporal placement, correct Occurrence vs shared source identity, guarded history | **IMPLEMENTED CANDIDATE**: `_157` bounded owner-scoped Schedule/receipt reads and Event Inspector controls; PostgreSQL test file registered. Real-stack browser and full gate **NOT RUN** |
 
 ## Evidence on this checkout
 

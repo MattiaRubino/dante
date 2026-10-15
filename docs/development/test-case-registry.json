@@ -1856,6 +1856,15 @@
       "audit_note": "Needs contract/assertion review, rejection cases, and executable evidence; filename alone is not proof."
     },
     {
+      "path": "apps/backend/tests/integration/temporal/test_event_timeline_unplace_undo.py",
+      "suite": "temporal-postgresql-integration",
+      "contract_id": "T04",
+      "candidate_behavior": "Event and recurring Occurrence Schedule removal and monotonic Undo",
+      "purpose": "Verify owner-scoped Event and Occurrence placement discovery, non-destructive unschedule and exact Undo receipt readback in real PostgreSQL.",
+      "invariant": "Removing a placement does not delete the Event or Occurrence; Undo restores the same Schedule with a new material state and cannot expose a foreign owner's placement.",
+      "status": "QUALIFIED"
+    },
+    {
       "path": "apps/backend/tests/integration/temporal/test_temporal_hard_deletion.py",
       "suite": "temporal-postgresql-integration",
       "contract_id": "T03",
