@@ -1,5 +1,52 @@
 # Timeline / Temporal-Operational — Workstream Handoff
 
+## 2026-10-15 — Complete deletion candidate published (implementation; WSL verification required)
+
+**Current forward migration head `20261015_156`**, exact expected catalog
+`238 tables | 5 views | 242 functions | 104 triggers | 486 indexes | 421 FKs | 596 checks`.
+This checkpoint supplies the previously open product paths in source code:
+
+- `_152` creates owner-checked, fingerprinted, atomically scoped hard deletion
+  of one recurring Activity / one Event Occurrence and full Routine/Event series
+  (also one-off Event). Durable Occurrence skip prevents single-instance
+  regeneration. The scheduler producer holds a matching transaction-level
+  source advisory lock through checkpoint and policy materialization.
+- `_153` recursively deletes one-off Activity children with a hard shared
+  child/depth refusal. `_155` forces recurring Activity deletion to use the
+  same safe child-graph code, replacing the original weaker duplicate.
+- `_154` adds coordinated non-destructive Activity Timeline unplace and
+  historical placement Undo. A private cloned generic Undo function is never
+  runtime executable; a restricted SECURITY DEFINER wrapper verifies actor,
+  current Session fingerprint, Schedule role and placement lock. Generic Undo
+  retains the original Activity interval guard.
+- `_156` provides actor-scoped Event Occurrence selection by date/identity.
+  Inspector offers `Solo questa istanza`, `Tutta la serie`, and
+  `Annulla` without guessing the Event source is the selected Occurrence.
+- API routes: `GET/DELETE /api/v1/temporal/hard-deletion/{ref}` for preview
+  and mutation; Activity `timeline-unplace`, `timeline-undo`,
+  `timeline-undo-receipts`; Event `deletion-occurrences`.
+  Web clients and both Inspector actions now invoke these routes.
+- PostgreSQL regressions: `test_temporal_hard_deletion.py`,
+  `test_activity_timeline_unplace_undo.py`, and updated Inspector,
+  admission guard, migration and exact catalog tests. Existing bare recurring
+  Activity DELETE remains fail-closed.
+
+**Evidence policy:** The assistant did not run tests, per the user's explicit
+instruction: user runs WSL/Docker/Postgres/Playwright gates. Code is an
+**unverified integration candidate**, not a confirmed passing feature or
+accepted production migration. The user must run all test groups on one SHA,
+and failures must be fixed without weakening tests, DB constraints or security.
+
+**Known experience boundary:** The Event Inspector supports manual explicit
+selection from at most 1000 currently materialized Occurrences when the
+caller has not supplied the selected `occurrenceRef`. The source Event has
+stable identity separate from its Occurrences. The Activity Timeline unplace
+form currently rejects an envelope with active child intervals and delegates
+multi-interval mutation to the existing replan path. These are deliberate
+fail-closed behaviors, not silent deletion.
+
+
+
 ## 2026-10-15 — Forward-only guarded generated Activity admission and Objective graph repair
 
 Published candidate Alembic heads `20261015_150` and `20261015_151` add two
