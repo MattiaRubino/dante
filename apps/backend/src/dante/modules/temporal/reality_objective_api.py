@@ -1633,3 +1633,89 @@ async def list_event_deletion_occurrences(
             retryable=True,
         ) from exc
     return [EventDeletionOccurrenceChoice.model_validate(dict(row)) for row in rows]
+
+
+class EventTimelineScheduleSelection(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    schedule_ref: UUID
+    subject_native_ref: UUID
+    material_state_ref: UUID | None
+    display_label: str
+
+
+class EventTimelineUndoReceipt(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    schedule_ref: UUID
+    unschedule_operation_id: str
+
+
+@router.get(
+    "/events/{event_ref}/timeline-schedules",
+    response_model=list[EventTimelineScheduleSelection],
+    operation_id="temporal_list_event_timeline_schedules",
+)
+async def list_event_timeline_schedules(
+    event_ref: UUID,
+    context: Context,
+    request: Request,
+    response: Response,
+) -> list[EventTimelineScheduleSelection]:
+    response.headers["Cache-Control"] = "no-store"
+    try:
+        async with request.app.state.database_runtime.session_factory() as session, session.begin():
+            rows = (
+                await session.execute(
+                    text(
+                        "SELECT * FROM dante.list_self_event_timeline_schedules("
+                        ":actor,:event)"
+                    ),
+                    {"actor": context.self_person_ref, "event": event_ref},
+                )
+            ).mappings().all()
+    except SQLAlchemyError as exc:
+        raise ProblemError(
+            status=503,
+            code="temporal.event_timeline.unavailable",
+            category="service",
+            title="Schedule Event non disponibili",
+            detail="Non è possibile leggere le collocazioni Event.",
+            retryable=True,
+        ) from exc
+    return [EventTimelineScheduleSelection.model_validate(dict(row)) for row in rows]
+
+
+@router.get(
+    "/events/{event_ref}/timeline-undo-receipts",
+    response_model=list[EventTimelineUndoReceipt],
+    operation_id="temporal_list_event_timeline_undo",
+)
+async def list_event_timeline_undo(
+    event_ref: UUID,
+    context: Context,
+    request: Request,
+    response: Response,
+) -> list[EventTimelineUndoReceipt]:
+    response.headers["Cache-Control"] = "no-store"
+    try:
+        async with request.app.state.database_runtime.session_factory() as session, session.begin():
+            rows = (
+                await session.execute(
+                    text(
+                        "SELECT * FROM dante.list_self_event_timeline_undo("
+                        ":actor,:event)"
+                    ),
+                    {"actor": context.self_person_ref, "event": event_ref},
+                )
+            ).mappings().all()
+    except SQLAlchemyError as exc:
+        raise ProblemError(
+            status=503,
+            code="temporal.event_timeline.unavailable",
+            category="service",
+            title="Undo Event non disponibili",
+            detail="Non è possibile leggere le precedenti collocazioni Event.",
+            retryable=True,
+        ) from exc
+    return [EventTimelineUndoReceipt.model_validate(dict(row)) for row in rows]
