@@ -87,13 +87,14 @@
       "B14-PAST-ACTIVITY-REVIEW",
       "B14-ACTIVITY-SESSION-LIFECYCLE",
       "B14-RECURRING-LIFECYCLE-GUARD",
-      "B14-ACTIVITY-OBJECTIVE-LIFECYCLE-GUARD"
+      "B14-ACTIVITY-OBJECTIVE-LIFECYCLE-GUARD",
+      "B14-ATOMIC-RECURRING-DELETION"
     ],
     "standalone_entries": {
       "tables": 238,
       "views": 5,
-      "routines": 234,
-      "total": 477
+      "routines": 237,
+      "total": 480
     },
     "embedded_objects": {
       "triggers": 104,
