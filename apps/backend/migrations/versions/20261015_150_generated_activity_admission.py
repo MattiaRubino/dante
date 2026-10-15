@@ -75,7 +75,7 @@ $admission$;
 
 _BIND = r"""
 CREATE OR REPLACE FUNCTION dante.bind_self_routine_occurrence_activity(
-    requested_actor uuid, requested_occurrence uuid, requested_activity uuid
+    uuid, uuid, uuid
 ) RETURNS TABLE(occurrence_ref uuid,activity_ref uuid,created_at timestamptz,replayed boolean)
 LANGUAGE plpgsql SECURITY DEFINER VOLATILE PARALLEL UNSAFE
 SET search_path=pg_catalog,dante,pg_temp
@@ -88,22 +88,22 @@ BEGIN
     PERFORM 1 FROM dante.occurrence_generation AS g
       JOIN dante.routine_intention AS routine
         ON routine.routine_ref=g.source_native_ref
-       AND routine.self_person_ref=requested_actor
-     WHERE g.occurrence_ref=requested_occurrence
+       AND routine.self_person_ref=$1
+     WHERE g.occurrence_ref=$2
        AND NOT EXISTS (
          SELECT 1 FROM dante.occurrence_skip AS skipped
-          WHERE skipped.occurrence_ref=requested_occurrence
+          WHERE skipped.occurrence_ref=$2
        )
      FOR SHARE OF g,routine;
     -- Re-read skip only *after* the lock, never rely solely on a snapshot
     -- obtained before a concurrent skip transaction committed.
     IF NOT FOUND OR EXISTS(
       SELECT 1 FROM dante.occurrence_skip AS skipped
-       WHERE skipped.occurrence_ref=requested_occurrence
+       WHERE skipped.occurrence_ref=$2
     ) OR NOT EXISTS(
       SELECT 1 FROM dante.activity_intention AS activity
-       WHERE activity.activity_ref=requested_activity
-         AND activity.self_person_ref=requested_actor
+       WHERE activity.activity_ref=$3
+         AND activity.self_person_ref=$1
          AND activity.retired_at IS NULL
     ) THEN
         RAISE EXCEPTION USING ERRCODE='23503',
@@ -113,10 +113,10 @@ BEGIN
 
     SELECT * INTO prior
       FROM dante.routine_occurrence_activity_instance AS linked
-     WHERE linked.occurrence_ref=requested_occurrence FOR UPDATE;
+     WHERE linked.occurrence_ref=$2 FOR UPDATE;
     IF FOUND THEN
-        IF prior.activity_ref IS DISTINCT FROM requested_activity OR
-           prior.self_person_ref IS DISTINCT FROM requested_actor THEN
+        IF prior.activity_ref IS DISTINCT FROM $3 OR
+           prior.self_person_ref IS DISTINCT FROM $1 THEN
             RAISE EXCEPTION USING ERRCODE='23505',
                 CONSTRAINT='routine_occurrence_activity_instance_conflict',
                 MESSAGE='Existing generated instance has another Activity';
@@ -128,8 +128,8 @@ BEGIN
 
     INSERT INTO dante.routine_occurrence_activity_instance(
         occurrence_ref,activity_ref,self_person_ref,created_at
-    ) VALUES(requested_occurrence,requested_activity,requested_actor,accepted_at);
-    RETURN QUERY SELECT requested_occurrence,requested_activity,accepted_at,false;
+    ) VALUES($2,$3,$1,accepted_at);
+    RETURN QUERY SELECT $2,$3,accepted_at,false;
 END;
 $binding$;
 """
