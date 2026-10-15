@@ -500,6 +500,7 @@ BEGIN
       encode(pg_catalog.sha256(pg_catalog.convert_to(exclusion_operation,'UTF8')),'hex'),
       occurrence,'Eliminazione definitiva istanza'
     );
+    affected:=affected+1; -- The durable exclusion is one accepted mutation.
   END IF;
 
   IF requested_scope IN ('activity_instance','activity_series') THEN
@@ -595,7 +596,8 @@ def upgrade() -> None:
         bind.exec_driver_sql(
             f"REVOKE ALL ON FUNCTION {name} FROM PUBLIC,dante_migrator,dante_runtime"
         )
-        bind.exec_driver_sql(f"GRANT EXECUTE ON FUNCTION {name} TO dante_runtime")
+        if signature != "delete_self_temporal_root_graph(uuid,uuid,text)":
+            bind.exec_driver_sql(f"GRANT EXECUTE ON FUNCTION {name} TO dante_runtime")
 
 
 def downgrade() -> None:
