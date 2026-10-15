@@ -17,6 +17,8 @@ from dante.context.contracts import DanteContext
 from dante.modules.temporal.authoring import TemporalAuthoringApplication
 from dante.modules.temporal.event_occurrence_policy import EventOccurrencePolicyApplication
 from dante.modules.temporal.reality_objective_api import (
+    ObjectiveCreateCommand,
+    create_activity_objective,
     TemporalHardDeleteCommand,
     apply_temporal_hard_deletion,
     preview_temporal_hard_deletion,
@@ -146,6 +148,29 @@ async def test_recurring_activity_instance_skip_and_whole_series_no_regeneration
         with pytest.raises(ProblemError) as foreign:
             await _preview(runtime, stranger, first_activity, "activity_instance")
         assert foreign.value.status == 404
+
+        fingerprint = await _preview(runtime, actor, first_activity, "activity_instance")
+        await create_activity_objective(
+            first_activity,
+            ObjectiveCreateCommand(
+                operation_id="hard:activity:stale-objective",
+                label="Obiettivo aggiunto dopo anteprima",
+                result_kind="boolean",
+                presentation_order=0,
+            ),
+            _context(actor),
+            _request(runtime),
+            Response(),
+        )
+        with pytest.raises(ProblemError) as stale:
+            await _delete(runtime, actor, first_activity, "activity_instance", fingerprint)
+        assert stale.value.status == 409
+        assert await _activity_for(runtime, actor, first) == first_activity
+        assert not _exists(
+            migrated_database,
+            "SELECT EXISTS(SELECT 1 FROM dante.occurrence_skip WHERE occurrence_ref=%s)",
+            first,
+        )
 
         fingerprint = await _preview(runtime, actor, first_activity, "activity_instance")
         await _delete(runtime, actor, first_activity, "activity_instance", fingerprint)
