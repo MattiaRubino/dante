@@ -1847,6 +1847,15 @@
       "audit_note": "Needs contract/assertion review, rejection cases, and executable evidence; filename alone is not proof."
     },
     {
+      "path": "apps/backend/tests/integration/temporal/test_temporal_hard_deletion.py",
+      "suite": "temporal-postgresql-integration",
+      "contract_id": "T03",
+      "candidate_behavior": "one-off Event hard delete; recurring Activity and Event single-instance/whole-series guarded deletion",
+      "purpose": "End-to-end PostgreSQL actor-scoped read/preview/delete proof for recurring Activity, Event Occurrence, and nonrecurring Event, including durable skip and no sibling loss.",
+      "invariant": "Only the selected owned graph or source series is removed; a skipped instance cannot be rematerialized; other owners and siblings retain all their truth.",
+      "status": "QUALIFIED"
+    },
+    {
       "path": "apps/backend/tests/integration/temporal/test_unified_planning_tray.py",
       "suite": "temporal-postgresql-integration",
       "contract_id": "T01",
