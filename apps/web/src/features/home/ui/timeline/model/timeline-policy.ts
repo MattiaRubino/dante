@@ -113,7 +113,7 @@ export const TIMELINE_POLICY = {
     minDragDistancePx: 110,
   },
   grid: {
-    minorLineIntervalMinutes: 15,
+    minorLineIntervalMinutes: 30,
     majorLineIntervalMinutes: 60,
     milestoneMinutes: [9 * 60, 18 * 60],
     marginLabelCutoffMinute: 20 * 60,
