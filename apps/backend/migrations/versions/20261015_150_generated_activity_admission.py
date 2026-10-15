@@ -58,7 +58,12 @@ BEGIN
           WHERE skipped.occurrence_ref=candidate
        )
      FOR SHARE OF g,r;
-    IF source_ref IS NULL THEN
+    -- Take a fresh READ COMMITTED statement snapshot after acquiring the
+    -- generation lock: a concurrent skipper may have committed while we waited.
+    IF source_ref IS NULL OR EXISTS (
+        SELECT 1 FROM dante.occurrence_skip AS skipped
+        WHERE skipped.occurrence_ref=candidate
+    ) THEN
         RAISE EXCEPTION USING ERRCODE='23514',
             CONSTRAINT='generated_activity_occurrence_unavailable',
             MESSAGE='Generated Activity Occurrence is deleted, skipped or not owned';
@@ -90,7 +95,12 @@ BEGIN
           WHERE skipped.occurrence_ref=requested_occurrence
        )
      FOR SHARE OF g,routine;
-    IF NOT FOUND OR NOT EXISTS(
+    -- Re-read skip only *after* the lock, never rely solely on a snapshot
+    -- obtained before a concurrent skip transaction committed.
+    IF NOT FOUND OR EXISTS(
+      SELECT 1 FROM dante.occurrence_skip AS skipped
+       WHERE skipped.occurrence_ref=requested_occurrence
+    ) OR NOT EXISTS(
       SELECT 1 FROM dante.activity_intention AS activity
        WHERE activity.activity_ref=requested_activity
          AND activity.self_person_ref=requested_actor
