@@ -1429,3 +1429,164 @@ async def confirm_objective_input_draft(
             detail="Conferma non riuscita. Il valore provvisorio rimane salvato.",
             retryable=True,
         ) from exc
+
+
+# B14 hard deletion is a distinct authority from ordinary Objective edits.
+# These routes use one serializable SQL capability and never issue table DELETE.
+TemporalHardDeleteScope = Literal[
+    "activity_instance", "activity_series", "event_once",
+    "event_instance", "event_series",
+]
+
+
+class TemporalHardDeletePreview(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    requested_ref: UUID
+    scope: TemporalHardDeleteScope
+    fingerprint: str
+
+
+class TemporalHardDeleteCommand(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    scope: TemporalHardDeleteScope
+    expected_fingerprint: str = Field(pattern=r"^[a-f0-9]{64}$")
+
+
+class TemporalHardDeleteResult(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    requested_ref: UUID
+    scope: TemporalHardDeleteScope
+    deleted_rows: int
+
+
+def _hard_delete_problem(exc: DBAPIError) -> ProblemError:
+    diagnostic = getattr(getattr(exc, "orig", None), "diag", None)
+    constraint = getattr(diagnostic, "constraint_name", None)
+    if constraint == "temporal_hard_unavailable":
+        return ProblemError(
+            status=404,
+            code="temporal.hard_delete.not_found",
+            category="not_found",
+            title="Elemento non disponibile",
+            detail="La ricorrenza o l'elemento non appartiene più a questo profilo.",
+        )
+    if constraint in {"temporal_hard_stale", "pk_occurrence_skip", "uq_occurrence_skip_operation"}:
+        return ProblemError(
+            status=409,
+            code="temporal.hard_delete.stale",
+            category="conflict",
+            title="Dati modificati",
+            detail="La serie o le sue istanze sono cambiate: ricarica prima di eliminare.",
+        )
+    if constraint == "temporal_hard_invalid_scope":
+        return ProblemError(
+            status=422,
+            code="temporal.hard_delete.scope_invalid",
+            category="validation",
+            title="Selezione non valida",
+            detail="La modalità di eliminazione richiesta non è supportata.",
+        )
+    return ProblemError(
+        status=409,
+        code="temporal.hard_delete.rejected",
+        category="conflict",
+        title="Eliminazione non completata",
+        detail="La cancellazione atomica non è stata accettata; nessun elemento è stato eliminato.",
+    )
+
+
+@router.get(
+    "/hard-deletion/{requested_ref}/preview",
+    response_model=TemporalHardDeletePreview,
+    operation_id="temporal_preview_hard_deletion",
+)
+async def preview_temporal_hard_deletion(
+    requested_ref: UUID,
+    scope: TemporalHardDeleteScope,
+    context: Context,
+    request: Request,
+    response: Response,
+) -> TemporalHardDeletePreview:
+    response.headers["Cache-Control"] = "no-store"
+    try:
+        async with request.app.state.database_runtime.session_factory() as session, session.begin():
+            fingerprint = await session.scalar(
+                text(
+                    "SELECT dante.get_self_temporal_hard_delete_fingerprint("
+                    ":actor,:requested_ref,:scope)"
+                ),
+                {
+                    "actor": context.self_person_ref,
+                    "requested_ref": requested_ref,
+                    "scope": scope,
+                },
+            )
+    except DBAPIError as exc:
+        raise _hard_delete_problem(exc) from exc
+    except SQLAlchemyError as exc:
+        raise ProblemError(
+            status=503,
+            code="temporal.hard_delete.unavailable",
+            category="service",
+            title="Anteprima non disponibile",
+            detail="Non è stato possibile verificare la cancellazione.",
+            retryable=True,
+        ) from exc
+    if fingerprint is None:
+        raise ProblemError(
+            status=404,
+            code="temporal.hard_delete.not_found",
+            category="not_found",
+            title="Elemento non disponibile",
+            detail="L'elemento non è più presente.",
+        )
+    return TemporalHardDeletePreview(
+        requested_ref=requested_ref, scope=scope, fingerprint=fingerprint
+    )
+
+
+@router.delete(
+    "/hard-deletion/{requested_ref}",
+    response_model=TemporalHardDeleteResult,
+    operation_id="temporal_apply_hard_deletion",
+)
+async def apply_temporal_hard_deletion(
+    requested_ref: UUID,
+    body: TemporalHardDeleteCommand,
+    context: MutatingContext,
+    request: Request,
+    response: Response,
+) -> TemporalHardDeleteResult:
+    response.headers["Cache-Control"] = "no-store"
+    try:
+        async with request.app.state.database_runtime.session_factory() as session, session.begin():
+            await session.execute(text("SET TRANSACTION ISOLATION LEVEL SERIALIZABLE"))
+            deleted_rows = await session.scalar(
+                text(
+                    "SELECT dante.delete_self_temporal_hard("
+                    ":actor,:requested_ref,:scope,:fingerprint)"
+                ),
+                {
+                    "actor": context.self_person_ref,
+                    "requested_ref": requested_ref,
+                    "scope": body.scope,
+                    "fingerprint": body.expected_fingerprint,
+                },
+            )
+    except DBAPIError as exc:
+        raise _hard_delete_problem(exc) from exc
+    except SQLAlchemyError as exc:
+        raise ProblemError(
+            status=503,
+            code="temporal.hard_delete.unavailable",
+            category="service",
+            title="Eliminazione non disponibile",
+            detail="Non è stato possibile confermare una cancellazione atomica.",
+            retryable=True,
+        ) from exc
+    return TemporalHardDeleteResult(
+        requested_ref=requested_ref, scope=body.scope, deleted_rows=deleted_rows or 0
+    )
