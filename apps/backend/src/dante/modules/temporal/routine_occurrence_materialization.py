@@ -800,35 +800,48 @@ class RoutineOccurrenceMaterializationApplication:
         checkpoints: list[OccurrenceCheckpoint] = []
         try:
             for owner, source_ref in await self._sources(self_person_ref):
-                checkpoint = await self._occurrences.checkpoint(
-                    owner=owner,
-                    self_person_ref=self_person_ref,
-                    source_ref=source_ref,
-                    operation_id=_window_source_operation_id(
-                        root_operation_id=operation_id,
+                # A transaction-level lock covers checkpoint + ALL subsequent
+                # policy writes, even though the downstream applications own
+                # independent transactions. Hard-delete takes this same key
+                # before skipping an instance or deleting the series.
+                # Transaction end always releases the lock, including on error.
+                async with self._session_factory() as gate, gate.begin():
+                    await gate.execute(
+                        text(
+                            "SELECT pg_advisory_xact_lock("
+                            "hashtextextended(:admission_key,0))"
+                        ),
+                        {"admission_key": f"dante:recurrence-materialization:{source_ref}"},
+                    )
+                    checkpoint = await self._occurrences.checkpoint(
                         owner=owner,
+                        self_person_ref=self_person_ref,
                         source_ref=source_ref,
+                        operation_id=_window_source_operation_id(
+                            root_operation_id=operation_id,
+                            owner=owner,
+                            source_ref=source_ref,
+                            start_date=start_date,
+                            end_date_exclusive=end_date_exclusive,
+                            effective_zone_id=effective_zone_id,
+                        ),
                         start_date=start_date,
                         end_date_exclusive=end_date_exclusive,
                         effective_zone_id=effective_zone_id,
-                    ),
-                    start_date=start_date,
-                    end_date_exclusive=end_date_exclusive,
-                    effective_zone_id=effective_zone_id,
-                )
-                checkpoints.append(checkpoint)
-                if owner == "routine":
-                    await self._apply_routine_policy(
-                        self_person_ref=self_person_ref,
-                        source_ref=source_ref,
-                        checkpoint=checkpoint,
                     )
-                elif owner == "event":
-                    await self._apply_event_policy(
-                        self_person_ref=self_person_ref,
-                        source_ref=source_ref,
-                        checkpoint=checkpoint,
-                    )
+                    checkpoints.append(checkpoint)
+                    if owner == "routine":
+                        await self._apply_routine_policy(
+                            self_person_ref=self_person_ref,
+                            source_ref=source_ref,
+                            checkpoint=checkpoint,
+                        )
+                    elif owner == "event":
+                        await self._apply_event_policy(
+                            self_person_ref=self_person_ref,
+                            source_ref=source_ref,
+                            checkpoint=checkpoint,
+                        )
         except (
             RoutineOccurrencePolicyPersistenceError,
             EventOccurrencePolicyPersistenceError,
