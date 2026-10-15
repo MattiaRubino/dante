@@ -25,6 +25,13 @@ Timeline, review rail and browser must agree before a row is accepted.
 | Direct Timeline drag, time edit, unschedule and undo | same Keep/Delete/Cancel authority and coherent interval move | Candidate coordinates exact floating/named-zone Activity revisions, including Keep/Delete/Cancel and plan Undo with fresh Session choice. Targeted Web 14/14 and full Web 1,061/1,061 passed locally on `c298769`; a later browser real-stack case checks the card mutation and persistence but has not run in WSL. Unschedule still uses generic Schedule boundary and cannot remove a governed Activity interval |
 | Recurring instance versus future series | explicit scope, no rematerialization or unrelated loss | Timeline move/Undo now prompts for the scope of a recurring instance; its focused UI test passed 6/6 and full Web suite 1,062/1,062 in this later local candidate. **Missing** atomic hard deletion: Solo questa must skip the selected occurrence while cascading its Activity graph; Tutta la serie must delete source, all materialized/future instances and their graphs. Bare hard deletion remains fail-closed until that command exists. Browser and full gate pending |
 
+## 2026-10-15 focused persistence correction candidate
+
+- Alembic `_150`: owner-scoped, locked generated Activity authoring admission and final binding reject skipped/deleted Routine Occurrences. Adds **one trigger and one function**, no table/FK change.
+- Alembic `_151`: explicitly seed the Activity-owned Objective in the existing Activity deletion graph (the subject reference is polymorphic without an FK).
+- Expected Dictionary catalog `238|5|234|104|486|421|596`; new target PostgreSQL regression + existing hard-delete Objective regression. **NOT RUN**, not a declaration of deletion-workflow acceptance.
+- **Still missing:** atomic complete delete, including Activity child graph, single/full recurring scope, Event-owned graph, coordinated Timeline removal/Undo, new UI, full same-SHA 27-group gate and dogfood. The distinct producer/consumer transaction race remains a release blocker.
+
 ## Event and Activity recurring deletion parity (accepted, unimplemented)
 
 | Scenario | Required evidence | Current state |
