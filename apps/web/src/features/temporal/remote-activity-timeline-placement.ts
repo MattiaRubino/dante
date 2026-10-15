@@ -109,9 +109,10 @@ export function createRemoteActivityTimelinePlacement(
       activityRef: string,
       placement: TimelineActivityPlacement,
       disposition: 'keep' | 'delete' | null,
+      expectedSessionFingerprint: string,
+      attemptsAtConfirmation: number,
     ): Promise<TimelineUndoReceipt> {
-      const currentImpact = await inspector.sessionImpact(activityRef);
-      if (disposition === null && currentImpact.attempts.length !== 0) {
+      if (disposition === null && attemptsAtConfirmation !== 0) {
         throw new Error('Scegli Mantieni Sessioni, Elimina Sessioni o Annulla.');
       }
       const response = await request(`${url(activityRef)}/timeline-unplace`, {
@@ -126,7 +127,7 @@ export function createRemoteActivityTimelinePlacement(
           expected_material_state_ref: placement.expectedMaterialStateRef,
           session_disposition: disposition,
           expected_session_fingerprint:
-            disposition === null ? null : currentImpact.fingerprint,
+            disposition === null ? null : expectedSessionFingerprint,
         }),
       });
       const data = record(await checked(response));
