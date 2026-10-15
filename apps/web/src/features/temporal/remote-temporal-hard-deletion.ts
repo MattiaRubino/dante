@@ -11,6 +11,12 @@ export type TemporalHardDeletionScope =
   | 'event_instance'
   | 'event_series';
 
+export type EventDeletionOccurrenceChoice = Readonly<{
+  occurrenceRef: string;
+  scheduleRef: string | null;
+  displayLabel: string;
+}>;
+
 export type TemporalHardDeletionPreview = Readonly<{
   requestedRef: string;
   scope: TemporalHardDeletionScope;
@@ -32,6 +38,33 @@ export function createRemoteTemporalHardDeletion(
     `/api/v1/temporal/hard-deletion/${encodeURIComponent(ref)}`;
 
   return Object.freeze({
+    async eventOccurrences(eventRef: string): Promise<readonly EventDeletionOccurrenceChoice[]> {
+      const response = await request(
+        `/api/v1/temporal/events/${encodeURIComponent(eventRef)}/deletion-occurrences`,
+      );
+      if (!response.ok) {
+        throw new Error('Non è possibile verificare le istanze Event.');
+      }
+      const payload: unknown = await response.json();
+      if (!Array.isArray(payload)) {
+        throw new Error('Elenco Occurrence Event non valido.');
+      }
+      return payload.map((item: unknown) => {
+        const data = record(item);
+        if (
+          typeof data.occurrence_ref !== 'string' ||
+          typeof data.display_label !== 'string' ||
+          (data.schedule_ref !== null && typeof data.schedule_ref !== 'string')
+        ) {
+          throw new Error('Identità Occurrence Event non valida.');
+        }
+        return {
+          occurrenceRef: data.occurrence_ref,
+          scheduleRef: data.schedule_ref,
+          displayLabel: data.display_label,
+        };
+      });
+    },
     async preview(
       ref: string,
       scope: TemporalHardDeletionScope,
