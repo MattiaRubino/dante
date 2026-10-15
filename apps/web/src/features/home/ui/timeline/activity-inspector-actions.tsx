@@ -7,6 +7,11 @@ import {
   type ActivitySessionImpact,
 } from '../../../temporal/remote-activity-inspector';
 import { createRemoteActivityEditSettings } from '../../../temporal/remote-activity-edit-settings';
+import {
+  createRemoteActivityTimelinePlacement,
+  type TimelineActivityPlacement,
+  type TimelineUndoReceipt,
+} from '../../../temporal/remote-activity-timeline-placement';
 import { createRemoteRecurringProfileEdit } from '../../../temporal/remote-recurring-profile-edit';
 import { createRemoteTemporalHardDeletion, type TemporalHardDeletionPreview } from '../../../temporal/remote-temporal-hard-deletion';
 import {
@@ -39,6 +44,7 @@ export function ActivityInspectorActions({
   const [settingsSource] = useState(createRemoteActivityEditSettings);
   const [recurringSource] = useState(createRemoteRecurringProfileEdit);
   const [hardDelete] = useState(createRemoteTemporalHardDeletion);
+  const [timelinePlacement] = useState(createRemoteActivityTimelinePlacement);
   const [draftVault] = useState(createRemoteDraftVault);
   const [profile, setProfile] = useState<ActivityProfile | null>(null);
   const [confirming, setConfirming] = useState(false);
@@ -47,6 +53,9 @@ export function ActivityInspectorActions({
     readonly [TemporalHardDeletionPreview, TemporalHardDeletionPreview] | null
   >(null);
   const [confirmingVault, setConfirmingVault] = useState(false);
+  const [removePlacement, setRemovePlacement] = useState<TimelineActivityPlacement | null>(null);
+  const [removeImpact, setRemoveImpact] = useState<ActivitySessionImpact | null>(null);
+  const [undoReceipt, setUndoReceipt] = useState<TimelineUndoReceipt | null>(null);
   const [pending, setPending] = useState(false);
   const [error, setError] = useState('');
 
@@ -149,6 +158,42 @@ export function ActivityInspectorActions({
       </button>
       <button
         type="button"
+        aria-label="Rimuovi dalla Timeline"
+        title="Rimuovi dalla Timeline"
+        disabled={pending}
+        onClick={() =>
+          void action(async () => {
+            const [placement, impact] = await Promise.all([
+              timelinePlacement.current(activityRef),
+              source.sessionImpact(activityRef),
+            ]);
+            setRemovePlacement(placement);
+            setRemoveImpact(impact);
+          })
+        }
+      >
+        Rimuovi dalla Timeline
+      </button>
+      <button
+        type="button"
+        aria-label="Annulla rimozione Timeline"
+        title="Annulla rimozione Timeline"
+        disabled={pending}
+        onClick={() =>
+          void action(async () => {
+            const receipts = await timelinePlacement.listUndo(activityRef);
+            const latest = receipts[0];
+            if (!latest) {
+              throw new Error('Non sono presenti collocazioni ripristinabili.');
+            }
+            setUndoReceipt(latest);
+          })
+        }
+      >
+        Undo collocazione
+      </button>
+      <button
+        type="button"
         aria-label="Elimina"
         title="Elimina"
         disabled={pending}
@@ -184,6 +229,109 @@ export function ActivityInspectorActions({
         </div>
       ) : null}
       {error ? <p role="alert">{error}</p> : null}
+      {removePlacement && removeImpact ? (
+        <div className="timeline-activity-inspector__confirmation">
+          <p>
+            Rimuovere questa Activity dalla Timeline senza eliminarla?
+            Le Sessioni realmente registrate possono essere conservate o
+            eliminate soltanto dopo una scelta esplicita.
+          </p>
+          {removeImpact.attempts.length !== 0 ? (
+            <>
+              <p>
+                Sessioni registrate: {removeImpact.attempts.length}.
+                «Mantieni» conserva i dati storici e i tempi reali.
+              </p>
+              <button
+                type="button"
+                disabled={pending}
+                onClick={() =>
+                  void action(async () => {
+                    const receipt = await timelinePlacement.remove(
+                      activityRef, removePlacement, 'keep',
+                    );
+                    setUndoReceipt(receipt);
+                    setRemovePlacement(null);
+                    setRemoveImpact(null);
+                  })
+                }
+              >
+                Mantieni Sessioni e rimuovi dalla Timeline
+              </button>
+              <button
+                type="button"
+                disabled={pending}
+                onClick={() =>
+                  void action(async () => {
+                    const receipt = await timelinePlacement.remove(
+                      activityRef, removePlacement, 'delete',
+                    );
+                    setUndoReceipt(receipt);
+                    setRemovePlacement(null);
+                    setRemoveImpact(null);
+                  })
+                }
+              >
+                Elimina Sessioni e rimuovi dalla Timeline
+              </button>
+            </>
+          ) : (
+            <button
+              type="button"
+              disabled={pending}
+              onClick={() =>
+                void action(async () => {
+                  const receipt = await timelinePlacement.remove(
+                    activityRef, removePlacement, null,
+                  );
+                  setUndoReceipt(receipt);
+                  setRemovePlacement(null);
+                  setRemoveImpact(null);
+                })
+              }
+            >
+              Conferma rimozione dalla Timeline
+            </button>
+          )}
+          <button
+            type="button"
+            disabled={pending}
+            onClick={() => {
+              setRemovePlacement(null);
+              setRemoveImpact(null);
+            }}
+          >
+            Annulla
+          </button>
+        </div>
+      ) : null}
+      {undoReceipt ? (
+        <div className="timeline-activity-inspector__confirmation">
+          <p>
+            Ripristinare la precedente collocazione come nuova revisione?
+            La Schedule non verrà ripristinata se lo stato è cambiato.
+          </p>
+          <button
+            type="button"
+            disabled={pending}
+            onClick={() =>
+              void action(async () => {
+                await timelinePlacement.undo(activityRef, undoReceipt);
+                setUndoReceipt(null);
+              })
+            }
+          >
+            Conferma Undo della collocazione
+          </button>
+          <button
+            type="button"
+            disabled={pending}
+            onClick={() => setUndoReceipt(null)}
+          >
+            Annulla
+          </button>
+        </div>
+      ) : null}
       {confirmingVault ? (
         <div className="timeline-activity-inspector__confirmation">
           <p>
