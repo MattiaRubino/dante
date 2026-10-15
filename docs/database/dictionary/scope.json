@@ -89,13 +89,14 @@
       "B14-RECURRING-LIFECYCLE-GUARD",
       "B14-ACTIVITY-OBJECTIVE-LIFECYCLE-GUARD",
       "B14-ATOMIC-RECURRING-DELETION",
-      "B14-ACTIVITY-TREE-HARD-DELETE"
+      "B14-ACTIVITY-TREE-HARD-DELETE",
+      "B14-COORDINATED-TIMELINE-UNDO"
     ],
     "standalone_entries": {
       "tables": 238,
       "views": 5,
-      "routines": 238,
-      "total": 481
+      "routines": 241,
+      "total": 484
     },
     "embedded_objects": {
       "triggers": 104,
