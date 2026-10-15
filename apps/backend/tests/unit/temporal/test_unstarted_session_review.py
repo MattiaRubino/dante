@@ -72,7 +72,16 @@ def test_only_unattempted_enabled_parts_are_reviewed() -> None:
     ]
     assert _unstarted_session_items([record], now, "UTC") == []
 
+    record["mode_code"] = "record"
+    record["historical_attempts"] = []
+    record_only = _unstarted_session_items([record], now, "UTC")
+    assert len(record_only) == 1
+    assert record_only[0].planned_schedule_ref is not None
+
     record["mode_code"] = "live"
+    record["historical_attempts"] = [
+        {"planned_schedule_ref": record["schedules"][1]["schedule_ref"]}
+    ]
     pending = _unstarted_session_items([record], now, "UTC")
     assert len(pending) == 1
     assert pending[0].planned_schedule_ref is None

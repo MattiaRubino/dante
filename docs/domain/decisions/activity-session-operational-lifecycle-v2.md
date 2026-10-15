@@ -55,4 +55,4 @@ Moving an Activity removes its unstarted rows from the panel when the current in
 
 ## Review queue
 
-Once every current Activity interval has ended, each enabled generic or named Session with no real attempt enters **Da verificare**. Visibility is derived from the **current** plan: moving the Activity into the future clears these pending entries, and reaching its new end can show them again. This is not a completion, failure, Actual, Outcome or Confirmation. Recording, replanning or deleting the pending item is a separate follow-up workflow.
+Once every current Activity interval has ended, each live-capable generic or named Session with no real attempt enters **Da verificare**. A record-only Activity has no generic Play row and follows its separate Reality review policy. Visibility is derived from the **current** plan: moving the Activity into the future clears these pending entries, and reaching its new end can show them again. This is not a completion, failure, Actual, Outcome or Confirmation. Recording, replanning or deleting the pending item is a separate follow-up workflow.
