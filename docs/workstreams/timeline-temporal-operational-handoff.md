@@ -1297,3 +1297,23 @@ through the Activity hard-delete function or mark them accepted before real
 PostgreSQL and browser tests. User's WSL generated `dante.ts` change was not
 included in the three generated files published on `f7eb26c`; inspect its
 diff before changing the user's local generated worktree.
+
+## 2026-10-15 — Accepted recurring Activity deletion semantics
+
+Deletion is now explicitly defined in
+`docs/domain/decisions/activity-session-operational-lifecycle-v2.md`:
+
+- a non-recurring Activity hard-deletes its full owned graph;
+- a materialized recurring Activity asks **Solo questa istanza**, **Tutta la
+  serie**, or **Annulla**;
+- Solo questa atomically deletes the selected Activity graph and persists a
+  skip for its Occurrence, preventing rematerialization while preserving the
+  other instances and Routine;
+- Tutta la serie atomically deletes the Routine source, all materialized and
+  future instances, and every owned graph; and
+- neither scope may leave a partial cascade or recreate a deleted instance.
+
+This is a product rule, not implementation evidence. The present backend
+continues to fail closed for recurring Activity hard deletion until the scoped
+database command, API, UI confirmation and PostgreSQL/browser regressions
+are delivered.

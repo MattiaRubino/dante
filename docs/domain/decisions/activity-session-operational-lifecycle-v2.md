@@ -49,7 +49,22 @@ The editor clearly labels retained Session attempts as `in corso`, `in pausa`, o
 
 Removing a named internal Session from the editor is a draft operation. On **Salva**, it removes the internal Session configuration and all real attempts linked to it. Closing/cancelling the editor does not remove anything.
 
-Deleting an Activity is a hard cascade after one confirmation: Activity, intervals, reminders, named Session configuration and all of its real Sessions are deleted. Dante does not retain an archive/tombstone for this product action.
+Deleting a non-recurring Activity is a hard cascade after one confirmation:
+Activity, Objectives, Schedule and intervals, reminders, named Session
+configuration and every real Session are deleted. Dante does not retain an
+archive/tombstone for this product action.
+
+Deleting an Activity that belongs to a recurring Routine first asks for a
+scope:
+
+| Choice | Effect |
+| --- | --- |
+| **Solo questa istanza** | Delete that materialized Activity and all of its Objectives, Schedule/intervalli, reminders, Session configuration and real Sessions. Persist the occurrence as skipped so the Routine cannot recreate the deleted Activity. Other instances and the Routine remain intact. |
+| **Tutta la serie** | Delete the Routine/recurrence source, every materialized and future instance, and for every materialized Activity all Objectives, Schedule/intervalli, reminders, Session configuration and real Sessions. Nothing of the series remains. |
+| **Annulla** | Delete nothing. |
+
+Both deletion paths are one atomic operation. A partial series deletion or a
+deleted occurrence that later rematerializes is invalid.
 
 Moving an Activity removes its unstarted rows from the panel when the current interval no longer makes them available. They appear in **Da verificare** only if the Activity's current accepted plan has ended. Moving the Activity into the future removes those rows from **Da verificare** and makes them available again at the new preview time. Retained open/paused rows remain in the panel and completed rows remain historical.
 
