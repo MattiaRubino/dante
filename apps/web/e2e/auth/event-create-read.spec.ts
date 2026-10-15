@@ -280,6 +280,7 @@ test.describe('Timeline B03-E real-stack Event closure', () => {
         scope: 'event_once',
         expected_fingerprint: expect.stringMatching(/^[a-f0-9]{64}$/),
       });
+      await expect(inspector).toHaveCount(0);
       const persistedRead = waitForTimelineRead(page);
       await page.reload();
       const window = (await (await persistedRead).json()) as {
