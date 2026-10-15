@@ -11,11 +11,19 @@ import {
   useState,
 } from 'react';
 import { useTranslation } from 'react-i18next';
+import { createPortal } from 'react-dom';
 
 import './timeline.css';
 
 import { TemporalScheduleRemoteError } from '../../../temporal/remote-schedule-data-source';
 import type { TemporalSchedulePlacementInput } from '../../../temporal/schedule-data-source';
+import {
+  createRemoteActivityEditSettings,
+  type ActivityEditSettings,
+  type ActivityReplanDraft,
+  type ActivitySessionDisposition,
+} from '../../../temporal/remote-activity-edit-settings';
+import { createRemoteActivityInspector } from '../../../temporal/remote-activity-inspector';
 import { useTemporalTimelineRuntime } from '../../../temporal/timeline-runtime-boundary';
 import { REVIEW_QUEUE_INVALIDATED } from '../context-rail/review-events';
 import { useSessionPanel } from '../../../temporal/use-session-panel';
@@ -29,6 +37,7 @@ import {
   TIMELINE_PROTOTYPE_TODAY,
 } from './model/timeline-fixtures';
 import { timelineCanonicalRevisionForDisplayEdit } from './model/timeline-canonical-revision';
+import { activityReplanForTimelineRevision } from './model/timeline-activity-replan';
 import {
   timelineEffectiveScrollBehavior,
   timelinePrefersReducedMotion,
@@ -122,7 +131,27 @@ type ScheduleNotice = Readonly<{
   message: string;
 }>;
 
+type PendingActivityReplan = Readonly<{
+  activityRef: string;
+  scheduleRef: string;
+  title: string;
+  settings: ActivityEditSettings;
+  draft: ActivityReplanDraft;
+  fingerprint: string;
+  attemptCount: number;
+  restoreDraft?: ActivityReplanDraft;
+  isUndo?: boolean;
+}>;
+
 type CanonicalScheduleUndo =
+  | Readonly<{
+      kind: 'activity-replan';
+      activityRef: string;
+      scheduleRef: string;
+      title: string;
+      settings: ActivityEditSettings;
+      draft: ActivityReplanDraft;
+    }>
   | Readonly<{
       kind: 'revision';
       scheduleRef: string;
@@ -145,6 +174,10 @@ export function TimelineSurface({
   onDateNavigation,
 }: TimelineSurfaceProps) {
   const { t, i18n } = useTranslation('common');
+  const [activityEditSource] = useState(createRemoteActivityEditSettings);
+  const [activityImpactSource] = useState(createRemoteActivityInspector);
+  const [pendingActivityReplan, setPendingActivityReplan] =
+    useState<PendingActivityReplan | null>(null);
   const {
     state: temporalRuntimeState,
     reviseSchedule,
@@ -459,6 +492,67 @@ export function TimelineSurface({
     }, TIMELINE_POLICY.feedback.toastDurationMs);
   }, []);
 
+  const applyActivityTimelineReplan = useCallback(
+    (
+      proposal: PendingActivityReplan,
+      disposition?: ActivitySessionDisposition,
+    ) => {
+      void activityEditSource
+        .applyReplan(
+          proposal.activityRef,
+          proposal.settings,
+          proposal.draft,
+          crypto.randomUUID(),
+          disposition,
+        )
+        .then((saved) => {
+          window.dispatchEvent(new Event(REVIEW_QUEUE_INVALIDATED));
+          if (
+            disposition?.mode !== 'delete' &&
+            !proposal.isUndo &&
+            proposal.restoreDraft
+          ) {
+            setCanonicalUndo({
+              kind: 'activity-replan',
+              activityRef: proposal.activityRef,
+              scheduleRef: proposal.scheduleRef,
+              title: proposal.title,
+              settings: saved,
+              draft: proposal.restoreDraft,
+            });
+            showCanonicalUndo(
+              t(($) => $.common.home.timeline.feedback.scheduleUndoAvailable),
+            );
+          } else {
+            setCanonicalUndo(null);
+            setToastVisible(false);
+          }
+          showScheduleNotice({
+            kind: 'status',
+            message: t(
+              ($) => $.common.home.timeline.feedback.scheduleRevisionUpdated,
+            ),
+          });
+        })
+        .catch((reason: unknown) => {
+          showScheduleNotice({
+            kind: 'error',
+            message:
+              reason instanceof Error
+                ? reason.message
+                : 'Impossibile spostare l’attività. Ricarica e riprova.',
+          });
+        })
+        .finally(() => {
+          pendingScheduleRefsRef.current.delete(proposal.scheduleRef);
+          setPendingScheduleRef((current) =>
+            current === proposal.scheduleRef ? null : current,
+          );
+        });
+    },
+    [activityEditSource, showCanonicalUndo, showScheduleNotice, t],
+  );
+
   const reviseCanonicalEvent = useCallback(
     (
       event: TimelineEvent,
@@ -502,6 +596,76 @@ export function TimelineSurface({
             ($) => $.common.home.timeline.feedback.scheduleRevisionUnavailable,
           ),
         });
+        return;
+      }
+
+      if (basis.kind === 'scheduled-activity') {
+        pendingScheduleRefsRef.current.add(basis.scheduleRef);
+        setPendingScheduleRef(basis.scheduleRef);
+        void Promise.all([
+          activityEditSource.load(basis.activityRef),
+          activityImpactSource.sessionImpact(basis.activityRef),
+        ])
+          .then(([settings, impact]) => {
+            const draft = activityReplanForTimelineRevision(
+              settings,
+              basis,
+              revision,
+            );
+            if (draft === null) {
+              throw new Error(
+                'Questo orario richiede Modifica dell’attività o intervalli non sovrapposti.',
+              );
+            }
+            const proposal: PendingActivityReplan = {
+              activityRef: basis.activityRef,
+              scheduleRef: basis.scheduleRef,
+              title: event.title,
+              settings,
+              draft,
+              fingerprint: impact.fingerprint,
+              attemptCount: impact.attempts.length,
+              restoreDraft: {
+                times: Object.fromEntries(
+                  settings.schedules
+                    .filter((row) =>
+                      settings.schedules.some(
+                        (item) => item.role === 'interval',
+                      )
+                        ? row.role === 'interval'
+                        : row.role === 'envelope',
+                    )
+                    .map((row) => [
+                      row.scheduleRef,
+                      { start: row.start!, end: row.end! },
+                    ]),
+                ),
+                removedIntervals: [],
+                newIntervals: [],
+                removedPlanned: [],
+                deletedPlanned: [],
+                newPlanned: [],
+              },
+            };
+            if (impact.attempts.length > 0) {
+              setPendingActivityReplan(proposal);
+            } else {
+              applyActivityTimelineReplan(proposal);
+            }
+          })
+          .catch((reason: unknown) => {
+            showScheduleNotice({
+              kind: 'error',
+              message:
+                reason instanceof Error
+                  ? reason.message
+                  : 'Impossibile leggere l’attività. Riprova.',
+            });
+            pendingScheduleRefsRef.current.delete(basis.scheduleRef);
+            setPendingScheduleRef((current) =>
+              current === basis.scheduleRef ? null : current,
+            );
+          });
         return;
       }
 
@@ -573,6 +737,9 @@ export function TimelineSurface({
         });
     },
     [
+      activityEditSource,
+      activityImpactSource,
+      applyActivityTimelineReplan,
       effectiveZoneId,
       i18n,
       reviseSchedule,
@@ -656,6 +823,42 @@ export function TimelineSurface({
       return;
     }
 
+    if (undo.kind === 'activity-replan') {
+      pendingScheduleRefsRef.current.add(undo.scheduleRef);
+      setPendingScheduleRef(undo.scheduleRef);
+      void activityImpactSource
+        .sessionImpact(undo.activityRef)
+        .then((impact) => {
+          const proposal: PendingActivityReplan = {
+            activityRef: undo.activityRef,
+            scheduleRef: undo.scheduleRef,
+            title: undo.title,
+            settings: undo.settings,
+            draft: undo.draft,
+            fingerprint: impact.fingerprint,
+            attemptCount: impact.attempts.length,
+            isUndo: true,
+          };
+          if (impact.attempts.length > 0) {
+            setPendingActivityReplan(proposal);
+          } else {
+            applyActivityTimelineReplan(proposal);
+          }
+        })
+        .catch((reason: unknown) => {
+          showScheduleNotice({
+            kind: 'error',
+            message:
+              reason instanceof Error
+                ? reason.message
+                : 'Impossibile verificare le Sessioni. Riprova.',
+          });
+          pendingScheduleRefsRef.current.delete(undo.scheduleRef);
+          setPendingScheduleRef(null);
+        });
+      return;
+    }
+
     pendingScheduleRefsRef.current.add(undo.scheduleRef);
     setPendingScheduleRef(undo.scheduleRef);
     const command =
@@ -703,6 +906,8 @@ export function TimelineSurface({
         );
       });
   }, [
+    activityImpactSource,
+    applyActivityTimelineReplan,
     canonicalUndo,
     reviseSchedule,
     showScheduleNotice,
@@ -1511,6 +1716,69 @@ export function TimelineSurface({
           }}
         />
       ) : null}
+
+      {pendingActivityReplan
+        ? createPortal(
+            <div className="timeline-activity-replan-backdrop">
+              <div
+                className="timeline-activity-replan-dialog"
+                role="alertdialog"
+                aria-modal="true"
+                aria-label="Conferma spostamento attività"
+                onKeyDown={(event) => {
+                  if (event.key === 'Escape') {
+                    event.preventDefault();
+                    pendingScheduleRefsRef.current.delete(
+                      pendingActivityReplan.scheduleRef,
+                    );
+                    setPendingScheduleRef(null);
+                    setPendingActivityReplan(null);
+                  }
+                }}
+              >
+                <h2>{pendingActivityReplan.title}</h2>
+                <p>
+                  Questa attività contiene {pendingActivityReplan.attemptCount}{' '}
+                  Sessioni reali. Come vuoi gestirle durante lo spostamento?
+                </p>
+                <div className="timeline-activity-replan-dialog__actions">
+                  {(['keep', 'delete'] as const).map((mode) => (
+                    <button
+                      key={mode}
+                      type="button"
+                      autoFocus={mode === 'keep'}
+                      onClick={() => {
+                        const proposal = pendingActivityReplan;
+                        setPendingActivityReplan(null);
+                        applyActivityTimelineReplan(proposal, {
+                          mode,
+                          expectedFingerprint: proposal.fingerprint,
+                        });
+                      }}
+                    >
+                      {mode === 'keep'
+                        ? 'Mantieni Sessioni'
+                        : 'Elimina Sessioni'}
+                    </button>
+                  ))}
+                  <button
+                    type="button"
+                    onClick={() => {
+                      pendingScheduleRefsRef.current.delete(
+                        pendingActivityReplan.scheduleRef,
+                      );
+                      setPendingScheduleRef(null);
+                      setPendingActivityReplan(null);
+                    }}
+                  >
+                    Annulla
+                  </button>
+                </div>
+              </div>
+            </div>,
+            document.body,
+          )
+        : null}
 
       <EventDetailDialog
         detail={detailState?.detail ?? null}

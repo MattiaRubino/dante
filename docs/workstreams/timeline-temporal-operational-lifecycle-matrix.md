@@ -16,13 +16,13 @@ Timeline, review rail and browser must agree before a row is accepted.
 | Main capture prerequisite and cascade | running, pause, stop, replay and concurrent transitions | PostgreSQL reconfirmation pending |
 | Multiple Activity intervals | one attempt resumes across intervals; Stop then Play creates a new attempt | Panel unit candidate; PostgreSQL pending |
 | Panel preview and Stop | availability follows Activity interval; ended attempt never gets Play again | Unit candidate; browser pending |
-| Never-started generic and named Sessions | separate read-only rows after the current plan ends; moving into the future clears them; real attempts suppress only their own row | API/UI candidate and unit/PostgreSQL/browser regression added; PostgreSQL and browser pending. Resolution actions intentionally deferred |
+| Never-started generic and named Sessions | separate read-only rows after the current plan ends; moving into the future clears them; real attempts suppress only their own row | Focused WSL PostgreSQL 21/21 and Web rail 6/6 passed on `5e87cc26`; browser real-stack pending. Resolution actions intentionally deferred |
 | Editor Keep/Delete/Cancel | choice before a mutation with attempts; stale fingerprint rejected | Candidate; PostgreSQL pending |
 | Keep after a plan change | real timestamps and open/paused state retained | Focused PostgreSQL case passed on `0e848943`; browser pending |
 | Delete attempts before edit | full linked graph, rollback, isolation and concurrency | Focused rollback case passed on `0e848943`; complete inventory pending |
 | Named X, Save and Cancel | Save removes configuration with its attempts atomically; Cancel leaves both | Focused PostgreSQL case passed on `0e848943`; browser pending |
 | Hard Activity deletion | one confirmation, complete owned graph, stale/owner checks | Focused PostgreSQL case passed on `0e848943`; browser pending |
-| Direct Timeline drag, time edit, unschedule and undo | same Keep/Delete/Cancel authority and coherent interval move | **Missing** coordinated UI; unconfirmed direct changes with attempts are rejected |
+| Direct Timeline drag, time edit, unschedule and undo | same Keep/Delete/Cancel authority and coherent interval move | Candidate coordinates exact floating/named-zone Activity interval revisions, including Keep/Delete/Cancel and plan Undo with fresh Session choice. Targeted Web 14/14 and full Web 1,061/1,061 passed locally; PostgreSQL/browser pending. Unschedule still uses generic Schedule boundary and cannot remove a governed Activity interval |
 | Recurring instance versus future series | explicit scope, no rematerialization or unrelated loss | **Missing** scoped deletion; bare hard deletion of a materialized instance now fails closed |
 
 ## Evidence on this checkout
@@ -78,6 +78,18 @@ Timeline, review rail and browser must agree before a row is accepted.
   `_148`; the migration itself, Alembic drift and Undo suite passed. All six
   catalog head literals now advance to `_149` together. Current-plan Session
   review visibility is a candidate and has no PostgreSQL or browser proof yet.
+- The user's WSL run on `5e87cc26` passed test integrity, Ruff, six
+  non-PostgreSQL tests, **21/21 PostgreSQL tests** (including all six current
+  catalog modules and Activity review), Web typecheck, **6/6 rail tests** and
+  deterministic generated-source check. The API client schema was then
+  published on `f7eb26c`; that newer SHA has not run the complete gate.
+- A subsequent local Timeline candidate routes drag, keyboard and time edits
+  for exact Activity intervals through the coordinated replan. It previews
+  no local optimistic movement, asks Keep/Delete/Cancel for real attempts,
+  uses the session fingerprint at the backend CAS boundary and makes a plan
+  Undo from the returned current revision. The targeted Timeline set and
+  all **1,061 Web Vitest** passed locally; no PostgreSQL or real-browser proof
+  exists for this newer candidate. Generic Event mutations remain separate.
 - This environment has no Docker, PostgreSQL 18/PostGIS or real-app browser
   stack. The previous full-gate result on an older SHA is not evidence for
   these changes.
