@@ -68,6 +68,59 @@ deleted occurrence that later rematerializes is invalid.
 
 Moving an Activity removes its unstarted rows from the panel when the current interval no longer makes them available. They appear in **Da verificare** only if the Activity's current accepted plan has ended. Moving the Activity into the future removes those rows from **Da verificare** and makes them available again at the new preview time. Retained open/paused rows remain in the panel and completed rows remain historical.
 
+
+## Event parity — deletion, recurrence scope and scheduling
+
+**Accepted product extension (2026-10-15):** The same intent, scope, atomicity,
+history-versus-plan, ownership, and no-silent-regeneration rules apply to
+**Events**, with Event-owned data instead of Activity-only Session configuration.
+An Event remains occurrence-centred: an individual recurring Event instance is
+an Occurrence, not a new unrelated Event source.
+
+- **One-off Event / non-recurring Activity:** one explicit hard-delete confirmation
+  removes the owned object and its complete owned graph. Event graph includes
+  agenda/profile, Schedule and Reminder, Objectives, participation and attendance
+  records, Actual/Outcome/Confirmation/reconciliation and any other records
+  canonically owned by that Event; Activity graph includes its corresponding
+  Activity-specific members and real Session attempts. Never traverse into
+  independently owned people, Life Areas, or other subjects.
+- **Solo questa istanza:** delete only the selected recurring Event Occurrence's
+  owned instance graph, including its Schedule, reminders, participation/attendance
+  and factual records specifically owned by that instance; retain the shared
+  source Event and all sibling Occurrences. Record a durable technical exclusion
+  (e.g. an Occurrence skip) so future materialization cannot recreate the
+  deleted instance. For recurring Activity the equivalent action deletes the
+  selected Activity's full owned graph, keeping only the technical exclusion.
+- **Tutta la serie:** atomically delete the recurring Event source, recurrence,
+  every existing/materialized Occurrence and its owned graph, and eliminate all
+  future generation. The Activity equivalent deletes its Routine/recurrence
+  source, every materialized Activity instance and each owned graph.
+  A partial deletion, surviving generated future instance or orphan is invalid.
+- **Annulla:** no changes. Every hard-delete action is irreversible in product
+  terms: there is no historical archive or Undo for deleted truth.
+- **Rimuovi dalla Timeline / sposta:** change only the accepted temporal
+  placement, with coordinated preview/confirmation and guarded plan Undo.
+  Do **not** hard-delete the Event/Activity or erase actual attendance/results.
+  An Event whose placement is withdrawn remains the same expected Event,
+  possibly postponed/unplaced, with its original expectation reconstructible.
+- **Ricorrenze, modifiche:** preserve stable instance identity, distinguish
+  `Solo questa` from `Questa e le prossime` for edits when those are supported,
+  and never silently apply a single-instance change to a series.
+  For **hard deletion** the choices remain exactly `Solo questa istanza`,
+  `Tutta la serie` and `Annulla`.
+
+Deletion must be a **single owner-scoped serializable transaction** with a
+current source/instance revision and impacted-history fingerprint, locks
+against concurrent checkpoint/materialization, and all-or-nothing graph
+removal. Externally owned/shared references must fail closed instead of
+causing cross-owner data deletion. The API and UI may offer the action only
+after the database provides this guarantee. Passage of time and scheduling
+changes do not manufacture Actual, Outcome, attendance or Confirmation.
+
+**Implementation/evidence status:** this is accepted behavior, not a claim
+that Event deletion or recurring Activity deletion is implemented; both
+require their own PostgreSQL/API/Web/browser acceptance and the same-SHA gate.
+
 ## Review queue
 
 Once every current Activity interval has ended, each live-capable generic or named Session with no real attempt enters **Da verificare**. A record-only Activity has no generic Play row and follows its separate Reality review policy. Visibility is derived from the **current** plan: moving the Activity into the future clears these pending entries, and reaching its new end can show them again. This is not a completion, failure, Actual, Outcome or Confirmation. Recording, replanning or deleting the pending item is a separate follow-up workflow.
