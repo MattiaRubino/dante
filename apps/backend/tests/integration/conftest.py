@@ -26,6 +26,7 @@ from dante.platform.database.provisioning import ProvisioningSettings, provision
 
 _POSTGRES_IMAGE = "dante-postgres-local:18.6"
 _BACKEND_ROOT = Path(__file__).resolve().parents[2]
+_DISPOSABLE_VOLUME_LABEL = "dante.test.scope=postgres-acceptance"
 
 
 @dataclass(frozen=True, slots=True)
@@ -40,6 +41,7 @@ class PostgresCluster:
     runtime_password: str
     observer_password: str
     container_name: str
+    volume_name: str
 
     def stop(self) -> None:
         """Stop PostgreSQL while preserving the disposable acceptance cluster."""
@@ -124,6 +126,23 @@ def _docker(*args: str, check: bool = True) -> subprocess.CompletedProcess[str]:
         capture_output=True,
         text=True,
     )
+
+
+def _create_disposable_volume(volume_name: str) -> None:
+    """Create the uniquely labelled data volume for one acceptance cluster."""
+    _docker("volume", "create", "--label", _DISPOSABLE_VOLUME_LABEL, volume_name)
+
+
+def _remove_disposable_cluster(container_name: str, volume_name: str) -> None:
+    """Remove one test cluster and exactly its dedicated PostgreSQL data volume.
+
+    The production image declares PostgreSQL storage. Acceptance clusters use
+    a uniquely named, labelled volume so teardown can remove the exact data
+    it created without relying on Docker's anonymous-volume retention rules
+    or touching the persistent Compose volumes.
+    """
+    _docker("rm", "--force", "--volumes", container_name, check=False)
+    _docker("volume", "rm", "--force", volume_name, check=False)
 
 
 def _wait_for_postgres(cluster: PostgresCluster) -> None:
@@ -234,39 +253,41 @@ def postgres_cluster() -> Generator[PostgresCluster]:
         )
 
     container_name = f"dante-pytest-{uuid.uuid4().hex[:12]}"
+    volume_name = f"dante-pytest-volume-{uuid.uuid4().hex[:12]}"
     admin_password = secrets.token_urlsafe(32)
     # Bind an explicit, dynamically selected port: Docker's auto-published host
     # port may differ after docker stop/start, invalidating preexisting clients.
     host_port = _available_loopback_port()
-    started = _docker(
-        "run",
-        "--detach",
-        "--name",
-        container_name,
-        "--publish",
-        f"127.0.0.1:{host_port}:5432",
-        "--env",
-        "POSTGRES_DB=dante",
-        "--env",
-        "POSTGRES_USER=postgres",
-        "--env",
-        f"POSTGRES_PASSWORD={admin_password}",
-        _POSTGRES_IMAGE,
-        "postgres",
-        "-c",
-        "shared_preload_libraries=pg_stat_statements",
-        "-c",
-        "compute_query_id=on",
-        check=False,
-    )
-    if started.returncode != 0:
-        _docker("rm", "--force", container_name, check=False)
-        pytest.exit(
-            f"Disposable PostgreSQL could not start: {started.stderr.strip()}",
-            returncode=2,
-        )
-
+    _create_disposable_volume(volume_name)
     try:
+        started = _docker(
+            "run",
+            "--detach",
+            "--name",
+            container_name,
+            "--mount",
+            f"type=volume,src={volume_name},dst=/var/lib/postgresql",
+            "--publish",
+            f"127.0.0.1:{host_port}:5432",
+            "--env",
+            "POSTGRES_DB=dante",
+            "--env",
+            "POSTGRES_USER=postgres",
+            "--env",
+            f"POSTGRES_PASSWORD={admin_password}",
+            _POSTGRES_IMAGE,
+            "postgres",
+            "-c",
+            "shared_preload_libraries=pg_stat_statements",
+            "-c",
+            "compute_query_id=on",
+            check=False,
+        )
+        if started.returncode != 0:
+            pytest.exit(
+                f"Disposable PostgreSQL could not start: {started.stderr.strip()}",
+                returncode=2,
+            )
         published = _docker("port", container_name, "5432/tcp", check=False)
         if published.returncode != 0 or not published.stdout.strip():
             pytest.exit(
@@ -294,11 +315,12 @@ def postgres_cluster() -> Generator[PostgresCluster]:
             runtime_password=secrets.token_urlsafe(32),
             observer_password=secrets.token_urlsafe(32),
             container_name=container_name,
+            volume_name=volume_name,
         )
         _wait_for_postgres(cluster)
         yield cluster
     finally:
-        _docker("rm", "--force", cluster.container_name, check=False)
+        _remove_disposable_cluster(container_name, volume_name)
 
 
 @pytest.fixture

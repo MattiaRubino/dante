@@ -178,9 +178,14 @@ whole test modules and worker processes, never interrupted or duplicated.
 PostgreSQL is divided by complete test module, using
 `pytest --collect-only -m postgres` as its inventory: every selected case
 belongs to exactly one shard, and each separate pytest process has its own
-session-scoped disposable Docker PostgreSQL 18.6 cluster and unique database
-fixture. Each shard keeps its complete original pytest log and explicit node-id
-manifest. No `pytest-xdist` installation or test-fixture rewrite is required.
+session-scoped disposable Docker PostgreSQL 18.6 cluster, uniquely named and
+labelled PostgreSQL data volume, and unique database fixture. Fixture teardown
+removes that exact container and its data volume. Before the queue starts, the
+runner also removes only dangling volumes that carry the same DANTE acceptance
+label and matching generated name; it never prunes anonymous Docker resources
+or Compose/local named volumes. Each shard keeps its complete original pytest
+log and explicit node-id manifest. No `pytest-xdist` installation or test-fixture
+rewrite is required.
 
 The resulting logs and archive are saved under the Git-ignored
 `temp/dante-parallel-gate.XXXXXX/`; `LATEST_GATE_SUMMARY.md` is updated.

@@ -27,6 +27,8 @@ GATE = ROOT / "tooling/verify-all-current-tests-local.sh"
 BRANCH = "feature/timeline-temporal-operational"
 PG_TIMINGS = ROOT / "temp/POSTGRES_MODULE_TIMINGS.json"
 GROUP_TIMINGS = ROOT / "temp/GATE_GROUP_TIMINGS.json"
+_DISPOSABLE_VOLUME_LABEL = "dante.test.scope=postgres-acceptance"
+_DISPOSABLE_VOLUME_NAME = re.compile(r"dante-pytest-volume-[0-9a-f]{12}\Z")
 
 READ_ONLY = (
     "DIFF_CHECK", "TEST_FILE_NAMES", "TEST_INTEGRITY", "BACKEND_FORMAT",
@@ -143,6 +145,7 @@ def docker_prerequisites(folder: Path) -> bool:
         )
         if status.returncode:
             raise RuntimeError(status.stderr.strip() or "Docker daemon stopped")
+        _remove_stale_disposable_volumes(folder)
         image = subprocess.run(
             ["docker", "image", "inspect", "dante-postgres-local:18.6"],
             cwd=ROOT, capture_output=True, text=True, check=False,
@@ -163,6 +166,60 @@ def docker_prerequisites(folder: Path) -> bool:
         )
         print(f"DOCKER PREREQUISITE FAILED: {exc}", flush=True)
         return False
+
+
+def _is_disposable_test_volume(name: str) -> bool:
+    """Recognize only an explicitly named acceptance volume we are allowed to remove."""
+    return bool(_DISPOSABLE_VOLUME_NAME.fullmatch(name))
+
+
+def _remove_stale_disposable_volumes(folder: Path) -> None:
+    """Reclaim orphaned labelled test data from an interrupted earlier gate.
+
+    This executes before the PostgreSQL queue begins, so a currently running
+    test can never have created one of the selected volumes. It intentionally
+    excludes anonymous and named LOCAL Compose volumes.
+    """
+    listed = subprocess.run(
+        [
+            "docker",
+            "volume",
+            "ls",
+            "--quiet",
+            "--filter",
+            "dangling=true",
+            "--filter",
+            f"label={_DISPOSABLE_VOLUME_LABEL}",
+        ],
+        cwd=ROOT,
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    if listed.returncode:
+        raise RuntimeError(listed.stderr.strip() or "Could not list stale test volumes")
+    names = [name for name in listed.stdout.splitlines() if name]
+    if invalid := [name for name in names if not _is_disposable_test_volume(name)]:
+        raise RuntimeError(f"Refusing unexpected labelled Docker volumes: {invalid!r}")
+    log = folder / "POSTGRES_STALE_VOLUME_CLEANUP.log"
+    lines = ["Disposable PostgreSQL stale-volume cleanup"]
+    for name in names:
+        removed = subprocess.run(
+            ["docker", "volume", "rm", name],
+            cwd=ROOT,
+            capture_output=True,
+            text=True,
+            check=False,
+        )
+        if removed.returncode:
+            raise RuntimeError(
+                f"Could not remove stale disposable volume {name}: "
+                f"{removed.stderr.strip() or removed.stdout.strip()}"
+            )
+        lines.append(f"REMOVED {name}")
+    if not names:
+        lines.append("NONE")
+    log.write_text("\n".join(lines) + "\n", encoding="utf-8")
 
 
 def postgres_collection(task: Task, folder: Path) -> list[str]:
@@ -342,6 +399,9 @@ def self_test_scheduler() -> None:
     assert not docker_only_interruption(
         2, "FAILED tests/integration/test_real_rule.py\\nDisposable PostgreSQL could not start"
     )
+    assert _is_disposable_test_volume("dante-pytest-volume-2d6cf2b2c696")
+    assert not _is_disposable_test_volume("dante-local_postgres-data")
+    assert not _is_disposable_test_volume("dante-pytest-volume-TOO-SHORT")
     print("PASS: dynamic scheduler and infrastructure-only retries preserve coverage")
 
 

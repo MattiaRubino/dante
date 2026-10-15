@@ -200,6 +200,7 @@
     "apps/backend/tests/test_plan_dependency_openapi_contract.py",
     "apps/backend/tests/test_plan_diagnosis_openapi_contract.py",
     "apps/backend/tests/test_plan_work_openapi_contract.py",
+    "apps/backend/tests/test_postgres_harness_cleanup.py",
     "apps/backend/tests/test_private_api_cache_policy.py",
     "apps/backend/tests/test_provider_auth_http_contract.py",
     "apps/backend/tests/test_reconciliation_openapi_contract.py",
@@ -2312,6 +2313,16 @@
       "invariant": "",
       "status": "UNREVIEWED",
       "audit_note": "Needs contract/assertion review, rejection cases, and executable evidence; filename alone is not proof."
+    },
+    {
+      "path": "apps/backend/tests/test_postgres_harness_cleanup.py",
+      "suite": "test-infrastructure",
+      "contract_id": "P-DATABASE",
+      "candidate_behavior": "disposable postgres harness cleanup",
+      "purpose": "Verify that a disposable PostgreSQL acceptance cluster removes its own anonymous data volume during teardown.",
+      "invariant": "Cleanup targets only the uniquely named test container and includes Docker volume removal, leaving named LOCAL volumes untouched.",
+      "status": "QUALIFIED",
+      "audit_note": "Regression for retained anonymous PostgreSQL image volumes from disposable acceptance clusters."
     },
     {
       "path": "apps/backend/tests/test_private_api_cache_policy.py",

@@ -1,5 +1,18 @@
 # Timeline / Temporal-Operational — Workstream Handoff
 
+## 2026-10-15 — Disposable PostgreSQL test-volume retention correction
+
+The PostgreSQL acceptance fixture previously used the Docker image-declared
+anonymous data volume and removed only its container. Docker consequently
+retained one anonymous volume for every completed disposable cluster. The
+fixture now creates one uniquely named, labelled data volume per acceptance
+cluster, mounts it explicitly and removes that exact volume in `finally`.
+The parallel gate additionally removes only stale, dangling volumes bearing
+the test label and generated-name pattern before it starts the PostgreSQL
+queue. It never performs a global Docker prune and never targets the persistent
+`dante-local` Compose volumes. The focused harness regression test and runner
+self-test must pass before this operational correction is treated as verified.
+
 ## 2026-10-15 — Full gate at `43778ea4` and repair candidate
 
 The user's WSL parallel gate at `43778ea49b0bc12285ebb1b08810da49463c6e67`
