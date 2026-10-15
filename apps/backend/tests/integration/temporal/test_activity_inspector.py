@@ -18,7 +18,7 @@ from dante.modules.temporal.activity_inspector_api import (
     delete_self_activity_hard,
     get_self_activity_session_impact,
 )
-from dante.modules.temporal.authoring import TemporalAuthoringApplication
+from dante.modules.temporal.authoring import ActivityChildIntent, TemporalAuthoringApplication
 from dante.modules.temporal.reality_objective_api import (
     ObjectiveCreateCommand,
     create_activity_objective,
@@ -374,5 +374,58 @@ async def test_hard_delete_includes_polymorphically_owned_objectives(
                 "SELECT count(*) FROM dante.activity_intention WHERE activity_ref=%s",
                 (retained.item.subject_native_ref,),
             ).fetchone() == (1,)
+    finally:
+        await runtime.dispose()
+
+
+@pytest.mark.asyncio
+async def test_one_off_activity_hard_delete_removes_child_native_identities(
+    migrated_database: Any,
+) -> None:
+    actor = _seed_self(migrated_database)
+    runtime = create_database_runtime(migrated_database.runtime_settings())
+    try:
+        created = await TemporalAuthoringApplication(runtime.session_factory).create_activity(
+            self_person_ref=actor,
+            operation_id="hard:activity:subtree",
+            title="Activity principale",
+            children=(
+                ActivityChildIntent(
+                    title="Figlia da eliminare",
+                    requirement_code="required",
+                    presentation_order=1,
+                ),
+            ),
+        )
+        root = created.item.subject_native_ref
+        assert len(created.children) == 1
+        child = created.children[0].item.subject_native_ref
+        context = cast(DanteContext, SimpleNamespace(self_person_ref=actor))
+        request = cast(
+            Request,
+            SimpleNamespace(app=SimpleNamespace(state=SimpleNamespace(database_runtime=runtime))),
+        )
+        impact = await get_self_activity_session_impact(root, context, request, Response())
+        deleted = await delete_self_activity_hard(
+            root,
+            ActivityHardDeleteCommand(expected_session_fingerprint=impact.fingerprint),
+            context,
+            request,
+            Response(),
+        )
+        assert deleted.deleted_rows > 0
+        with psycopg.connect(
+            **migrated_database.connection_kwargs(
+                "dante_migrator", migrated_database.cluster.migrator_password
+            )
+        ) as connection:
+            connection.execute("SET ROLE dante_owner")
+            for ref in (root, child):
+                assert connection.execute(
+                    "SELECT count(*) FROM dante.activity WHERE activity_ref=%s", (ref,)
+                ).fetchone() == (0,)
+                assert connection.execute(
+                    "SELECT count(*) FROM dante.native_address WHERE native_ref=%s", (ref,)
+                ).fetchone() == (0,)
     finally:
         await runtime.dispose()
