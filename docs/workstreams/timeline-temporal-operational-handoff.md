@@ -1273,3 +1273,27 @@ The user's attached WSL run on `5e87cc26` passed test integrity, Ruff, six non-P
 A subsequent Timeline candidate routes Activity keyboard/drag and time-editor changes through Activity replan rather than the generic Schedule mutation. It loads the current Activity plan, accounts for every interval, rejects stale or overlapping inputs, and requests Keep/Delete/Cancel before a real Session is affected. Successful Keep changes can be undone from the returned plan state with a fresh Session choice. Event Schedule mutation remains on its own path. Local focused Web tests passed 14/14 and complete Web Vitest passed 1,061/1,061 in 225 files; Web TypeScript and targeted ESLint passed. These checks use the locally installed dependency tree and are not the WSL full gate.
 
 Still open: Activity unschedule is a separate coordinated operation; the generic Schedule path is rejected for governed intervals. Recurring instance/series deletion needs an explicit scope and materialization-safe database command. Real-stack PostgreSQL/browser acceptance and visual verification remain to be run after these paths are complete.
+
+## 2026-10-15 — Recurring Timeline scope and browser journey candidate
+
+After `c298769`, a recurring Activity card move and its plan Undo explicitly ask
+the user to confirm that the operation applies to **only this occurrence**;
+the same dialog offers Keep/Delete/Cancel if real Session attempts exist. A
+new focused UI case asserts no mutation before the scope choice. An existing
+authenticated browser suite now includes an Activity card keyboard move,
+checks the coordinated `PUT /activities/{ref}/replan` request, then reloads
+and reads the persisted five-minute change. The focused UI test passed 6/6
+locally; Web TypeScript, targeted ESLint and Prettier passed. The new browser
+case has **not** run against the real stack, and the complete 27-group gate
+has **not** run on this candidate. The complete local Web Vitest suite passed
+**1,062/1,062 in 225 files** on this candidate. The earlier 1,061/1,061 Web
+result belongs to `c298769`, before these changes. This scratch dependency
+tree lacks Playwright, so browser discovery/execution must run in WSL.
+
+Coordinated unplacement and its Undo are still open: generic Schedule mutation
+rejects governed Activity intervals. Materialized recurring instance deletion
+still requires a scoped, materialization-safe operation. Do not route either
+through the Activity hard-delete function or mark them accepted before real
+PostgreSQL and browser tests. User's WSL generated `dante.ts` change was not
+included in the three generated files published on `f7eb26c`; inspect its
+diff before changing the user's local generated worktree.

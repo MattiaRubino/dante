@@ -249,6 +249,77 @@ async function createScheduledActivity(
 }
 
 test.describe('Timeline B02-E full-stack Schedule forms', () => {
+  test('Activity card move uses coordinated replan and survives reload', async ({
+    browser,
+  }, testInfo) => {
+    const context = await browser.newContext({
+      ignoreHTTPSErrors: true,
+      timezoneId: 'Europe/Rome',
+    });
+    try {
+      const page = await context.newPage();
+      await useItalianLocale(page);
+      await signIn(page, emailFor(testInfo));
+      const day = Temporal.Now.plainDateISO('Europe/Rome')
+        .add({ days: 1 })
+        .toString();
+      const initialRead = waitForTimelineRead(page);
+      await page.goto(`/home?date=${day}`);
+      expect((await initialRead).status()).toBe(200);
+      const created = await createScheduledActivity(
+        page,
+        `Activity replan ${randomUUID()}`,
+        {
+          kind: 'floating_local_interval',
+          starts_local_at: `${day}T10:00:00`,
+          ends_local_at: `${day}T11:00:00`,
+        },
+      );
+      const scheduleRef = uuidField(created, 'schedule_ref');
+      const activityRef = uuidField(created, 'activity_ref');
+      const freshRead = waitForTimelineRead(page);
+      await page.reload();
+      expect((await freshRead).status()).toBe(200);
+      const card = page.locator(`[data-timeline-event="${scheduleRef}"]`);
+      await expect(card).toHaveCount(1);
+      await card.scrollIntoViewIfNeeded();
+
+      const replanResponse = page.waitForResponse(
+        (response) =>
+          response
+            .url()
+            .endsWith(`/api/v1/temporal/activities/${activityRef}/replan`) &&
+          response.request().method() === 'PUT',
+        { timeout: E2E_RESPONSE_TIMEOUT_MS },
+      );
+      await card.press('Alt+ArrowDown');
+      const accepted = await replanResponse;
+      expect(accepted.status()).toBe(200);
+      const body = accepted.request().postDataJSON() as Record<string, unknown>;
+      expect(body.envelope).toMatchObject({
+        schedule_ref: scheduleRef,
+        expected_material_state_ref: created.placement_material_state_ref,
+        starts_local_at: `${day}T10:05:00`,
+        ends_local_at: `${day}T11:05:00`,
+      });
+      expect(body.session_disposition).toBeUndefined();
+
+      const persistedRead = waitForTimelineRead(page);
+      await page.reload();
+      const window = (await (await persistedRead).json()) as {
+        items?: Array<Record<string, unknown>>;
+      };
+      const persisted = window.items?.find(
+        (item) => item.schedule_ref === scheduleRef,
+      );
+      expect(String(persisted?.starts_local_at)).toContain(`${day}T10:05`);
+      expect(String(persisted?.ends_local_at)).toContain(`${day}T11:05`);
+      await expect(card).toHaveAttribute('aria-label', /10:05/);
+    } finally {
+      await context.close();
+    }
+  });
+
   test('create unplaced → establish → move → cross-form revise → unschedule → Undo → reload stays monotonic', async ({
     browser,
   }, testInfo) => {

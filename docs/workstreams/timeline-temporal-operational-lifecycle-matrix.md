@@ -22,8 +22,8 @@ Timeline, review rail and browser must agree before a row is accepted.
 | Delete attempts before edit | full linked graph, rollback, isolation and concurrency | Focused rollback case passed on `0e848943`; complete inventory pending |
 | Named X, Save and Cancel | Save removes configuration with its attempts atomically; Cancel leaves both | Focused PostgreSQL case passed on `0e848943`; browser pending |
 | Hard Activity deletion | one confirmation, complete owned graph, stale/owner checks | Focused PostgreSQL case passed on `0e848943`; browser pending |
-| Direct Timeline drag, time edit, unschedule and undo | same Keep/Delete/Cancel authority and coherent interval move | Candidate coordinates exact floating/named-zone Activity interval revisions, including Keep/Delete/Cancel and plan Undo with fresh Session choice. Targeted Web 14/14 and full Web 1,061/1,061 passed locally; PostgreSQL/browser pending. Unschedule still uses generic Schedule boundary and cannot remove a governed Activity interval |
-| Recurring instance versus future series | explicit scope, no rematerialization or unrelated loss | **Missing** scoped deletion; bare hard deletion of a materialized instance now fails closed |
+| Direct Timeline drag, time edit, unschedule and undo | same Keep/Delete/Cancel authority and coherent interval move | Candidate coordinates exact floating/named-zone Activity revisions, including Keep/Delete/Cancel and plan Undo with fresh Session choice. Targeted Web 14/14 and full Web 1,061/1,061 passed locally on `c298769`; a later browser real-stack case checks the card mutation and persistence but has not run in WSL. Unschedule still uses generic Schedule boundary and cannot remove a governed Activity interval |
+| Recurring instance versus future series | explicit scope, no rematerialization or unrelated loss | Timeline move/Undo now prompts for the scope of a recurring instance; its focused UI test passed 6/6 and full Web suite 1,062/1,062 in this later local candidate. **Missing** scoped deletion; bare hard deletion of a materialized instance fails closed. Browser and full gate pending |
 
 ## Evidence on this checkout
 
@@ -90,6 +90,14 @@ Timeline, review rail and browser must agree before a row is accepted.
   Undo from the returned current revision. The targeted Timeline set and
   all **1,061 Web Vitest** passed locally; no PostgreSQL or real-browser proof
   exists for this newer candidate. Generic Event mutations remain separate.
+- A later unverified browser real-stack case in the existing Schedule forms
+  suite exercises Activity card keyboard move through `PUT /activities/{ref}/replan`
+  and reads the persisted five-minute shift after reload. The recurring
+  instance scope prompt has a focused Web test (6/6 locally) and the full Web
+  Vitest suite passed 1,062/1,062 in 225 files; TypeScript,
+  targeted ESLint and Prettier pass. These additions have **not** run against
+  PostgreSQL or the real browser. The real-stack test cannot be discovered
+  locally because this scratch dependency tree lacks Playwright; WSL must run it.
 - This environment has no Docker, PostgreSQL 18/PostGIS or real-app browser
   stack. The previous full-gate result on an older SHA is not evidence for
   these changes.

@@ -36,6 +36,7 @@ const remote = vi.hoisted(() => ({
   load: vi.fn(),
   applyReplan: vi.fn(),
   sessionImpact: vi.fn(),
+  loadRecurring: vi.fn(),
 }));
 vi.mock('../../../temporal/remote-activity-edit-settings', () => ({
   createRemoteActivityEditSettings: () => ({
@@ -46,6 +47,11 @@ vi.mock('../../../temporal/remote-activity-edit-settings', () => ({
 vi.mock('../../../temporal/remote-activity-inspector', () => ({
   createRemoteActivityInspector: () => ({
     sessionImpact: remote.sessionImpact,
+  }),
+}));
+vi.mock('../../../temporal/remote-recurring-profile-edit', () => ({
+  createRemoteRecurringProfileEdit: () => ({
+    loadActivityContext: remote.loadRecurring,
   }),
 }));
 
@@ -168,6 +174,7 @@ beforeEach(() => {
   remote.sessionImpact
     .mockReset()
     .mockResolvedValue({ fingerprint, attempts: [] });
+  remote.loadRecurring.mockReset().mockResolvedValue(null);
   remote.applyReplan.mockReset().mockImplementation((_ref, current, draft) => {
     invalidateTemporalTimelineRead();
     const next = draft as ActivityReplanDraft;
@@ -334,6 +341,27 @@ describe('Activity Timeline coordinated replan', () => {
         `[data-timeline-event="${SCHEDULE_REF}"]`,
       ),
     ).toBeTruthy();
+  });
+
+  it('requires explicit single-instance scope for a recurring Activity, even without attempts', async () => {
+    remote.loadRecurring.mockResolvedValue({
+      occurrenceRef: 'occurrence-1',
+      sourceRef: 'routine-1',
+      editRevision: 0,
+      recurrenceStateRef: null,
+    });
+    const { container, reviseSchedule } = renderTimeline();
+    await moveCard(container);
+    const dialog = await screen.findByRole('alertdialog', {
+      name: 'Conferma spostamento attività',
+    });
+    expect(dialog.textContent).toContain('solo questa istanza');
+    expect(remote.applyReplan).not.toHaveBeenCalled();
+    fireEvent.click(
+      within(dialog).getByRole('button', { name: 'Solo questa' }),
+    );
+    await waitFor(() => expect(remote.applyReplan).toHaveBeenCalledTimes(1));
+    expect(reviseSchedule).not.toHaveBeenCalled();
   });
 
   it('Undo coordinates the prior Activity times from the new revision basis', async () => {

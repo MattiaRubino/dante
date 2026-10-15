@@ -24,6 +24,7 @@ import {
   type ActivitySessionDisposition,
 } from '../../../temporal/remote-activity-edit-settings';
 import { createRemoteActivityInspector } from '../../../temporal/remote-activity-inspector';
+import { createRemoteRecurringProfileEdit } from '../../../temporal/remote-recurring-profile-edit';
 import { useTemporalTimelineRuntime } from '../../../temporal/timeline-runtime-boundary';
 import { REVIEW_QUEUE_INVALIDATED } from '../context-rail/review-events';
 import { useSessionPanel } from '../../../temporal/use-session-panel';
@@ -139,6 +140,7 @@ type PendingActivityReplan = Readonly<{
   draft: ActivityReplanDraft;
   fingerprint: string;
   attemptCount: number;
+  recurring: boolean;
   restoreDraft?: ActivityReplanDraft;
   isUndo?: boolean;
 }>;
@@ -176,6 +178,7 @@ export function TimelineSurface({
   const { t, i18n } = useTranslation('common');
   const [activityEditSource] = useState(createRemoteActivityEditSettings);
   const [activityImpactSource] = useState(createRemoteActivityInspector);
+  const [recurringEditSource] = useState(createRemoteRecurringProfileEdit);
   const [pendingActivityReplan, setPendingActivityReplan] =
     useState<PendingActivityReplan | null>(null);
   const {
@@ -553,6 +556,18 @@ export function TimelineSurface({
     [activityEditSource, showCanonicalUndo, showScheduleNotice, t],
   );
 
+  const confirmActivityTimelineReplan = (mode: 'keep' | 'delete' | null) => {
+    const proposal = pendingActivityReplan;
+    if (proposal === null) return;
+    setPendingActivityReplan(null);
+    applyActivityTimelineReplan(
+      proposal,
+      mode === null
+        ? undefined
+        : { mode, expectedFingerprint: proposal.fingerprint },
+    );
+  };
+
   const reviseCanonicalEvent = useCallback(
     (
       event: TimelineEvent,
@@ -605,8 +620,9 @@ export function TimelineSurface({
         void Promise.all([
           activityEditSource.load(basis.activityRef),
           activityImpactSource.sessionImpact(basis.activityRef),
+          recurringEditSource.loadActivityContext(basis.activityRef),
         ])
-          .then(([settings, impact]) => {
+          .then(([settings, impact, recurringContext]) => {
             const draft = activityReplanForTimelineRevision(
               settings,
               basis,
@@ -625,6 +641,7 @@ export function TimelineSurface({
               draft,
               fingerprint: impact.fingerprint,
               attemptCount: impact.attempts.length,
+              recurring: recurringContext !== null,
               restoreDraft: {
                 times: Object.fromEntries(
                   settings.schedules
@@ -647,7 +664,7 @@ export function TimelineSurface({
                 newPlanned: [],
               },
             };
-            if (impact.attempts.length > 0) {
+            if (impact.attempts.length > 0 || recurringContext !== null) {
               setPendingActivityReplan(proposal);
             } else {
               applyActivityTimelineReplan(proposal);
@@ -740,6 +757,7 @@ export function TimelineSurface({
       activityEditSource,
       activityImpactSource,
       applyActivityTimelineReplan,
+      recurringEditSource,
       effectiveZoneId,
       i18n,
       reviseSchedule,
@@ -826,9 +844,11 @@ export function TimelineSurface({
     if (undo.kind === 'activity-replan') {
       pendingScheduleRefsRef.current.add(undo.scheduleRef);
       setPendingScheduleRef(undo.scheduleRef);
-      void activityImpactSource
-        .sessionImpact(undo.activityRef)
-        .then((impact) => {
+      void Promise.all([
+        activityImpactSource.sessionImpact(undo.activityRef),
+        recurringEditSource.loadActivityContext(undo.activityRef),
+      ])
+        .then(([impact, recurringContext]) => {
           const proposal: PendingActivityReplan = {
             activityRef: undo.activityRef,
             scheduleRef: undo.scheduleRef,
@@ -837,9 +857,10 @@ export function TimelineSurface({
             draft: undo.draft,
             fingerprint: impact.fingerprint,
             attemptCount: impact.attempts.length,
+            recurring: recurringContext !== null,
             isUndo: true,
           };
-          if (impact.attempts.length > 0) {
+          if (impact.attempts.length > 0 || recurringContext !== null) {
             setPendingActivityReplan(proposal);
           } else {
             applyActivityTimelineReplan(proposal);
@@ -908,6 +929,7 @@ export function TimelineSurface({
   }, [
     activityImpactSource,
     applyActivityTimelineReplan,
+    recurringEditSource,
     canonicalUndo,
     reviseSchedule,
     showScheduleNotice,
@@ -1737,30 +1759,45 @@ export function TimelineSurface({
                 }}
               >
                 <h2>{pendingActivityReplan.title}</h2>
-                <p>
-                  Questa attività contiene {pendingActivityReplan.attemptCount}{' '}
-                  Sessioni reali. Come vuoi gestirle durante lo spostamento?
-                </p>
+                {pendingActivityReplan.recurring ? (
+                  <p>
+                    Lo spostamento modifica solo questa istanza della
+                    ricorrenza. Le successive mantengono il proprio piano.
+                  </p>
+                ) : null}
+                {pendingActivityReplan.attemptCount > 0 ? (
+                  <p>
+                    Questa attività contiene{' '}
+                    {pendingActivityReplan.attemptCount} Sessioni reali. Come
+                    vuoi gestirle durante lo spostamento?
+                  </p>
+                ) : null}
                 <div className="timeline-activity-replan-dialog__actions">
-                  {(['keep', 'delete'] as const).map((mode) => (
+                  {pendingActivityReplan.attemptCount === 0 ? (
                     <button
-                      key={mode}
                       type="button"
-                      autoFocus={mode === 'keep'}
-                      onClick={() => {
-                        const proposal = pendingActivityReplan;
-                        setPendingActivityReplan(null);
-                        applyActivityTimelineReplan(proposal, {
-                          mode,
-                          expectedFingerprint: proposal.fingerprint,
-                        });
-                      }}
+                      autoFocus
+                      onClick={() => confirmActivityTimelineReplan(null)}
                     >
-                      {mode === 'keep'
-                        ? 'Mantieni Sessioni'
-                        : 'Elimina Sessioni'}
+                      Solo questa
                     </button>
-                  ))}
+                  ) : (
+                    <>
+                      <button
+                        type="button"
+                        autoFocus
+                        onClick={() => confirmActivityTimelineReplan('keep')}
+                      >
+                        Mantieni Sessioni
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => confirmActivityTimelineReplan('delete')}
+                      >
+                        Elimina Sessioni
+                      </button>
+                    </>
+                  )}
                   <button
                     type="button"
                     onClick={() => {
