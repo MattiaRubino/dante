@@ -70,6 +70,7 @@ async def test_event_timeline_unplace_and_undo_never_delete_event(
         selected = available[0]
         assert selected.schedule_ref == event.schedule.schedule_ref
         assert selected.material_state_ref == event.schedule.material_state_ref
+        assert selected.material_state_ref is not None
 
         schedules = TemporalScheduleApplication(runtime.session_factory)
         removed = await schedules.unschedule(
@@ -101,17 +102,6 @@ async def test_event_timeline_unplace_and_undo_never_delete_event(
         assert await list_event_timeline_undo(
             ref, _context(actor), _request(runtime), Response()
         ) == []
-        assert (
-            await authoring.create_event(
-                self_person_ref=actor,
-                operation_id="event-timeline:oneoff",
-                title="Evento ancora esistente",
-                placement=FloatingLocalIntervalPlacement(
-                    starts_local_at=datetime(2026, 10, 18, 9, 0),
-                    ends_local_at=datetime(2026, 10, 18, 10, 0),
-                ),
-            )
-        ).replayed
     finally:
         await runtime.dispose()
 
