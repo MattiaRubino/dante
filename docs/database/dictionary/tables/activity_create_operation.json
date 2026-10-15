@@ -20,9 +20,15 @@
       "docs/workstreams/timeline-temporal-operational-roadmap.md#3-b01--activity-core-first-real-originating-owner",
       "docs/development/backend-cp6-02-postgresql-persistence-constitution.md"
     ],
-    "domain_concepts": ["Activity"],
-    "logical_families": ["application operation idempotency control"],
-    "reference_families": ["NativeRef"],
+    "domain_concepts": [
+      "Activity"
+    ],
+    "logical_families": [
+      "application operation idempotency control"
+    ],
+    "reference_families": [
+      "NativeRef"
+    ],
     "material_facets": []
   },
   "implementation": {
@@ -41,7 +47,10 @@
         "name": "self_person_ref",
         "postgres_type": "uuid",
         "nullable": false,
-        "default": {"kind": "none", "expression": null},
+        "default": {
+          "kind": "none",
+          "expression": null
+        },
         "meaning": "Authenticated self Person that scopes the operation identifier.",
         "semantic_type": "NativeRef",
         "value_contract": "Existing Person NativeRef; operation ids are not globally reusable across self-Person scopes."
@@ -50,7 +59,10 @@
         "name": "operation_id",
         "postgres_type": "text",
         "nullable": false,
-        "default": {"kind": "none", "expression": null},
+        "default": {
+          "kind": "none",
+          "expression": null
+        },
         "meaning": "Caller-supplied idempotency identity for one CreateActivity attempt stream.",
         "semantic_type": null,
         "value_contract": "Trimmed, non-empty, at most 200 characters; same scope+id may replay only the same immutable intent fingerprint."
@@ -59,7 +71,10 @@
         "name": "intent_fingerprint",
         "postgres_type": "text",
         "nullable": false,
-        "default": {"kind": "none", "expression": null},
+        "default": {
+          "kind": "none",
+          "expression": null
+        },
         "meaning": "Canonical lowercase hexadecimal SHA-256 fingerprint of the normalized CreateActivity intent.",
         "semantic_type": null,
         "value_contract": "Exactly 64 lowercase hexadecimal characters. Same operation id with a different fingerprint is a conflict, not a replay."
@@ -68,7 +83,10 @@
         "name": "activity_ref",
         "postgres_type": "uuid",
         "nullable": false,
-        "default": {"kind": "none", "expression": null},
+        "default": {
+          "kind": "none",
+          "expression": null
+        },
         "meaning": "The one canonical Activity NativeRef created or replayed for this operation identity.",
         "semantic_type": "NativeRef",
         "value_contract": "References one existing Activity and is unique across operation receipts."
@@ -77,7 +95,10 @@
         "name": "created_at",
         "postgres_type": "timestamp with time zone",
         "nullable": false,
-        "default": {"kind": "none", "expression": null},
+        "default": {
+          "kind": "none",
+          "expression": null
+        },
         "meaning": "Authoritative receipt creation instant.",
         "semantic_type": null,
         "value_contract": "Recorded by the bounded PostgreSQL CreateActivity capability in the same transaction as canonical creation."
@@ -85,7 +106,10 @@
     ],
     "primary_key": {
       "name": "pk_activity_create_operation",
-      "columns": ["self_person_ref", "operation_id"],
+      "columns": [
+        "self_person_ref",
+        "operation_id"
+      ],
       "reason": "The self-Person scope plus operation identifier is the database arbiter for CreateActivity idempotency.",
       "deferrable": false,
       "initially": "NOT DEFERRABLE",
@@ -94,8 +118,16 @@
     "foreign_keys": [
       {
         "name": "fk_activity_create_operation_self_person_ref_person",
-        "columns": ["self_person_ref"],
-        "target": {"schema": "dante", "table": "person", "columns": ["person_ref"]},
+        "columns": [
+          "self_person_ref"
+        ],
+        "target": {
+          "schema": "dante",
+          "table": "person",
+          "columns": [
+            "person_ref"
+          ]
+        },
         "on_delete": "NO ACTION",
         "on_update": "NO ACTION",
         "match_type": "SIMPLE",
@@ -109,8 +141,16 @@
       },
       {
         "name": "fk_activity_create_operation_activity_ref_activity",
-        "columns": ["activity_ref"],
-        "target": {"schema": "dante", "table": "activity", "columns": ["activity_ref"]},
+        "columns": [
+          "activity_ref"
+        ],
+        "target": {
+          "schema": "dante",
+          "table": "activity",
+          "columns": [
+            "activity_ref"
+          ]
+        },
         "on_delete": "NO ACTION",
         "on_update": "NO ACTION",
         "match_type": "SIMPLE",
@@ -126,7 +166,9 @@
     "unique_constraints": [
       {
         "name": "uq_activity_create_operation_activity_ref",
-        "columns": ["activity_ref"],
+        "columns": [
+          "activity_ref"
+        ],
         "reason": "Prevent multiple operation receipts from claiming creation ownership of the same Activity identity.",
         "deferrable": false,
         "initially": "NOT DEFERRABLE",
@@ -156,7 +198,10 @@
         "name": "pk_activity_create_operation",
         "method": "btree",
         "unique": true,
-        "keys": ["self_person_ref", "operation_id"],
+        "keys": [
+          "self_person_ref",
+          "operation_id"
+        ],
         "predicate": null,
         "include": [],
         "source": "primary_key",
@@ -169,7 +214,9 @@
         "name": "uq_activity_create_operation_activity_ref",
         "method": "btree",
         "unique": true,
-        "keys": ["activity_ref"],
+        "keys": [
+          "activity_ref"
+        ],
         "predicate": null,
         "include": [],
         "source": "unique_constraint",
@@ -179,7 +226,26 @@
         "live": true
       }
     ],
-    "triggers": [],
+    "triggers": [
+      {
+        "name": "trg_activity_create_generated_occurrence_guard",
+        "routine": "dante.guard_generated_activity_creation",
+        "events": [
+          "INSERT"
+        ],
+        "timing": "BEFORE",
+        "orientation": "ROW",
+        "constraint_trigger": false,
+        "deferrable": false,
+        "initially_deferred": false,
+        "enabled_mode": "ORIGIN",
+        "update_columns": [],
+        "when_condition": null,
+        "arguments": [],
+        "invariant_role": "generated_activity_admission",
+        "reason": "Refuse creation for skipped, deleted or foreign Routine Occurrences before the Activity create receipt commits."
+      }
+    ],
     "table": {
       "persistence": "permanent",
       "access_method": "heap",
@@ -214,7 +280,8 @@
       "same self-Person operation id plus same normalized intent replays the original Activity",
       "same self-Person operation id plus different intent is rejected as conflict",
       "runtime has no generic table DML or direct receipt-read authority",
-      "one Activity identity cannot be claimed by multiple create-operation receipts"
+      "one Activity identity cannot be claimed by multiple create-operation receipts",
+      "Generated Routine Activity creation cannot commit after an Occurrence skip or source removal."
     ],
     "test_refs": [
       "apps/backend/tests/integration/temporal/test_b01_activity_core.py",
