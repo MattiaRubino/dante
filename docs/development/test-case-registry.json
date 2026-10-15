@@ -1048,6 +1048,15 @@
       "audit_note": "Needs contract/assertion review, rejection cases, and executable evidence; filename alone is not proof."
     },
     {
+      "path": "apps/backend/tests/integration/temporal/test_activity_timeline_unplace_undo.py",
+      "suite": "temporal-postgresql-integration",
+      "contract_id": "T03",
+      "candidate_behavior": "Activity non-destructive unplace and monotonic guarded Undo after refetch",
+      "purpose": "Verify full identity retained across Activity Schedule unschedule, owner rejection, stale CAS refusal and undo restoring same placement as a new material state.",
+      "invariant": "No Event/Activity deletion or factual Session loss on unplace; Undo succeeds only for the exact latest placement and its owner under Session state CAS.",
+      "status": "QUALIFIED"
+    },
+    {
       "path": "apps/backend/tests/integration/temporal/test_actual_api.py",
       "suite": "temporal-postgresql-integration",
       "contract_id": "P-OTHER",
