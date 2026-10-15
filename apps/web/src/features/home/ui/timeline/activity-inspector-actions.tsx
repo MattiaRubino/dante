@@ -8,6 +8,7 @@ import {
 } from '../../../temporal/remote-activity-inspector';
 import { createRemoteActivityEditSettings } from '../../../temporal/remote-activity-edit-settings';
 import { createRemoteRecurringProfileEdit } from '../../../temporal/remote-recurring-profile-edit';
+import { createRemoteTemporalHardDeletion, type TemporalHardDeletionPreview } from '../../../temporal/remote-temporal-hard-deletion';
 import {
   createRemoteDraftVault,
   notifyDraftVaultUpdated,
@@ -37,10 +38,14 @@ export function ActivityInspectorActions({
   const [source] = useState(createRemoteActivityInspector);
   const [settingsSource] = useState(createRemoteActivityEditSettings);
   const [recurringSource] = useState(createRemoteRecurringProfileEdit);
+  const [hardDelete] = useState(createRemoteTemporalHardDeletion);
   const [draftVault] = useState(createRemoteDraftVault);
   const [profile, setProfile] = useState<ActivityProfile | null>(null);
   const [confirming, setConfirming] = useState(false);
   const [deleteImpact, setDeleteImpact] = useState<ActivitySessionImpact | null>(null);
+  const [recurringDeletePreview, setRecurringDeletePreview] = useState<
+    readonly [TemporalHardDeletionPreview, TemporalHardDeletionPreview] | null
+  >(null);
   const [confirmingVault, setConfirmingVault] = useState(false);
   const [pending, setPending] = useState(false);
   const [error, setError] = useState('');
@@ -150,6 +155,15 @@ export function ActivityInspectorActions({
         onClick={() =>
           void action(async () => {
             const current = await source.sessionImpact(activityRef);
+            const origin = await recurringSource.loadActivityContext(activityRef);
+            const scopes =
+              origin === null
+                ? null
+                : await Promise.all([
+                    hardDelete.preview(activityRef, 'activity_instance'),
+                    hardDelete.preview(activityRef, 'activity_series'),
+                  ]);
+            setRecurringDeletePreview(scopes);
             setDeleteImpact(current);
             setConfirming(true);
           })
@@ -275,24 +289,61 @@ export function ActivityInspectorActions({
               {deleteImpact.attempts.map((attempt) => attempt.status).join(', ')}).
             </p>
           ) : null}
-          <button
-            type="button"
-            disabled={pending}
-            onClick={() =>
-              void action(async () => {
-                await source.deleteHard(activityRef, deleteImpact.fingerprint);
-                onDeleted();
-              })
-            }
-          >
-            Conferma eliminazione definitiva
-          </button>
+          {recurringDeletePreview ? (
+            <>
+              <p>
+                Questa Activity appartiene a una Routine ricorrente.
+                «Solo questa istanza» rimuove unicamente l’Activity selezionata
+                e tutte le sue Sessioni e i suoi dati. «Tutta la serie»
+                elimina definitivamente anche la Routine, tutte le altre
+                istanze e i relativi dati, presenti e futuri.
+              </p>
+              <button
+                type="button"
+                disabled={pending}
+                onClick={() =>
+                  void action(async () => {
+                    await hardDelete.deleteConfirmed(recurringDeletePreview[0]);
+                    onDeleted();
+                  })
+                }
+              >
+                Solo questa istanza
+              </button>
+              <button
+                type="button"
+                disabled={pending}
+                onClick={() =>
+                  void action(async () => {
+                    await hardDelete.deleteConfirmed(recurringDeletePreview[1]);
+                    onDeleted();
+                  })
+                }
+              >
+                Tutta la serie
+              </button>
+            </>
+          ) : (
+            <button
+              type="button"
+              disabled={pending}
+              onClick={() =>
+                void action(async () => {
+                  await source.deleteHard(activityRef, deleteImpact.fingerprint);
+                  onDeleted();
+                })
+              }
+            >
+              Conferma eliminazione definitiva
+            </button>
+          )}
           <button
             type="button"
             disabled={pending}
             onClick={() => {
               setConfirming(false);
               setDeleteImpact(null);
+              setRecurringDeletePreview(null);
             }}
           >
             Annulla
