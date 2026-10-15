@@ -1,14 +1,7 @@
 import { Temporal } from '@dante/time';
 
 import type { SessionVisual } from '../../../temporal/use-session-panel';
-import { offsetTimelineTimeMapper } from './model/timeline-all-day-layout';
-import { createTimelineTimeMapper } from './model/timeline-density';
-import { computeTimelineEventLayouts } from './model/timeline-layout';
-import type {
-  TimelineEvent,
-  TimelineEventLayout,
-  TimelineGroup,
-} from './model/timeline-types';
+import type { TimelineEvent, TimelineGroup } from './model/timeline-types';
 import type { TimelineRenderedDay } from './timeline-day-stream';
 
 export type TimelineSessionReality = Readonly<{
@@ -21,11 +14,7 @@ export type TimelineSessionReality = Readonly<{
 }>;
 
 type Span = Readonly<{ from: number; until: number; paused: boolean }>;
-type Projected = Readonly<{
-  startMinute: number;
-  endMinute: number;
-  reality: TimelineSessionReality;
-}>;
+type Projected = Readonly<{ reality: TimelineSessionReality }>;
 
 const ACTIVE = 'rgba(234, 92, 18, .25)';
 const PAUSED = 'rgba(147, 163, 184, .30)';
@@ -156,13 +145,7 @@ function project(
     );
   const startedAt = new Date(startAt).toISOString();
   const endedAt = running ? null : new Date(endAt).toISOString();
-  // The card label and ruler show whole minutes. Snap its painted boundary to
-  // the same minute so a start at 09:08:50 does not appear below 09:08.
-  const first = Math.floor(onDay(startedAt, dateKey, zone));
-  const last = Math.ceil(onDay(new Date(endAt).toISOString(), dateKey, zone));
   return {
-    startMinute: first,
-    endMinute: Math.max(first + 1 / 60, last),
     reality: {
       state: !running ? 'ended' : paused ? 'paused' : 'running',
       startedAt,
@@ -175,8 +158,9 @@ function project(
 }
 
 /**
- * Only modifies view geometry. The original event/canonicalBasis is retained
- * in every resulting layout, including all scheduling and mutation handlers.
+ * Adds actual Session state to the planned card without changing its Timeline
+ * geometry. A short live Session must never magnify minute density, card
+ * height, lanes, or following-day offsets.
  */
 export function applyTimelineSessionReality(
   days: readonly TimelineRenderedDay[],
@@ -184,9 +168,9 @@ export function applyTimelineSessionReality(
   zone: string,
   evaluatedAt: string,
   clockAt: number,
-  groups: readonly TimelineGroup[],
-  zoom: number,
-  expandedEventIds: ReadonlySet<string>,
+  _groups: readonly TimelineGroup[],
+  _zoom: number,
+  _expandedEventIds: ReadonlySet<string>,
 ): readonly TimelineRenderedDay[] {
   if (visuals.length === 0) return days;
   const now = Number.isFinite(Date.parse(evaluatedAt)) ? clockAt : Date.now();
@@ -196,6 +180,7 @@ export function applyTimelineSessionReality(
     list.push(visual);
     byActivity.set(visual.activity_ref, list);
   }
+
   let offsetTop = 0;
   return days.map((day) => {
     const activityEvents = new Map<string, TimelineEvent[]>();
@@ -204,14 +189,15 @@ export function applyTimelineSessionReality(
       const key = event.canonicalBasis.activityRef;
       activityEvents.set(key, [...(activityEvents.get(key) ?? []), event]);
     }
+
     const overlays = new Map<string, Projected>();
-    const displayEvents: TimelineEvent[] = day.events.map((event) => {
+    for (const event of day.events) {
       const basis = event.canonicalBasis;
-      if (basis?.kind !== 'scheduled-activity') return event;
+      if (basis?.kind !== 'scheduled-activity') continue;
       const activity = byActivity.get(basis.activityRef) ?? [];
       const intervals = activityEvents.get(basis.activityRef) ?? [];
-      // A real Session is attached to one visible interval, including when
-      // it starts early or ends before the planned interval begins.
+      // A real Session is attached to one visible planned interval, including
+      // when it starts early or ends before that interval begins.
       const relevant =
         intervals.length === 1
           ? activity
@@ -227,45 +213,17 @@ export function applyTimelineSessionReality(
               return nearest?.id === event.id;
             });
       const projected = project(relevant, day.dateKey, zone, now);
-      if (!projected) return event;
-      overlays.set(event.id, projected);
-      return {
-        ...event,
-        startMinute: projected.startMinute,
-        endMinute: projected.endMinute,
-        visualMinimumHeightPx: 94,
-      };
-    });
-    if (overlays.size === 0) {
-      const unchanged = { ...day, offsetTop };
-      offsetTop += day.height;
-      return unchanged;
+      if (projected) overlays.set(event.id, projected);
     }
-    const allDayHeight = day.mapper.map(0);
-    const mapper = offsetTimelineTimeMapper(
-      createTimelineTimeMapper(displayEvents, zoom, { expandedEventIds }),
-      allDayHeight,
-    );
-    const mapped = computeTimelineEventLayouts(displayEvents, groups, mapper);
-    const layouts: TimelineEventLayout[] = day.layouts.map((old, index) => {
-      const target = mapped[index];
-      if (!target) return old;
-      const reality = overlays.get(old.event.id);
-      if (!reality) return { ...target, event: old.event };
-      return {
-        ...target,
-        event: old.event,
-        sessionReality: reality.reality,
-      };
+
+    const layouts = day.layouts.map((layout) => {
+      const reality = overlays.get(layout.event.id);
+      return reality
+        ? { ...layout, sessionReality: reality.reality }
+        : layout;
     });
-    const rendered = {
-      ...day,
-      mapper,
-      layouts,
-      offsetTop,
-      height: mapper.height,
-    };
-    offsetTop += rendered.height;
+    const rendered = { ...day, layouts, offsetTop };
+    offsetTop += day.height;
     return rendered;
   });
 }

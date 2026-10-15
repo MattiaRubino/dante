@@ -134,60 +134,16 @@
   }
 }
 
-/*
- * U1 viewport contract: the Home Today row starts below the full 650px
- * Hero. Constraining only the Create height still positioned it at y≈724px
- * and pushed its bottom below a 900px viewport. The open desktop editor
- * must float above the rail's screen column, while preserving its width.
- *
- * The rail's translateX(0) creates a containing block even at zero offset;
- * remove that transform during Create so its fixed host uses the viewport.
- * Keep the context rail as the actual owner/DOM ancestor.
- */
+/* Desktop Quick replaces the two Context Rail panels. Its absolute host
+ * inherits the same top and bottom as the Timeline, instead of floating from
+ * the viewport top. */
 @media (min-width: 1121px) {
-  .home-context-rail:has(.home-create-panel-host .temporal-create-backdrop) {
-    /* The normal rail animates transform for expansion. Even translateX(0)
-       creates a fixed-position containing block; transitioning it to none
-       retains that block for the 320ms transition. Stop that transition
-       immediately while Create is open, or the editor sits 18px left of
-       the actual rail because right:18px resolves inside the rail. */
-    transition: none;
-    transform: none;
-  }
-
   .home-context-rail .home-create-panel-host:has(.temporal-create-backdrop) {
-    position: fixed;
-    z-index: 1200;
-    top: 96px;
-    /* Measured at 1440px: the Context Rail is x=947..1422, leaving
-       18px to the viewport right edge. A fixed host at right:0 was
-       x=965..1440 after removing the ancestor transform transition.
-       Honor the same 18px page gutter as the actual rail. */
-    right: 18px;
-    bottom: 16px;
-    left: auto;
-    width: var(--home-today-rail-width);
-    height: auto;
-    max-height: calc(100dvh - 112px);
-    overflow: hidden;
-  }
-
-  .home-context-rail .home-create-panel-host .temporal-create-backdrop {
-    position: absolute;
-    inset: 0;
-  }
-
-  .home-context-rail .home-create-panel-host .temporal-create-composer {
-    position: absolute;
-    inset: 0 !important;
-    width: 100%;
-    height: 100%;
-    max-height: 100%;
+    z-index: 30;
   }
 
   /* Full Advanced leaves the narrow Quick rail and occupies the viewport.
-     Without this override, the fixed Quick host (475px, overflow:hidden)
-     clips the 1040px Advanced modal when the user expands it. */
+     The rail host otherwise clips the 1040px Advanced modal. */
   .home-context-rail
     .home-create-panel-host:has(.temporal-create-backdrop.is-advanced) {
     position: fixed;

@@ -180,7 +180,11 @@ export function ActivityInspectorActions({
           })
         }
       >
-        Rimuovi dalla Timeline
+        {toolbarTarget ? (
+          <TimelineInspectorIcon name="unschedule" />
+        ) : (
+          'Rimuovi dalla Timeline'
+        )}
       </button>
       <button
         type="button"
@@ -198,7 +202,11 @@ export function ActivityInspectorActions({
           })
         }
       >
-        Undo collocazione
+        {toolbarTarget ? (
+          <TimelineInspectorIcon name="undo" />
+        ) : (
+          'Undo collocazione'
+        )}
       </button>
       <button
         type="button"
