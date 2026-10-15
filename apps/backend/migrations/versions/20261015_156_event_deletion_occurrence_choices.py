@@ -31,7 +31,7 @@ AS $choices$
            COALESCE(
                zoned.starts_local_at::text,
                floating.starts_local_at::text,
-               upper(dates.date_span)::text,
+               lower(dates.date_span)::text,
                generation.occurrence_ref::text
            ) AS display_label
       FROM dante.event_expectation AS owned
