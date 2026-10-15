@@ -25,6 +25,16 @@ Timeline, review rail and browser must agree before a row is accepted.
 | Direct Timeline drag, time edit, unschedule and undo | same Keep/Delete/Cancel authority and coherent interval move | Candidate coordinates exact floating/named-zone Activity revisions, including Keep/Delete/Cancel and plan Undo with fresh Session choice. Targeted Web 14/14 and full Web 1,061/1,061 passed locally on `c298769`; a later browser real-stack case checks the card mutation and persistence but has not run in WSL. Unschedule still uses generic Schedule boundary and cannot remove a governed Activity interval |
 | Recurring instance versus future series | explicit scope, no rematerialization or unrelated loss | Timeline move/Undo now prompts for the scope of a recurring instance; its focused UI test passed 6/6 and full Web suite 1,062/1,062 in this later local candidate. **Missing** atomic hard deletion: Solo questa must skip the selected occurrence while cascading its Activity graph; Tutta la serie must delete source, all materialized/future instances and their graphs. Bare hard deletion remains fail-closed until that command exists. Browser and full gate pending |
 
+## 2026-10-15 current integration candidate
+
+The forward-only migrations now extend through `20261015_156`. The public
+API and Activity/Event Inspector contain the scope choices, confirmation,
+non-destructive Activity unplace/Undo, and safe Event Occurrence selection.
+All new code is **unverified** until the user's WSL gate, including generated
+OpenAPI/Orval drift reconciliation and authenticated Chromium regression,
+runs successfully on one final commit. Never treat implementation status as
+test evidence. Event Schedule Undo series parity must be separately checked.
+
 ## 2026-10-15 focused persistence correction candidate
 
 - Alembic `_150`: owner-scoped, locked generated Activity authoring admission and final binding reject skipped/deleted Routine Occurrences. Adds **one trigger and one function**, no table/FK change.
@@ -32,15 +42,16 @@ Timeline, review rail and browser must agree before a row is accepted.
 - Expected Dictionary catalog `238|5|234|104|486|421|596`; new target PostgreSQL regression + existing hard-delete Objective regression. **NOT RUN**, not a declaration of deletion-workflow acceptance.
 - **Still missing:** atomic complete delete, including Activity child graph, single/full recurring scope, Event-owned graph, coordinated Timeline removal/Undo, new UI, full same-SHA 27-group gate and dogfood. The distinct producer/consumer transaction race remains a release blocker.
 
-## Event and Activity recurring deletion parity (accepted, unimplemented)
+## Event and Activity recurring deletion parity (implementation candidate, acceptance pending)
 
 | Scenario | Required evidence | Current state |
 | --- | --- | --- |
-| One-off Event hard deletion | Full owner-specific Event graph, negative foreign-owner refs, rollback, no shared-entity loss | **NOT IMPLEMENTED/NOT RUN** |
-| Recurring Event — Solo questa istanza | Delete selected Occurrence-owned records; retain series/siblings; skip/exclude prevents rematerialization; concurrent checkpoint refusal | **NOT IMPLEMENTED/NOT RUN** |
-| Recurring Event — Tutta la serie | Delete Event source, all generated/materialized Occurrences and linked records, future generation disabled; atomic rollback and race tests | **NOT IMPLEMENTED/NOT RUN** |
-| Activity recurring hard delete — both scopes | Existing Activity graph + Occurrence exclusion / Routine series disposal, CAS and concurrent checkpoint | **NOT IMPLEMENTED/NOT RUN** |
-| Event/Activity remove placement and Undo | Change accepted Schedule only, keep factual history, reversible with fresh CAS; never silently hard-delete | **Event parity pending; Activity coordinated unschedule pending** |
+| One-off Event hard deletion | Full owner-specific Event graph, negative foreign-owner refs, rollback, no shared-entity loss | **IMPLEMENTED CANDIDATE**: `_152`, API/Inspector and PostgreSQL regression; **NOT RUN** |
+| Recurring Event — Solo questa istanza | Delete selected Occurrence-owned records; retain series/siblings; skip prevents rematerialization; concurrent checkpoint refusal | **IMPLEMENTED CANDIDATE**: `_152`, `_156`, selectable Occurrence and guard tests; **NOT RUN** |
+| Recurring Event — Tutta la serie | Delete Event source, all generated/materialized Occurrences and linked records, future generation disabled; atomic rollback and race tests | **IMPLEMENTED CANDIDATE**: `_152`, API/Inspector; **NOT RUN** |
+| Activity recurring hard delete — both scopes | Existing Activity graph + Occurrence exclusion / Routine series disposal, child-tree sharing guard, CAS and concurrent checkpoint | **IMPLEMENTED CANDIDATE**: `_150`–`_153` / `_155`, API/UI and PostgreSQL regressions; **NOT RUN** |
+| Activity Timeline unplace and Undo | Modify only Schedule, retain factual history under Keep, check fresh fingerprint and exact receipt | **IMPLEMENTED CANDIDATE**: `_154`, API/UI and PostgreSQL regression; **NOT RUN** |
+| Event Timeline removal and Undo | Non-destructive temporal placement, correct Occurrence vs shared source identity, guarded history | **PARTIAL**: existing generic Event Schedule operations; new Event hard delete is separate. Dedicated Event-series Undo parity remains to be proven |
 
 ## Evidence on this checkout
 
