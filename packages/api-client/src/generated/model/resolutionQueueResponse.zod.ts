@@ -22,11 +22,18 @@ export const ResolutionQueueResponse = /*#__PURE__*/ zod.object({
         /*#__PURE__*/ zod.uuid(),
         /*#__PURE__*/ zod.null(),
       ]),
+      planned_schedule_ref: /*#__PURE__*/ zod.optional(
+        /*#__PURE__*/ zod.union([
+          /*#__PURE__*/ zod.uuid(),
+          /*#__PURE__*/ zod.null(),
+        ]),
+      ),
       purpose_code: /*#__PURE__*/ zod.string(),
       reason_code: /*#__PURE__*/ zod.enum([
         'reconciliation_open',
         'realization_review',
         'objective_review',
+        'session_unstarted',
       ]),
       reconciliation_ref: /*#__PURE__*/ zod.union([
         /*#__PURE__*/ zod.uuid(),

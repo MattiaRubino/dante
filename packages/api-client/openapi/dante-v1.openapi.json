@@ -12762,6 +12762,18 @@
             ],
             "title": "Outcome Ref"
           },
+          "planned_schedule_ref": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Planned Schedule Ref"
+          },
           "purpose_code": {
             "title": "Purpose Code",
             "type": "string"
@@ -12770,7 +12782,8 @@
             "enum": [
               "reconciliation_open",
               "realization_review",
-              "objective_review"
+              "objective_review",
+              "session_unstarted"
             ],
             "title": "Reason Code",
             "type": "string"
