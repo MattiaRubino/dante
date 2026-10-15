@@ -297,6 +297,7 @@ test.describe('Timeline B02-E full-stack Schedule forms', () => {
         (
           await page.request.get(
             `/api/v1/temporal/activities/${activityRef}/profile`,
+            { headers: { 'X-Dante-Time-Zone': 'Europe/Rome' } },
           )
         ).status(),
       ).toBe(200);
@@ -334,6 +335,7 @@ test.describe('Timeline B02-E full-stack Schedule forms', () => {
         (
           await page.request.get(
             `/api/v1/temporal/activities/${activityRef}/profile`,
+            { headers: { 'X-Dante-Time-Zone': 'Europe/Rome' } },
           )
         ).status(),
       ).toBe(404);

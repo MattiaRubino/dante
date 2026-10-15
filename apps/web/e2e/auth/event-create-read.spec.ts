@@ -281,7 +281,9 @@ test.describe('Timeline B03-E real-stack Event closure', () => {
           name: 'Conferma eliminazione definitiva',
         }),
       ).toBeVisible();
-      await inspector.getByRole('button', { name: 'Annulla' }).click();
+      await inspector
+        .getByRole('button', { name: 'Annulla', exact: true })
+        .click();
       await expect(card).toHaveCount(1);
 
       await inspector.getByRole('button', { name: 'Elimina Event' }).click();
