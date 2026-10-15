@@ -1,5 +1,10 @@
 # Timeline / Temporal-Operational — Workstream Handoff
 
+## 2026-10-15 — User extends deletion/recurrence parity to Event (normative scope)
+
+The user expressly confirms that Event follows the same single-instance / full-series / cancel hard-deletion semantics as Activity, adapted to Event's own graph (agenda, expected participation/attendance, objectives, reminders, Actual/Outcome/Confirmation). A recurring Event instance is an Occurrence sharing the source Event; deleting one must not delete that source or siblings. A hard-deleted single Occurrence must never rematerialize; deleting the whole series must eliminate the source and every current/future Occurrence. Placement removal and Undo remain NON-DESTRUCTIVE for both kinds, and edit scopes are distinct from hard-deletion scopes. The accepted normative overlay is `docs/domain/decisions/activity-session-operational-lifecycle-v2.md`. These are requirements, **not delivered runtime or passing tests**. Event hard-delete capability, Event UI, and both recurring deletion scopes remain open. Don't reuse Activity-only graph deletion blindly for the Event graph; audit FK descendants/ownership and ensure one protected transaction and fail-closed cross-owner behavior before wiring a destructive action.
+
+
 ## 2026-10-15 — `_149` focused run and current-plan review correction
 
 The user's WSL run on exact `cd3b589` completed **5 PASS / 1 FAIL**. Fresh
