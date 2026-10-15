@@ -838,20 +838,20 @@
       "audit_note": "Needs contract/assertion review, rejection cases, and executable evidence; filename alone is not proof."
     },
     {
-      "path": "apps/backend/tests/integration/database/test_runtime.py",
+      "path": "apps/backend/tests/integration/database/test_runtime_database_acl.py",
       "suite": "postgresql",
       "contract_id": "P-DATABASE",
-      "candidate_behavior": "runtime py",
+      "candidate_behavior": "runtime database acl py",
       "purpose": "",
       "invariant": "",
       "status": "UNREVIEWED",
       "audit_note": "Needs contract/assertion review, rejection cases, and executable evidence; filename alone is not proof."
     },
     {
-      "path": "apps/backend/tests/integration/database/test_runtime_database_acl.py",
+      "path": "apps/backend/tests/integration/database/test_runtime.py",
       "suite": "postgresql",
       "contract_id": "P-DATABASE",
-      "candidate_behavior": "runtime database acl py",
+      "candidate_behavior": "runtime py",
       "purpose": "",
       "invariant": "",
       "status": "UNREVIEWED",
@@ -1088,16 +1088,6 @@
       "audit_note": "Needs contract/assertion review, rejection cases, and executable evidence; filename alone is not proof."
     },
     {
-      "path": "apps/backend/tests/integration/temporal/test_conditional_temporal.py",
-      "suite": "temporal-postgresql-integration",
-      "contract_id": "P-OTHER",
-      "candidate_behavior": "conditional temporal py",
-      "purpose": "",
-      "invariant": "",
-      "status": "UNREVIEWED",
-      "audit_note": "Needs contract/assertion review, rejection cases, and executable evidence; filename alone is not proof."
-    },
-    {
       "path": "apps/backend/tests/integration/temporal/test_conditional_temporal_api.py",
       "suite": "temporal-postgresql-integration",
       "contract_id": "P-OTHER",
@@ -1108,10 +1098,10 @@
       "audit_note": "Needs contract/assertion review, rejection cases, and executable evidence; filename alone is not proof."
     },
     {
-      "path": "apps/backend/tests/integration/temporal/test_confirmation.py",
+      "path": "apps/backend/tests/integration/temporal/test_conditional_temporal.py",
       "suite": "temporal-postgresql-integration",
       "contract_id": "P-OTHER",
-      "candidate_behavior": "confirmation py",
+      "candidate_behavior": "conditional temporal py",
       "purpose": "",
       "invariant": "",
       "status": "UNREVIEWED",
@@ -1122,6 +1112,16 @@
       "suite": "temporal-postgresql-integration",
       "contract_id": "P-OTHER",
       "candidate_behavior": "confirmation api py",
+      "purpose": "",
+      "invariant": "",
+      "status": "UNREVIEWED",
+      "audit_note": "Needs contract/assertion review, rejection cases, and executable evidence; filename alone is not proof."
+    },
+    {
+      "path": "apps/backend/tests/integration/temporal/test_confirmation.py",
+      "suite": "temporal-postgresql-integration",
+      "contract_id": "P-OTHER",
+      "candidate_behavior": "confirmation py",
       "purpose": "",
       "invariant": "",
       "status": "UNREVIEWED",
@@ -1348,20 +1348,20 @@
       "audit_note": "Needs contract/assertion review, rejection cases, and executable evidence; filename alone is not proof."
     },
     {
-      "path": "apps/backend/tests/integration/temporal/test_outcome.py",
+      "path": "apps/backend/tests/integration/temporal/test_outcome_api.py",
       "suite": "temporal-postgresql-integration",
       "contract_id": "P-OTHER",
-      "candidate_behavior": "outcome py",
+      "candidate_behavior": "outcome api py",
       "purpose": "",
       "invariant": "",
       "status": "UNREVIEWED",
       "audit_note": "Needs contract/assertion review, rejection cases, and executable evidence; filename alone is not proof."
     },
     {
-      "path": "apps/backend/tests/integration/temporal/test_outcome_api.py",
+      "path": "apps/backend/tests/integration/temporal/test_outcome.py",
       "suite": "temporal-postgresql-integration",
       "contract_id": "P-OTHER",
-      "candidate_behavior": "outcome api py",
+      "candidate_behavior": "outcome py",
       "purpose": "",
       "invariant": "",
       "status": "UNREVIEWED",
@@ -1478,20 +1478,20 @@
       "audit_note": "Needs contract/assertion review, rejection cases, and executable evidence; filename alone is not proof."
     },
     {
-      "path": "apps/backend/tests/integration/temporal/test_reconciliation.py",
+      "path": "apps/backend/tests/integration/temporal/test_reconciliation_api.py",
       "suite": "temporal-postgresql-integration",
       "contract_id": "T10",
-      "candidate_behavior": "reconciliation py",
+      "candidate_behavior": "reconciliation api py",
       "purpose": "",
       "invariant": "",
       "status": "UNREVIEWED",
       "audit_note": "Needs contract/assertion review, rejection cases, and executable evidence; filename alone is not proof."
     },
     {
-      "path": "apps/backend/tests/integration/temporal/test_reconciliation_api.py",
+      "path": "apps/backend/tests/integration/temporal/test_reconciliation.py",
       "suite": "temporal-postgresql-integration",
       "contract_id": "T10",
-      "candidate_behavior": "reconciliation api py",
+      "candidate_behavior": "reconciliation py",
       "purpose": "",
       "invariant": "",
       "status": "UNREVIEWED",
@@ -1506,6 +1506,15 @@
       "invariant": "",
       "status": "UNREVIEWED",
       "audit_note": "Needs contract/assertion review, rejection cases, and executable evidence; filename alone is not proof."
+    },
+    {
+      "path": "apps/backend/tests/integration/temporal/test_recurring_admission_guard.py",
+      "suite": "temporal-postgresql-integration",
+      "contract_id": "T07",
+      "candidate_behavior": "guarded recurring Activity creation after Occurrence skip",
+      "purpose": "Verify generated Activity authoring and final binding refuse skipped Routine Occurrences without retaining a create receipt; ordinary Activity authoring remains permitted.",
+      "invariant": "An already-skipped recurring Occurrence cannot produce an Activity create receipt or bind another Activity, while unrelated self-owned Activity authoring still works.",
+      "status": "QUALIFIED"
     },
     {
       "path": "apps/backend/tests/integration/temporal/test_recurring_event_create.py",
@@ -1888,16 +1897,6 @@
       "audit_note": "Needs contract/assertion review, rejection cases, and executable evidence; filename alone is not proof."
     },
     {
-      "path": "apps/backend/tests/test_auth_apple.py",
-      "suite": "backend-contract-or-unit",
-      "contract_id": "P-OTHER",
-      "candidate_behavior": "auth apple py",
-      "purpose": "",
-      "invariant": "",
-      "status": "UNREVIEWED",
-      "audit_note": "Needs contract/assertion review, rejection cases, and executable evidence; filename alone is not proof."
-    },
-    {
       "path": "apps/backend/tests/test_auth_apple_crypto.py",
       "suite": "backend-contract-or-unit",
       "contract_id": "P-OTHER",
@@ -1918,6 +1917,16 @@
       "audit_note": "Needs contract/assertion review, rejection cases, and executable evidence; filename alone is not proof."
     },
     {
+      "path": "apps/backend/tests/test_auth_apple.py",
+      "suite": "backend-contract-or-unit",
+      "contract_id": "P-OTHER",
+      "candidate_behavior": "auth apple py",
+      "purpose": "",
+      "invariant": "",
+      "status": "UNREVIEWED",
+      "audit_note": "Needs contract/assertion review, rejection cases, and executable evidence; filename alone is not proof."
+    },
+    {
       "path": "apps/backend/tests/test_auth_authenticator_lifecycle.py",
       "suite": "backend-contract-or-unit",
       "contract_id": "P-OTHER",
@@ -1928,20 +1937,20 @@
       "audit_note": "Needs contract/assertion review, rejection cases, and executable evidence; filename alone is not proof."
     },
     {
-      "path": "apps/backend/tests/test_auth_email.py",
+      "path": "apps/backend/tests/test_auth_email_platform.py",
       "suite": "backend-contract-or-unit",
       "contract_id": "P-EMAIL",
-      "candidate_behavior": "auth email py",
+      "candidate_behavior": "auth email platform py",
       "purpose": "",
       "invariant": "",
       "status": "UNREVIEWED",
       "audit_note": "Needs contract/assertion review, rejection cases, and executable evidence; filename alone is not proof."
     },
     {
-      "path": "apps/backend/tests/test_auth_email_platform.py",
+      "path": "apps/backend/tests/test_auth_email.py",
       "suite": "backend-contract-or-unit",
       "contract_id": "P-EMAIL",
-      "candidate_behavior": "auth email platform py",
+      "candidate_behavior": "auth email py",
       "purpose": "",
       "invariant": "",
       "status": "UNREVIEWED",
