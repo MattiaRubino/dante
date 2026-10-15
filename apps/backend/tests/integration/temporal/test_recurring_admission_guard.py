@@ -72,8 +72,8 @@ async def test_skipped_recurring_activity_admission_denies_creation_and_binding(
                 title="Attività ricomparsa",
             )
 
-        async with runtime.session_factory() as session, session.begin():
-            with pytest.raises(DBAPIError) as refused:
+        with pytest.raises(DBAPIError) as refused:
+            async with runtime.session_factory() as session, session.begin():
                 await session.execute(
                     text(
                         "SELECT * FROM dante.bind_self_routine_occurrence_activity("
@@ -85,10 +85,10 @@ async def test_skipped_recurring_activity_admission_denies_creation_and_binding(
                         "activity": independent.item.subject_native_ref,
                     },
                 )
-            assert (
-                getattr(getattr(refused.value.orig, "diag", None), "constraint_name", None)
-                == "routine_occurrence_activity_instance_unavailable"
-            )
+        assert (
+            getattr(getattr(refused.value.orig, "diag", None), "constraint_name", None)
+            == "routine_occurrence_activity_instance_unavailable"
+        )
 
         # Count with owner privileges: runtime must not receive direct access
         # to Activity creation receipts merely for test introspection.
