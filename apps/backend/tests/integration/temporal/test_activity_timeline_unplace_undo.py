@@ -11,6 +11,8 @@ from fastapi import Request, Response
 from tests.integration.temporal.test_primary_life_area_assignment import _seed_self
 
 from dante.context.contracts import DanteContext
+from dante.modules.temporal.activity_edit_snapshot_api import get_activity_edit_snapshot
+from dante.modules.temporal.activity_inspector_api import get_self_activity_session_impact
 from dante.modules.temporal.activity_replan_api import (
     ActivityTimelineUndoCommand,
     ActivityTimelineUnplaceCommand,
@@ -18,8 +20,6 @@ from dante.modules.temporal.activity_replan_api import (
     undo_activity_timeline,
     unplace_activity_timeline,
 )
-from dante.modules.temporal.activity_inspector_api import get_self_activity_session_impact
-from dante.modules.temporal.activity_edit_snapshot_api import get_activity_edit_snapshot
 from dante.modules.temporal.authoring import TemporalAuthoringApplication
 from dante.modules.temporal.schedule import FloatingLocalIntervalPlacement
 from dante.platform.database.runtime import create_database_runtime
@@ -52,8 +52,8 @@ async def test_activity_unplace_preserves_identity_and_undo_restores_new_state(
             operation_id="timeline-unplace:activity",
             title="Activity resta anche senza collocazione",
             placement=FloatingLocalIntervalPlacement(
-                starts_local_at=datetime(2026, 10, 18, 10, 0),
-                ends_local_at=datetime(2026, 10, 18, 11, 0),
+                starts_local_at=datetime(2026, 10, 18, 10, 0),  # noqa: DTZ001 - floating local
+                ends_local_at=datetime(2026, 10, 18, 11, 0),  # noqa: DTZ001 - floating local
             ),
         )
         activity = created.item.subject_native_ref
@@ -136,10 +136,13 @@ async def test_activity_unplace_preserves_identity_and_undo_restores_new_state(
         envelope = next(row for row in snapshot.schedules if row.role_code == "envelope")
         assert envelope.schedule_ref == schedule.schedule_ref
         assert envelope.placement_material_state_ref == undone.placement_material_state_ref
-        assert envelope.starts_local_at == datetime(2026, 10, 18, 10, 0)
-        assert envelope.ends_local_at == datetime(2026, 10, 18, 11, 0)
-        assert await list_activity_timeline_undo(
-            activity, _context(actor), _request(runtime), Response()
-        ) == []
+        assert envelope.starts_local_at == datetime(2026, 10, 18, 10, 0)  # noqa: DTZ001
+        assert envelope.ends_local_at == datetime(2026, 10, 18, 11, 0)  # noqa: DTZ001
+        assert (
+            await list_activity_timeline_undo(
+                activity, _context(actor), _request(runtime), Response()
+            )
+            == []
+        )
     finally:
         await runtime.dispose()

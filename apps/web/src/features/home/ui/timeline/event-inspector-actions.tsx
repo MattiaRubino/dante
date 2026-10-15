@@ -61,16 +61,16 @@ export function EventInspectorActions({
     readonly EventTimelineSchedule[] | null
   >(null);
   const [selectedTimelineSchedule, setSelectedTimelineSchedule] = useState('');
-  const [timelineUndoReceipt, setTimelineUndoReceipt] = useState<
-    EventTimelineUndoReceipt | null
-  >(null);
+  const [timelineUndoReceipt, setTimelineUndoReceipt] =
+    useState<EventTimelineUndoReceipt | null>(null);
   const [deletePreviews, setDeletePreviews] = useState<
     readonly TemporalHardDeletionPreview[] | null
   >(null);
   const [deletionChoices, setDeletionChoices] = useState<
     readonly EventDeletionOccurrenceChoice[]
   >([]);
-  const [selectedDeletionOccurrence, setSelectedDeletionOccurrence] = useState('');
+  const [selectedDeletionOccurrence, setSelectedDeletionOccurrence] =
+    useState('');
   const [profileSource] = useState(createRemoteEventProfileDataSource);
   const [areaSource] = useState(createRemoteEventLifeAreaSettings);
   const [organizationSource] = useState(
@@ -302,7 +302,6 @@ export function EventInspectorActions({
     }
   };
 
-
   const confirmDeletion = async () => {
     if (busy) return;
     setBusy(true);
@@ -318,10 +317,11 @@ export function EventInspectorActions({
           hardDelete.preview(eventRef, 'event_series'),
           hardDelete.eventOccurrences(eventRef),
         ]);
-        const selected = occurrenceRef !== null &&
+        const selected =
+          occurrenceRef !== null &&
           choices.some((choice) => choice.occurrenceRef === occurrenceRef)
-          ? occurrenceRef
-          : '';
+            ? occurrenceRef
+            : '';
         setDeletionChoices(choices);
         setSelectedDeletionOccurrence(selected);
         const instance =
@@ -351,7 +351,9 @@ export function EventInspectorActions({
       else window.location.reload();
     } catch (reason) {
       setError(
-        reason instanceof Error ? reason.message : 'Eliminazione Event rifiutata.',
+        reason instanceof Error
+          ? reason.message
+          : 'Eliminazione Event rifiutata.',
       );
     } finally {
       setBusy(false);
@@ -373,10 +375,14 @@ export function EventInspectorActions({
       }
       setTimelineCandidates(schedules);
       setSelectedTimelineSchedule(
-        schedules.length === 1 ? schedules[0]?.scheduleRef ?? '' : '',
+        schedules.length === 1 ? (schedules[0]?.scheduleRef ?? '') : '',
       );
     } catch (reason) {
-      setError(reason instanceof Error ? reason.message : 'Collocazione non disponibile.');
+      setError(
+        reason instanceof Error
+          ? reason.message
+          : 'Collocazione non disponibile.',
+      );
     } finally {
       setBusy(false);
     }
@@ -389,7 +395,9 @@ export function EventInspectorActions({
     try {
       const receipts = await eventTimeline.listUndo(eventRef);
       if (receipts.length === 0) {
-        throw new Error('Non è presente alcuna collocazione Event da ripristinare.');
+        throw new Error(
+          'Non è presente alcuna collocazione Event da ripristinare.',
+        );
       }
       if (receipts.length !== 1) {
         throw new Error(
@@ -398,7 +406,9 @@ export function EventInspectorActions({
       }
       setTimelineUndoReceipt(receipts[0] ?? null);
     } catch (reason) {
-      setError(reason instanceof Error ? reason.message : 'Undo non disponibile.');
+      setError(
+        reason instanceof Error ? reason.message : 'Undo non disponibile.',
+      );
     } finally {
       setBusy(false);
     }
@@ -476,11 +486,7 @@ export function EventInspectorActions({
         title="Elimina Event"
         onClick={() => void confirmDeletion()}
       >
-        {toolbarTarget ? (
-          <TimelineInspectorIcon name="trash" />
-        ) : (
-          'Elimina'
-        )}
+        {toolbarTarget ? <TimelineInspectorIcon name="trash" /> : 'Elimina'}
       </button>
     </div>
   );
@@ -669,8 +675,8 @@ export function EventInspectorActions({
       {timelineUndoReceipt ? (
         <div className="timeline-activity-inspector__confirmation">
           <p>
-            Ripristinare questa collocazione come nuova revisione dello
-            Schedule Event? L’Undo viene rifiutato se il piano è cambiato.
+            Ripristinare questa collocazione come nuova revisione dello Schedule
+            Event? L’Undo viene rifiutato se il piano è cambiato.
           </p>
           <button
             type="button"
@@ -709,8 +715,8 @@ export function EventInspectorActions({
         <div className="timeline-activity-inspector__confirmation">
           <p>
             L’eliminazione è definitiva e comprende Schedule, promemoria,
-            Objective e dati storici collegati all’Evento o all’istanza.
-            La rimozione dalla Timeline è un’operazione diversa.
+            Objective e dati storici collegati all’Evento o all’istanza. La
+            rimozione dalla Timeline è un’operazione diversa.
           </p>
           {deletionChoices.length > 0 ? (
             <label>
@@ -728,13 +734,17 @@ export function EventInspectorActions({
                         (preview) => preview.scope === 'event_series',
                       );
                       if (!series) {
-                        throw new Error('Anteprima della serie non disponibile.');
+                        throw new Error(
+                          'Anteprima della serie non disponibile.',
+                        );
                       }
                       const instance = selected
                         ? await hardDelete.preview(selected, 'event_instance')
                         : null;
                       setSelectedDeletionOccurrence(selected);
-                      setDeletePreviews(instance ? [instance, series] : [series]);
+                      setDeletePreviews(
+                        instance ? [instance, series] : [series],
+                      );
                     } catch (reason) {
                       setError(
                         reason instanceof Error
@@ -749,7 +759,10 @@ export function EventInspectorActions({
               >
                 <option value="">Seleziona una Occurrence specifica</option>
                 {deletionChoices.map((choice) => (
-                  <option key={choice.occurrenceRef} value={choice.occurrenceRef}>
+                  <option
+                    key={choice.occurrenceRef}
+                    value={choice.occurrenceRef}
+                  >
                     {choice.displayLabel}
                   </option>
                 ))}

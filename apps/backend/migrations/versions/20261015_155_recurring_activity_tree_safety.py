@@ -8,6 +8,7 @@ Only one owner-checked deletion code path handles child identities, CAS and
 transactional rollback. Does not change executable runtime grants or catalog
 topology: this is an existing function replacement, forward only.
 """
+
 from collections.abc import Sequence
 
 from alembic import op

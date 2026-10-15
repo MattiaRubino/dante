@@ -185,10 +185,9 @@ def test_current_repository_head_refuses_downgrade_by_design(
     command.upgrade(alembic_config, "head")
     assert _current_revisions(provisioned_database) == {_CURRENT_HEAD}
 
-    # The latest accepted migration deliberately refuses rollback.
-    with pytest.raises(
-        RuntimeError, match="relative Recurrence anchors and policy indexes are canonical"
-    ):
+    # The current forward-only head refuses rollback; older guards are
+    # exercised separately at their own historical revisions.
+    with pytest.raises(RuntimeError, match="Owned Reality policy hard deletion is forward-only"):
         command.downgrade(alembic_config, "-1")
 
     assert _current_revisions(provisioned_database) == {_CURRENT_HEAD}

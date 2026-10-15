@@ -13,7 +13,10 @@ import {
   type TimelineUndoReceipt,
 } from '../../../temporal/remote-activity-timeline-placement';
 import { createRemoteRecurringProfileEdit } from '../../../temporal/remote-recurring-profile-edit';
-import { createRemoteTemporalHardDeletion, type TemporalHardDeletionPreview } from '../../../temporal/remote-temporal-hard-deletion';
+import {
+  createRemoteTemporalHardDeletion,
+  type TemporalHardDeletionPreview,
+} from '../../../temporal/remote-temporal-hard-deletion';
 import {
   createRemoteDraftVault,
   notifyDraftVaultUpdated,
@@ -48,14 +51,19 @@ export function ActivityInspectorActions({
   const [draftVault] = useState(createRemoteDraftVault);
   const [profile, setProfile] = useState<ActivityProfile | null>(null);
   const [confirming, setConfirming] = useState(false);
-  const [deleteImpact, setDeleteImpact] = useState<ActivitySessionImpact | null>(null);
+  const [deleteImpact, setDeleteImpact] =
+    useState<ActivitySessionImpact | null>(null);
   const [recurringDeletePreview, setRecurringDeletePreview] = useState<
     readonly [TemporalHardDeletionPreview, TemporalHardDeletionPreview] | null
   >(null);
   const [confirmingVault, setConfirmingVault] = useState(false);
-  const [removePlacement, setRemovePlacement] = useState<TimelineActivityPlacement | null>(null);
-  const [removeImpact, setRemoveImpact] = useState<ActivitySessionImpact | null>(null);
-  const [undoReceipt, setUndoReceipt] = useState<TimelineUndoReceipt | null>(null);
+  const [removePlacement, setRemovePlacement] =
+    useState<TimelineActivityPlacement | null>(null);
+  const [removeImpact, setRemoveImpact] =
+    useState<ActivitySessionImpact | null>(null);
+  const [undoReceipt, setUndoReceipt] = useState<TimelineUndoReceipt | null>(
+    null,
+  );
   const [pending, setPending] = useState(false);
   const [error, setError] = useState('');
 
@@ -200,7 +208,8 @@ export function ActivityInspectorActions({
         onClick={() =>
           void action(async () => {
             const current = await source.sessionImpact(activityRef);
-            const origin = await recurringSource.loadActivityContext(activityRef);
+            const origin =
+              await recurringSource.loadActivityContext(activityRef);
             const scopes =
               origin === null
                 ? null
@@ -232,15 +241,15 @@ export function ActivityInspectorActions({
       {removePlacement && removeImpact ? (
         <div className="timeline-activity-inspector__confirmation">
           <p>
-            Rimuovere questa Activity dalla Timeline senza eliminarla?
-            Le Sessioni realmente registrate possono essere conservate o
-            eliminate soltanto dopo una scelta esplicita.
+            Rimuovere questa Activity dalla Timeline senza eliminarla? Le
+            Sessioni realmente registrate possono essere conservate o eliminate
+            soltanto dopo una scelta esplicita.
           </p>
           {removeImpact.attempts.length !== 0 ? (
             <>
               <p>
-                Sessioni registrate: {removeImpact.attempts.length}.
-                «Mantieni» conserva i dati storici e i tempi reali.
+                Sessioni registrate: {removeImpact.attempts.length}. «Mantieni»
+                conserva i dati storici e i tempi reali.
               </p>
               <button
                 type="button"
@@ -248,8 +257,11 @@ export function ActivityInspectorActions({
                 onClick={() =>
                   void action(async () => {
                     const receipt = await timelinePlacement.remove(
-                      activityRef, removePlacement, 'keep',
-                      removeImpact.fingerprint, removeImpact.attempts.length,
+                      activityRef,
+                      removePlacement,
+                      'keep',
+                      removeImpact.fingerprint,
+                      removeImpact.attempts.length,
                     );
                     setUndoReceipt(receipt);
                     setRemovePlacement(null);
@@ -265,8 +277,11 @@ export function ActivityInspectorActions({
                 onClick={() =>
                   void action(async () => {
                     const receipt = await timelinePlacement.remove(
-                      activityRef, removePlacement, 'delete',
-                      removeImpact.fingerprint, removeImpact.attempts.length,
+                      activityRef,
+                      removePlacement,
+                      'delete',
+                      removeImpact.fingerprint,
+                      removeImpact.attempts.length,
                     );
                     setUndoReceipt(receipt);
                     setRemovePlacement(null);
@@ -284,8 +299,11 @@ export function ActivityInspectorActions({
               onClick={() =>
                 void action(async () => {
                   const receipt = await timelinePlacement.remove(
-                    activityRef, removePlacement, null,
-                    removeImpact.fingerprint, removeImpact.attempts.length,
+                    activityRef,
+                    removePlacement,
+                    null,
+                    removeImpact.fingerprint,
+                    removeImpact.attempts.length,
                   );
                   setUndoReceipt(receipt);
                   setRemovePlacement(null);
@@ -311,8 +329,8 @@ export function ActivityInspectorActions({
       {undoReceipt ? (
         <div className="timeline-activity-inspector__confirmation">
           <p>
-            Ripristinare la precedente collocazione come nuova revisione?
-            La Schedule non verrà ripristinata se lo stato è cambiato.
+            Ripristinare la precedente collocazione come nuova revisione? La
+            Schedule non verrà ripristinata se lo stato è cambiato.
           </p>
           <button
             type="button"
@@ -435,19 +453,22 @@ export function ActivityInspectorActions({
           </p>
           {deleteImpact.attempts.length > 0 ? (
             <p>
-              Verranno eliminate anche {deleteImpact.attempts.length}
-              {' '}Sessioni registrate (
-              {deleteImpact.attempts.map((attempt) => attempt.status).join(', ')}).
+              Verranno eliminate anche {deleteImpact.attempts.length} Sessioni
+              registrate (
+              {deleteImpact.attempts
+                .map((attempt) => attempt.status)
+                .join(', ')}
+              ).
             </p>
           ) : null}
           {recurringDeletePreview ? (
             <>
               <p>
-                Questa Activity appartiene a una Routine ricorrente.
-                «Solo questa istanza» rimuove unicamente l’Activity selezionata
-                e tutte le sue Sessioni e i suoi dati. «Tutta la serie»
-                elimina definitivamente anche la Routine, tutte le altre
-                istanze e i relativi dati, presenti e futuri.
+                Questa Activity appartiene a una Routine ricorrente. «Solo
+                questa istanza» rimuove unicamente l’Activity selezionata e
+                tutte le sue Sessioni e i suoi dati. «Tutta la serie» elimina
+                definitivamente anche la Routine, tutte le altre istanze e i
+                relativi dati, presenti e futuri.
               </p>
               <button
                 type="button"
@@ -480,7 +501,10 @@ export function ActivityInspectorActions({
               disabled={pending}
               onClick={() =>
                 void action(async () => {
-                  await source.deleteHard(activityRef, deleteImpact.fingerprint);
+                  await source.deleteHard(
+                    activityRef,
+                    deleteImpact.fingerprint,
+                  );
                   onDeleted();
                 })
               }

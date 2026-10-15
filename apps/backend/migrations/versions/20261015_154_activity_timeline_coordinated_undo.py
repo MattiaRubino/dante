@@ -9,6 +9,7 @@ a dedicated Activity coordinator validates identity, Session CAS, role set and
 placement locks BEFORE invoking it in a serializable transaction. Generic
 Schedule Undo remains guarded exactly as before.
 """
+
 from collections.abc import Sequence
 
 from alembic import op
@@ -160,6 +161,7 @@ END;
 $coordinated$;
 """
 
+
 def upgrade() -> None:
     db = op.get_bind()
     old_name = "dante.undo_self_schedule_unschedule_any"
@@ -172,14 +174,14 @@ def upgrade() -> None:
         raise RuntimeError("Unexpected generic Undo guard: review independently")
     if definition.count(old_name) < 1:
         raise RuntimeError("Cannot identify generic Undo capability")
-    clone = definition.replace(_GENERIC_ACTIVITY_GUARD, "").replace(old_name,new_name,1)
+    clone = definition.replace(_GENERIC_ACTIVITY_GUARD, "").replace(old_name, new_name, 1)
     db.exec_driver_sql(clone.replace("%", "%%"))
     db.exec_driver_sql(_UNDO_RECEIPTS)
     db.exec_driver_sql(_COORDINATED_UNDO)
     for name, direct in (
-        (f"{new_name}(uuid,text,text,uuid,text,uuid)",False),
-        ("dante.list_self_activity_timeline_undo(uuid,uuid)",True),
-        ("dante.undo_self_activity_timeline(uuid,text,text,uuid,text,uuid,uuid,text)",True),
+        (f"{new_name}(uuid,text,text,uuid,text,uuid)", False),
+        ("dante.list_self_activity_timeline_undo(uuid,uuid)", True),
+        ("dante.undo_self_activity_timeline(uuid,text,text,uuid,text,uuid,uuid,text)", True),
     ):
         db.exec_driver_sql(f"ALTER FUNCTION {name} OWNER TO dante_owner")
         db.exec_driver_sql(

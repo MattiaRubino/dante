@@ -142,9 +142,7 @@ class ActivityReplanCommand(BaseModel):
     remove_planned_sessions: list[RetainedPlannedRow] = Field(default_factory=list, max_length=0)
     delete_planned_sessions: list[DeletePlannedRow] = Field(default_factory=list, max_length=100)
     session_disposition: Literal["keep", "delete"] | None = None
-    expected_session_fingerprint: str | None = Field(
-        default=None, pattern=r"^[a-f0-9]{64}$"
-    )
+    expected_session_fingerprint: str | None = Field(default=None, pattern=r"^[a-f0-9]{64}$")
 
     @model_validator(mode="after")
     def unique_new_rows(self) -> ActivityReplanCommand:
@@ -153,9 +151,7 @@ class ActivityReplanCommand(BaseModel):
         ]
         if len(set(refs)) != len(refs):
             raise ValueError("New Activity interval and planned Session identities must be unique.")
-        if (self.session_disposition is None) != (
-            self.expected_session_fingerprint is None
-        ):
+        if (self.session_disposition is None) != (self.expected_session_fingerprint is None):
             raise ValueError("Session disposition requires its expected impact fingerprint.")
         return self
 
@@ -739,15 +735,11 @@ class ActivityTimelineUnplaceCommand(BaseModel):
     schedule_ref: UUID
     expected_material_state_ref: UUID
     session_disposition: Literal["keep", "delete"] | None = None
-    expected_session_fingerprint: str | None = Field(
-        default=None, pattern=r"^[0-9a-f]{64}$"
-    )
+    expected_session_fingerprint: str | None = Field(default=None, pattern=r"^[0-9a-f]{64}$")
 
     @model_validator(mode="after")
     def paired_session_decision(self) -> ActivityTimelineUnplaceCommand:
-        if (self.session_disposition is None) != (
-            self.expected_session_fingerprint is None
-        ):
+        if (self.session_disposition is None) != (self.expected_session_fingerprint is None):
             raise ValueError("Session choice must carry the current impact fingerprint.")
         return self
 
@@ -825,12 +817,15 @@ async def _guard_timeline_role(
     )
     if locked:
         raise _conflict("Sblocca la collocazione prima di modificarla.")
-    return role
+    return str(role)
 
 
 async def _timeline_session_guard(
-    session: AsyncSession, actor: UUID, activity_ref: UUID,
-    expected_fingerprint: str | None, disposition: str | None,
+    session: AsyncSession,
+    actor: UUID,
+    activity_ref: UUID,
+    expected_fingerprint: str | None,
+    disposition: str | None,
 ) -> str:
     impact = await session.scalar(
         text("SELECT dante.get_self_activity_session_impact_hash(:actor,:activity)"),
@@ -842,10 +837,7 @@ async def _timeline_session_guard(
         raise _conflict("Le Sessioni sono cambiate: ricarica e riprova.")
     if disposition is None:
         attempts = await session.scalar(
-            text(
-                "SELECT EXISTS(SELECT 1 FROM "
-                "dante.list_self_subject_sessions(:actor,:activity))"
-            ),
+            text("SELECT EXISTS(SELECT 1 FROM dante.list_self_subject_sessions(:actor,:activity))"),
             {"actor": actor, "activity": activity_ref},
         )
         if attempts:
@@ -872,12 +864,18 @@ async def list_activity_timeline_undo(
     response.headers["Cache-Control"] = "no-store"
     try:
         async with request.app.state.database_runtime.session_factory() as session, session.begin():
-            rows = (await session.execute(
-                text(
-                    "SELECT * FROM dante.list_self_activity_timeline_undo(:actor,:activity)"
-                ),
-                {"actor": context.self_person_ref, "activity": activity_ref},
-            )).mappings().all()
+            rows = (
+                (
+                    await session.execute(
+                        text(
+                            "SELECT * FROM dante.list_self_activity_timeline_undo(:actor,:activity)"
+                        ),
+                        {"actor": context.self_person_ref, "activity": activity_ref},
+                    )
+                )
+                .mappings()
+                .all()
+            )
     except SQLAlchemyError as exc:
         raise _conflict("Impossibile leggere gli Undo della Timeline.") from exc
     return [ActivityTimelineUndoReceipt.model_validate(dict(row)) for row in rows]
@@ -902,31 +900,40 @@ async def unplace_activity_timeline(
             await session.execute(text("SET TRANSACTION ISOLATION LEVEL SERIALIZABLE"))
             await session.execute(text("SET LOCAL lock_timeout = '5s'"))
             await _guard_timeline_role(
-                session,actor,activity_ref,body.schedule_ref,require_current=True
+                session, actor, activity_ref, body.schedule_ref, require_current=True
             )
             await _timeline_session_guard(
-                session,actor,activity_ref,
-                body.expected_session_fingerprint,body.session_disposition,
+                session,
+                actor,
+                activity_ref,
+                body.expected_session_fingerprint,
+                body.session_disposition,
             )
-            row = (await session.execute(
-                text("""
+            row = (
+                (
+                    await session.execute(
+                        text("""
                   SELECT * FROM dante.unschedule_self_schedule(
                     :actor,:operation,:fingerprint,:schedule,:expected
                   )
                 """),
-                {
-                    "actor": actor,
-                    "operation": body.operation_id,
-                    "fingerprint": _unschedule_fingerprint(
-                        schedule_ref=ScopedRecordRef(body.schedule_ref),
-                        expected_material_state_ref=MaterialStateRef(
-                            body.expected_material_state_ref
-                        ),
-                    ),
-                    "schedule": body.schedule_ref,
-                    "expected": body.expected_material_state_ref,
-                },
-            )).mappings().one()
+                        {
+                            "actor": actor,
+                            "operation": body.operation_id,
+                            "fingerprint": _unschedule_fingerprint(
+                                schedule_ref=ScopedRecordRef(body.schedule_ref),
+                                expected_material_state_ref=MaterialStateRef(
+                                    body.expected_material_state_ref
+                                ),
+                            ),
+                            "schedule": body.schedule_ref,
+                            "expected": body.expected_material_state_ref,
+                        },
+                    )
+                )
+                .mappings()
+                .one()
+            )
     except DBAPIError as exc:
         raise _conflict("La collocazione è cambiata: ricarica prima di confermare.") from exc
     except SQLAlchemyError as exc:
@@ -958,35 +965,41 @@ async def undo_activity_timeline(
             await session.execute(text("SET TRANSACTION ISOLATION LEVEL SERIALIZABLE"))
             await session.execute(text("SET LOCAL lock_timeout = '5s'"))
             await _guard_timeline_role(
-                session,actor,activity_ref,body.schedule_ref,require_current=False
+                session, actor, activity_ref, body.schedule_ref, require_current=False
             )
             await _timeline_session_guard(
-                session,actor,activity_ref,body.expected_session_fingerprint,"keep"
+                session, actor, activity_ref, body.expected_session_fingerprint, "keep"
             )
             # Dedicated owner-only SQL capability bypasses ONLY the generic
             # interval-Undo guard. It retains all CAS/receipt constraints and
             # monotonic history of the original Schedule Undo procedure.
-            row = (await session.execute(
-                text("""
+            row = (
+                (
+                    await session.execute(
+                        text("""
                     SELECT * FROM dante.undo_self_activity_timeline(
                         :actor,:operation,:fingerprint,:schedule,:removed,:next_state,
                         :activity,:session_fingerprint
                     )
                 """),
-                {
-                    "actor": actor,
-                    "operation": body.operation_id,
-                    "fingerprint": _unschedule_undo_fingerprint(
-                        schedule_ref=ScopedRecordRef(body.schedule_ref),
-                        unschedule_operation_id=body.unschedule_operation_id,
-                    ),
-                    "schedule": body.schedule_ref,
-                    "removed": body.unschedule_operation_id,
-                    "next_state": uuid7(),
-                    "activity": activity_ref,
-                    "session_fingerprint": body.expected_session_fingerprint,
-                },
-            )).mappings().one()
+                        {
+                            "actor": actor,
+                            "operation": body.operation_id,
+                            "fingerprint": _unschedule_undo_fingerprint(
+                                schedule_ref=ScopedRecordRef(body.schedule_ref),
+                                unschedule_operation_id=body.unschedule_operation_id,
+                            ),
+                            "schedule": body.schedule_ref,
+                            "removed": body.unschedule_operation_id,
+                            "next_state": uuid7(),
+                            "activity": activity_ref,
+                            "session_fingerprint": body.expected_session_fingerprint,
+                        },
+                    )
+                )
+                .mappings()
+                .one()
+            )
     except DBAPIError as exc:
         raise _conflict("Undo non disponibile: la Schedule o le Sessioni sono cambiate.") from exc
     except SQLAlchemyError as exc:

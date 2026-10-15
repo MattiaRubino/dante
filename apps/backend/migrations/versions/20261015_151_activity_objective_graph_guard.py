@@ -9,6 +9,7 @@ Seed the owner-scoped Objective roots before the existing bounded FK closure.
 No runtime table DELETE privileges are added. This is a candidate and still
 requires complete real-PostgreSQL graph proof before extending recurring delete.
 """
+
 from collections.abc import Sequence
 
 from alembic import op

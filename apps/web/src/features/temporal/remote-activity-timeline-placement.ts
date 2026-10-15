@@ -58,7 +58,9 @@ export function createRemoteActivityTimelinePlacement(
 
   return Object.freeze({
     async current(activityRef: string): Promise<TimelineActivityPlacement> {
-      const data = record(await checked(await request(`${url(activityRef)}/edit-snapshot`)));
+      const data = record(
+        await checked(await request(`${url(activityRef)}/edit-snapshot`)),
+      );
       if (data.activity_ref !== activityRef || !Array.isArray(data.schedules)) {
         throw new Error('Identità Activity non coerente.');
       }
@@ -83,7 +85,9 @@ export function createRemoteActivityTimelinePlacement(
       };
     },
 
-    async listUndo(activityRef: string): Promise<readonly TimelineUndoReceipt[]> {
+    async listUndo(
+      activityRef: string,
+    ): Promise<readonly TimelineUndoReceipt[]> {
       const body = await checked(
         await request(`${url(activityRef)}/timeline-undo-receipts`),
       );
@@ -113,7 +117,9 @@ export function createRemoteActivityTimelinePlacement(
       attemptsAtConfirmation: number,
     ): Promise<TimelineUndoReceipt> {
       if (disposition === null && attemptsAtConfirmation !== 0) {
-        throw new Error('Scegli Mantieni Sessioni, Elimina Sessioni o Annulla.');
+        throw new Error(
+          'Scegli Mantieni Sessioni, Elimina Sessioni o Annulla.',
+        );
       }
       const response = await request(`${url(activityRef)}/timeline-unplace`, {
         method: 'POST',
@@ -147,7 +153,10 @@ export function createRemoteActivityTimelinePlacement(
       };
     },
 
-    async undo(activityRef: string, receipt: TimelineUndoReceipt): Promise<void> {
+    async undo(
+      activityRef: string,
+      receipt: TimelineUndoReceipt,
+    ): Promise<void> {
       const impact = await inspector.sessionImpact(activityRef);
       const response = await request(`${url(activityRef)}/timeline-undo`, {
         method: 'POST',

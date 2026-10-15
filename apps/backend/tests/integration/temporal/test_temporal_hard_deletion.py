@@ -20,6 +20,7 @@ from dante.modules.temporal.reality_objective_api import (
     ObjectiveCreateCommand,
     RealityPolicyCommand,
     TemporalHardDeleteCommand,
+    TemporalHardDeleteScope,
     apply_temporal_hard_deletion,
     create_activity_objective,
     list_event_deletion_occurrences,
@@ -50,7 +51,7 @@ def _context(actor: Any) -> DanteContext:
     return cast(DanteContext, SimpleNamespace(self_person_ref=actor))
 
 
-async def _preview(runtime: Any, actor: Any, ref: Any, scope: str) -> str:
+async def _preview(runtime: Any, actor: Any, ref: Any, scope: TemporalHardDeleteScope) -> str:
     result = await preview_temporal_hard_deletion(
         ref, scope, _context(actor), _request(runtime), Response()
     )
@@ -59,7 +60,9 @@ async def _preview(runtime: Any, actor: Any, ref: Any, scope: str) -> str:
     return result.fingerprint
 
 
-async def _delete(runtime: Any, actor: Any, ref: Any, scope: str, fingerprint: str) -> int:
+async def _delete(
+    runtime: Any, actor: Any, ref: Any, scope: TemporalHardDeleteScope, fingerprint: str
+) -> int:
     result = await apply_temporal_hard_deletion(
         ref,
         TemporalHardDeleteCommand(scope=scope, expected_fingerprint=fingerprint),

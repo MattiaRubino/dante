@@ -241,10 +241,14 @@ test.describe('Timeline B03-E real-stack Event closure', () => {
         .toString();
       await openHome(page, `/home?date=${day}`);
       const title = `Event delete ${randomUUID()}`;
-      const created = await createScheduledEvent(page, title, async (dialog) => {
-        await chooseDate(dialog, 'Data inizio', day);
-        await chooseFloatingLocalTime(dialog);
-      });
+      const created = await createScheduledEvent(
+        page,
+        title,
+        async (dialog) => {
+          await chooseDate(dialog, 'Data inizio', day);
+          await chooseFloatingLocalTime(dialog);
+        },
+      );
       const eventRef = uuidField(created, 'event_ref');
       const scheduleRef = uuidField(created, 'schedule_ref');
       const card = page.locator(`[data-timeline-event="${scheduleRef}"]`);
@@ -259,7 +263,9 @@ test.describe('Timeline B03-E real-stack Event closure', () => {
       ).toHaveCount(0);
       await inspector.getByRole('button', { name: 'Elimina Event' }).click();
       await expect(
-        inspector.getByRole('button', { name: 'Conferma eliminazione definitiva' }),
+        inspector.getByRole('button', {
+          name: 'Conferma eliminazione definitiva',
+        }),
       ).toBeVisible();
       await inspector.getByRole('button', { name: 'Annulla' }).click();
       await expect(card).toHaveCount(1);
@@ -267,7 +273,9 @@ test.describe('Timeline B03-E real-stack Event closure', () => {
       await inspector.getByRole('button', { name: 'Elimina Event' }).click();
       const deletedResponse = page.waitForResponse(
         (response) =>
-          response.url().endsWith(`/api/v1/temporal/hard-deletion/${eventRef}`) &&
+          response
+            .url()
+            .endsWith(`/api/v1/temporal/hard-deletion/${eventRef}`) &&
           response.request().method() === 'DELETE',
         { timeout: E2E_RESPONSE_TIMEOUT_MS },
       );
@@ -286,9 +294,9 @@ test.describe('Timeline B03-E real-stack Event closure', () => {
       const window = (await (await persistedRead).json()) as {
         items?: Array<Record<string, unknown>>;
       };
-      expect(window.items?.some((item) => item.schedule_ref === scheduleRef)).toBe(
-        false,
-      );
+      expect(
+        window.items?.some((item) => item.schedule_ref === scheduleRef),
+      ).toBe(false);
       await expect(card).toHaveCount(0);
     } finally {
       await context.close();

@@ -17,10 +17,6 @@ function record(value: unknown): Record<string, unknown> {
   return value as Record<string, unknown>;
 }
 
-function optionalString(value: unknown): string | null {
-  return typeof value === 'string' ? value : null;
-}
-
 function parsePlannedSessions(
   value: unknown,
   activityRef: string,

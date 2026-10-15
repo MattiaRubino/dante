@@ -325,9 +325,9 @@ test.describe('Timeline B02-E full-stack Schedule forms', () => {
       const window = (await (await persistedRead).json()) as {
         items?: Array<Record<string, unknown>>;
       };
-      expect(window.items?.some((item) => item.schedule_ref === scheduleRef)).toBe(
-        false,
-      );
+      expect(
+        window.items?.some((item) => item.schedule_ref === scheduleRef),
+      ).toBe(false);
       await expect(card).toHaveCount(0);
       expect(
         (

@@ -1434,8 +1434,11 @@ async def confirm_objective_input_draft(
 # B14 hard deletion is a distinct authority from ordinary Objective edits.
 # These routes use one serializable SQL capability and never issue table DELETE.
 TemporalHardDeleteScope = Literal[
-    "activity_instance", "activity_series", "event_once",
-    "event_instance", "event_series",
+    "activity_instance",
+    "activity_series",
+    "event_once",
+    "event_instance",
+    "event_series",
 ]
 
 
@@ -1615,14 +1618,18 @@ async def list_event_deletion_occurrences(
     try:
         async with request.app.state.database_runtime.session_factory() as session, session.begin():
             rows = (
-                await session.execute(
-                    text(
-                        "SELECT * FROM dante.list_self_event_deletion_occurrences("
-                        ":actor,:event)"
-                    ),
-                    {"actor": context.self_person_ref, "event": event_ref},
+                (
+                    await session.execute(
+                        text(
+                            "SELECT * FROM dante.list_self_event_deletion_occurrences("
+                            ":actor,:event)"
+                        ),
+                        {"actor": context.self_person_ref, "event": event_ref},
+                    )
                 )
-            ).mappings().all()
+                .mappings()
+                .all()
+            )
     except SQLAlchemyError as exc:
         raise ProblemError(
             status=503,
@@ -1666,14 +1673,17 @@ async def list_event_timeline_schedules(
     try:
         async with request.app.state.database_runtime.session_factory() as session, session.begin():
             rows = (
-                await session.execute(
-                    text(
-                        "SELECT * FROM dante.list_self_event_timeline_schedules("
-                        ":actor,:event)"
-                    ),
-                    {"actor": context.self_person_ref, "event": event_ref},
+                (
+                    await session.execute(
+                        text(
+                            "SELECT * FROM dante.list_self_event_timeline_schedules(:actor,:event)"
+                        ),
+                        {"actor": context.self_person_ref, "event": event_ref},
+                    )
                 )
-            ).mappings().all()
+                .mappings()
+                .all()
+            )
     except SQLAlchemyError as exc:
         raise ProblemError(
             status=503,
@@ -1701,14 +1711,15 @@ async def list_event_timeline_undo(
     try:
         async with request.app.state.database_runtime.session_factory() as session, session.begin():
             rows = (
-                await session.execute(
-                    text(
-                        "SELECT * FROM dante.list_self_event_timeline_undo("
-                        ":actor,:event)"
-                    ),
-                    {"actor": context.self_person_ref, "event": event_ref},
+                (
+                    await session.execute(
+                        text("SELECT * FROM dante.list_self_event_timeline_undo(:actor,:event)"),
+                        {"actor": context.self_person_ref, "event": event_ref},
+                    )
                 )
-            ).mappings().all()
+                .mappings()
+                .all()
+            )
     except SQLAlchemyError as exc:
         raise ProblemError(
             status=503,

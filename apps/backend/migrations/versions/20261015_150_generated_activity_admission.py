@@ -10,6 +10,7 @@ Occurrences and sources outside the authenticated actor's scope.
 
 This migration is *not* itself a recurring hard-deletion capability.
 """
+
 from collections.abc import Sequence
 
 from alembic import op
@@ -133,6 +134,7 @@ BEGIN
 END;
 $binding$;
 """
+
 
 def upgrade() -> None:
     db = op.get_bind()

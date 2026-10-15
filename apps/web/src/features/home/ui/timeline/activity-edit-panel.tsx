@@ -805,7 +805,8 @@ export function ActivityEditPanel({
         }
         if (
           sessionDecision?.mode === 'delete' &&
-          ((planDirty && (coreDirty || areaDirty || objectiveDirty || nameDirty)) ||
+          ((planDirty &&
+            (coreDirty || areaDirty || objectiveDirty || nameDirty)) ||
             (!planDirty && !coreDirty))
         ) {
           setError(
@@ -845,7 +846,9 @@ export function ActivityEditPanel({
                 currentSettings,
                 replanDraft,
                 operationId,
-                ...(sessionDecision ? ([sessionDecision] as const) : ([] as const)),
+                ...(sessionDecision
+                  ? ([sessionDecision] as const)
+                  : ([] as const)),
               )
               .catch((reason: unknown) => {
                 errorHandled = true;
@@ -1213,12 +1216,14 @@ export function ActivityEditPanel({
                 />
                 Sessione
               </label>
-              {sessionAttempts?.some((attempt) => !attempt.plannedScheduleRef) ? (
+              {sessionAttempts?.some(
+                (attempt) => !attempt.plannedScheduleRef,
+              ) ? (
                 <small
                   className="timeline-activity-editor__session-attempt-status"
                   aria-label="Stato della Sessione principale"
                 >
-                  Sessione principale: {' '}
+                  Sessione principale:{' '}
                   {sessionAttempts
                     .filter((attempt) => !attempt.plannedScheduleRef)
                     .map(attemptStatus)
@@ -1229,7 +1234,9 @@ export function ActivityEditPanel({
           ) : null}
         </div>
         {lockError ? <p role="alert">{lockError}</p> : null}
-        {sessionAttemptsError ? <p role="alert">{sessionAttemptsError}</p> : null}
+        {sessionAttemptsError ? (
+          <p role="alert">{sessionAttemptsError}</p>
+        ) : null}
         {settings &&
         (settings.schedules.some((row) => row.role === 'planned') ||
           newPlanned.length > 0) ? (
@@ -1305,7 +1312,8 @@ export function ActivityEditPanel({
                         </div>
                       </div>
                       {sessionAttempts?.some(
-                        (attempt) => attempt.plannedScheduleRef === row.scheduleRef,
+                        (attempt) =>
+                          attempt.plannedScheduleRef === row.scheduleRef,
                       ) ? (
                         <small
                           className="timeline-activity-editor__session-attempt-status"
@@ -2186,11 +2194,13 @@ export function ActivityEditPanel({
           aria-label="Conferma Sessioni registrate"
         >
           <p>
-            Questa attività contiene {sessionConfirmation.attempts.length}
-            {' '}Sessioni reali. Scegli come gestirle prima di salvare la modifica.
+            Questa attività contiene {sessionConfirmation.attempts.length}{' '}
+            Sessioni reali. Scegli come gestirle prima di salvare la modifica.
           </p>
           <p>
-            {sessionConfirmation.attempts.map((attempt) => attempt.status).join(' · ')}
+            {sessionConfirmation.attempts
+              .map((attempt) => attempt.status)
+              .join(' · ')}
           </p>
           {(['keep', 'delete'] as const).map((mode) => (
             <button
@@ -2209,10 +2219,7 @@ export function ActivityEditPanel({
               {mode === 'keep' ? 'Mantieni Sessioni' : 'Elimina Sessioni'}
             </button>
           ))}
-          <button
-            type="button"
-            onClick={() => setSessionConfirmation(null)}
-          >
+          <button type="button" onClick={() => setSessionConfirmation(null)}>
             Annulla
           </button>
         </div>

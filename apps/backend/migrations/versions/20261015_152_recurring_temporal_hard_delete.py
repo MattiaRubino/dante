@@ -12,6 +12,7 @@ generated Activities and all Occurrence descendants.
 These capabilities are candidates pending real PostgreSQL, browser and
 concurrency acceptance performed on the user's WSL environment.
 """
+
 from collections.abc import Sequence
 
 from alembic import op

@@ -7,6 +7,7 @@ Event and Event Occurrence placement removal uses the pre-existing
 guarded, monotonic generic Schedule commands. These bounded read functions
 expose exact event-owned Schedule identity without runtime table SELECT.
 """
+
 from collections.abc import Sequence
 
 from alembic import op

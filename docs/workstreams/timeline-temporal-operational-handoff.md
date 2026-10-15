@@ -1,5 +1,32 @@
 # Timeline / Temporal-Operational — Workstream Handoff
 
+## 2026-10-15 — Full gate at `43778ea4` and repair candidate
+
+The user's WSL parallel gate at `43778ea49b0bc12285ebb1b08810da49463c6e67`
+collected all 27 groups with a stable source tree: **18 PASS, 9 FAIL**.
+Ruff/format, Mypy, Dictionary schema and Temporal OpenAPI inventory expose
+deterministic source/test drift; Web lint found one unused function. The
+authenticated real-stack browser could not start because the required
+`dante-postgres-local:18.6` Docker image was absent. Four PostgreSQL cases
+failed or errored in five cases, but the uploaded summary lacks their tracebacks, so their
+causes are not yet established. OpenAPI snapshot and generated client are
+behind the eight newly added Temporal routes.
+
+This corrective source candidate formats affected Backend/Web files, fixes
+the strict typing and outdated current-head downgrade assertion, admits all
+70 current Dictionary stages, enumerates 193 Temporal operations and removes
+the unused Web helper. Locally Ruff check/format, repository Prettier,
+structural test registry, Web typecheck and 50 focused Inspector tests pass.
+The full Web Vitest run had one jsdom computed-style failure in an unrelated
+Planning Tray test (1064 passed, 1 failed); the five cases in that file pass
+when rerun alone. This is **not** a same-SHA full green gate.
+
+Remaining evidence: export and publish the governed OpenAPI/Orval artifacts
+from the WSL Python 3.14/pnpm toolchain; inspect the original PostgreSQL
+tracebacks in the existing `FULL_GATE_LOGS.tar.gz`; build the required local
+PostgreSQL image; then rerun the full gate once on the final candidate SHA.
+No real-data destructive acceptance or visual closure is claimed.
+
 ## 2026-10-15 — Destructive Inspector browser regression candidate
 
 The one-off Activity and Event authenticated browser journeys now create their

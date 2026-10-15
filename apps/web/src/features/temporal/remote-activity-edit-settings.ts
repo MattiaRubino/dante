@@ -524,7 +524,8 @@ export function createRemoteActivityEditSettings(
                 ...(disposition
                   ? {
                       session_disposition: disposition.mode,
-                      expected_session_fingerprint: disposition.expectedFingerprint,
+                      expected_session_fingerprint:
+                        disposition.expectedFingerprint,
                     }
                   : {}),
               }),
@@ -961,7 +962,8 @@ export function createRemoteActivityEditSettings(
               ...(disposition
                 ? {
                     session_disposition: disposition.mode,
-                    expected_session_fingerprint: disposition.expectedFingerprint,
+                    expected_session_fingerprint:
+                      disposition.expectedFingerprint,
                   }
                 : {}),
             }),

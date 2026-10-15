@@ -9,7 +9,7 @@ from dante.bootstrap.openapi_export import openapi_document
 _PUBLISHED_OPENAPI = (
     Path(__file__).resolve().parents[3] / "packages/api-client/openapi/dante-v1.openapi.json"
 )
-_CURRENT_ACCEPTED_TEMPORAL_OPERATION_COUNT = 185
+_CURRENT_ACCEPTED_TEMPORAL_OPERATION_COUNT = 193
 
 _HTTP_METHODS = frozenset({"get", "post", "put", "patch", "delete", "options", "head", "trace"})
 
@@ -401,6 +401,38 @@ _EXPECTED_TEMPORAL_OPERATIONS = {
         "/api/v1/temporal/activities/{parent_activity_ref}/children/{child_activity_ref}",
         "post",
     ): "temporal_set_activity_child",
+    (
+        "/api/v1/temporal/activities/{activity_ref}/timeline-undo-receipts",
+        "get",
+    ): "temporal_list_activity_timeline_undo",
+    (
+        "/api/v1/temporal/activities/{activity_ref}/timeline-unplace",
+        "post",
+    ): "temporal_unplace_activity_timeline",
+    (
+        "/api/v1/temporal/activities/{activity_ref}/timeline-undo",
+        "post",
+    ): "temporal_undo_activity_timeline",
+    (
+        "/api/v1/temporal/hard-deletion/{requested_ref}/preview",
+        "get",
+    ): "temporal_preview_hard_deletion",
+    (
+        "/api/v1/temporal/hard-deletion/{requested_ref}",
+        "delete",
+    ): "temporal_apply_hard_deletion",
+    (
+        "/api/v1/temporal/events/{event_ref}/deletion-occurrences",
+        "get",
+    ): "temporal_list_event_deletion_occurrences",
+    (
+        "/api/v1/temporal/events/{event_ref}/timeline-schedules",
+        "get",
+    ): "temporal_list_event_timeline_schedules",
+    (
+        "/api/v1/temporal/events/{event_ref}/timeline-undo-receipts",
+        "get",
+    ): "temporal_list_event_timeline_undo",
 }
 
 

@@ -807,10 +807,7 @@ class RoutineOccurrenceMaterializationApplication:
                 # Transaction end always releases the lock, including on error.
                 async with self._session_factory() as gate, gate.begin():
                     await gate.execute(
-                        text(
-                            "SELECT pg_advisory_xact_lock("
-                            "hashtextextended(:admission_key,0))"
-                        ),
+                        text("SELECT pg_advisory_xact_lock(hashtextextended(:admission_key,0))"),
                         {"admission_key": f"dante:recurrence-materialization:{source_ref}"},
                     )
                     checkpoint = await self._occurrences.checkpoint(

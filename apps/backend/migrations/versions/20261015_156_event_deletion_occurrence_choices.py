@@ -8,6 +8,7 @@ Occurrences, so the Inspector cannot treat source id as selected instance id.
 This bounded read capability exposes current materialized Occurrences without
 granting runtime table SELECT or allowing source/instance identity confusion.
 """
+
 from collections.abc import Sequence
 
 from alembic import op
@@ -63,9 +64,7 @@ def upgrade() -> None:
     db.exec_driver_sql(_CHOICES)
     name = "dante.list_self_event_deletion_occurrences(uuid,uuid)"
     db.exec_driver_sql(f"ALTER FUNCTION {name} OWNER TO dante_owner")
-    db.exec_driver_sql(
-        f"REVOKE ALL ON FUNCTION {name} FROM PUBLIC,dante_migrator,dante_runtime"
-    )
+    db.exec_driver_sql(f"REVOKE ALL ON FUNCTION {name} FROM PUBLIC,dante_migrator,dante_runtime")
     db.exec_driver_sql(f"GRANT EXECUTE ON FUNCTION {name} TO dante_runtime")
 
 

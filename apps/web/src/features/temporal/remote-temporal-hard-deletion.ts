@@ -38,7 +38,9 @@ export function createRemoteTemporalHardDeletion(
     `/api/v1/temporal/hard-deletion/${encodeURIComponent(ref)}`;
 
   return Object.freeze({
-    async eventOccurrences(eventRef: string): Promise<readonly EventDeletionOccurrenceChoice[]> {
+    async eventOccurrences(
+      eventRef: string,
+    ): Promise<readonly EventDeletionOccurrenceChoice[]> {
       const response = await request(
         `/api/v1/temporal/events/${encodeURIComponent(eventRef)}/deletion-occurrences`,
       );

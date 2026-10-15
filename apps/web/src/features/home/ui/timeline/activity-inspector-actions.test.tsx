@@ -97,7 +97,13 @@ vi.mock('../../../temporal/remote-recurring-profile-edit', () => ({
   }),
 }));
 vi.mock('../../../temporal/remote-activity-inspector', () => ({
-  createRemoteActivityInspector: () => ({ get, revise, retire, sessionImpact, deleteHard }),
+  createRemoteActivityInspector: () => ({
+    get,
+    revise,
+    retire,
+    sessionImpact,
+    deleteHard,
+  }),
 }));
 vi.mock('../../../temporal/remote-session-data-source', () => ({
   createRemoteTemporalSessionDataSource: () => ({
@@ -167,7 +173,6 @@ loadLifeAreaChoice.mockResolvedValue({
 });
 
 describe('Recurring Activity profile scope', () => {
-
   it('labels retained named and generic attempts with their factual lifecycle state', async () => {
     loadSettings.mockResolvedValueOnce({
       ...currentSettings,
@@ -186,9 +191,24 @@ describe('Recurring Activity profile scope', () => {
       ],
     });
     listActivitySessions.mockResolvedValueOnce([
-      { sessionRef: 'main', plannedScheduleRef: null, open: true, paused: false },
-      { sessionRef: 'named1', plannedScheduleRef: 'named-schedule', open: true, paused: true },
-      { sessionRef: 'named2', plannedScheduleRef: 'named-schedule', open: false, paused: false },
+      {
+        sessionRef: 'main',
+        plannedScheduleRef: null,
+        open: true,
+        paused: false,
+      },
+      {
+        sessionRef: 'named1',
+        plannedScheduleRef: 'named-schedule',
+        open: true,
+        paused: true,
+      },
+      {
+        sessionRef: 'named2',
+        plannedScheduleRef: 'named-schedule',
+        open: false,
+        paused: false,
+      },
     ]);
     const { container } = render(
       <ActivityEditPanel
@@ -198,9 +218,13 @@ describe('Recurring Activity profile scope', () => {
         onCancel={() => undefined}
       />,
     );
-    const mainStatus = await screen.findByLabelText('Stato della Sessione principale');
+    const mainStatus = await screen.findByLabelText(
+      'Stato della Sessione principale',
+    );
     expect(mainStatus.textContent).toContain('in corso');
-    const namedRow = container.querySelector('[data-edit-planned-session="named-schedule"]');
+    const namedRow = container.querySelector(
+      '[data-edit-planned-session="named-schedule"]',
+    );
     expect(namedRow).not.toBeNull();
     await waitFor(() => {
       const status = namedRow?.querySelector(
@@ -1457,11 +1481,15 @@ describe('Activity Inspector', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Elimina' }));
     expect(retire).not.toHaveBeenCalled();
     expect(deleteHard).not.toHaveBeenCalled();
-    expect((await screen.findByText(/1 Sessioni registrate/)).textContent).toContain('in pausa');
+    expect(
+      (await screen.findByText(/1 Sessioni registrate/)).textContent,
+    ).toContain('in pausa');
     fireEvent.click(
       screen.getByRole('button', { name: 'Conferma eliminazione definitiva' }),
     );
-    await waitFor(() => expect(deleteHard).toHaveBeenCalledWith(ref, fingerprint));
+    await waitFor(() =>
+      expect(deleteHard).toHaveBeenCalledWith(ref, fingerprint),
+    );
     expect(retire).not.toHaveBeenCalled();
     expect(onDeleted).toHaveBeenCalledOnce();
   });
@@ -1469,7 +1497,9 @@ describe('Activity Inspector', () => {
   it('cancelling Activity deletion leaves recorded Sessions untouched', async () => {
     sessionImpact.mockResolvedValueOnce({
       fingerprint: 'c'.repeat(64),
-      attempts: [{ sessionRef: 'live', status: 'in corso', plannedScheduleRef: null }],
+      attempts: [
+        { sessionRef: 'live', status: 'in corso', plannedScheduleRef: null },
+      ],
     });
     render(
       <ActivityInspectorActions
@@ -1480,7 +1510,9 @@ describe('Activity Inspector', () => {
       />,
     );
     fireEvent.click(screen.getByRole('button', { name: 'Elimina' }));
-    await screen.findByRole('button', { name: 'Conferma eliminazione definitiva' });
+    await screen.findByRole('button', {
+      name: 'Conferma eliminazione definitiva',
+    });
     fireEvent.click(screen.getByRole('button', { name: 'Annulla' }));
     expect(deleteHard).not.toHaveBeenCalled();
     expect(retire).not.toHaveBeenCalled();

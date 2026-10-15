@@ -22,8 +22,11 @@ from dante.modules.temporal.recurring_authoring import RecurringAuthoringApplica
 from dante.modules.temporal.routine_occurrence_materialization import (
     RoutineOccurrenceMaterializationApplication,
 )
-from dante.modules.temporal.schedule import FloatingLocalIntervalPlacement, TemporalScheduleApplication
-from dante.platform.database.references import ScopedRecordRef, MaterialStateRef
+from dante.modules.temporal.schedule import (
+    FloatingLocalIntervalPlacement,
+    TemporalScheduleApplication,
+)
+from dante.platform.database.references import MaterialStateRef, ScopedRecordRef
 from dante.platform.database.runtime import create_database_runtime
 
 pytestmark = pytest.mark.postgres
@@ -54,15 +57,18 @@ async def test_event_timeline_unplace_and_undo_never_delete_event(
             operation_id="event-timeline:oneoff",
             title="Evento ancora esistente",
             placement=FloatingLocalIntervalPlacement(
-                starts_local_at=datetime(2026, 10, 18, 9, 0),
-                ends_local_at=datetime(2026, 10, 18, 10, 0),
+                starts_local_at=datetime(2026, 10, 18, 9, 0),  # noqa: DTZ001 - floating local
+                ends_local_at=datetime(2026, 10, 18, 10, 0),  # noqa: DTZ001 - floating local
             ),
         )
         ref = event.item.subject_native_ref
         assert event.schedule is not None
-        assert await list_event_timeline_schedules(
-            ref, _context(stranger), _request(runtime), Response()
-        ) == []
+        assert (
+            await list_event_timeline_schedules(
+                ref, _context(stranger), _request(runtime), Response()
+            )
+            == []
+        )
         available = await list_event_timeline_schedules(
             ref, _context(actor), _request(runtime), Response()
         )
@@ -99,9 +105,10 @@ async def test_event_timeline_unplace_and_undo_never_delete_event(
         )
         assert len(after) == 1
         assert after[0].material_state_ref == restored.material_state_ref
-        assert await list_event_timeline_undo(
-            ref, _context(actor), _request(runtime), Response()
-        ) == []
+        assert (
+            await list_event_timeline_undo(ref, _context(actor), _request(runtime), Response())
+            == []
+        )
     finally:
         await runtime.dispose()
 
@@ -129,7 +136,9 @@ async def test_recurring_event_timeline_lists_occurrence_schedule_not_source(
             duration_days=None,
             reminder_lead_minutes=None,
         )
-        await RoutineOccurrenceMaterializationApplication(runtime.session_factory).checkpoint_window(
+        await RoutineOccurrenceMaterializationApplication(
+            runtime.session_factory
+        ).checkpoint_window(
             self_person_ref=actor,
             operation_id="event-timeline:checkpoint",
             start_date=date(2026, 10, 18),

@@ -150,7 +150,9 @@ describe('Home resolution rail', () => {
       ),
     );
     const { container } = render(<ContextRail />);
-    const panel = container.querySelector<HTMLElement>('[data-home-context="resolution"]');
+    const panel = container.querySelector<HTMLElement>(
+      '[data-home-context="resolution"]',
+    );
     if (!panel) throw new Error('Resolution panel absent.');
     await waitFor(() =>
       expect(within(panel).getByText('Ripasso · mai avviata')).toBeTruthy(),
@@ -160,7 +162,9 @@ describe('Home resolution rail', () => {
     future = true;
     fireEvent(window, new Event(REVIEW_QUEUE_INVALIDATED));
     await waitFor(() =>
-      expect(within(panel).getByText('Niente da verificare per ora.')).toBeTruthy(),
+      expect(
+        within(panel).getByText('Niente da verificare per ora.'),
+      ).toBeTruthy(),
     );
   });
 

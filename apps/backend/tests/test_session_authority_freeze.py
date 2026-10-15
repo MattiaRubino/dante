@@ -144,18 +144,15 @@ def test_session_transitions_accept_json_uuid_string_and_reject_invalid_refs() -
             command.model_validate({**payload, "unexpected_field": True})
 
 
-
-class _SessionConstraintFailure(Exception):
+class _SessionConstraintError(Exception):
     def __init__(self, constraint: str) -> None:
         super().__init__(constraint)
-        self.orig = SimpleNamespace(
-            diag=SimpleNamespace(constraint_name=constraint)
-        )
+        self.orig = SimpleNamespace(diag=SimpleNamespace(constraint_name=constraint))
 
 
 @pytest.mark.parametrize(
     ("constraint", "expected_message"),
-    (
+    [
         (
             "session_internal_requires_running_main",
             "Avvia prima la Sessione principale",
@@ -164,7 +161,7 @@ class _SessionConstraintFailure(Exception):
             "session_internal_before_planned_start",
             "La Sessione non può iniziare prima",
         ),
-    ),
+    ],
 )
 def test_named_session_rejection_identifies_only_the_failed_precondition(
     constraint: str, expected_message: str
@@ -172,4 +169,4 @@ def test_named_session_rejection_identifies_only_the_failed_precondition(
     """The API must never blame the main clock for an early-start rejection."""
     application = object.__new__(SessionApplication)
     with pytest.raises(SessionInputError, match=expected_message):
-        application._raise_known(_SessionConstraintFailure(constraint))
+        application._raise_known(_SessionConstraintError(constraint))

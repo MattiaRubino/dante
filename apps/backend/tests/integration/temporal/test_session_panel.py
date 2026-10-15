@@ -288,9 +288,7 @@ async def test_two_simultaneous_activities_keep_independent_named_session_rows(
             )
             created.append(item.item.subject_native_ref)
 
-        panel = await get_session_panel(
-            _fake_context(actor), _fake_request(runtime), Response()
-        )
+        panel = await get_session_panel(_fake_context(actor), _fake_request(runtime), Response())
         assert {group.activity_ref for group in panel.groups} == set(created)
         rows = {
             group.activity_ref: next(
@@ -309,13 +307,13 @@ async def test_two_simultaneous_activities_keep_independent_named_session_rows(
             schedule_ref=ScopedRecordRef(first_row.planned_schedule_ref),
             operation_id="panel:multi:start",
         )
-        running = await get_session_panel(
-            _fake_context(actor), _fake_request(runtime), Response()
-        )
+        running = await get_session_panel(_fake_context(actor), _fake_request(runtime), Response())
         assert {group.activity_ref for group in running.groups} == set(created)
         first_group = next(group for group in running.groups if group.activity_ref == created[0])
-        assert any(row.execution and row.execution.session_ref == started.session_ref
-                   for row in first_group.rows)
+        assert any(
+            row.execution and row.execution.session_ref == started.session_ref
+            for row in first_group.rows
+        )
 
         await sessions.end(
             self_person_ref=actor,
@@ -356,22 +354,24 @@ async def test_named_session_can_start_before_activity_interval_from_direct_comm
             session_capture_mode="disabled",
         )
         activity = created.item.subject_native_ref
-        panel = await get_session_panel(
-            _fake_context(actor), _fake_request(runtime), Response()
-        )
+        panel = await get_session_panel(_fake_context(actor), _fake_request(runtime), Response())
         # No fabricated preview row two hours before the planned Activity.
         assert all(group.activity_ref != activity for group in panel.groups)
         async with runtime.session_factory() as session, session.begin():
             refs = (
-                await session.execute(
-                    text(
-                        "SELECT schedule_ref FROM dante.get_self_activity_schedule_roles("
-                        ":actor, CAST(ARRAY[:activity] AS uuid[])) "
-                        "WHERE role_code='planned'"
-                    ),
-                    {"actor": actor, "activity": activity},
+                (
+                    await session.execute(
+                        text(
+                            "SELECT schedule_ref FROM dante.get_self_activity_schedule_roles("
+                            ":actor, CAST(ARRAY[:activity] AS uuid[])) "
+                            "WHERE role_code='planned'"
+                        ),
+                        {"actor": actor, "activity": activity},
+                    )
                 )
-            ).scalars().all()
+                .scalars()
+                .all()
+            )
         assert len(refs) == 1
         started = await SessionApplication(runtime.session_factory).start_planned(
             self_person_ref=actor,
@@ -381,16 +381,12 @@ async def test_named_session_can_start_before_activity_interval_from_direct_comm
         )
         assert started.open
         assert started.started_at < planned_start
-        active = await get_session_panel(
-            _fake_context(actor), _fake_request(runtime), Response()
-        )
+        active = await get_session_panel(_fake_context(actor), _fake_request(runtime), Response())
         rows = [
-            row
-            for group in active.groups
-            if group.activity_ref == activity
-            for row in group.rows
+            row for group in active.groups if group.activity_ref == activity for row in group.rows
         ]
-        assert any(row.execution and row.execution.session_ref == started.session_ref
-                   for row in rows)
+        assert any(
+            row.execution and row.execution.session_ref == started.session_ref for row in rows
+        )
     finally:
         await runtime.dispose()

@@ -197,4 +197,6 @@ def test_named_session_identity_rejects_stale_placement_and_old_timed_payload() 
         )
     assert stale.value.status == 409
     with pytest.raises(ValidationError):
-        NewPlannedRow(client_ref=uuid7(), name="Ripasso", starts_local_at=_time(10))
+        NewPlannedRow.model_validate(
+            {"client_ref": uuid7(), "name": "Ripasso", "starts_local_at": _time(10)}
+        )

@@ -408,7 +408,9 @@ describe('Event Inspector actions', () => {
       occurrenceRef,
       'event_instance',
     );
-    fireEvent.click(screen.getByRole('button', { name: 'Solo questa istanza' }));
+    fireEvent.click(
+      screen.getByRole('button', { name: 'Solo questa istanza' }),
+    );
     await waitFor(() =>
       expect(confirmHardDeletion).toHaveBeenCalledWith(instance),
     );

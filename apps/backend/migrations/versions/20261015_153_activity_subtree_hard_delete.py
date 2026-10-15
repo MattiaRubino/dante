@@ -7,6 +7,7 @@ Scope checked, bounded by depth, rejects shared descendants, then deletes
 every independent child Activity identity deepest-first. The original owner
 and Session CAS in delete_self_activity_hard remain intact.
 """
+
 from collections.abc import Sequence
 
 from alembic import op
@@ -147,13 +148,10 @@ def upgrade() -> None:
     db.exec_driver_sql(_ACTIVITY)
     name = "dante.delete_self_activity_tree(uuid,uuid)"
     db.exec_driver_sql(f"ALTER FUNCTION {name} OWNER TO dante_owner")
-    db.exec_driver_sql(
-        f"REVOKE ALL ON FUNCTION {name} FROM PUBLIC,dante_migrator,dante_runtime"
-    )
+    db.exec_driver_sql(f"REVOKE ALL ON FUNCTION {name} FROM PUBLIC,dante_migrator,dante_runtime")
     # Existing guarded public command retains its original runtime grant.
     db.exec_driver_sql(
-        "ALTER FUNCTION dante.delete_self_activity_hard(uuid,uuid,text) "
-        "OWNER TO dante_owner"
+        "ALTER FUNCTION dante.delete_self_activity_hard(uuid,uuid,text) OWNER TO dante_owner"
     )
 
 
