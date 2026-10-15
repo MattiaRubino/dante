@@ -87,6 +87,79 @@ AS $receipts$
 $receipts$;
 """
 
+
+_COORDINATED_UNDO = r"""
+CREATE FUNCTION dante.undo_self_activity_timeline(
+    requested_actor uuid, requested_operation text, requested_fingerprint text,
+    requested_schedule uuid, requested_removed_operation text,
+    requested_next_state uuid, requested_activity uuid,
+    requested_session_fingerprint text
+) RETURNS TABLE(
+    schedule_ref uuid, restored_from_material_state_ref uuid,
+    material_state_ref uuid, placement_payload jsonb, created_at timestamptz,
+    replayed boolean
+)
+LANGUAGE plpgsql SECURITY DEFINER VOLATILE PARALLEL UNSAFE
+SET search_path=pg_catalog,dante,pg_temp
+AS $coordinated$
+DECLARE checked_role text;
+BEGIN
+    -- Guard both identity and concurrent Session state in the SQL admission.
+    PERFORM 1 FROM dante.activity_intention AS owned
+     WHERE owned.activity_ref=requested_activity
+       AND owned.self_person_ref=requested_actor
+       AND owned.retired_at IS NULL
+     FOR UPDATE;
+    IF NOT FOUND THEN
+        RAISE EXCEPTION USING ERRCODE='23503',
+          CONSTRAINT='activity_timeline_undo_unavailable';
+    END IF;
+    SELECT role.role_code INTO checked_role
+      FROM dante.schedule AS schedule
+      JOIN dante.get_self_activity_schedule_roles(
+          requested_actor,ARRAY[requested_activity]
+      ) AS role ON role.schedule_ref=schedule.schedule_ref
+     WHERE schedule.schedule_ref=requested_schedule
+       AND schedule.subject_native_ref=requested_activity
+       AND role.role_code IN ('envelope','interval');
+    IF checked_role IS NULL
+       OR requested_session_fingerprint IS DISTINCT FROM
+          dante.get_self_activity_session_impact_hash(
+              requested_actor,requested_activity
+          )
+    THEN
+        RAISE EXCEPTION USING ERRCODE='23505',
+           CONSTRAINT='activity_timeline_undo_stale';
+    END IF;
+    IF EXISTS (
+      SELECT 1 FROM dante.get_self_schedule_placement_lock(
+          requested_actor,requested_schedule
+      ) AS placement WHERE placement.locked
+    ) THEN
+       RAISE EXCEPTION USING ERRCODE='23505',
+         CONSTRAINT='activity_timeline_undo_locked';
+    END IF;
+    IF checked_role='envelope' AND EXISTS (
+      SELECT 1
+        FROM dante.get_self_activity_schedule_roles(
+          requested_actor,ARRAY[requested_activity]
+        ) AS role
+        JOIN dante.schedule_current_placement AS placement
+          ON placement.scoped_owner_ref=role.schedule_ref
+       WHERE role.role_code='interval'
+    ) THEN
+       RAISE EXCEPTION USING ERRCODE='23505',
+          CONSTRAINT='activity_timeline_undo_envelope_conflict';
+    END IF;
+    RETURN QUERY
+      SELECT * FROM dante.undo_self_activity_schedule_coordinated(
+          requested_actor,requested_operation,requested_fingerprint,
+          requested_schedule,requested_removed_operation,requested_next_state
+      );
+END;
+$coordinated$;
+"""
+
 def upgrade() -> None:
     db = op.get_bind()
     old_name = "dante.undo_self_schedule_unschedule_any"
@@ -102,9 +175,11 @@ def upgrade() -> None:
     clone = definition.replace(_GENERIC_ACTIVITY_GUARD, "").replace(old_name,new_name,1)
     db.exec_driver_sql(clone.replace("%", "%%"))
     db.exec_driver_sql(_UNDO_RECEIPTS)
+    db.exec_driver_sql(_COORDINATED_UNDO)
     for name, direct in (
         (f"{new_name}(uuid,text,text,uuid,text,uuid)",False),
         ("dante.list_self_activity_timeline_undo(uuid,uuid)",True),
+        ("dante.undo_self_activity_timeline(uuid,text,text,uuid,text,uuid,uuid,text)",True),
     ):
         db.exec_driver_sql(f"ALTER FUNCTION {name} OWNER TO dante_owner")
         db.exec_driver_sql(
