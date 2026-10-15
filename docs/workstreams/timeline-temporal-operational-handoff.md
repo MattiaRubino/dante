@@ -1,5 +1,41 @@
 # Timeline / Temporal-Operational — Workstream Handoff
 
+## 2026-10-15 — Forward-only guarded generated Activity admission and Objective graph repair
+
+Published candidate Alembic heads `20261015_150` and `20261015_151` add two
+bounded persistence repairs. `_150` adds the owner-executed
+`guard_generated_activity_creation()` BEFORE INSERT trigger on
+`activity_create_operation`. Only the reserved
+`b14:occurrence-activity:<occurrence_ref>` operation-id namespace gets
+the owner/source/skip admission check and lock; ordinary Activity authoring
+remains unchanged. It also redefines `bind_self_routine_occurrence_activity`
+to refuse deleted/skipped or cross-owner Occurrences and retired/foreign
+Activity rows while retaining existing binding replay behavior.
+
+`_151` redefines `delete_self_activity_lifecycle_graph` with an explicit
+owner-scoped `temporal_objective` root for Activity hard-deletion; this
+polymorphic link has no ordinary FK and was not traversed by the old graph.
+Dictionary and exact catalog constants now expect
+`238|5|234|104|486|421|596` and Alembic head `20261015_151`.
+New PostgreSQL regression `test_recurring_admission_guard.py` verifies
+normal Activity admission and skipped-Occurrence rejection with zero orphan
+create receipts; the existing `test_activity_inspector.py` now verifies
+Objective deletion and other-owner preservation.
+
+**Not verified by the assistant, per user test ownership.** No unit, PostgreSQL,
+browser or 27-group test execution is claimed for these commits. More
+importantly, these guards DO NOT IMPLEMENT hard deletion of a recurring
+Activity instance/full Routine series or Event instance/full Event series,
+nor coordinated Timeline unschedule/Undo. Producer materialization still
+spans separate transactions; a deletion command must lock both source and
+Occurrence and sweep in-flight generated creation receipts, and full graph
+closure must cover child Activity identities, Event-specific and non-FK
+ownership facets. Do not expose a destructive UI/API on the strength of
+these guards alone. The full engineering obligations remain in
+`timeline-recurring-deletion-atomicity-audit-2026-10-15.md`.
+
+
+
 ## 2026-10-15 — Deletion producer/consumer race audit (engineering gate)
 
 The audited `_111` Activity binder does not check `occurrence_skip`, and
