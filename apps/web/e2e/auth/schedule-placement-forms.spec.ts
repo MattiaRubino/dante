@@ -324,12 +324,15 @@ test.describe('Timeline B02-E full-stack Schedule forms', () => {
       await expect(inspector).toHaveCount(0);
       const persistedRead = waitForTimelineRead(page);
       await page.reload();
-      const window = (await (await persistedRead).json()) as {
-        items?: Array<Record<string, unknown>>;
-      };
-      expect(
-        window.items?.some((item) => item.schedule_ref === scheduleRef),
-      ).toBe(false);
+      const window = (await (await persistedRead).json()) as
+        | { kind: 'empty' }
+        | { kind: 'window'; items: Array<{ schedule_ref?: string }> };
+      expect(window.kind).toMatch(/^(empty|window)$/);
+      if (window.kind === 'window') {
+        expect(
+          window.items.some((item) => item.schedule_ref === scheduleRef),
+        ).toBe(false);
+      }
       await expect(card).toHaveCount(0);
       expect(
         (
