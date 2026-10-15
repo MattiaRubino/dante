@@ -249,6 +249,7 @@ export function ActivityInspectorActions({
                   void action(async () => {
                     const receipt = await timelinePlacement.remove(
                       activityRef, removePlacement, 'keep',
+                      removeImpact.fingerprint, removeImpact.attempts.length,
                     );
                     setUndoReceipt(receipt);
                     setRemovePlacement(null);
@@ -265,6 +266,7 @@ export function ActivityInspectorActions({
                   void action(async () => {
                     const receipt = await timelinePlacement.remove(
                       activityRef, removePlacement, 'delete',
+                      removeImpact.fingerprint, removeImpact.attempts.length,
                     );
                     setUndoReceipt(receipt);
                     setRemovePlacement(null);
@@ -283,6 +285,7 @@ export function ActivityInspectorActions({
                 void action(async () => {
                   const receipt = await timelinePlacement.remove(
                     activityRef, removePlacement, null,
+                    removeImpact.fingerprint, removeImpact.attempts.length,
                   );
                   setUndoReceipt(receipt);
                   setRemovePlacement(null);
