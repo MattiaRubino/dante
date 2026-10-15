@@ -249,6 +249,98 @@ async function createScheduledActivity(
 }
 
 test.describe('Timeline B02-E full-stack Schedule forms', () => {
+  test('one-off Activity deletion requires confirmation and is absent after reload', async ({
+    browser,
+  }, testInfo) => {
+    const context = await browser.newContext({
+      ignoreHTTPSErrors: true,
+      timezoneId: 'Europe/Rome',
+    });
+    try {
+      const page = await context.newPage();
+      await useItalianLocale(page);
+      await signIn(page, emailFor(testInfo));
+      const day = Temporal.Now.plainDateISO('Europe/Rome')
+        .add({ days: 1 })
+        .toString();
+      const initialRead = waitForTimelineRead(page);
+      await page.goto(`/home?date=${day}`);
+      expect((await initialRead).status()).toBe(200);
+      const title = `Activity delete ${randomUUID()}`;
+      const created = await createScheduledActivity(page, title, {
+        kind: 'floating_local_interval',
+        starts_local_at: `${day}T13:00:00`,
+        ends_local_at: `${day}T14:00:00`,
+      });
+      const activityRef = uuidField(created, 'activity_ref');
+      const scheduleRef = uuidField(created, 'schedule_ref');
+      const freshRead = waitForTimelineRead(page);
+      await page.reload();
+      expect((await freshRead).status()).toBe(200);
+      const card = page.locator(`[data-timeline-event="${scheduleRef}"]`);
+      await expect(card).toHaveCount(1);
+      await card.getByRole('button', { name: title }).click();
+      const inspector = page.getByRole('dialog', { name: title });
+      await inspector
+        .getByRole('button', { name: 'Elimina', exact: true })
+        .click();
+      await expect(
+        inspector.getByRole('button', {
+          name: 'Conferma eliminazione definitiva',
+        }),
+      ).toBeVisible();
+      await inspector
+        .getByRole('button', { name: 'Annulla', exact: true })
+        .click();
+      expect(
+        (
+          await page.request.get(
+            `/api/v1/temporal/activities/${activityRef}/profile`,
+          )
+        ).status(),
+      ).toBe(200);
+
+      await inspector
+        .getByRole('button', { name: 'Elimina', exact: true })
+        .click();
+      const deleteResponse = page.waitForResponse(
+        (response) =>
+          response
+            .url()
+            .endsWith(`/api/v1/temporal/activities/${activityRef}`) &&
+          response.request().method() === 'DELETE',
+        { timeout: E2E_RESPONSE_TIMEOUT_MS },
+      );
+      await inspector
+        .getByRole('button', { name: 'Conferma eliminazione definitiva' })
+        .click();
+      const deleted = await deleteResponse;
+      expect(deleted.status()).toBe(200);
+      expect(deleted.request().postDataJSON()).toMatchObject({
+        expected_session_fingerprint: expect.stringMatching(/^[a-f0-9]{64}$/),
+      });
+      await expect(inspector).toHaveCount(0);
+      const persistedRead = waitForTimelineRead(page);
+      await page.reload();
+      const window = (await (await persistedRead).json()) as {
+        items?: Array<Record<string, unknown>>;
+      };
+      expect(window.items?.some((item) => item.schedule_ref === scheduleRef)).toBe(
+        false,
+      );
+      await expect(card).toHaveCount(0);
+      expect(
+        (
+          await page.request.get(
+            `/api/v1/temporal/activities/${activityRef}/profile`,
+          )
+        ).status(),
+      ).toBe(404);
+    } finally {
+      await context.close();
+    }
+  });
+
   test('Activity card move uses coordinated replan and survives reload', async ({
     browser,
   }, testInfo) => {

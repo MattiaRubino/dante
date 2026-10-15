@@ -1,5 +1,23 @@
 # Timeline / Temporal-Operational — Workstream Handoff
 
+## 2026-10-15 — Destructive Inspector browser regression candidate
+
+The one-off Activity and Event authenticated browser journeys now create their
+own scheduled subject, open its Inspector, cancel a deletion, then confirm a
+fresh deletion and prove the Schedule is absent after reload (Activity also
+checks the canonical profile is gone).
+Colocated Inspector tests cover recurring Activity scope choice and recurring
+Event Occurrence selection versus full-series confirmation. The obsolete,
+disabled Event delete icon was removed from the same toolbar as the now-live
+Event action; it previously presented a contradictory inert control.
+
+These source/tests are **NOT_RUN** in the WSL real-stack environment. A prior
+single Playwright PASS on `624e3766` covered only Activity card move and cannot
+certify this newer candidate. PostgreSQL migrations `_150`–`_158`, full gate,
+Event recurring real-browser journeys and manual visual acceptance remain open.
+Do not perform irreversible deletion on user data before isolated PostgreSQL
+and browser proof at one SHA.
+
 ## 2026-10-15 — Review after Event Timeline candidate (`_158` pending PostgreSQL)
 
 The branch reached `_157` with Event/Occurrence non-destructive Timeline

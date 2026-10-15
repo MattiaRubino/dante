@@ -1042,16 +1042,6 @@ export function EventDetailDialog({
                 className="timeline-event-modal__owner-actions"
               />
             )}
-            {currentEditingProfile || detail.ownerKind !== 'event' ? null : (
-              <button
-                type="button"
-                disabled
-                title="Eliminazione Event non disponibile"
-                aria-label="Elimina Event non disponibile"
-              >
-                <TimelineInspectorIcon name="trash" />
-              </button>
-            )}
             {currentEditingProfile ||
             placementLockScheduleRef === null ? null : (
               <button

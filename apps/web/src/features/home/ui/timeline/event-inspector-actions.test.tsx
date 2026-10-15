@@ -19,6 +19,17 @@ const loadProfile = vi.fn();
 const reviseProfile = vi.fn();
 const isRecurring = vi.fn().mockResolvedValue(false);
 const assignArea = vi.fn();
+const previewHardDeletion = vi.fn();
+const confirmHardDeletion = vi.fn();
+const eventOccurrences = vi.fn();
+
+vi.mock('../../../temporal/remote-temporal-hard-deletion', () => ({
+  createRemoteTemporalHardDeletion: () => ({
+    preview: previewHardDeletion,
+    deleteConfirmed: confirmHardDeletion,
+    eventOccurrences,
+  }),
+}));
 
 vi.mock('../../../temporal/remote-event-recurrence-guard', () => ({
   createRemoteEventRecurrenceGuard: () => ({ isRecurring }),
@@ -61,7 +72,7 @@ afterEach(() => {
   isRecurring.mockResolvedValue(false);
 });
 
-describe('Event Inspector duplication', () => {
+describe('Event Inspector actions', () => {
   it('loads owner-scoped Agenda and Participation and opens a new draft without copying truth', async () => {
     loadEvent.mockResolvedValue({
       eventRef,
@@ -308,5 +319,100 @@ describe('Event Inspector duplication', () => {
     );
     expect(isRecurring).toHaveBeenCalledWith(eventRef);
     expect(onDuplicate).not.toHaveBeenCalled();
+  });
+
+  it('requires a fresh one-off Event preview and confirmation, while cancellation keeps the Event', async () => {
+    const preview = {
+      requestedRef: eventRef,
+      scope: 'event_once',
+      fingerprint: '3'.repeat(64),
+    };
+    previewHardDeletion.mockResolvedValue(preview);
+    confirmHardDeletion.mockResolvedValue(undefined);
+    const onDeleted = vi.fn();
+    render(
+      <EventInspectorActions
+        eventRef={eventRef}
+        placement={placement}
+        onDeleted={onDeleted}
+        onDuplicate={vi.fn()}
+      />,
+    );
+    fireEvent.click(screen.getByRole('button', { name: 'Elimina Event' }));
+    await screen.findByRole('button', {
+      name: 'Conferma eliminazione definitiva',
+    });
+    expect(previewHardDeletion).toHaveBeenCalledWith(eventRef, 'event_once');
+    expect(eventOccurrences).not.toHaveBeenCalled();
+    fireEvent.click(screen.getByRole('button', { name: 'Annulla' }));
+    expect(confirmHardDeletion).not.toHaveBeenCalled();
+    expect(onDeleted).not.toHaveBeenCalled();
+
+    fireEvent.click(screen.getByRole('button', { name: 'Elimina Event' }));
+    await screen.findByRole('button', {
+      name: 'Conferma eliminazione definitiva',
+    });
+    fireEvent.click(
+      screen.getByRole('button', { name: 'Conferma eliminazione definitiva' }),
+    );
+    await waitFor(() =>
+      expect(confirmHardDeletion).toHaveBeenCalledWith(preview),
+    );
+    expect(onDeleted).toHaveBeenCalledOnce();
+  });
+
+  it('does not offer recurring Event instance deletion until an explicit Occurrence is selected', async () => {
+    const occurrenceRef = '0199a222-2222-7222-8222-222222222222';
+    const series = {
+      requestedRef: eventRef,
+      scope: 'event_series',
+      fingerprint: '4'.repeat(64),
+    };
+    const instance = {
+      requestedRef: occurrenceRef,
+      scope: 'event_instance',
+      fingerprint: '5'.repeat(64),
+    };
+    isRecurring.mockResolvedValue(true);
+    previewHardDeletion.mockImplementation((ref: string, scope: string) =>
+      Promise.resolve(
+        ref === occurrenceRef && scope === 'event_instance' ? instance : series,
+      ),
+    );
+    eventOccurrences.mockResolvedValue([
+      { occurrenceRef, scheduleRef: null, displayLabel: '16 ottobre, 10:00' },
+    ]);
+    confirmHardDeletion.mockResolvedValue(undefined);
+    const onDeleted = vi.fn();
+    render(
+      <EventInspectorActions
+        eventRef={eventRef}
+        placement={placement}
+        onDeleted={onDeleted}
+        onDuplicate={vi.fn()}
+      />,
+    );
+
+    fireEvent.click(screen.getByRole('button', { name: 'Elimina Event' }));
+    await screen.findByRole('button', { name: 'Tutta la serie' });
+    expect(
+      screen.queryByRole('button', { name: 'Solo questa istanza' }),
+    ).toBeNull();
+    expect(confirmHardDeletion).not.toHaveBeenCalled();
+    fireEvent.change(
+      screen.getByRole('combobox', { name: 'Istanza Event da eliminare' }),
+      { target: { value: occurrenceRef } },
+    );
+    await screen.findByRole('button', { name: 'Solo questa istanza' });
+    expect(previewHardDeletion).toHaveBeenCalledWith(
+      occurrenceRef,
+      'event_instance',
+    );
+    fireEvent.click(screen.getByRole('button', { name: 'Solo questa istanza' }));
+    await waitFor(() =>
+      expect(confirmHardDeletion).toHaveBeenCalledWith(instance),
+    );
+    expect(confirmHardDeletion).not.toHaveBeenCalledWith(series);
+    expect(onDeleted).toHaveBeenCalledOnce();
   });
 });

@@ -69,6 +69,15 @@ const getSeriesState = vi.fn().mockResolvedValue(null);
 const reviseDefinition = vi.fn();
 const applyActivityEdits = vi.fn();
 const correctResult = vi.fn();
+const previewHardDeletion = vi.fn();
+const confirmHardDeletion = vi.fn();
+
+vi.mock('../../../temporal/remote-temporal-hard-deletion', () => ({
+  createRemoteTemporalHardDeletion: () => ({
+    preview: previewHardDeletion,
+    deleteConfirmed: confirmHardDeletion,
+  }),
+}));
 
 vi.mock('../../../temporal/remote-reality-objective-data-source', () => ({
   createRemoteRealityObjectiveDataSource: () => ({
@@ -1475,6 +1484,63 @@ describe('Activity Inspector', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Annulla' }));
     expect(deleteHard).not.toHaveBeenCalled();
     expect(retire).not.toHaveBeenCalled();
+  });
+
+  it('requires an explicit recurring Activity scope and never routes it through one-off deletion', async () => {
+    loadRecurringContext.mockResolvedValueOnce({
+      occurrenceRef: '0199a222-2222-7222-8222-222222222222',
+      sourceRef: '0199a444-4444-7444-8444-444444444444',
+      editRevision: 3,
+      recurrenceStateRef: null,
+    });
+    const instance = {
+      requestedRef: ref,
+      scope: 'activity_instance',
+      fingerprint: '1'.repeat(64),
+    };
+    const series = {
+      requestedRef: ref,
+      scope: 'activity_series',
+      fingerprint: '2'.repeat(64),
+    };
+    previewHardDeletion.mockImplementation((_ref: string, scope: string) =>
+      Promise.resolve(scope === 'activity_instance' ? instance : series),
+    );
+    confirmHardDeletion.mockResolvedValue(undefined);
+    const onDeleted = vi.fn();
+    render(
+      <ActivityInspectorActions
+        activityRef={ref}
+        onEdit={() => undefined}
+        onDeleted={onDeleted}
+        onDuplicate={() => undefined}
+      />,
+    );
+
+    fireEvent.click(screen.getByRole('button', { name: 'Elimina' }));
+    await screen.findByRole('button', { name: 'Solo questa istanza' });
+    expect(screen.getByRole('button', { name: 'Tutta la serie' })).toBeTruthy();
+    expect(previewHardDeletion).toHaveBeenCalledWith(ref, 'activity_instance');
+    expect(previewHardDeletion).toHaveBeenCalledWith(ref, 'activity_series');
+    expect(deleteHard).not.toHaveBeenCalled();
+    expect(confirmHardDeletion).not.toHaveBeenCalled();
+
+    fireEvent.click(screen.getByRole('button', { name: 'Annulla' }));
+    expect(confirmHardDeletion).not.toHaveBeenCalled();
+    expect(onDeleted).not.toHaveBeenCalled();
+
+    loadRecurringContext.mockResolvedValueOnce({
+      sourceRef: series.requestedRef,
+    });
+    fireEvent.click(screen.getByRole('button', { name: 'Elimina' }));
+    await screen.findByRole('button', { name: 'Tutta la serie' });
+    fireEvent.click(screen.getByRole('button', { name: 'Tutta la serie' }));
+    await waitFor(() =>
+      expect(confirmHardDeletion).toHaveBeenCalledWith(series),
+    );
+    expect(confirmHardDeletion).toHaveBeenCalledTimes(1);
+    expect(deleteHard).not.toHaveBeenCalled();
+    expect(onDeleted).toHaveBeenCalledOnce();
   });
 
   it('refuses a recurring Activity duplicate instead of silently creating a one-off', async () => {

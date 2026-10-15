@@ -1,3 +1,5 @@
+import { randomUUID } from 'node:crypto';
+
 import { Temporal } from '@dante/time';
 import {
   expect,
@@ -222,6 +224,76 @@ function addDays(date: string, days: number): string {
 }
 
 test.describe('Timeline B03-E real-stack Event closure', () => {
+  test('one-off Event deletion removes its source and Schedule only after confirmation', async ({
+    browser,
+  }, testInfo) => {
+    requireClosureProject(testInfo);
+    const context = await browser.newContext({
+      ignoreHTTPSErrors: true,
+      timezoneId: 'Europe/Rome',
+    });
+    try {
+      const page = await context.newPage();
+      await useItalianLocale(page);
+      await signIn(page);
+      const day = Temporal.Now.plainDateISO('Europe/Rome')
+        .add({ days: 1 })
+        .toString();
+      await openHome(page, `/home?date=${day}`);
+      const title = `Event delete ${randomUUID()}`;
+      const created = await createScheduledEvent(page, title, async (dialog) => {
+        await chooseDate(dialog, 'Data inizio', day);
+        await chooseFloatingLocalTime(dialog);
+      });
+      const eventRef = uuidField(created, 'event_ref');
+      const scheduleRef = uuidField(created, 'schedule_ref');
+      const card = page.locator(`[data-timeline-event="${scheduleRef}"]`);
+      await expect(card).toHaveCount(1);
+      await card.getByRole('button', { name: title }).click();
+      const inspector = page.getByRole('dialog', { name: title });
+      await expect(
+        inspector.getByRole('button', {
+          name: 'Elimina Event non disponibile',
+          includeHidden: true,
+        }),
+      ).toHaveCount(0);
+      await inspector.getByRole('button', { name: 'Elimina Event' }).click();
+      await expect(
+        inspector.getByRole('button', { name: 'Conferma eliminazione definitiva' }),
+      ).toBeVisible();
+      await inspector.getByRole('button', { name: 'Annulla' }).click();
+      await expect(card).toHaveCount(1);
+
+      await inspector.getByRole('button', { name: 'Elimina Event' }).click();
+      const deletedResponse = page.waitForResponse(
+        (response) =>
+          response.url().endsWith(`/api/v1/temporal/hard-deletion/${eventRef}`) &&
+          response.request().method() === 'DELETE',
+        { timeout: E2E_RESPONSE_TIMEOUT_MS },
+      );
+      await inspector
+        .getByRole('button', { name: 'Conferma eliminazione definitiva' })
+        .click();
+      const deleted = await deletedResponse;
+      expect(deleted.status()).toBe(200);
+      expect(deleted.request().postDataJSON()).toMatchObject({
+        scope: 'event_once',
+        expected_fingerprint: expect.stringMatching(/^[a-f0-9]{64}$/),
+      });
+      const persistedRead = waitForTimelineRead(page);
+      await page.reload();
+      const window = (await (await persistedRead).json()) as {
+        items?: Array<Record<string, unknown>>;
+      };
+      expect(window.items?.some((item) => item.schedule_ref === scheduleRef)).toBe(
+        false,
+      );
+      await expect(card).toHaveCount(0);
+    } finally {
+      await context.close();
+    }
+  });
+
   test('create, reschedule, all-day, multi-day and reload preserve canonical Event truth', async ({
     browser,
   }, testInfo) => {
