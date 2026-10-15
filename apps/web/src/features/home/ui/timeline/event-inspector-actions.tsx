@@ -11,6 +11,10 @@ import {
   type EventProfileDraft,
 } from '../../../temporal/remote-event-profile-data-source';
 import { createRemoteEventRecurrenceGuard } from '../../../temporal/remote-event-recurrence-guard';
+import {
+  createRemoteTemporalHardDeletion,
+  type TemporalHardDeletionPreview,
+} from '../../../temporal/remote-temporal-hard-deletion';
 import { createRemoteTemporalOrganizationDataSource } from '../../../temporal/remote-organization';
 import {
   createRemoteDraftVault,
@@ -28,11 +32,15 @@ import { TimelineInspectorIcon } from './timeline-inspector-icon';
 export function EventInspectorActions({
   eventRef,
   placement,
+  occurrenceRef = null,
+  onDeleted,
   onDuplicate,
   toolbarTarget = null,
 }: Readonly<{
   eventRef: string;
   placement: TimelineCanonicalSchedulePlacement;
+  occurrenceRef?: string | null;
+  onDeleted?: () => void;
   onDuplicate: (seed: ActivityDuplicateSeed) => void;
   toolbarTarget?: HTMLElement | null;
 }>) {
@@ -41,6 +49,10 @@ export function EventInspectorActions({
     createRemoteTemporalResponsibilityDataSource,
   );
   const [recurrenceGuard] = useState(createRemoteEventRecurrenceGuard);
+  const [hardDelete] = useState(createRemoteTemporalHardDeletion);
+  const [deletePreviews, setDeletePreviews] = useState<
+    readonly TemporalHardDeletionPreview[] | null
+  >(null);
   const [profileSource] = useState(createRemoteEventProfileDataSource);
   const [areaSource] = useState(createRemoteEventLifeAreaSettings);
   const [organizationSource] = useState(
@@ -272,6 +284,51 @@ export function EventInspectorActions({
     }
   };
 
+
+  const confirmDeletion = async () => {
+    if (busy) return;
+    setBusy(true);
+    setError('');
+    try {
+      const recurring = await recurrenceGuard.isRecurring(eventRef);
+      if (!recurring) {
+        setDeletePreviews([await hardDelete.preview(eventRef, 'event_once')]);
+      } else {
+        const series = await hardDelete.preview(eventRef, 'event_series');
+        const instance =
+          occurrenceRef === null
+            ? null
+            : await hardDelete.preview(occurrenceRef, 'event_instance');
+        setDeletePreviews(instance === null ? [series] : [instance, series]);
+      }
+    } catch (reason) {
+      setError(
+        reason instanceof Error
+          ? reason.message
+          : 'Impossibile verificare l’evento da eliminare.',
+      );
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const acceptDeletion = async (preview: TemporalHardDeletionPreview) => {
+    if (busy) return;
+    setBusy(true);
+    setError('');
+    try {
+      await hardDelete.deleteConfirmed(preview);
+      if (onDeleted) onDeleted();
+      else window.location.reload();
+    } catch (reason) {
+      setError(
+        reason instanceof Error ? reason.message : 'Eliminazione Event rifiutata.',
+      );
+    } finally {
+      setBusy(false);
+    }
+  };
+
   const toolbar = (
     <div className="timeline-activity-inspector__toolbar">
       <button
@@ -317,6 +374,19 @@ export function EventInspectorActions({
           <TimelineInspectorIcon name="copy" />
         ) : (
           'Copia in Bozze'
+        )}
+      </button>
+      <button
+        type="button"
+        disabled={busy}
+        aria-label="Elimina Event"
+        title="Elimina Event"
+        onClick={() => void confirmDeletion()}
+      >
+        {toolbarTarget ? (
+          <TimelineInspectorIcon name="trash" />
+        ) : (
+          'Elimina'
         )}
       </button>
     </div>
@@ -431,6 +501,43 @@ export function EventInspectorActions({
       ) : null}
       {profileNotice ? <p role="status">{profileNotice}</p> : null}
       {areaNotice ? <p role="status">{areaNotice}</p> : null}
+      {deletePreviews ? (
+        <div className="timeline-activity-inspector__confirmation">
+          <p>
+            L’eliminazione è definitiva e comprende Schedule, promemoria,
+            Objective e dati storici collegati all’Evento o all’istanza.
+            La rimozione dalla Timeline è un’operazione diversa.
+          </p>
+          {deletePreviews.map((preview) => (
+            <button
+              type="button"
+              key={preview.scope}
+              disabled={busy}
+              onClick={() => void acceptDeletion(preview)}
+            >
+              {preview.scope === 'event_once'
+                ? 'Conferma eliminazione definitiva'
+                : preview.scope === 'event_instance'
+                  ? 'Solo questa istanza'
+                  : 'Tutta la serie'}
+            </button>
+          ))}
+          {deletePreviews.length === 1 &&
+           deletePreviews[0]?.scope === 'event_series' ? (
+            <p>
+              Per eliminare soltanto un’istanza occorre selezionare la sua
+              Occurrence, non l’Evento sorgente.
+            </p>
+          ) : null}
+          <button
+            type="button"
+            disabled={busy}
+            onClick={() => setDeletePreviews(null)}
+          >
+            Annulla
+          </button>
+        </div>
+      ) : null}
       {error ? <p role="alert">{error}</p> : null}
     </div>
   );
