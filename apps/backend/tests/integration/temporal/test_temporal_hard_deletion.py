@@ -65,19 +65,31 @@ async def _delete(runtime: Any, actor: Any, ref: Any, scope: str, fingerprint: s
     return result.deleted_rows
 
 
-async def _occurrences(runtime: Any, source: Any) -> list[Any]:
-    async with runtime.session_factory() as session, session.begin():
-        return list(
-            (
-                await session.execute(
-                    text(
-                        "SELECT occurrence_ref FROM dante.occurrence_generation "
-                        "WHERE source_native_ref=:source ORDER BY occurrence_ref"
-                    ),
-                    {"source": source},
-                )
-            ).scalars()
+def _owner_sql(database: Any, sql_text: str, args: tuple[Any, ...]) -> list[tuple[Any, ...]]:
+    # Introspection is exclusively for the test owner role, never runtime DML.
+    with psycopg.connect(
+        **database.connection_kwargs(
+            "dante_migrator", database.cluster.migrator_password
         )
+    ) as connection:
+        connection.execute("SET ROLE dante_owner")
+        return list(connection.execute(sql_text, args).fetchall())
+
+
+def _occurrences(database: Any, source: Any) -> list[Any]:
+    return [
+        row[0]
+        for row in _owner_sql(
+            database,
+            "SELECT occurrence_ref FROM dante.occurrence_generation "
+            "WHERE source_native_ref=%s ORDER BY occurrence_ref",
+            (source,),
+        )
+    ]
+
+
+def _exists(database: Any, sql_text: str, ref: Any) -> bool:
+    return bool(_owner_sql(database, sql_text, (ref,))[0][0])
 
 
 async def _activity_for(runtime: Any, actor: Any, occurrence: Any) -> Any:
@@ -124,7 +136,7 @@ async def test_recurring_activity_instance_skip_and_whole_series_no_regeneration
             end_date_exclusive=date(2026, 10, 8),
             effective_zone_id="Europe/Rome",
         )
-        occurrences = await _occurrences(runtime, routine.source_ref)
+        occurrences = _occurrences(migrated_database, routine.source_ref)
         assert len(occurrences) == 2
         first, second = occurrences
         first_activity = await _activity_for(runtime, actor, first)
@@ -140,17 +152,16 @@ async def test_recurring_activity_instance_skip_and_whole_series_no_regeneration
         assert await _activity_for(runtime, actor, first) is None
         assert await _activity_for(runtime, actor, second) == second_activity
 
-        async with runtime.session_factory() as session, session.begin():
-            assert await session.scalar(
-                text("SELECT EXISTS(SELECT 1 FROM dante.occurrence_skip "
-                     "WHERE occurrence_ref=:occurrence)"),
-                {"occurrence": first},
-            )
-            assert await session.scalar(
-                text("SELECT EXISTS(SELECT 1 FROM dante.routine_intention "
-                     "WHERE routine_ref=:source)"),
-                {"source": routine.source_ref},
-            )
+        assert _exists(
+            migrated_database,
+            "SELECT EXISTS(SELECT 1 FROM dante.occurrence_skip WHERE occurrence_ref=%s)",
+            first,
+        )
+        assert _exists(
+            migrated_database,
+            "SELECT EXISTS(SELECT 1 FROM dante.routine_intention WHERE routine_ref=%s)",
+            routine.source_ref,
+        )
         await materializer.checkpoint_window(
             self_person_ref=actor,
             operation_id="hard:activity:replay",
@@ -162,7 +173,7 @@ async def test_recurring_activity_instance_skip_and_whole_series_no_regeneration
 
         series = await _preview(runtime, actor, second_activity, "activity_series")
         await _delete(runtime, actor, second_activity, "activity_series", series)
-        assert await _occurrences(runtime, routine.source_ref) == []
+        assert _occurrences(migrated_database, routine.source_ref) == []
         with psycopg.connect(
             **migrated_database.connection_kwargs(
                 "dante_migrator", migrated_database.cluster.migrator_password
@@ -212,25 +223,24 @@ async def test_recurring_event_single_occurrence_then_full_series(
             end_date_exclusive=date(2026, 10, 8),
             effective_zone_id="Europe/Rome",
         )
-        first, second = await _occurrences(runtime, created.source_ref)
+        first, second = _occurrences(migrated_database, created.source_ref)
         fingerprint = await _preview(runtime, actor, first, "event_instance")
         await _delete(runtime, actor, first, "event_instance", fingerprint)
-        async with runtime.session_factory() as session, session.begin():
-            assert await session.scalar(
-                text("SELECT EXISTS(SELECT 1 FROM dante.occurrence_skip "
-                     "WHERE occurrence_ref=:ref)"),
-                {"ref": first},
-            )
-            assert not await session.scalar(
-                text("SELECT EXISTS(SELECT 1 FROM dante.schedule "
-                     "WHERE subject_native_ref=:ref)"),
-                {"ref": first},
-            )
-            assert await session.scalar(
-                text("SELECT EXISTS(SELECT 1 FROM dante.schedule "
-                     "WHERE subject_native_ref=:ref)"),
-                {"ref": second},
-            )
+        assert _exists(
+            migrated_database,
+            "SELECT EXISTS(SELECT 1 FROM dante.occurrence_skip WHERE occurrence_ref=%s)",
+            first,
+        )
+        assert not _exists(
+            migrated_database,
+            "SELECT EXISTS(SELECT 1 FROM dante.schedule WHERE subject_native_ref=%s)",
+            first,
+        )
+        assert _exists(
+            migrated_database,
+            "SELECT EXISTS(SELECT 1 FROM dante.schedule WHERE subject_native_ref=%s)",
+            second,
+        )
         await materializer.checkpoint_window(
             self_person_ref=actor,
             operation_id="hard:event:after-single",
@@ -238,22 +248,20 @@ async def test_recurring_event_single_occurrence_then_full_series(
             end_date_exclusive=date(2026, 10, 8),
             effective_zone_id="Europe/Rome",
         )
-        async with runtime.session_factory() as session, session.begin():
-            assert not await session.scalar(
-                text("SELECT EXISTS(SELECT 1 FROM dante.schedule "
-                     "WHERE subject_native_ref=:ref)"),
-                {"ref": first},
-            )
+        assert not _exists(
+            migrated_database,
+            "SELECT EXISTS(SELECT 1 FROM dante.schedule WHERE subject_native_ref=%s)",
+            first,
+        )
 
         series = await _preview(runtime, actor, second, "event_series")
         await _delete(runtime, actor, second, "event_series", series)
-        assert await _occurrences(runtime, created.source_ref) == []
-        async with runtime.session_factory() as session, session.begin():
-            assert not await session.scalar(
-                text("SELECT EXISTS(SELECT 1 FROM dante.event "
-                     "WHERE event_ref=:source)"),
-                {"source": created.source_ref},
-            )
+        assert _occurrences(migrated_database, created.source_ref) == []
+        assert not _exists(
+            migrated_database,
+            "SELECT EXISTS(SELECT 1 FROM dante.event WHERE event_ref=%s)",
+            created.source_ref,
+        )
     finally:
         await runtime.dispose()
 
@@ -280,14 +288,13 @@ async def test_single_event_delete_keeps_unrelated_actors(
         ref = selected.item.subject_native_ref
         impact = await _preview(runtime, actor, ref, "event_once")
         await _delete(runtime, actor, ref, "event_once", impact)
-        async with runtime.session_factory() as session, session.begin():
-            assert not await session.scalar(
-                text("SELECT EXISTS(SELECT 1 FROM dante.event WHERE event_ref=:ref)"),
-                {"ref": ref},
-            )
-            assert await session.scalar(
-                text("SELECT EXISTS(SELECT 1 FROM dante.event WHERE event_ref=:ref)"),
-                {"ref": retained.item.subject_native_ref},
-            )
+        assert not _exists(
+            migrated_database, "SELECT EXISTS(SELECT 1 FROM dante.event WHERE event_ref=%s)",
+            ref,
+        )
+        assert _exists(
+            migrated_database, "SELECT EXISTS(SELECT 1 FROM dante.event WHERE event_ref=%s)",
+            retained.item.subject_native_ref,
+        )
     finally:
         await runtime.dispose()
