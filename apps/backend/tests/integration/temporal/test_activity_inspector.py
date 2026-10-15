@@ -19,6 +19,10 @@ from dante.modules.temporal.activity_inspector_api import (
     get_self_activity_session_impact,
 )
 from dante.modules.temporal.authoring import TemporalAuthoringApplication
+from dante.modules.temporal.reality_objective_api import (
+    ObjectiveCreateCommand,
+    create_activity_objective,
+)
 from dante.modules.temporal.session_runtime import SessionApplication
 from dante.platform.database.references import ScopedRecordRef
 from dante.platform.database.runtime import create_database_runtime
@@ -287,6 +291,87 @@ async def test_hard_delete_requires_fresh_owner_confirmation_and_removes_executi
                 ).fetchone() == (0,)
             assert connection.execute(
                 "SELECT count(*) FROM dante.activity WHERE activity_ref=%s",
+                (retained.item.subject_native_ref,),
+            ).fetchone() == (1,)
+    finally:
+        await runtime.dispose()
+
+
+@pytest.mark.asyncio
+async def test_hard_delete_includes_polymorphically_owned_objectives(
+    migrated_database: Any,
+) -> None:
+    actor, other = _seed_self(migrated_database), _seed_self(migrated_database)
+    runtime = create_database_runtime(migrated_database.runtime_settings())
+    try:
+        authoring = TemporalAuthoringApplication(runtime.session_factory)
+        selected = await authoring.create_activity(
+            self_person_ref=actor,
+            operation_id="hard-delete:objective:selected",
+            title="Activity con obiettivo",
+        )
+        retained = await authoring.create_activity(
+            self_person_ref=other,
+            operation_id="hard-delete:objective:other",
+            title="Activity di altro utente",
+        )
+        request = cast(
+            Request,
+            SimpleNamespace(app=SimpleNamespace(state=SimpleNamespace(database_runtime=runtime))),
+        )
+        context = cast(DanteContext, SimpleNamespace(self_person_ref=actor))
+        other_context = cast(DanteContext, SimpleNamespace(self_person_ref=other))
+        first = await create_activity_objective(
+            selected.item.subject_native_ref,
+            ObjectiveCreateCommand(
+                operation_id="hard-delete:objective:selected-create",
+                label="Verifica completamento",
+                result_kind="boolean",
+                presentation_order=0,
+            ),
+            context,
+            request,
+            Response(),
+        )
+        second = await create_activity_objective(
+            retained.item.subject_native_ref,
+            ObjectiveCreateCommand(
+                operation_id="hard-delete:objective:other-create",
+                label="Obiettivo di altro utente",
+                result_kind="boolean",
+                presentation_order=0,
+            ),
+            other_context,
+            request,
+            Response(),
+        )
+        impact = await get_self_activity_session_impact(
+            selected.item.subject_native_ref, context, request, Response()
+        )
+        deleted = await delete_self_activity_hard(
+            selected.item.subject_native_ref,
+            ActivityHardDeleteCommand(expected_session_fingerprint=impact.fingerprint),
+            context,
+            request,
+            Response(),
+        )
+        assert deleted.deleted_rows > 0
+        with psycopg.connect(
+            **migrated_database.connection_kwargs(
+                "dante_migrator", migrated_database.cluster.migrator_password
+            )
+        ) as connection:
+            connection.execute("SET ROLE dante_owner")
+            assert connection.execute(
+                "SELECT count(*) FROM dante.temporal_objective WHERE objective_ref=%s",
+                (first.objective_ref,),
+            ).fetchone() == (0,)
+            assert connection.execute(
+                "SELECT count(*) FROM dante.temporal_objective WHERE objective_ref=%s",
+                (second.objective_ref,),
+            ).fetchone() == (1,)
+            assert connection.execute(
+                "SELECT count(*) FROM dante.activity_intention WHERE activity_ref=%s",
                 (retained.item.subject_native_ref,),
             ).fetchone() == (1,)
     finally:
