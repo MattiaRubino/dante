@@ -15,7 +15,7 @@ pytestmark = pytest.mark.postgres
 
 # The current head is forward-only; the earlier B01/B02 downgrade guard
 # fixtures intentionally exercise the last historically reversible snapshot.
-_CURRENT_HEAD = "20261014_148"
+_CURRENT_HEAD = "20261014_149"
 _HISTORICAL_REVERSIBLE_HEAD = "20260917_29"
 _B02_REVISION_PARENT = "20260909_21"
 _B02_SCHEMA_HEAD = "20260909_20"

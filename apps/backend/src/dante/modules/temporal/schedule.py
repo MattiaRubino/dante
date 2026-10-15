@@ -699,6 +699,12 @@ async def undo_schedule_unschedule_in_session(
     unschedule_operation_id: str,
 ) -> RestoredScheduleView:
     """Restore any activated prior placement as a new monotonic state."""
+    if await _requires_coordinated_activity_interval_change(
+        database_session, self_person_ref=self_person_ref, schedule_ref=schedule_ref
+    ):
+        raise ScheduleActivityIntervalConflictError(
+            "An Activity interval requires a coordinated Activity replan."
+        )
     normalized_operation_id = _normalize_operation_id(operation_id)
     normalized_unschedule_operation_id = _normalize_operation_id(unschedule_operation_id)
     material_state_ref = new_material_state_ref()

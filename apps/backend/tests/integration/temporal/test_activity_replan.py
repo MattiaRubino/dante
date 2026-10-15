@@ -1,10 +1,12 @@
 """Real PostgreSQL contract for Activity intervals and named Session configuration."""
 
+import hashlib
 from datetime import datetime
 from types import SimpleNamespace
 from typing import Any, cast
 from uuid import uuid7
 
+import psycopg
 import pytest
 from fastapi import Request, Response
 from sqlalchemy import text
@@ -29,6 +31,7 @@ from dante.modules.temporal.schedule import (
     NamedZoneLocalIntervalPlacement,
     ScheduleActivityIntervalConflictError,
     TemporalScheduleApplication,
+    _unschedule_undo_fingerprint,
 )
 from dante.modules.temporal.session_runtime import SessionApplication
 from dante.platform.database.references import MaterialStateRef, NativeRef, ScopedRecordRef
@@ -498,5 +501,105 @@ async def test_direct_activity_envelope_revision_with_attempt_requires_confirmed
                 activity, _context(actor), _request(runtime), Response()
             )
         ).fingerprint == impact.fingerprint
+    finally:
+        await runtime.dispose()
+
+
+@pytest.mark.asyncio
+async def test_generic_undo_cannot_restore_removed_activity_interval_around_a_running_session(
+    migrated_database: Any,
+) -> None:
+    actor = _seed_self(migrated_database)
+    runtime = create_database_runtime(migrated_database.runtime_settings())
+    try:
+        created = await TemporalAuthoringApplication(runtime.session_factory).create_activity(
+            self_person_ref=actor,
+            operation_id="lifecycle:undo:create",
+            title="Studio",
+            placement=_window(9, 12),
+            activity_intervals=(_window(9, 10), _window(11, 12)),
+            session_capture_mode="live",
+        )
+        activity = created.item.subject_native_ref
+        before = await _snapshot(runtime, actor, activity)
+        first, second = (row for row in before.schedules if row.role_code == "interval")
+        started = await SessionApplication(runtime.session_factory).start(
+            self_person_ref=actor,
+            subject_kind="activity",
+            subject_native_ref=activity,
+            operation_id="lifecycle:undo:start",
+        )
+        impact = await get_self_activity_session_impact(
+            activity, _context(actor), _request(runtime), Response()
+        )
+        operation = "lifecycle:undo:remove"
+        await apply_activity_replan(
+            activity,
+            ActivityReplanCommand(
+                operation_id=operation,
+                intervals=[_move(second, 11, 12)],
+                remove_intervals=[_move(first, 9, 10)],
+                session_disposition="keep",
+                expected_session_fingerprint=impact.fingerprint,
+            ),
+            _context(actor),
+            _request(runtime),
+            Response(),
+        )
+        receipt = (
+            f"replan:remove:{hashlib.sha256(operation.encode('utf-8')).hexdigest()}"
+            f":{first.schedule_ref}"
+        )
+        schedules = TemporalScheduleApplication(runtime.session_factory)
+        with pytest.raises(ScheduleActivityIntervalConflictError):
+            await schedules.undo_unschedule(
+                self_person_ref=NativeRef(actor),
+                operation_id="lifecycle:undo:refused",
+                schedule_ref=ScopedRecordRef(first.schedule_ref),
+                unschedule_operation_id=receipt,
+            )
+
+        # The runtime can invoke the exposed DEFINER routine directly. It must
+        # enforce the same refusal even without the Python application guard.
+        with (
+            psycopg.connect(
+                **migrated_database.connection_kwargs(
+                    "dante_runtime", migrated_database.cluster.runtime_password
+                )
+            ) as connection,
+            pytest.raises(psycopg.errors.CheckViolation) as refused,
+        ):
+            connection.execute(
+                "SELECT * FROM dante.undo_self_schedule_unschedule_any(%s,%s,%s,%s,%s,%s)",
+                (
+                    actor,
+                    "lifecycle:undo:direct",
+                    _unschedule_undo_fingerprint(
+                        schedule_ref=ScopedRecordRef(first.schedule_ref),
+                        unschedule_operation_id=receipt,
+                    ),
+                    first.schedule_ref,
+                    receipt,
+                    uuid7(),
+                ),
+            )
+        assert refused.value.diag.constraint_name == "schedule_activity_interval_requires_replan"
+        async with runtime.session_factory() as session, session.begin():
+            restored = await session.scalar(
+                text(
+                    "SELECT EXISTS(SELECT 1 FROM dante.get_self_activity_schedule_roles("
+                    ":actor, CAST(ARRAY[:activity] AS uuid[])) AS role "
+                    "JOIN dante.schedule_current_placement AS placement "
+                    "ON placement.scoped_owner_ref=role.schedule_ref "
+                    "WHERE role.schedule_ref=:schedule)"
+                ),
+                {"actor": actor, "activity": activity, "schedule": first.schedule_ref},
+            )
+        assert restored is False
+        after = await get_self_activity_session_impact(
+            activity, _context(actor), _request(runtime), Response()
+        )
+        assert after.fingerprint == impact.fingerprint
+        assert [row.session_ref for row in after.attempts] == [started.session_ref]
     finally:
         await runtime.dispose()

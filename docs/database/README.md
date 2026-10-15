@@ -6,7 +6,7 @@
 - **Protected-main Alembic head:** `20260906_18`
 - **Protected-main topology:** `89|5|18|77|173|91|272|0|0|0`
 - **Timeline candidate branch:** `feature/timeline-temporal-operational`
-- **Timeline candidate Alembic head (unverified lifecycle candidate):** `20261014_148`; `_146` removes the legacy named Session start guard, `_147` adds owner-scoped graph deletion, and `_148` adds Session fingerprint and guarded deletion capabilities. Intended catalog: `238|5|233|103|486|421|596`; PostgreSQL migration and exact catalog validation remain pending. See `timeline-temporal-operational.md`.
+- **Timeline candidate Alembic head:** `20261014_149`; `_146` removes the legacy named Session start guard, `_147` adds owner-scoped graph deletion, `_148` adds Session fingerprint and guarded deletion capabilities, and `_149` closes generic Undo of coordinated Activity intervals. Intended catalog: `238|5|233|103|486|421|596` (the `_149` replacement changes no topology). The user's focused PostgreSQL check passed at `_148` on `0e848943`; `_149` still needs PostgreSQL migration and exact catalog validation. See `timeline-temporal-operational.md`.
 - **Historical B10-C proven topology (2026-09-26):** `20260925_79` / `167|5|123|93|329|279|446`; latest `_142` candidate topology `238|5|228|103|486|421|596` (user-local catalog gate green)
 - **Timeline candidate DB overlay:** `timeline-temporal-operational.md`
 - **Persistence doctrine:** `../development/backend-cp6-02-postgresql-persistence-constitution.md`

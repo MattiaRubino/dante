@@ -1,5 +1,18 @@
 # Timeline / Temporal-Operational — Workstream Handoff
 
+## 2026-10-15 — Generic Activity interval Undo guard candidate
+
+Forward-only `_149` prevents the generic Schedule Undo capability from
+restoring an interval removed by a coordinated Activity replan. The Python
+application and HTTP route reject it, while the directly executable database
+function takes the Activity lock and rejects it independently. A PostgreSQL
+regression exercises a running Session, attempted application and raw SQL
+Undo, and readback of both placement and Session impact. This candidate has
+not been tested on PostgreSQL; the earlier 10/10 on `0e848943` is evidence
+only for `_148`. The current catalog topology stays `238|5|233|103|486|421|596`.
+The review queue, direct Timeline disposition UX, and recurring scope remain
+open in the lifecycle matrix.
+
 ## 2026-10-14 — Owner TEMP corrective candidate: focused PostgreSQL PASS
 
 The user's WSL run of ten selected PostgreSQL tests on exact source

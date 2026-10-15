@@ -1714,6 +1714,15 @@ async def undo_schedule_unschedule(
             detail="The operation id was already used for a different Undo intent.",
             retryable=False,
         ) from exc
+    except ScheduleActivityIntervalConflictError as exc:
+        raise ProblemError(
+            status=409,
+            code="temporal.schedule.activity_interval_requires_replan",
+            category="conflict",
+            title="Activity interval replan required",
+            detail="Activity intervals require a coordinated Activity replan.",
+            retryable=False,
+        ) from exc
     except ScheduleUndoConflictError as exc:
         raise ProblemError(
             status=409,

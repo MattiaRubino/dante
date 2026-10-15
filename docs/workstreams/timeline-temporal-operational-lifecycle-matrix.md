@@ -68,6 +68,11 @@ Timeline, review rail and browser must agree before a row is accepted.
   `238|5|233|103|486|421|596`; cross-representation equality passed in the
   selected database test, while the complete catalog test inventory remains
   outside this focused run.
+- A forward-only `_149` candidate guards generic Undo of an Activity interval
+  after a coordinated removal, in both the API and the directly executable
+  PostgreSQL routine. Its focused regression checks refusal with a running
+  Session and preserved removal; PostgreSQL has not run on `_149`. The expected
+  catalog topology is unchanged. Direct Timeline mutation UX is still open.
 - This environment has no Docker, PostgreSQL 18/PostGIS or real-app browser
   stack. The previous full-gate result on an older SHA is not evidence for
   these changes.
