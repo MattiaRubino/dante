@@ -8,7 +8,7 @@
     "name": "bind_self_routine_occurrence_activity",
     "ownership_class": "dante_owned"
   },
-  "purpose": "Bind one self-owned Routine Occurrence to its concrete materialized Activity.",
+  "purpose": "Bind one self-owned, non-skipped Routine Occurrence to its concrete Activity under a source and Occurrence lock; refuse deleted/foreign or retired Activity and conflicting bindings.",
   "classification": {
     "persistence_role": "bind_self_routine_occurrence_activity",
     "canonicality": "capability_surface",
@@ -105,7 +105,8 @@
   "proof": {
     "obligations": [
       "Self scope is enforced in PostgreSQL.",
-      "Replay/CAS semantics remain capability-owned where applicable."
+      "Replay/CAS semantics remain capability-owned where applicable.",
+      "Binding after a skipped/deleted Occurrence fails atomically, without rematerializing it."
     ],
     "test_refs": [
       "apps/backend/tests/integration/database/test_current_catalog.py",
