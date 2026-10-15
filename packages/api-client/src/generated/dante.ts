@@ -20,6 +20,10 @@ import type {
   ActivityRetirementCommand,
   ActivityRetirementResponse,
   ActivitySessionImpactResponse,
+  ActivityTimelineMutationResult,
+  ActivityTimelineUndoCommand,
+  ActivityTimelineUndoReceipt,
+  ActivityTimelineUnplaceCommand,
   ActualRealizationCommand,
   ActualRealizationConditionRequest,
   ActualRealizationConditionResponse,
@@ -74,7 +78,10 @@ import type {
   EstablishOccurrenceScheduleRequest,
   EvaluateTemporalConstraintsRequest,
   EventAgendaMutationResponse,
+  EventDeletionOccurrenceChoice,
   EventResponse,
+  EventTimelineScheduleSelection,
+  EventTimelineUndoReceipt,
   ExecutionAssessmentResponse,
   ExecutionPolicyCommand,
   ExecutionPolicyResponse,
@@ -244,9 +251,13 @@ import type {
   TemporalDiagnoseSelfPlanConflictsParams,
   TemporalFindActualRealizationConditionParams,
   TemporalGetSessionPanelParams,
+  TemporalHardDeleteCommand,
+  TemporalHardDeletePreview,
+  TemporalHardDeleteResult,
   TemporalListConstraintsBySubjectParams,
   TemporalListHomeFinishedWorkParams,
   TemporalListHomeObjectiveWorkParams,
+  TemporalPreviewHardDeletionParams,
   TemporalRetireDraftParams,
   TemporalSearchSelfPlanStepCandidatesParams,
   TimelineWindowEmptyResponse,
@@ -5910,6 +5921,199 @@ export const temporalDetachActivityTag = async (
   } as temporalDetachActivityTagResponse;
 };
 
+export type temporalUndoActivityTimelineResponse200 = {
+  data: ActivityTimelineMutationResult;
+  status: 200;
+};
+
+export type temporalUndoActivityTimelineResponse422 = {
+  data: HTTPValidationError;
+  status: 422;
+};
+
+export type temporalUndoActivityTimelineResponseSuccess =
+  temporalUndoActivityTimelineResponse200 & {
+    headers: Headers;
+  };
+export type temporalUndoActivityTimelineResponseError =
+  temporalUndoActivityTimelineResponse422 & {
+    headers: Headers;
+  };
+
+export type temporalUndoActivityTimelineResponse =
+  | temporalUndoActivityTimelineResponseSuccess
+  | temporalUndoActivityTimelineResponseError;
+
+export const getTemporalUndoActivityTimelineUrl = (activityRef: string) => {
+  return `/api/v1/temporal/activities/${activityRef}/timeline-undo`;
+};
+
+/**
+ * @summary Undo Activity Timeline
+ */
+export const temporalUndoActivityTimeline = async (
+  activityRef: string,
+  activityTimelineUndoCommand: ActivityTimelineUndoCommand,
+  options?: RequestInit,
+  fetchFn?: typeof globalThis.fetch,
+): Promise<temporalUndoActivityTimelineResponse> => {
+  const getHeaders = (
+    h?: NonNullable<RequestInit['headers']>,
+  ): Record<string, string | readonly string[]> => {
+    if (!h) return {};
+    if (h instanceof Headers) return Object.fromEntries(h.entries());
+    if (Array.isArray(h)) return Object.fromEntries(h);
+    return h;
+  };
+  const res = await (fetchFn ?? fetch)(
+    getTemporalUndoActivityTimelineUrl(activityRef),
+    {
+      ...options,
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        ...getHeaders(options?.headers),
+      },
+      body: JSON.stringify(activityTimelineUndoCommand),
+    },
+  );
+
+  const body = [204, 205, 304].includes(res.status) ? null : await res.text();
+
+  const data: temporalUndoActivityTimelineResponse['data'] = body
+    ? JSON.parse(body)
+    : {};
+  return {
+    data,
+    status: res.status,
+    headers: res.headers,
+  } as temporalUndoActivityTimelineResponse;
+};
+
+export type temporalListActivityTimelineUndoResponse200 = {
+  data: ActivityTimelineUndoReceipt[];
+  status: 200;
+};
+
+export type temporalListActivityTimelineUndoResponse422 = {
+  data: HTTPValidationError;
+  status: 422;
+};
+
+export type temporalListActivityTimelineUndoResponseSuccess =
+  temporalListActivityTimelineUndoResponse200 & {
+    headers: Headers;
+  };
+export type temporalListActivityTimelineUndoResponseError =
+  temporalListActivityTimelineUndoResponse422 & {
+    headers: Headers;
+  };
+
+export type temporalListActivityTimelineUndoResponse =
+  | temporalListActivityTimelineUndoResponseSuccess
+  | temporalListActivityTimelineUndoResponseError;
+
+export const getTemporalListActivityTimelineUndoUrl = (activityRef: string) => {
+  return `/api/v1/temporal/activities/${activityRef}/timeline-undo-receipts`;
+};
+
+/**
+ * @summary List Activity Timeline Undo
+ */
+export const temporalListActivityTimelineUndo = async (
+  activityRef: string,
+  options?: RequestInit,
+  fetchFn?: typeof globalThis.fetch,
+): Promise<temporalListActivityTimelineUndoResponse> => {
+  const res = await (fetchFn ?? fetch)(
+    getTemporalListActivityTimelineUndoUrl(activityRef),
+    {
+      ...options,
+      method: 'GET',
+    },
+  );
+
+  const body = [204, 205, 304].includes(res.status) ? null : await res.text();
+
+  const data: temporalListActivityTimelineUndoResponse['data'] = body
+    ? JSON.parse(body)
+    : {};
+  return {
+    data,
+    status: res.status,
+    headers: res.headers,
+  } as temporalListActivityTimelineUndoResponse;
+};
+
+export type temporalUnplaceActivityTimelineResponse200 = {
+  data: ActivityTimelineMutationResult;
+  status: 200;
+};
+
+export type temporalUnplaceActivityTimelineResponse422 = {
+  data: HTTPValidationError;
+  status: 422;
+};
+
+export type temporalUnplaceActivityTimelineResponseSuccess =
+  temporalUnplaceActivityTimelineResponse200 & {
+    headers: Headers;
+  };
+export type temporalUnplaceActivityTimelineResponseError =
+  temporalUnplaceActivityTimelineResponse422 & {
+    headers: Headers;
+  };
+
+export type temporalUnplaceActivityTimelineResponse =
+  | temporalUnplaceActivityTimelineResponseSuccess
+  | temporalUnplaceActivityTimelineResponseError;
+
+export const getTemporalUnplaceActivityTimelineUrl = (activityRef: string) => {
+  return `/api/v1/temporal/activities/${activityRef}/timeline-unplace`;
+};
+
+/**
+ * @summary Unplace Activity Timeline
+ */
+export const temporalUnplaceActivityTimeline = async (
+  activityRef: string,
+  activityTimelineUnplaceCommand: ActivityTimelineUnplaceCommand,
+  options?: RequestInit,
+  fetchFn?: typeof globalThis.fetch,
+): Promise<temporalUnplaceActivityTimelineResponse> => {
+  const getHeaders = (
+    h?: NonNullable<RequestInit['headers']>,
+  ): Record<string, string | readonly string[]> => {
+    if (!h) return {};
+    if (h instanceof Headers) return Object.fromEntries(h.entries());
+    if (Array.isArray(h)) return Object.fromEntries(h);
+    return h;
+  };
+  const res = await (fetchFn ?? fetch)(
+    getTemporalUnplaceActivityTimelineUrl(activityRef),
+    {
+      ...options,
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        ...getHeaders(options?.headers),
+      },
+      body: JSON.stringify(activityTimelineUnplaceCommand),
+    },
+  );
+
+  const body = [204, 205, 304].includes(res.status) ? null : await res.text();
+
+  const data: temporalUnplaceActivityTimelineResponse['data'] = body
+    ? JSON.parse(body)
+    : {};
+  return {
+    data,
+    status: res.status,
+    headers: res.headers,
+  } as temporalUnplaceActivityTimelineResponse;
+};
+
 export type temporalGetActivityChildrenResponse200 = {
   data: ActivityChildrenResponse;
   status: 200;
@@ -8095,6 +8299,63 @@ export const replaceEventAgendaApiV1TemporalEventsEventRefAgendaPut = async (
   } as replaceEventAgendaApiV1TemporalEventsEventRefAgendaPutResponse;
 };
 
+export type temporalListEventDeletionOccurrencesResponse200 = {
+  data: EventDeletionOccurrenceChoice[];
+  status: 200;
+};
+
+export type temporalListEventDeletionOccurrencesResponse422 = {
+  data: HTTPValidationError;
+  status: 422;
+};
+
+export type temporalListEventDeletionOccurrencesResponseSuccess =
+  temporalListEventDeletionOccurrencesResponse200 & {
+    headers: Headers;
+  };
+export type temporalListEventDeletionOccurrencesResponseError =
+  temporalListEventDeletionOccurrencesResponse422 & {
+    headers: Headers;
+  };
+
+export type temporalListEventDeletionOccurrencesResponse =
+  | temporalListEventDeletionOccurrencesResponseSuccess
+  | temporalListEventDeletionOccurrencesResponseError;
+
+export const getTemporalListEventDeletionOccurrencesUrl = (
+  eventRef: string,
+) => {
+  return `/api/v1/temporal/events/${eventRef}/deletion-occurrences`;
+};
+
+/**
+ * @summary List Event Deletion Occurrences
+ */
+export const temporalListEventDeletionOccurrences = async (
+  eventRef: string,
+  options?: RequestInit,
+  fetchFn?: typeof globalThis.fetch,
+): Promise<temporalListEventDeletionOccurrencesResponse> => {
+  const res = await (fetchFn ?? fetch)(
+    getTemporalListEventDeletionOccurrencesUrl(eventRef),
+    {
+      ...options,
+      method: 'GET',
+    },
+  );
+
+  const body = [204, 205, 304].includes(res.status) ? null : await res.text();
+
+  const data: temporalListEventDeletionOccurrencesResponse['data'] = body
+    ? JSON.parse(body)
+    : {};
+  return {
+    data,
+    status: res.status,
+    headers: res.headers,
+  } as temporalListEventDeletionOccurrencesResponse;
+};
+
 export type temporalListEventExpectedParticipationResponse200 = {
   data: ExpectedParticipationResponse[];
   status: 200;
@@ -8972,6 +9233,116 @@ export const temporalDetachEventTag = async (
   } as temporalDetachEventTagResponse;
 };
 
+export type temporalListEventTimelineSchedulesResponse200 = {
+  data: EventTimelineScheduleSelection[];
+  status: 200;
+};
+
+export type temporalListEventTimelineSchedulesResponse422 = {
+  data: HTTPValidationError;
+  status: 422;
+};
+
+export type temporalListEventTimelineSchedulesResponseSuccess =
+  temporalListEventTimelineSchedulesResponse200 & {
+    headers: Headers;
+  };
+export type temporalListEventTimelineSchedulesResponseError =
+  temporalListEventTimelineSchedulesResponse422 & {
+    headers: Headers;
+  };
+
+export type temporalListEventTimelineSchedulesResponse =
+  | temporalListEventTimelineSchedulesResponseSuccess
+  | temporalListEventTimelineSchedulesResponseError;
+
+export const getTemporalListEventTimelineSchedulesUrl = (eventRef: string) => {
+  return `/api/v1/temporal/events/${eventRef}/timeline-schedules`;
+};
+
+/**
+ * @summary List Event Timeline Schedules
+ */
+export const temporalListEventTimelineSchedules = async (
+  eventRef: string,
+  options?: RequestInit,
+  fetchFn?: typeof globalThis.fetch,
+): Promise<temporalListEventTimelineSchedulesResponse> => {
+  const res = await (fetchFn ?? fetch)(
+    getTemporalListEventTimelineSchedulesUrl(eventRef),
+    {
+      ...options,
+      method: 'GET',
+    },
+  );
+
+  const body = [204, 205, 304].includes(res.status) ? null : await res.text();
+
+  const data: temporalListEventTimelineSchedulesResponse['data'] = body
+    ? JSON.parse(body)
+    : {};
+  return {
+    data,
+    status: res.status,
+    headers: res.headers,
+  } as temporalListEventTimelineSchedulesResponse;
+};
+
+export type temporalListEventTimelineUndoResponse200 = {
+  data: EventTimelineUndoReceipt[];
+  status: 200;
+};
+
+export type temporalListEventTimelineUndoResponse422 = {
+  data: HTTPValidationError;
+  status: 422;
+};
+
+export type temporalListEventTimelineUndoResponseSuccess =
+  temporalListEventTimelineUndoResponse200 & {
+    headers: Headers;
+  };
+export type temporalListEventTimelineUndoResponseError =
+  temporalListEventTimelineUndoResponse422 & {
+    headers: Headers;
+  };
+
+export type temporalListEventTimelineUndoResponse =
+  | temporalListEventTimelineUndoResponseSuccess
+  | temporalListEventTimelineUndoResponseError;
+
+export const getTemporalListEventTimelineUndoUrl = (eventRef: string) => {
+  return `/api/v1/temporal/events/${eventRef}/timeline-undo-receipts`;
+};
+
+/**
+ * @summary List Event Timeline Undo
+ */
+export const temporalListEventTimelineUndo = async (
+  eventRef: string,
+  options?: RequestInit,
+  fetchFn?: typeof globalThis.fetch,
+): Promise<temporalListEventTimelineUndoResponse> => {
+  const res = await (fetchFn ?? fetch)(
+    getTemporalListEventTimelineUndoUrl(eventRef),
+    {
+      ...options,
+      method: 'GET',
+    },
+  );
+
+  const body = [204, 205, 304].includes(res.status) ? null : await res.text();
+
+  const data: temporalListEventTimelineUndoResponse['data'] = body
+    ? JSON.parse(body)
+    : {};
+  return {
+    data,
+    status: res.status,
+    headers: res.headers,
+  } as temporalListEventTimelineUndoResponse;
+};
+
 export type temporalGetEventAdvancedRecurrenceResponse200 = {
   data: AdvancedRecurrenceResponse;
   status: 200;
@@ -9510,6 +9881,146 @@ export const temporalSetEventRealityPolicy = async (
     status: res.status,
     headers: res.headers,
   } as temporalSetEventRealityPolicyResponse;
+};
+
+export type temporalApplyHardDeletionResponse200 = {
+  data: TemporalHardDeleteResult;
+  status: 200;
+};
+
+export type temporalApplyHardDeletionResponse422 = {
+  data: HTTPValidationError;
+  status: 422;
+};
+
+export type temporalApplyHardDeletionResponseSuccess =
+  temporalApplyHardDeletionResponse200 & {
+    headers: Headers;
+  };
+export type temporalApplyHardDeletionResponseError =
+  temporalApplyHardDeletionResponse422 & {
+    headers: Headers;
+  };
+
+export type temporalApplyHardDeletionResponse =
+  | temporalApplyHardDeletionResponseSuccess
+  | temporalApplyHardDeletionResponseError;
+
+export const getTemporalApplyHardDeletionUrl = (requestedRef: string) => {
+  return `/api/v1/temporal/hard-deletion/${requestedRef}`;
+};
+
+/**
+ * @summary Apply Temporal Hard Deletion
+ */
+export const temporalApplyHardDeletion = async (
+  requestedRef: string,
+  temporalHardDeleteCommand: TemporalHardDeleteCommand,
+  options?: RequestInit,
+  fetchFn?: typeof globalThis.fetch,
+): Promise<temporalApplyHardDeletionResponse> => {
+  const getHeaders = (
+    h?: NonNullable<RequestInit['headers']>,
+  ): Record<string, string | readonly string[]> => {
+    if (!h) return {};
+    if (h instanceof Headers) return Object.fromEntries(h.entries());
+    if (Array.isArray(h)) return Object.fromEntries(h);
+    return h;
+  };
+  const res = await (fetchFn ?? fetch)(
+    getTemporalApplyHardDeletionUrl(requestedRef),
+    {
+      ...options,
+      method: 'DELETE',
+      headers: {
+        'Content-Type': 'application/json',
+        ...getHeaders(options?.headers),
+      },
+      body: JSON.stringify(temporalHardDeleteCommand),
+    },
+  );
+
+  const body = [204, 205, 304].includes(res.status) ? null : await res.text();
+
+  const data: temporalApplyHardDeletionResponse['data'] = body
+    ? JSON.parse(body)
+    : {};
+  return {
+    data,
+    status: res.status,
+    headers: res.headers,
+  } as temporalApplyHardDeletionResponse;
+};
+
+export type temporalPreviewHardDeletionResponse200 = {
+  data: TemporalHardDeletePreview;
+  status: 200;
+};
+
+export type temporalPreviewHardDeletionResponse422 = {
+  data: HTTPValidationError;
+  status: 422;
+};
+
+export type temporalPreviewHardDeletionResponseSuccess =
+  temporalPreviewHardDeletionResponse200 & {
+    headers: Headers;
+  };
+export type temporalPreviewHardDeletionResponseError =
+  temporalPreviewHardDeletionResponse422 & {
+    headers: Headers;
+  };
+
+export type temporalPreviewHardDeletionResponse =
+  | temporalPreviewHardDeletionResponseSuccess
+  | temporalPreviewHardDeletionResponseError;
+
+export const getTemporalPreviewHardDeletionUrl = (
+  requestedRef: string,
+  params: TemporalPreviewHardDeletionParams,
+) => {
+  const normalizedParams = new URLSearchParams();
+
+  Object.entries(params || {}).forEach(([key, value]) => {
+    if (value !== undefined) {
+      normalizedParams.append(key, value === null ? 'null' : String(value));
+    }
+  });
+
+  const stringifiedParams = normalizedParams.toString();
+
+  return stringifiedParams.length > 0
+    ? `/api/v1/temporal/hard-deletion/${requestedRef}/preview?${stringifiedParams}`
+    : `/api/v1/temporal/hard-deletion/${requestedRef}/preview`;
+};
+
+/**
+ * @summary Preview Temporal Hard Deletion
+ */
+export const temporalPreviewHardDeletion = async (
+  requestedRef: string,
+  params: TemporalPreviewHardDeletionParams,
+  options?: RequestInit,
+  fetchFn?: typeof globalThis.fetch,
+): Promise<temporalPreviewHardDeletionResponse> => {
+  const res = await (fetchFn ?? fetch)(
+    getTemporalPreviewHardDeletionUrl(requestedRef, params),
+    {
+      ...options,
+      method: 'GET',
+    },
+  );
+
+  const body = [204, 205, 304].includes(res.status) ? null : await res.text();
+
+  const data: temporalPreviewHardDeletionResponse['data'] = body
+    ? JSON.parse(body)
+    : {};
+  return {
+    data,
+    status: res.status,
+    headers: res.headers,
+  } as temporalPreviewHardDeletionResponse;
 };
 
 export type temporalListHomeFinishedWorkResponse200 = {
@@ -13893,7 +14404,8 @@ export const getTemporalListResolutionQueueUrl = () => {
  *
  * A past planned Activity without execution may enter Reality review only
  * under explicit review/auto policy, or Objective review when an Objective
- * awaits assessment. Bounded Session/Event reviews remain independent.
+ * awaits assessment. A separately typed read-only item shows every enabled
+ * Session with no attempt while the current Activity plan is wholly past.
  * Absence of Actual never means that the subject did not happen.
  * @summary List Resolution Queue
  */

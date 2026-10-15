@@ -1857,6 +1857,147 @@
         "title": "ActivitySessionImpactResponse",
         "type": "object"
       },
+      "ActivityTimelineMutationResult": {
+        "properties": {
+          "activity_ref": {
+            "format": "uuid",
+            "title": "Activity Ref",
+            "type": "string"
+          },
+          "operation_id": {
+            "title": "Operation Id",
+            "type": "string"
+          },
+          "placement_material_state_ref": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Placement Material State Ref"
+          },
+          "schedule_ref": {
+            "format": "uuid",
+            "title": "Schedule Ref",
+            "type": "string"
+          }
+        },
+        "required": [
+          "activity_ref",
+          "schedule_ref",
+          "operation_id",
+          "placement_material_state_ref"
+        ],
+        "title": "ActivityTimelineMutationResult",
+        "type": "object"
+      },
+      "ActivityTimelineUndoCommand": {
+        "additionalProperties": false,
+        "properties": {
+          "expected_session_fingerprint": {
+            "pattern": "^[0-9a-f]{64}$",
+            "title": "Expected Session Fingerprint",
+            "type": "string"
+          },
+          "operation_id": {
+            "maxLength": 200,
+            "minLength": 1,
+            "title": "Operation Id",
+            "type": "string"
+          },
+          "schedule_ref": {
+            "format": "uuid",
+            "title": "Schedule Ref",
+            "type": "string"
+          },
+          "unschedule_operation_id": {
+            "maxLength": 200,
+            "minLength": 1,
+            "title": "Unschedule Operation Id",
+            "type": "string"
+          }
+        },
+        "required": [
+          "operation_id",
+          "schedule_ref",
+          "unschedule_operation_id",
+          "expected_session_fingerprint"
+        ],
+        "title": "ActivityTimelineUndoCommand",
+        "type": "object"
+      },
+      "ActivityTimelineUndoReceipt": {
+        "properties": {
+          "schedule_ref": {
+            "format": "uuid",
+            "title": "Schedule Ref",
+            "type": "string"
+          },
+          "unschedule_operation_id": {
+            "title": "Unschedule Operation Id",
+            "type": "string"
+          }
+        },
+        "required": ["schedule_ref", "unschedule_operation_id"],
+        "title": "ActivityTimelineUndoReceipt",
+        "type": "object"
+      },
+      "ActivityTimelineUnplaceCommand": {
+        "additionalProperties": false,
+        "properties": {
+          "expected_material_state_ref": {
+            "format": "uuid",
+            "title": "Expected Material State Ref",
+            "type": "string"
+          },
+          "expected_session_fingerprint": {
+            "anyOf": [
+              {
+                "pattern": "^[0-9a-f]{64}$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Expected Session Fingerprint"
+          },
+          "operation_id": {
+            "maxLength": 200,
+            "minLength": 1,
+            "title": "Operation Id",
+            "type": "string"
+          },
+          "schedule_ref": {
+            "format": "uuid",
+            "title": "Schedule Ref",
+            "type": "string"
+          },
+          "session_disposition": {
+            "anyOf": [
+              {
+                "enum": ["keep", "delete"],
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Session Disposition"
+          }
+        },
+        "required": [
+          "operation_id",
+          "schedule_ref",
+          "expected_material_state_ref"
+        ],
+        "title": "ActivityTimelineUnplaceCommand",
+        "type": "object"
+      },
       "ActualRealizationCommand": {
         "additionalProperties": false,
         "properties": {
@@ -6669,6 +6810,35 @@
         "title": "EventDateSpanPlacementRequest",
         "type": "object"
       },
+      "EventDeletionOccurrenceChoice": {
+        "additionalProperties": false,
+        "properties": {
+          "display_label": {
+            "title": "Display Label",
+            "type": "string"
+          },
+          "occurrence_ref": {
+            "format": "uuid",
+            "title": "Occurrence Ref",
+            "type": "string"
+          },
+          "schedule_ref": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Schedule Ref"
+          }
+        },
+        "required": ["occurrence_ref", "schedule_ref", "display_label"],
+        "title": "EventDeletionOccurrenceChoice",
+        "type": "object"
+      },
       "EventFloatingLocalIntervalPlacementRequest": {
         "additionalProperties": false,
         "properties": {
@@ -6835,6 +7005,62 @@
           "created_at"
         ],
         "title": "EventResponse",
+        "type": "object"
+      },
+      "EventTimelineScheduleSelection": {
+        "additionalProperties": false,
+        "properties": {
+          "display_label": {
+            "title": "Display Label",
+            "type": "string"
+          },
+          "material_state_ref": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Material State Ref"
+          },
+          "schedule_ref": {
+            "format": "uuid",
+            "title": "Schedule Ref",
+            "type": "string"
+          },
+          "subject_native_ref": {
+            "format": "uuid",
+            "title": "Subject Native Ref",
+            "type": "string"
+          }
+        },
+        "required": [
+          "schedule_ref",
+          "subject_native_ref",
+          "material_state_ref",
+          "display_label"
+        ],
+        "title": "EventTimelineScheduleSelection",
+        "type": "object"
+      },
+      "EventTimelineUndoReceipt": {
+        "additionalProperties": false,
+        "properties": {
+          "schedule_ref": {
+            "format": "uuid",
+            "title": "Schedule Ref",
+            "type": "string"
+          },
+          "unschedule_operation_id": {
+            "title": "Unschedule Operation Id",
+            "type": "string"
+          }
+        },
+        "required": ["schedule_ref", "unschedule_operation_id"],
+        "title": "EventTimelineUndoReceipt",
         "type": "object"
       },
       "ExecutionAssessmentResponse": {
@@ -16651,6 +16877,86 @@
           "current_rule"
         ],
         "title": "TemporalConstraintResponse",
+        "type": "object"
+      },
+      "TemporalHardDeleteCommand": {
+        "additionalProperties": false,
+        "properties": {
+          "expected_fingerprint": {
+            "pattern": "^[a-f0-9]{64}$",
+            "title": "Expected Fingerprint",
+            "type": "string"
+          },
+          "scope": {
+            "enum": [
+              "activity_instance",
+              "activity_series",
+              "event_once",
+              "event_instance",
+              "event_series"
+            ],
+            "title": "Scope",
+            "type": "string"
+          }
+        },
+        "required": ["scope", "expected_fingerprint"],
+        "title": "TemporalHardDeleteCommand",
+        "type": "object"
+      },
+      "TemporalHardDeletePreview": {
+        "additionalProperties": false,
+        "properties": {
+          "fingerprint": {
+            "title": "Fingerprint",
+            "type": "string"
+          },
+          "requested_ref": {
+            "format": "uuid",
+            "title": "Requested Ref",
+            "type": "string"
+          },
+          "scope": {
+            "enum": [
+              "activity_instance",
+              "activity_series",
+              "event_once",
+              "event_instance",
+              "event_series"
+            ],
+            "title": "Scope",
+            "type": "string"
+          }
+        },
+        "required": ["requested_ref", "scope", "fingerprint"],
+        "title": "TemporalHardDeletePreview",
+        "type": "object"
+      },
+      "TemporalHardDeleteResult": {
+        "additionalProperties": false,
+        "properties": {
+          "deleted_rows": {
+            "title": "Deleted Rows",
+            "type": "integer"
+          },
+          "requested_ref": {
+            "format": "uuid",
+            "title": "Requested Ref",
+            "type": "string"
+          },
+          "scope": {
+            "enum": [
+              "activity_instance",
+              "activity_series",
+              "event_once",
+              "event_instance",
+              "event_series"
+            ],
+            "title": "Scope",
+            "type": "string"
+          }
+        },
+        "required": ["requested_ref", "scope", "deleted_rows"],
+        "title": "TemporalHardDeleteResult",
         "type": "object"
       },
       "TemporalRuleAssessment": {
@@ -29044,6 +29350,153 @@
         "tags": ["temporal"]
       }
     },
+    "/api/v1/temporal/activities/{activity_ref}/timeline-undo": {
+      "post": {
+        "operationId": "temporal_undo_activity_timeline",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "activity_ref",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Activity Ref",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ActivityTimelineUndoCommand"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ActivityTimelineMutationResult"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Undo Activity Timeline",
+        "tags": ["temporal"]
+      }
+    },
+    "/api/v1/temporal/activities/{activity_ref}/timeline-undo-receipts": {
+      "get": {
+        "operationId": "temporal_list_activity_timeline_undo",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "activity_ref",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Activity Ref",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/ActivityTimelineUndoReceipt"
+                  },
+                  "title": "Response Temporal List Activity Timeline Undo",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "List Activity Timeline Undo",
+        "tags": ["temporal"]
+      }
+    },
+    "/api/v1/temporal/activities/{activity_ref}/timeline-unplace": {
+      "post": {
+        "operationId": "temporal_unplace_activity_timeline",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "activity_ref",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Activity Ref",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ActivityTimelineUnplaceCommand"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ActivityTimelineMutationResult"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Unplace Activity Timeline",
+        "tags": ["temporal"]
+      }
+    },
     "/api/v1/temporal/activities/{parent_activity_ref}/children": {
       "get": {
         "operationId": "temporal_get_activity_children",
@@ -30689,6 +31142,51 @@
         "tags": ["temporal"]
       }
     },
+    "/api/v1/temporal/events/{event_ref}/deletion-occurrences": {
+      "get": {
+        "operationId": "temporal_list_event_deletion_occurrences",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "event_ref",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Event Ref",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/EventDeletionOccurrenceChoice"
+                  },
+                  "title": "Response Temporal List Event Deletion Occurrences",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "List Event Deletion Occurrences",
+        "tags": ["temporal"]
+      }
+    },
     "/api/v1/temporal/events/{event_ref}/expected-participation": {
       "get": {
         "operationId": "temporal_list_event_expected_participation",
@@ -31386,6 +31884,96 @@
         "tags": ["temporal"]
       }
     },
+    "/api/v1/temporal/events/{event_ref}/timeline-schedules": {
+      "get": {
+        "operationId": "temporal_list_event_timeline_schedules",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "event_ref",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Event Ref",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/EventTimelineScheduleSelection"
+                  },
+                  "title": "Response Temporal List Event Timeline Schedules",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "List Event Timeline Schedules",
+        "tags": ["temporal"]
+      }
+    },
+    "/api/v1/temporal/events/{event_ref}/timeline-undo-receipts": {
+      "get": {
+        "operationId": "temporal_list_event_timeline_undo",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "event_ref",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Event Ref",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/EventTimelineUndoReceipt"
+                  },
+                  "title": "Response Temporal List Event Timeline Undo",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "List Event Timeline Undo",
+        "tags": ["temporal"]
+      }
+    },
     "/api/v1/temporal/events/{source_ref}/advanced-recurrence": {
       "get": {
         "operationId": "temporal_get_event_advanced_recurrence",
@@ -31858,6 +32446,114 @@
           }
         },
         "summary": "Set Event Reality Policy",
+        "tags": ["temporal"]
+      }
+    },
+    "/api/v1/temporal/hard-deletion/{requested_ref}": {
+      "delete": {
+        "operationId": "temporal_apply_hard_deletion",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "requested_ref",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Requested Ref",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TemporalHardDeleteCommand"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TemporalHardDeleteResult"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Apply Temporal Hard Deletion",
+        "tags": ["temporal"]
+      }
+    },
+    "/api/v1/temporal/hard-deletion/{requested_ref}/preview": {
+      "get": {
+        "operationId": "temporal_preview_hard_deletion",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "requested_ref",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Requested Ref",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "scope",
+            "required": true,
+            "schema": {
+              "enum": [
+                "activity_instance",
+                "activity_series",
+                "event_once",
+                "event_instance",
+                "event_series"
+              ],
+              "title": "Scope",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TemporalHardDeletePreview"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Preview Temporal Hard Deletion",
         "tags": ["temporal"]
       }
     },
@@ -35435,7 +36131,7 @@
     },
     "/api/v1/temporal/resolution-queue": {
       "get": {
-        "description": "Derived current product work, never inferred failure from time passage.\n\nA past planned Activity without execution may enter Reality review only\nunder explicit review/auto policy, or Objective review when an Objective\nawaits assessment. Bounded Session/Event reviews remain independent.\nAbsence of Actual never means that the subject did not happen.",
+        "description": "Derived current product work, never inferred failure from time passage.\n\nA past planned Activity without execution may enter Reality review only\nunder explicit review/auto policy, or Objective review when an Objective\nawaits assessment. A separately typed read-only item shows every enabled\nSession with no attempt while the current Activity plan is wholly past.\nAbsence of Actual never means that the subject did not happen.",
         "operationId": "temporal_list_resolution_queue",
         "responses": {
           "200": {

@@ -1499,3 +1499,12 @@ This is a product rule, not implementation evidence. The present backend
 continues to fail closed for recurring Activity hard deletion until the scoped
 database command, API, UI confirmation and PostgreSQL/browser regressions
 are delivered.
+
+
+## 2026-10-15 — Disposable-volume regression and generated API publication
+
+User-local WSL evidence on exact source `4ad9df9cec17a7db50647e8b3ce89017b960eee4`: **7 passed in 21.82s** for `tests/test_postgres_harness_cleanup.py` (2 cases), runtime outage/readiness recovery, schema/search_path hardening, WebAuthn account/session/user-handle binding and both forward-only downgrade guards. These seven tests pass; this is not a full-gate result.
+
+The user then ran `pnpm api:generate` followed by `pnpm generated:check`. The supplied console ends with **PASS: generated sources are deterministic and current (550 files)**. The supplied `DANTE_GENERATED_API.tar.gz` contains 547 API artifacts. Comparing their Git blob hashes with the exact candidate tree identifies **17 changed/new API files and no deletions**. Publish those exact generator-produced bytes: OpenAPI, generated client, model index and fourteen Zod models for hard deletion, Timeline unplacement/Undo and Event occurrence/Schedule selection. No generated file is hand-edited.
+
+**Still open:** one complete 27-group gate on the candidate containing these generated artifacts, plus real-app visual acceptance. Prior PostgreSQL and generated checks are scoped evidence from the user, not proof that every group passes on the publication commit. Preserve local generated work before pulling; after publication the remote files should match the uploaded artifacts exactly. Do not reapply an obsolete generated-only stash over the published client. No CI/Actions requested.
