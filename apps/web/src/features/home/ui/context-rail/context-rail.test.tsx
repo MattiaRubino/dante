@@ -9,6 +9,7 @@ import {
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import { ContextRail } from './context-rail';
+import { REVIEW_QUEUE_INVALIDATED } from './review-events';
 
 vi.mock('../../../temporal/objective-controls', () => ({
   ObjectiveControls: ({
@@ -107,6 +108,62 @@ const realizationReviewItem = {
 };
 
 describe('Home resolution rail', () => {
+  it('shows distinct unstarted Sessions and removes them when the current plan moves to the future', async () => {
+    const main = {
+      reason_code: 'session_unstarted',
+      subject_kind: 'activity',
+      subject_ref: '019a45a2-7180-7000-8000-000000000041',
+      title: 'Studio',
+      summary: 'Sessione attività · mai avviata',
+      effective_at: '2026-10-04T10:00:00Z',
+      reconciliation_ref: null,
+      outcome_ref: null,
+      purpose_code: 'activity.session.unstarted',
+      session_ref: null,
+      session_timing_material_state_ref: null,
+      planned_schedule_ref: null,
+      actions: [],
+    };
+    const named = {
+      ...main,
+      summary: 'Ripasso · mai avviata',
+      planned_schedule_ref: '019a45a2-7180-7000-8000-000000000042',
+    };
+    let future = false;
+    vi.stubGlobal(
+      'fetch',
+      vi.fn((input: RequestInfo | URL) =>
+        Promise.resolve(
+          Response.json(
+            (typeof input === 'string'
+              ? input
+              : input instanceof URL
+                ? input.href
+                : input.url
+            ).includes('/resolution-queue')
+              ? future
+                ? { items: [], count: 0 }
+                : { items: [main, named], count: 2 }
+              : [],
+          ),
+        ),
+      ),
+    );
+    const { container } = render(<ContextRail />);
+    const panel = container.querySelector<HTMLElement>('[data-home-context="resolution"]');
+    if (!panel) throw new Error('Resolution panel absent.');
+    await waitFor(() =>
+      expect(within(panel).getByText('Ripasso · mai avviata')).toBeTruthy(),
+    );
+    expect(within(panel).getAllByText('Studio')).toHaveLength(2);
+    expect(within(panel).queryByText('Registra Sessione passata')).toBeNull();
+    future = true;
+    fireEvent(window, new Event(REVIEW_QUEUE_INVALIDATED));
+    await waitFor(() =>
+      expect(within(panel).getByText('Niente da verificare per ora.')).toBeTruthy(),
+    );
+  });
+
   it('derives reconciliation cards from the canonical queue and refreshes after the owner action', async () => {
     let open = true;
     const fetchFn = vi.fn((input: RequestInfo | URL) => {

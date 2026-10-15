@@ -1,5 +1,24 @@
 # Timeline / Temporal-Operational — Workstream Handoff
 
+## 2026-10-15 — `_149` focused run and current-plan review correction
+
+The user's WSL run on exact `cd3b589` completed **5 PASS / 1 FAIL**. Fresh
+Alembic head, Alembic schema drift, the Schedule Undo file and the new direct
+Activity interval Undo regression passed. The only failure was the exact
+cross-representation test expecting `_148` while the fresh DB correctly had
+`_149`. Six catalog tests held that same stale literal; all are corrected in
+this candidate, with no test expectation weakened beyond the migration head.
+
+The accepted Session review rule was corrected: a never-started generic/named
+Session enters Da verificare only when **every current Activity interval** has
+ended. Moving the Activity into the future removes its pending Session rows;
+moving it back into the past restores them if no attempt exists. Visibility is
+derived from the current owner-scoped plan and factual attempts, not stored
+as an immutable missed event. The API/rail candidate shows distinct read-only
+rows and refreshes after Activity Save/Delete. Resolution actions are a later
+product workflow. Backend unit/integration and Web regression tests were
+added; they still need the user-local PostgreSQL/Web/generated-client gate.
+
 ## 2026-10-15 — Generic Activity interval Undo guard candidate
 
 Forward-only `_149` prevents the generic Schedule Undo capability from

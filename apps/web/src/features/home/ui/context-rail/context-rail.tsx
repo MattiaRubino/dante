@@ -15,11 +15,14 @@ import {
   type ResolutionItem,
   type ResolutionQueue,
 } from './resolution-queue-data-source';
+import { REVIEW_QUEUE_INVALIDATED } from './review-events';
 
 function resolutionItemKey(item: ResolutionItem): string {
-  return item.reasonCode === 'reconciliation_open'
-    ? `${item.reasonCode}:${item.reconciliationRef}`
-    : `${item.reasonCode}:${item.subjectKind}:${item.subjectRef}`;
+  if (item.reasonCode === 'reconciliation_open')
+    return `${item.reasonCode}:${item.reconciliationRef}`;
+  if (item.reasonCode === 'session_unstarted')
+    return `${item.reasonCode}:${item.subjectRef}:${item.plannedScheduleRef ?? 'main'}`;
+  return `${item.reasonCode}:${item.subjectKind}:${item.subjectRef}`;
 }
 
 export function ContextRail() {
@@ -114,10 +117,12 @@ export function ContextRail() {
       }
     };
     window.addEventListener('focus', onVisible);
+    window.addEventListener(REVIEW_QUEUE_INVALIDATED, onVisible);
     document.addEventListener('visibilitychange', onVisible);
     const interval = window.setInterval(onVisible, 60_000);
     return () => {
       window.removeEventListener('focus', onVisible);
+      window.removeEventListener(REVIEW_QUEUE_INVALIDATED, onVisible);
       document.removeEventListener('visibilitychange', onVisible);
       window.clearInterval(interval);
     };
@@ -290,20 +295,25 @@ export function ContextRail() {
                 const isExpanded = expanded === itemKey;
                 const isReality = item.reasonCode === 'realization_review';
                 const isObjective = item.reasonCode === 'objective_review';
-                const label = isReality
-                  ? 'Realtà'
-                  : isObjective
-                    ? 'Obiettivi'
-                    : 'Decisione';
-                const description = isReality
-                  ? item.subjectKind === 'activity'
-                    ? item.sessionRef
-                      ? 'Sessione conclusa · registra cosa è successo.'
-                      : 'Orario passato senza Sessione · verifica se è avvenuta.'
-                    : 'Evento concluso · registra cosa è successo.'
-                  : isObjective
-                    ? 'Registra e valuta gli obiettivi.'
-                    : 'Decisione aperta sul risultato registrato.';
+                const isUnstarted = item.reasonCode === 'session_unstarted';
+                const label = isUnstarted
+                  ? 'Sessione'
+                  : isReality
+                    ? 'Realtà'
+                    : isObjective
+                      ? 'Obiettivi'
+                      : 'Decisione';
+                const description = isUnstarted
+                  ? item.summary
+                  : isReality
+                    ? item.subjectKind === 'activity'
+                      ? item.sessionRef
+                        ? 'Sessione conclusa · registra cosa è successo.'
+                        : 'Orario passato senza Sessione · verifica se è avvenuta.'
+                      : 'Evento concluso · registra cosa è successo.'
+                    : isObjective
+                      ? 'Registra e valuta gli obiettivi.'
+                      : 'Decisione aperta sul risultato registrato.';
                 return (
                   <article key={itemKey} className="home-resolution-card">
                     <div className="home-resolution-row">
@@ -321,7 +331,7 @@ export function ContextRail() {
                     </div>
                     <strong>{item.title}</strong>
                     <p>{description}</p>
-                    {isReality ? (
+                    {isUnstarted ? null : isReality ? (
                       <>
                         {item.subjectKind === 'activity' &&
                         item.sessionRef === null ? (

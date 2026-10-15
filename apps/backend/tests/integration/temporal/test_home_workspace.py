@@ -3,12 +3,21 @@
 from datetime import UTC, datetime, timedelta
 from types import SimpleNamespace
 from typing import Any, cast
+from zoneinfo import ZoneInfo
 
 import pytest
 from fastapi import Request, Response
 from tests.integration.temporal.test_activity_quick_authoring_metadata import _seed_self
 
 from dante.context.contracts import DanteContext
+from dante.modules.temporal.activity_edit_snapshot_api import _SNAPSHOT, ActivityEditSnapshot
+from dante.modules.temporal.activity_inspector_api import get_self_activity_session_impact
+from dante.modules.temporal.activity_replan_api import (
+    ActivityReplanCommand,
+    ReplanRow,
+    RetainedPlannedRow,
+    apply_activity_replan,
+)
 from dante.modules.temporal.authoring import TemporalAuthoringApplication
 from dante.modules.temporal.outcome_review_policy_api import (
     OutcomeReviewPolicyCommand,
@@ -23,7 +32,10 @@ from dante.modules.temporal.resolution_queue_api import (
     list_home_objective_work,
     list_resolution_queue,
 )
-from dante.modules.temporal.schedule import AbsoluteIntervalPlacement
+from dante.modules.temporal.schedule import (
+    AbsoluteIntervalPlacement,
+    NamedZoneLocalIntervalPlacement,
+)
 from dante.modules.temporal.session_runtime import SessionApplication
 from dante.platform.database.runtime import create_database_runtime
 
@@ -189,7 +201,13 @@ async def test_past_unstarted_activity_requires_explicit_reality_review_and_show
             Response(),
         )
         auto_queue = await list_resolution_queue(request, context)
-        assert auto_queue.count == 3
+        assert auto_queue.count == 4
+        assert any(
+            item.subject_ref == automatic
+            and item.reason_code == "session_unstarted"
+            and item.planned_schedule_ref is None
+            for item in auto_queue.items
+        )
         assert any(
             item.subject_ref == automatic
             and item.reason_code == "realization_review"
@@ -202,5 +220,137 @@ async def test_past_unstarted_activity_requires_explicit_reality_review_and_show
                 _fake_context(stranger),
             )
         ).count == 0
+    finally:
+        await runtime.dispose()
+
+
+@pytest.mark.asyncio
+async def test_unstarted_named_session_review_tracks_current_plan_and_real_attempts(
+    migrated_database: Any,
+) -> None:
+    actor = _seed_self(migrated_database)
+    stranger = _seed_self(migrated_database)
+    runtime = create_database_runtime(migrated_database.runtime_settings())
+    request = _fake_request(runtime)
+    context = _fake_context(actor)
+    local_today = datetime.now(ZoneInfo("Europe/Rome")).date()
+    past = datetime.combine(local_today - timedelta(days=2), datetime.min.time()).replace(hour=10)
+    future = datetime.combine(local_today + timedelta(days=2), datetime.min.time()).replace(hour=10)
+
+    async def snapshot(activity_ref: Any) -> ActivityEditSnapshot:
+        async with runtime.session_factory() as session, session.begin():
+            return ActivityEditSnapshot.model_validate(
+                await session.scalar(_SNAPSHOT, {"actor": actor, "activity": activity_ref})
+            )
+
+    async def move(activity_ref: Any, start: datetime, operation: str) -> None:
+        profile = await snapshot(activity_ref)
+        impact = await get_self_activity_session_impact(activity_ref, context, request, Response())
+        envelope = next(row for row in profile.schedules if row.role_code == "envelope")
+        planned = next(row for row in profile.schedules if row.role_code == "planned")
+        assert envelope.placement_material_state_ref is not None
+        await apply_activity_replan(
+            activity_ref,
+            ActivityReplanCommand(
+                operation_id=operation,
+                envelope=ReplanRow(
+                    schedule_ref=envelope.schedule_ref,
+                    expected_material_state_ref=envelope.placement_material_state_ref,
+                    starts_local_at=start,
+                    ends_local_at=start + timedelta(hours=1),
+                ),
+                planned_sessions=[
+                    RetainedPlannedRow(
+                        schedule_ref=planned.schedule_ref,
+                        expected_material_state_ref=planned.placement_material_state_ref,
+                    )
+                ],
+                session_disposition="keep" if impact.attempts else None,
+                expected_session_fingerprint=impact.fingerprint if impact.attempts else None,
+            ),
+            context,
+            request,
+            Response(),
+        )
+
+    try:
+        created = await TemporalAuthoringApplication(runtime.session_factory).create_activity(
+            self_person_ref=actor,
+            operation_id="review-plan:create",
+            title="Studio programmato",
+            placement=NamedZoneLocalIntervalPlacement(
+                starts_local_at=past,
+                ends_local_at=past + timedelta(hours=1),
+                zone_id="Europe/Rome",
+            ),
+            planned_slices=(None,),
+            session_capture_mode="live",
+        )
+        activity = created.item.subject_native_ref
+        initial = await list_resolution_queue(request, context)
+        pending = [
+            item
+            for item in initial.items
+            if item.subject_ref == activity and item.reason_code == "session_unstarted"
+        ]
+        assert len(pending) == 2
+        assert {item.planned_schedule_ref for item in pending} == {
+            None,
+            next(
+                row.schedule_ref
+                for row in (await snapshot(activity)).schedules
+                if row.role_code == "planned"
+            ),
+        }
+        assert (await list_resolution_queue(request, _fake_context(stranger))).count == 0
+
+        await move(activity, future, "review-plan:future-unstarted")
+        assert not any(
+            item.reason_code == "session_unstarted" and item.subject_ref == activity
+            for item in (await list_resolution_queue(request, context)).items
+        )
+        await move(activity, past, "review-plan:past-unstarted")
+        assert (
+            sum(
+                item.reason_code == "session_unstarted" and item.subject_ref == activity
+                for item in (await list_resolution_queue(request, context)).items
+            )
+            == 2
+        )
+
+        sessions = SessionApplication(runtime.session_factory)
+        started = await sessions.start(
+            self_person_ref=actor,
+            operation_id="review-plan:start-main",
+            subject_kind="activity",
+            subject_native_ref=activity,
+        )
+        await sessions.end(
+            self_person_ref=actor,
+            operation_id="review-plan:stop-main",
+            session_ref=started.session_ref,
+            expected_material_state_ref=started.timing_material_state_ref,
+        )
+        remaining = [
+            item
+            for item in (await list_resolution_queue(request, context)).items
+            if item.subject_ref == activity and item.reason_code == "session_unstarted"
+        ]
+        assert len(remaining) == 1
+        assert remaining[0].planned_schedule_ref is not None
+
+        await move(activity, future, "review-plan:future")
+        assert not any(
+            item.reason_code == "session_unstarted" and item.subject_ref == activity
+            for item in (await list_resolution_queue(request, context)).items
+        )
+        await move(activity, past, "review-plan:past-again")
+        again = [
+            item
+            for item in (await list_resolution_queue(request, context)).items
+            if item.subject_ref == activity and item.reason_code == "session_unstarted"
+        ]
+        assert len(again) == 1
+        assert again[0].planned_schedule_ref == remaining[0].planned_schedule_ref
     finally:
         await runtime.dispose()

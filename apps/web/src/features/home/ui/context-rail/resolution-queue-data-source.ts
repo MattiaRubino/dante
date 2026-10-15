@@ -45,10 +45,23 @@ export type ObjectiveReviewResolutionItem = ResolutionItemBase &
     actions: readonly ['open_objectives'];
   }>;
 
+export type UnstartedSessionResolutionItem = ResolutionItemBase &
+  Readonly<{
+    reasonCode: 'session_unstarted';
+    subjectKind: 'activity';
+    reconciliationRef: null;
+    outcomeRef: null;
+    sessionRef: null;
+    sessionTimingMaterialStateRef: null;
+    plannedScheduleRef: string | null;
+    actions: readonly [];
+  }>;
+
 export type ResolutionItem =
   | ReconciliationResolutionItem
   | RealizationReviewResolutionItem
-  | ObjectiveReviewResolutionItem;
+  | ObjectiveReviewResolutionItem
+  | UnstartedSessionResolutionItem;
 
 export type ResolutionQueue = Readonly<{
   items: readonly ResolutionItem[];
@@ -103,6 +116,10 @@ function parseItem(value: unknown): ResolutionItem {
   const sessionTimingMaterialStateRef = nullableUuid(
     item.session_timing_material_state_ref,
   );
+  const plannedScheduleRef =
+    item.planned_schedule_ref === undefined
+      ? null
+      : nullableUuid(item.planned_schedule_ref);
 
   if (
     subjectRef === null ||
@@ -116,6 +133,35 @@ function parseItem(value: unknown): ResolutionItem {
     sessionTimingMaterialStateRef === undefined
   ) {
     throw new Error('Elemento Da risolvere non valido.');
+  }
+
+  if (
+    item.reason_code === 'session_unstarted' &&
+    item.subject_kind === 'activity' &&
+    reconciliationRef === null &&
+    outcomeRef === null &&
+    sessionRef === null &&
+    sessionTimingMaterialStateRef === null &&
+    plannedScheduleRef !== undefined &&
+    item.purpose_code === 'activity.session.unstarted' &&
+    Array.isArray(item.actions) &&
+    item.actions.length === 0
+  ) {
+    return {
+      reasonCode: 'session_unstarted',
+      subjectKind: 'activity',
+      subjectRef,
+      title,
+      summary,
+      effectiveAt,
+      reconciliationRef: null,
+      outcomeRef: null,
+      purposeCode,
+      sessionRef: null,
+      sessionTimingMaterialStateRef: null,
+      plannedScheduleRef,
+      actions: [],
+    };
   }
 
   if (

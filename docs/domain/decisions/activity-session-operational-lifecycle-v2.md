@@ -24,7 +24,7 @@ The Session panel uses the Activity interval, not an internal Session time:
 - an Activity without an exact interval does not receive an invented minute-level availability;
 - starting from the Inspector makes the started row actionable immediately, even outside the current Activity interval;
 - Stop removes that completed attempt from the panel; it never offers Play for that same attempt;
-- an unstarted row disappears at the end of the Activity interval and becomes an item in **Da verificare**;
+- an unstarted row disappears at the end of the Activity interval and enters **Da verificare** only while the Activity's accepted plan is wholly in the past;
 - an open or paused row remains actionable after the Activity interval ends until explicitly stopped or deleted.
 
 If generic Activity capture is enabled, a named Session requires the generic Session to be running. Pausing or stopping generic capture pauses or stops open named Sessions. Resuming the generic Session does not resume a named Session. With generic capture disabled, named Sessions run independently.
@@ -51,8 +51,8 @@ Removing a named internal Session from the editor is a draft operation. On **Sal
 
 Deleting an Activity is a hard cascade after one confirmation: Activity, intervals, reminders, named Session configuration and all of its real Sessions are deleted. Dante does not retain an archive/tombstone for this product action.
 
-Moving an Activity while it has rows that were never started removes those rows from the panel immediately and places them in **Da verificare**. Retained open/paused rows remain in the panel and completed rows remain historical.
+Moving an Activity removes its unstarted rows from the panel when the current interval no longer makes them available. They appear in **Da verificare** only if the Activity's current accepted plan has ended. Moving the Activity into the future removes those rows from **Da verificare** and makes them available again at the new preview time. Retained open/paused rows remain in the panel and completed rows remain historical.
 
 ## Review queue
 
-At the end of an Activity interval, every enabled generic or named Session that was never started enters **Da verificare**. This is not a completion, failure, Actual, Outcome or Confirmation. The user can later record work, replan, or delete it according to the applicable editor action.
+Once every current Activity interval has ended, each enabled generic or named Session with no real attempt enters **Da verificare**. Visibility is derived from the **current** plan: moving the Activity into the future clears these pending entries, and reaching its new end can show them again. This is not a completion, failure, Actual, Outcome or Confirmation. Recording, replanning or deleting the pending item is a separate follow-up workflow.

@@ -16,7 +16,7 @@ Timeline, review rail and browser must agree before a row is accepted.
 | Main capture prerequisite and cascade | running, pause, stop, replay and concurrent transitions | PostgreSQL reconfirmation pending |
 | Multiple Activity intervals | one attempt resumes across intervals; Stop then Play creates a new attempt | Panel unit candidate; PostgreSQL pending |
 | Panel preview and Stop | availability follows Activity interval; ended attempt never gets Play again | Unit candidate; browser pending |
-| Never-started generic and named Sessions | separate actionable review items, record/replan/delete, durable after an Activity move | **Missing** persistence, API and UI |
+| Never-started generic and named Sessions | separate read-only rows after the current plan ends; moving into the future clears them; real attempts suppress only their own row | API/UI candidate and unit/PostgreSQL/browser regression added; PostgreSQL and browser pending. Resolution actions intentionally deferred |
 | Editor Keep/Delete/Cancel | choice before a mutation with attempts; stale fingerprint rejected | Candidate; PostgreSQL pending |
 | Keep after a plan change | real timestamps and open/paused state retained | Focused PostgreSQL case passed on `0e848943`; browser pending |
 | Delete attempts before edit | full linked graph, rollback, isolation and concurrency | Focused rollback case passed on `0e848943`; complete inventory pending |
@@ -73,6 +73,11 @@ Timeline, review rail and browser must agree before a row is accepted.
   PostgreSQL routine. Its focused regression checks refusal with a running
   Session and preserved removal; PostgreSQL has not run on `_149`. The expected
   catalog topology is unchanged. Direct Timeline mutation UX is still open.
+- The user's focused `_149` run on `cd3b589` passed five cases and failed the
+  exact cross-representation test only because its hard-coded head still read
+  `_148`; the migration itself, Alembic drift and Undo suite passed. All six
+  catalog head literals now advance to `_149` together. Current-plan Session
+  review visibility is a candidate and has no PostgreSQL or browser proof yet.
 - This environment has no Docker, PostgreSQL 18/PostGIS or real-app browser
   stack. The previous full-gate result on an older SHA is not evidence for
   these changes.

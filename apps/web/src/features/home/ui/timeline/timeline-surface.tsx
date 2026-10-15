@@ -17,6 +17,7 @@ import './timeline.css';
 import { TemporalScheduleRemoteError } from '../../../temporal/remote-schedule-data-source';
 import type { TemporalSchedulePlacementInput } from '../../../temporal/schedule-data-source';
 import { useTemporalTimelineRuntime } from '../../../temporal/timeline-runtime-boundary';
+import { REVIEW_QUEUE_INVALIDATED } from '../context-rail/review-events';
 import { useSessionPanel } from '../../../temporal/use-session-panel';
 import { useSessionPanelPresentation } from './timeline-session-panel';
 import { applyTimelineSessionReality } from './timeline-session-reality';
@@ -512,6 +513,7 @@ export function TimelineSurface({
         placement: revision.next,
       })
         .then((result) => {
+          window.dispatchEvent(new Event(REVIEW_QUEUE_INVALIDATED));
           setCanonicalUndo({
             kind: 'revision',
             scheduleRef: result.scheduleRef,
@@ -593,6 +595,7 @@ export function TimelineSurface({
         expectedPlacementMaterialStateRef: basis.placementMaterialStateRef,
       })
         .then((result) => {
+          window.dispatchEvent(new Event(REVIEW_QUEUE_INVALIDATED));
           setDetailState(null);
           setCanonicalUndo({
             kind: 'unschedule',
@@ -670,6 +673,7 @@ export function TimelineSurface({
 
     void command
       .then(() => {
+        window.dispatchEvent(new Event(REVIEW_QUEUE_INVALIDATED));
         setCanonicalUndo(null);
         setToastVisible(false);
         showScheduleNotice({
@@ -1561,6 +1565,7 @@ export function TimelineSurface({
           }
         }}
         onActivitySaved={(profile) => {
+          window.dispatchEvent(new Event(REVIEW_QUEUE_INVALIDATED));
           if (!detailState) return;
           const existing = findTimelineEvent(state, detailState.event.id);
           if (existing) {
@@ -1590,6 +1595,7 @@ export function TimelineSurface({
           );
         }}
         onActivityDeleted={() => {
+          window.dispatchEvent(new Event(REVIEW_QUEUE_INVALIDATED));
           if (detailState)
             dispatch({ type: 'remove-event', eventId: detailState.event.id });
           setDetailState(null);

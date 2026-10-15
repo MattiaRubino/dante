@@ -6,9 +6,10 @@ routes to its owning vertical: B10 Reconciliation or B10 Actual realization.
 
 from __future__ import annotations
 
-from datetime import datetime
-from typing import Annotated, Literal
+from datetime import UTC, datetime
+from typing import Annotated, Any, Literal
 from uuid import UUID
+from zoneinfo import ZoneInfo
 
 from fastapi import APIRouter, Depends, Request, Response
 from pydantic import BaseModel, ConfigDict
@@ -18,11 +19,15 @@ from sqlalchemy.exc import SQLAlchemyError
 
 from dante.context.contracts import DanteContext
 from dante.context.dependencies import require_dante_context
+from dante.modules.temporal.decomposition_api import ActivityScheduleResponse
+from dante.modules.temporal.session_panel_api import _bounds
 from dante.platform.http.problem import ProblemError
 
 router = APIRouter(prefix="/api/v1/temporal", tags=["temporal"])
 Context = Annotated[DanteContext, Depends(require_dante_context)]
-ResolutionReason = Literal["reconciliation_open", "realization_review", "objective_review"]
+ResolutionReason = Literal[
+    "reconciliation_open", "realization_review", "objective_review", "session_unstarted"
+]
 ResolutionAction = Literal["open_reconciliation", "record_realization", "open_objectives"]
 
 
@@ -41,6 +46,7 @@ class ResolutionQueueItem(BaseModel):
     session_ref: UUID | None
     session_timing_material_state_ref: UUID | None
     actions: list[ResolutionAction]
+    planned_schedule_ref: UUID | None = None
 
 
 class ResolutionQueueResponse(BaseModel):
@@ -78,6 +84,74 @@ def _item(row: RowMapping) -> ResolutionQueueItem:
     raise ValueError("Unsupported resolution queue reason.")
 
 
+_UNSTARTED_INPUT = text("""
+    SELECT owner.*,
+           COALESCE((
+               SELECT jsonb_agg(jsonb_build_object(
+                   'planned_schedule_ref',
+                   dante.get_self_session_planned_schedule(:actor,attempt.session_ref)
+               ))
+                 FROM dante.list_self_subject_sessions(:actor,owner.activity_ref) AS attempt
+           ),'[]'::jsonb) AS historical_attempts
+      FROM dante.list_self_session_panel_inputs(:actor) AS owner
+""")
+
+
+def _unstarted_session_items(
+    records: list[Any], now: datetime, zone_id: str
+) -> list[ResolutionQueueItem]:
+    """Project only currently expired plans; clock passage creates no execution fact."""
+    zone = ZoneInfo(zone_id)
+    result: list[ResolutionQueueItem] = []
+    for owner in records:
+        schedules = [ActivityScheduleResponse.model_validate(row) for row in owner["schedules"]]
+        intervals = [schedule for schedule in schedules if schedule.role_code == "interval"]
+        if not intervals:
+            intervals = [
+                schedule for schedule in schedules if schedule.role_code in {None, "envelope"}
+            ]
+        bounds = [_bounds(schedule, zone) for schedule in intervals]
+        # An unknown or future current interval cannot establish a missed row.
+        if not bounds or any(bound is None or bound[1] > now for bound in bounds):
+            continue
+        ended_at = max(bound[1] for bound in bounds if bound is not None)
+        attempted = {
+            UUID(str(attempt["planned_schedule_ref"]))
+            if attempt["planned_schedule_ref"] is not None
+            else None
+            for attempt in owner["historical_attempts"]
+        }
+        candidates: list[tuple[UUID | None, str]] = []
+        if owner["mode_code"] in {"live", "record_and_live"}:
+            candidates.append((None, "Sessione attività"))
+        candidates.extend(
+            (schedule.schedule_ref, schedule.display_name or "Sessione interna")
+            for schedule in schedules
+            if schedule.role_code == "planned"
+        )
+        for planned_ref, name in candidates:
+            if planned_ref in attempted:
+                continue
+            result.append(
+                ResolutionQueueItem(
+                    reason_code="session_unstarted",
+                    subject_kind="activity",
+                    subject_ref=UUID(str(owner["activity_ref"])),
+                    title=str(owner["title"]),
+                    summary=f"{name} · mai avviata",
+                    effective_at=ended_at,
+                    reconciliation_ref=None,
+                    outcome_ref=None,
+                    purpose_code="activity.session.unstarted",
+                    session_ref=None,
+                    session_timing_material_state_ref=None,
+                    planned_schedule_ref=planned_ref,
+                    actions=[],
+                )
+            )
+    return result
+
+
 @router.get(
     "/resolution-queue",
     response_model=ResolutionQueueResponse,
@@ -88,7 +162,8 @@ async def list_resolution_queue(request: Request, context: Context) -> Resolutio
 
     A past planned Activity without execution may enter Reality review only
     under explicit review/auto policy, or Objective review when an Objective
-    awaits assessment. Bounded Session/Event reviews remain independent.
+    awaits assessment. A separately typed read-only item shows every enabled
+    Session with no attempt while the current Activity plan is wholly past.
     Absence of Actual never means that the subject did not happen.
     """
     try:
@@ -118,6 +193,17 @@ async def list_resolution_queue(request: Request, context: Context) -> Resolutio
                 .all()
             )
             items = [_item(row) for row in rows]
+            session_inputs = (
+                (await session.execute(_UNSTARTED_INPUT, {"actor": context.self_person_ref}))
+                .mappings()
+                .all()
+            )
+            items.extend(
+                _unstarted_session_items(
+                    list(session_inputs), datetime.now(UTC), context.effective_zone_id
+                )
+            )
+            items.sort(key=lambda item: item.effective_at, reverse=True)
     except (SQLAlchemyError, ValueError) as exc:
         raise ProblemError(
             status=503,
