@@ -1,5 +1,21 @@
 # Timeline / Temporal-Operational — Workstream Handoff
 
+## 2026-10-15 — Deletion producer/consumer race audit (engineering gate)
+
+The audited `_111` Activity binder does not check `occurrence_skip`, and
+`RoutineOccurrenceMaterializationApplication._materialize_activity` commits
+Activity creation and final binding in separate transactions. Therefore merely
+wrapping `skip_self_occurrence` plus `delete_self_activity_lifecycle_graph`
+in one deletion transaction is **not sufficient** for no-resurrection under a
+concurrent materialization. The Event model has a different shape: one shared
+Event source with individual Occurrences. The checked, concrete architecture,
+negative scenarios, and 12 acceptance cases are documented in
+`timeline-recurring-deletion-atomicity-audit-2026-10-15.md`.
+
+**Do not activate a destructive API/UI until both producer atomicity and
+owner-scoped graph deletion are proven in real PostgreSQL and the real browser.**
+No new destructive runtime capability or passing test is claimed by this audit.
+
 ## 2026-10-15 — User extends deletion/recurrence parity to Event (normative scope)
 
 The user expressly confirms that Event follows the same single-instance / full-series / cancel hard-deletion semantics as Activity, adapted to Event's own graph (agenda, expected participation/attendance, objectives, reminders, Actual/Outcome/Confirmation). A recurring Event instance is an Occurrence sharing the source Event; deleting one must not delete that source or siblings. A hard-deleted single Occurrence must never rematerialize; deleting the whole series must eliminate the source and every current/future Occurrence. Placement removal and Undo remain NON-DESTRUCTIVE for both kinds, and edit scopes are distinct from hard-deletion scopes. The accepted normative overlay is `docs/domain/decisions/activity-session-operational-lifecycle-v2.md`. These are requirements, **not delivered runtime or passing tests**. Event hard-delete capability, Event UI, and both recurring deletion scopes remain open. Don't reuse Activity-only graph deletion blindly for the Event graph; audit FK descendants/ownership and ensure one protected transaction and fail-closed cross-owner behavior before wiring a destructive action.
