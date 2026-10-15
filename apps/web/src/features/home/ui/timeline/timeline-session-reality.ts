@@ -103,10 +103,12 @@ function project(
     );
   });
   if (relevant.length === 0) return null;
-  const mains = relevant.filter((slice) => slice.planned_schedule_ref === null);
-  // When there is a main real Session it determines outer geometry, not the
-  // sum of overlapping internal executions.
-  const chosen = mains.length > 0 ? mains : relevant;
+  // Only the Activity's own Session belongs on the Activity card. Named
+  // planned Sessions keep their separate controls in the Session panel.
+  const chosen = relevant.filter(
+    (slice) => slice.planned_schedule_ref === null,
+  );
+  if (chosen.length === 0) return null;
   const spans: Span[] = [];
   for (const slice of chosen) {
     const first = Date.parse(slice.started_at);
@@ -218,9 +220,7 @@ export function applyTimelineSessionReality(
 
     const layouts = day.layouts.map((layout) => {
       const reality = overlays.get(layout.event.id);
-      return reality
-        ? { ...layout, sessionReality: reality.reality }
-        : layout;
+      return reality ? { ...layout, sessionReality: reality.reality } : layout;
     });
     const rendered = { ...day, layouts, offsetTop };
     offsetTop += day.height;

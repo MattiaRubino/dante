@@ -58,6 +58,12 @@ export function timelineEventReadableHeight(event: TimelineEvent): number {
     height += eventPolicy.longTitleExtraHeightPx;
   }
 
+  // Activity cards can show runtime controls, actual timing and a planned
+  // Session indicator. Reserve their full content height in the mapper itself
+  // so the visible card ends at its matching ruler position.
+  if (event.canonicalBasis?.kind === 'scheduled-activity') {
+    height = Math.max(height, 94);
+  }
   return Math.max(height, event.visualMinimumHeightPx ?? 0);
 }
 

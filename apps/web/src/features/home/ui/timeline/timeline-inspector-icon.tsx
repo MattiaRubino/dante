@@ -1,6 +1,6 @@
 import type { ReactNode } from 'react';
 
-type InspectorIconName = 'edit' | 'copy' | 'trash' | 'unschedule' | 'undo';
+type InspectorIconName = 'edit' | 'copy' | 'trash' | 'vault';
 
 export function TimelineInspectorIcon({
   name,
@@ -24,16 +24,10 @@ export function TimelineInspectorIcon({
         <path d="M10 11v5M14 11v5" />
       </>
     ),
-    unschedule: (
+    vault: (
       <>
-        <rect x="3" y="5" width="18" height="16" rx="2" />
-        <path d="M7 3v4M17 3v4M3 10h18M8 15h8M13 12l3 3-3 3" />
-      </>
-    ),
-    undo: (
-      <>
-        <path d="M9 7 5 11l4 4" />
-        <path d="M5 11h9a5 5 0 1 1 0 10h-2" />
+        <rect x="3" y="5" width="18" height="15" rx="2" />
+        <path d="M3 10h18M9 14h6" />
       </>
     ),
   } satisfies Record<InspectorIconName, ReactNode>;

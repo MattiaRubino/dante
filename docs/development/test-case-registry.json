@@ -3657,9 +3657,9 @@
       "path": "apps/web/src/features/home/ui/timeline/timeline-schedule-unschedule-undo.test.tsx",
       "suite": "web-unit-component",
       "contract_id": "T03",
-      "candidate_behavior": "timeline schedule unschedule undo",
-      "purpose": "",
-      "invariant": "",
+      "candidate_behavior": "timeline Inspector hides retired unplacement",
+      "purpose": "Verify that a scheduled Activity Inspector does not offer the retired Da collocare action.",
+      "invariant": "Opening the Inspector cannot trigger canonical unscheduling through a legacy move button.",
       "status": "UNREVIEWED",
       "audit_note": "Needs contract/assertion review, rejection cases, and executable evidence; filename alone is not proof."
     },

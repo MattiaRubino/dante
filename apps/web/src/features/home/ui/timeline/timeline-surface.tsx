@@ -1820,15 +1820,6 @@ export function TimelineSurface({
       <EventDetailDialog
         detail={detailState?.detail ?? null}
         opener={detailState?.opener ?? null}
-        canUnschedule={
-          detailState?.allowUnschedule === true &&
-          detailState.event.canonicalBasis !== undefined
-        }
-        pending={
-          detailState?.allowUnschedule === true &&
-          detailState.event.canonicalBasis !== undefined &&
-          pendingScheduleRef === detailState.event.canonicalBasis.scheduleRef
-        }
         sessionSubject={(() => {
           const basis = detailState?.event.canonicalBasis;
           if (basis?.kind === 'scheduled-activity') {
@@ -1863,12 +1854,6 @@ export function TimelineSurface({
           const basis = detailState?.event.canonicalBasis;
           return basis?.scheduleRef ?? null;
         })()}
-        onUnschedule={() => {
-          const basis = detailState?.event.canonicalBasis;
-          if (basis !== undefined) {
-            unscheduleCanonicalBasis(basis);
-          }
-        }}
         onActivitySaved={(profile) => {
           window.dispatchEvent(new Event(REVIEW_QUEUE_INVALIDATED));
           if (!detailState) return;

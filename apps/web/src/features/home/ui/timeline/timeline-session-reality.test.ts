@@ -170,6 +170,29 @@ describe('one-card Activity actual Session projection', () => {
     expect(projected?.layouts[1]?.sessionReality?.state).toBe('ended');
   });
 
+  it('does not paint a named Session as the Activity main Session', () => {
+    const planned = activity('interval1', 1080, 1140);
+    const current = day(planned);
+    const child = {
+      ...ended,
+      session_ref: 'child-session',
+      planned_schedule_ref: 'named-plan',
+    };
+    const [projected] = applyTimelineSessionReality(
+      [current],
+      [child],
+      'UTC',
+      '2026-10-10T18:30:00Z',
+      Date.parse('2026-10-10T18:30:00Z'),
+      groups,
+      zoom,
+      expanded,
+    );
+    expect(projected?.layouts[0]?.sessionReality).toBeUndefined();
+    expect(projected?.mapper).toBe(current.mapper);
+    expect(projected?.height).toBe(current.height);
+  });
+
   it('uses main timing over simultaneous internal execution without adding time twice', () => {
     const planned = activity('interval1', 1080, 1140);
     const child = {

@@ -1,5 +1,24 @@
 # Timeline / Temporal-Operational — Workstream Handoff
 
+## 2026-10-15 — Inspector and Activity card visual repair candidate
+
+The current user screenshot review retired the direct Inspector controls that
+unplace an already-created Activity/Event and the old "Sposta in Da collocare"
+shortcut. Quick actions retain the distinct "Sposta in Bozze" Activity move and
+"Copia in Bozze" Event copy. Canonical unplaced records and low-level recovery
+capabilities remain in persistence for existing history; they are not relabeled
+as inert drafts.
+
+The Activity card keeps title and runtime controls in the heading, planned
+time below it, then only its own main Session timing when recorded and the
+planned Session indicator when present. After Stop its card controls vanish.
+The density mapper reserves at least 94px for Activity card content at the
+same minute scale as the ruler. The visible minor grid interval is 15 minutes
+by explicit user preference in this correction; the adaptive density slots
+also remain 15 minutes. Colocated regressions have been updated, but browser
+and WSL focused checks on this candidate are **NOT_RUN**. Visual acceptance
+remains open.
+
 ## 2026-10-15 — Disposable PostgreSQL test-volume retention correction
 
 The PostgreSQL acceptance fixture previously used the Docker image-declared

@@ -12,11 +12,6 @@ import {
 } from '../../../temporal/remote-event-profile-data-source';
 import { createRemoteEventRecurrenceGuard } from '../../../temporal/remote-event-recurrence-guard';
 import {
-  createRemoteEventTimelinePlacement,
-  type EventTimelineSchedule,
-  type EventTimelineUndoReceipt,
-} from '../../../temporal/remote-event-timeline-placement';
-import {
   createRemoteTemporalHardDeletion,
   type TemporalHardDeletionPreview,
   type EventDeletionOccurrenceChoice,
@@ -56,13 +51,6 @@ export function EventInspectorActions({
   );
   const [recurrenceGuard] = useState(createRemoteEventRecurrenceGuard);
   const [hardDelete] = useState(createRemoteTemporalHardDeletion);
-  const [eventTimeline] = useState(createRemoteEventTimelinePlacement);
-  const [timelineCandidates, setTimelineCandidates] = useState<
-    readonly EventTimelineSchedule[] | null
-  >(null);
-  const [selectedTimelineSchedule, setSelectedTimelineSchedule] = useState('');
-  const [timelineUndoReceipt, setTimelineUndoReceipt] =
-    useState<EventTimelineUndoReceipt | null>(null);
   const [deletePreviews, setDeletePreviews] = useState<
     readonly TemporalHardDeletionPreview[] | null
   >(null);
@@ -360,60 +348,6 @@ export function EventInspectorActions({
     }
   };
 
-  const openTimelineRemoval = async () => {
-    if (busy) return;
-    setBusy(true);
-    setError('');
-    try {
-      const schedules = (await eventTimeline.list(eventRef)).filter(
-        (row) =>
-          row.materialStateRef !== null &&
-          (occurrenceRef === null || row.subjectNativeRef === occurrenceRef),
-      );
-      if (schedules.length === 0) {
-        throw new Error('Questo Evento non ha una collocazione attiva.');
-      }
-      setTimelineCandidates(schedules);
-      setSelectedTimelineSchedule(
-        schedules.length === 1 ? (schedules[0]?.scheduleRef ?? '') : '',
-      );
-    } catch (reason) {
-      setError(
-        reason instanceof Error
-          ? reason.message
-          : 'Collocazione non disponibile.',
-      );
-    } finally {
-      setBusy(false);
-    }
-  };
-
-  const openTimelineUndo = async () => {
-    if (busy) return;
-    setBusy(true);
-    setError('');
-    try {
-      const receipts = await eventTimeline.listUndo(eventRef);
-      if (receipts.length === 0) {
-        throw new Error(
-          'Non è presente alcuna collocazione Event da ripristinare.',
-        );
-      }
-      if (receipts.length !== 1) {
-        throw new Error(
-          'Sono presenti più collocazioni da ripristinare: seleziona la Schedule specifica.',
-        );
-      }
-      setTimelineUndoReceipt(receipts[0] ?? null);
-    } catch (reason) {
-      setError(
-        reason instanceof Error ? reason.message : 'Undo non disponibile.',
-      );
-    } finally {
-      setBusy(false);
-    }
-  };
-
   const toolbar = (
     <div className="timeline-activity-inspector__toolbar">
       <button
@@ -456,28 +390,10 @@ export function EventInspectorActions({
         onClick={() => void duplicate(true)}
       >
         {toolbarTarget ? (
-          <TimelineInspectorIcon name="copy" />
+          <TimelineInspectorIcon name="vault" />
         ) : (
           'Copia in Bozze'
         )}
-      </button>
-      <button
-        type="button"
-        disabled={busy}
-        aria-label="Rimuovi Event dalla Timeline"
-        title="Rimuovi Event dalla Timeline"
-        onClick={() => void openTimelineRemoval()}
-      >
-        Rimuovi dalla Timeline
-      </button>
-      <button
-        type="button"
-        disabled={busy}
-        aria-label="Annulla rimozione Event"
-        title="Annulla rimozione Event"
-        onClick={() => void openTimelineUndo()}
-      >
-        Undo collocazione
       </button>
       <button
         type="button"
@@ -600,117 +516,6 @@ export function EventInspectorActions({
       ) : null}
       {profileNotice ? <p role="status">{profileNotice}</p> : null}
       {areaNotice ? <p role="status">{areaNotice}</p> : null}
-      {timelineCandidates ? (
-        <div className="timeline-activity-inspector__confirmation">
-          <p>
-            Rimuovi soltanto la collocazione dell’Evento o dell’Occurrence
-            selezionata. Agenda, presenze, risultati e ricorrenza rimangono
-            invariati. Questa operazione è diversa da «Elimina».
-          </p>
-          <label>
-            Collocazione da rimuovere
-            <select
-              disabled={busy}
-              value={selectedTimelineSchedule}
-              onChange={(event) =>
-                setSelectedTimelineSchedule(event.currentTarget.value)
-              }
-            >
-              <option value="">Seleziona una Schedule</option>
-              {timelineCandidates.map((candidate) => (
-                <option
-                  key={candidate.scheduleRef}
-                  value={candidate.scheduleRef}
-                >
-                  {candidate.displayLabel}
-                </option>
-              ))}
-            </select>
-          </label>
-          <button
-            type="button"
-            disabled={busy || selectedTimelineSchedule === ''}
-            onClick={() =>
-              void (async () => {
-                setBusy(true);
-                setError('');
-                try {
-                  const selected = timelineCandidates.find(
-                    (candidate) =>
-                      candidate.scheduleRef === selectedTimelineSchedule,
-                  );
-                  if (!selected) {
-                    throw new Error('Schedule Event non selezionata.');
-                  }
-                  const receipt = await eventTimeline.unplace(selected);
-                  setTimelineUndoReceipt(receipt);
-                  setTimelineCandidates(null);
-                  setSelectedTimelineSchedule('');
-                } catch (reason) {
-                  setError(
-                    reason instanceof Error
-                      ? reason.message
-                      : 'Rimozione dalla Timeline non riuscita.',
-                  );
-                } finally {
-                  setBusy(false);
-                }
-              })()
-            }
-          >
-            Conferma rimozione dalla Timeline
-          </button>
-          <button
-            type="button"
-            disabled={busy}
-            onClick={() => {
-              setTimelineCandidates(null);
-              setSelectedTimelineSchedule('');
-            }}
-          >
-            Annulla
-          </button>
-        </div>
-      ) : null}
-      {timelineUndoReceipt ? (
-        <div className="timeline-activity-inspector__confirmation">
-          <p>
-            Ripristinare questa collocazione come nuova revisione dello Schedule
-            Event? L’Undo viene rifiutato se il piano è cambiato.
-          </p>
-          <button
-            type="button"
-            disabled={busy}
-            onClick={() =>
-              void (async () => {
-                setBusy(true);
-                setError('');
-                try {
-                  await eventTimeline.undo(timelineUndoReceipt);
-                  setTimelineUndoReceipt(null);
-                } catch (reason) {
-                  setError(
-                    reason instanceof Error
-                      ? reason.message
-                      : 'Undo della Schedule Event non riuscito.',
-                  );
-                } finally {
-                  setBusy(false);
-                }
-              })()
-            }
-          >
-            Conferma Undo collocazione
-          </button>
-          <button
-            type="button"
-            disabled={busy}
-            onClick={() => setTimelineUndoReceipt(null)}
-          >
-            Annulla
-          </button>
-        </div>
-      ) : null}
       {deletePreviews ? (
         <div className="timeline-activity-inspector__confirmation">
           <p>

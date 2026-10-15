@@ -961,6 +961,13 @@
   cursor: pointer;
 }
 
+.timeline-event-card--activity .timeline-event-card__title {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  white-space: normal;
+}
+
 .timeline-event-card__title:hover {
   color: color-mix(in srgb, var(--timeline-group-color) 34%, white);
 }

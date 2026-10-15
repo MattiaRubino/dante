@@ -94,7 +94,7 @@ function copyFor(language: string) {
         retry: 'Riprova',
         search: 'Cerca tra gli elementi già creati',
         searchPlaceholder: 'Cerca…',
-        emptyTitle: 'Niente da collocare',
+        emptyTitle: 'Nessun elemento già creato senza orario',
         emptyBody: 'Attività ed eventi senza collocazione compariranno qui.',
         activity: 'Attività',
         event: 'Evento',

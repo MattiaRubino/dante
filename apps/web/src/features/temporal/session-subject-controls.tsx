@@ -327,7 +327,9 @@ export function SessionSubjectControls({
             />
           </>
         ) : stopped ? (
-          <span role="status">Sessione conclusa</span>
+          card ? null : (
+            <span role="status">Sessione conclusa</span>
+          )
         ) : openSession === null ? (
           allowLive ? (
             <RuntimeButton

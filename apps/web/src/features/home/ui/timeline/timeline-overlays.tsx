@@ -24,7 +24,6 @@ import { requestTemporalCreateDuplicate } from '../../../temporal-create/ui/temp
 import { TemporalPanelCloseButton } from '../../../temporal-create/ui/temporal-panel-close-button';
 import { ActivityInspectorActions } from './activity-inspector-actions';
 import { EventInspectorActions } from './event-inspector-actions';
-import { TimelineInspectorIcon } from './timeline-inspector-icon';
 import { TimelineInspectorReality } from './timeline-inspector-reality';
 import { TimelineInspectorOccurrenceSession } from './timeline-inspector-occurrence-session';
 import { LEGACY_UNASSIGNED_GROUP } from './timeline-organization';
@@ -829,8 +828,6 @@ export type TimelineDetail = Readonly<{
 type EventDetailDialogProps = Readonly<{
   detail: TimelineDetail | null;
   opener: HTMLElement | null;
-  canUnschedule: boolean;
-  pending: boolean;
   sessionSubject?: Readonly<{
     kind: 'activity' | 'occurrence';
     ref: string;
@@ -841,7 +838,6 @@ type EventDetailDialogProps = Readonly<{
   }> | null;
   reminderScheduleRef?: string | null;
   placementLockScheduleRef?: string | null;
-  onUnschedule: () => void;
   onActivitySaved?: (profile: ActivityProfile) => void;
   onActivityDeleted?: () => void;
   onClose: () => void;
@@ -850,13 +846,10 @@ type EventDetailDialogProps = Readonly<{
 export function EventDetailDialog({
   detail,
   opener,
-  canUnschedule,
-  pending,
   sessionSubject = null,
   responsibilitySubject = null,
   reminderScheduleRef = null,
   placementLockScheduleRef = null,
-  onUnschedule,
   onActivitySaved,
   onActivityDeleted,
   onClose,
@@ -875,15 +868,6 @@ export function EventDetailDialog({
   const [toolbarTarget, setToolbarTarget] = useState<HTMLDivElement | null>(
     null,
   );
-  const [confirmingMove, setConfirmingMove] = useState(false);
-  const [placementLockState, setPlacementLockState] = useState<{
-    scheduleRef: string;
-    locked: boolean;
-  } | null>(null);
-  const placementLocked =
-    placementLockState?.scheduleRef === placementLockScheduleRef
-      ? placementLockState.locked
-      : null;
   const currentEditingProfile =
     editingProfile?.activityRef === sessionSubject?.ref ? editingProfile : null;
 
@@ -1028,12 +1012,6 @@ export function EventDetailDialog({
                 key={placementLockScheduleRef}
                 scheduleRef={placementLockScheduleRef}
                 variant="icon"
-                onLockChanged={(locked) =>
-                  setPlacementLockState({
-                    scheduleRef: placementLockScheduleRef,
-                    locked,
-                  })
-                }
               />
             )}
             {currentEditingProfile ? null : (
@@ -1041,24 +1019,6 @@ export function EventDetailDialog({
                 ref={setToolbarTarget}
                 className="timeline-event-modal__owner-actions"
               />
-            )}
-            {currentEditingProfile ||
-            placementLockScheduleRef === null ? null : (
-              <button
-                type="button"
-                disabled={
-                  pending || !canUnschedule || placementLocked !== false
-                }
-                aria-label="Sposta in Da collocare"
-                title={
-                  placementLocked === false
-                    ? 'Sposta in Da collocare'
-                    : 'Sblocca prima di spostare'
-                }
-                onClick={() => setConfirmingMove(true)}
-              >
-                <TimelineInspectorIcon name="unschedule" />
-              </button>
             )}
             <TemporalPanelCloseButton
               buttonRef={closeButtonRef}
@@ -1125,30 +1085,6 @@ export function EventDetailDialog({
             detail.groupLabel !== LEGACY_UNASSIGNED_GROUP &&
             detail.groupLabel !== 'Senza Life Area' ? (
               <p className="timeline-event-modal__group">{detail.groupLabel}</p>
-            ) : null}
-            {confirmingMove ? (
-              <div
-                className="timeline-activity-inspector__confirmation"
-                role="group"
-                aria-label="Sposta in Da collocare"
-              >
-                <p>
-                  Rimuovere questo orario e spostare l’elemento in Da collocare?
-                </p>
-                <button
-                  type="button"
-                  disabled={pending}
-                  onClick={() => {
-                    setConfirmingMove(false);
-                    onUnschedule();
-                  }}
-                >
-                  Conferma
-                </button>
-                <button type="button" onClick={() => setConfirmingMove(false)}>
-                  Annulla
-                </button>
-              </div>
             ) : null}
             {sessionSubject?.kind === 'activity' ? (
               <>

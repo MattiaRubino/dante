@@ -213,8 +213,10 @@ describe('compact Session runtime on created cards', () => {
         variant="card"
       />,
     );
-    expect(await screen.findByText('Sessione conclusa')).toBeTruthy();
+    await waitFor(() => expect(source.list).toHaveBeenCalledOnce());
+    expect(screen.queryByText('Sessione conclusa')).toBeNull();
     expect(screen.queryByRole('button', { name: 'Avvia' })).toBeNull();
+    expect(screen.queryByRole('button', { name: 'Termina' })).toBeNull();
     expect(source.startPlanned).not.toHaveBeenCalled();
   });
 });

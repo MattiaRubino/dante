@@ -172,6 +172,29 @@ loadLifeAreaChoice.mockResolvedValue({
   currentRevision: 0,
 });
 
+describe('Activity Inspector actions', () => {
+  it('offers Bozze without exposing a second unplaced workflow', async () => {
+    get.mockResolvedValue(profile);
+    render(
+      <ActivityInspectorActions
+        activityRef={ref}
+        onEdit={() => undefined}
+        onDeleted={() => undefined}
+        onDuplicate={() => undefined}
+      />,
+    );
+    expect(
+      screen.getByRole('button', { name: 'Sposta in Bozze' }),
+    ).toBeTruthy();
+    expect(
+      screen.queryByRole('button', { name: /Rimuovi dalla Timeline/ }),
+    ).toBeNull();
+    expect(
+      screen.queryByRole('button', { name: /Annulla rimozione Timeline/ }),
+    ).toBeNull();
+  });
+});
+
 describe('Recurring Activity profile scope', () => {
   it('labels retained named and generic attempts with their factual lifecycle state', async () => {
     loadSettings.mockResolvedValueOnce({

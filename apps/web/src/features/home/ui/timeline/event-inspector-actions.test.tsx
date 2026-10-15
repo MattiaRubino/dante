@@ -73,6 +73,23 @@ afterEach(() => {
 });
 
 describe('Event Inspector actions', () => {
+  it('offers a copy to Bozze without exposing canonical unplacement', () => {
+    render(
+      <EventInspectorActions
+        eventRef={eventRef}
+        placement={placement}
+        onDuplicate={() => undefined}
+      />,
+    );
+    expect(screen.getByRole('button', { name: 'Copia in Bozze' })).toBeTruthy();
+    expect(
+      screen.queryByRole('button', { name: /Rimuovi Event dalla Timeline/ }),
+    ).toBeNull();
+    expect(
+      screen.queryByRole('button', { name: /Annulla rimozione Event/ }),
+    ).toBeNull();
+  });
+
   it('loads owner-scoped Agenda and Participation and opens a new draft without copying truth', async () => {
     loadEvent.mockResolvedValue({
       eventRef,

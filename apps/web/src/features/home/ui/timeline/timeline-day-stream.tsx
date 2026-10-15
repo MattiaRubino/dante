@@ -327,20 +327,15 @@ function TimelineEventCard({
           {formatTimelineMinute(event.startMinute)}–
           {formatTimelineMinute(event.endMinute)}
         </button>
-        {cardMeta ? (
+        {!isActivity && cardMeta ? (
           <div className="timeline-event-card__meta">{cardMeta}</div>
         ) : null}
         {layout.sessionReality ? (
           <div
             className="timeline-event-card__reality-status"
-            role="status"
-            title={`Reale: ${layout.sessionReality.actualLabel}. Previsto: ${formatTimelineMinute(event.startMinute)}–${formatTimelineMinute(event.endMinute)}`}
+            title={`Sessione dell'attività: ${layout.sessionReality.actualLabel}`}
           >
-            {layout.sessionReality.state === 'running'
-              ? `In corso · ${layout.sessionReality.actualLabel}`
-              : layout.sessionReality.state === 'paused'
-                ? `In pausa · ${layout.sessionReality.actualLabel}`
-                : `Registrata · ${layout.sessionReality.actualLabel}`}
+            Sessione dell'attività · {layout.sessionReality.actualLabel}
           </div>
         ) : null}
         {sessionActivityRef === null ? null : (
