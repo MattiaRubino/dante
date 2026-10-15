@@ -91,13 +91,14 @@
       "B14-ATOMIC-RECURRING-DELETION",
       "B14-ACTIVITY-TREE-HARD-DELETE",
       "B14-COORDINATED-TIMELINE-UNDO",
-      "B14-EVENT-DELETION-INSTANCE-CHOICES"
+      "B14-EVENT-DELETION-INSTANCE-CHOICES",
+      "B14-EVENT-TIMELINE-PLACEMENT"
     ],
     "standalone_entries": {
       "tables": 238,
       "views": 5,
-      "routines": 242,
-      "total": 485
+      "routines": 244,
+      "total": 487
     },
     "embedded_objects": {
       "triggers": 104,
