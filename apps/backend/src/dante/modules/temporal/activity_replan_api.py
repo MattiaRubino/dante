@@ -968,8 +968,9 @@ async def undo_activity_timeline(
             # monotonic history of the original Schedule Undo procedure.
             row = (await session.execute(
                 text("""
-                    SELECT * FROM dante.undo_self_activity_schedule_coordinated(
-                        :actor,:operation,:fingerprint,:schedule,:removed,:next_state
+                    SELECT * FROM dante.undo_self_activity_timeline(
+                        :actor,:operation,:fingerprint,:schedule,:removed,:next_state,
+                        :activity,:session_fingerprint
                     )
                 """),
                 {
@@ -982,6 +983,8 @@ async def undo_activity_timeline(
                     "schedule": body.schedule_ref,
                     "removed": body.unschedule_operation_id,
                     "next_state": uuid7(),
+                    "activity": activity_ref,
+                    "session_fingerprint": body.expected_session_fingerprint,
                 },
             )).mappings().one()
     except DBAPIError as exc:
