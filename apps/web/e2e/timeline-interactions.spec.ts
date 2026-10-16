@@ -1,6 +1,45 @@
-import { expect, test } from '@playwright/test';
+import { expect, test, type Locator } from '@playwright/test';
 
 test.use({ locale: 'it-IT' });
+
+/** Hit a visible, real card surface, never an offscreen fixed-width lane.
+ * Coordinates cached before a horizontal auto-scroll are not safe inputs. */
+async function cardBodyPoint(card: Locator): Promise<{ x: number; y: number }> {
+  await card.scrollIntoViewIfNeeded();
+  return card.evaluate((element) => {
+    const bounds = element.getBoundingClientRect();
+    const grid = element.closest('.timeline-grid');
+    const limit = grid?.getBoundingClientRect();
+    if (!limit) throw new Error('Card missing Timeline grid.');
+    const left = Math.max(bounds.left + 9, limit.left + 9, 9);
+    const right = Math.min(
+      bounds.right - 9,
+      limit.right - 9,
+      window.innerWidth - 9,
+    );
+    const top = Math.max(bounds.top + 9, limit.top + 9, 9);
+    const bottom = Math.min(
+      bounds.bottom - 9,
+      limit.bottom - 9,
+      window.innerHeight - 9,
+    );
+    if (right <= left || bottom <= top) {
+      throw new Error('Timeline card not visible inside its scroll region.');
+    }
+    for (const yf of [0.7, 0.55, 0.4, 0.85, 0.2]) {
+      for (const xf of [0.5, 0.8, 0.2]) {
+        const x = left + (right - left) * xf;
+        const y = top + (bottom - top) * yf;
+        const hit = document.elementFromPoint(x, y);
+        if (hit && element.contains(hit) && !hit.closest('button, input, a')) {
+          return { x, y };
+        }
+      }
+    }
+    throw new Error('No unobstructed Timeline card-body interaction point.');
+  });
+}
+
 
 test('custom event dragging never falls back to a native browser drag ghost', async ({
   page,
@@ -84,35 +123,16 @@ test('a focused card never consumes the first drag gesture on another card', asy
 
   const focused = page.locator('[data-timeline-event="7"]');
   const target = page.locator('[data-timeline-event="12"]');
-  await focused.scrollIntoViewIfNeeded();
-
-  const focusedBox = await focused.boundingBox();
-  expect(focusedBox).not.toBeNull();
-  if (!focusedBox) {
-    throw new Error('Expected focus-card geometry');
-  }
-
-  await page.mouse.click(
-    focusedBox.x + Math.max(12, focusedBox.width - 16),
-    focusedBox.y +
-      Math.min(focusedBox.height - 12, Math.max(18, focusedBox.height * 0.62)),
-  );
+  const first = await cardBodyPoint(focused);
+  await page.mouse.click(first.x, first.y);
   await expect(focused).toHaveClass(/is-focused/);
 
-  const targetBox = await target.boundingBox();
-  expect(targetBox).not.toBeNull();
-  if (!targetBox) {
-    throw new Error('Expected drag-target geometry');
-  }
-
-  const startX = targetBox.x + Math.max(12, targetBox.width - 16);
-  const startY =
-    targetBox.y +
-    Math.min(targetBox.height - 12, Math.max(18, targetBox.height * 0.62));
-
-  await page.mouse.move(startX, startY);
+  // The target may now occupy a horizontally scrollable lane. Reveal it
+  // before taking coordinates, and verify the click target belongs to it.
+  const point = await cardBodyPoint(target);
+  await page.mouse.move(point.x, point.y);
   await page.mouse.down();
-  await page.mouse.move(startX, startY + 52, { steps: 5 });
+  await page.mouse.move(point.x, point.y + 52, { steps: 5 });
 
   const overlay = page.locator('.timeline-event-drag-overlay');
   await expect(overlay).toHaveCount(1);
@@ -130,37 +150,20 @@ test('a simple click on another card retargets focus without retaining stale sel
 
   const focused = page.locator('[data-timeline-event="7"]');
   const target = page.locator('[data-timeline-event="12"]');
-  await focused.scrollIntoViewIfNeeded();
-
-  const focusedBox = await focused.boundingBox();
-  const targetBox = await target.boundingBox();
-  expect(focusedBox).not.toBeNull();
-  expect(targetBox).not.toBeNull();
-  if (!focusedBox || !targetBox) {
-    throw new Error('Expected Timeline focus geometry');
-  }
-
-  const focusedX = focusedBox.x + Math.max(12, focusedBox.width - 16);
-  const focusedY =
-    focusedBox.y +
-    Math.min(focusedBox.height - 12, Math.max(18, focusedBox.height * 0.62));
-  const targetX = targetBox.x + Math.max(12, targetBox.width - 16);
-  const targetY =
-    targetBox.y +
-    Math.min(targetBox.height - 12, Math.max(18, targetBox.height * 0.62));
-
-  await page.mouse.click(focusedX, focusedY);
+  const first = await cardBodyPoint(focused);
+  await page.mouse.click(first.x, first.y);
   await expect(focused).toHaveClass(/is-focused/);
 
-  // Direct single-click focus retargeting is the current Timeline contract:
-  // the old card must lose focus as the new card gains it.
-  await page.mouse.click(targetX, targetY);
+  const second = await cardBodyPoint(target);
+  await page.mouse.click(second.x, second.y);
   await expect(focused).not.toHaveClass(/is-focused/);
   await expect(target).toHaveClass(/is-focused/);
 
-  await page.mouse.click(focusedX, focusedY);
+  const again = await cardBodyPoint(focused);
+  await page.mouse.click(again.x, again.y);
   await expect(target).not.toHaveClass(/is-focused/);
   await expect(focused).toHaveClass(/is-focused/);
+  await expect(page.locator('[data-timeline-event="12"]')).toHaveCount(1);
 });
 
 test('compact overlap cards stay in a bounded cluster instead of jumping across the canvas', async ({
