@@ -235,12 +235,20 @@ def test_current_database_cross_representation_is_exact(migrated_database: Any) 
         "B14-INDEPENDENT-PLANNED-SESSION",
         "B14-PAST-ACTIVITY-REVIEW",
         "B14-ACTIVITY-SESSION-LIFECYCLE",
+        "B14-RECURRING-LIFECYCLE-GUARD",
+        "B14-ACTIVITY-OBJECTIVE-LIFECYCLE-GUARD",
+        "B14-ATOMIC-RECURRING-DELETION",
+        "B14-ACTIVITY-TREE-HARD-DELETE",
+        "B14-COORDINATED-TIMELINE-UNDO",
+        "B14-EVENT-DELETION-INSTANCE-CHOICES",
+        "B14-EVENT-TIMELINE-PLACEMENT",
+        "B14-HARD-DELETE-REALITY-POLICY-GRAPH",
     ]
     assert current["standalone_entries"] == {
         "tables": 238,
         "views": 5,
         "routines": 239,
-        "total": 476,
+        "total": 482,
     }
     assert current["embedded_objects"] == {
         "triggers": 104,
