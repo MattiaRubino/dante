@@ -243,35 +243,25 @@ describe('TimelineSurface production parity', () => {
     expect(screen.getByText('Redesign LifeOS — sessione focus')).toBeTruthy();
   });
 
-  it('expands event subitems and exposes precise keyboard, wheel and pointer time controls', () => {
-    renderTimeline();
+  it('expands Event agenda items while keeping card times read-only', () => {
+    const { container } = renderTimeline();
 
     fireEvent.click(
       screen.getByRole('button', { name: '3 sotto-attività · espandi' }),
     );
     expect(screen.getByText('• Rivedi layout Home')).toBeTruthy();
 
-    fireEvent.click(
-      screen.getByRole('button', {
-        name: 'Modifica orario di Redesign LifeOS — sessione focus',
-      }),
+    const card = container.querySelector<HTMLElement>(
+      '[data-timeline-event="2"]',
     );
+    const time = card?.querySelector<HTMLElement>('.timeline-event-card__time');
+    expect(time?.tagName).toBe('DIV');
+    expect(time?.textContent).toContain('09:00–11:00');
+    fireEvent.click(time as HTMLElement);
+    expect(card?.classList.contains('is-focused')).toBe(true);
     expect(
-      screen.getByRole('dialog', { name: 'Modifica orario' }),
-    ).toBeTruthy();
-
-    const startMinute =
-      screen.getByLabelText<HTMLInputElement>('Inizio minuti');
-    const endMinute = screen.getByLabelText<HTMLInputElement>('Fine minuti');
-    expect(startMinute.value).toBe('00');
-    expect(endMinute.value).toBe('00');
-
-    fireEvent.click(
-      screen.getByRole('button', { name: 'Aumenta Inizio di 1 minuto' }),
-    );
-
-    expect(startMinute.value).toBe('01');
-    expect(endMinute.value).toBe('01');
+      screen.queryByRole('dialog', { name: 'Modifica orario' }),
+    ).toBeNull();
   });
 
   it('lets a different card receive a click while another card is focused', () => {
@@ -290,12 +280,13 @@ describe('TimelineSurface production parity', () => {
     fireEvent.click(focusedCard as HTMLElement);
     expect(focusedCard?.classList.contains('is-focused')).toBe(true);
 
-    const targetTime = screen.getByRole('button', {
-      name: 'Modifica orario di Promemoria',
-    });
-    expect(targetTime.tabIndex).toBe(-1);
+    const targetTime = targetCard?.querySelector<HTMLElement>(
+      '.timeline-event-card__time',
+    );
+    expect(targetTime?.tagName).toBe('DIV');
+    expect(targetTime?.tabIndex).toBe(-1);
 
-    fireEvent.click(targetTime);
+    fireEvent.click(targetTime as HTMLElement);
     expect(
       screen.queryByRole('dialog', { name: 'Modifica orario' }),
     ).toBeNull();
@@ -350,12 +341,14 @@ describe('TimelineSurface production parity', () => {
     for (let step = 0; step < 5; step += 1) {
       moveReminder('ArrowDown');
     }
-    expect(getReminder()?.getAttribute('aria-label')).toContain('15:10–15:25');
+    // Keyboard placement now moves by one exact minute, never a hidden
+    // five-minute grid step. Focus changes must not change that precision.
+    expect(getReminder()?.getAttribute('aria-label')).toContain('14:50–15:05');
 
     for (let cycle = 0; cycle < 8; cycle += 1) {
       moveReminder('ArrowDown');
       expect(getReminder()?.getAttribute('aria-label')).toContain(
-        '15:15–15:30',
+        '14:51–15:06',
       );
 
       const isolatedReminder = getReminder();
@@ -366,7 +359,7 @@ describe('TimelineSurface production parity', () => {
 
       moveReminder('ArrowUp');
       expect(getReminder()?.getAttribute('aria-label')).toContain(
-        '15:10–15:25',
+        '14:50–15:05',
       );
     }
 
