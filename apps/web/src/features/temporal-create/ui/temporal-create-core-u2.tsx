@@ -263,7 +263,7 @@ export function TimeControl({
         listRef.current?.querySelectorAll<HTMLElement>('[data-time-value]') ??
           [],
       )
-        .find((candidate) => candidate.dataset.timeValue === selected)
+        .find((candidate) => candidate.dataset.timeValue === lastValidRef.current || candidate.dataset.timeValue === selected)
         ?.scrollIntoView({ block: 'center' });
     });
     return () => cancelAnimationFrame(frame);
@@ -384,8 +384,8 @@ export function TimeControl({
           <div className="temporal-create-time-segment">
             <button
               type="button"
-              aria-label={`${label}: aumenta 15 minuti`}
-              onClick={() => syncDraft(shiftTime(lastValidRef.current, 15))}
+              aria-label={`${label}: aumenta 1 minuto`}
+              onClick={() => syncDraft(shiftTime(lastValidRef.current, 1))}
             >
               ▲
             </button>
@@ -415,8 +415,8 @@ export function TimeControl({
             />
             <button
               type="button"
-              aria-label={`${label}: diminuisci 15 minuti`}
-              onClick={() => syncDraft(shiftTime(lastValidRef.current, -15))}
+              aria-label={`${label}: diminuisci 1 minuto`}
+              onClick={() => syncDraft(shiftTime(lastValidRef.current, -1))}
             >
               ▼
             </button>
@@ -440,13 +440,26 @@ export function TimeControl({
           aria-label={label}
         >
           <div ref={listRef} className="temporal-create-time-list">
+            {!TIME_OPTIONS.includes(committedValue) ? (
+              <button
+                type="button"
+                data-time-value={committedValue}
+                className="is-selected"
+                onClick={() => {
+                  syncDraft(committedValue);
+                  setPickerOpen(false);
+                }}
+              >
+                {committedValue}
+              </button>
+            ) : null}
             {TIME_OPTIONS.map((option) => (
               <button
                 key={option}
                 type="button"
                 data-time-value={option}
                 className={
-                  nearestQuarter(committedValue) === option ? 'is-selected' : ''
+                  committedValue === option ? 'is-selected' : ''
                 }
                 onClick={() => {
                   syncDraft(option);
