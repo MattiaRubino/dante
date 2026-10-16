@@ -13,12 +13,14 @@ from tests.integration.temporal.support.life_area import ensure_test_life_area
 from dante.auth.contracts import Principal
 from dante.context.contracts import DanteContext
 from dante.modules.temporal.activity import TemporalActivityApplication
+from dante.modules.temporal.event import TemporalEventApplication
 from dante.modules.temporal.application import (
     TemporalTimelineApplication,
     TimelineAbsoluteActivityItem,
     TimelineCoarseLocalPeriodActivityItem,
     TimelineDateSpanActivityItem,
     TimelineFloatingLocalActivityItem,
+    TimelineFloatingLocalEventItem,
     TimelineNamedZoneLocalActivityItem,
 )
 from dante.modules.temporal.contracts import TimelineWindowQuery
@@ -89,6 +91,85 @@ def _context(
         timezone_policy=TimeZonePolicy(mode=TimeZoneMode.FOLLOW_DEVICE),
         effective_zone_id=effective_zone_id,
     )
+
+
+@pytest.mark.postgres
+@pytest.mark.asyncio
+async def test_one_minute_activity_and_event_schedules_remain_exact_across_database_read(
+    migrated_database: Any,
+) -> None:
+    """Authoring, persistence, replan and Timeline must NEVER pad 10:30–10:31."""
+    owner = _seed_self_person(migrated_database)
+    area_ref = ensure_test_life_area(migrated_database, owner)
+    runtime = create_database_runtime(migrated_database.runtime_settings())
+    activities = TemporalActivityApplication(runtime.session_factory)
+    events = TemporalEventApplication(runtime.session_factory)
+    schedules = TemporalScheduleApplication(runtime.session_factory)
+    timeline = TemporalTimelineApplication(runtime.session_factory)
+    one_minute = FloatingLocalIntervalPlacement(
+        starts_local_at=_local(2026, 10, 16, 10, 30),
+        ends_local_at=_local(2026, 10, 16, 10, 31),
+    )
+    shifted = FloatingLocalIntervalPlacement(
+        starts_local_at=_local(2026, 10, 16, 10, 37),
+        ends_local_at=_local(2026, 10, 16, 10, 38),
+    )
+    try:
+        activity = await activities.create_activity_with_schedule(
+            self_person_ref=owner,
+            life_area_ref=area_ref,
+            operation_id="operation:minute-accuracy:activity",
+            title="One minute Activity",
+            placement=one_minute,
+        )
+        event = await events.create_event_with_schedule(
+            self_person_ref=owner,
+            life_area_ref=area_ref,
+            operation_id="operation:minute-accuracy:event",
+            title="One minute Event",
+            placement=one_minute,
+        )
+        assert activity.schedule.placement == one_minute
+        assert event.schedule.placement == one_minute
+
+        first_read = await timeline.read_window(
+            query=TimelineWindowQuery(
+                start_date=date(2026, 10, 16),
+                end_date_exclusive=date(2026, 10, 17),
+            ),
+            context=_context(owner),
+        )
+        by_title = {item.title: item for item in first_read.items}
+        assert len(by_title) == 2
+        assert isinstance(by_title["One minute Activity"], TimelineFloatingLocalActivityItem)
+        assert isinstance(by_title["One minute Event"], TimelineFloatingLocalEventItem)
+        for item in by_title.values():
+            assert item.starts_local_at == _local(2026, 10, 16, 10, 30)
+            assert item.ends_local_at == _local(2026, 10, 16, 10, 31)
+
+        for index, schedule in enumerate((activity.schedule, event.schedule)):
+            revision = await schedules.revise_schedule(
+                self_person_ref=owner,
+                operation_id=f"operation:minute-accuracy:move:{index}",
+                schedule_ref=schedule.schedule_ref,
+                expected_material_state_ref=schedule.material_state_ref,
+                placement=shifted,
+            )
+            assert revision.placement == shifted
+
+        after_replan = await timeline.read_window(
+            query=TimelineWindowQuery(
+                start_date=date(2026, 10, 16),
+                end_date_exclusive=date(2026, 10, 17),
+            ),
+            context=_context(owner),
+        )
+        assert len(after_replan.items) == 2
+        for item in after_replan.items:
+            assert item.starts_local_at == _local(2026, 10, 16, 10, 37)
+            assert item.ends_local_at == _local(2026, 10, 16, 10, 38)
+    finally:
+        await runtime.dispose()
 
 
 def _placements() -> tuple[SchedulePlacement, ...]:
