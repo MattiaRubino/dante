@@ -443,14 +443,18 @@ async function emptyTimedCanvasPoint(
   day: VisibleTimelineDay,
   travel = 0,
 ): Promise<{ x: number; y: number }> {
-  return day.section.evaluate((section, requiredTravel) => {
+  return day.section.evaluate((section, { requiredTravel, timedTop }) => {
     const sectionRect = section.getBoundingClientRect();
     const grid = section.closest('.timeline-grid');
     const gridRect = grid?.getBoundingClientRect();
     if (!gridRect) throw new Error('No Timeline grid for timed Create.');
     const left = Math.max(sectionRect.left + 20, gridRect.left + 20, 20);
     const right = Math.min(sectionRect.right - 20, gridRect.right - 20, window.innerWidth - 20);
-    const top = Math.max(sectionRect.top + 20, gridRect.top + 20, 20);
+    const top = Math.max(
+      sectionRect.top + Math.max(20, timedTop + 20),
+      gridRect.top + 20,
+      20,
+    );
     const bottom = Math.min(sectionRect.bottom - 20, gridRect.bottom - 20, window.innerHeight - 20);
     const available = bottom - top - requiredTravel;
     if (right <= left || available < 20) throw new Error('Timed canvas not visible.');
@@ -473,7 +477,7 @@ async function emptyTimedCanvasPoint(
       }
     }
     throw new Error('No unobstructed timed canvas for contextual Create.');
-  }, travel);
+  }, { requiredTravel: travel, timedTop: day.visibleTop });
 }
 
 test('double-click and Shift-drag only use the timed canvas for contextual Create', async ({
