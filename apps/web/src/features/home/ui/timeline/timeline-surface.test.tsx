@@ -253,11 +253,11 @@ describe('TimelineSurface production parity', () => {
     expect(endMinute.value).toBe('00');
 
     fireEvent.click(
-      screen.getByRole('button', { name: 'Aumenta Inizio di 5 minuti' }),
+      screen.getByRole('button', { name: 'Aumenta Inizio di 1 minuto' }),
     );
 
-    expect(startMinute.value).toBe('05');
-    expect(endMinute.value).toBe('05');
+    expect(startMinute.value).toBe('01');
+    expect(endMinute.value).toBe('01');
   });
 
   it('lets a different card receive a click while another card is focused', () => {
