@@ -1,5 +1,44 @@
 # Timeline / Temporal-Operational — Workstream Handoff
 
+## 2026-10-16 — Timeline card geometry / group packing regression repair
+
+The user supplied four visual reproductions: moving several Activity/Event
+cards toward the same starts caused intrinsic widths to shrink or grow,
+occasional side-by-side cards to overlap, and expanded group columns to drift
+in both rolling Timeline and Giorno views.
+
+**Implementation candidate:** the production card now derives one immutable
+width solely from title and Activity/Event kind (Activity floor 352px, Event
+floor 292px, capped at 456px); Play/Pause/Stop and lane pressure cannot
+re-measure or shrink it. Activity height reserves at least 116px for heading
+and runtime actions, planned/real times and the internal-Session indicator;
+Event height reserves 88px. The Activity heading reserves 74px for controls
+even before Play and after Stop; long titles clamp to two lines.
+
+The shared viewport runtime now positions collision lanes with a fixed pixel
+pitch and expands the horizontal track whenever necessary. The same fixed
+width is used in compact, partially-expanded and fully-grouped modes; the
+grouped track/header share one computed width, including extra lanes needed
+by multiple simultaneous cards in the same group. Hidden groups do not
+inflate the visible group count. Crowded compact tracks enable horizontal
+scroll instead of cropping events. The week view keeps its own compact
+minimum and widens its seven-column track rather than compressing simultaneous
+card slots. Live Session projection uses its unchanged **painted** height to
+reserve a correct collision lane; the independent elastic ruler scale and
+canonical Schedule are not changed by Play.
+
+Colocated Vitest regressions now exercise four simultaneous cards,
+variable starts, overlapping group members, every intermediate expansion
+fraction, fixed DOM width, scroll reachability and relocated live-Session
+painted-height collisions.
+
+**Evidence boundary:** GitHub code and test changes are published. The
+assistant has **NOT_RUN** Web Vitest, typecheck, lint, Prettier, real-browser
+or full gate; these remain user-run WSL checks. Visual acceptance still
+requires dragging real Activities/Events at identical starts in Timeline
+and Giorno and opening group expansion to 100% while inspecting actual card
+geometry on the final exact commit.
+
 ## 2026-10-16 — User visual review follow-up (candidate)
 
 The first visual review found a too-small idle ruler/card scale, zoom clicks
