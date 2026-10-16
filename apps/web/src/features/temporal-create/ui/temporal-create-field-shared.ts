@@ -117,7 +117,7 @@ export function temporalCreateDurationFromEndDateTime(
     difference.hours * 60 +
     difference.minutes +
     Math.ceil(difference.seconds / 60);
-  return Math.max(5, minutes);
+  return minutes;
 }
 
 export function temporalCreateEndTime(
@@ -145,5 +145,5 @@ export function temporalCreateDurationFromEndTime(
     return null;
   }
   const delta = end > start ? end - start : end + 1440 - start;
-  return Math.max(5, delta);
+  return delta;
 }
