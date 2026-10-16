@@ -1,5 +1,31 @@
 # Timeline / Temporal-Operational — Workstream Handoff
 
+## 2026-10-16 — User-run Timeline geometry focused verification follow-up
+
+User WSL evidence on `b92a6a659c8f7e868f0f24fbb631dbc2de19bc1b`:
+60 focused Vitest tests: 57 passed, 3 failed; `@dante/web` typecheck:
+3 TS2345 errors; `@dante/web` build: PASS (Vite chunk-size
+advisory only). The failures were reported at exact source lines, not
+guessed from a later commit.
+
+Corrections published:
+- Explicit `minimumGroupWidth: number` on the expanded track geometry;
+  the previous inferred literal type `260` prevented actual group widths.
+- Removed obsolete `compactLaneRegionPercent/2` cluster limit from the
+  regression; lane order and right bound remain enforced, while the new
+  fixed-pixel collision tests still cover actual non-overlap.
+- Ended Activity projection regression now enforces min-height 116px,
+  no expansion relative to its planned card, real visible interval end and
+  preserved canonical Schedule instead of demanding a strict height shrink
+  below the common minimum.
+- Separate main/internal Session regression compares the same Activity
+  with and without its named internal Session to directly assert its
+  actual geometry and label are unchanged.
+
+**Verification status:** edits are published, NOT_RUN by assistant. User
+must rerun focused Vitest, typecheck and build together on this newer SHA.
+Do not claim these corrections PASS until the logs confirm them.
+
 ## 2026-10-16 — Timeline card geometry / group packing regression repair
 
 The user supplied four visual reproductions: moving several Activity/Event
