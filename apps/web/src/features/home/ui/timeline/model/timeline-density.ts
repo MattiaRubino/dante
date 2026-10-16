@@ -61,7 +61,9 @@ export function timelineEventReadableHeight(event: TimelineEvent): number {
   // Reserve room before Play for the planned time, actual time and optional
   // Session count. The card's runtime state never dictates this floor.
   if (event.canonicalBasis?.kind === 'scheduled-activity') {
-    height = Math.max(height, event.title.length > 55 ? 108 : 88);
+    height = Math.max(height, eventPolicy.activityMinimumHeightPx);
+  } else {
+    height = Math.max(height, eventPolicy.eventMinimumHeightPx);
   }
   return Math.max(height, event.visualMinimumHeightPx ?? 0);
 }
