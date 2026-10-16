@@ -158,7 +158,11 @@ describe('Timeline Session panel integration', () => {
     ];
     // Before Play there is no five-minute preview and no panel group.
     let current = feed([]);
-    const fetcher = vi.fn(async () => Response.json(current));
+    const requests: string[] = [];
+    const fetcher = vi.fn(async (input: RequestInfo | URL) => {
+      requests.push(requestPath(input));
+      return Response.json(current);
+    });
     vi.stubGlobal('fetch', fetcher);
     render(<Harness />);
     await waitFor(() => expect(fetcher).toHaveBeenCalledOnce());
@@ -182,9 +186,9 @@ describe('Timeline Session panel integration', () => {
       });
       expect(play.disabled).toBe(false);
     }
-    expect(fetcher.mock.calls.every(([input]) =>
-      requestPath(input).endsWith('/session-panel'),
-    )).toBe(true);
+    expect(requests.every((path) => path.endsWith('/session-panel'))).toBe(
+      true,
+    );
 
     // Pausing the main keeps children visible but prevents independent
     // Start; resuming is an explicit main action, never an auto child Start.
