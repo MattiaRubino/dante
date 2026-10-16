@@ -99,36 +99,16 @@ export function timelineIntrinsicCardWidth(
 }
 
 /**
- * Compact width is content-driven regardless of overlap. A collision lane is
- * a maximum available slot, never a reason to inflate a short card. This keeps
- * an event visually stable when it moves into or out of an overlap cluster.
+ * Compatibility helper for compact intrinsic widths: an overlap lane may
+ * increase track scroll width, but must never shrink an individual card.
+ * The production renderer uses the stricter identity-derived width above.
  */
 export function timelineCompactCardWidth(
   renderedContentWidth: number,
   availableWidth: number,
-  slotMaximumWidth: number | null,
+  _slotMaximumWidth: number | null,
 ): number {
-  const intrinsic = timelineIntrinsicCardWidth(
-    renderedContentWidth,
-    availableWidth,
-  );
-  if (slotMaximumWidth === null || !Number.isFinite(slotMaximumWidth)) {
-    return intrinsic;
-  }
-
-  const safeAvailableWidth = Number.isFinite(availableWidth)
-    ? Math.max(1, availableWidth)
-    : 1;
-  const minimumVisibleWidth = Math.min(
-    TIMELINE_POLICY.expansion.cardMinWidthPx,
-    safeAvailableWidth,
-  );
-  const safeSlotMaximum = Math.max(
-    minimumVisibleWidth,
-    Math.min(safeAvailableWidth, slotMaximumWidth),
-  );
-
-  return Math.max(minimumVisibleWidth, Math.min(intrinsic, safeSlotMaximum));
+  return timelineIntrinsicCardWidth(renderedContentWidth, availableWidth);
 }
 
 /**
