@@ -1,7 +1,11 @@
 import { describe, expect, it } from 'vitest';
 
 import { TIMELINE_PROTOTYPE_TODAY } from './model/timeline-fixtures';
-import { TIMELINE_POLICY, timelineStableCardWidth } from './model/timeline-policy';
+import {
+  TIMELINE_POLICY,
+  timelineDragSnapMinutes,
+  timelineStableCardWidth,
+} from './model/timeline-policy';
 import { computeTimelineEventLayouts } from './model/timeline-layout';
 import type { TimelineEvent, TimelineGroup } from './model/timeline-types';
 import { createInitialTimelineState } from './model/timeline-state';
@@ -37,6 +41,18 @@ function buildReferenceDays() {
 }
 
 describe('timeline viewport runtime', () => {
+  it('never rounds manual card moves or keyboard nudges to a five-minute grid', () => {
+    for (const zoom of [
+      TIMELINE_POLICY.zoom.min,
+      1,
+      TIMELINE_POLICY.zoom.precisionThreshold,
+      TIMELINE_POLICY.zoom.max,
+    ]) {
+      expect(timelineDragSnapMinutes(zoom)).toBe(1);
+    }
+  });
+
+
   it('parses external view dates defensively', () => {
     expect(parseTimelineViewedDate('2034-02-17')?.toString()).toBe(
       '2034-02-17',
