@@ -16,6 +16,34 @@ import {
   validateTemporalCreateFields,
 } from './temporal-create-session';
 
+describe('timed one-minute Activity/Event validation', () => {
+  it.each(['activity', 'event'] as const)(
+    'accepts a one-minute %s but rejects a zero/negative interval',
+    (kind) => {
+      const oneMinute = createTemporalCreateFields({
+        kind,
+        title: 'Precise clock',
+        date: '2026-10-16',
+        startTime: '10:30',
+        durationMinutes: 1,
+      });
+      expect(validateTemporalCreateFields(oneMinute)).toEqual([]);
+      const placement = buildTemporalCreatePlacement(oneMinute);
+      expect(placement?.start.toString()).toContain('10:30');
+      expect(placement?.end.toString()).toContain('10:31');
+
+      for (const minutes of [0, -1]) {
+        const invalid = createTemporalCreateFields({
+          ...oneMinute,
+          durationMinutes: minutes,
+        });
+        expect(validateTemporalCreateFields(invalid).map((issue) => issue.code))
+          .toContain('temporal.create.duration.invalid');
+      }
+    },
+  );
+});
+
 describe('temporal create session', () => {
   it('starts with a clean structured draft', () => {
     const session = createTemporalCreateSession(
