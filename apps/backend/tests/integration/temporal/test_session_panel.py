@@ -153,6 +153,103 @@ async def test_panel_untimed_start_pause_resume_stop_owner_isolation_and_no_actu
 
 
 @pytest.mark.asyncio
+async def test_main_started_before_preview_exposes_all_children_and_preserves_cascade(
+    migrated_database: Any,
+) -> None:
+    """Real DB read: main Play grants early child visibility, not automatic execution."""
+    actor, outsider = _seed_self(migrated_database), _seed_self(migrated_database)
+    runtime = create_database_runtime(migrated_database.runtime_settings())
+    request = _fake_request(runtime)
+    context = _fake_context(actor)
+    now = datetime.now(UTC)
+    try:
+        created = await TemporalAuthoringApplication(runtime.session_factory).create_activity(
+            self_person_ref=actor,
+            operation_id="panel:main-early:create",
+            title="Studio futuro",
+            placement=AbsoluteIntervalPlacement(
+                starts_at=now + timedelta(hours=2),
+                ends_at=now + timedelta(hours=3),
+            ),
+            planned_slices=(None, None),
+            planned_slice_names=("Ripasso", "Esercizi"),
+            session_capture_mode="live",
+        )
+        activity = created.item.subject_native_ref
+        before = await get_session_panel(context, request, Response())
+        assert all(group.activity_ref != activity for group in before.groups)
+
+        sessions = SessionApplication(runtime.session_factory)
+        started = await sessions.start(
+            self_person_ref=actor,
+            subject_kind="activity",
+            subject_native_ref=activity,
+            operation_id="panel:main-early:start",
+        )
+        assert started.open
+
+        panel = await get_session_panel(context, request, Response())
+        group = next(group for group in panel.groups if group.activity_ref == activity)
+        assert len(group.rows) == 3
+        assert [row.name for row in group.rows] == [
+            "Sessione attività", "Ripasso", "Esercizi",
+        ]
+        assert group.rows[0].execution is not None
+        assert group.rows[0].execution.session_ref == started.session_ref
+        assert all(row.execution is None for row in group.rows[1:])
+        assert all(row.starts_at is None for row in group.rows[1:])
+        assert len({row.planned_schedule_ref for row in group.rows[1:]}) == 2
+        outsider_panel = await get_session_panel(
+            _fake_context(outsider), request, Response()
+        )
+        assert all(group.activity_ref != activity for group in outsider_panel.groups)
+
+        paused = await sessions.pause(
+            self_person_ref=actor,
+            session_ref=started.session_ref,
+            expected_material_state_ref=started.timing_material_state_ref,
+            operation_id="panel:main-early:pause",
+        )
+        paused_panel = await get_session_panel(context, request, Response())
+        paused_group = next(
+            group for group in paused_panel.groups if group.activity_ref == activity
+        )
+        assert len(paused_group.rows) == 3
+        assert paused_group.rows[0].execution is not None
+        assert paused_group.rows[0].execution.paused
+        assert all(row.execution is None for row in paused_group.rows[1:])
+
+        ended = await sessions.end(
+            self_person_ref=actor,
+            session_ref=started.session_ref,
+            expected_material_state_ref=paused.timing_material_state_ref,
+            operation_id="panel:main-early:stop",
+        )
+        assert not ended.open
+        after = await get_session_panel(context, request, Response())
+        assert all(group.activity_ref != activity for group in after.groups)
+        # The Activity and its two planned children were never deleted.
+        async with runtime.session_factory() as session, session.begin():
+            refs = (
+                (
+                    await session.execute(
+                        text(
+                            "SELECT schedule_ref FROM dante.get_self_activity_schedule_roles("
+                            ":actor, CAST(ARRAY[:activity] AS uuid[])) "
+                            "WHERE role_code='planned'"
+                        ),
+                        {"actor": actor, "activity": activity},
+                    )
+                )
+                .scalars()
+                .all()
+            )
+        assert len(refs) == 2
+    finally:
+        await runtime.dispose()
+
+
+@pytest.mark.asyncio
 async def test_retired_untimed_row_cannot_start_and_is_not_projected(
     migrated_database: Any,
 ) -> None:
