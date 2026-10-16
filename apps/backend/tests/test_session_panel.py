@@ -152,6 +152,74 @@ def test_open_main_keeps_configured_internal_sessions_visible_after_plan_ends() 
     assert build_panel([{**record, "executions": []}], at(20), "UTC").groups == []
 
 
+def test_early_child_stop_stays_retired_during_current_main_attempt() -> None:
+    named = schedule(display_name="Ripasso")
+    activity = owner(
+        schedule("interval", at(23, 30), at(23, 59)),
+        named,
+        executions=[execution()],
+    )
+    visuals = [
+        {
+            "activity_ref": activity["activity_ref"],
+            "planned_schedule_ref": None,
+            "started_at": at(20, 46),
+            "ended_at": None,
+        },
+        {
+            "activity_ref": activity["activity_ref"],
+            "planned_schedule_ref": named["schedule_ref"],
+            "started_at": at(20, 47),
+            "ended_at": at(20, 48),
+        },
+    ]
+    panel = build_panel([activity], at(20, 50), "UTC", visuals)
+    assert names(panel) == ["Sessione attività"]
+
+
+def test_new_main_attempt_re_admits_children_stopped_in_previous_attempt() -> None:
+    named = schedule(display_name="Ripasso")
+    activity = owner(
+        schedule("interval", at(23, 30), at(23, 59)),
+        named,
+        executions=[execution()],
+    )
+    stopped_main = {
+        "activity_ref": activity["activity_ref"],
+        "planned_schedule_ref": None,
+        "started_at": at(23, 30),
+        "ended_at": at(23, 31),
+    }
+    stopped_child = {
+        "activity_ref": activity["activity_ref"],
+        "planned_schedule_ref": named["schedule_ref"],
+        "started_at": at(23, 30),
+        "ended_at": at(23, 31),
+    }
+    new_main = {
+        "activity_ref": activity["activity_ref"],
+        "planned_schedule_ref": None,
+        "started_at": at(23, 32),
+        "ended_at": None,
+    }
+    # A previously stopped main within the same plan interval must not
+    # suppress child readiness after an explicit new main Play.
+    previous = [stopped_main, stopped_child, new_main]
+    assert names(build_panel([activity], at(23, 35), "UTC", previous)) == [
+        "Sessione attività",
+        "Ripasso",
+    ]
+    new_child_stop = {
+        "activity_ref": activity["activity_ref"],
+        "planned_schedule_ref": named["schedule_ref"],
+        "started_at": at(23, 33),
+        "ended_at": at(23, 34),
+    }
+    assert names(build_panel([activity], at(23, 35), "UTC", [*previous, new_child_stop])) == [
+        "Sessione attività"
+    ]
+
+
 def test_open_executions_survive_end_and_disabled_capture_without_collapsing_attempts() -> None:
     planned = schedule(start=at(9), end=at(10))
     record = owner(
