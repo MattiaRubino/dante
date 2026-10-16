@@ -56,7 +56,10 @@
   .home-context-rail:has(
     .home-create-panel-host .temporal-create-backdrop:not(.is-advanced)
   ) {
+    /* Do not animate between identity transform and none: during that
+       transition it still establishes a fixed-position containing block. */
     transform: none;
+    transition: none;
   }
 
   .home-context-rail
