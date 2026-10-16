@@ -17,13 +17,8 @@
   }
 
   .home-create-panel-host {
-    /* A stretched absolute host inherits the height of the entire rail,
-       including content below the viewport. Establish a definite bounded
-       block-size instead of max-height alone: the child composer uses
-       height: 100%, so percentage resolution otherwise fills 1400+ px. */
-    bottom: auto;
-    height: calc(100dvh - 180px);
-    max-height: calc(100dvh - 180px);
+    /* Quick Create replaces the Context Rail at the Timeline's own origin.
+       It must share the rail geometry, never escape to the Home viewport. */
     overflow: hidden;
   }
 
@@ -41,44 +36,13 @@
     bottom: 0;
     left: 0 !important;
     width: 100%;
-    height: calc(100dvh - 180px);
-    max-height: calc(100dvh - 180px);
+    height: 100%;
+    max-height: none;
     margin: 0;
     border-radius: var(--dante-semantic-radius-card);
     overflow: auto;
   }
 
-  /* Quick Create belongs to the right Context Rail in the DOM, but that
-     rail starts below the hero (often y > 700 at 900px viewport height).
-     A bounded height alone still puts its bottom below the viewport.
-     Untransform only the rail while Quick is open: transform:translateX(0)
-     establishes a containing block even for position:fixed descendants. */
-  .home-context-rail:has(
-    .home-create-panel-host .temporal-create-backdrop:not(.is-advanced)
-  ) {
-    /* Do not animate between identity transform and none: during that
-       transition it still establishes a fixed-position containing block. */
-    transform: none;
-    transition: none;
-  }
-
-  .home-context-rail
-    .home-create-panel-host:has(.temporal-create-backdrop:not(.is-advanced)) {
-    position: fixed;
-    inset: 104px 18px 16px auto;
-    width: var(--home-today-rail-width, 475px);
-    height: auto;
-    max-height: calc(100dvh - 120px);
-    overflow: hidden;
-    z-index: 1600;
-  }
-
-  .home-context-rail
-    .home-create-panel-host:has(.temporal-create-backdrop:not(.is-advanced))
-    .temporal-create-composer {
-    height: 100%;
-    max-height: 100%;
-  }
 }
 
 .home-context-rail {

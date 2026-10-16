@@ -41,20 +41,19 @@ test('Create stays in the desktop Context Rail, keeps Timeline scroll available,
   }
   const hostBox = await host.boundingBox();
   const geometry = JSON.stringify({ railBox, hostBox, quickBox });
-  // The rail is physically below the hero and may begin beyond the fold.
-  // Quick Create must stay associated horizontally with that rail, but
-  // vertically anchor to the viewport rather than inherit the rail's Y.
+  // Quick Create replaces the Context Rail from the Timeline's own top edge.
+  // It is not a viewport-fixed third panel above the Timeline.
   expect(
     await host.evaluate((element) => getComputedStyle(element).position),
-  ).toBe('fixed');
-  expect(quickBox.y, geometry).toBeGreaterThanOrEqual(0);
-  expect(quickBox.y, geometry).toBeLessThanOrEqual(120);
+  ).toBe('absolute');
+  expect(Math.abs(quickBox.y - railBox.y), geometry).toBeLessThanOrEqual(2);
   expect(quickBox.x, geometry).toBeGreaterThanOrEqual(railBox.x - 1);
   expect(quickBox.x + quickBox.width, geometry).toBeLessThanOrEqual(
     railBox.x + railBox.width + 1,
   );
-  expect(quickBox.y).toBeGreaterThanOrEqual(0);
-  expect(quickBox.y + quickBox.height).toBeLessThanOrEqual(900.5);
+  expect(Math.abs(quickBox.height - railBox.height), geometry).toBeLessThanOrEqual(
+    2,
+  );
 
   const backdrop = page.locator('[data-temporal-create="backdrop"]');
   const backdropStyle = await backdrop.evaluate((element) => {
