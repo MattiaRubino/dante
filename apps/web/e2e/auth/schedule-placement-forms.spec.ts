@@ -183,15 +183,23 @@ async function assertPlanningTrayContainsActivity(
   page: Page,
   activityRef: string,
 ): Promise<void> {
+  // The separate planning tray was deliberately retired. The canonical
+  // unplaced Activity must still be readable from PostgreSQL, while never
+  // appearing as an executable Timeline card or an inert Draft.
+  const read = await readUnplaced(page);
+  expect(read.status()).toBe(200);
+  const payload = (await read.json()) as {
+    kind: string;
+    items: Array<{ activity_ref: string; title: string }>;
+  };
+  expect(payload.kind).toBe('unplaced');
+  expect(payload.items.filter((item) => item.activity_ref === activityRef)).toHaveLength(1);
+  await expect(page.locator(`[data-timeline-event="${activityRef}"]`)).toHaveCount(0);
   await page.getByRole('button', { name: 'Apri Bozze' }).click();
-  await page
-    .getByRole('button', { name: 'Gestisci elementi già creati' })
-    .click();
-  const tray = page.locator('[data-timeline-planning-tray="true"]');
-  await expect(tray).toBeVisible();
   await expect(
-    tray.locator(`[data-temporal-subject-ref="${activityRef}"]`),
-  ).toHaveCount(1);
+    page.locator(`[data-timeline-draft-vault="true"] [data-temporal-subject-ref="${activityRef}"]`),
+  ).toHaveCount(0);
+  await page.getByRole('button', { name: 'Chiudi Bozze' }).click();
 }
 
 function uuidField(payload: Record<string, unknown>, field: string): string {
@@ -436,8 +444,8 @@ test.describe('Timeline B02-E full-stack Schedule forms', () => {
       const activity = await createUnplacedActivity(page, title);
       expect(activity.title).toBe(title);
       // API-driven creation bypasses the SPA's optimistic invalidation.
-      // Reload to prove that the legacy existing-item inventory hydrates
-      // this canonical Activity from PostgreSQL, not from a stale client list.
+      // Reload to prove that the canonical unplaced Activity remains in
+      // PostgreSQL, not a stale client projection or a Draft Vault item.
       const inventoryRead = waitForTimelineRead(page);
       await page.reload();
       expect((await inventoryRead).status()).toBe(200);
