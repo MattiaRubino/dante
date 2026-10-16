@@ -140,6 +140,80 @@ describe('Timeline Session panel integration', () => {
     expect(screen.getByRole('complementary')).toBeTruthy();
   });
 
+  it('shows all configured child controls when the main starts hours before its plan', async () => {
+    const mainRef = '0199a666-6666-7666-8666-666666666666';
+    const main = {
+      planned_schedule_ref: null,
+      name: 'Sessione attività',
+      starts_at: null,
+      execution: {
+        session_ref: mainRef,
+        timing_material_state_ref: state,
+        paused: false,
+      },
+    };
+    const children = [
+      { ...row(), name: 'Ripasso' },
+      { ...row(), planned_schedule_ref: nextState, name: 'Esercizi' },
+    ];
+    // Before Play there is no five-minute preview and no panel group.
+    let current = feed([]);
+    const fetcher = vi.fn(async () => Response.json(current));
+    vi.stubGlobal('fetch', fetcher);
+    render(<Harness />);
+    await waitFor(() => expect(fetcher).toHaveBeenCalledOnce());
+    expect(screen.queryByRole('complementary')).toBeNull();
+
+    // The main Session is started via its separate card/Inspector control.
+    // No child command has been sent and neither child is auto-running.
+    current = feed([main, ...children]);
+    fireEvent(window, new Event('dante:session-changed'));
+    expect(
+      await screen.findByRole('button', { name: 'Sessioni disponibili · 3' }),
+    ).toBeTruthy();
+    expect(screen.getByRole('region', { name: 'Studio' })).toBeTruthy();
+    expect(screen.getAllByRole('listitem')).toHaveLength(3);
+    expect(
+      screen.getByRole('button', { name: 'Pausa · Sessione attività' }),
+    ).toBeTruthy();
+    for (const name of ['Ripasso', 'Esercizi']) {
+      const play = screen.getByRole<HTMLButtonElement>('button', {
+        name: `Avvia · ${name}`,
+      });
+      expect(play.disabled).toBe(false);
+    }
+    expect(fetcher.mock.calls.every(([input]) =>
+      requestPath(input).endsWith('/session-panel'),
+    )).toBe(true);
+
+    // Pausing the main keeps children visible but prevents independent
+    // Start; resuming is an explicit main action, never an auto child Start.
+    current = feed([
+      { ...main, execution: { ...main.execution, paused: true } },
+      ...children,
+    ]);
+    fireEvent(window, new Event('dante:session-changed'));
+    await waitFor(() =>
+      expect(
+        screen.getByRole('button', { name: 'Riprendi · Sessione attività' }),
+      ).toBeTruthy(),
+    );
+    for (const name of ['Ripasso', 'Esercizi']) {
+      expect(
+        screen.getByRole<HTMLButtonElement>('button', {
+          name: `Avvia · ${name}`,
+        }).disabled,
+      ).toBe(true);
+    }
+
+    // After main Stop, those early-ready rows disappear again until preview.
+    current = feed([]);
+    fireEvent(window, new Event('dante:session-changed'));
+    await waitFor(() =>
+      expect(screen.queryByRole('complementary')).toBeNull(),
+    );
+  });
+
   it('executes start → pause → resume → stop with CSRF and accepted CAS; reads once per panel, not per row', async () => {
     let execution: null | {
       session_ref: string;
