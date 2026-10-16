@@ -122,7 +122,7 @@ export function timelineCompactCardWidth(
 export function timelineExpandedTrackGeometry(
   viewportWidth: number,
   groupCount: number,
-  minimumGroupWidth = TIMELINE_POLICY.layout.groupMinWidthPx,
+  minimumGroupWidth: number = TIMELINE_POLICY.layout.groupMinWidthPx,
 ): TimelineExpandedTrackGeometry {
   const layout = TIMELINE_POLICY.layout;
   const safeViewportWidth = Number.isFinite(viewportWidth)
