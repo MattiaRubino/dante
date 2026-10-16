@@ -287,6 +287,7 @@ describe('timeline viewport runtime', () => {
         );
         expect(parseFloat(day.style.minWidth)).toBeGreaterThanOrEqual(980);
         expect(stream.style.minWidth).toBe(day.style.minWidth);
+        expect(grid.classList.contains('is-overflowing')).toBe(true);
       }
       // Removing a temporal overlap allows lane reuse, never card resizing.
       cards[2]!.dataset.compactLane = '0';
