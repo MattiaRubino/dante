@@ -1,5 +1,32 @@
 # Timeline / Temporal-Operational — Workstream Handoff
 
+## 2026-10-16 — Focused WSL acceptance: Quick Create vertical anchoring
+
+User-provided `BROWSER_NONAUTH.log`, `BROWSER_REAL_STACK.log`,
+`POSTGRES.log` and `TYPECHECK(3).log` show:
+- TypeScript PASS; PostgreSQL 2/2 PASS.
+- Authenticated Playwright 19 PASS and 2 WebKit skipped (no failures).
+- Non-auth Playwright 22 PASS, **one failing test**:
+  `temporal-create-manual-hardening.spec.ts` Quick Create bottom at
+  1443.52px in a 900px-high browser window. Full Advanced was not reached
+  because the Quick assertion failed first.
+- No acceptance PostgreSQL volumes remained.
+
+Root cause: Desktop Home Context Rail lives below the tall hero and carries
+`transform: translateX(0)`, which creates a containing block for fixed
+descendants even at an identity transform. Previous Quick Create CSS bounded
+the panel's **height** but anchored its **top** to the below-fold rail.
+The new base-only selector removes that transform while Quick Create is open
+and positions its host `fixed` at viewport `top:104px; right:18px;
+bottom:16px`, at 475px rail width. Quick's composer fills this bound.
+Advanced uses separate `.is-advanced` selectors and is untouched.
+
+The browser regression now requires the Quick host be fixed and Quick Y be
+within 120px, in addition to the existing bounds and Advanced checks.
+
+**Status: implementation published, user must run focused nonauth Playwright
+again.** The assistant did not run tests or declare this fix PASS.
+
 ## 2026-10-16 — Full-gate archive triage (895794f9)
 
 The actual `FULL_GATE_LOGS.tar(20261016-103821).gz` uploaded by the
