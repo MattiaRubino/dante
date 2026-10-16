@@ -610,7 +610,8 @@
   outline-offset: -1px;
 }
 
-.timeline-grid.is-expanded {
+.timeline-grid.is-expanded,
+.timeline-grid.is-overflowing {
   overflow-x: auto;
 }
 
