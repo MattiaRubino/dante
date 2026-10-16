@@ -860,7 +860,7 @@ export function validateTemporalCreateFields(
     }
     if (
       !Number.isInteger(fields.durationMinutes) ||
-      fields.durationMinutes < 5 ||
+      fields.durationMinutes < 1 ||
       fields.durationMinutes > 10080
     ) {
       issues.push(
