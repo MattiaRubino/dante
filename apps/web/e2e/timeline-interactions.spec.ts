@@ -190,10 +190,24 @@ test('compact overlap cards stay in a bounded cluster instead of jumping across 
 
   expect(studyBox.x).toBeLessThan(conceptBox.x);
   expect(conceptBox.x).toBeLessThan(reminderBox.x);
-  expect(reminderBox.x - studyBox.x).toBeLessThan(gridBox.width * 0.45);
-  expect(studyBox.width).toBeLessThanOrEqual(480);
-  expect(conceptBox.width).toBeLessThanOrEqual(480);
-  expect(reminderBox.width).toBeLessThanOrEqual(480);
+  // The fixed-width contract expands the scrollable canvas rather than
+  // compressing concurrent cards into a 45%-of-viewport cluster.
+  expect(studyBox.x + studyBox.width + 1).toBeLessThanOrEqual(conceptBox.x);
+  expect(conceptBox.x + conceptBox.width + 1).toBeLessThanOrEqual(
+    reminderBox.x,
+  );
+  for (const box of [studyBox, conceptBox, reminderBox]) {
+    expect(box.width).toBeGreaterThanOrEqual(292);
+    expect(box.width).toBeLessThanOrEqual(456);
+  }
+  const contentRight = reminderBox.x + reminderBox.width;
+  const scrollableRight = await grid.evaluate(
+    (element) =>
+      element.getBoundingClientRect().x +
+      element.scrollWidth -
+      element.scrollLeft,
+  );
+  expect(scrollableRight).toBeGreaterThanOrEqual(contentRight);
 });
 
 test('expanded group header, event columns and horizontal scroll stay mathematically aligned', async ({
@@ -225,8 +239,15 @@ test('expanded group header, event columns and horizontal scroll stay mathematic
       throw new Error('Expected expanded group alignment geometry');
     }
 
-    expect(Math.abs(cardBox.x - chipBox.x)).toBeLessThanOrEqual(8);
-    expect(Math.abs(cardBox.width - chipBox.width)).toBeLessThanOrEqual(10);
+    // The header covers a complete group, possibly containing several
+    // fixed-width lanes. An individual card must fit INSIDE its group,
+    // not stretch across the entire group header.
+    expect(cardBox.x).toBeGreaterThanOrEqual(chipBox.x - 8);
+    expect(cardBox.x + cardBox.width).toBeLessThanOrEqual(
+      chipBox.x + chipBox.width + 8,
+    );
+    expect(cardBox.width).toBeGreaterThanOrEqual(292);
+    expect(cardBox.width).toBeLessThanOrEqual(456);
   }
 
   const maxGridScroll = await grid.evaluate(
