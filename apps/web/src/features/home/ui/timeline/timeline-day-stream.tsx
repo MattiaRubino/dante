@@ -340,7 +340,7 @@ function TimelineEventCard({
           {formatTimelineMinute(event.startMinute)}–
           {formatTimelineMinute(event.endMinute)}
         </button>
-        {!isActivity && cardMeta ? (
+        {cardMeta ? (
           <div className="timeline-event-card__meta">{cardMeta}</div>
         ) : null}
         {layout.sessionReality ? (
