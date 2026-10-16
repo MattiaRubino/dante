@@ -866,11 +866,11 @@ export function TimelineSurface({
         rootRef.current,
         gridRef.current,
         groupScrollerRef.current,
-        state.groups.length,
+        visibleGroups.length,
         normalizedProgress,
       );
     },
-    [onExpansionProgress, state.groups.length],
+    [onExpansionProgress, visibleGroups.length],
   );
 
   const requestExpansion = useCallback(
@@ -1201,13 +1201,13 @@ export function TimelineSurface({
       rootRef.current,
       grid,
       groupScrollerRef.current,
-      state.groups.length,
+      visibleGroups.length,
       expansionProgressRef.current,
     );
   }, [
     renderedDays,
     scrollToRenderedDay,
-    state.groups.length,
+    visibleGroups.length,
     synchronizeViewportContext,
     timelineNowMinute,
     timelineToday,
