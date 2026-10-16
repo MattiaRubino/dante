@@ -98,6 +98,60 @@ def test_independent_groups_and_unique_activity_with_multiple_intervals() -> Non
     assert len(panel.groups[0].rows) == 3  # generic main plus two planned internals
 
 
+def test_main_started_hours_early_exposes_all_unstarted_internal_sessions() -> None:
+    record = owner(
+        schedule("interval", at(23, 30), at(23, 59)),
+        schedule(display_name="Ripasso"),
+        schedule(display_name="Esercizi"),
+        executions=[execution()],
+    )
+    # This is not an Activity preview at 20:47; only explicit main Play
+    # makes the named Sessions visible before the planned 23:30 start.
+    before = {**record, "executions": []}
+    assert build_panel([before], at(20, 47), "UTC").groups == []
+
+    panel = build_panel([record], at(20, 47), "UTC")
+    assert names(panel) == ["Sessione attività", "Ripasso", "Esercizi"]
+    assert panel.next_change_at == at(23, 25)
+    main, *internals = panel.groups[0].rows
+    assert main.execution is not None
+    assert main.execution.paused is False
+    assert all(row.execution is None for row in internals)
+    assert all(row.starts_at is None for row in internals)
+    assert len({row.planned_schedule_ref for row in internals}) == 2
+
+
+def test_paused_main_keeps_early_internal_rows_visible_without_auto_start() -> None:
+    record = owner(
+        schedule("interval", at(23, 30), at(23, 59)),
+        schedule(display_name="Ripasso"),
+        schedule(display_name="Esercizi"),
+        executions=[{**execution(), "paused": True}],
+    )
+    panel = build_panel([record], at(20, 47), "UTC")
+    assert names(panel) == ["Sessione attività", "Ripasso", "Esercizi"]
+    assert panel.groups[0].rows[0].execution is not None
+    assert panel.groups[0].rows[0].execution.paused is True
+    assert all(row.execution is None for row in panel.groups[0].rows[1:])
+    # Stopping the main execution removes the early access: it must not
+    # leave orphaned ready children before the scheduled preview.
+    stopped = {**record, "executions": []}
+    assert build_panel([stopped], at(20, 47), "UTC").groups == []
+
+
+def test_open_main_keeps_configured_internal_sessions_visible_after_plan_ends() -> None:
+    record = owner(
+        schedule("interval", at(18), at(19)),
+        schedule(display_name="Ripasso"),
+        executions=[execution()],
+    )
+    assert names(build_panel([record], at(20), "UTC")) == [
+        "Sessione attività",
+        "Ripasso",
+    ]
+    assert build_panel([{**record, "executions": []}], at(20), "UTC").groups == []
+
+
 def test_open_executions_survive_end_and_disabled_capture_without_collapsing_attempts() -> None:
     planned = schedule(start=at(9), end=at(10))
     record = owner(
