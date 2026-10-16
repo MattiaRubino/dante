@@ -204,6 +204,33 @@ async def test_main_started_before_preview_exposes_all_children_and_preserves_ca
         )
         assert all(group.activity_ref != activity for group in outsider_panel.groups)
 
+        # Explicit early child Play works once the main is running. Stopping
+        # just that child must remove its ready row even before 5-minute preview.
+        child_ref = group.rows[1].planned_schedule_ref
+        assert child_ref is not None
+        child = await sessions.start_planned(
+            self_person_ref=actor,
+            activity_ref=activity,
+            schedule_ref=ScopedRecordRef(child_ref),
+            operation_id="panel:main-early:child:start",
+        )
+        assert child.open
+        during_child = await get_session_panel(context, request, Response())
+        current = next(g for g in during_child.groups if g.activity_ref == activity)
+        assert any(
+            row.execution is not None and row.execution.session_ref == child.session_ref
+            for row in current.rows
+        )
+        await sessions.end(
+            self_person_ref=actor,
+            session_ref=child.session_ref,
+            expected_material_state_ref=child.timing_material_state_ref,
+            operation_id="panel:main-early:child:stop",
+        )
+        stopped_child = await get_session_panel(context, request, Response())
+        current = next(g for g in stopped_child.groups if g.activity_ref == activity)
+        assert [row.name for row in current.rows] == ["Sessione attività", "Esercizi"]
+
         paused = await sessions.pause(
             self_person_ref=actor,
             session_ref=started.session_ref,
@@ -214,7 +241,10 @@ async def test_main_started_before_preview_exposes_all_children_and_preserves_ca
         paused_group = next(
             group for group in paused_panel.groups if group.activity_ref == activity
         )
-        assert len(paused_group.rows) == 3
+        assert [row.name for row in paused_group.rows] == [
+            "Sessione attività",
+            "Esercizi",
+        ]
         assert paused_group.rows[0].execution is not None
         assert paused_group.rows[0].execution.paused
         assert all(row.execution is None for row in paused_group.rows[1:])
