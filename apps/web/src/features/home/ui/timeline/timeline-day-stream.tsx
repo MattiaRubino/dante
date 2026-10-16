@@ -340,9 +340,6 @@ function TimelineEventCard({
           {formatTimelineMinute(event.startMinute)}–
           {formatTimelineMinute(event.endMinute)}
         </button>
-        {cardMeta ? (
-          <div className="timeline-event-card__meta">{cardMeta}</div>
-        ) : null}
         {layout.sessionReality ? (
           <div
             className="timeline-event-card__reality-status"
@@ -350,6 +347,9 @@ function TimelineEventCard({
           >
             Sessione attività · Reale {layout.sessionReality.actualLabel}
           </div>
+        ) : null}
+        {cardMeta ? (
+          <div className="timeline-event-card__meta">{cardMeta}</div>
         ) : null}
         {sessionActivityRef === null ? null : (
           <ActivityPlannedSessionsCardDetail
