@@ -18,6 +18,7 @@ import {
   TIMELINE_MINUTES_PER_DAY,
   TIMELINE_POLICY,
   timelineDragSnapMinutes,
+  timelineStableCardWidth,
 } from './model/timeline-policy';
 import { timelineRulerLabels } from './model/timeline-density';
 import { findTimelineEvent, type TimelineState } from './model/timeline-state';
@@ -204,6 +205,9 @@ function TimelineEventCard({
       : null;
 
   const isActivity = sessionActivityRef !== null;
+  // The immutable title/category determines card width. Running Session state,
+  // planned/actual time, move and overlap cluster may only change position.
+  const stableWidth = timelineStableCardWidth(event.title, isActivity);
 
   if (filtered) {
     return null;
@@ -212,8 +216,9 @@ function TimelineEventCard({
   const style: CSSProperties & { '--timeline-group-color'?: string } = {
     top: layout.top,
     height: layout.height,
-    left: `${layout.compactLeftPercent}%`,
-    width: `${layout.compactWidthPercent}%`,
+    // Usable even before the layout effect runs: never render 0%-wide cards.
+    left: layout.compactLane * (TIMELINE_POLICY.layout.cardMaximumWidthPx + TIMELINE_POLICY.layout.cardLaneGapPx),
+    width: stableWidth,
     ...(itemColorCode ? { '--timeline-group-color': itemColorCode } : {}),
   };
 
@@ -254,6 +259,7 @@ function TimelineEventCard({
       data-compact-width={layout.compactWidthPercent}
       data-compact-lane={layout.compactLane}
       data-compact-lanes={layout.compactLaneCount}
+      data-stable-width={stableWidth}
       data-group-index={layout.groupIndex}
       data-group-lane={layout.groupLane}
       data-group-lanes={layout.groupLaneCount}
