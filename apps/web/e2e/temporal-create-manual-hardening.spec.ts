@@ -166,8 +166,8 @@ test('Quick Create keeps the Timeline rail origin and height while its fields ch
   };
 
   await assertRailGeometry();
-  await dialog.getByRole('button', { name: 'Evento', exact: true }).click();
+  await dialog.getByRole('radio', { name: 'Evento', exact: true }).click();
   await assertRailGeometry();
-  await dialog.getByRole('button', { name: 'Attività', exact: true }).click();
+  await dialog.getByRole('radio', { name: 'Attività', exact: true }).click();
   await assertRailGeometry();
 });
