@@ -1,5 +1,45 @@
 # Timeline / Temporal-Operational — Workstream Handoff
 
+## 2026-10-16 — Minute-exact time authoring across Activity/Event/Timeline
+
+**User-reported high-severity data-integrity issue:** authoring Activity or Event
+`10:30–10:31` silently saved `10:30–10:35`. Every explicit minute must remain
+canonical truth, including occupied Activity intervals and edited/moved cards.
+
+**Confirmed root causes:** two `Math.max(5,...)` clamps in
+`temporalCreateDurationFromEndDateTime` and `...FromEndTime`; Create timed
+validation required `durationMinutes >= 5`. Create time spinner arrows
+used 15-minute jumps in both U2 and legacy components. Timeline TimeEditor
+minute arrows/wheel/ArrowUp used 5-minute steps, as did default drag snap.
+There was no corresponding five-minute minimum on typed Schedule acceptance:
+the backend requires positive intervals, not quarter-hour/five-minute grid.
+
+**Published candidate:**
+- Create calculations and validation accept **every whole minute >= 1**;
+  invalid zero/negative still rejected.
+- Both Create control variants use **1-minute** spinner arrows; arbitrary
+  00–59 typed minutes remain accepted. Clock dropdown retains optional
+  quarter-hour shortcuts but shows any exact off-grid authored value as the
+  selected option. No rounded suggestion pretends to be the current time.
+- Timeline TimeEditor arrows, wheel and minute ArrowUp/ArrowDown use 1 minute;
+  PageUp/PageDown remain deliberate 15-minute acceleration shortcuts.
+- Drag and keyboard replan snap at 1 minute at all zoom levels, not 5 minutes;
+  the elastic ruler's 15-minute ticks remain merely visual.
+- Existing recorded **Session minimum duration authority is unchanged**;
+  planned Activity/Event Schedules and Activity occupied bands are not
+  execution Session duration rules.
+- Unit tests cover exact 1–4-minute durations, overnight and DST semantics,
+  Quick/Advanced × Activity/Event manual input, picker selection and arrows,
+  outgoing U2 canonical payload, extra Activity interval with non-grid ends,
+  zero/negative invalid, Timeline TimeEditor and snap, plus a PostgreSQL
+  integration test creating/revising/reading Activity and Event 1-minute
+  Schedules without rounding or padding.
+
+**Evidence boundary:** code and regressions pushed through GitHub.
+Vitest, TypeScript, PostgreSQL and browser checks **NOT RUN by the assistant**;
+user must verify on the new exact branch HEAD. Do not call this fixed until
+`10:30–10:31` survives actual creation, reload and editing in browser.
+
 ## 2026-10-16 — Focused WSL acceptance: Quick Create vertical anchoring
 
 User-provided `BROWSER_NONAUTH.log`, `BROWSER_REAL_STACK.log`,
