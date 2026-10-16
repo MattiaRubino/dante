@@ -88,6 +88,59 @@
  * block would report the card's current width as scrollWidth, creating a
  * positive feedback loop where repeated moves progressively widened the card. */
 .home-m1 .home-timeline--production .timeline-event-card__title,
+/* Identity-sized Activity headings reserve the runtime-actions slot before
+ * Play and after Stop. A missing control never steals title space or triggers
+ * an intrinsic-width re-measure. The title is ellipsized within its own cell. */
+.home-m1
+  .home-timeline--production
+  .timeline-day-stream:not(.is-week)
+  .timeline-event-card--activity
+  .timeline-event-card__heading {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 74px;
+  align-items: start;
+  gap: 8px;
+}
+
+.home-m1
+  .home-timeline--production
+  .timeline-day-stream:not(.is-week)
+  .timeline-event-card--activity
+  .timeline-event-card__heading
+  .timeline-event-card__title {
+  grid-column: 1;
+  min-width: 0;
+  width: 100%;
+  overflow: hidden;
+  overflow-wrap: anywhere;
+  text-overflow: ellipsis;
+}
+
+.home-m1
+  .home-timeline--production
+  .timeline-day-stream:not(.is-week)
+  .timeline-event-card--activity
+  .timeline-event-card__heading
+  .timeline-activity-session-card-controls {
+  grid-column: 2;
+  justify-self: end;
+  max-width: 74px;
+  min-width: 0;
+}
+
+.home-m1
+  .home-timeline--production
+  .timeline-event-card__reality-status,
+.home-m1
+  .home-timeline--production
+  .timeline-activity-planned-sessions__indicator {
+  min-width: 0;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
 .home-m1 .home-timeline--production .timeline-event-card__time,
 .home-m1 .home-timeline--production .timeline-event-card__meta,
 .timeline-event-drag-overlay .timeline-event-card__title,
