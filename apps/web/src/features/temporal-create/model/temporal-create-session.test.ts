@@ -29,8 +29,11 @@ describe('timed one-minute Activity/Event validation', () => {
       });
       expect(validateTemporalCreateFields(oneMinute)).toEqual([]);
       const placement = buildTemporalCreatePlacement(oneMinute);
-      expect(placement?.start.toString()).toContain('10:30');
-      expect(placement?.end.toString()).toContain('10:31');
+      if (placement?.kind !== 'floating-local') {
+        throw new Error('Expected precise floating-local placement.');
+      }
+      expect(placement.start.toString()).toContain('10:30');
+      expect(placement.end.toString()).toContain('10:31');
 
       for (const minutes of [0, -1]) {
         const invalid = createTemporalCreateFields({
