@@ -1,5 +1,25 @@
 # Timeline / Temporal-Operational — Workstream Handoff
 
+## 2026-10-16 — Owner WSL evidence for early-main child visibility
+
+User ran focused checks after a verified fast-forward to
+`f047d50b29203730205e7f2669e73297e90ef496`:
+
+- `apps/backend/tests/test_session_panel.py`: **21 passed** (exit 0).
+- Real PostgreSQL `tests/integration/temporal/test_session_panel.py::test_main_started_before_preview_exposes_all_children_and_preserves_cascade`: **1 passed** (exit 0).
+- `apps/web/src/features/home/ui/timeline/timeline-session-panel.test.tsx`: **10 passed** (exit 0).
+- `pnpm --filter @dante/web typecheck`: **exit 0**.
+
+**32 targeted tests PASS, all four focused commands exit 0.** This
+closes focused unit/DB/Web/type verification for the early-start
+Session panel projection, including owner-scoped reads, two configured
+internal rows, Pause, Stop and no automatic child execution. Full gate,
+authenticated real-stack browser and manual screenshot acceptance were
+**not run**, by explicit user request to test only the changed behavior.
+No new migration or API/client generation was required. This entry is a
+documentation-only record of user-supplied terminal output; it does not
+invalidate the source-equivalent focused code test evidence.
+
 ## 2026-10-16 — Early main Play must reveal configured internal Sessions
 
 **Real-app regression:** an Activity with two named internal Sessions and
