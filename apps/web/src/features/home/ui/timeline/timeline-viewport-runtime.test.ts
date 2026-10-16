@@ -7,6 +7,7 @@ import type { TimelineEvent, TimelineGroup } from './model/timeline-types';
 import { createInitialTimelineState } from './model/timeline-state';
 import { addTimelineDays } from './model/timeline-temporal';
 import {
+  applyTimelineExpansion,
   buildTimelineRenderedDays,
   captureTimelineViewportAnchor,
   findTimelineDayAtOffset,
@@ -233,6 +234,72 @@ describe('timeline viewport runtime', () => {
     // The canvas expands horizontally instead of compressing cards.
     expect(constrained).toBe(isolated);
     expect(constrained).toBeGreaterThan(180);
+  });
+
+  it('keeps DOM card width invariant as group tracks expand and collision lanes change', () => {
+    const previousWidth = window.innerWidth;
+    Object.defineProperty(window, 'innerWidth', {
+      configurable: true, value: 1440,
+    });
+    try {
+      const root = document.createElement('div');
+      root.dataset.timelineView = 'timeline';
+      const grid = document.createElement('div');
+      Object.defineProperty(grid, 'clientWidth', { configurable: true, value: 980 });
+      const stream = document.createElement('div');
+      stream.className = 'timeline-day-stream';
+      const day = document.createElement('section');
+      day.className = 'timeline-day-section';
+      stream.appendChild(day);
+      root.appendChild(stream);
+      root.appendChild(grid);
+      const data = [
+        { lane: 0, group: 0, groupLane: 0, width: 352 },
+        { lane: 1, group: 1, groupLane: 0, width: 292 },
+        { lane: 2, group: 1, groupLane: 1, width: 414 },
+      ];
+      const cards = data.map((entry) => {
+        const card = document.createElement('article');
+        card.className = 'timeline-event-card';
+        card.dataset.compactLane = String(entry.lane);
+        card.dataset.compactLanes = '3';
+        card.dataset.groupIndex = String(entry.group);
+        card.dataset.groupLane = String(entry.groupLane);
+        card.dataset.groupLanes = entry.group === 1 ? '2' : '1';
+        card.dataset.stableWidth = String(entry.width);
+        day.appendChild(card);
+        return card;
+      });
+      for (const progress of [0, 0.25, 0.5, 0.75, 1]) {
+        applyTimelineExpansion(root, grid, null, 3, progress);
+        for (const [index, card] of cards.entries()) {
+          expect(parseFloat(card.style.width)).toBe(data[index]!.width);
+        }
+        const positions = cards.map((card) => ({
+          left: parseFloat(card.style.left),
+          width: parseFloat(card.style.width),
+        }));
+        expect(positions[0]!.left + positions[0]!.width).toBeLessThan(
+          positions[1]!.left,
+        );
+        expect(positions[1]!.left + positions[1]!.width).toBeLessThan(
+          positions[2]!.left,
+        );
+        expect(parseFloat(day.style.minWidth)).toBeGreaterThanOrEqual(980);
+        expect(stream.style.minWidth).toBe(day.style.minWidth);
+      }
+      // Removing a temporal overlap allows lane reuse, never card resizing.
+      cards[2]!.dataset.compactLane = '0';
+      cards[2]!.dataset.compactLanes = '2';
+      cards[2]!.dataset.groupLane = '0';
+      cards[2]!.dataset.groupLanes = '1';
+      applyTimelineExpansion(root, grid, null, 3, 1);
+      expect(parseFloat(cards[2]!.style.width)).toBe(414);
+    } finally {
+      Object.defineProperty(window, 'innerWidth', {
+        configurable: true, value: previousWidth,
+      });
+    }
   });
 
   it('uses one identity width for the same Activity across moves and Session transitions', () => {
