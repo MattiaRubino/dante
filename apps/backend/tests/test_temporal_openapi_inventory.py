@@ -468,6 +468,13 @@ def test_temporal_inventory_is_only_v1_temporal_surface() -> None:
 def test_retired_timeline_withdrawal_routes_are_absent() -> None:
     paths = cast(dict[str, Any], openapi_document()["paths"])
     assert not any(
-        path.endswith(("/timeline-unplace", "/timeline-undo", "/timeline-undo-receipts", "/timeline-schedules"))
+        path.endswith(
+            (
+                "/timeline-unplace",
+                "/timeline-undo",
+                "/timeline-undo-receipts",
+                "/timeline-schedules",
+            )
+        )
         for path in paths
     )
