@@ -278,8 +278,30 @@ export function applyTimelineSessionReality(
         : day.mapper);
     // Reassign collision lanes using the rectangles that are actually painted,
     // while preserving canonical event identity and the planned Schedule.
+    // Collision detection must use the *painted* height, not just the
+    // shifted clock duration. During Play/Pause the card intentionally keeps
+    // its original planned height, which may extend past the short actual
+    // interval and would otherwise overlap a neighbor assigned to its lane.
+    // This visual floor is fed only to packing, NEVER the time mapper: the
+    // clock's elastic scale must remain stable during live execution.
+    const paintSizedEvents = displayEvents.map((event, eventIndex) => {
+      const placement = visible[eventIndex];
+      if (!placement?.reality || placement.reality.endedAt !== null)
+        return event;
+      const plannedHeight = placement.plannedDay.layouts.find(
+        (candidate) => candidate.event.id === event.id,
+      )?.height;
+      if (plannedHeight === undefined) return event;
+      return {
+        ...event,
+        visualMinimumHeightPx: Math.max(
+          event.visualMinimumHeightPx ?? 0,
+          plannedHeight,
+        ),
+      };
+    });
     const displayed = computeTimelineEventLayouts(
-      displayEvents,
+      paintSizedEvents,
       groups,
       mapper,
     );
