@@ -1,5 +1,35 @@
 # Timeline / Temporal-Operational — Workstream Handoff
 
+## 2026-10-16 — Owner WSL focused acceptance on `62f9ebb3`
+
+Owner supplied the full shell output after `git pull --ff-only` and an
+exact-HEAD assertion to
+`62f9ebb366617ed18e2af501c4e1116a71dca5b8`:
+- `timeline-temporal.test.ts`: 4/4 PASS
+- `timeline-density.test.ts`: 9/9 PASS
+- `timeline-session-reality.test.ts`: 11/11 PASS
+- `timeline-surface.test.tsx`: 16/16 PASS
+- **Vitest 4 files / 40 tests PASS, zero failures**.
+- `pnpm --filter @dante/web typecheck` completed with exit 0:
+  subsequent Playwright ran in the same `set -euo pipefail` shell.
+- Non-auth `playwright.config.ts`, single
+  `e2e/temporal-create-contexts.spec.ts`: **1/1 PASS (5.2s)**.
+  Vite client build and its entry-size check passed. Build reports a
+  non-fatal oversized chunk warning.
+- Vite proxy logged `ECONNREFUSED 127.0.0.1:8000` for Drafts,
+  resolution queue, finished work and objective work: backend was not
+  accepting connections. These are **not** real-stack API/DB evidence;
+  they did not fail this non-auth browser test.
+
+These results close the five originally reported *focused* Web regression
+failures on exactly `62f9ebb3`, including short Stop placement and compact
+overlap, **not** full 27-group acceptance or authenticated real-stack
+browser proof. No source changes are inferred from the log. Next:
+run the complete 27-group local gate on a clean, pinned branch HEAD and
+preserve `LATEST_GATE_SUMMARY.md` + original log archive; then inspect
+Timeline/Giorno with actual Play/Stop behavior in the real app. This
+documentation-only checkpoint does not alter Web source or SQL.
+
 ## 2026-10-16 — Focused Web 5-red handoff after `5df23f72` (corrective candidate)
 
 The user ran the exact `5df23f72c61f6867e1e0160e6109b3fc9c35d2c7`
