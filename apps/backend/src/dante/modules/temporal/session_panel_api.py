@@ -191,6 +191,20 @@ def build_panel(
         # while the Web panel prevents starting/resuming a child until main
         # capture is running again.
         main_open = bool(executions.get(None))
+        # The same read includes current and completed Session visuals. Use the
+        # current main attempt's factual start to distinguish a child stopped
+        # within this attempt from a child stopped in a previous main attempt.
+        # In particular an early child Stop must not resurrect its ready row.
+        main_started_at = max(
+            (
+                item["started_at"]
+                for item in (ended_executions or [])
+                if str(item["activity_ref"]) == str(owner["activity_ref"])
+                and item["planned_schedule_ref"] is None
+                and item["ended_at"] is None
+            ),
+            default=None,
+        ) if main_open else None
         rows: list[SessionPanelRow] = []
         for schedule in schedules:
             if schedule.role_code != "planned":
@@ -202,20 +216,29 @@ def build_panel(
             due = (
                 (upcoming or main_open)
                 and owner["mode_code"] in {"live", "record_and_live", "internal_only"}
-                and not main_stopped_in_window
+                and (main_open or not main_stopped_in_window)
             )
-            if (
-                due
-                and not matching
-                and _stopped_in_interval(
-                    stopped,
-                    owner["activity_ref"],
-                    schedule.schedule_ref,
-                    bounded_intervals,
-                    current_refs,
-                )
-            ):
-                due = False
+            if due and not matching:
+                if main_started_at is not None:
+                    # A new main attempt re-admits a child stopped during an
+                    # older attempt, but never re-admits a child stopped after
+                    # this main attempt began, even outside the plan preview.
+                    child_already_stopped = any(
+                        str(item["activity_ref"]) == str(owner["activity_ref"])
+                        and str(item["planned_schedule_ref"]) == str(schedule.schedule_ref)
+                        and item["started_at"] >= main_started_at
+                        for item in stopped
+                    )
+                else:
+                    child_already_stopped = _stopped_in_interval(
+                        stopped,
+                        owner["activity_ref"],
+                        schedule.schedule_ref,
+                        bounded_intervals,
+                        current_refs,
+                    )
+                if child_already_stopped:
+                    due = False
             if not due and not matching:
                 continue
             rows.extend(
