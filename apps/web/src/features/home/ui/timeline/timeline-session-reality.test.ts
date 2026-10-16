@@ -108,8 +108,9 @@ describe('one-card Activity actual Session projection', () => {
       3,
     );
     expect(mapper.inv(mapper.map(middle))).toBeCloseTo(middle, 3);
-    expect(mapper.map(19 * 60 + 32) - mapper.map(19 * 60 + 31))
-      .toBeLessThan(220);
+    expect(
+      mapper.map(19 * 60 + 32) - mapper.map(19 * 60 + 31),
+    ).toBeLessThan(220);
   });
 
   it('moves immediately on Play without resizing during Play or Pause', () => {
