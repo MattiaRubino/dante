@@ -463,6 +463,14 @@ export function applyTimelineExpansion(
         7 * (maxWeekLanes * weekPitch + expansion.cardInsetPx * 2),
       )
     : trackWidth;
+  // Compact mode normally hides horizontal scrolling. Crowded lanes are
+  // different: clipping the extra fixed-width track would hide real cards.
+  // Expose horizontal scroll only while the current geometry needs it.
+  grid.classList.toggle(
+    'is-overflowing',
+    (week ? weekTrackWidth : trackWidth) >
+      viewportWidth + syncTolerance,
+  );
   root.style.setProperty(
     '--timeline-group-opacity',
     String(
