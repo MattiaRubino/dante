@@ -148,6 +148,10 @@ test('Quick Create keeps the Timeline rail origin and height while its fields ch
   const timeline = page.locator('.home-timeline');
   const rail = page.locator('[data-home-region="context-rail"]');
   const assertRailGeometry = async () => {
+    // The replacement must not shrink during the generic Create entrance.
+    expect(
+      await dialog.evaluate((element) => getComputedStyle(element).animationName),
+    ).toBe('none');
     const [timelineBox, railBox, quickBox] = await Promise.all([
       timeline.boundingBox(),
       rail.boundingBox(),

@@ -147,6 +147,14 @@
     max-height: none;
   }
 
+  /* The generic entrance animation scales the entire composer for 150 ms.
+     Quick replaces the rail exactly, including on its very first frame. */
+  .home-context-rail
+    .home-create-panel-host:has(.temporal-create-backdrop:not(.is-advanced))
+    .temporal-create-composer {
+    animation: none;
+  }
+
   /* Full Advanced leaves the narrow Quick rail and occupies the viewport.
      The rail host otherwise clips the 1040px Advanced modal. */
   .home-context-rail
