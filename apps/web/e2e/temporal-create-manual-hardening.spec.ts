@@ -137,3 +137,33 @@ test('Create stays in the desktop Context Rail, keeps Timeline scroll available,
     dialog.locator('[data-create-recurrence-owner="routine"]'),
   ).toBeVisible();
 });
+
+test('Quick Create keeps the Timeline rail origin and height while its fields change', async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 1440, height: 1300 });
+  await page.goto('/home');
+
+  const dialog = await openCreate(page);
+  const timeline = page.locator('.home-timeline');
+  const rail = page.locator('[data-home-region="context-rail"]');
+  const assertRailGeometry = async () => {
+    const [timelineBox, railBox, quickBox] = await Promise.all([
+      timeline.boundingBox(),
+      rail.boundingBox(),
+      dialog.boundingBox(),
+    ]);
+    if (!timelineBox || !railBox || !quickBox) {
+      throw new Error('Expected desktop Timeline and rail geometry');
+    }
+    expect(Math.abs(quickBox.y - timelineBox.y)).toBeLessThanOrEqual(2);
+    expect(Math.abs(quickBox.y - railBox.y)).toBeLessThanOrEqual(2);
+    expect(Math.abs(quickBox.height - railBox.height)).toBeLessThanOrEqual(2);
+  };
+
+  await assertRailGeometry();
+  await dialog.getByRole('button', { name: 'Evento', exact: true }).click();
+  await assertRailGeometry();
+  await dialog.getByRole('button', { name: 'Attività', exact: true }).click();
+  await assertRailGeometry();
+});

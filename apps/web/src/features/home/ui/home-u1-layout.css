@@ -42,7 +42,6 @@
     border-radius: var(--dante-semantic-radius-card);
     overflow: auto;
   }
-
 }
 
 .home-context-rail {
@@ -136,6 +135,16 @@
 @media (min-width: 1121px) {
   .home-context-rail .home-create-panel-host:has(.temporal-create-backdrop) {
     z-index: 30;
+  }
+
+  /* Quick is the rail replacement even when generic Create styles change.
+     Only Advanced may leave this grid cell for the viewport modal. */
+  .home-context-rail
+    .home-create-panel-host:has(.temporal-create-backdrop:not(.is-advanced)) {
+    position: absolute;
+    inset: 0;
+    height: 100%;
+    max-height: none;
   }
 
   /* Full Advanced leaves the narrow Quick rail and occupies the viewport.

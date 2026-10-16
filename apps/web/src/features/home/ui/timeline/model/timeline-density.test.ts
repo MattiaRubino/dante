@@ -60,6 +60,67 @@ describe('timeline density engine', () => {
     );
   });
 
+  it('keeps a 30-minute card compact around a readable overlapping one-minute card', () => {
+    const long: TimelineEvent = {
+      id: 'long',
+      title: 'Intervallo lungo',
+      groupId: 'health',
+      startMinute: 20 * 60,
+      endMinute: 20 * 60 + 30,
+      canonicalBasis: {
+        kind: 'scheduled-activity',
+        activityRef: 'long-activity',
+        scheduleRef: 'long-schedule',
+        placementMaterialStateRef: 'long-state',
+        placement: {
+          kind: 'absolute',
+          startsAt: Temporal.Instant.from('2026-10-16T18:00:00Z'),
+          endsAt: Temporal.Instant.from('2026-10-16T18:30:00Z'),
+        },
+      },
+    };
+    const short: TimelineEvent = {
+      id: 'short',
+      title: 'Un minuto',
+      groupId: 'health',
+      startMinute: 20 * 60 + 15,
+      endMinute: 20 * 60 + 16,
+      canonicalBasis: {
+        kind: 'scheduled-activity',
+        activityRef: 'short-activity',
+        scheduleRef: 'short-schedule',
+        placementMaterialStateRef: 'short-state',
+        placement: {
+          kind: 'absolute',
+          startsAt: Temporal.Instant.from('2026-10-16T18:15:00Z'),
+          endsAt: Temporal.Instant.from('2026-10-16T18:16:00Z'),
+        },
+      },
+    };
+    const alone = createTimelineTimeMapper([long], 1);
+    const together = createTimelineTimeMapper([long, short], 1);
+    const [longLayout, shortLayout] = computeTimelineEventLayouts(
+      [long, short],
+      [{ id: 'health', label: 'Salute', tone: 'health' }],
+      together,
+    );
+    const longHeight =
+      together.map(long.endMinute) - together.map(long.startMinute);
+
+    expect(shortLayout?.height).toBeGreaterThanOrEqual(
+      timelineEventReadableHeight(short),
+    );
+    expect(longLayout?.height).toBeCloseTo(longHeight, 5);
+    expect(longHeight).toBeGreaterThan(
+      alone.map(long.endMinute) - alone.map(long.startMinute),
+    );
+    expect(longHeight).toBeLessThan(280);
+    expect(together.inv(together.map(short.endMinute))).toBeCloseTo(
+      short.endMinute,
+      3,
+    );
+  });
+
   it('only labels quarter-hours with enough elastic pixel separation', () => {
     const quiet = timelineRulerLabels(createTimelineTimeMapper([], 1));
     expect(

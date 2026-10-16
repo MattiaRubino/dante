@@ -277,8 +277,11 @@ export function createTimelineTimeMapper(
       shoulder <= policy.readableHeightShoulderMinutes;
       shoulder += 1
     ) {
+      // The minute itself must fit the card. Its neighboring minutes only
+      // soften the transition: copying a one-minute card's full slope into
+      // both shoulders would also make every overlapping long card enormous.
       const eased =
-        requiredPerMinute *
+        Math.min(requiredPerMinute, policy.maxLocalScale) *
         (1 -
           shoulder /
             (policy.readableHeightShoulderMinutes +
