@@ -1,7 +1,9 @@
 import { describe, expect, it } from 'vitest';
 
 import { TIMELINE_PROTOTYPE_TODAY } from './model/timeline-fixtures';
-import { TIMELINE_POLICY } from './model/timeline-policy';
+import { TIMELINE_POLICY, timelineStableCardWidth } from './model/timeline-policy';
+import { computeTimelineEventLayouts } from './model/timeline-layout';
+import type { TimelineEvent, TimelineGroup } from './model/timeline-types';
 import { createInitialTimelineState } from './model/timeline-state';
 import { addTimelineDays } from './model/timeline-temporal';
 import {
@@ -14,6 +16,7 @@ import {
   buildTimelineRenderedWeek,
   timelineIntrinsicCardWidth,
   timelineNowViewportOffset,
+  timelinePackedCardGeometry,
   timelineScrollTopForViewportAnchor,
 } from './timeline-viewport-runtime';
 
@@ -229,6 +232,115 @@ describe('timeline viewport runtime', () => {
 
     expect(constrained).toBe(180);
     expect(constrained).toBeLessThan(isolated);
+  });
+
+  it('uses one identity width for the same Activity across moves and Session transitions', () => {
+    const title = 'Allenamento e programma personale molto articolato';
+    const expected = timelineStableCardWidth(title, true);
+    expect(expected).toBeGreaterThanOrEqual(
+      TIMELINE_POLICY.layout.activityCardMinimumWidthPx,
+    );
+    expect(expected).toBeLessThanOrEqual(
+      TIMELINE_POLICY.layout.cardMaximumWidthPx,
+    );
+    const pitch = expected + TIMELINE_POLICY.layout.cardLaneGapPx;
+    for (const lane of [0, 1, 2, 3]) {
+      for (const progress of [0, 0.2, 0.5, 0.8, 1]) {
+        const card = timelinePackedCardGeometry(
+          expected, lane, 1, lane, pitch, 3 * pitch, progress,
+        );
+        expect(card.width).toBe(expected);
+      }
+    }
+    expect(timelineStableCardWidth('short', false)).toBe(
+      TIMELINE_POLICY.layout.eventCardMinimumWidthPx,
+    );
+    expect(timelineStableCardWidth('x'.repeat(400), true)).toBe(
+      TIMELINE_POLICY.layout.cardMaximumWidthPx,
+    );
+  });
+
+  it('packs simultaneous and short painted cards without overlap at every expansion fraction', () => {
+    const groups: readonly TimelineGroup[] = [
+      { id: 'work', label: 'Work', tone: 'focus' },
+      { id: 'home', label: 'Home', tone: 'personal' },
+      { id: 'other', label: 'Other', tone: 'creative' },
+    ];
+    const source: readonly TimelineEvent[] = [
+      { id: 'a', title: 'A', groupId: 'work', startMinute: 720, endMinute: 750 },
+      { id: 'b', title: 'B', groupId: 'home', startMinute: 720, endMinute: 750 },
+      { id: 'c', title: 'C', groupId: 'home', startMinute: 721, endMinute: 722 },
+      { id: 'd', title: 'D', groupId: 'other', startMinute: 722, endMinute: 752 },
+      { id: 'e', title: 'E', groupId: 'work', startMinute: 800, endMinute: 825 },
+    ];
+    const mapper = {
+      height: 2880,
+      pxPerMinute: 2,
+      map: (minute: number) => minute * 2,
+      inv: (pixel: number) => pixel / 2,
+    };
+    // Each move changes the collision cluster without changing the source
+    // identity, title or painted minimum height.
+    for (const moveTo of [720, 721, 739, 805]) {
+      const events = source.map((event) =>
+        event.id === 'e'
+          ? { ...event, startMinute: moveTo, endMinute: moveTo + 25 }
+          : event,
+      );
+      const layouts = computeTimelineEventLayouts(events, groups, mapper);
+      const widths = layouts.map((layout) => timelineStableCardWidth(
+        layout.event.title,
+        layout.event.canonicalBasis?.kind === 'scheduled-activity',
+      ));
+      const pitch = Math.max(
+        TIMELINE_POLICY.layout.activityCardMinimumWidthPx, ...widths,
+      ) + TIMELINE_POLICY.layout.cardLaneGapPx;
+      const groupsLanes = Math.max(...layouts.map((layout) => layout.groupLaneCount));
+      const groupedWidth = timelineExpandedTrackGeometry(
+        1560, groups.length, pitch * groupsLanes,
+      ).groupWidth;
+      for (const progress of [0, 0.1, 0.25, 0.5, 0.75, 0.9, 1]) {
+        const geometries = layouts.map((layout, index) =>
+          timelinePackedCardGeometry(
+            widths[index]!,
+            layout.compactLane,
+            layout.groupIndex,
+            layout.groupLane,
+            pitch,
+            groupedWidth,
+            progress,
+          ),
+        );
+        for (let left = 0; left < layouts.length; left += 1) {
+          for (let right = left + 1; right < layouts.length; right += 1) {
+            const a = layouts[left]!;
+            const b = layouts[right]!;
+            if (a.top >= b.top + b.height || b.top >= a.top + a.height)
+              continue;
+            const x = geometries[left]!;
+            const y = geometries[right]!;
+            expect(
+              x.left + x.width + 1 <= y.left ||
+              y.left + y.width + 1 <= x.left,
+              `Overlap at move=${moveTo}, expansion=${progress}, ${a.event.id}/${b.event.id}`,
+            ).toBe(true);
+          }
+        }
+      }
+    }
+  });
+
+  it('widens a group track instead of shrinking two overlapping cards', () => {
+    const width = TIMELINE_POLICY.layout.activityCardMinimumWidthPx;
+    const pitch = width + TIMELINE_POLICY.layout.cardLaneGapPx;
+    const grouped = timelineExpandedTrackGeometry(1100, 4, pitch * 3);
+    expect(grouped.groupWidth).toBeGreaterThanOrEqual(pitch * 3);
+    expect(grouped.expandedTrackWidth).toBeGreaterThan(1100);
+    const left = timelinePackedCardGeometry(width, 0, 2, 0, pitch, grouped.groupWidth, 1);
+    const right = timelinePackedCardGeometry(width, 1, 2, 1, pitch, grouped.groupWidth, 1);
+    expect(left.width).toBe(width);
+    expect(right.width).toBe(width);
+    expect(right.left).toBeGreaterThanOrEqual(left.left + width);
   });
 
   it('keeps expanded header and event canvas on the same scroll range', () => {
