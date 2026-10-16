@@ -52,6 +52,8 @@ export const TIMELINE_POLICY = {
       upTo60Minutes: 60,
       upTo90Minutes: 90,
     },
+    activityMinimumHeightPx: 116,
+    eventMinimumHeightPx: 88,
     readableHeightPx: {
       upTo5Minutes: 50,
       upTo15Minutes: 68,
@@ -150,6 +152,16 @@ export const TIMELINE_POLICY = {
     compactIntrinsicResponsiveMaxFloorPx: 280,
     compactIntrinsicMaxViewportRatio: 0.42,
     compactIntrinsicHorizontalBreathingPx: 32,
+
+    // Identity-only card sizing. Time changes, Play/Pause/Stop, lane count and
+    // Timeline expansion must NEVER change an individual card's width.
+    activityCardMinimumWidthPx: 352,
+    eventCardMinimumWidthPx: 292,
+    cardMaximumWidthPx: 456,
+    cardLongTitleThreshold: 44,
+    cardLongTitleGrowthPerCharacterPx: 3,
+    cardLaneGapPx: 12,
+    weekCardMinimumWidthPx: 172,
   },
 } as const;
 
@@ -173,4 +185,25 @@ export function timelineDragSnapMinutes(zoom: number): number {
 
 export function timelineSupportsExpandedLayout(viewportWidth: number): boolean {
   return viewportWidth >= TIMELINE_POLICY.viewport.expandedMinWidthPx;
+}
+
+
+/**
+ * Immutable presentation width for one Activity/Event. The title is permitted
+ * to enlarge a card within a hard cap; excessively long titles are ellipsized
+ * by CSS. Session state, Schedule position and overlap lanes are not inputs.
+ */
+export function timelineStableCardWidth(
+  title: string,
+  activity: boolean,
+): number {
+  const policy = TIMELINE_POLICY.layout;
+  const minimum = activity
+    ? policy.activityCardMinimumWidthPx
+    : policy.eventCardMinimumWidthPx;
+  const additional = Math.max(
+    0,
+    title.length - policy.cardLongTitleThreshold,
+  ) * policy.cardLongTitleGrowthPerCharacterPx;
+  return Math.min(policy.cardMaximumWidthPx, minimum + additional);
 }
