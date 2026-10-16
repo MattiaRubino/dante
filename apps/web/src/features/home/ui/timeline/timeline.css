@@ -615,6 +615,10 @@
   overflow-x: auto;
 }
 
+.timeline-grid.is-overflowing {
+  scrollbar-color: rgba(177, 193, 211, 0.26) transparent;
+}
+
 .timeline-temporal-scrubber {
   position: relative;
   z-index: 72;
