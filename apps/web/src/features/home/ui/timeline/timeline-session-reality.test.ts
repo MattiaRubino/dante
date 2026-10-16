@@ -196,7 +196,16 @@ describe('one-card Activity actual Session projection', () => {
     expect(projected?.events).toEqual(current.events);
     expect(layout?.event).toBe(planned);
     expect(layout?.top).toBeCloseTo(projected?.mapper.map(1065) ?? 0, 3);
-    expect(layout?.height).toBeLessThan(current.layouts[0]?.height ?? Infinity);
+    // The ended 45-minute execution is shorter than the 60-minute plan,
+    // but both intervals hit the new 116px content floor. No longer demand
+    // a strict height decrease that would make the card unreadable.
+    expect(layout?.height).toBeGreaterThanOrEqual(116);
+    expect(layout?.height).toBeLessThanOrEqual(
+      (current.layouts[0]?.height ?? Infinity) + 0.001,
+    );
+    expect(
+      (layout?.top ?? 0) + (layout?.height ?? 0),
+    ).toBeLessThanOrEqual((projected?.mapper.map(1110) ?? 0) + 0.001);
     expect(layout?.event.startMinute).toBe(1080); // Schedule not rewritten
     expect(layout?.sessionReality?.state).toBe('ended');
     expect(layout?.sessionReality?.fill).toContain('rgba(234, 92, 18, .12)');
@@ -354,9 +363,30 @@ describe('one-card Activity actual Session projection', () => {
       zoom,
       expanded,
     );
-    expect(projected?.layouts[0]?.height).toBeLessThan(
-      current.layouts[0]?.height ?? Infinity,
+    const [mainOnly] = applyTimelineSessionReality(
+      [current],
+      [ended],
+      'UTC',
+      '2026-10-10T18:30:00Z',
+      Date.parse('2026-10-10T18:30:00Z'),
+      groups,
+      zoom,
+      expanded,
     );
+    // A named internal Session never increases the outer card duration,
+    // changes its true start/end or double-counts the execution.
+    expect(projected?.layouts[0]?.top).toBeCloseTo(
+      mainOnly?.layouts[0]?.top ?? 0,
+      3,
+    );
+    expect(projected?.layouts[0]?.height).toBeCloseTo(
+      mainOnly?.layouts[0]?.height ?? 0,
+      3,
+    );
+    expect(projected?.layouts[0]?.sessionReality?.actualLabel).toBe(
+      mainOnly?.layouts[0]?.sessionReality?.actualLabel,
+    );
+    expect(projected?.layouts[0]?.height).toBeGreaterThanOrEqual(116);
   });
 
   it('does not stretch a one-minute reality or shift later day offsets', () => {
