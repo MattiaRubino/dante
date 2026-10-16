@@ -195,16 +195,18 @@ def build_panel(
         # current main attempt's factual start to distinguish a child stopped
         # within this attempt from a child stopped in a previous main attempt.
         # In particular an early child Stop must not resurrect its ready row.
-        main_started_at = max(
-            (
-                item["started_at"]
-                for item in (ended_executions or [])
-                if str(item["activity_ref"]) == str(owner["activity_ref"])
-                and item["planned_schedule_ref"] is None
-                and item["ended_at"] is None
-            ),
-            default=None,
-        ) if main_open else None
+        main_started_at: datetime | None = None
+        if main_open:
+            main_started_at = max(
+                (
+                    item["started_at"]
+                    for item in (ended_executions or [])
+                    if str(item["activity_ref"]) == str(owner["activity_ref"])
+                    and item["planned_schedule_ref"] is None
+                    and item["ended_at"] is None
+                ),
+                default=None,
+            )
         rows: list[SessionPanelRow] = []
         for schedule in schedules:
             if schedule.role_code != "planned":
