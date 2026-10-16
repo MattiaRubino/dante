@@ -69,6 +69,25 @@ describe('TimelineSurface production parity', () => {
     expect(screen.getByText('Redesign LifeOS — sessione focus')).toBeTruthy();
   });
 
+  it('shows an assigned Life Area below the time and keeps it absent when no group is assigned', () => {
+    const { container } = renderTimeline();
+    const card = container.querySelector<HTMLElement>(
+      '[data-timeline-event="7"]',
+    );
+    const time = card?.querySelector('.timeline-event-card__time');
+    const meta = card?.querySelector('.timeline-event-card__meta');
+    expect(time).not.toBeNull();
+    expect(meta?.textContent).toContain('Focus / lavoro profondo');
+    expect(meta?.textContent).toContain('Certificazione B2');
+    expect(
+      Boolean(
+        (time?.compareDocumentPosition(meta as Node) ?? 0) &
+          Node.DOCUMENT_POSITION_FOLLOWING,
+      ),
+    ).toBe(true);
+    expect(meta?.textContent).not.toContain('Senza Life Area');
+  });
+
   it('switches between continuous, one-day and seven-column views without changing the frame', () => {
     const { container } = renderTimeline();
     const frame = container.querySelector('.timeline-frame');
