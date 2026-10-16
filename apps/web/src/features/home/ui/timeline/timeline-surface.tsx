@@ -57,6 +57,7 @@ import {
   formatTimelineMinute,
   parseTimelineDate,
   timelineDateKey,
+  timelineMinuteOfClock,
 } from './model/timeline-temporal';
 import type {
   TimelineAllDayItem,
@@ -77,7 +78,6 @@ import {
 import {
   CalendarPopover,
   EventDetailDialog,
-  TimeEditorPopover,
   UndoToast,
   ViewOptionsPopover,
   detailFromEvent,
@@ -113,12 +113,6 @@ type ScrollTarget = Readonly<{
   minute: number | null;
   viewportOffset: number | null;
   behavior: ScrollBehavior;
-}>;
-
-type TimeEditorState = Readonly<{
-  dateKey: string;
-  event: TimelineEvent;
-  anchor: HTMLButtonElement;
 }>;
 
 type DetailState = Readonly<{
@@ -185,13 +179,13 @@ export function TimelineSurface({
   const locale = i18n.resolvedLanguage ?? i18n.language;
   const prototypeMode = import.meta.env.MODE === 'test';
   const clockZone = effectiveZoneId ?? detectDeviceTimeZone();
+  const now = Temporal.Now.zonedDateTimeISO(clockZone);
   const timelineToday = prototypeMode
     ? TIMELINE_PROTOTYPE_TODAY
-    : Temporal.Now.plainDateISO(clockZone);
-  const now = Temporal.Now.zonedDateTimeISO(clockZone);
+    : now.toPlainDate();
   const timelineNowMinute = prototypeMode
     ? TIMELINE_PROTOTYPE_NOW_MINUTE
-    : now.hour * 60 + now.minute;
+    : timelineMinuteOfClock(now);
   const initialDate = parseTimelineViewedDate(viewedDateIso) ?? timelineToday;
   const initialDateRef = useRef(initialDate);
   const externalViewedDateRef = useRef(viewedDateIso);
@@ -286,6 +280,7 @@ export function TimelineSurface({
   const [anchor, setAnchor] = useState<PlainDate>(() => initialDate);
   const [viewDate, setViewDate] = useState<PlainDate>(() => initialDate);
   const [timelineView, setTimelineView] = useState<TimelineView>('timeline');
+  const [realityClock, setRealityClock] = useState(() => Date.now());
   const sessionPanel = useSessionPanel(
     sessionPanelEnabled,
     timelineDateKey(viewDate),
@@ -293,22 +288,20 @@ export function TimelineSurface({
     timelineView === 'week',
   );
   const sessionPresentation = useSessionPanelPresentation(sessionPanel);
-  const [realityClock, setRealityClock] = useState(() => Date.now());
   const openRealityCount =
     sessionPanel.snapshot?.visuals?.filter((visual) => visual.ended_at === null)
       .length ?? 0;
   useEffect(() => {
-    if (openRealityCount === 0) return;
-    // Geometry animates locally; no database polling or per-card requests.
+    // Keep the now ruler at the actual instant, including seconds. A stopped
+    // Session can otherwise appear below a minute-rounded 19:31 marker.
     const interval = window.setInterval(
       () => setRealityClock(Date.now()),
-      15_000,
+      openRealityCount > 0 ? 15_000 : 60_000,
     );
     return () => window.clearInterval(interval);
   }, [openRealityCount]);
   const [calendarOpen, setCalendarOpen] = useState(false);
   const [viewOptionsOpen, setViewOptionsOpen] = useState(false);
-  const [timeEditor, setTimeEditor] = useState<TimeEditorState | null>(null);
   const [detailState, setDetailState] = useState<DetailState | null>(null);
   const [nowNeeded, setNowNeeded] = useState(false);
   const [toastMessage, setToastMessage] = useState('');
@@ -1532,14 +1525,6 @@ export function TimelineSurface({
             opener,
           })
         }
-        onOpenTimeEditor={(dateKey, event, editorAnchor) => {
-          if (
-            event.canonicalBasis?.kind === 'scheduled-activity' &&
-            event.canonicalBasis.placementLocked
-          )
-            return;
-          setTimeEditor({ dateKey, event, anchor: editorAnchor });
-        }}
         onMoveEvent={(move) => {
           const current = findTimelineEvent(state, move.eventId)?.event;
           if (current?.canonicalBasis !== undefined) {
@@ -1626,46 +1611,6 @@ export function TimelineSurface({
         onReset={() => dispatch({ type: 'reset-view-options' })}
         onClose={closeViewOptions}
       />
-
-      {timeEditor ? (
-        <TimeEditorPopover
-          event={timeEditor.event}
-          dateKey={timeEditor.dateKey}
-          anchor={timeEditor.anchor}
-          gridRef={gridRef}
-          onSave={(dateKey, eventId, startMinute, endMinute) => {
-            if (timeEditor.event.canonicalBasis !== undefined) {
-              reviseCanonicalEvent(
-                timeEditor.event,
-                timeEditor.dateKey,
-                dateKey,
-                startMinute,
-                endMinute,
-              );
-              return;
-            }
-
-            preserveRawScroll();
-            dispatch({
-              type: 'update-event-time',
-              dateKey,
-              eventId,
-              startMinute,
-              endMinute,
-            });
-            showFeedback(
-              `${t(($) => $.common.home.timeline.feedback.timeUpdated)} ${formatTimelineMinute(startMinute)}–${formatTimelineMinute(endMinute)}`,
-            );
-          }}
-          onClose={(restoreFocus = true) => {
-            const anchorButton = timeEditor.anchor;
-            setTimeEditor(null);
-            if (restoreFocus) {
-              requestAnimationFrame(() => anchorButton.focus());
-            }
-          }}
-        />
-      ) : null}
 
       {pendingActivityReplan
         ? createPortal(

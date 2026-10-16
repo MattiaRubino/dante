@@ -38,6 +38,21 @@ export function clampTimelineMinute(minute: number): number {
   return Math.max(0, Math.min(TIMELINE_MINUTES_PER_DAY, minute));
 }
 
+/** Keep the now ruler on the same sub-minute axis as real Session timestamps. */
+export function timelineMinuteOfClock(clock: Readonly<{
+  hour: number;
+  minute: number;
+  second: number;
+  millisecond: number;
+}>): number {
+  return (
+    clock.hour * 60 +
+    clock.minute +
+    clock.second / 60 +
+    clock.millisecond / 60_000
+  );
+}
+
 export function formatTimelineMinute(minute: number): string {
   const clamped = Math.round(clampTimelineMinute(minute));
   if (clamped === TIMELINE_MINUTES_PER_DAY) {

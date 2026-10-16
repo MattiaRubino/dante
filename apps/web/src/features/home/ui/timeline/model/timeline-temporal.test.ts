@@ -7,6 +7,7 @@ import {
   parseTimelineDate,
   startOfIsoWeek,
   timelineDateKey,
+  timelineMinuteOfClock,
 } from './timeline-temporal';
 
 describe('timeline temporal model', () => {
@@ -38,5 +39,16 @@ describe('timeline temporal model', () => {
     expect(formatTimelineMinute(14 * 60 + 20)).toBe('14:20');
     expect(formatTimelineMinute(24 * 60)).toBe('24:00');
     expect(formatTimelineMinute(-50)).toBe('00:00');
+  });
+
+  it('places the now marker at the real second without displaying the next minute early', () => {
+    const minute = timelineMinuteOfClock({
+      hour: 19,
+      minute: 31,
+      second: 35,
+      millisecond: 500,
+    });
+    expect(minute).toBeCloseTo(19 * 60 + 31 + 35.5 / 60, 6);
+    expect(formatTimelineMinute(Math.floor(minute))).toBe('19:31');
   });
 });

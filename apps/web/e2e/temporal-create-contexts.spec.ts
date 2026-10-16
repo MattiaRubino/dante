@@ -55,8 +55,11 @@ test('Create stages Life Area color and keeps the 45-minute interval without fab
   await expect(card).toContainText('15:00–15:45');
 
   await card.locator('.timeline-event-card__time').click();
-  await expect(page.locator('.timeline-time-popover')).toBeVisible();
-  await page.keyboard.press('Escape');
+  expect(
+    await card
+      .locator('.timeline-event-card__time')
+      .evaluate((node) => node.tagName),
+  ).toBe('DIV');
   await expect(page.locator('.timeline-time-popover')).toHaveCount(0);
 
   dialog = await openCreate(page);

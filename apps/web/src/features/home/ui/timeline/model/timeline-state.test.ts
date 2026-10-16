@@ -230,19 +230,6 @@ describe('timeline state', () => {
     });
   });
 
-  it('rejects invalid time-editor commits', () => {
-    const initial = createInitialTimelineState();
-    const invalid = timelineReducer(initial, {
-      type: 'update-event-time',
-      dateKey: '2026-08-04',
-      eventId: '2',
-      startMinute: 700,
-      endMinute: 699,
-    });
-
-    expect(invalid).toBe(initial);
-  });
-
   it('keeps filter, focus and zoom semantics independent', () => {
     const initial = createInitialTimelineState();
     const filtered = timelineReducer(initial, {

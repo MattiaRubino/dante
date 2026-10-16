@@ -68,6 +68,34 @@ const ended = {
 } as const;
 
 describe('one-card Activity actual Session projection', () => {
+  it('keeps a Session stopped after a few seconds above the exact now marker', () => {
+    const planned = activity('short-session', 20 * 60 + 2, 20 * 60 + 32);
+    const [projected] = applyTimelineSessionReality(
+      [day(planned)],
+      [{
+        ...ended,
+        started_at: '2026-10-10T19:31:20Z',
+        ended_at: '2026-10-10T19:31:25Z',
+        pause_ranges: [],
+      }],
+      'UTC',
+      '2026-10-10T19:31:30Z',
+      Date.parse('2026-10-10T19:31:30Z'),
+      groups,
+      zoom,
+      expanded,
+    );
+    const card = projected?.layouts[0];
+    expect(card?.sessionReality?.state).toBe('ended');
+    expect(card?.top).toBeCloseTo(
+      projected?.mapper.map(19 * 60 + 31 + 20 / 60) ?? 0,
+      3,
+    );
+    expect((card?.top ?? 0) + (card?.height ?? 0)).toBeLessThanOrEqual(
+      (projected?.mapper.map(19 * 60 + 31 + 30 / 60) ?? 0) + 0.001,
+    );
+  });
+
   it('moves immediately on Play without resizing during Play or Pause', () => {
     const planned = activity('minute-aligned', 600, 630);
     const current = day(planned);

@@ -475,19 +475,6 @@ export const home = {
       out: 'Riduci zoom',
       in: 'Aumenta zoom',
     },
-    timeEditor: {
-      title: 'Modifica orario',
-      start: 'Inizio',
-      end: 'Fine',
-      open: 'Modifica orario di {{title}}',
-      hourPart: '{{label}} ore',
-      minutePart: '{{label}} minuti',
-      increase: 'Aumenta {{label}} di 1 minuto',
-      decrease: 'Diminuisci {{label}} di 1 minuto',
-      invalid: 'Inserisci un orario valido.',
-      cancel: 'Annulla',
-      save: 'Conferma',
-    },
     detail: {
       reminder: {
         title: 'Promemoria personale',
@@ -515,7 +502,6 @@ export const home = {
       moved: 'Spostato:',
       movedDay: 'Evento spostato al giorno adiacente.',
       movedTime: 'Orario evento aggiornato.',
-      timeUpdated: 'Orario aggiornato:',
       created: 'Creato:',
       createUndone: 'Creazione annullata.',
     },

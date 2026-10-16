@@ -91,13 +91,6 @@ export type TimelineAction =
   | Readonly<{ type: 'remove-event'; eventId: TimelineEventId }>
   | Readonly<{ type: 'remove-all-day'; itemId: string }>
   | Readonly<{
-      type: 'update-event-time';
-      dateKey: string;
-      eventId: TimelineEventId;
-      startMinute: number;
-      endMinute: number;
-    }>
-  | Readonly<{
       type: 'move-event';
       fromDateKey: string;
       toDateKey: string;
@@ -408,57 +401,6 @@ function removeAllDay(state: TimelineState, itemId: string): TimelineState {
     : { ...state, allDayItems };
 }
 
-function updateEventTime(
-  state: TimelineState,
-  action: Extract<TimelineAction, { type: 'update-event-time' }>,
-): TimelineState {
-  if (
-    !Number.isFinite(action.startMinute) ||
-    !Number.isFinite(action.endMinute) ||
-    action.startMinute < 0 ||
-    action.startMinute > 1439 ||
-    action.endMinute < 1 ||
-    action.endMinute > 1440 ||
-    action.endMinute <= action.startMinute
-  ) {
-    return state;
-  }
-
-  const events = timelineEventsForDate(state, action.dateKey);
-  const current = events.find((event) => event.id === action.eventId);
-  if (!current) {
-    return state;
-  }
-
-  if (
-    current.startMinute === action.startMinute &&
-    current.endMinute === action.endMinute
-  ) {
-    return state;
-  }
-
-  const nextEvent: TimelineEvent = {
-    ...current,
-    startMinute: action.startMinute,
-    endMinute: action.endMinute,
-  };
-  const nextEvents = events.map((event) =>
-    event.id === action.eventId ? nextEvent : event,
-  );
-
-  return {
-    ...state,
-    eventsByDate: replaceDateEvents(state, action.dateKey, nextEvents),
-    undo: {
-      eventId: current.id,
-      beforeDateKey: action.dateKey,
-      beforeEvent: current,
-      afterDateKey: action.dateKey,
-      group: 'single',
-    },
-  };
-}
-
 function moveUndoSnapshot(
   state: TimelineState,
   current: TimelineEvent,
@@ -698,9 +640,6 @@ export function timelineReducer(
 
     case 'remove-all-day':
       return removeAllDay(state, action.itemId);
-
-    case 'update-event-time':
-      return updateEventTime(state, action);
 
     case 'move-event':
       return moveEvent(state, action);

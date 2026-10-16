@@ -466,19 +466,6 @@ export const home = {
       out: 'Zoom out',
       in: 'Zoom in',
     },
-    timeEditor: {
-      title: 'Edit time',
-      start: 'Start',
-      end: 'End',
-      open: 'Edit time for {{title}}',
-      hourPart: '{{label}} hours',
-      minutePart: '{{label}} minutes',
-      increase: 'Increase {{label}} by 1 minute',
-      decrease: 'Decrease {{label}} by 1 minute',
-      invalid: 'Enter a valid time range.',
-      cancel: 'Cancel',
-      save: 'Confirm',
-    },
     detail: {
       reminder: {
         title: 'Personal reminder',
@@ -506,7 +493,6 @@ export const home = {
       moved: 'Moved:',
       movedDay: 'Event moved to the adjacent day.',
       movedTime: 'Event time updated.',
-      timeUpdated: 'Time updated:',
       created: 'Created:',
       createUndone: 'Create undone.',
     },

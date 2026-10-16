@@ -192,7 +192,6 @@
   .home-timeline--production
   :is(
     .timeline-event-card__title,
-    .timeline-event-card__time,
     .timeline-event-card__subitem,
     .timeline-event-card__expander
   ) {
@@ -243,6 +242,61 @@
     justify-self: auto;
     transform: translate(-50%, -50%);
   }
+}
+
+/* Each accepted piece of card information owns one compact row. The
+ * separators follow the content, so absent Life Areas or panels leave no
+ * empty band behind. */
+.home-m1 .home-timeline--production .timeline-event-card__heading {
+  padding-bottom: 3px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.11);
+}
+
+.home-m1 .home-timeline--production .timeline-event-card__time {
+  display: block;
+  width: 100%;
+  margin-top: 0;
+  padding: 3px 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.09);
+  cursor: default;
+}
+
+.home-m1 .home-timeline--production .timeline-event-card__reality-status,
+.home-m1 .home-timeline--production .timeline-event-card__meta {
+  width: 100%;
+  max-width: 100%;
+  margin-top: 0;
+  padding: 3px 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.09);
+  font-size: 10.5px;
+  line-height: 1.2;
+}
+
+.home-m1 .home-timeline--production .timeline-event-card__indicator,
+.home-m1 .home-timeline--production .timeline-activity-planned-sessions__indicator {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  min-height: 18px;
+  margin-top: 3px;
+  padding: 1px 8px;
+  border-left: 2px solid var(--timeline-group-color);
+  border-radius: 3px;
+  color: var(--dante-semantic-color-home-text-secondary, #b2bdc1);
+  background: color-mix(in srgb, var(--timeline-group-color) 11%, transparent);
+  font-size: 10.5px;
+}
+
+.home-m1 .home-timeline--production .timeline-event-card__indicator strong {
+  font-variant-numeric: tabular-nums;
+}
+
+.home-m1 .home-timeline--production .timeline-day-stream.is-week
+  .timeline-event-card__indicator,
+.home-m1 .home-timeline--production .timeline-day-stream.is-week
+  .timeline-activity-planned-sessions__indicator {
+  display: none;
 }
 
 /* Desktop Home owns the row height. Timeline and Context Rail are peers in

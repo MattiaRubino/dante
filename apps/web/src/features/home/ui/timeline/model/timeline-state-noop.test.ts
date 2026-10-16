@@ -17,26 +17,6 @@ function eventById(
 }
 
 describe('timeline no-op mutation semantics', () => {
-  it('does not manufacture state or Undo for an unchanged time edit', () => {
-    const initial = createInitialTimelineState();
-    const event = eventById(initial, '2026-08-04', '2');
-    expect(event).toBeDefined();
-    if (!event) {
-      return;
-    }
-
-    const unchanged = timelineReducer(initial, {
-      type: 'update-event-time',
-      dateKey: '2026-08-04',
-      eventId: event.id,
-      startMinute: event.startMinute,
-      endMinute: event.endMinute,
-    });
-
-    expect(unchanged).toBe(initial);
-    expect(unchanged.undo).toBeNull();
-  });
-
   it('keeps the last real Undo when a repeated boundary move clamps to no change', () => {
     const initial = createInitialTimelineState();
     const original = eventById(initial, '2026-08-04', '2');

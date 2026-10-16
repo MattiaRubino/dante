@@ -88,6 +88,20 @@ describe('TimelineSurface production parity', () => {
     expect(meta?.textContent).not.toContain('Senza Life Area');
   });
 
+  it('renders non-editable card time and an Event agenda indicator beneath its details', () => {
+    const { container } = renderTimeline();
+    const card = container.querySelector<HTMLElement>(
+      '[data-timeline-event="2"]',
+    );
+    expect(card?.querySelector('.timeline-event-card__time')?.tagName).toBe(
+      'DIV',
+    );
+    expect(card?.querySelector('.timeline-event-card__indicator')?.textContent)
+      .toBe('Scaletta3');
+    expect(card?.querySelector('.timeline-activity-session-card-controls'))
+      .toBeNull();
+  });
+
   it('switches between continuous, one-day and seven-column views without changing the frame', () => {
     const { container } = renderTimeline();
     const frame = container.querySelector('.timeline-frame');

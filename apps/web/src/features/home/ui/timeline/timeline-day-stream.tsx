@@ -35,6 +35,7 @@ import type {
   TimelineTimeMapper,
 } from './model/timeline-types';
 import { TimelineAllDayLane } from './timeline-all-day-layer';
+import { useTimelineCardDetails } from './timeline-card-details';
 import { LEGACY_UNASSIGNED_GROUP } from './timeline-organization';
 
 export type TimelineRenderedDay = Readonly<{
@@ -72,11 +73,6 @@ type TimelineDayStreamProps = Readonly<{
     event: TimelineEvent,
     subitem: string,
     opener: HTMLElement,
-  ) => void;
-  onOpenTimeEditor: (
-    dateKey: string,
-    event: TimelineEvent,
-    anchor: HTMLButtonElement,
   ) => void;
   onMoveEvent: (move: TimelineEventMove) => void;
   onMoveFeedback: (message: string) => void;
@@ -139,7 +135,6 @@ function TimelineEventCard({
   onToggleSubitems,
   onOpenEventDetail,
   onOpenSubitemDetail,
-  onOpenTimeEditor,
   onPointerPress,
   onKeyboardMove,
   suppressClickRef,
@@ -158,11 +153,6 @@ function TimelineEventCard({
     subitem: string,
     opener: HTMLElement,
   ) => void;
-  onOpenTimeEditor: (
-    dateKey: string,
-    event: TimelineEvent,
-    anchor: HTMLButtonElement,
-  ) => void;
   onPointerPress: (
     pointerEvent: ReactPointerEvent<HTMLElement>,
     dateKey: string,
@@ -177,6 +167,7 @@ function TimelineEventCard({
 }>) {
   const { t } = useTranslation('common');
   const event = layout.event;
+  const details = useTimelineCardDetails(event);
   const plannedDateKey = layout.plannedDateKey ?? dateKey;
   const group = groupForEvent(event, groups);
   const tone = event.appearanceTone ?? group?.tone ?? 'personal';
@@ -187,11 +178,19 @@ function TimelineEventCard({
       ? undefined
       : group?.itemColorCodes?.[organizationKey]) ??
     group?.colorCode;
+  const areaRef = details?.lifeAreaRef;
   const groupLabel =
-    event.groupId === LEGACY_UNASSIGNED_GROUP
-      ? null
-      : (group?.label ?? event.groupId);
-  const cardMeta = [groupLabel, event.meta].filter(Boolean).join(' · ');
+    details !== null
+      ? areaRef === null
+        ? null
+        : (groups.find((entry) => entry.id === areaRef)?.label ?? null)
+      : event.groupId === LEGACY_UNASSIGNED_GROUP
+        ? null
+        : (group?.label ?? null);
+  const cardMeta = [groupLabel, event.canonicalBasis ? null : event.meta]
+    .filter(Boolean)
+    .join(' · ');
+  const agendaCount = details?.agendaCount ?? event.subitems?.length ?? 0;
   const isFocused = focusedEvent?.id === event.id;
   const isGroupmate =
     focusedEvent !== null &&
@@ -320,32 +319,17 @@ function TimelineEventCard({
             />
           )}
         </div>
-        <button
-          className="timeline-event-card__time"
-          type="button"
-          tabIndex={inlineActionsEnabled ? 0 : -1}
-          onClick={(clickEvent) => {
-            clickEvent.stopPropagation();
-            if (!inlineActionsEnabled) {
-              onFocusEvent(event.id);
-              return;
-            }
-            onOpenTimeEditor(plannedDateKey, event, clickEvent.currentTarget);
-          }}
-          aria-label={t(($) => $.common.home.timeline.timeEditor.open, {
-            title: event.title,
-          })}
-        >
+        <div className="timeline-event-card__time">
           {layout.sessionReality ? 'Pianificata ' : null}
           {formatTimelineMinute(event.startMinute)}–
           {formatTimelineMinute(event.endMinute)}
-        </button>
+        </div>
         {layout.sessionReality ? (
           <div
             className="timeline-event-card__reality-status"
             title={`Sessione dell'attività: ${layout.sessionReality.actualLabel}`}
           >
-            Sessione attività · Reale {layout.sessionReality.actualLabel}
+            Sessione attività · {layout.sessionReality.actualLabel}
           </div>
         ) : null}
         {cardMeta ? (
@@ -358,6 +342,24 @@ function TimelineEventCard({
             variant="indicator"
           />
         )}
+        {details && details.objectiveCount > 0 ? (
+          <div
+            className="timeline-event-card__indicator"
+            aria-label={`${details.objectiveCount} obiettivi impostati`}
+          >
+            <span>Obiettivi</span>
+            <strong>{details.objectiveCount}</strong>
+          </div>
+        ) : null}
+        {!isActivity && agendaCount > 0 ? (
+          <div
+            className="timeline-event-card__indicator"
+            aria-label={`${agendaCount} voci in scaletta`}
+          >
+            <span>Scaletta</span>
+            <strong>{agendaCount}</strong>
+          </div>
+        ) : null}
       </div>
 
       {event.subitems?.length && expandedSubitems ? (
@@ -426,7 +428,6 @@ function TimelineDay({
   onToggleSubitems,
   onOpenEventDetail,
   onOpenSubitemDetail,
-  onOpenTimeEditor,
   onPointerPress,
   onKeyboardMove,
   suppressClickRef,
@@ -443,11 +444,6 @@ function TimelineDay({
     event: TimelineEvent,
     subitem: string,
     opener: HTMLElement,
-  ) => void;
-  onOpenTimeEditor: (
-    dateKey: string,
-    event: TimelineEvent,
-    anchor: HTMLButtonElement,
   ) => void;
   onPointerPress: (
     pointerEvent: ReactPointerEvent<HTMLElement>,
@@ -519,7 +515,7 @@ function TimelineDay({
           style={{ top: day.mapper.map(nowMinute) }}
           aria-hidden="true"
         >
-          <span>{formatTimelineMinute(nowMinute)}</span>
+          <span>{formatTimelineMinute(Math.floor(nowMinute))}</span>
         </div>
       ) : null}
 
@@ -578,7 +574,6 @@ function TimelineDay({
             onToggleSubitems={onToggleSubitems}
             onOpenEventDetail={onOpenEventDetail}
             onOpenSubitemDetail={onOpenSubitemDetail}
-            onOpenTimeEditor={onOpenTimeEditor}
             onPointerPress={onPointerPress}
             onKeyboardMove={onKeyboardMove}
             suppressClickRef={suppressClickRef}
@@ -603,7 +598,6 @@ export function TimelineDayStream({
   onToggleSubitems,
   onOpenEventDetail,
   onOpenSubitemDetail,
-  onOpenTimeEditor,
   onMoveEvent,
   onMoveFeedback,
 }: TimelineDayStreamProps) {
@@ -1404,7 +1398,6 @@ export function TimelineDayStream({
               onToggleSubitems={onToggleSubitems}
               onOpenEventDetail={onOpenEventDetail}
               onOpenSubitemDetail={onOpenSubitemDetail}
-              onOpenTimeEditor={onOpenTimeEditor}
               onPointerPress={startPointerPress}
               onKeyboardMove={keyboardMove}
               suppressClickRef={suppressClickRef}
