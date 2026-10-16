@@ -16,6 +16,79 @@ import {
   validateTemporalCreateU6StructureIssue,
 } from './temporal-create-u2-submit';
 
+describe('minute-exact U2 submit mappings', () => {
+  it.each(['activity', 'event'] as const)(
+    'preserves 10:30–10:31 on the outgoing %s request',
+    (kind) => {
+      const fields = createTemporalCreateFields({
+        kind,
+        title: 'One minute exactly',
+        date: '2026-10-16',
+        startTime: '10:30',
+        durationMinutes: 1,
+      });
+      const draft = createTemporalCreateU2AuthoringDraft(fields);
+      expect(validateTemporalCreateU2QuickFields(fields)).toEqual([]);
+      const result = buildTemporalCreateU2Request(
+        fields, draft, `minute-precision:${kind}`,
+      );
+      expect(result.kind).toBe(kind);
+      expect(result.request.placement?.kind).toBe('floating-local-interval');
+      const placement = result.request.placement;
+      if (placement?.kind !== 'floating-local-interval') {
+        throw new Error('Expected canonical floating interval.');
+      }
+      expect(placement.startsLocalAt.toString()).toBe('2026-10-16T10:30:00');
+      expect(placement.endsLocalAt.toString()).toBe('2026-10-16T10:31:00');
+    },
+  );
+
+  it('preserves non-quarter-hour Activity interval boundaries in the authoring graph', () => {
+    const fields = createTemporalCreateFields({
+      kind: 'activity',
+      title: 'Two precise occupied bands',
+      date: '2026-10-16',
+      startTime: '10:30',
+      durationMinutes: 1,
+    });
+    const base = createTemporalCreateU2AuthoringDraft(fields);
+    const draft = patchTemporalCreateU2AuthoringDraft(base, {
+      activityStructure: {
+        ...base.activityStructure,
+        activityIntervals: [
+          {
+            id: 'extra-minute',
+            date: '2026-10-16',
+            startTime: '10:37',
+            endDate: '2026-10-16',
+            endTime: '10:38',
+          },
+        ],
+      },
+    });
+    expect(validateTemporalCreateU6Structure(fields, draft)).toBeNull();
+    const result = buildTemporalCreateU2Request(
+      fields, draft, 'minute-precision:bands',
+    );
+    if (result.kind !== 'activity') throw new Error('Expected Activity.');
+    const placements = result.request.activityIntervals;
+    expect(placements).toHaveLength(2);
+    const boundaries = placements?.map((placement) => {
+      if (placement.kind !== 'floating-local-interval') {
+        throw new Error('Expected floating local Activity interval.');
+      }
+      return [
+        placement.startsLocalAt.toString(),
+        placement.endsLocalAt.toString(),
+      ];
+    });
+    expect(boundaries).toEqual([
+      ['2026-10-16T10:30:00', '2026-10-16T10:31:00'],
+      ['2026-10-16T10:37:00', '2026-10-16T10:38:00'],
+    ]);
+  });
+});
+
 describe('U2 Quick Create submit mapping', () => {
   it('keeps an untimed named Session in every recurring Activity template', () => {
     const fields = createTemporalCreateFields({
