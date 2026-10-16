@@ -226,12 +226,13 @@ describe('timeline viewport runtime', () => {
     expect(spaciousOverlapLane).toBe(isolated);
   });
 
-  it('only shrinks a card when the overlap lane is genuinely narrower', () => {
+  it('never shrinks a card when a collision lane would be narrower', () => {
     const isolated = timelineCompactCardWidth(410, 1400, null);
     const constrained = timelineCompactCardWidth(410, 1400, 180);
 
-    expect(constrained).toBe(180);
-    expect(constrained).toBeLessThan(isolated);
+    // The canvas expands horizontally instead of compressing cards.
+    expect(constrained).toBe(isolated);
+    expect(constrained).toBeGreaterThan(180);
   });
 
   it('uses one identity width for the same Activity across moves and Session transitions', () => {
