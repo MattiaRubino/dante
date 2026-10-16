@@ -437,6 +437,45 @@ test('Advanced validation focuses the required title without discarding time or 
   );
 });
 
+/** Choose a point in the visible, empty timed canvas. A fixed-width
+ * overlap cluster can cover the old hard-coded x=600 coordinate. */
+async function emptyTimedCanvasPoint(
+  day: VisibleTimelineDay,
+  travel = 0,
+): Promise<{ x: number; y: number }> {
+  return day.section.evaluate((section, requiredTravel) => {
+    const sectionRect = section.getBoundingClientRect();
+    const grid = section.closest('.timeline-grid');
+    const gridRect = grid?.getBoundingClientRect();
+    if (!gridRect) throw new Error('No Timeline grid for timed Create.');
+    const left = Math.max(sectionRect.left + 20, gridRect.left + 20, 20);
+    const right = Math.min(sectionRect.right - 20, gridRect.right - 20, window.innerWidth - 20);
+    const top = Math.max(sectionRect.top + 20, gridRect.top + 20, 20);
+    const bottom = Math.min(sectionRect.bottom - 20, gridRect.bottom - 20, window.innerHeight - 20);
+    const available = bottom - top - requiredTravel;
+    if (right <= left || available < 20) throw new Error('Timed canvas not visible.');
+    const clear = (x: number, y: number) => {
+      const hit = document.elementFromPoint(x, y);
+      return !!hit && section.contains(hit) &&
+        !hit.closest('.timeline-event-card,button,input,select,.timeline-milestone,.timeline-margin-label');
+    };
+    // Prefer the area to the right of scheduled content; test the whole
+    // path rather than a single point, since Shift+drag spans time.
+    for (const xf of [0.92, 0.75, 0.55, 0.35, 0.15]) {
+      const x = left + (right - left) * xf;
+      for (const yf of [0.12, 0.32, 0.52, 0.72, 0.92]) {
+        const y = top + available * yf;
+        if (
+          clear(x, y) &&
+          clear(x, y + requiredTravel * 0.5) &&
+          clear(x, y + requiredTravel)
+        ) return { x, y };
+      }
+    }
+    throw new Error('No unobstructed timed canvas for contextual Create.');
+  }, travel);
+}
+
 test('double-click and Shift-drag only use the timed canvas for contextual Create', async ({
   page,
 }) => {
@@ -445,10 +484,8 @@ test('double-click and Shift-drag only use the timed canvas for contextual Creat
   await page.goto('/home');
 
   let target = await visibleTimelineDay(page);
-  const emptyX = Math.min(600, target.box.width - 40);
-  const emptyY =
-    target.visibleTop + (target.visibleBottom - target.visibleTop) * 0.46;
-  await target.section.dblclick({ position: { x: emptyX, y: emptyY } });
+  const empty = await emptyTimedCanvasPoint(target);
+  await page.mouse.dblclick(empty.x, empty.y);
 
   let dialog = page.locator('[data-temporal-create="composer"]');
   await expect(dialog).toBeVisible();
@@ -463,16 +500,11 @@ test('double-click and Shift-drag only use the timed canvas for contextual Creat
   await expect(page.locator('.timeline-grid')).toBeFocused();
 
   target = await visibleTimelineDay(page);
-  const x = target.box.x + Math.min(600, target.box.width - 40);
-  const top = target.box.y + target.visibleTop;
-  const bottom = target.box.y + target.visibleBottom;
-  const startY = top + (bottom - top) * 0.4;
-  const endY = Math.min(bottom - 20, startY + 130);
-
+  const dragPoint = await emptyTimedCanvasPoint(target, 130);
   await page.keyboard.down('Shift');
-  await page.mouse.move(x, startY);
+  await page.mouse.move(dragPoint.x, dragPoint.y);
   await page.mouse.down();
-  await page.mouse.move(x, endY, { steps: 5 });
+  await page.mouse.move(dragPoint.x, dragPoint.y + 130, { steps: 5 });
   await page.mouse.up();
   await page.keyboard.up('Shift');
 
