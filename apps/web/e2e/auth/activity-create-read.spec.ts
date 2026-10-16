@@ -59,20 +59,6 @@ function readUnplaced(page: Page) {
     headers: { 'X-Dante-Time-Zone': 'Europe/Rome' },
   });
 }
-async function openExistingCanonicalItems(page: Page): Promise<void> {
-  await page.getByRole('button', { name: 'Apri Bozze' }).click();
-  const existing = page.locator(
-    'section[aria-label="Elementi preesistenti senza orario"]',
-  );
-  await expect(existing).toBeVisible();
-  await page
-    .getByRole('button', { name: 'Gestisci elementi già creati' })
-    .click();
-  await expect(
-    page.locator('[data-timeline-planning-tray="true"]'),
-  ).toBeVisible();
-}
-
 test.describe('Timeline B01 canonical Activity vertical', () => {
   test('creates one canonical unplaced Activity by U2 API and reviews it separately from Draft Vault', async ({
     browser,
@@ -98,7 +84,7 @@ test.describe('Timeline B01 canonical Activity vertical', () => {
       const title = `B01 Activity persistita ${testInfo.project.name}`;
       // U2 Quick Create no longer offers an unplaced mode. This scenario
       // explicitly proves canonical U2 authoring with placement=null,
-      // then its separate existing-item management and Draft Vault isolation.
+      // then its isolation from the Timeline and Draft Vault.
       const authored = await page.evaluate(async (activityTitle) => {
         const sessionResponse = await fetch('/api/v1/auth/session', {
           credentials: 'same-origin',
@@ -150,7 +136,6 @@ test.describe('Timeline B01 canonical Activity vertical', () => {
       const createdRead = waitForTimelineRead(page);
       await page.reload();
       expect((await createdRead).status()).toBe(200);
-      await openExistingCanonicalItems(page);
       const firstPlanningRead = await readUnplaced(page);
       expect(firstPlanningRead.status()).toBe(200);
       const firstPayload = (await firstPlanningRead.json()) as {
@@ -164,17 +149,10 @@ test.describe('Timeline B01 canonical Activity vertical', () => {
         ),
       ).toHaveLength(1);
 
-      const firstCard = page.locator(
-        `[data-temporal-subject-ref="${created.activity_ref}"]`,
-      );
-      await expect(firstCard).toHaveCount(1);
-      await expect(firstCard).toContainText(title);
+      // The legacy "Elementi preesistenti senza orario" panel was retired.
+      // A canonical unplaced Activity remains real backend truth, NOT a
+      // Timeline card and NOT an inert Draft. Check both boundaries directly.
       await expect(page.locator('[data-timeline-event]')).toHaveCount(0);
-      // Canonical unplaced Activity is visible only through explicit legacy
-      // management. It must never masquerade as an inert Draft Vault item.
-      await page
-        .getByRole('button', { name: 'Chiudi elementi già creati' })
-        .click();
       await page.getByRole('button', { name: 'Apri Bozze' }).click();
       await expect(
         page.locator('[data-timeline-draft-vault="true"] article').filter({
@@ -201,18 +179,15 @@ test.describe('Timeline B01 canonical Activity vertical', () => {
         ),
       ).toHaveLength(1);
 
-      await openExistingCanonicalItems(page);
 
-      const reloadedCard = page.locator(
-        `[data-temporal-subject-ref="${created.activity_ref}"]`,
-      );
-      await expect(reloadedCard).toHaveCount(1);
-      await expect(reloadedCard).toContainText(title);
       await expect(page.locator('[data-timeline-event]')).toHaveCount(0);
-
-      await page
-        .getByRole('button', { name: 'Chiudi elementi già creati' })
-        .click();
+      await page.getByRole('button', { name: 'Apri Bozze' }).click();
+      await expect(
+        page.locator('[data-timeline-draft-vault="true"] article').filter({
+          hasText: title,
+        }),
+      ).toHaveCount(0);
+      await page.getByRole('button', { name: 'Chiudi Bozze' }).click();
       const discardedDraftTitle = `B01 bozza scartata ${testInfo.project.name}`;
       await page
         .getByRole('button', { name: 'Aggiungi alla timeline' })
@@ -247,13 +222,16 @@ test.describe('Timeline B01 canonical Activity vertical', () => {
         ),
       ).toHaveLength(0);
 
-      await openExistingCanonicalItems(page);
-      const afterDiscardCard = page.locator(
-        `[data-temporal-subject-ref="${created.activity_ref}"]`,
-      );
-      await expect(afterDiscardCard).toHaveCount(1);
-      await expect(afterDiscardCard).toContainText(title);
-      await expect(page.getByText(discardedDraftTitle)).toHaveCount(0);
+      // Closing an unsaved draft must neither create a new canonical
+      // Activity nor mutate the previously persisted unplaced Activity.
+      await expect(page.locator('[data-timeline-event]')).toHaveCount(0);
+      await page.getByRole('button', { name: 'Apri Bozze' }).click();
+      await expect(
+        page.locator('[data-timeline-draft-vault="true"] article').filter({
+          hasText: discardedDraftTitle,
+        }),
+      ).toHaveCount(0);
+      await page.getByRole('button', { name: 'Chiudi Bozze' }).click();
     } finally {
       await context.close();
     }
