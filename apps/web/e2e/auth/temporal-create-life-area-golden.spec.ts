@@ -187,7 +187,36 @@ async function expectTimedCardColor(
   if (lifeAreaName === null) {
     await expect(card).not.toContainText(/Senza Life Area/);
   } else {
-    await expect(card).toContainText(lifeAreaName);
+    const meta = card.locator('.timeline-event-card__meta');
+    await expect(meta).toContainText(lifeAreaName);
+    // Real data must paint the Life Area under planned/actual timing and
+    // before the named Session indicator, never in a hidden attribute.
+    const order = await card.evaluate((element) => {
+      const time = element.querySelector('.timeline-event-card__time');
+      const reality = element.querySelector(
+        '.timeline-event-card__reality-status',
+      );
+      const meta = element.querySelector('.timeline-event-card__meta');
+      const sessions = element.querySelector(
+        '.timeline-activity-planned-sessions__indicator',
+      );
+      return {
+        afterPlanned:
+          !!time && !!meta &&
+          Boolean(time.compareDocumentPosition(meta) & Node.DOCUMENT_POSITION_FOLLOWING),
+        afterReality:
+          !reality || (!!meta &&
+          Boolean(reality.compareDocumentPosition(meta) & Node.DOCUMENT_POSITION_FOLLOWING)),
+        beforeSessions:
+          !sessions || (!!meta &&
+          Boolean(meta.compareDocumentPosition(sessions) & Node.DOCUMENT_POSITION_FOLLOWING)),
+      };
+    });
+    expect(order).toEqual({
+      afterPlanned: true,
+      afterReality: true,
+      beforeSessions: true,
+    });
   }
   await expect
     .poll(() =>
