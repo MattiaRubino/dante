@@ -1,5 +1,47 @@
 # Timeline / Temporal-Operational — Workstream Handoff
 
+## 2026-10-16 — Focused Web 5-red handoff after `5df23f72` (corrective candidate)
+
+The user ran the exact `5df23f72c61f6867e1e0160e6109b3fc9c35d2c7`
+focused Web Vitest command in WSL: **35 PASS / 5 FAIL** (4 files, 40
+tests). Shell `&&` short-circuited at Vitest, therefore **typecheck and
+Playwright were NOT RUN** in this user command.
+
+Failures and corrective scope:
+
+- `timeline-density.test.ts`: a one-minute Activity at 20:15–20:16
+  expanded its enclosing 30-minute card to 306.8px, violating the <280px
+  compactness assertion. The Timeline mapper now allocates minimum height
+  shortest-first, accounting for pixels already reserved by overlapping
+  cards instead of summing entire minimums twice. The original strict
+  compactness test is retained, not loosened.
+- `timeline-session-reality.test.ts`: a 19:31:20–19:31:25 completed
+  Session's card end extended below the 19:31:30 now line. The original
+  mapper used a one-minute floor for its required slope, giving only
+  a few pixels between the real second anchors while the card reserved
+  156px. A sub-minute knot now allocates its readable height between
+  the factual fractional-minute start/end, without scaling the entire
+  60-second minute. Interpolation uses the actual fractional interval,
+  not the old `Math.max(1, duration)` denominator. The existing
+  exact-now assertion remains; new midpoint/inverse/bounded-expansion
+  assertions protect continuity and prevent whole-minute explosion.
+- Three `timeline-surface.test.tsx` failures came from the intentionally
+  retired inline `Modifica orario` control or 5-minute keyboard
+  expectations. Tests now assert read-only card time, focus transfer by
+  clicking that time, unchanged Inspector title flow, and one-minute
+  `Alt+ArrowUp/Down` increments across repeated focus changes. No
+  inline card time editor was reintroduced.
+
+**Evidence:** GitHub commits published after `5df23f72`; all changes
+are a **NOT_RUN candidate**. This assistant environment cannot run the
+repo's pnpm/Vitest/PostgreSQL/Chromium stack. Must rerun the original
+four focused Vitest files, `@dante/web` typecheck and the non-auth
+`temporal-create-contexts.spec.ts` Playwright case **on the same
+current HEAD**. If green, continue the full 27-group gate and real
+Timeline/Giorno visual acceptance; do not infer green from source review.
+No server, database, migration, API or recorded Session authority was
+changed by this repair.
+
 ## 2026-10-16 — Minute-exact time authoring across Activity/Event/Timeline
 
 **User-reported high-severity data-integrity issue:** authoring Activity or Event
