@@ -192,7 +192,9 @@ async def test_main_started_before_preview_exposes_all_children_and_preserves_ca
         group = next(group for group in panel.groups if group.activity_ref == activity)
         assert len(group.rows) == 3
         assert [row.name for row in group.rows] == [
-            "Sessione attività", "Ripasso", "Esercizi",
+            "Sessione attività",
+            "Ripasso",
+            "Esercizi",
         ]
         assert group.rows[0].execution is not None
         assert group.rows[0].execution.session_ref == started.session_ref
