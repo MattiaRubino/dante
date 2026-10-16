@@ -12,6 +12,16 @@
   gap: 5px;
 }
 
+.timeline-session-controls__runtime-actions:empty {
+  display: none;
+}
+
+.timeline-session-controls__recorded {
+  color: #b9c4cf;
+  font-size: 11px;
+  white-space: nowrap;
+}
+
 .timeline-session-controls__manual {
   display: flex;
   flex: 1 1 100%;

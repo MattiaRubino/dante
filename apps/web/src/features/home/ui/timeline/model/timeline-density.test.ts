@@ -47,7 +47,7 @@ describe('timeline density engine', () => {
       },
     };
     const mapper = createTimelineTimeMapper([activity], 1);
-    expect(timelineEventReadableHeight(activity)).toBeGreaterThanOrEqual(70);
+    expect(timelineEventReadableHeight(activity)).toBeGreaterThanOrEqual(88);
     expect(mapper.map(630) - mapper.map(600)).toBeGreaterThanOrEqual(69.99);
     const [layout] = computeTimelineEventLayouts(
       [activity],
@@ -66,7 +66,6 @@ describe('timeline density engine', () => {
       quiet.filter((label) => label.minute >= 600 && label.minute <= 660),
     ).toEqual([
       { minute: 600, minor: false },
-      { minute: 630, minor: true },
       { minute: 660, minor: false },
     ]);
     const mapper = createTimelineTimeMapper(
@@ -92,9 +91,51 @@ describe('timeline density engine', () => {
           index === 0 ||
           mapper.map(label.minute) -
             mapper.map(inside[index - 1]?.minute ?? 0) >=
-            21,
+            28,
       ),
     ).toBe(true);
+  });
+
+  it('adds 10:45 inside a genuinely stretched 10:30–11:00 interval', () => {
+    const map = (minute: number) =>
+      minute <= 630
+        ? minute
+        : minute <= 660
+          ? 630 + (minute - 630) * 3
+          : 720 + minute - 660;
+    const labels = timelineRulerLabels({
+      map,
+      inv: (pixel) => pixel,
+      height: map(1440),
+      pxPerMinute: 1,
+    });
+    expect(labels.find((label) => label.minute === 645)).toEqual({
+      minute: 645,
+      minor: true,
+    });
+  });
+
+  it('reserves a second title row for a long Activity before Session Play', () => {
+    const activity: TimelineEvent = {
+      id: 'long',
+      title:
+        'Una attività con un titolo molto lungo che richiede due righe leggibili',
+      groupId: 'health',
+      startMinute: 600,
+      endMinute: 630,
+      canonicalBasis: {
+        kind: 'scheduled-activity',
+        activityRef: 'activity-ref',
+        scheduleRef: 'schedule-ref',
+        placementMaterialStateRef: 'state-ref',
+        placement: {
+          kind: 'absolute',
+          startsAt: Temporal.Instant.from('2026-10-10T10:00:00Z'),
+          endsAt: Temporal.Instant.from('2026-10-10T10:30:00Z'),
+        },
+      },
+    };
+    expect(timelineEventReadableHeight(activity)).toBeGreaterThanOrEqual(108);
   });
 
   it('keeps the nonlinear minute-to-pixel map strictly monotonic', () => {

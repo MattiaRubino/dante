@@ -1,5 +1,25 @@
 # Timeline / Temporal-Operational — Workstream Handoff
 
+## 2026-10-16 — User visual review follow-up (candidate)
+
+The first visual review found a too-small idle ruler/card scale, zoom clicks
+at a bound appearing to reverse, view switches opening at the top of the day,
+Play-dependent card width, raw fractional gap labels, unexplained milestone
+flags and stale controls after Stop. The Web candidate now uses hourly labels
+in a quiet day, adds quarter labels only where the nonlinear map has adequate
+pixel separation, increases readable ruler/card type and reserves stable
+Activity title/control/actual/count space. Zoom clamps before changing its
+viewport anchor and disables the reached limit. Every view switch returns to
+today with the current minute about one third below the viewport top. Margins
+and milestones are opt-in; enabled gap labels round to whole minutes and say
+what they measure. After Stop the card has no runtime controls, while the
+Inspector retains a compact recorded duration and no Play/Stop.
+
+Focused Web verification passed (9 files, 85 tests), as did Web typecheck,
+changed-file ESLint, Prettier and the production build/bundle budget. The next
+step is a user WSL visual pass on the published SHA. No PostgreSQL or
+authenticated-browser evidence is inferred from the local component tests.
+
 ## 2026-10-16 — Activity Session card and three-view candidate
 
 The Activity card now refreshes its configured internal Session count after

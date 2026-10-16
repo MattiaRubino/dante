@@ -134,7 +134,7 @@ export const TIMELINE_POLICY = {
 
     compactLeftInsetPercent: 1.4,
     compactLaneRegionPercent: 91.6,
-    compactTargetLaneWidthPercent: 18,
+    compactTargetLaneWidthPercent: 24,
     compactMaxLeftPercent: 64,
     compactMaxRightPercent: 94,
     compactMultiLaneGapPercent: 1,
@@ -145,8 +145,8 @@ export const TIMELINE_POLICY = {
      * for arbitrary titles/locales while preventing both postage-stamp cards
      * and giant empty slabs on wide timelines.
      */
-    compactIntrinsicMinWidthPx: 190,
-    compactIntrinsicMaxWidthPx: 480,
+    compactIntrinsicMinWidthPx: 280,
+    compactIntrinsicMaxWidthPx: 520,
     compactIntrinsicResponsiveMaxFloorPx: 280,
     compactIntrinsicMaxViewportRatio: 0.42,
     compactIntrinsicHorizontalBreathingPx: 32,
@@ -158,6 +158,11 @@ export function clampTimelineZoom(value: number): number {
     TIMELINE_POLICY.zoom.min,
     Math.min(TIMELINE_POLICY.zoom.max, value),
   );
+}
+
+export function stepTimelineZoom(current: number, factor: number): number {
+  if (!Number.isFinite(factor) || factor <= 0) return current;
+  return clampTimelineZoom(current * factor);
 }
 
 export function timelineDragSnapMinutes(zoom: number): number {

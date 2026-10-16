@@ -57,11 +57,7 @@ describe('compact Session runtime on created cards', () => {
       </>,
     );
     await waitFor(() => expect(source.list).toHaveBeenCalledTimes(2));
-    expect(
-      screen
-        .getByLabelText('Sessione · Intervallo passato')
-        .querySelector('button[aria-label="Avvia"]'),
-    ).toBeNull();
+    expect(screen.queryByLabelText('Sessione · Intervallo passato')).toBeNull();
     expect(
       screen
         .getByLabelText('Sessione · Intervallo nuovo')

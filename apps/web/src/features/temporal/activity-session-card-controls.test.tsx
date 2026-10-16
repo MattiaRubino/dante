@@ -96,4 +96,21 @@ describe('Activity Session controls on Timeline cards', () => {
     );
     expect(await screen.findByTestId('session-runtime')).not.toBeNull();
   });
+
+  it('never remounts runtime actions on a concluded Activity card', async () => {
+    const source: TemporalSessionCapabilityDataSource = {
+      activityEnabled: vi.fn(() => Promise.resolve(true)),
+    };
+    render(
+      <ActivitySessionCardControls
+        activityRef={ACTIVITY_REF}
+        label="Conclusa"
+        completed
+        showPlanned={false}
+        source={source}
+      />,
+    );
+    await waitFor(() => expect(source.activityEnabled).toHaveBeenCalled());
+    expect(screen.queryByTestId('session-runtime')).toBeNull();
+  });
 });

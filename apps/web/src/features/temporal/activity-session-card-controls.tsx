@@ -19,6 +19,7 @@ export function ActivitySessionCardControls({
   interactive = true,
   showPlanned = true,
   variant = 'card',
+  completed = false,
   visibleSessionRefs,
   source = defaultActivitySessionSource,
 }: Readonly<{
@@ -27,6 +28,7 @@ export function ActivitySessionCardControls({
   interactive?: boolean;
   showPlanned?: boolean;
   variant?: 'card' | 'inspector';
+  completed?: boolean;
   visibleSessionRefs?: readonly string[];
   source?: TemporalSessionCapabilityDataSource;
 }>) {
@@ -83,13 +85,14 @@ export function ActivitySessionCardControls({
   const live = mode === 'live' || mode === 'record_and_live';
 
   if (variant === 'inspector' && !live) return null;
+  if (completed && !showPlanned) return null;
 
   return (
     <div
       className="timeline-activity-session-card-controls"
       data-timeline-activity-session-controls={activityRef}
     >
-      {live ? (
+      {live && !completed ? (
         <>
           <SessionSubjectControls
             kind="activity"

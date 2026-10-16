@@ -229,8 +229,10 @@ describe('SessionSubjectControls B08-D whole workflow', () => {
 
     fireEvent.click(screen.getByRole('button', { name: 'Termina' }));
     await waitFor(() =>
-      expect(screen.getByText('Sessione conclusa')).toBeTruthy(),
+      expect(screen.queryByRole('button', { name: 'Termina' })).toBeNull(),
     );
+    expect(screen.queryByText('Sessione conclusa')).toBeNull();
+    expect(screen.getByText('Registrata · 2:00')).toBeTruthy();
     expect(screen.queryByRole('button', { name: 'Avvia' })).toBeNull();
     expect(source.end).toHaveBeenCalledWith(
       sessionRef,

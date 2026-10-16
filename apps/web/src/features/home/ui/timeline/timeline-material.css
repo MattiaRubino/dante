@@ -548,8 +548,12 @@
 .home-m1 .home-timeline--production .timeline-ruler-label {
   right: 12px;
   color: var(--dante-timeline-ruler-text);
-  font-size: 9px;
+  font-size: 11px;
   line-height: 1;
+}
+
+.home-m1 .home-timeline--production .timeline-ruler-label.is-minor {
+  font-size: 10px;
 }
 
 .home-m1 .home-timeline--production .timeline-event-card,
@@ -661,7 +665,7 @@
 .home-m1 .home-timeline--production .timeline-now-line > span {
   color: #fff;
   background: var(--dante-timeline-accent-strong);
-  font-size: 9px;
+  font-size: 11px;
   font-weight: 750;
 }
 

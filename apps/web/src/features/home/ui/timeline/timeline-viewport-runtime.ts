@@ -410,6 +410,15 @@ function measureTimelineCardContentWidth(card: HTMLElement): number {
     }
   }
 
+  if (card.classList.contains('timeline-event-card--activity')) {
+    const title = top?.querySelector<HTMLElement>(
+      '.timeline-event-card__title',
+    );
+    // Reserve both runtime icons regardless of whether a Session is ready,
+    // running or concluded. Actual/planned labels never resize the card.
+    maximum = Math.max(maximum, (title?.scrollWidth ?? 0) + 72, 248);
+  }
+
   timelineCardContentWidthCache.set(card, { signature, width: maximum });
   return maximum;
 }

@@ -187,7 +187,7 @@ export function SessionSubjectControls({
         operationId(),
       )
       .then(changed)
-      .then(() => setMessage(`Sessione chiusa · ${label}`))
+      .then(() => setMessage(null))
       .catch((error: unknown) =>
         recoverAfterRejection('Chiusura sessione rifiutata.', error),
       )
@@ -264,6 +264,7 @@ export function SessionSubjectControls({
       .finally(() => setPending(false));
   };
 
+  if (card && stopped) return null;
   if (!allowLive && !allowManual && openSession === null) return null;
 
   return (
@@ -326,11 +327,7 @@ export function SessionSubjectControls({
               onClick={end}
             />
           </>
-        ) : stopped ? (
-          card ? null : (
-            <span role="status">Sessione conclusa</span>
-          )
-        ) : openSession === null ? (
+        ) : stopped ? null : openSession === null ? (
           allowLive ? (
             <RuntimeButton
               label="Avvia"
@@ -366,7 +363,7 @@ export function SessionSubjectControls({
             />
           </>
         )}
-        {allowManual && kind === 'activity' ? (
+        {allowManual && !stopped && kind === 'activity' ? (
           <button
             type="button"
             disabled={pending || !interactive}
@@ -422,6 +419,11 @@ export function SessionSubjectControls({
           {formatDuration(openSession.elapsedSeconds)}
         </span>
       )}
+      {stopped && durationSession ? (
+        <span className="timeline-session-controls__recorded">
+          Registrata · {formatDuration(durationSession.elapsedSeconds)}
+        </span>
+      ) : null}
       {message === null ? null : (
         <span
           role="status"

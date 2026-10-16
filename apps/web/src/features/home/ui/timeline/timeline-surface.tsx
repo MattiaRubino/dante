@@ -44,6 +44,7 @@ import {
 } from './model/timeline-motion';
 import {
   TIMELINE_POLICY,
+  stepTimelineZoom,
   timelineSupportsExpandedLayout,
 } from './model/timeline-policy';
 import {
@@ -1073,6 +1074,8 @@ export function TimelineSurface({
 
   const zoomAt = useCallback(
     (clientY: number, factor: number) => {
+      const nextZoom = stepTimelineZoom(state.zoom, factor);
+      if (nextZoom === state.zoom) return;
       const grid = gridRef.current;
       if (!grid) {
         return;
@@ -1090,7 +1093,7 @@ export function TimelineSurface({
         viewportOffset,
         behavior: 'auto',
       };
-      dispatch({ type: 'set-zoom', zoom: state.zoom * factor });
+      dispatch({ type: 'set-zoom', zoom: nextZoom });
     },
     [state.zoom],
   );
@@ -1367,11 +1370,17 @@ export function TimelineSurface({
         onTimelineViewChange={(nextView) => {
           if (nextView === timelineView) return;
           setTimelineView(nextView);
-          setAnchor(viewDate);
+          setViewDate(timelineToday);
+          setAnchor(timelineToday);
+          publishViewportDate(timelineToday);
+          onDateNavigation?.(undefined);
           pendingScrollTargetRef.current = {
-            dateKey: timelineDateKey(viewDate),
-            minute: null,
-            viewportOffset: null,
+            dateKey: timelineDateKey(timelineToday),
+            minute: timelineNowMinute,
+            viewportOffset: timelineNowViewportOffset(
+              gridRef.current?.clientHeight ??
+                TIMELINE_POLICY.viewport.defaultGridHeightPx,
+            ),
             behavior: 'auto',
           };
         }}

@@ -58,10 +58,10 @@ export function timelineEventReadableHeight(event: TimelineEvent): number {
     height += eventPolicy.longTitleExtraHeightPx;
   }
 
-  // A small stable floor accommodates title, controls and time. Optional
-  // runtime/detail lines must not expand the clock or stretch a short card.
+  // Reserve room before Play for the planned time, actual time and optional
+  // Session count. The card's runtime state never dictates this floor.
   if (event.canonicalBasis?.kind === 'scheduled-activity') {
-    height = Math.max(height, 70);
+    height = Math.max(height, event.title.length > 55 ? 108 : 88);
   }
   return Math.max(height, event.visualMinimumHeightPx ?? 0);
 }
@@ -379,7 +379,7 @@ export function timelineRulerLabels(
   const labels: Array<{ minute: number; minor: boolean }> = [];
   const canPlace = (minute: number) =>
     labels.every(
-      (label) => Math.abs(mapper.map(label.minute) - mapper.map(minute)) >= 21,
+      (label) => Math.abs(mapper.map(label.minute) - mapper.map(minute)) >= 28,
     );
   for (let minute = 0; minute <= TIMELINE_MINUTES_PER_DAY; minute += 60)
     labels.push({ minute, minor: false });

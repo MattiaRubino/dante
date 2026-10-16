@@ -100,13 +100,23 @@
 
 .home-m1 .home-timeline--production .timeline-event-card__title,
 .timeline-event-drag-overlay .timeline-event-card__title {
-  font-size: clamp(10.5px, calc(9px + 2cqh), 12px);
+  font-size: clamp(12px, calc(10.5px + 2cqh), 14px);
+}
+
+.home-m1
+  .home-timeline--production
+  .timeline-event-card--activity
+  .timeline-event-card__title {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  white-space: normal;
 }
 
 .home-m1 .home-timeline--production .timeline-event-card__time,
 .timeline-event-drag-overlay .timeline-event-card__time {
   margin-top: clamp(2.5px, calc(1.5px + 1.1cqh), 4.5px);
-  font-size: clamp(8.5px, calc(7.7px + 1.3cqh), 9.75px);
+  font-size: clamp(10.5px, calc(9.5px + 1.3cqh), 12px);
 }
 
 .home-m1 .home-timeline--production .timeline-event-card__time:hover {
@@ -116,7 +126,7 @@
 .home-m1 .home-timeline--production .timeline-event-card__meta,
 .timeline-event-drag-overlay .timeline-event-card__meta {
   margin-top: clamp(2.5px, calc(1.5px + 1cqh), 4.5px);
-  font-size: clamp(8px, calc(7.4px + 1.1cqh), 9.25px);
+  font-size: clamp(10px, calc(9px + 1.1cqh), 11.5px);
 }
 
 /* Pointer grammar: the card body is a neutral selectable/draggable canvas.

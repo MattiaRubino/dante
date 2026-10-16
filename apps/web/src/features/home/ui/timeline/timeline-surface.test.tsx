@@ -93,6 +93,43 @@ describe('TimelineSurface production parity', () => {
     ).toBeGreaterThan(1);
   });
 
+  it('places the current time one third down the viewport after switching views', () => {
+    const { container } = renderTimeline();
+    const grid = container.querySelector<HTMLElement>('.timeline-grid');
+    expect(grid).not.toBeNull();
+    const select = (label: string) => {
+      fireEvent.click(
+        screen.getByRole('button', { name: 'Scegli vista Timeline' }),
+      );
+      fireEvent.click(screen.getByRole('menuitemradio', { name: label }));
+      const now = container.querySelector<HTMLElement>('.timeline-now-line');
+      expect(now).not.toBeNull();
+      expect(
+        Number.parseFloat(now?.style.top ?? '0') - (grid?.scrollTop ?? 0),
+      ).toBeCloseTo(80, 0);
+    };
+    select('Giorno');
+    select('Settimana');
+  });
+
+  it('stops the zoom controls at their bounds without wrapping', () => {
+    renderTimeline();
+    const increase = screen.getByRole<HTMLButtonElement>('button', {
+      name: 'Aumenta zoom',
+    });
+    const decrease = screen.getByRole<HTMLButtonElement>('button', {
+      name: 'Riduci zoom',
+    });
+    for (let click = 0; click < 12; click += 1) fireEvent.click(increase);
+    expect(increase.disabled).toBe(true);
+    fireEvent.click(increase);
+    expect(increase.disabled).toBe(true);
+    fireEvent.click(decrease);
+    expect(increase.disabled).toBe(false);
+    for (let click = 0; click < 12; click += 1) fireEvent.click(decrease);
+    expect(decrease.disabled).toBe(true);
+  });
+
   it('anchors the accepted rich fixture to the frozen parity date and publishes it without a route date', () => {
     const onViewedDateChange = vi.fn();
     const { container } = renderTimeline({ onViewedDateChange });

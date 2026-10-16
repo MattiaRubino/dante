@@ -309,6 +309,7 @@ function TimelineEventCard({
               label={event.title}
               interactive={inlineActionsEnabled}
               showPlanned={false}
+              completed={layout.sessionReality?.state === 'ended'}
               visibleSessionRefs={layout.sessionReality?.sessionRefs ?? []}
             />
           )}
@@ -536,7 +537,11 @@ function TimelineDay({
       </div>
 
       {gaps
-        .filter((gap) => gap.fromMinute <= gridPolicy.marginLabelCutoffMinute)
+        .filter(
+          (gap) =>
+            gap.fromMinute <= gridPolicy.marginLabelCutoffMinute &&
+            gap.durationMinutes >= 5,
+        )
         .map((gap) => (
           <span
             className="timeline-margin-label"
@@ -547,7 +552,7 @@ function TimelineDay({
             }}
             aria-hidden="true"
           >
-            {gap.durationMinutes} min
+            Spazio libero · {Math.round(gap.durationMinutes)} min
           </span>
         ))}
 
@@ -1452,6 +1457,7 @@ export function TimelineDayStream({
       >
         <button
           type="button"
+          disabled={state.zoom <= TIMELINE_POLICY.zoom.min}
           onClick={() => {
             const grid = gridRef.current;
             if (grid) {
@@ -1468,6 +1474,7 @@ export function TimelineDayStream({
         </button>
         <button
           type="button"
+          disabled={state.zoom >= TIMELINE_POLICY.zoom.max}
           onClick={() => {
             const grid = gridRef.current;
             if (grid) {

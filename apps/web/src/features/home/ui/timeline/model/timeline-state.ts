@@ -108,9 +108,9 @@ export type TimelineAction =
   | Readonly<{ type: 'undo-last-event-change' }>;
 
 const DEFAULT_VIEW_OPTIONS: TimelineViewOptions = {
-  showMargins: true,
+  showMargins: false,
   showNow: true,
-  showMilestones: true,
+  showMilestones: false,
 };
 
 function sortEvents(
