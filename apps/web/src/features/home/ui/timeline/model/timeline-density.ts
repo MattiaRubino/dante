@@ -392,7 +392,7 @@ export function createTimelineTimeMapper(
           : minute >= stretch.end
             ? 1
             : (minute - stretch.start) /
-              Math.max(1, stretch.end - stretch.start);
+              Math.max(Number.EPSILON, stretch.end - stretch.start);
       pixel += stretch.extra * progress;
     }
     return pixel;
