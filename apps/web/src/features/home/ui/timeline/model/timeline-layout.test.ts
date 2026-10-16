@@ -122,9 +122,13 @@ describe('timeline layout engine', () => {
       TIMELINE_POLICY.layout.compactTargetLaneWidthPercent * 2,
       6,
     );
-    expect(spread).toBeLessThan(
-      TIMELINE_POLICY.layout.compactLaneRegionPercent / 2,
-    );
+    // Compact percentages are only the semantic lane hints now. The real
+    // width is fixed in pixels and the track scrolls when those lanes need
+    // more space; the legacy half-region cap would reject valid clusters.
+    expect(last.compactLeftPercent).toBeGreaterThan(first.compactLeftPercent);
+    expect(
+      last.compactLeftPercent + last.compactWidthPercent,
+    ).toBeLessThanOrEqual(TIMELINE_POLICY.layout.compactMaxRightPercent);
   });
 
   it('keeps overlap lane widths explicit because collisions constrain geometry', () => {
