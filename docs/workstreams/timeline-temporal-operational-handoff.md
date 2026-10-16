@@ -1,5 +1,49 @@
 # Timeline / Temporal-Operational — Workstream Handoff
 
+## 2026-10-16 — Early main Play must reveal configured internal Sessions
+
+**Real-app regression:** an Activity with two named internal Sessions and
+a planned 23:30–24:00 interval was started at approximately 20:46.
+The Activity card and Session panel correctly showed the open main Session,
+but the panel omitted both configured internal rows until the standard
+five-minute preview. Screenshot evidence from user.
+
+**Confirmed backend cause:** `build_panel` computed named-row eligibility
+from `upcoming` only, whereas main execution visibility uses
+`owner["executions"]` independently. When explicitly playing the main
+Session hours early, its open execution existed but `upcoming=False`.
+
+**Implemented candidate:**
+- The read-only, owner-scoped panel projection admits configured unstarted
+  internal rows when an actual main execution is open (running **or paused**),
+  even before preview or after the accepted Activity interval. It never
+  modifies the Schedule or starts children.
+- In the existing UI the children show **Pronta** with individual Play when
+  main is running; when main is paused they remain visible but Play is
+  disabled. Main Resume does not resume any internal Session automatically.
+  Main Stop removes early readiness again.
+- A child ended within the current main attempt must not reappear as
+  “Pronta”; restarting a **new** main attempt re-admits previously
+  stopped configured children. The projection uses the actual open main
+  start supplied by the same owner-scoped Session visuals read.
+- No changes to PostgreSQL schema, SQL ACLs, migrations, Session command
+  semantics, generated clients, or canonical temporal truth.
+
+**Regressions added:** deterministic backend before-preview Play, two
+internal names and refs, pause/Stop, outside the planned interval, child Stop
+and new main attempt; Web card-originated `dante:session-changed`
+refresh with two children, Play enabled/disabled and no auto-start;
+PostgreSQL readback with two real persisted named Schedules, owner isolation,
+early parent Play, explicit child Play/Stop, main Pause/Stop, and retained
+configuration.
+
+**Verification status:** GitHub source/test candidate only. Unit,
+Vitest, TypeScript, PostgreSQL, authenticated browser and manual real-app
+checks **NOT RUN** on this new SHA. Owner requested **focused tests only**;
+do **not** launch the 27-group gate for this correction. The previous
+40/40 Timeline Vitest and 1/1 nonauth browser PASS were on an **older**
+SHA and do not certify this change.
+
 ## 2026-10-16 — Owner WSL focused acceptance on `62f9ebb3`
 
 Owner supplied the full shell output after `git pull --ff-only` and an
