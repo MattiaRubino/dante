@@ -58,11 +58,10 @@ export function timelineEventReadableHeight(event: TimelineEvent): number {
     height += eventPolicy.longTitleExtraHeightPx;
   }
 
-  // Activity cards can show runtime controls, actual timing and a planned
-  // Session indicator. Reserve their full content height in the mapper itself
-  // so the visible card ends at its matching ruler position.
+  // A small stable floor accommodates title, controls and time. Optional
+  // runtime/detail lines must not expand the clock or stretch a short card.
   if (event.canonicalBasis?.kind === 'scheduled-activity') {
-    height = Math.max(height, 94);
+    height = Math.max(height, 70);
   }
   return Math.max(height, event.visualMinimumHeightPx ?? 0);
 }
@@ -370,4 +369,25 @@ export function createTimelineTimeMapper(
   };
 
   return { height, map, inv, pxPerMinute };
+}
+
+/** Keep hours legible first, then fill genuinely free ruler space with half-
+ * and quarter-hour labels. Positions use the same non-linear map as cards. */
+export function timelineRulerLabels(
+  mapper: TimelineTimeMapper,
+): readonly Readonly<{ minute: number; minor: boolean }>[] {
+  const labels: Array<{ minute: number; minor: boolean }> = [];
+  const canPlace = (minute: number) =>
+    labels.every(
+      (label) => Math.abs(mapper.map(label.minute) - mapper.map(minute)) >= 21,
+    );
+  for (let minute = 0; minute <= TIMELINE_MINUTES_PER_DAY; minute += 60)
+    labels.push({ minute, minor: false });
+  for (const offset of [30, 15, 45]) {
+    for (let hour = 0; hour < TIMELINE_MINUTES_PER_DAY; hour += 60) {
+      const minute = hour + offset;
+      if (canPlace(minute)) labels.push({ minute, minor: true });
+    }
+  }
+  return labels.sort((a, b) => a.minute - b.minute);
 }

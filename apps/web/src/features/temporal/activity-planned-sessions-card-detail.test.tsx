@@ -1,10 +1,11 @@
 import { fetchRequestUrl } from '../../test-support/fetch-request';
 // @vitest-environment jsdom
 
-import { cleanup, render, screen } from '@testing-library/react';
+import { act, cleanup, render, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import { ActivityPlannedSessionsCardDetail } from './activity-planned-sessions-card-detail';
+import { invalidateTemporalPlanningRead } from './timeline-invalidation';
 
 const ACTIVITY = '0199a8c0-6e72-7cd1-9be1-b3f51406728e';
 const ENVELOPE = '0199a8c0-6e72-7cd1-9be1-b3f514067290';
@@ -101,5 +102,44 @@ describe('Activity planned Sessions card detail', () => {
     expect(
       container.querySelector('[data-activity-planned-sessions]'),
     ).toBeNull();
+  });
+
+  it('updates the card indicator after Modifica adds an internal Session', async () => {
+    let planned = false;
+    const fetchFn = vi.fn<typeof fetch>(() =>
+      Promise.resolve(
+        Response.json({
+          parent_activity_ref: ACTIVITY,
+          schedules: planned
+            ? [
+                {
+                  schedule_ref: SESSION_A,
+                  role_code: 'planned',
+                  presentation_order: 1,
+                  display_name: 'Nuova',
+                },
+              ]
+            : [],
+        }),
+      ),
+    );
+    vi.stubGlobal('fetch', fetchFn);
+    const { container } = render(
+      <ActivityPlannedSessionsCardDetail
+        activityRef={ACTIVITY}
+        visible
+        variant="indicator"
+      />,
+    );
+    await act(async () => {
+      await Promise.resolve();
+    });
+    expect(
+      container.querySelector('[data-activity-planned-sessions]'),
+    ).toBeNull();
+    planned = true;
+    act(() => invalidateTemporalPlanningRead());
+    expect(await screen.findByLabelText('1 sessioni pianificate')).toBeTruthy();
+    expect(fetchFn).toHaveBeenCalledTimes(2);
   });
 });

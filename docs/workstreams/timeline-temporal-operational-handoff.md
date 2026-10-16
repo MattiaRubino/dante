@@ -1,5 +1,26 @@
 # Timeline / Temporal-Operational — Workstream Handoff
 
+## 2026-10-16 — Activity Session card and three-view candidate
+
+The Activity card now refreshes its configured internal Session count after
+editing. The main Activity Session visually relocates on Play without changing
+its height on Play/Pause; Stop immediately uses its actual interval, and a
+short stopped interval remaps the elastic ruler to avoid a card extending past
+its displayed end. The accepted Schedule remains unchanged. Internal Sessions
+alone do not move the card. The paused fill retains a subdued orange instead
+of turning the card gray; the card labels planned and actual times separately.
+
+The toolbar has Timeline/Giorno/Settimana views. Giorno uses the same elastic
+day layout, while Settimana aligns seven compact columns on one shared minute
+scale and retains horizontal expansion. The ruler admits :15/:30/:45 labels
+only when mapped pixel spacing allows them. In the scratch candidate the
+complete Web Vitest run passed (222 files, 1065 tests); Web typecheck, global
+ESLint, production build and bundle budget also passed. An unrelated but
+adjacent `async` without `await` in the Inspector's Bozze regression was
+removed to make the global lint gate truthful. Authenticated real-stack
+Playwright and user visual acceptance remain pending in the user's WSL
+environment; no PostgreSQL/backend gate is claimed for this Web-only change.
+
 ## 2026-10-16 — Direct Timeline withdrawal retired (candidate)
 
 The user rejected “Rimuovi dalla Timeline”, its Undo, and the separate

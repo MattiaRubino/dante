@@ -173,7 +173,7 @@ loadLifeAreaChoice.mockResolvedValue({
 });
 
 describe('Activity Inspector actions', () => {
-  it('offers Bozze without exposing a second unplaced workflow', async () => {
+  it('offers Bozze without exposing a second unplaced workflow', () => {
     get.mockResolvedValue(profile);
     render(
       <ActivityInspectorActions

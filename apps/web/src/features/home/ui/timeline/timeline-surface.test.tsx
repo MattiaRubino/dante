@@ -69,6 +69,30 @@ describe('TimelineSurface production parity', () => {
     expect(screen.getByText('Redesign LifeOS — sessione focus')).toBeTruthy();
   });
 
+  it('switches between continuous, one-day and seven-column views without changing the frame', () => {
+    const { container } = renderTimeline();
+    const frame = container.querySelector('.timeline-frame');
+    const select = (label: string) => {
+      fireEvent.click(
+        screen.getByRole('button', { name: 'Scegli vista Timeline' }),
+      );
+      fireEvent.click(screen.getByRole('menuitemradio', { name: label }));
+    };
+    select('Giorno');
+    expect(container.querySelector('[data-timeline-view="day"]')).toBeTruthy();
+    expect(container.querySelectorAll('[data-timeline-date]')).toHaveLength(1);
+    select('Settimana');
+    expect(
+      container.querySelector('.timeline-day-stream.is-week'),
+    ).toBeTruthy();
+    expect(container.querySelectorAll('[data-timeline-date]')).toHaveLength(7);
+    expect(container.querySelector('.timeline-frame')).toBe(frame);
+    select('Timeline');
+    expect(
+      container.querySelectorAll('[data-timeline-date]').length,
+    ).toBeGreaterThan(1);
+  });
+
   it('anchors the accepted rich fixture to the frozen parity date and publishes it without a route date', () => {
     const onViewedDateChange = vi.fn();
     const { container } = renderTimeline({ onViewedDateChange });

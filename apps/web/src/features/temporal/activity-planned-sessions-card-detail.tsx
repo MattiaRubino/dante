@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 
 import { createWebFetch } from '../../platform/api/web-fetch';
+import { subscribeTemporalPlanningInvalidation } from './timeline-invalidation';
 import { SessionSubjectControls } from './session-subject-controls';
 import './activity-planned-sessions-card-detail.css';
 
@@ -82,6 +83,13 @@ function PlannedSessionCardContent({
   variant = 'detail',
 }: PlannedSessionCardProps) {
   const [rows, setRows] = useState<readonly PlannedSession[] | null>(null);
+  const [revision, setRevision] = useState(0);
+
+  useEffect(
+    () =>
+      subscribeTemporalPlanningInvalidation(() => setRevision((n) => n + 1)),
+    [],
+  );
 
   useEffect(() => {
     let cancelled = false;
@@ -111,7 +119,7 @@ function PlannedSessionCardContent({
       cancelled = true;
       controller.abort();
     };
-  }, [activityRef, visible]);
+  }, [activityRef, visible, revision]);
 
   if (!visible || rows === null || rows.length === 0) return null;
 

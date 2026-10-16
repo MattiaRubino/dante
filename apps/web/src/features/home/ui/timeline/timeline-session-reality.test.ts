@@ -10,6 +10,7 @@ import type {
 } from './model/timeline-types';
 import { applyTimelineSessionReality } from './timeline-session-reality';
 import type { TimelineRenderedDay } from './timeline-day-stream';
+import { buildTimelineRenderedWeek } from './timeline-viewport-runtime';
 
 const groups: readonly TimelineGroup[] = [
   { id: 'area', label: 'Salute', tone: 'health' },
@@ -67,7 +68,7 @@ const ended = {
 } as const;
 
 describe('one-card Activity actual Session projection', () => {
-  it('keeps planned geometry when a Session starts between minute marks', () => {
+  it('moves immediately on Play without resizing during Play or Pause', () => {
     const planned = activity('minute-aligned', 600, 630);
     const current = day(planned);
     const visual = {
@@ -86,13 +87,16 @@ describe('one-card Activity actual Session projection', () => {
       zoom,
       expanded,
     );
-    expect(projected?.layouts[0]?.top).toBe(current.layouts[0]?.top);
+    expect(projected?.layouts[0]?.top).toBeCloseTo(
+      current.mapper.map(548 + 50 / 60),
+      3,
+    );
     expect(projected?.layouts[0]?.height).toBe(current.layouts[0]?.height);
     expect(projected?.layouts[0]?.sessionReality?.actualLabel).toBe(
       '09:08–ora',
     );
   });
-  it('keeps planned lanes for an early stopped Session beside another card', () => {
+  it('reassigns lanes from real painted positions and fits stopped time on the ruler', () => {
     const planned = activity('early-execution', 600, 630);
     const neighbor: TimelineEvent = {
       id: 'other',
@@ -119,12 +123,13 @@ describe('one-card Activity actual Session projection', () => {
       expanded,
     );
     const [actual, adjacent] = projected?.layouts ?? [];
-    expect(actual?.top).toBe(current.layouts[0]?.top);
-    expect(actual?.height).toBe(current.layouts[0]?.height);
-    expect(projected?.height).toBe(current.height);
+    expect(actual?.top).toBeCloseTo(projected?.mapper.map(589) ?? 0, 3);
+    expect(actual?.height).toBeGreaterThanOrEqual(70);
+    expect((actual?.top ?? 0) + (actual?.height ?? 0)).toBeLessThanOrEqual(
+      (projected?.mapper.map(591) ?? 0) + 0.001,
+    );
     expect(actual?.event).toBe(planned);
-    expect(adjacent?.top).toBe(current.layouts[1]?.top);
-    expect(adjacent?.compactLane).toBe(current.layouts[1]?.compactLane);
+    expect(adjacent?.top).toBeCloseTo(projected?.mapper.map(600) ?? 0, 3);
   });
   it('remodulates one Activity card without changing canonical schedule or identity', () => {
     const planned = activity('interval1', 1080, 1140);
@@ -140,13 +145,13 @@ describe('one-card Activity actual Session projection', () => {
       expanded,
     );
     const layout = projected?.layouts[0];
-    expect(projected?.events).toBe(current.events);
+    expect(projected?.events).toEqual(current.events);
     expect(layout?.event).toBe(planned);
-    expect(layout?.top).toBe(current.layouts[0]?.top);
-    expect(layout?.height).toBe(current.layouts[0]?.height);
+    expect(layout?.top).toBeCloseTo(projected?.mapper.map(1065) ?? 0, 3);
+    expect(layout?.height).toBeLessThan(current.layouts[0]?.height ?? Infinity);
     expect(layout?.event.startMinute).toBe(1080); // Schedule not rewritten
     expect(layout?.sessionReality?.state).toBe('ended');
-    expect(layout?.sessionReality?.fill).toContain('rgba(147, 163, 184');
+    expect(layout?.sessionReality?.fill).toContain('rgba(234, 92, 18, .12)');
     expect(layout?.sessionReality?.fill).toContain('rgba(234, 92, 18');
   });
 
@@ -164,8 +169,14 @@ describe('one-card Activity actual Session projection', () => {
       zoom,
       expanded,
     );
-    expect(projected?.layouts[0]?.top).toBe(current.layouts[0]?.top);
-    expect(projected?.layouts[1]?.top).toBe(current.layouts[1]?.top);
+    expect(projected?.layouts[0]?.top).toBeCloseTo(
+      projected?.mapper.map(840) ?? 0,
+      3,
+    );
+    expect(projected?.layouts[1]?.top).toBeCloseTo(
+      projected?.mapper.map(1065) ?? 0,
+      3,
+    );
     expect(projected?.layouts[0]?.sessionReality).toBeUndefined();
     expect(projected?.layouts[1]?.sessionReality?.state).toBe('ended');
   });
@@ -193,6 +204,87 @@ describe('one-card Activity actual Session projection', () => {
     expect(projected?.height).toBe(current.height);
   });
 
+  it('projects an early main execution into its real day without moving the Schedule', () => {
+    const plan = activity('tomorrow-plan', 600, 630);
+    const yesterday = {
+      ...day(),
+      dateKey: '2026-10-09',
+      date: Temporal.PlainDate.from('2026-10-09'),
+    };
+    const tomorrow = {
+      ...day(plan),
+      offsetTop: yesterday.height,
+    };
+    const [actualDay, plannedDay] = applyTimelineSessionReality(
+      [yesterday, tomorrow],
+      [
+        {
+          ...ended,
+          started_at: '2026-10-09T09:00:00Z',
+          ended_at: '2026-10-09T09:20:00Z',
+          pause_ranges: [],
+        },
+      ],
+      'UTC',
+      '2026-10-10T12:00:00Z',
+      Date.parse('2026-10-10T12:00:00Z'),
+      groups,
+      zoom,
+      expanded,
+    );
+    expect(actualDay?.layouts).toHaveLength(1);
+    expect(actualDay?.layouts[0]?.top).toBeCloseTo(
+      actualDay?.mapper.map(540) ?? 0,
+      3,
+    );
+    expect(actualDay?.layouts[0]?.plannedDateKey).toBe('2026-10-10');
+    expect(actualDay?.layouts[0]?.event).toBe(plan);
+    expect(plannedDay?.layouts).toHaveLength(0);
+    expect(plan.startMinute).toBe(600);
+  });
+
+  it('aligns every week column after a short cross-day Stop', () => {
+    const plan = activity('week-plan', 600, 630);
+    const week = buildTimelineRenderedWeek(
+      Temporal.PlainDate.from('2026-10-10'),
+      {
+        eventsByDate: { '2026-10-10': [plan] },
+        groups,
+        zoom,
+        expandedEventIds: expanded,
+      },
+    );
+    const projected = applyTimelineSessionReality(
+      week,
+      [
+        {
+          ...ended,
+          started_at: '2026-10-09T09:00:00Z',
+          ended_at: '2026-10-09T09:01:00Z',
+          pause_ranges: [],
+        },
+      ],
+      'UTC',
+      '2026-10-10T12:00:00Z',
+      Date.parse('2026-10-10T12:00:00Z'),
+      groups,
+      zoom,
+      expanded,
+    );
+    const actual = projected.find((day) => day.dateKey === '2026-10-09');
+    const planned = projected.find((day) => day.dateKey === '2026-10-10');
+    const relocated = actual?.layouts.find(
+      (layout) => layout.event.id === plan.id,
+    );
+    expect(relocated?.plannedDateKey).toBe('2026-10-10');
+    expect(planned?.layouts).toHaveLength(0);
+    expect(projected.every((day) => day.mapper === actual?.mapper)).toBe(true);
+    expect(projected.every((day) => day.offsetTop === 0)).toBe(true);
+    expect(
+      (relocated?.top ?? 0) + (relocated?.height ?? 0),
+    ).toBeLessThanOrEqual((actual?.mapper.map(541) ?? 0) + 0.001);
+  });
+
   it('uses main timing over simultaneous internal execution without adding time twice', () => {
     const planned = activity('interval1', 1080, 1140);
     const child = {
@@ -214,7 +306,9 @@ describe('one-card Activity actual Session projection', () => {
       zoom,
       expanded,
     );
-    expect(projected?.layouts[0]?.height).toBe(current.layouts[0]?.height);
+    expect(projected?.layouts[0]?.height).toBeLessThan(
+      current.layouts[0]?.height ?? Infinity,
+    );
   });
 
   it('does not stretch a one-minute reality or shift later day offsets', () => {
@@ -250,12 +344,18 @@ describe('one-card Activity actual Session projection', () => {
       zoom,
       expanded,
     );
-    expect(projected?.layouts[0]?.height).toBe(first.layouts[0]?.height);
+    expect(projected?.layouts[0]?.height).toBeGreaterThanOrEqual(70);
     expect(projected?.layouts[0]?.event.startMinute).toBe(600);
     expect(projected?.layouts[0]?.sessionReality?.actualLabel).toBe(
       '10:00–10:01',
     );
-    expect(projected?.layouts[1]?.top).toBe(first.layouts[1]?.top);
-    expect(next?.offsetTop).toBe(first.height);
+    expect(
+      (projected?.layouts[0]?.top ?? 0) + (projected?.layouts[0]?.height ?? 0),
+    ).toBeLessThanOrEqual((projected?.mapper.map(601) ?? 0) + 0.001);
+    expect(projected?.layouts[1]?.top).toBeCloseTo(
+      projected?.mapper.map(631) ?? 0,
+      3,
+    );
+    expect(next?.offsetTop).toBe(projected?.height);
   });
 });

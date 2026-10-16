@@ -170,6 +170,8 @@ export type TimelineOverlapSlot = Readonly<{
 
 export type TimelineEventLayout = Readonly<{
   event: TimelineEvent;
+  /** Original planning day when reality projects this card on another day. */
+  plannedDateKey?: string;
   top: number;
   height: number;
   compactLane: number;

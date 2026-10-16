@@ -569,6 +569,15 @@
   white-space: nowrap;
 }
 
+.timeline-ruler-label.is-minor {
+  color: color-mix(
+    in srgb,
+    var(--dante-timeline-ruler-text, #a3b1c1) 68%,
+    transparent
+  );
+  font-size: 8px;
+}
+
 .timeline-grid {
   position: relative;
   min-width: 0;
@@ -704,6 +713,36 @@
 .timeline-day-section {
   position: relative;
   min-width: 100%;
+}
+
+.timeline-day-stream.is-week {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  align-items: start;
+}
+
+.timeline-day-stream.is-week .timeline-day-section {
+  box-sizing: border-box;
+  min-width: 0;
+  border-right: 1px solid var(--dante-semantic-color-home-border-subtle);
+}
+
+.timeline-day-stream.is-week
+  .timeline-event-card__heading
+  .timeline-activity-session-card-controls,
+.timeline-day-stream.is-week .timeline-event-card__reality-status,
+.timeline-day-stream.is-week .timeline-activity-planned-sessions__indicator {
+  display: none;
+}
+
+.timeline-day-stream.is-week .timeline-events-layer {
+  right: 0;
+  left: 0;
+}
+
+.timeline-day-stream.is-week .timeline-event-card__top {
+  overflow: hidden;
+  padding-left: 6px;
 }
 
 .timeline-day-section {

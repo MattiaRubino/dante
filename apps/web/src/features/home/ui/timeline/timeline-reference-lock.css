@@ -52,6 +52,14 @@
     var(--timeline-events-left-inset, 44px);
 }
 
+.home-m1
+  .home-timeline--production
+  .timeline-day-stream.is-week
+  .timeline-events-layer {
+  right: 0;
+  left: 0;
+}
+
 /* Event cards are explicitly sized by the temporal layout engine, therefore a
  * size container is safe here and lets typography breathe progressively with
  * the real rendered card height instead of using one fixed scale everywhere. */

@@ -1,8 +1,11 @@
 import { Temporal } from '@dante/time';
 
 import type { SessionVisual } from '../../../temporal/use-session-panel';
-import type { TimelineEvent, TimelineGroup } from './model/timeline-types';
+import { createTimelineTimeMapper } from './model/timeline-density';
+import { computeTimelineEventLayouts } from './model/timeline-layout';
+import type { TimelineGroup } from './model/timeline-types';
 import type { TimelineRenderedDay } from './timeline-day-stream';
+import { createTimelineSharedWeekMapper } from './timeline-viewport-runtime';
 
 export type TimelineSessionReality = Readonly<{
   state: 'running' | 'paused' | 'ended';
@@ -17,8 +20,8 @@ type Span = Readonly<{ from: number; until: number; paused: boolean }>;
 type Projected = Readonly<{ reality: TimelineSessionReality }>;
 
 const ACTIVE = 'rgba(234, 92, 18, .25)';
-const PAUSED = 'rgba(147, 163, 184, .30)';
-const UNTRACKED = 'rgba(147, 163, 184, .07)';
+const PAUSED = 'rgba(234, 92, 18, .12)';
+const UNTRACKED = 'rgba(234, 92, 18, .04)';
 
 function bounded(n: number, lo: number, hi: number): number {
   return Math.max(lo, Math.min(hi, n));
@@ -105,9 +108,10 @@ function project(
   if (relevant.length === 0) return null;
   // Only the Activity's own Session belongs on the Activity card. Named
   // planned Sessions keep their separate controls in the Session panel.
-  const chosen = relevant.filter(
-    (slice) => slice.planned_schedule_ref === null,
-  );
+  const chosen = relevant
+    .filter((slice) => slice.planned_schedule_ref === null)
+    .sort((a, b) => Date.parse(b.started_at) - Date.parse(a.started_at))
+    .slice(0, 1);
   if (chosen.length === 0) return null;
   const spans: Span[] = [];
   for (const slice of chosen) {
@@ -159,71 +163,156 @@ function project(
   };
 }
 
-/**
- * Adds actual Session state to the planned card without changing its Timeline
- * geometry. A short live Session must never magnify minute density, card
- * height, lanes, or following-day offsets.
- */
+/** Project execution over the unchanged plan-derived time scale. Starting
+ * moves the card; only an ended attempt changes its visible duration. */
 export function applyTimelineSessionReality(
   days: readonly TimelineRenderedDay[],
   visuals: readonly SessionVisual[],
   zone: string,
   evaluatedAt: string,
   clockAt: number,
-  _groups: readonly TimelineGroup[],
-  _zoom: number,
-  _expandedEventIds: ReadonlySet<string>,
+  groups: readonly TimelineGroup[],
+  zoom: number,
+  expandedEventIds: ReadonlySet<string>,
 ): readonly TimelineRenderedDay[] {
   if (visuals.length === 0) return days;
   const now = Number.isFinite(Date.parse(evaluatedAt)) ? clockAt : Date.now();
-  const byActivity = new Map<string, SessionVisual[]>();
+  const allEvents = days.flatMap((day) =>
+    day.events.map((event) => ({ event, plannedDay: day })),
+  );
+  const mainByEvent = new Map<string, SessionVisual>();
   for (const visual of visuals) {
-    const list = byActivity.get(visual.activity_ref) ?? [];
-    list.push(visual);
-    byActivity.set(visual.activity_ref, list);
+    if (visual.planned_schedule_ref !== null) continue;
+    const started = Date.parse(visual.started_at);
+    if (!Number.isFinite(started)) continue;
+    const candidates = allEvents.filter(
+      ({ event }) =>
+        event.canonicalBasis?.kind === 'scheduled-activity' &&
+        event.canonicalBasis.activityRef === visual.activity_ref,
+    );
+    const nearest = candidates.sort((a, b) => {
+      const plannedAt = (entry: (typeof candidates)[number]) =>
+        Temporal.PlainDate.from(entry.plannedDay.dateKey)
+          .toZonedDateTime({ timeZone: zone, plainTime: '00:00' })
+          .toInstant().epochMilliseconds +
+        entry.event.startMinute * 60_000;
+      return (
+        Math.abs(plannedAt(a) - started) - Math.abs(plannedAt(b) - started) ||
+        a.event.id.localeCompare(b.event.id)
+      );
+    })[0];
+    if (!nearest) continue;
+    const previous = mainByEvent.get(nearest.event.id);
+    if (!previous || Date.parse(previous.started_at) < started)
+      mainByEvent.set(nearest.event.id, visual);
   }
 
-  let offsetTop = 0;
-  return days.map((day) => {
-    const activityEvents = new Map<string, TimelineEvent[]>();
-    for (const event of day.events) {
-      if (event.canonicalBasis?.kind !== 'scheduled-activity') continue;
-      const key = event.canonicalBasis.activityRef;
-      activityEvents.set(key, [...(activityEvents.get(key) ?? []), event]);
-    }
+  const placements = allEvents.map(({ event, plannedDay }) => {
+    const visual = mainByEvent.get(event.id);
+    const realDate = visual
+      ? Temporal.Instant.from(visual.started_at)
+          .toZonedDateTimeISO(zone)
+          .toPlainDate()
+          .toString()
+      : plannedDay.dateKey;
+    const displayDay = days.find((day) => day.dateKey === realDate);
+    const target = displayDay ?? plannedDay;
+    const overlay = visual
+      ? project([visual], target.dateKey, zone, now)
+      : null;
+    return { event, plannedDay, target, reality: overlay?.reality };
+  });
 
-    const overlays = new Map<string, Projected>();
-    for (const event of day.events) {
-      const basis = event.canonicalBasis;
-      if (basis?.kind !== 'scheduled-activity') continue;
-      const activity = byActivity.get(basis.activityRef) ?? [];
-      const intervals = activityEvents.get(basis.activityRef) ?? [];
-      // A real Session is attached to one visible planned interval, including
-      // when it starts early or ends before that interval begins.
-      const relevant =
-        intervals.length === 1
-          ? activity
-          : activity.filter((slice) => {
-              if (slice.planned_schedule_ref === basis.scheduleRef) return true;
-              const minute = onDay(slice.started_at, day.dateKey, zone);
-              const nearest = [...intervals].sort(
-                (a, b) =>
-                  Math.abs(a.startMinute - minute) -
-                    Math.abs(b.startMinute - minute) ||
-                  a.id.localeCompare(b.id),
-              )[0];
-              return nearest?.id === event.id;
-            });
-      const projected = project(relevant, day.dateKey, zone, now);
-      if (projected) overlays.set(event.id, projected);
-    }
-
-    const layouts = day.layouts.map((layout) => {
-      const reality = overlays.get(layout.event.id);
-      return reality ? { ...layout, sessionReality: reality.reality } : layout;
+  const prepared = days.map((day) => {
+    const visible = placements.filter((placement) => placement.target === day);
+    const displayEvents = visible.map(({ event, reality }) => {
+      if (!reality) return event;
+      const startMinute = onDay(reality.startedAt, day.dateKey, zone);
+      const duration = event.endMinute - event.startMinute;
+      const endMinute =
+        reality.endedAt === null
+          ? startMinute + duration
+          : onDay(reality.endedAt, day.dateKey, zone);
+      return {
+        ...event,
+        startMinute,
+        endMinute: Math.max(startMinute + 1 / 60, Math.min(1440, endMinute)),
+      };
     });
-    const rendered = { ...day, layouts, offsetTop };
-    offsetTop += day.height;
+    return { day, visible, displayEvents };
+  });
+  // The clock never changes the scale while an attempt is running/paused.
+  // Once stopped, the real interval owns its readable height: recomputing at
+  // that transition prevents a short card from painting beyond its end time.
+  const hasEnded = prepared.some(({ visible }) =>
+    visible.some(({ reality }) => reality?.endedAt != null),
+  );
+  const endedIds = new Set(
+    placements
+      .filter(({ reality }) => reality?.endedAt != null)
+      .map(({ event }) => event.id),
+  );
+  const densityEvents = prepared.map(({ day, visible, displayEvents }) => [
+    ...day.events.filter((event) => !endedIds.has(event.id)),
+    ...displayEvents.filter(
+      (event, index) => visible[index]?.reality?.endedAt != null,
+    ),
+  ]);
+  const isWeek =
+    days.length === 7 && days.every((candidate) => candidate.offsetTop === 0);
+  const weekMapper =
+    hasEnded && isWeek
+      ? createTimelineSharedWeekMapper(densityEvents, zoom, expandedEventIds)
+      : null;
+  let offsetTop = 0;
+  return prepared.map(({ day, visible, displayEvents }, index) => {
+    const dayChanged =
+      densityEvents[index]?.some((event) => endedIds.has(event.id)) ||
+      day.events.some((event) => endedIds.has(event.id));
+    const mapper =
+      weekMapper ??
+      (hasEnded && dayChanged
+        ? createTimelineTimeMapper(densityEvents[index] ?? [], zoom, {
+            expandedEventIds,
+          })
+        : day.mapper);
+    // Reassign collision lanes using the rectangles that are actually painted,
+    // while preserving canonical event identity and the planned Schedule.
+    const displayed = computeTimelineEventLayouts(
+      displayEvents,
+      groups,
+      mapper,
+    );
+    const layouts = displayed.map((layout, index) => {
+      const placement = visible[index];
+      const planned = placement?.event ?? layout.event;
+      const reality = placement?.reality;
+      if (!reality) return { ...layout, event: planned };
+      const plannedLayout = placement.plannedDay.layouts.find(
+        (candidate) => candidate.event.id === planned.id,
+      );
+      return {
+        ...layout,
+        event: planned,
+        plannedDateKey: placement.plannedDay.dateKey,
+        // Play/Pause never resize; Stop maps the factual interval. The minimum
+        // readable card height remains a purely visual floor for tiny attempts.
+        height:
+          reality.endedAt === null
+            ? (plannedLayout?.height ?? layout.height)
+            : layout.height,
+        sessionReality: reality,
+      };
+    });
+    const rendered = {
+      ...day,
+      events: visible.map((entry) => entry.event),
+      mapper,
+      layouts,
+      offsetTop: isWeek ? 0 : offsetTop,
+      height: mapper.height,
+    };
+    offsetTop += mapper.height;
     return rendered;
   });
 }

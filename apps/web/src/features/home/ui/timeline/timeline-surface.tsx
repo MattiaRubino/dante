@@ -86,6 +86,7 @@ import {
 import {
   applyTimelineExpansion,
   buildTimelineRenderedDays,
+  buildTimelineRenderedWeek,
   captureTimelineViewportAnchor,
   clampTimelineRuntime,
   findTimelineDayAtOffset,
@@ -103,6 +104,8 @@ type TimelineSurfaceProps = Readonly<{
   onViewedDateChange?: ((isoDate: string | undefined) => void) | undefined;
   onDateNavigation?: ((isoDate: string | undefined) => void) | undefined;
 }>;
+
+type TimelineView = 'timeline' | 'day' | 'week';
 
 type ScrollTarget = Readonly<{
   dateKey: string;
@@ -281,10 +284,12 @@ export function TimelineSurface({
   }, [state.filters, state.groups, visibleGroups]);
   const [anchor, setAnchor] = useState<PlainDate>(() => initialDate);
   const [viewDate, setViewDate] = useState<PlainDate>(() => initialDate);
+  const [timelineView, setTimelineView] = useState<TimelineView>('timeline');
   const sessionPanel = useSessionPanel(
     sessionPanelEnabled,
     timelineDateKey(viewDate),
     clockZone,
+    timelineView === 'week',
   );
   const sessionPresentation = useSessionPanelPresentation(sessionPanel);
   const [realityClock, setRealityClock] = useState(() => Date.now());
@@ -394,13 +399,17 @@ export function TimelineSurface({
   );
   const baseRenderedDays = useMemo(
     () =>
-      buildTimelineRenderedDays(
-        anchor,
-        TIMELINE_POLICY.window.pastBufferDays,
-        TIMELINE_POLICY.window.futureBufferDays,
-        renderedDayInputs,
-      ),
-    [anchor, renderedDayInputs],
+      timelineView === 'week'
+        ? buildTimelineRenderedWeek(viewDate, renderedDayInputs)
+        : buildTimelineRenderedDays(
+            timelineView === 'day' ? viewDate : anchor,
+            timelineView === 'day' ? 0 : TIMELINE_POLICY.window.pastBufferDays,
+            timelineView === 'day'
+              ? 0
+              : TIMELINE_POLICY.window.futureBufferDays,
+            renderedDayInputs,
+          ),
+    [anchor, renderedDayInputs, timelineView, viewDate],
   );
   const renderedDays = useMemo(
     () =>
@@ -409,6 +418,7 @@ export function TimelineSurface({
           baseRenderedDays,
           state.allDayItems,
           presentationFilters,
+          timelineView === 'week',
         ),
         sessionPanel.snapshot?.visuals ?? [],
         clockZone,
@@ -430,6 +440,7 @@ export function TimelineSurface({
       baseRenderedDays,
       state.allDayItems,
       presentationFilters,
+      timelineView,
       sessionPanel.snapshot,
       clockZone,
       realityClock,
@@ -971,7 +982,11 @@ export function TimelineSurface({
         scrollTop +
         grid.clientHeight * TIMELINE_POLICY.viewport.contextProbeRatio;
       const viewed = findTimelineDayAtOffset(days, probe);
-      if (viewed && !viewed.date.equals(viewDate)) {
+      if (
+        timelineView === 'timeline' &&
+        viewed &&
+        !viewed.date.equals(viewDate)
+      ) {
         setViewDate(viewed.date);
         publishViewportDate(viewed.date);
       }
@@ -987,7 +1002,13 @@ export function TimelineSurface({
         nowY <= scrollTop + grid.clientHeight;
       setNowNeeded(!visible);
     },
-    [publishViewportDate, timelineNowMinute, timelineToday, viewDate],
+    [
+      publishViewportDate,
+      timelineNowMinute,
+      timelineToday,
+      viewDate,
+      timelineView,
+    ],
   );
 
   const handleScroll = useCallback(
@@ -1014,6 +1035,8 @@ export function TimelineSurface({
       const previousScrollTop = lastScrollTopRef.current ?? scrollTop;
       const verticalDelta = scrollTop - previousScrollTop;
       lastScrollTopRef.current = scrollTop;
+
+      if (timelineView !== 'timeline') return;
 
       let shiftDays = 0;
       if (
@@ -1045,7 +1068,7 @@ export function TimelineSurface({
         }
       }
     },
-    [expanded, synchronizeViewportContext],
+    [expanded, synchronizeViewportContext, timelineView],
   );
 
   const zoomAt = useCallback(
@@ -1330,6 +1353,7 @@ export function TimelineSurface({
     <section
       ref={rootRef}
       className="home-timeline home-timeline--production"
+      data-timeline-view={timelineView}
       data-home-region="timeline"
       data-home-timeline-state={expanded ? 'expanded' : 'normal'}
       aria-label={t(($) => $.common.home.timeline.label)}
@@ -1339,6 +1363,18 @@ export function TimelineSurface({
         locale={locale}
         today={timelineToday}
         viewDate={viewDate}
+        timelineView={timelineView}
+        onTimelineViewChange={(nextView) => {
+          if (nextView === timelineView) return;
+          setTimelineView(nextView);
+          setAnchor(viewDate);
+          pendingScrollTargetRef.current = {
+            dateKey: timelineDateKey(viewDate),
+            minute: null,
+            viewportOffset: null,
+            behavior: 'auto',
+          };
+        }}
         groups={visibleGroups}
         filters={state.filters}
         nowNeeded={nowNeeded}
@@ -1451,6 +1487,7 @@ export function TimelineSurface({
 
       <TimelineDayStream
         days={renderedDays}
+        view={timelineView}
         today={timelineToday}
         nowMinute={timelineNowMinute}
         state={

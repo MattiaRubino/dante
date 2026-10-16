@@ -11,6 +11,7 @@ import {
 import type { TimelineState } from './model/timeline-state';
 import {
   addTimelineDays,
+  buildIsoWeek,
   parseTimelineDate,
   timelineDateKey,
 } from './model/timeline-temporal';
@@ -225,6 +226,84 @@ export function buildTimelineRenderedDays(
   return days;
 }
 
+/** The week shares one elastic minute scale so 10:30 aligns in all columns. */
+export function buildTimelineRenderedWeek(
+  selected: PlainDate,
+  inputs: TimelineRenderedDayInputs,
+): readonly TimelineRenderedDay[] {
+  const dates = buildIsoWeek(selected);
+  const contents = dates.map((date) => {
+    const dateKey = timelineDateKey(date);
+    return {
+      date,
+      dateKey,
+      events:
+        inputs.eventsByDate[dateKey] ??
+        createTimelinePrototypeEventsForDate(dateKey),
+    };
+  });
+  const mapper = createTimelineSharedWeekMapper(
+    contents.map((day) => day.events),
+    inputs.zoom,
+    inputs.expandedEventIds,
+  );
+  return contents.map((day) => ({
+    ...day,
+    mapper,
+    layouts: computeTimelineEventLayouts(day.events, inputs.groups, mapper),
+    offsetTop: 0,
+    height: mapper.height,
+  }));
+}
+
+export function createTimelineSharedWeekMapper(
+  dailyEvents: readonly (readonly TimelineEvent[])[],
+  zoom: number,
+  expandedEventIds: ReadonlySet<TimelineEventId>,
+): TimelineTimeMapper {
+  const dailyMappers = dailyEvents.map((events) =>
+    createTimelineTimeMapper(events, zoom, { expandedEventIds }),
+  );
+  // The seven dates must align, but seven independent days must not count as
+  // seven simultaneous crowds. At each minute use the most spacious day's
+  // local slope, preserving readable card bounds without multiplying density.
+  const cumulative = new Float64Array(TIMELINE_MINUTES_PER_DAY + 1);
+  for (let minute = 0; minute < TIMELINE_MINUTES_PER_DAY; minute += 1) {
+    const slope = Math.max(
+      ...dailyMappers.map(
+        (candidate) => candidate.map(minute + 1) - candidate.map(minute),
+      ),
+    );
+    cumulative[minute + 1] = (cumulative[minute] ?? 0) + slope;
+  }
+  const map = (minute: number): number => {
+    const bounded = clampTimelineRuntime(minute, 0, TIMELINE_MINUTES_PER_DAY);
+    const whole = Math.floor(bounded);
+    if (whole === TIMELINE_MINUTES_PER_DAY)
+      return cumulative[TIMELINE_MINUTES_PER_DAY] ?? 0;
+    return (
+      (cumulative[whole] ?? 0) +
+      (bounded % 1) * ((cumulative[whole + 1] ?? 0) - (cumulative[whole] ?? 0))
+    );
+  };
+  const mapper: TimelineTimeMapper = {
+    height: map(TIMELINE_MINUTES_PER_DAY),
+    map,
+    inv: (pixel) => {
+      let low = 0;
+      let high = TIMELINE_MINUTES_PER_DAY;
+      for (let i = 0; i < 28; i += 1) {
+        const middle = (low + high) / 2;
+        if (map(middle) < pixel) low = middle;
+        else high = middle;
+      }
+      return (low + high) / 2;
+    },
+    pxPerMinute: Math.max(...dailyMappers.map((day) => day.pxPerMinute)),
+  };
+  return mapper;
+}
+
 export function findTimelineDayAtOffset(
   days: readonly TimelineRenderedDay[],
   offset: number,
@@ -407,15 +486,26 @@ export function applyTimelineExpansion(
   );
 
   const nextTrackWidth = `${trackWidth}px`;
+  const week = root.dataset.timelineView === 'week';
+  const weekTrackWidth = week
+    ? Math.max(
+        trackWidth,
+        viewportWidth + normalizedProgress * (7 * 190 - viewportWidth),
+      )
+    : trackWidth;
   const stream = root.querySelector<HTMLElement>('.timeline-day-stream');
-  if (stream && stream.style.minWidth !== nextTrackWidth) {
-    stream.style.minWidth = nextTrackWidth;
+  if (
+    stream &&
+    stream.style.minWidth !== (week ? `${weekTrackWidth}px` : nextTrackWidth)
+  ) {
+    stream.style.minWidth = week ? `${weekTrackWidth}px` : nextTrackWidth;
   }
   root
     .querySelectorAll<HTMLElement>('.timeline-day-section')
     .forEach((section) => {
-      if (section.style.minWidth !== nextTrackWidth) {
-        section.style.minWidth = nextTrackWidth;
+      const width = week ? `${weekTrackWidth / 7}px` : nextTrackWidth;
+      if (section.style.minWidth !== width) {
+        section.style.minWidth = width;
       }
     });
 
@@ -427,6 +517,19 @@ export function applyTimelineExpansion(
   const geometries: TimelineCardGeometry[] = [];
   const cards = root.querySelectorAll<HTMLElement>('.timeline-event-card');
   for (const card of cards) {
+    if (week) {
+      const section = card.closest<HTMLElement>('.timeline-day-section');
+      const columnWidth = section?.clientWidth ?? weekTrackWidth / 7;
+      const lane = Number(card.dataset.compactLane ?? 0);
+      const laneCount = Math.max(1, Number(card.dataset.compactLanes ?? 1));
+      const slot = Math.max(1, (columnWidth - 8) / laneCount);
+      geometries.push({
+        card,
+        left: 4 + lane * slot,
+        width: Math.max(1, slot - 3),
+      });
+      continue;
+    }
     const compactLeft = Number(
       card.dataset.compactLeft ?? layout.compactLeftInsetPercent,
     );

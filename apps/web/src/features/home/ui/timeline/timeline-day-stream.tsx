@@ -19,6 +19,7 @@ import {
   TIMELINE_POLICY,
   timelineDragSnapMinutes,
 } from './model/timeline-policy';
+import { timelineRulerLabels } from './model/timeline-density';
 import { findTimelineEvent, type TimelineState } from './model/timeline-state';
 import {
   addTimelineDays,
@@ -55,6 +56,7 @@ type TimelineEventMove = Readonly<{
 
 type TimelineDayStreamProps = Readonly<{
   days: readonly TimelineRenderedDay[];
+  view?: 'timeline' | 'day' | 'week';
   today: PlainDate;
   nowMinute: number;
   state: TimelineState;
@@ -174,6 +176,7 @@ function TimelineEventCard({
 }>) {
   const { t } = useTranslation('common');
   const event = layout.event;
+  const plannedDateKey = layout.plannedDateKey ?? dateKey;
   const group = groupForEvent(event, groups);
   const tone = event.appearanceTone ?? group?.tone ?? 'personal';
   const organizationKey = eventOrganizationKey(event);
@@ -239,7 +242,7 @@ function TimelineEventCard({
       return;
     }
     keyboardEvent.preventDefault();
-    onKeyboardMove(event, dateKey, direction);
+    onKeyboardMove(event, plannedDateKey, direction);
   };
 
   return (
@@ -249,6 +252,8 @@ function TimelineEventCard({
       data-timeline-tone={tone}
       data-compact-left={layout.compactLeftPercent}
       data-compact-width={layout.compactWidthPercent}
+      data-compact-lane={layout.compactLane}
+      data-compact-lanes={layout.compactLaneCount}
       data-group-index={layout.groupIndex}
       data-group-lane={layout.groupLane}
       data-group-lanes={layout.groupLaneCount}
@@ -261,7 +266,7 @@ function TimelineEventCard({
       onDragStart={(dragEvent) => dragEvent.preventDefault()}
       onKeyDown={keyboardMove}
       onPointerDown={(pointerEvent) =>
-        onPointerPress(pointerEvent, dateKey, event)
+        onPointerPress(pointerEvent, plannedDateKey, event)
       }
       onClick={(clickEvent) => {
         if ((clickEvent.target as Element).closest('button')) {
@@ -318,12 +323,13 @@ function TimelineEventCard({
               onFocusEvent(event.id);
               return;
             }
-            onOpenTimeEditor(dateKey, event, clickEvent.currentTarget);
+            onOpenTimeEditor(plannedDateKey, event, clickEvent.currentTarget);
           }}
           aria-label={t(($) => $.common.home.timeline.timeEditor.open, {
             title: event.title,
           })}
         >
+          {layout.sessionReality ? 'Pianificata ' : null}
           {formatTimelineMinute(event.startMinute)}–
           {formatTimelineMinute(event.endMinute)}
         </button>
@@ -335,7 +341,7 @@ function TimelineEventCard({
             className="timeline-event-card__reality-status"
             title={`Sessione dell'attività: ${layout.sessionReality.actualLabel}`}
           >
-            Sessione dell'attività · {layout.sessionReality.actualLabel}
+            Sessione attività · Reale {layout.sessionReality.actualLabel}
           </div>
         ) : null}
         {sessionActivityRef === null ? null : (
@@ -459,7 +465,13 @@ function TimelineDay({
     ? `${t(($) => $.common.home.timeline.todayPrefix)} · ${label}`
     : label;
   const gaps = state.viewOptions.showMargins
-    ? computeTimelineGaps(day.events)
+    ? computeTimelineGaps(
+        day.layouts.map((layout) => ({
+          ...layout.event,
+          startMinute: day.mapper.inv(layout.top),
+          endMinute: day.mapper.inv(layout.top + layout.height),
+        })),
+      )
     : [];
   const gridPolicy = TIMELINE_POLICY.grid;
 
@@ -568,6 +580,7 @@ function TimelineDay({
 
 export function TimelineDayStream({
   days,
+  view = 'timeline',
   today,
   nowMinute,
   state,
@@ -782,12 +795,24 @@ export function TimelineDayStream({
     const contentTop =
       grid.scrollTop + (clientY - runtime.anchorY - gridRect.top);
     const overlayHeight = runtime.overlay?.getBoundingClientRect().height ?? 0;
-    const targetDay =
-      daysRef.current.find(
-        (day) =>
-          contentTop >= day.offsetTop &&
-          contentTop < day.offsetTop + day.height,
-      ) ?? null;
+    const week =
+      daysRef.current.length === 7 &&
+      daysRef.current.every((day) => day.offsetTop === 0);
+    const targetDay = week
+      ? (daysRef.current.find((day) => {
+          const section = Array.from(
+            grid.querySelectorAll<HTMLElement>('[data-timeline-date]'),
+          ).find((element) => element.dataset.timelineDate === day.dateKey);
+          const rect = section?.getBoundingClientRect();
+          return (
+            rect && runtime.clientX >= rect.left && runtime.clientX < rect.right
+          );
+        }) ?? null)
+      : (daysRef.current.find(
+          (day) =>
+            contentTop >= day.offsetTop &&
+            contentTop < day.offsetTop + day.height,
+        ) ?? null);
 
     if (!targetDay) {
       finishDragVisual();
@@ -1247,24 +1272,15 @@ export function TimelineDayStream({
     >
       <div className="timeline-ruler" aria-hidden="true">
         <div ref={rulerStreamRef} className="timeline-ruler-stream">
-          {days.map((day) => (
+          {(view === 'week' ? days.slice(0, 1) : days).map((day) => (
             <div
               className="timeline-ruler-day"
               key={day.dateKey}
               style={{ height: day.height }}
             >
-              {Array.from(
-                {
-                  length:
-                    TIMELINE_MINUTES_PER_DAY /
-                      TIMELINE_POLICY.grid.majorLineIntervalMinutes +
-                    1,
-                },
-                (_, index) =>
-                  index * TIMELINE_POLICY.grid.majorLineIntervalMinutes,
-              ).map((minute) => (
+              {timelineRulerLabels(day.mapper).map(({ minute, minor }) => (
                 <span
-                  className="timeline-ruler-label"
+                  className={`timeline-ruler-label${minor ? ' is-minor' : ''}`}
                   key={minute}
                   style={{ top: day.mapper.map(minute) }}
                 >
@@ -1309,7 +1325,10 @@ export function TimelineDayStream({
             return;
           }
 
-          startPointerPress(pointerEvent, dateKey, event);
+          const planDateKey =
+            day?.layouts.find((layout) => layout.event.id === eventId)
+              ?.plannedDateKey ?? dateKey;
+          startPointerPress(pointerEvent, planDateKey, event);
         }}
         onClickCapture={(clickEvent) => {
           const target = clickEvent.target;
@@ -1359,7 +1378,9 @@ export function TimelineDayStream({
           }
         }}
       >
-        <div className="timeline-day-stream">
+        <div
+          className={`timeline-day-stream${view === 'week' ? ' is-week' : ''}`}
+        >
           {days.map((day) => (
             <TimelineDay
               day={day}
@@ -1378,9 +1399,11 @@ export function TimelineDayStream({
               suppressClickRef={suppressClickRef}
             />
           ))}
-          <div className="timeline-stream-loading">
-            {t(($) => $.common.home.timeline.streamHint)}
-          </div>
+          {view === 'timeline' ? (
+            <div className="timeline-stream-loading">
+              {t(($) => $.common.home.timeline.streamHint)}
+            </div>
+          ) : null}
         </div>
       </div>
 

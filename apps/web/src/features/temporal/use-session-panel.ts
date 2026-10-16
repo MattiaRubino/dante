@@ -42,13 +42,17 @@ export function useSessionPanel(
   enabled = true,
   viewedDateIso?: string | null,
   effectiveZoneId?: string | null,
+  weekView = false,
 ) {
   const readPath = useMemo(() => {
     if (!viewedDateIso || !effectiveZoneId)
       return '/api/v1/temporal/session-panel';
     try {
       const day = Temporal.PlainDate.from(viewedDateIso);
-      const from = day
+      const firstDay = weekView
+        ? day.subtract({ days: day.dayOfWeek - 1 })
+        : day;
+      const from = firstDay
         .subtract({ days: 1 })
         .toZonedDateTime({
           timeZone: effectiveZoneId,
@@ -56,8 +60,8 @@ export function useSessionPanel(
         })
         .toInstant()
         .toString();
-      const until = day
-        .add({ days: 2 })
+      const until = firstDay
+        .add({ days: weekView ? 8 : 2 })
         .toZonedDateTime({
           timeZone: effectiveZoneId,
           plainTime: '00:00',
@@ -72,7 +76,7 @@ export function useSessionPanel(
     } catch {
       return '/api/v1/temporal/session-panel';
     }
-  }, [viewedDateIso, effectiveZoneId]);
+  }, [viewedDateIso, effectiveZoneId, weekView]);
   const [snapshot, setSnapshot] = useState<SessionPanelSnapshot | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [pending, setPending] = useState<ReadonlySet<string>>(new Set());

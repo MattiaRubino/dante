@@ -16,6 +16,27 @@ An Activity may expose one optional generic **Activity Session** and zero or mor
 
 A real Session can start before an Activity interval or end after it. Its timestamps are factual execution history and remain independent of later planning changes.
 
+## Timeline presentation
+
+The Activity card keeps its planned interval as the editable Schedule, with
+planned and real times labelled separately. Starting its generic Activity
+Session immediately places the *visible* card at the real start, including
+when that falls on another day; Play/Pause preserve its planned visual height.
+Stop immediately places and sizes it by the real start/end. This projection
+never writes the Schedule or replaces the factual Session timestamps. A very
+short completed interval makes the elastic ruler reserve the card's minimum
+readable height, so its visible end still corresponds to the ruler end.
+
+Starting/stopping an internal Session alone neither relocates nor resizes the
+Activity card. The card only shows the count of configured internal Sessions;
+their names, controls and history belong in the Session panel/Inspector.
+
+The Home Timeline provides a rolling **Timeline**, a single **Giorno**, and a
+seven-column **Settimana** view. The first two retain the elastic density and
+right-hand expansion; the week uses a shared minute scale across columns.
+Quarter-hour ruler labels are shown only where their actual mapped positions
+have sufficient room; they do not imply a fixed linear 15-minute grid.
+
 ## Availability and timer rules
 
 The Session panel uses the Activity interval, not an internal Session time:

@@ -11,6 +11,7 @@ import {
   parseTimelineViewedDate,
   timelineCompactCardWidth,
   timelineExpandedTrackGeometry,
+  buildTimelineRenderedWeek,
   timelineIntrinsicCardWidth,
   timelineNowViewportOffset,
   timelineScrollTopForViewportAnchor,
@@ -64,6 +65,21 @@ describe('timeline viewport runtime', () => {
         6,
       );
     }
+  });
+
+  it('places every weekday on one aligned elastic time axis', () => {
+    const state = createInitialTimelineState(TIMELINE_PROTOTYPE_TODAY);
+    const days = buildTimelineRenderedWeek(TIMELINE_PROTOTYPE_TODAY, {
+      eventsByDate: state.eventsByDate,
+      groups: state.groups,
+      zoom: state.zoom,
+      expandedEventIds: state.expandedEventIds,
+    });
+    expect(days).toHaveLength(7);
+    expect(days[0]?.date.dayOfWeek).toBe(1);
+    expect(days[6]?.date.dayOfWeek).toBe(7);
+    expect(days.every((day) => day.offsetTop === 0)).toBe(true);
+    expect(new Set(days.map((day) => day.mapper.map(630))).size).toBe(1);
   });
 
   it('resolves the semantic day nearest a viewport offset', () => {

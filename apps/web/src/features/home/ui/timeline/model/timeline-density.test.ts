@@ -6,6 +6,7 @@ import {
   computeTimelineDensityMetrics,
   createTimelineTimeMapper,
   timelineEventReadableHeight,
+  timelineRulerLabels,
 } from './timeline-density';
 import { TIMELINE_PROTOTYPE_EVENTS } from './timeline-fixtures';
 import { computeTimelineEventLayouts } from './timeline-layout';
@@ -46,8 +47,8 @@ describe('timeline density engine', () => {
       },
     };
     const mapper = createTimelineTimeMapper([activity], 1);
-    expect(timelineEventReadableHeight(activity)).toBeGreaterThanOrEqual(94);
-    expect(mapper.map(630) - mapper.map(600)).toBeGreaterThanOrEqual(93.99);
+    expect(timelineEventReadableHeight(activity)).toBeGreaterThanOrEqual(70);
+    expect(mapper.map(630) - mapper.map(600)).toBeGreaterThanOrEqual(69.99);
     const [layout] = computeTimelineEventLayouts(
       [activity],
       [{ id: 'health', label: 'Salute', tone: 'health' }],
@@ -57,6 +58,43 @@ describe('timeline density engine', () => {
       mapper.map(630),
       5,
     );
+  });
+
+  it('only labels quarter-hours with enough elastic pixel separation', () => {
+    const quiet = timelineRulerLabels(createTimelineTimeMapper([], 1));
+    expect(
+      quiet.filter((label) => label.minute >= 600 && label.minute <= 660),
+    ).toEqual([
+      { minute: 600, minor: false },
+      { minute: 630, minor: true },
+      { minute: 660, minor: false },
+    ]);
+    const mapper = createTimelineTimeMapper(
+      [
+        {
+          id: 'brief',
+          title: 'Breve',
+          groupId: 'health',
+          startMinute: 600,
+          endMinute: 615,
+        },
+      ],
+      2,
+    );
+    const stretched = timelineRulerLabels(mapper);
+    const inside = stretched.filter(
+      (label) => label.minute >= 600 && label.minute <= 660,
+    );
+    expect(inside.some((label) => label.minor)).toBe(true);
+    expect(
+      inside.every(
+        (label, index) =>
+          index === 0 ||
+          mapper.map(label.minute) -
+            mapper.map(inside[index - 1]?.minute ?? 0) >=
+            21,
+      ),
+    ).toBe(true);
   });
 
   it('keeps the nonlinear minute-to-pixel map strictly monotonic', () => {

@@ -5,6 +5,7 @@ import {
   type KeyboardEvent,
   type RefObject,
   type ReactNode,
+  useEffect,
   useRef,
   useState,
 } from 'react';
@@ -105,6 +106,8 @@ type TimelineHeaderProps = Readonly<{
   locale: string;
   today: PlainDate;
   viewDate: PlainDate;
+  timelineView: 'timeline' | 'day' | 'week';
+  onTimelineViewChange: (view: 'timeline' | 'day' | 'week') => void;
   groups: readonly TimelineGroup[];
   filters: ReadonlySet<TimelineGroupId>;
   nowNeeded: boolean;
@@ -136,6 +139,8 @@ export function TimelineHeader({
   locale,
   today,
   viewDate,
+  timelineView,
+  onTimelineViewChange,
   groups,
   filters,
   nowNeeded,
@@ -170,6 +175,31 @@ export function TimelineHeader({
     null,
   );
   const suppressFilterClickRef = useRef(false);
+  const viewMenuRef = useRef<HTMLDivElement | null>(null);
+  const [viewMenuOpen, setViewMenuOpen] = useState(false);
+
+  useEffect(() => {
+    if (!viewMenuOpen) return;
+    const dismiss = (event: PointerEvent) => {
+      if (
+        event.target instanceof Node &&
+        !viewMenuRef.current?.contains(event.target)
+      )
+        setViewMenuOpen(false);
+    };
+    const escape = (event: globalThis.KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        setViewMenuOpen(false);
+        viewMenuRef.current?.querySelector('button')?.focus();
+      }
+    };
+    document.addEventListener('pointerdown', dismiss);
+    document.addEventListener('keydown', escape);
+    return () => {
+      document.removeEventListener('pointerdown', dismiss);
+      document.removeEventListener('keydown', escape);
+    };
+  }, [viewMenuOpen]);
 
   const reorderFromDrop = (
     event: DragEvent<HTMLButtonElement>,
@@ -215,8 +245,9 @@ export function TimelineHeader({
   const groupTrackStyle = {
     '--timeline-group-count': groups.length,
   } as CSSProperties;
-  const previousWeekDate = addTimelineDays(viewDate, -7);
-  const nextWeekDate = addTimelineDays(viewDate, 7);
+  const navigationStep = timelineView === 'day' ? 1 : 7;
+  const previousWeekDate = addTimelineDays(viewDate, -navigationStep);
+  const nextWeekDate = addTimelineDays(viewDate, navigationStep);
 
   return (
     <header className="dante-timeline-header">
@@ -260,19 +291,62 @@ export function TimelineHeader({
           <i aria-hidden="true">▾</i>
         </button>
 
-        <button
-          className={`dante-timeline-now${nowNeeded ? ' is-needed' : ''}`}
-          type="button"
-          onClick={onGoNow}
-          aria-label={t(($) =>
-            nowNeeded
-              ? $.common.home.timeline.now.go
-              : $.common.home.timeline.now.visible,
-          )}
-        >
-          <span className="dante-timeline-now-dot" aria-hidden="true" />
-          {t(($) => $.common.home.timeline.now.label)}
-        </button>
+        <div className="dante-timeline-primary-actions" ref={viewMenuRef}>
+          <button
+            className={`dante-timeline-now${nowNeeded ? ' is-needed' : ''}`}
+            type="button"
+            onClick={onGoNow}
+            aria-label={t(($) =>
+              nowNeeded
+                ? $.common.home.timeline.now.go
+                : $.common.home.timeline.now.visible,
+            )}
+          >
+            <span className="dante-timeline-now-dot" aria-hidden="true" />
+            {t(($) => $.common.home.timeline.now.label)}
+          </button>
+          <button
+            className="dante-timeline-view-trigger"
+            type="button"
+            aria-label="Scegli vista Timeline"
+            aria-expanded={viewMenuOpen}
+            aria-haspopup="menu"
+            onClick={() => setViewMenuOpen((open) => !open)}
+          >
+            {
+              { timeline: 'Timeline', day: 'Giorno', week: 'Settimana' }[
+                timelineView
+              ]
+            }{' '}
+            <span aria-hidden="true">▾</span>
+          </button>
+          {viewMenuOpen ? (
+            <div
+              className="dante-timeline-view-menu"
+              role="menu"
+              aria-label="Vista Timeline"
+            >
+              {(['timeline', 'day', 'week'] as const).map((view) => (
+                <button
+                  key={view}
+                  type="button"
+                  role="menuitemradio"
+                  aria-checked={view === timelineView}
+                  onClick={() => {
+                    onTimelineViewChange(view);
+                    setViewMenuOpen(false);
+                  }}
+                >
+                  {
+                    { timeline: 'Timeline', day: 'Giorno', week: 'Settimana' }[
+                      view
+                    ]
+                  }
+                </button>
+              ))}
+            </div>
+          ) : null}
+        </div>
 
         <div className="dante-timeline-week-nav">
           <button

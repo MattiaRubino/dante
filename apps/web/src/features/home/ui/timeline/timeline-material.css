@@ -121,8 +121,67 @@
 }
 
 /* v43 exact orange chrome recolor. */
-.dante-timeline-now {
+.dante-timeline-primary-actions {
+  position: relative;
   grid-area: now;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+}
+
+.dante-timeline-view-trigger {
+  height: 34px;
+  padding: 0 10px;
+  border: 1px solid rgba(234, 92, 18, 0.38);
+  border-radius: var(--dante-timeline-control-radius);
+  color: var(--dante-timeline-accent-text);
+  background: rgba(234, 92, 18, 0.11);
+  font-size: 10px;
+  font-weight: 650;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.dante-timeline-view-trigger:hover,
+.dante-timeline-view-trigger[aria-expanded='true'] {
+  color: #fff;
+  background: rgba(234, 92, 18, 0.2);
+}
+
+.dante-timeline-view-menu {
+  position: absolute;
+  z-index: 90;
+  top: calc(100% + 8px);
+  left: 0;
+  display: grid;
+  width: max-content;
+  min-width: 124px;
+  padding: 5px;
+  border: 1px solid rgba(234, 92, 18, 0.32);
+  border-radius: 11px;
+  background: #101a29;
+  box-shadow: 0 16px 36px rgba(0, 0, 0, 0.35);
+}
+
+.dante-timeline-view-menu button {
+  padding: 8px 10px;
+  border: 0;
+  border-radius: 7px;
+  color: var(--dante-timeline-text-muted);
+  background: transparent;
+  font-size: 11px;
+  text-align: left;
+  cursor: pointer;
+}
+
+.dante-timeline-view-menu button:hover,
+.dante-timeline-view-menu button[aria-checked='true'] {
+  color: #fff;
+  background: rgba(234, 92, 18, 0.18);
+}
+
+.dante-timeline-now {
   display: inline-flex;
   align-items: center;
   justify-content: center;
