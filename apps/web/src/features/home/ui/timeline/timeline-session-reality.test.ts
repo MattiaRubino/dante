@@ -131,6 +131,54 @@ describe('one-card Activity actual Session projection', () => {
     expect(actual?.event).toBe(planned);
     expect(adjacent?.top).toBeCloseTo(projected?.mapper.map(600) ?? 0, 3);
   });
+  it('keeps live Session visual height collision-free after a real-time move', () => {
+    const planned = activity('moving', 600, 610);
+    const neighbor: TimelineEvent = {
+      id: 'neighbor',
+      title: 'Appuntamento vicino',
+      groupId: 'area',
+      startMinute: 635,
+      endMinute: 645,
+    };
+    // Under a denser planned scale the visible Activity was taller than
+    // the default short-event minimum. Play moves its top, not its height.
+    const basis = day(planned, neighbor);
+    const original = basis.layouts.find((layout) => layout.event.id === planned.id)!;
+    const crowded: TimelineRenderedDay = {
+      ...basis,
+      layouts: basis.layouts.map((layout) =>
+        layout.event.id === planned.id ? { ...layout, height: 240 } : layout,
+      ),
+    };
+    const [projected] = applyTimelineSessionReality(
+      [crowded],
+      [
+        {
+          ...ended,
+          started_at: '2026-10-10T09:30:00Z',
+          ended_at: null,
+          pause_ranges: [],
+        },
+      ],
+      'UTC',
+      '2026-10-10T09:32:00Z',
+      Date.parse('2026-10-10T09:32:00Z'),
+      groups,
+      zoom,
+      expanded,
+    );
+    const moving = projected?.layouts.find((layout) => layout.event.id === planned.id);
+    const adjacent = projected?.layouts.find((layout) => layout.event.id === neighbor.id);
+    expect(original.height).toBeLessThan(240);
+    expect(moving?.height).toBe(240);
+    expect((moving?.top ?? 0) + (moving?.height ?? 0)).toBeGreaterThan(
+      adjacent?.top ?? Infinity,
+    );
+    expect(moving?.compactLane).not.toBe(adjacent?.compactLane);
+    expect(moving?.groupLane).not.toBe(adjacent?.groupLane);
+    expect(projected?.mapper).toBe(basis.mapper);
+  });
+
   it('remodulates one Activity card without changing canonical schedule or identity', () => {
     const planned = activity('interval1', 1080, 1140);
     const current = day(planned);
