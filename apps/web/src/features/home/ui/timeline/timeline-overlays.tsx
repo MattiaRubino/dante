@@ -624,7 +624,7 @@ function TimeSegment({
           : 15
         : segment === 'hour'
           ? 60
-          : 5;
+          : 1;
     applyDelta(positive ? amount : -amount);
   };
 
@@ -655,7 +655,7 @@ function TimeSegment({
           onKeyDown={(event) => step(event, 'minute')}
           onWheel={(event) => {
             event.preventDefault();
-            applyDelta(event.deltaY < 0 ? 5 : -5);
+            applyDelta(event.deltaY < 0 ? 1 : -1);
           }}
           aria-label={t(($) => $.common.home.timeline.timeEditor.minutePart, {
             label,
@@ -665,7 +665,7 @@ function TimeSegment({
       <div className="timeline-time-steps">
         <button
           type="button"
-          onClick={() => applyDelta(5)}
+          onClick={() => applyDelta(1)}
           aria-label={t(($) => $.common.home.timeline.timeEditor.increase, {
             label,
           })}
@@ -674,7 +674,7 @@ function TimeSegment({
         </button>
         <button
           type="button"
-          onClick={() => applyDelta(-5)}
+          onClick={() => applyDelta(-1)}
           aria-label={t(($) => $.common.home.timeline.timeEditor.decrease, {
             label,
           })}
