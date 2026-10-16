@@ -183,17 +183,24 @@ def build_panel(
                 else None
             )
             executions.setdefault(ref, []).append(execution)
+        # Starting the main Activity Session early admits its configured
+        # internal Sessions to the desk immediately. The canonical Activity
+        # interval still controls ordinary five-minute preview; the open main
+        # execution is a separate, explicit user action, not clock passage.
+        # Paused main executions remain open and keep the internal rows visible,
+        # while the Web panel prevents starting/resuming a child until main
+        # capture is running again.
+        main_open = bool(executions.get(None))
         rows: list[SessionPanelRow] = []
         for schedule in schedules:
             if schedule.role_code != "planned":
                 continue
             matching = executions.pop(str(schedule.schedule_ref), [])
-            # An internal Session is a named part of execution, not a second
-            # calendar placement. Its availability follows the enclosing
-            # Activity interval (including its five-minute preview), while a
-            # running/paused attempt remains actionable independently.
+            # Internal Sessions have no own time boundary. When the main is
+            # already open, show unstarted children even outside the normal
+            # Activity interval. Never auto-start them or change the plan.
             due = (
-                upcoming
+                (upcoming or main_open)
                 and owner["mode_code"] in {"live", "record_and_live", "internal_only"}
                 and not main_stopped_in_window
             )
