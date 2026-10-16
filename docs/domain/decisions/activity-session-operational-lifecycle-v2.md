@@ -45,7 +45,10 @@ The Session panel uses the Activity interval, not an internal Session time:
 - an Activity without an exact interval does not receive an invented minute-level availability;
 - starting from the Inspector makes the started row actionable immediately, even outside the current Activity interval;
 - Stop removes that completed attempt from the panel; it never offers Play for that same attempt;
-- an unstarted row disappears at the end of the Activity interval and enters **Da verificare** only while the Activity's accepted plan is wholly in the past;
+- an unstarted row disappears at the end of the Activity interval **unless the main Activity Session is still open**; it enters **Da verificare** only while the Activity's accepted plan is wholly in the past and no running main attempt is offering that row;
+- explicitly starting the main Activity Session makes all its configured internal Session rows visible immediately, even hours before the five-minute preview or beyond the planned end. This never starts any internal Session automatically or changes the accepted Activity interval;
+- pausing the main keeps its unstarted internal rows visible but not startable; resuming the main makes them startable again without auto-resuming any child;
+- stopping an internal Session removes its completed attempt from the panel for the current main attempt, including outside the normal preview; starting a genuinely new main attempt makes configured internal rows eligible again;
 - an open or paused row remains actionable after the Activity interval ends until explicitly stopped or deleted.
 
 If generic Activity capture is enabled, a named Session requires the generic Session to be running. Pausing or stopping generic capture pauses or stops open named Sessions. Resuming the generic Session does not resume a named Session. With generic capture disabled, named Sessions run independently.
