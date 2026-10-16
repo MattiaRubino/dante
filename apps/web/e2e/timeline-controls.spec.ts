@@ -102,8 +102,8 @@ test('view options toggle real Timeline layers, reset defaults, and restore trig
   const margins = page.locator('.timeline-margin-label');
 
   await expect(nowLine).toHaveCount(1);
-  expect(await milestones.count()).toBeGreaterThan(0);
-  expect(await margins.count()).toBeGreaterThan(0);
+  await expect(milestones).toHaveCount(0);
+  await expect(margins).toHaveCount(0);
 
   await trigger.click();
   const dialog = page.getByRole('dialog', { name: 'Vista e legenda' });
@@ -117,9 +117,14 @@ test('view options toggle real Timeline layers, reset defaults, and restore trig
     name: 'Milestone sul percorso',
   });
 
-  await expect(marginsOption).toBeChecked();
+  await expect(marginsOption).not.toBeChecked();
   await expect(nowOption).toBeChecked();
-  await expect(milestonesOption).toBeChecked();
+  await expect(milestonesOption).not.toBeChecked();
+
+  await milestonesOption.check();
+  await expect(milestones).toHaveCount(2);
+  await marginsOption.check();
+  await expect.poll(() => margins.count()).toBeGreaterThan(0);
 
   await nowOption.uncheck();
   await expect(nowLine).toHaveCount(0);
@@ -133,12 +138,12 @@ test('view options toggle real Timeline layers, reset defaults, and restore trig
   await dialog
     .getByRole('button', { name: 'Ripristina vista predefinita' })
     .click();
-  await expect(marginsOption).toBeChecked();
+  await expect(marginsOption).not.toBeChecked();
   await expect(nowOption).toBeChecked();
-  await expect(milestonesOption).toBeChecked();
+  await expect(milestonesOption).not.toBeChecked();
   await expect(nowLine).toHaveCount(1);
-  expect(await milestones.count()).toBeGreaterThan(0);
-  expect(await margins.count()).toBeGreaterThan(0);
+  await expect(milestones).toHaveCount(0);
+  await expect(margins).toHaveCount(0);
 
   await page.keyboard.press('Escape');
   await expect(dialog).toHaveCount(0);
