@@ -106,8 +106,10 @@ export function timelineIntrinsicCardWidth(
 export function timelineCompactCardWidth(
   renderedContentWidth: number,
   availableWidth: number,
-  _slotMaximumWidth: number | null,
+  slotMaximumWidth: number | null,
 ): number {
+  // The lane is a positioning constraint; it is not a card-size constraint.
+  void slotMaximumWidth;
   return timelineIntrinsicCardWidth(renderedContentWidth, availableWidth);
 }
 
@@ -521,11 +523,8 @@ export function applyTimelineExpansion(
       }
     });
 
-  /*
-   * Read phase first, write phase second. Interleaving scrollWidth reads with
-   * left/width writes forces repeated synchronous layouts and becomes visibly
-   * expensive during expansion or repeated move operations.
-   */
+  // Geometry reads immutable data attributes, not computed DOM widths;
+  // calculate every card first, then apply all coordinate/width writes.
   const geometries: TimelineCardGeometry[] = [];
   for (const card of cards) {
     if (week) {
