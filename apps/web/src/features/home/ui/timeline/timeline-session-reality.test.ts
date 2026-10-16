@@ -94,6 +94,22 @@ describe('one-card Activity actual Session projection', () => {
     expect((card?.top ?? 0) + (card?.height ?? 0)).toBeLessThanOrEqual(
       (projected?.mapper.map(19 * 60 + 31 + 30 / 60) ?? 0) + 0.001,
     );
+    // Five seconds must be mapped continuously between their actual second
+    // coordinates. Stretching the entire minute would create a huge day,
+    // while a discontinuity at Stop would misrepresent the midpoint.
+    const start = 19 * 60 + 31 + 20 / 60;
+    const stop = 19 * 60 + 31 + 25 / 60;
+    const middle = (start + stop) / 2;
+    const mapper = projected?.mapper;
+    expect(mapper).toBeDefined();
+    if (!mapper) return;
+    expect(mapper.map(middle)).toBeCloseTo(
+      (mapper.map(start) + mapper.map(stop)) / 2,
+      3,
+    );
+    expect(mapper.inv(mapper.map(middle))).toBeCloseTo(middle, 3);
+    expect(mapper.map(19 * 60 + 32) - mapper.map(19 * 60 + 31))
+      .toBeLessThan(220);
   });
 
   it('moves immediately on Play without resizing during Play or Pause', () => {
