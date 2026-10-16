@@ -40,11 +40,6 @@ type TimelineRenderedDayInputs = Readonly<{
   expandedEventIds: ReadonlySet<TimelineEventId>;
 }>;
 
-type TimelineCardContentMeasurement = Readonly<{
-  signature: string;
-  width: number;
-}>;
-
 type TimelineCardGeometry = Readonly<{
   card: HTMLElement;
   left: number;
@@ -58,11 +53,6 @@ export type TimelineExpandedTrackGeometry = Readonly<{
   groupWidth: number;
   groupHeaderTrackWidth: number;
 }>;
-
-const timelineCardContentWidthCache = new WeakMap<
-  HTMLElement,
-  TimelineCardContentMeasurement
->();
 
 export function clampTimelineRuntime(
   value: number,
@@ -150,6 +140,7 @@ export function timelineCompactCardWidth(
 export function timelineExpandedTrackGeometry(
   viewportWidth: number,
   groupCount: number,
+  minimumGroupWidth = TIMELINE_POLICY.layout.groupMinWidthPx,
 ): TimelineExpandedTrackGeometry {
   const layout = TIMELINE_POLICY.layout;
   const safeViewportWidth = Number.isFinite(viewportWidth)
@@ -162,7 +153,7 @@ export function timelineExpandedTrackGeometry(
   const compactInnerWidth = Math.max(1, safeViewportWidth - chromeWidth);
   const expandedInnerWidth = Math.max(
     compactInnerWidth,
-    safeGroupCount * layout.groupMinWidthPx,
+    safeGroupCount * Math.max(layout.groupMinWidthPx, minimumGroupWidth),
   );
   const expandedTrackWidth = chromeWidth + expandedInnerWidth;
   const groupWidth = expandedInnerWidth / safeGroupCount;
@@ -382,45 +373,28 @@ export function timelineScrollTopForViewportAnchor(
   return Math.max(0, day.offsetTop + day.mapper.map(minute) - viewportOffset);
 }
 
-function measureTimelineCardContentWidth(card: HTMLElement): number {
-  /*
-   * Only the stable top-level identity/time/context rows participate in compact
-   * width. Subitem expansion must not resize the card horizontally. The top
-   * text plus explicit height form a cheap invalidation key for locale/content
-   * and zoom changes while expansion frames reuse the cached measurement.
-   */
-  const top = card.querySelector<HTMLElement>('.timeline-event-card__top');
-  const signature = `${card.style.height}\u0000${top?.textContent ?? ''}`;
-  const cached = timelineCardContentWidthCache.get(card);
-  if (cached?.signature === signature) {
-    return cached.width;
-  }
-
-  const elements = top?.querySelectorAll<HTMLElement>(
-    [
-      '.timeline-event-card__title',
-      '.timeline-event-card__time',
-      '.timeline-event-card__meta',
-    ].join(', '),
-  );
-  let maximum = 0;
-  if (elements) {
-    for (const element of elements) {
-      maximum = Math.max(maximum, element.scrollWidth);
-    }
-  }
-
-  if (card.classList.contains('timeline-event-card--activity')) {
-    const title = top?.querySelector<HTMLElement>(
-      '.timeline-event-card__title',
-    );
-    // Reserve both runtime icons regardless of whether a Session is ready,
-    // running or concluded. Actual/planned labels never resize the card.
-    maximum = Math.max(maximum, (title?.scrollWidth ?? 0) + 72, 248);
-  }
-
-  timelineCardContentWidthCache.set(card, { signature, width: maximum });
-  return maximum;
+/**
+ * Independent of card content measurement and runtime states: each card gets
+ * its immutable authored width, while the cluster/group determines only X.
+ * Both endpoints have a collision-free ordering for cards that overlap in
+ * painted time; linear interpolation preserves their left-to-right ordering.
+ */
+export function timelinePackedCardGeometry(
+  stableWidth: number,
+  compactLane: number,
+  groupIndex: number,
+  groupLane: number,
+  lanePitch: number,
+  groupWidth: number,
+  progress: number,
+): Readonly<{ left: number; width: number }> {
+  const factor = clampTimelineRuntime(progress, 0, 1);
+  const compactLeft = compactLane * lanePitch;
+  const groupedLeft = groupIndex * groupWidth + groupLane * lanePitch;
+  return {
+    left: compactLeft + (groupedLeft - compactLeft) * factor,
+    width: stableWidth,
+  };
 }
 
 function setPixelStyle(
@@ -452,15 +426,63 @@ export function applyTimelineExpansion(
     ? clampTimelineRuntime(progress, 0, 1)
     : 0;
   const viewportWidth = Math.max(1, grid.clientWidth);
-  const expanded = timelineExpandedTrackGeometry(viewportWidth, groupCount);
-  const trackWidth =
-    viewportWidth +
-    (expanded.expandedTrackWidth - viewportWidth) * normalizedProgress;
-  const compactInner = Math.max(1, viewportWidth - expanded.chromeWidth);
+  const cards = Array.from(
+    root.querySelectorAll<HTMLElement>('.timeline-event-card'),
+  );
+  // Measurements of rendered text are not stable when Session controls come
+  // and go (and can form a width feedback loop with scrollWidth). Identity
+  // dimensions are fixed on the card when it is rendered.
+  const stableWidths = cards.map((card) => {
+    const raw = Number(card.dataset.stableWidth);
+    return Number.isFinite(raw) && raw > 0
+      ? raw
+      : layout.activityCardMinimumWidthPx;
+  });
+  const maxStableWidth = Math.max(
+    layout.activityCardMinimumWidthPx,
+    ...stableWidths,
+  );
+  const lanePitch = maxStableWidth + layout.cardLaneGapPx;
+  const maxCompactLane = Math.max(
+    0,
+    ...cards.map((card) => Math.max(0, Number(card.dataset.compactLane ?? 0))),
+  );
+  const maxGroupLaneCount = Math.max(
+    1,
+    ...cards.map((card) => Math.max(1, Number(card.dataset.groupLanes ?? 1))),
+  );
+  // Never squeeze overlapping cards into the same physical space. More lanes
+  // mean more horizontal scrollable track, not smaller, colliding rectangles.
+  const expanded = timelineExpandedTrackGeometry(
+    viewportWidth,
+    groupCount,
+    Math.max(layout.groupMinWidthPx, maxGroupLaneCount * lanePitch),
+  );
+  const compactTrackWidth =
+    expanded.chromeWidth +
+    maxCompactLane * lanePitch +
+    maxStableWidth +
+    expansion.cardInsetPx * 2;
+  const trackWidth = Math.max(
+    viewportWidth,
+    compactTrackWidth +
+      (expanded.expandedTrackWidth - compactTrackWidth) * normalizedProgress,
+  );
   const safeGroupCount = Number.isFinite(groupCount)
     ? Math.max(1, Math.floor(groupCount))
     : 1;
-
+  const week = root.dataset.timelineView === 'week';
+  const maxWeekLanes = Math.max(
+    1,
+    ...cards.map((card) => Math.max(1, Number(card.dataset.compactLanes ?? 1))),
+  );
+  const weekPitch = layout.weekCardMinimumWidthPx + layout.cardLaneGapPx;
+  const weekTrackWidth = week
+    ? Math.max(
+        viewportWidth,
+        7 * (maxWeekLanes * weekPitch + expansion.cardInsetPx * 2),
+      )
+    : trackWidth;
   root.style.setProperty(
     '--timeline-group-opacity',
     String(
@@ -495,13 +517,6 @@ export function applyTimelineExpansion(
   );
 
   const nextTrackWidth = `${trackWidth}px`;
-  const week = root.dataset.timelineView === 'week';
-  const weekTrackWidth = week
-    ? Math.max(
-        trackWidth,
-        viewportWidth + normalizedProgress * (7 * 190 - viewportWidth),
-      )
-    : trackWidth;
   const stream = root.querySelector<HTMLElement>('.timeline-day-stream');
   if (
     stream &&
@@ -524,55 +539,35 @@ export function applyTimelineExpansion(
    * expensive during expansion or repeated move operations.
    */
   const geometries: TimelineCardGeometry[] = [];
-  const cards = root.querySelectorAll<HTMLElement>('.timeline-event-card');
   for (const card of cards) {
     if (week) {
-      const section = card.closest<HTMLElement>('.timeline-day-section');
-      const columnWidth = section?.clientWidth ?? weekTrackWidth / 7;
-      const lane = Number(card.dataset.compactLane ?? 0);
-      const laneCount = Math.max(1, Number(card.dataset.compactLanes ?? 1));
-      const slot = Math.max(1, (columnWidth - 8) / laneCount);
+      const lane = Math.max(0, Number(card.dataset.compactLane ?? 0));
       geometries.push({
         card,
-        left: 4 + lane * slot,
-        width: Math.max(1, slot - 3),
+        left: expansion.cardInsetPx + lane * weekPitch,
+        width: layout.weekCardMinimumWidthPx,
       });
       continue;
     }
-    const compactLeft = Number(
-      card.dataset.compactLeft ?? layout.compactLeftInsetPercent,
-    );
-    const compactWidthPercent = Number(card.dataset.compactWidth ?? 0);
+    const width = Number(card.dataset.stableWidth);
+    const stableWidth =
+      Number.isFinite(width) && width > 0
+        ? width
+        : layout.activityCardMinimumWidthPx;
+    const lane = Math.max(0, Number(card.dataset.compactLane ?? 0));
     const groupIndex = Math.max(0, Number(card.dataset.groupIndex ?? 0));
     const groupLane = Math.max(0, Number(card.dataset.groupLane ?? 0));
-    const groupLanes = Math.max(1, Number(card.dataset.groupLanes ?? 1));
-
-    const leftA = (compactLeft / 100) * compactInner;
-    const availableA = Math.max(
-      1,
-      compactInner - leftA - expansion.cardInsetPx,
-    );
-    const slotMaximumA =
-      compactWidthPercent > 0
-        ? Math.min(availableA, (compactWidthPercent / 100) * compactInner)
-        : null;
-    const widthA = timelineCompactCardWidth(
-      measureTimelineCardContentWidth(card),
-      availableA,
-      slotMaximumA,
-    );
-    const leftB =
-      groupIndex * expanded.groupWidth +
-      (groupLane / groupLanes) * expanded.groupWidth;
-    const widthB = Math.max(
-      expansion.cardMinWidthPx,
-      expanded.groupWidth / groupLanes - expansion.cardLaneGapPx,
-    );
-
     geometries.push({
       card,
-      left: leftA + (leftB - leftA) * normalizedProgress,
-      width: widthA + (widthB - widthA) * normalizedProgress,
+      ...timelinePackedCardGeometry(
+        stableWidth,
+        lane,
+        groupIndex,
+        groupLane,
+        lanePitch,
+        expanded.groupWidth,
+        normalizedProgress,
+      ),
     });
   }
 
@@ -585,7 +580,10 @@ export function applyTimelineExpansion(
     );
   }
 
-  if (normalizedProgress < expansion.settledProgress) {
+  if (
+    normalizedProgress < expansion.settledProgress &&
+    trackWidth <= viewportWidth + syncTolerance
+  ) {
     if (Math.abs(grid.scrollLeft) > syncTolerance) {
       grid.scrollLeft = 0;
     }
