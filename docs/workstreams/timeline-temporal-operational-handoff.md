@@ -1,5 +1,41 @@
 # Timeline / Temporal-Operational — Workstream Handoff
 
+## 2026-10-16 — Full-gate archive triage (895794f9)
+
+The actual `FULL_GATE_LOGS.tar(20261016-103821).gz` uploaded by the
+user was inspected along with browser trace artifacts for SHA
+`895794f9be8bbab592cd7e9d298a2f4104f0afe8`. All 27 groups ran.
+Failures: 2 PostgreSQL expected-history/catalog checks; 7 nonauth
+Playwright tests (120 passed); 10 real-stack Playwright tests (82 passed,
+4 skipped). A transient PostgreSQL shard 06 failure recovered on isolation
+retry. Docker acceptance volumes: none before or after.
+
+Changes on this branch:
+- Synchronize PostgreSQL catalog expected completed stages/counts and
+  `20261015_159` forward-only downgrade message without altering SQL.
+- Restore real Life Area label in Activity cards under planned/actual hours,
+  above the internal-Session strip. Real-stack Golden test asserts placement.
+- Replace obsolete browser selectors for retired unplaced-item management
+  with direct canonical API persistence assertions and Draft Vault separation.
+- Test actual defaults-off for optional Timeline milestones/margins and verify
+  enabling, disabling and resetting them.
+- Assert collision-free fixed-width cards within group columns and reachable
+  in horizontally scrolled compact tracks instead of old proportional width.
+- Reacquire a real visible card body point after scrolling for drag/focus
+  tests; still require correct drag overlay and focus retarget.
+- Double-click and Shift-drag Create test now finds a visible empty timed
+  canvas spot below the all-day header, rather than hitting a card at x=600.
+- Bound the basic Create host to viewport height without editing Advanced.
+
+The long real-stack Schedule test was terminated under 27-group gate load
+after using the removed unplaced management panel, so acceptance must check
+it in isolation after the selector update.
+
+**Evidence policy**: candidate code published. Tests intentionally NOT_RUN
+by assistant, per user. Formatting-only checks are deliberately deferred.
+Do not call this fully green until user WSL focused PostgreSQL and both
+browser suites confirm it.
+
 ## 2026-10-16 — User-run Timeline geometry focused verification follow-up
 
 User WSL evidence on `b92a6a659c8f7e868f0f24fbb631dbc2de19bc1b`:
