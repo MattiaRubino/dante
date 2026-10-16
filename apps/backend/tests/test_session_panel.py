@@ -215,9 +215,10 @@ def test_new_main_attempt_re_admits_children_stopped_in_previous_attempt() -> No
         "started_at": at(23, 33),
         "ended_at": at(23, 34),
     }
-    assert names(build_panel([activity], at(23, 35), "UTC", [*previous, new_child_stop])) == [
-        "Sessione attività"
-    ]
+    after_child_stop = build_panel(
+        [activity], at(23, 35), "UTC", [*previous, new_child_stop]
+    )
+    assert names(after_child_stop) == ["Sessione attività"]
 
 
 def test_open_executions_survive_end_and_disabled_capture_without_collapsing_attempts() -> None:
