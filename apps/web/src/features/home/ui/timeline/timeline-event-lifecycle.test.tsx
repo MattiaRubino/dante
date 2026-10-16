@@ -1,12 +1,5 @@
 import { Temporal } from '@dante/time';
-import {
-  cleanup,
-  fireEvent,
-  render,
-  screen,
-  waitFor,
-  within,
-} from '@testing-library/react';
+import { cleanup, fireEvent, render, waitFor } from '@testing-library/react';
 import { afterEach, beforeAll, describe, expect, it, vi } from 'vitest';
 
 import { i18n } from '../../../../bootstrap/i18n';
@@ -30,7 +23,6 @@ const EVENT_REF = '0199a8c0-7e71-7bc0-8ad0-a2f403f5617d';
 const SCHEDULE_REF = '0199a8c0-7e72-7bc0-8ad0-a2f403f5617d';
 const CURRENT_STATE_REF = '0199a8c0-7e73-7bc0-8ad0-a2f403f5617d';
 const NEXT_STATE_REF = '0199a8c0-7e74-7bc0-8ad0-a2f403f5617d';
-const RESTORED_STATE_REF = '0199a8c0-7e75-7bc0-8ad0-a2f403f5617d';
 
 beforeAll(async () => {
   await i18n.changeLanguage('it');
@@ -81,15 +73,6 @@ function eventWindow(
         endsLocalAt: Temporal.PlainDateTime.from(endsLocalAt),
       },
     ],
-  };
-}
-
-function emptyWindow(): TemporalTimelineWindow {
-  return {
-    kind: 'empty',
-    startDate: '2026-09-02',
-    endDateExclusive: '2026-10-15',
-    effectiveZoneId: 'Europe/Rome',
   };
 }
 
@@ -196,115 +179,5 @@ describe('B03-C Event placement lifecycle from Timeline', () => {
           ?.getAttribute('aria-label'),
       ).toContain('10:05–11:05');
     });
-  });
-
-  it('postpones an Event to truthful no-current-Schedule state and guarded-undoes it', async () => {
-    const postponedWindow = deferred<TemporalTimelineWindow>();
-    const restoredWindow = deferred<TemporalTimelineWindow>();
-    const loadWindow = vi
-      .fn<TemporalTimelineDataSource['loadWindow']>()
-      .mockResolvedValueOnce(
-        eventWindow('2026-09-09T10:00', '2026-09-09T11:00', CURRENT_STATE_REF),
-      )
-      .mockImplementationOnce(() => postponedWindow.promise)
-      .mockImplementationOnce(() => restoredWindow.promise);
-    const unscheduleSchedule = vi.fn<
-      TemporalScheduleDataSource['unscheduleSchedule']
-    >((request) =>
-      Promise.resolve({
-        scheduleRef: request.scheduleRef,
-        previousPlacementMaterialStateRef:
-          request.expectedPlacementMaterialStateRef,
-        unscheduleOperationId: request.operationId,
-        replayed: false,
-      }),
-    );
-    const undoScheduleUnschedule = vi.fn<
-      TemporalScheduleDataSource['undoScheduleUnschedule']
-    >((request) =>
-      Promise.resolve({
-        scheduleRef: request.scheduleRef,
-        restoredFromPlacementMaterialStateRef: CURRENT_STATE_REF,
-        placementMaterialStateRef: RESTORED_STATE_REF,
-        placement: {
-          kind: 'floating-local-interval',
-          startsLocalAt: Temporal.PlainDateTime.from('2026-09-09T10:00'),
-          endsLocalAt: Temporal.PlainDateTime.from('2026-09-09T11:00'),
-        },
-        replayed: false,
-      }),
-    );
-    const scheduleDataSource: TemporalScheduleDataSource = {
-      reviseSchedule: vi.fn(() => Promise.reject(new Error('not expected'))),
-      unscheduleSchedule,
-      undoScheduleUnschedule,
-    };
-
-    const { container } = renderEventTimeline(
-      { loadWindow },
-      scheduleDataSource,
-      'b03-c-event-postpone',
-    );
-    const card = await waitFor(() => {
-      const match = container.querySelector<HTMLElement>(
-        `[data-timeline-event="${SCHEDULE_REF}"]`,
-      );
-      expect(match).toBeTruthy();
-      return match as HTMLElement;
-    });
-
-    fireEvent.click(card);
-    fireEvent.click(
-      await screen.findByRole('button', { name: 'Evento governato B03-C' }),
-    );
-    fireEvent.click(
-      await screen.findByRole('button', { name: 'Sposta in Da collocare' }),
-    );
-    fireEvent.click(
-      within(
-        screen.getByRole('group', { name: 'Sposta in Da collocare' }),
-      ).getByRole('button', { name: 'Conferma' }),
-    );
-
-    await waitFor(() => expect(unscheduleSchedule).toHaveBeenCalledTimes(1));
-    expect(unscheduleSchedule).toHaveBeenCalledWith({
-      operationId: 'b03-c-event-postpone:operation:1',
-      scheduleRef: SCHEDULE_REF,
-      expectedPlacementMaterialStateRef: CURRENT_STATE_REF,
-    });
-    expect(
-      container.querySelector(`[data-timeline-event="${SCHEDULE_REF}"]`),
-    ).toBeTruthy();
-    await waitFor(() => expect(loadWindow).toHaveBeenCalledTimes(2));
-
-    postponedWindow.resolve(emptyWindow());
-    await waitFor(() => {
-      expect(
-        container.querySelector(`[data-timeline-event="${SCHEDULE_REF}"]`),
-      ).toBeNull();
-    });
-
-    fireEvent.click(screen.getByRole('button', { name: 'Annulla' }));
-    await waitFor(() =>
-      expect(undoScheduleUnschedule).toHaveBeenCalledWith({
-        operationId: 'b03-c-event-postpone:operation:2',
-        scheduleRef: SCHEDULE_REF,
-        unscheduleOperationId: 'b03-c-event-postpone:operation:1',
-      }),
-    );
-    expect(
-      container.querySelector(`[data-timeline-event="${SCHEDULE_REF}"]`),
-    ).toBeNull();
-
-    restoredWindow.resolve(
-      eventWindow('2026-09-09T10:00', '2026-09-09T11:00', RESTORED_STATE_REF),
-    );
-    await waitFor(() => {
-      expect(
-        container.querySelector(`[data-timeline-event="${SCHEDULE_REF}"]`),
-      ).toBeTruthy();
-    });
-    expect(RESTORED_STATE_REF).not.toBe(CURRENT_STATE_REF);
-    expect(loadWindow).toHaveBeenCalledTimes(3);
   });
 });

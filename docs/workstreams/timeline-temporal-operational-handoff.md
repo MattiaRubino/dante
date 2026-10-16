@@ -1,5 +1,24 @@
 # Timeline / Temporal-Operational — Workstream Handoff
 
+## 2026-10-16 — Direct Timeline withdrawal retired (candidate)
+
+The user rejected “Rimuovi dalla Timeline”, its Undo, and the separate
+“Da collocare” destination. The direct controls are removed from timed and
+all-day cards and Inspectors. The Activity/Event withdrawal clients and their
+five dedicated HTTP reads/writes are removed, the generated OpenAPI/Orval
+client is updated, and forward migration `_159` drops the five dedicated SQL
+functions introduced for those actions. The no-op postponed panel and unused
+withdrawal copy/styles are gone. Generic Schedule revision and the older
+Schedule primitives used by coordinated editing remain; historical operation
+rows are not deleted or rewritten. The legacy existing-items tray is no longer mounted, and the Draft Vault
+shows only inert drafts. Historical canonical rows remain in PostgreSQL;
+no automatic data conversion or deletion is performed.
+
+Focused Web component tests and Web/API-client typechecks pass in the scratch
+worktree. PostgreSQL migration and deterministic FastAPI OpenAPI export could
+not run here (no Docker/Python 3.14 toolchain); user WSL validation and visual
+acceptance remain open. Do not claim an all-green gate.
+
 ## 2026-10-15 — Inspector and Activity card visual repair candidate
 
 The current user screenshot review retired the direct Inspector controls that

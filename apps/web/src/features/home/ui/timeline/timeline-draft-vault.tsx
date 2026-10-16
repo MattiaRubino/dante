@@ -6,24 +6,16 @@ import {
   DRAFT_VAULT_UPDATED,
   type DraftVaultItem,
 } from '../../../temporal-create/application/remote-draft-vault';
-import { createRemoteTemporalPlanningTrayDataSource } from '../../../temporal/remote-planning-tray-data-source';
-import type { TemporalPlanningTrayItem } from '../../../temporal/planning-tray-data-source';
 import { subscribeTemporalPlanningInvalidation } from '../../../temporal/timeline-invalidation';
 
 import './timeline-planning-tray.css';
 
 export function TimelineDraftVault({
   onOpen,
-  onManageExisting,
 }: Readonly<{
   onOpen: (draft: DraftVaultItem, duplicate: boolean) => void;
-  onManageExisting?: () => void;
 }>) {
   const vault = useMemo(() => createRemoteDraftVault(), []);
-  const legacySource = useMemo(
-    () => createRemoteTemporalPlanningTrayDataSource(),
-    [],
-  );
   const [open, setOpen] = useState(false);
   const triggerRef = useRef<HTMLButtonElement | null>(null);
   const panelRef = useRef<HTMLElement | null>(null);
@@ -59,9 +51,6 @@ export function TimelineDraftVault({
     };
   }, [open]);
   const [items, setItems] = useState<readonly DraftVaultItem[]>([]);
-  const [existing, setExisting] = useState<readonly TemporalPlanningTrayItem[]>(
-    [],
-  );
   const [query, setQuery] = useState('');
   const [failure, setFailure] = useState('');
   const [pendingRef, setPendingRef] = useState<string | null>(null);
@@ -86,14 +75,6 @@ export function TimelineDraftVault({
                 : 'Bozze non disponibili.',
             );
         });
-      // Legacy canonical rows are not drafts. Keep them visible as a read-only
-      // migration/acceptance obligation, never misrepresenting them as inert.
-      void legacySource
-        .listItems()
-        .then((loaded) => {
-          if (active) setExisting(loaded);
-        })
-        .catch(() => undefined);
     };
     refresh();
     window.addEventListener(DRAFT_VAULT_UPDATED, refresh);
@@ -103,7 +84,7 @@ export function TimelineDraftVault({
       window.removeEventListener(DRAFT_VAULT_UPDATED, refresh);
       unsubscribe();
     };
-  }, [legacySource, vault]);
+  }, [vault]);
 
   const filtered = items.filter((draft) =>
     draft.title.toLocaleLowerCase().includes(query.trim().toLocaleLowerCase()),
@@ -269,37 +250,6 @@ export function TimelineDraftVault({
             ) : null}
           </article>
         ))}
-        {existing.length > 0 ? (
-          <section aria-label="Elementi preesistenti senza orario">
-            <p>Elementi creati prima delle Bozze</p>
-            <p>
-              Questi {existing.length} elementi sono già nel database e non sono
-              bozze. Restano conservati; nessuna cancellazione o conversione
-              automatica.
-            </p>
-            {onManageExisting ? (
-              <button
-                type="button"
-                onClick={() => {
-                  setOpen(false);
-                  onManageExisting();
-                }}
-              >
-                Gestisci elementi già creati
-              </button>
-            ) : null}
-            {existing.map((item) => (
-              <div key={`${item.kind}:${item.subjectRef}`}>
-                <strong>{item.title}</strong>
-                <span>
-                  {' '}
-                  · {item.kind === 'activity' ? 'Attività' : 'Evento'} già
-                  creato
-                </span>
-              </div>
-            ))}
-          </section>
-        ) : null}
       </div>
     </aside>
   ) : null;

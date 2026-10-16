@@ -31,7 +31,6 @@ import { useSessionPanel } from '../../../temporal/use-session-panel';
 import { useSessionPanelPresentation } from './timeline-session-panel';
 import { applyTimelineSessionReality } from './timeline-session-reality';
 import { useAuthoritativeTimelineHydration } from './timeline-authoritative-hydration';
-import { TimelineCanonicalActionsProvider } from './timeline-canonical-actions';
 import { createTimelineLocalContext } from './model/timeline-context-catalog';
 import {
   TIMELINE_PROTOTYPE_NOW_MINUTE,
@@ -60,7 +59,6 @@ import {
 } from './model/timeline-temporal';
 import type {
   TimelineAllDayItem,
-  TimelineCanonicalScheduleBasis,
   TimelineEvent,
   TimelineGroup,
   TimelineGroupId,
@@ -75,7 +73,6 @@ import {
   TimelineOrganizationPanel,
   useTimelineOrganization,
 } from './timeline-organization';
-import { TimelinePostponedEventsPanel } from './timeline-postponed-events';
 import {
   CalendarPopover,
   EventDetailDialog,
@@ -123,7 +120,6 @@ type TimeEditorState = Readonly<{
 type DetailState = Readonly<{
   detail: TimelineDetail;
   event: TimelineEvent;
-  allowUnschedule: boolean;
   opener: HTMLElement;
 }>;
 
@@ -159,11 +155,6 @@ type CanonicalScheduleUndo =
       scheduleRef: string;
       expectedPlacementMaterialStateRef: string;
       placement: TemporalSchedulePlacementInput;
-    }>
-  | Readonly<{
-      kind: 'unschedule';
-      scheduleRef: string;
-      unscheduleOperationId: string;
     }>;
 
 export function TimelineSurface({
@@ -181,12 +172,8 @@ export function TimelineSurface({
   const [recurringEditSource] = useState(createRemoteRecurringProfileEdit);
   const [pendingActivityReplan, setPendingActivityReplan] =
     useState<PendingActivityReplan | null>(null);
-  const {
-    state: temporalRuntimeState,
-    reviseSchedule,
-    undoScheduleUnschedule,
-    unscheduleSchedule,
-  } = useTemporalTimelineRuntime();
+  const { state: temporalRuntimeState, reviseSchedule } =
+    useTemporalTimelineRuntime();
   const effectiveZoneId =
     temporalRuntimeState.status === 'ready'
       ? temporalRuntimeState.effectiveZoneId
@@ -325,9 +312,6 @@ export function TimelineSurface({
   );
   const [canonicalUndo, setCanonicalUndo] =
     useState<CanonicalScheduleUndo | null>(null);
-  const [pendingScheduleRef, setPendingScheduleRef] = useState<string | null>(
-    null,
-  );
 
   const rootRef = useRef<HTMLElement | null>(null);
   const gridRef = useRef<HTMLDivElement | null>(null);
@@ -548,9 +532,6 @@ export function TimelineSurface({
         })
         .finally(() => {
           pendingScheduleRefsRef.current.delete(proposal.scheduleRef);
-          setPendingScheduleRef((current) =>
-            current === proposal.scheduleRef ? null : current,
-          );
         });
     },
     [activityEditSource, showCanonicalUndo, showScheduleNotice, t],
@@ -616,7 +597,7 @@ export function TimelineSurface({
 
       if (basis.kind === 'scheduled-activity') {
         pendingScheduleRefsRef.current.add(basis.scheduleRef);
-        setPendingScheduleRef(basis.scheduleRef);
+
         void Promise.all([
           activityEditSource.load(basis.activityRef),
           activityImpactSource.sessionImpact(basis.activityRef),
@@ -679,15 +660,12 @@ export function TimelineSurface({
                   : 'Impossibile leggere l’attività. Riprova.',
             });
             pendingScheduleRefsRef.current.delete(basis.scheduleRef);
-            setPendingScheduleRef((current) =>
-              current === basis.scheduleRef ? null : current,
-            );
           });
         return;
       }
 
       pendingScheduleRefsRef.current.add(basis.scheduleRef);
-      setPendingScheduleRef(basis.scheduleRef);
+
       void reviseSchedule({
         scheduleRef: basis.scheduleRef,
         expectedPlacementMaterialStateRef: basis.placementMaterialStateRef,
@@ -748,9 +726,6 @@ export function TimelineSurface({
         })
         .finally(() => {
           pendingScheduleRefsRef.current.delete(basis.scheduleRef);
-          setPendingScheduleRef((current) =>
-            current === basis.scheduleRef ? null : current,
-          );
         });
     },
     [
@@ -767,74 +742,6 @@ export function TimelineSurface({
     ],
   );
 
-  const unscheduleCanonicalBasis = useCallback(
-    (basis: TimelineCanonicalScheduleBasis) => {
-      if (pendingScheduleRefsRef.current.has(basis.scheduleRef)) {
-        return;
-      }
-
-      pendingScheduleRefsRef.current.add(basis.scheduleRef);
-      setPendingScheduleRef(basis.scheduleRef);
-      void unscheduleSchedule({
-        scheduleRef: basis.scheduleRef,
-        expectedPlacementMaterialStateRef: basis.placementMaterialStateRef,
-      })
-        .then((result) => {
-          window.dispatchEvent(new Event(REVIEW_QUEUE_INVALIDATED));
-          setDetailState(null);
-          setCanonicalUndo({
-            kind: 'unschedule',
-            scheduleRef: result.scheduleRef,
-            unscheduleOperationId: result.unscheduleOperationId,
-          });
-          showCanonicalUndo(
-            t(($) => $.common.home.timeline.feedback.scheduleUndoAvailable),
-          );
-          showScheduleNotice({
-            kind: 'status',
-            message: t(
-              ($) => $.common.home.timeline.feedback.scheduleUnscheduled,
-            ),
-          });
-        })
-        .catch((error: unknown) => {
-          const intervalConflict =
-            error instanceof TemporalScheduleRemoteError &&
-            error.code ===
-              'temporal.schedule.activity_interval_requires_replan';
-          const conflict =
-            error instanceof TemporalScheduleRemoteError &&
-            error.status === 409 &&
-            error.code === 'temporal.schedule.unschedule_conflict';
-          showScheduleNotice({
-            kind: 'error',
-            message: intervalConflict
-              ? i18n.language.startsWith('it')
-                ? 'Apri Modifica per coordinare il piano e scegliere se mantenere o eliminare le Sessioni.'
-                : 'Open Edit to coordinate the plan and choose whether to keep or delete Sessions.'
-              : conflict
-                ? t(
-                    ($) =>
-                      $.common.home.timeline.feedback
-                        .scheduleUnscheduleConflict,
-                  )
-                : t(
-                    ($) =>
-                      $.common.home.timeline.feedback
-                        .scheduleUnscheduleUnavailable,
-                  ),
-          });
-        })
-        .finally(() => {
-          pendingScheduleRefsRef.current.delete(basis.scheduleRef);
-          setPendingScheduleRef((current) =>
-            current === basis.scheduleRef ? null : current,
-          );
-        });
-    },
-    [i18n, showCanonicalUndo, showScheduleNotice, t, unscheduleSchedule],
-  );
-
   const undoCanonicalSchedule = useCallback(() => {
     const undo = canonicalUndo;
     if (undo === null || pendingScheduleRefsRef.current.has(undo.scheduleRef)) {
@@ -843,7 +750,7 @@ export function TimelineSurface({
 
     if (undo.kind === 'activity-replan') {
       pendingScheduleRefsRef.current.add(undo.scheduleRef);
-      setPendingScheduleRef(undo.scheduleRef);
+
       void Promise.all([
         activityImpactSource.sessionImpact(undo.activityRef),
         recurringEditSource.loadActivityContext(undo.activityRef),
@@ -875,25 +782,17 @@ export function TimelineSurface({
                 : 'Impossibile verificare le Sessioni. Riprova.',
           });
           pendingScheduleRefsRef.current.delete(undo.scheduleRef);
-          setPendingScheduleRef(null);
         });
       return;
     }
 
     pendingScheduleRefsRef.current.add(undo.scheduleRef);
-    setPendingScheduleRef(undo.scheduleRef);
-    const command =
-      undo.kind === 'revision'
-        ? reviseSchedule({
-            scheduleRef: undo.scheduleRef,
-            expectedPlacementMaterialStateRef:
-              undo.expectedPlacementMaterialStateRef,
-            placement: undo.placement,
-          })
-        : undoScheduleUnschedule({
-            scheduleRef: undo.scheduleRef,
-            unscheduleOperationId: undo.unscheduleOperationId,
-          });
+
+    const command = reviseSchedule({
+      scheduleRef: undo.scheduleRef,
+      expectedPlacementMaterialStateRef: undo.expectedPlacementMaterialStateRef,
+      placement: undo.placement,
+    });
 
     void command
       .then(() => {
@@ -922,9 +821,6 @@ export function TimelineSurface({
       })
       .finally(() => {
         pendingScheduleRefsRef.current.delete(undo.scheduleRef);
-        setPendingScheduleRef((current) =>
-          current === undo.scheduleRef ? null : current,
-        );
       });
   }, [
     activityImpactSource,
@@ -934,7 +830,6 @@ export function TimelineSurface({
     reviseSchedule,
     showScheduleNotice,
     t,
-    undoScheduleUnschedule,
   ]);
 
   const publishViewportDate = useCallback(
@@ -1553,99 +1448,86 @@ export function TimelineSurface({
           })()}
         />
       )}
-      <TimelinePostponedEventsPanel
-        enabled={!prototypeMode}
-        areas={organization.snapshot?.areas ?? []}
-      />
 
-      <TimelineCanonicalActionsProvider
-        actions={{
-          pendingScheduleRef,
-          unschedule: unscheduleCanonicalBasis,
+      <TimelineDayStream
+        days={renderedDays}
+        today={timelineToday}
+        nowMinute={timelineNowMinute}
+        state={
+          presentationFilters === state.filters
+            ? state
+            : { ...state, filters: presentationFilters }
+        }
+        expanded={expanded}
+        gridRef={gridRef}
+        onScroll={handleScroll}
+        onZoomAt={zoomAt}
+        onFocusEvent={(eventId) => dispatch({ type: 'focus-event', eventId })}
+        onToggleSubitems={(eventId) => {
+          preserveRawScroll();
+          dispatch({ type: 'toggle-event-subitems', eventId });
         }}
-      >
-        <TimelineDayStream
-          days={renderedDays}
-          today={timelineToday}
-          nowMinute={timelineNowMinute}
-          state={
-            presentationFilters === state.filters
-              ? state
-              : { ...state, filters: presentationFilters }
-          }
-          expanded={expanded}
-          gridRef={gridRef}
-          onScroll={handleScroll}
-          onZoomAt={zoomAt}
-          onFocusEvent={(eventId) => dispatch({ type: 'focus-event', eventId })}
-          onToggleSubitems={(eventId) => {
-            preserveRawScroll();
-            dispatch({ type: 'toggle-event-subitems', eventId });
-          }}
-          onOpenEventDetail={(event, opener) =>
-            setDetailState({
-              detail: detailFromEvent(event, state.groups),
+        onOpenEventDetail={(event, opener) =>
+          setDetailState({
+            detail: detailFromEvent(event, state.groups),
+            event,
+            opener,
+          })
+        }
+        onOpenSubitemDetail={(event, subitem, opener) =>
+          setDetailState({
+            detail: detailFromSubitem(
               event,
-              allowUnschedule: event.canonicalBasis !== undefined,
-              opener,
-            })
-          }
-          onOpenSubitemDetail={(event, subitem, opener) =>
-            setDetailState({
-              detail: detailFromSubitem(
-                event,
-                subitem,
-                state.groups,
-                t(($) => $.common.home.timeline.detail.subitemParent),
-              ),
-              event,
-              allowUnschedule: false,
-              opener,
-            })
-          }
-          onOpenTimeEditor={(dateKey, event, editorAnchor) => {
-            if (
-              event.canonicalBasis?.kind === 'scheduled-activity' &&
-              event.canonicalBasis.placementLocked
-            )
-              return;
-            setTimeEditor({ dateKey, event, anchor: editorAnchor });
-          }}
-          onMoveEvent={(move) => {
-            const current = findTimelineEvent(state, move.eventId)?.event;
-            if (current?.canonicalBasis !== undefined) {
-              const duration = current.endMinute - current.startMinute;
-              reviseCanonicalEvent(
-                current,
-                move.fromDateKey,
-                move.toDateKey,
-                move.startMinute,
-                move.startMinute + duration,
-              );
-              return;
-            }
-
-            const targetIsRendered = renderedDaysRef.current.some(
-              (day) => day.dateKey === move.toDateKey,
+              subitem,
+              state.groups,
+              t(($) => $.common.home.timeline.detail.subitemParent),
+            ),
+            event,
+            opener,
+          })
+        }
+        onOpenTimeEditor={(dateKey, event, editorAnchor) => {
+          if (
+            event.canonicalBasis?.kind === 'scheduled-activity' &&
+            event.canonicalBasis.placementLocked
+          )
+            return;
+          setTimeEditor({ dateKey, event, anchor: editorAnchor });
+        }}
+        onMoveEvent={(move) => {
+          const current = findTimelineEvent(state, move.eventId)?.event;
+          if (current?.canonicalBasis !== undefined) {
+            const duration = current.endMinute - current.startMinute;
+            reviseCanonicalEvent(
+              current,
+              move.fromDateKey,
+              move.toDateKey,
+              move.startMinute,
+              move.startMinute + duration,
             );
-            if (targetIsRendered) {
-              preserveRawScroll();
-            } else {
-              rawScrollRestoreRef.current = null;
-              pendingScrollTargetRef.current = {
-                dateKey: move.toDateKey,
-                minute: move.startMinute,
-                viewportOffset: TIMELINE_POLICY.viewport.eventRevealInsetPx,
-                behavior: 'auto',
-              };
-              windowTransitionRef.current = true;
-              setAnchor(parseTimelineDate(move.toDateKey));
-            }
-            dispatch({ type: 'move-event', ...move });
-          }}
-          onMoveFeedback={showFeedback}
-        />
-      </TimelineCanonicalActionsProvider>
+            return;
+          }
+
+          const targetIsRendered = renderedDaysRef.current.some(
+            (day) => day.dateKey === move.toDateKey,
+          );
+          if (targetIsRendered) {
+            preserveRawScroll();
+          } else {
+            rawScrollRestoreRef.current = null;
+            pendingScrollTargetRef.current = {
+              dateKey: move.toDateKey,
+              minute: move.startMinute,
+              viewportOffset: TIMELINE_POLICY.viewport.eventRevealInsetPx,
+              behavior: 'auto',
+            };
+            windowTransitionRef.current = true;
+            setAnchor(parseTimelineDate(move.toDateKey));
+          }
+          dispatch({ type: 'move-event', ...move });
+        }}
+        onMoveFeedback={showFeedback}
+      />
 
       <button
         className="timeline-expansion-handle"
@@ -1753,7 +1635,7 @@ export function TimelineSurface({
                     pendingScheduleRefsRef.current.delete(
                       pendingActivityReplan.scheduleRef,
                     );
-                    setPendingScheduleRef(null);
+
                     setPendingActivityReplan(null);
                   }
                 }}
@@ -1804,7 +1686,7 @@ export function TimelineSurface({
                       pendingScheduleRefsRef.current.delete(
                         pendingActivityReplan.scheduleRef,
                       );
-                      setPendingScheduleRef(null);
+
                       setPendingActivityReplan(null);
                     }}
                   >

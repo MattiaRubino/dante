@@ -9,7 +9,7 @@ from dante.bootstrap.openapi_export import openapi_document
 _PUBLISHED_OPENAPI = (
     Path(__file__).resolve().parents[3] / "packages/api-client/openapi/dante-v1.openapi.json"
 )
-_CURRENT_ACCEPTED_TEMPORAL_OPERATION_COUNT = 193
+_CURRENT_ACCEPTED_TEMPORAL_OPERATION_COUNT = 188
 
 _HTTP_METHODS = frozenset({"get", "post", "put", "patch", "delete", "options", "head", "trace"})
 
@@ -402,18 +402,6 @@ _EXPECTED_TEMPORAL_OPERATIONS = {
         "post",
     ): "temporal_set_activity_child",
     (
-        "/api/v1/temporal/activities/{activity_ref}/timeline-undo-receipts",
-        "get",
-    ): "temporal_list_activity_timeline_undo",
-    (
-        "/api/v1/temporal/activities/{activity_ref}/timeline-unplace",
-        "post",
-    ): "temporal_unplace_activity_timeline",
-    (
-        "/api/v1/temporal/activities/{activity_ref}/timeline-undo",
-        "post",
-    ): "temporal_undo_activity_timeline",
-    (
         "/api/v1/temporal/hard-deletion/{requested_ref}/preview",
         "get",
     ): "temporal_preview_hard_deletion",
@@ -425,14 +413,7 @@ _EXPECTED_TEMPORAL_OPERATIONS = {
         "/api/v1/temporal/events/{event_ref}/deletion-occurrences",
         "get",
     ): "temporal_list_event_deletion_occurrences",
-    (
-        "/api/v1/temporal/events/{event_ref}/timeline-schedules",
-        "get",
-    ): "temporal_list_event_timeline_schedules",
-    (
-        "/api/v1/temporal/events/{event_ref}/timeline-undo-receipts",
-        "get",
-    ): "temporal_list_event_timeline_undo",
+
 }
 
 
@@ -454,9 +435,9 @@ def _temporal_operations(document: dict[str, Any]) -> dict[tuple[str, str], str]
 def test_complete_temporal_operation_inventory_and_operation_ids_are_frozen() -> None:
     """No Temporal endpoint may be lost, duplicated or silently renamed."""
     actual = _temporal_operations(openapi_document())
-    # Every previously accepted explicit operation remains present with its
-    # immutable ID. The checked-in generated OpenAPI is the complete published
-    # contract for later B14 routes, not a mutable in-test discovery baseline.
+    # The accepted operations, excluding the explicitly retired Timeline
+    # withdrawal routes, retain their immutable IDs. The checked-in generated
+    # OpenAPI is the complete published contract for later B14 routes.
     assert _EXPECTED_TEMPORAL_OPERATIONS.items() <= actual.items()
     with _PUBLISHED_OPENAPI.open(encoding="utf-8") as file:
         published = json.load(file)
@@ -482,3 +463,11 @@ def test_post_b03_temporal_operations_use_explicit_semantic_operation_ids() -> N
 def test_temporal_inventory_is_only_v1_temporal_surface() -> None:
     """Keep the inventory boundary exact instead of accidentally governing other APIs."""
     assert all(path.startswith("/api/v1/temporal/") for path, _ in _EXPECTED_TEMPORAL_OPERATIONS)
+
+
+def test_retired_timeline_withdrawal_routes_are_absent() -> None:
+    paths = cast(dict[str, Any], openapi_document()["paths"])
+    assert not any(
+        path.endswith(("/timeline-unplace", "/timeline-undo", "/timeline-undo-receipts", "/timeline-schedules"))
+        for path in paths
+    )

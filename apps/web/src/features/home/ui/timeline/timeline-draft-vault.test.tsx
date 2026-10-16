@@ -13,7 +13,6 @@ import { TimelineDraftVault } from './timeline-draft-vault';
 const sources = vi.hoisted(() => ({
   list: vi.fn(),
   remove: vi.fn(),
-  legacy: vi.fn().mockResolvedValue([]),
 }));
 vi.mock('../../../temporal-create/application/remote-draft-vault', () => ({
   createRemoteDraftVault: () => ({
@@ -21,11 +20,6 @@ vi.mock('../../../temporal-create/application/remote-draft-vault', () => ({
     remove: sources.remove,
   }),
   DRAFT_VAULT_UPDATED: 'dante:draft-vault-updated',
-}));
-vi.mock('../../../temporal/remote-planning-tray-data-source', () => ({
-  createRemoteTemporalPlanningTrayDataSource: () => ({
-    listItems: sources.legacy,
-  }),
 }));
 
 const draft = {
@@ -65,6 +59,9 @@ describe('Timeline Draft Vault', () => {
     expect(trigger.getAttribute('data-timeline-tooltip')).toBe('Bozze');
     expect(await screen.findByText('Allenamento')).toBeTruthy();
     expect(screen.queryByRole('button', { name: 'Play' })).toBeNull();
+    expect(
+      screen.queryByRole('button', { name: /elementi già creati/i }),
+    ).toBeNull();
     fireEvent.click(screen.getByRole('button', { name: 'Duplica' }));
     expect(onOpen).toHaveBeenCalledWith(draft, true);
     fireEvent.click(screen.getByRole('button', { name: 'Apri Bozze' }));

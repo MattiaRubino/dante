@@ -54,7 +54,6 @@ run_gate WEB_VITEST pnpm --filter @dante/web exec vitest run \
   src/features/temporal-create/ui/temporal-create-entry-authoring.test.tsx \
   src/features/temporal-create/ui/temporal-create-top-controls.test.tsx \
   src/features/home/ui/timeline/timeline-draft-vault.test.tsx \
-  src/features/home/ui/timeline/timeline-planning-tray-items.test.tsx \
   src/features/home/ui/timeline/activity-inspector-actions.test.tsx \
   src/features/home/ui/timeline/event-inspector-actions.test.tsx
 

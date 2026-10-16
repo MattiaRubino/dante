@@ -103,9 +103,6 @@ describe('Timeline post-create runtime destinations', () => {
           meta: '',
         }}
         opener={opener}
-        canUnschedule={false}
-        pending={false}
-        onUnschedule={() => undefined}
         onClose={close}
       />,
     );
@@ -202,10 +199,7 @@ describe('Timeline post-create runtime destinations', () => {
           realitySubject: { kind: 'activity', ref: ACTIVITY_REF },
         }}
         opener={null}
-        canUnschedule={false}
-        pending={false}
         sessionSubject={null}
-        onUnschedule={() => undefined}
         onClose={() => undefined}
       />,
     );

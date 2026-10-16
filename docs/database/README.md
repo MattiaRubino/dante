@@ -6,7 +6,7 @@
 - **Protected-main Alembic head:** `20260906_18`
 - **Protected-main topology:** `89|5|18|77|173|91|272|0|0|0`
 - **Timeline candidate branch:** `feature/timeline-temporal-operational`
-- **Timeline candidate Alembic head:** `20261015_158`; `_150`–`_157` add guarded materialization, owned graph deletion, scoped Activity/Event hard delete and coordinated Timeline operations. `_158` includes polymorphic Reality policies in the deletion graph. Intended catalog: `238|5|244|104|486|421|596`; the new migrations need PostgreSQL migration and exact catalog validation. Earlier focused proof at `_149` does not verify them. See `timeline-temporal-operational.md`.
+- **Timeline candidate Alembic head:** `20261015_159`; `_150`–`_157` add guarded materialization, owned graph deletion, scoped Activity/Event hard delete and historical coordinated Timeline operations, now retired by `_159`. `_158` includes polymorphic Reality policies in the deletion graph. `_159` retires the direct Timeline withdrawal functions. Intended catalog: `238|5|239|104|486|421|596`; the new migrations need PostgreSQL migration and exact catalog validation. Earlier focused proof at `_149` does not verify them. See `timeline-temporal-operational.md`.
 - **Historical B10-C proven topology (2026-09-26):** `20260925_79` / `167|5|123|93|329|279|446`; latest `_142` candidate topology `238|5|228|103|486|421|596` (user-local catalog gate green)
 - **Timeline candidate DB overlay:** `timeline-temporal-operational.md`
 - **Persistence doctrine:** `../development/backend-cp6-02-postgresql-persistence-constitution.md`

@@ -16,7 +16,6 @@ import type {
   TimelineGroup,
   TimelineGroupId,
 } from './model/timeline-types';
-import { useTimelineCanonicalActions } from './timeline-canonical-actions';
 
 import './timeline-all-day-layer.css';
 
@@ -118,7 +117,6 @@ export function TimelineAllDayLane({
   filters,
 }: TimelineAllDayLaneProps) {
   const { t, i18n } = useTranslation('common');
-  const canonicalActions = useTimelineCanonicalActions();
   const occurrenceScheduleSource = useMemo(
     () => createRemoteTemporalOccurrenceScheduleDataSource(),
     [],
@@ -229,22 +227,8 @@ export function TimelineAllDayLane({
                   : t(
                       ($) => $.common.home.timeline.create.timeSemantics.allDay,
                     );
-          const basis = item.canonicalBasis;
-          const canUnschedule =
-            basis !== undefined && canonicalActions !== null;
-          const pending =
-            basis !== undefined &&
-            canonicalActions?.pendingScheduleRef === basis.scheduleRef;
           const occurrencePending =
             item.occurrenceBasis?.occurrenceRef === pendingOccurrenceRef;
-          const eventPostpone = basis?.kind === 'scheduled-event';
-          const withdrawalLabel = pending
-            ? eventPostpone
-              ? t(($) => $.common.home.timeline.detail.eventPostponing)
-              : t(($) => $.common.home.timeline.detail.unscheduling)
-            : eventPostpone
-              ? t(($) => $.common.home.timeline.detail.eventPostpone)
-              : t(($) => $.common.home.timeline.detail.unschedule);
           const scheduleLabel = occurrencePending
             ? english
               ? 'Scheduling…'
@@ -319,17 +303,6 @@ export function TimelineAllDayLane({
                   onClick={() => void scheduleOccurrence(item)}
                 >
                   {scheduleLabel}
-                </button>
-              ) : canUnschedule ? (
-                <button
-                  className="timeline-all-day-item__unschedule"
-                  type="button"
-                  disabled={pending}
-                  data-timeline-unschedule-schedule={basis.scheduleRef}
-                  aria-label={`${withdrawalLabel} · ${item.title}`}
-                  onClick={() => canonicalActions.unschedule(basis)}
-                >
-                  {withdrawalLabel}
                 </button>
               ) : null}
             </div>

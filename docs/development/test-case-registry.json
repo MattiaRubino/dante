@@ -321,19 +321,16 @@
     "apps/web/src/features/home/ui/timeline/timeline-all-day-runtime.test.ts",
     "apps/web/src/features/home/ui/timeline/timeline-authoritative-event-hydration.test.ts",
     "apps/web/src/features/home/ui/timeline/timeline-authoritative-hydration.test.ts",
-    "apps/web/src/features/home/ui/timeline/timeline-create-canonical-bridge.test.tsx",
     "apps/web/src/features/home/ui/timeline/timeline-draft-vault.test.tsx",
     "apps/web/src/features/home/ui/timeline/timeline-event-agenda-editor.test.tsx",
     "apps/web/src/features/home/ui/timeline/timeline-event-lifecycle.test.tsx",
     "apps/web/src/features/home/ui/timeline/timeline-expected-occurrence-scheduling.test.ts",
     "apps/web/src/features/home/ui/timeline/timeline-inspector-reality.test.tsx",
     "apps/web/src/features/home/ui/timeline/timeline-organization.test.tsx",
-    "apps/web/src/features/home/ui/timeline/timeline-planning-tray-items.test.tsx",
-    "apps/web/src/features/home/ui/timeline/timeline-planning-tray-placement.test.tsx",
     "apps/web/src/features/home/ui/timeline/timeline-runtime-detail-controls.test.tsx",
     "apps/web/src/features/home/ui/timeline/timeline-schedule-forms.test.tsx",
     "apps/web/src/features/home/ui/timeline/timeline-schedule-revision.test.tsx",
-    "apps/web/src/features/home/ui/timeline/timeline-schedule-unschedule-undo.test.tsx",
+    "apps/web/src/features/home/ui/timeline/timeline-placement-actions.test.tsx",
     "apps/web/src/features/home/ui/timeline/timeline-session-panel.test.tsx",
     "apps/web/src/features/home/ui/timeline/timeline-session-reality.test.ts",
     "apps/web/src/features/home/ui/timeline/timeline-surface.test.tsx",
@@ -1047,15 +1044,6 @@
       "invariant": "",
       "status": "UNREVIEWED",
       "audit_note": "Needs contract/assertion review, rejection cases, and executable evidence; filename alone is not proof."
-    },
-    {
-      "path": "apps/backend/tests/integration/temporal/test_activity_timeline_unplace_undo.py",
-      "suite": "temporal-postgresql-integration",
-      "contract_id": "T03",
-      "candidate_behavior": "Activity non-destructive unplace and monotonic guarded Undo after refetch",
-      "purpose": "Verify full identity retained across Activity Schedule unschedule, owner rejection, stale CAS refusal and undo restoring same placement as a new material state.",
-      "invariant": "No Event/Activity deletion or factual Session loss on unplace; Undo succeeds only for the exact latest placement and its owner under Session state CAS.",
-      "status": "QUALIFIED"
     },
     {
       "path": "apps/backend/tests/integration/temporal/test_actual_api.py",
@@ -1855,15 +1843,6 @@
       "invariant": "",
       "status": "UNREVIEWED",
       "audit_note": "Needs contract/assertion review, rejection cases, and executable evidence; filename alone is not proof."
-    },
-    {
-      "path": "apps/backend/tests/integration/temporal/test_event_timeline_unplace_undo.py",
-      "suite": "temporal-postgresql-integration",
-      "contract_id": "T04",
-      "candidate_behavior": "Event and recurring Occurrence Schedule removal and monotonic Undo",
-      "purpose": "Verify owner-scoped Event and Occurrence placement discovery, non-destructive unschedule and exact Undo receipt readback in real PostgreSQL.",
-      "invariant": "Removing a placement does not delete the Event or Occurrence; Undo restores the same Schedule with a new material state and cannot expose a foreign owner's placement.",
-      "status": "QUALIFIED"
     },
     {
       "path": "apps/backend/tests/integration/temporal/test_temporal_hard_deletion.py",
@@ -3534,16 +3513,6 @@
       "audit_note": "Needs contract/assertion review, rejection cases, and executable evidence; filename alone is not proof."
     },
     {
-      "path": "apps/web/src/features/home/ui/timeline/timeline-create-canonical-bridge.test.tsx",
-      "suite": "web-unit-component",
-      "contract_id": "P-OTHER",
-      "candidate_behavior": "timeline create canonical bridge",
-      "purpose": "",
-      "invariant": "",
-      "status": "UNREVIEWED",
-      "audit_note": "Needs contract/assertion review, rejection cases, and executable evidence; filename alone is not proof."
-    },
-    {
       "path": "apps/web/src/features/home/ui/timeline/timeline-draft-vault.test.tsx",
       "suite": "web-unit-component",
       "contract_id": "T03",
@@ -3567,7 +3536,7 @@
       "path": "apps/web/src/features/home/ui/timeline/timeline-event-lifecycle.test.tsx",
       "suite": "web-unit-component",
       "contract_id": "T04",
-      "candidate_behavior": "timeline event lifecycle",
+      "candidate_behavior": "Event Schedule revision through the shared guarded placement boundary",
       "purpose": "",
       "invariant": "",
       "status": "UNREVIEWED",
@@ -3604,26 +3573,6 @@
       "audit_note": "Needs contract/assertion review, rejection cases, and executable evidence; filename alone is not proof."
     },
     {
-      "path": "apps/web/src/features/home/ui/timeline/timeline-planning-tray-items.test.tsx",
-      "suite": "web-unit-component",
-      "contract_id": "T01",
-      "candidate_behavior": "timeline planning tray items",
-      "purpose": "",
-      "invariant": "",
-      "status": "UNREVIEWED",
-      "audit_note": "Needs contract/assertion review, rejection cases, and executable evidence; filename alone is not proof."
-    },
-    {
-      "path": "apps/web/src/features/home/ui/timeline/timeline-planning-tray-placement.test.tsx",
-      "suite": "web-unit-component",
-      "contract_id": "T01",
-      "candidate_behavior": "timeline planning tray placement",
-      "purpose": "",
-      "invariant": "",
-      "status": "UNREVIEWED",
-      "audit_note": "Needs contract/assertion review, rejection cases, and executable evidence; filename alone is not proof."
-    },
-    {
       "path": "apps/web/src/features/home/ui/timeline/timeline-runtime-detail-controls.test.tsx",
       "suite": "web-unit-component",
       "contract_id": "P-OTHER",
@@ -3637,7 +3586,7 @@
       "path": "apps/web/src/features/home/ui/timeline/timeline-schedule-forms.test.tsx",
       "suite": "web-unit-component",
       "contract_id": "P-OTHER",
-      "candidate_behavior": "timeline schedule forms",
+      "candidate_behavior": "Schedule form rendering and absence of direct withdrawal controls",
       "purpose": "",
       "invariant": "",
       "status": "UNREVIEWED",
@@ -3654,7 +3603,7 @@
       "audit_note": "Needs contract/assertion review, rejection cases, and executable evidence; filename alone is not proof."
     },
     {
-      "path": "apps/web/src/features/home/ui/timeline/timeline-schedule-unschedule-undo.test.tsx",
+      "path": "apps/web/src/features/home/ui/timeline/timeline-placement-actions.test.tsx",
       "suite": "web-unit-component",
       "contract_id": "T03",
       "candidate_behavior": "timeline Inspector hides retired unplacement",

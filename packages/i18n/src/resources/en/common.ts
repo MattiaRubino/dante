@@ -17,13 +17,6 @@ const homeWithB02D = {
         agendaCancel: 'Cancel',
       },
     },
-    detail: {
-      ...home.timeline.detail,
-      unschedule: 'Return to Planning Tray',
-      unscheduling: 'Returning…',
-      eventPostpone: 'Postpone / date TBD',
-      eventPostponing: 'Updating…',
-    },
     feedback: {
       ...home.timeline.feedback,
       scheduleRevisionUpdated:
@@ -32,12 +25,6 @@ const homeWithB02D = {
         'The Schedule changed elsewhere. No change was overwritten.',
       scheduleRevisionUnavailable: 'This Schedule could not be updated safely.',
       scheduleUndoAvailable: 'Change saved.',
-      scheduleUnscheduled:
-        'Placement removed from Timeline. Current state is reloading.',
-      scheduleUnscheduleConflict:
-        'The Schedule changed elsewhere. It was not removed.',
-      scheduleUnscheduleUnavailable:
-        'This placement could not be removed safely.',
       scheduleUndoUpdated: 'Previous Schedule change restored.',
       scheduleUndoConflict:
         'A later Schedule change prevents this undo. Nothing was overwritten.',
