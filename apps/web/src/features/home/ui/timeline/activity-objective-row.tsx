@@ -1,4 +1,6 @@
 import type {
+  ObjectiveComparator,
+  ObjectiveKind,
   ObjectiveSeriesEditState,
   ObjectiveView,
 } from '../../../temporal/remote-reality-objective-data-source';
