@@ -193,3 +193,40 @@
     margin-left: 0;
   }
 }
+
+/* Edit-only metadata uses the same Objective surface, without leaking
+ * recurrence or recorded-history UI into Advanced Create. */
+.temporal-create-objective__extras:empty {
+  display: none;
+}
+
+.temporal-create-objective__extras {
+  display: grid;
+  gap: 7px;
+  padding: 0 9px 9px;
+}
+
+.temporal-create-objective__extras fieldset {
+  display: grid;
+  gap: 6px;
+  margin: 0;
+  padding: 8px 10px;
+  border: 1px solid var(--dante-semantic-color-home-border-subtle, rgba(255, 255, 255, 0.09));
+  border-radius: 9px;
+}
+
+.temporal-create-objective__extras fieldset label {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.temporal-create-objective__extras input[type='radio'] {
+  accent-color: var(--dante-semantic-color-home-chrome-active, #ea5c12);
+}
+
+.temporal-create-objective__extras p {
+  margin: 0;
+  color: var(--dante-semantic-color-home-text-muted, #8f9bad);
+  font-size: 11px;
+}
