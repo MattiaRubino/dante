@@ -91,9 +91,16 @@ type DragRuntime = {
   anchorX: number;
   anchorY: number;
   overlay: HTMLElement | null;
+  rulerMarker: HTMLElement | null;
   dragging: boolean;
   lastAutoFrame: number;
 };
+
+type DragPreview = Readonly<{
+  day: TimelineRenderedDay;
+  startMinute: number;
+  viewportTop: number;
+}>;
 
 type TemporalScrubberRuntime = {
   pointerId: number;
@@ -307,6 +314,10 @@ function TimelineEventCard({
             title={event.title}
             onClick={(clickEvent) => {
               clickEvent.stopPropagation();
+              if (suppressClickRef.current === event.id) {
+                suppressClickRef.current = null;
+                return;
+              }
               onOpenEventDetail(event, clickEvent.currentTarget);
             }}
           >
@@ -704,13 +715,87 @@ export function TimelineDayStream({
     }
   };
 
+  /* Preview and final drop use the same elastic inverse map and 15m snap. */
+  const resolveDragPreview = (clientX: number, clientY: number): DragPreview | null => {
+    const runtime = runtimeRef.current;
+    const grid = gridRef.current;
+    if (!runtime || !grid) return null;
+    const gridRect = grid.getBoundingClientRect();
+    const contentTop = grid.scrollTop + (clientY - runtime.anchorY - gridRect.top);
+    const overlayHeight = runtime.overlay?.getBoundingClientRect().height ?? 0;
+    const week =
+      daysRef.current.length === 7 &&
+      daysRef.current.every((day) => day.offsetTop === 0);
+    const day = week
+      ? (daysRef.current.find((candidate) => {
+          const section = Array.from(
+            grid.querySelectorAll<HTMLElement>('[data-timeline-date]'),
+          ).find((element) => element.dataset.timelineDate === candidate.dateKey);
+          const rect = section?.getBoundingClientRect();
+          return Boolean(rect && clientX >= rect.left && clientX < rect.right);
+        }) ?? null)
+      : (daysRef.current.find(
+          (candidate) =>
+            contentTop >= candidate.offsetTop &&
+            contentTop < candidate.offsetTop + candidate.height,
+        ) ?? null);
+    if (!day) return null;
+    const rawLocalY = contentTop - day.offsetTop;
+    const timedCanvasTop = day.mapper.map(0);
+    if (rawLocalY < timedCanvasTop) return null;
+    const localY = clamp(
+      rawLocalY,
+      timedCanvasTop,
+      Math.max(timedCanvasTop, day.height - overlayHeight),
+    );
+    const minute = day.mapper.inv(localY);
+    const snap = timelineDragSnapMinutes(stateRef.current.zoom);
+    const duration = runtime.event.endMinute - runtime.event.startMinute;
+    const latestSlot = Math.floor(
+      Math.max(0, TIMELINE_MINUTES_PER_DAY - duration) / snap,
+    ) * snap;
+    const startMinute = clamp(Math.round(minute / snap) * snap, 0, latestSlot);
+    return {
+      day,
+      startMinute,
+      viewportTop:
+        gridRect.top + day.offsetTop + day.mapper.map(startMinute) - grid.scrollTop,
+    };
+  };
+
   const updateOverlay = () => {
     const runtime = runtimeRef.current;
-    if (!runtime?.dragging || !runtime.overlay) {
-      return;
-    }
+    if (!runtime?.dragging || !runtime.overlay) return;
     runtime.overlay.style.left = `${runtime.clientX - runtime.anchorX}px`;
     runtime.overlay.style.top = `${runtime.clientY - runtime.anchorY}px`;
+
+    const preview = resolveDragPreview(runtime.clientX, runtime.clientY);
+    if (!preview) {
+      if (runtime.rulerMarker) runtime.rulerMarker.style.display = 'none';
+      return;
+    }
+    const duration = runtime.event.endMinute - runtime.event.startMinute;
+    const label =
+      `${formatTimelineMinute(preview.startMinute)}–${formatTimelineMinute(preview.startMinute + duration)}`;
+    const overlayTime = runtime.overlay.querySelector<HTMLElement>(
+      '.timeline-event-card__time',
+    );
+    if (overlayTime) overlayTime.textContent = label;
+    runtime.overlay.setAttribute('data-drag-preview-time', label);
+    runtime.overlay.setAttribute('data-drag-preview-date', preview.day.dateKey);
+    if (runtime.rulerMarker) {
+      const ruler = gridRef.current?.parentElement?.querySelector<HTMLElement>(
+        '.timeline-ruler',
+      );
+      if (ruler) {
+        runtime.rulerMarker.textContent = formatTimelineMinute(preview.startMinute);
+        runtime.rulerMarker.style.top = `${preview.viewportTop}px`;
+        runtime.rulerMarker.style.left = `${ruler.getBoundingClientRect().left + 4}px`;
+        runtime.rulerMarker.style.display = 'block';
+      } else {
+        runtime.rulerMarker.style.display = 'none';
+      }
+    }
   };
 
   const autoScrollTick = (time: number) => {
@@ -772,8 +857,15 @@ export function TimelineDayStream({
     overlay.style.height = `${rect.height}px`;
     overlay.style.position = 'fixed';
     document.body.appendChild(overlay);
+    const rulerMarker = document.createElement('span');
+    rulerMarker.className = 'timeline-drag-ruler-marker';
+    rulerMarker.setAttribute('data-timeline-drag-ruler-marker', '');
+    rulerMarker.setAttribute('aria-hidden', 'true');
+    rulerMarker.style.display = 'none';
+    document.body.appendChild(rulerMarker);
 
     runtime.overlay = overlay;
+    runtime.rulerMarker = rulerMarker;
     runtime.dragging = true;
     runtime.lastAutoFrame = performance.now();
     runtime.card.classList.add('is-drag-source');
@@ -784,9 +876,11 @@ export function TimelineDayStream({
   const finishDragVisual = () => {
     const runtime = runtimeRef.current;
     runtime?.overlay?.remove();
+    runtime?.rulerMarker?.remove();
     runtime?.card.classList.remove('is-drag-source');
     if (runtime) {
       runtime.overlay = null;
+      runtime.rulerMarker = null;
     }
     stopAutoScroll();
   };
@@ -801,82 +895,35 @@ export function TimelineDayStream({
     runtimeRef.current = null;
   };
 
-  const commitDrag = (clientY: number) => {
+  const commitDrag = (clientX: number, clientY: number) => {
     const runtime = runtimeRef.current;
-    const grid = gridRef.current;
-    if (!runtime || !grid || !runtime.dragging) {
+    if (!runtime?.dragging) {
       finishDragVisual();
       return;
     }
-
-    const gridRect = grid.getBoundingClientRect();
-    const contentTop =
-      grid.scrollTop + (clientY - runtime.anchorY - gridRect.top);
-    const overlayHeight = runtime.overlay?.getBoundingClientRect().height ?? 0;
-    const week =
-      daysRef.current.length === 7 &&
-      daysRef.current.every((day) => day.offsetTop === 0);
-    const targetDay = week
-      ? (daysRef.current.find((day) => {
-          const section = Array.from(
-            grid.querySelectorAll<HTMLElement>('[data-timeline-date]'),
-          ).find((element) => element.dataset.timelineDate === day.dateKey);
-          const rect = section?.getBoundingClientRect();
-          return (
-            rect && runtime.clientX >= rect.left && runtime.clientX < rect.right
-          );
-        }) ?? null)
-      : (daysRef.current.find(
-          (day) =>
-            contentTop >= day.offsetTop &&
-            contentTop < day.offsetTop + day.height,
-        ) ?? null);
-
-    if (!targetDay) {
-      finishDragVisual();
-      return;
-    }
-
-    const rawLocalY = contentTop - targetDay.offsetTop;
-    const timedCanvasTop = targetDay.mapper.map(0);
-    if (rawLocalY < timedCanvasTop) {
-      finishDragVisual();
-      return;
-    }
-
-    const localY = clamp(
-      rawLocalY,
-      timedCanvasTop,
-      Math.max(timedCanvasTop, targetDay.height - overlayHeight),
-    );
-    const minute = targetDay.mapper.inv(localY);
-    const snap = timelineDragSnapMinutes(stateRef.current.zoom);
-    const snappedMinute = Math.round(minute / snap) * snap;
-    const duration = runtime.event.endMinute - runtime.event.startMinute;
-    const bounded = clamp(
-      snappedMinute,
-      0,
-      TIMELINE_MINUTES_PER_DAY - duration,
-    );
-
+    const preview = resolveDragPreview(clientX, clientY);
     suppressClickRef.current = runtime.event.id;
+    if (!preview) {
+      finishDragVisual();
+      return;
+    }
     if (
-      targetDay.dateKey === runtime.fromDateKey &&
-      bounded === runtime.event.startMinute
+      preview.day.dateKey === runtime.fromDateKey &&
+      preview.startMinute === runtime.event.startMinute
     ) {
       finishDragVisual();
       return;
     }
-
+    const duration = runtime.event.endMinute - runtime.event.startMinute;
     onMoveEvent({
       fromDateKey: runtime.fromDateKey,
-      toDateKey: targetDay.dateKey,
+      toDateKey: preview.day.dateKey,
       eventId: runtime.event.id,
-      startMinute: bounded,
+      startMinute: preview.startMinute,
     });
     if (runtime.event.canonicalBasis === undefined) {
       onMoveFeedback(
-        `${t(($) => $.common.home.timeline.feedback.moved)} ${formatTimelineMinute(bounded)}–${formatTimelineMinute(bounded + duration)}`,
+        `${t(($) => $.common.home.timeline.feedback.moved)} ${formatTimelineMinute(preview.startMinute)}–${formatTimelineMinute(preview.startMinute + duration)}`,
       );
     }
     finishDragVisual();
@@ -902,7 +949,7 @@ export function TimelineDayStream({
     const target = pointerEvent.target;
     if (
       target instanceof Element &&
-      target.closest('button,input,textarea,select,a')
+      target.closest('button:not(.timeline-event-card__title),input,textarea,select,a')
     ) {
       return;
     }
@@ -933,6 +980,7 @@ export function TimelineDayStream({
       anchorX: pointerEvent.clientX - rect.left,
       anchorY: pointerEvent.clientY - rect.top,
       overlay: null,
+      rulerMarker: null,
       dragging: false,
       lastAutoFrame: 0,
     };
@@ -964,7 +1012,7 @@ export function TimelineDayStream({
         return;
       }
       if (runtime.dragging) {
-        commitDrag(eventUp.clientY);
+        commitDrag(eventUp.clientX, eventUp.clientY);
       }
       dragCleanupRef.current?.();
       dragCleanupRef.current = null;
@@ -1089,6 +1137,7 @@ export function TimelineDayStream({
         cancelAnimationFrame(scrubberFrameRef.current);
       }
       runtimeRef.current?.overlay?.remove();
+      runtimeRef.current?.rulerMarker?.remove();
       runtimeRef.current?.card.classList.remove('is-drag-source');
     };
   }, []);
