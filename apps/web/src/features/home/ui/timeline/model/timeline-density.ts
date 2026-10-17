@@ -4,7 +4,6 @@ import {
   clampTimelineZoom,
 } from './timeline-policy';
 import type {
-  TimelineDensityMetrics,
   TimelineEvent,
   TimelineEventId,
   TimelineTimeMapper,
@@ -68,111 +67,6 @@ export function timelineEventReadableHeight(event: TimelineEvent): number {
   return height;
 }
 
-export function computeTimelineDensityMetrics(
-  events: readonly TimelineEvent[],
-): TimelineDensityMetrics {
-  const policy = TIMELINE_POLICY.density;
-  const slotMinutes = policy.slotMinutes;
-  const bins = new Uint16Array(
-    Math.ceil(TIMELINE_MINUTES_PER_DAY / slotMinutes),
-  );
-  const starts = events.map((event) => event.startMinute).sort((a, b) => a - b);
-  let shortCount = 0;
-
-  for (const event of events) {
-    const duration = eventDurationMinutes(event);
-    if (duration <= policy.shortEventThresholdMinutes) {
-      shortCount += 1;
-    }
-
-    const first = Math.max(
-      0,
-      Math.min(bins.length - 1, Math.floor(event.startMinute / slotMinutes)),
-    );
-    const last = Math.max(
-      first,
-      Math.min(bins.length - 1, Math.ceil(event.endMinute / slotMinutes) - 1),
-    );
-
-    for (let index = first; index <= last; index += 1) {
-      incrementAt(bins, index, 1);
-    }
-  }
-
-  let maxConcurrent = 0;
-  let overlapLoad = 0;
-  for (const count of bins) {
-    maxConcurrent = Math.max(maxConcurrent, count);
-    overlapLoad += Math.max(0, count - 1);
-  }
-
-  let burst = 0;
-  let left = 0;
-  for (let right = 0; right < starts.length; right += 1) {
-    const rightStart = starts[right];
-    if (rightStart === undefined) {
-      continue;
-    }
-
-    while (left < right) {
-      const leftStart = starts[left];
-      if (
-        leftStart === undefined ||
-        rightStart - leftStart < policy.burstWindowMinutes
-      ) {
-        break;
-      }
-      left += 1;
-    }
-    burst = Math.max(burst, right - left + 1);
-  }
-
-  return {
-    count: events.length,
-    shortCount,
-    maxConcurrent,
-    overlapRatio: overlapLoad / Math.max(1, bins.length),
-    burst,
-  };
-}
-
-export function computeTimelineBaseScale(
-  events: readonly TimelineEvent[],
-): number {
-  if (events.length === 0) {
-    return TIMELINE_POLICY.density.baseScale;
-  }
-
-  const density = computeTimelineDensityMetrics(events);
-  const policy = TIMELINE_POLICY.density;
-  const eventPressure =
-    Math.max(0, density.count - policy.eventPressureBaselineCount) *
-    policy.eventPressurePerItem;
-  const concurrencyPressure =
-    Math.max(
-      0,
-      density.maxConcurrent - policy.concurrencyPressureBaselineCount,
-    ) * policy.concurrencyPressurePerItem;
-  const overlapPressure = density.overlapRatio * policy.overlapPressureFactor;
-  const shortPressure = density.shortCount * policy.shortEventPressurePerItem;
-  const burstPressure =
-    Math.max(0, density.burst - policy.burstPressureBaselineCount) *
-    policy.burstPressurePerItem;
-
-  return Math.max(
-    policy.minScale,
-    Math.min(
-      policy.maxScale,
-      policy.baseScale +
-        eventPressure +
-        concurrencyPressure +
-        overlapPressure +
-        shortPressure +
-        burstPressure,
-    ),
-  );
-}
-
 type TimelineMapperOptions = Readonly<{
   expandedEventIds?: ReadonlySet<TimelineEventId>;
 }>;
@@ -184,7 +78,7 @@ export function createTimelineTimeMapper(
 ): TimelineTimeMapper {
   const policy = TIMELINE_POLICY.density;
   const normalizedZoom = clampTimelineZoom(zoom);
-  const pxPerMinute = computeTimelineBaseScale(events) * normalizedZoom;
+  const pxPerMinute = policy.baseScale * normalizedZoom;
   const minuteCount = TIMELINE_MINUTES_PER_DAY;
   const activeDiff = new Int16Array(minuteCount + 2);
   const shortActiveDiff = new Int16Array(minuteCount + 2);

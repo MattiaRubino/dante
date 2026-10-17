@@ -2,23 +2,11 @@ export const TIMELINE_MINUTES_PER_DAY = 24 * 60;
 
 export const TIMELINE_POLICY = {
   density: {
-    slotMinutes: 15,
     baseScale: 0.72,
-    minScale: 0.72,
-    maxScale: 2.85,
     maxLocalScale: 6.2,
     smoothingRadiusMinutes: 7,
-    burstWindowMinutes: 60,
-    eventPressureBaselineCount: 5,
-    concurrencyPressureBaselineCount: 1,
-    burstPressureBaselineCount: 3,
     activeOverlapBaselineCount: 1,
     nearbyStartBaselineCount: 2,
-    eventPressurePerItem: 0.045,
-    concurrencyPressurePerItem: 0.15,
-    overlapPressureFactor: 0.28,
-    shortEventPressurePerItem: 0.032,
-    burstPressurePerItem: 0.085,
     activeOverlapFactor: 0.24,
     nearbyStartFactor: 0.095,
     shortActiveFactor: 0.1,

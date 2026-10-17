@@ -148,14 +148,6 @@ export type TimelineDay = Readonly<{
   events: readonly TimelineEvent[];
 }>;
 
-export type TimelineDensityMetrics = Readonly<{
-  count: number;
-  shortCount: number;
-  maxConcurrent: number;
-  overlapRatio: number;
-  burst: number;
-}>;
-
 export type TimelineTimeMapper = Readonly<{
   height: number;
   pxPerMinute: number;

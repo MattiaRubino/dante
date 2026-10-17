@@ -2,8 +2,6 @@ import { Temporal } from '@dante/time';
 import { describe, expect, it } from 'vitest';
 
 import {
-  computeTimelineBaseScale,
-  computeTimelineDensityMetrics,
   createTimelineTimeMapper,
   timelineEventReadableHeight,
   timelineRulerLabels,
@@ -13,18 +11,62 @@ import { computeTimelineEventLayouts } from './timeline-layout';
 import type { TimelineEvent } from './timeline-types';
 
 const denseEvents = TIMELINE_PROTOTYPE_EVENTS['2026-08-04'] ?? [];
-const sparseEvents = TIMELINE_PROTOTYPE_EVENTS['2026-08-07'] ?? [];
 
 describe('timeline density engine', () => {
-  it('detects real overlap and raises the base scale for denser days', () => {
-    const metrics = computeTimelineDensityMetrics(denseEvents);
+  it('stretches overlapping cards locally while empty hours keep their spacing', () => {
+    const cards: TimelineEvent[] = [
+      {
+        id: 'first',
+        title: 'Primo',
+        groupId: 'health',
+        startMinute: 675,
+        endMinute: 705,
+      },
+      {
+        id: 'second',
+        title: 'Secondo',
+        groupId: 'health',
+        startMinute: 690,
+        endMinute: 720,
+      },
+      {
+        id: 'third',
+        title: 'Terzo',
+        groupId: 'health',
+        startMinute: 690,
+        endMinute: 720,
+      },
+    ];
+    const empty = createTimelineTimeMapper([], 1);
+    const withCards = createTimelineTimeMapper(cards, 1);
+    const quietHour = empty.map(14 * 60) - empty.map(13 * 60);
 
-    expect(metrics.count).toBe(13);
-    expect(metrics.maxConcurrent).toBeGreaterThanOrEqual(3);
-    expect(metrics.overlapRatio).toBeGreaterThan(0);
-    expect(computeTimelineBaseScale(denseEvents)).toBeGreaterThan(
-      computeTimelineBaseScale(sparseEvents),
+    expect(withCards.map(3 * 60) - withCards.map(2 * 60)).toBeCloseTo(
+      quietHour,
+      5,
     );
+    expect(withCards.map(14 * 60) - withCards.map(13 * 60)).toBeCloseTo(
+      quietHour,
+      5,
+    );
+    expect(withCards.map(12 * 60) - withCards.map(11 * 60)).toBeGreaterThan(
+      quietHour,
+    );
+    const labels = timelineRulerLabels(withCards);
+    expect(labels.some(({ minute, minor }) => minute === 690 && minor)).toBe(
+      true,
+    );
+    expect(labels.some(({ minute, minor }) => minute === 810 && minor)).toBe(
+      false,
+    );
+    for (const zoom of [0.75, 2]) {
+      const emptyZoomed = createTimelineTimeMapper([], zoom);
+      const populatedZoomed = createTimelineTimeMapper(cards, zoom);
+      expect(populatedZoomed.map(840) - populatedZoomed.map(780)).toBeCloseTo(
+        emptyZoomed.map(840) - emptyZoomed.map(780),
+        5,
+      );
+    }
   });
 
   it('reserves the Activity card content height on the same minute ruler', () => {
