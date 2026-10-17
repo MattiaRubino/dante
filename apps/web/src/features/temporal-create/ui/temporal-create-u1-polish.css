@@ -766,3 +766,73 @@
   overflow: hidden;
   text-overflow: ellipsis;
 }
+
+/* Final readability pass: only text sizing, no changes to modal, buttons,
+ * control geometry, fixed footer heights or timeline columns. */
+.temporal-create-composer .temporal-create-type-grid > button strong {
+  font-size: 14px;
+}
+
+.temporal-create-composer .temporal-create-type-grid.is-four > button small {
+  font-size: 10px;
+}
+
+.temporal-create-composer .temporal-create-choice-row > button,
+.temporal-create-composer .temporal-create-segmented > button {
+  font-size: 13.5px;
+}
+
+.temporal-create-composer .temporal-create-reality-mode > button {
+  font-size: 14px;
+}
+
+.temporal-create-composer
+  .temporal-create-reality-objectives__block-copy strong {
+  font-size: 14px;
+}
+
+.temporal-create-composer
+  .temporal-create-reality-objectives__block-copy span,
+.temporal-create-composer
+  .temporal-create-reality-objectives__heading p {
+  font-size: 12.5px;
+}
+
+.temporal-create-composer
+  .temporal-create-actions
+  .temporal-create-advanced-toggle,
+.temporal-create-composer .temporal-create-actions > button {
+  font-size: 13px;
+}
+
+.temporal-create-composer .temporal-create-timezone-current,
+.temporal-create-composer .temporal-create-timezone-label,
+.temporal-create-composer .temporal-create-timezone-list > button {
+  font-size: 13.5px;
+}
+
+.temporal-create-composer .temporal-create-control > span,
+.temporal-create-composer .temporal-create-type-fieldset > legend,
+.temporal-create-composer .temporal-create-choice-group > legend,
+.temporal-create-composer .temporal-create-activity-interval__label {
+  font-size: 12.5px;
+}
+
+.temporal-create-composer .temporal-create-date-picker__trigger {
+  font-size: 12px;
+}
+
+/* Long Italian/English labels must stay inside their unchanged buttons. */
+.temporal-create-composer
+  .temporal-create-actions
+  :is(button, .temporal-create-advanced-toggle) {
+  min-width: 0;
+  white-space: nowrap;
+}
+
+.temporal-create-composer
+  .temporal-create-advanced-toggle > span:first-child {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
