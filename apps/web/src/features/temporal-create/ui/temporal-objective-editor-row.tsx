@@ -296,8 +296,8 @@ export function TemporalObjectiveEditorRow({
         ) : null}
       </div>
       {extras ? (
-    <div className="temporal-create-objective__extras">{extras}</div>
-  ) : null}
+        <div className="temporal-create-objective__extras">{extras}</div>
+      ) : null}
     </div>
   );
 }
