@@ -1,5 +1,35 @@
 # Timeline / Temporal-Operational — Workstream Handoff
 
+## 2026-10-17 — Owner verification: drag geometry and Create readability tests green
+
+Owner pulled branch `feature/timeline-temporal-operational` to
+`f641e655cb0966a5147f835807ada4be59fed214` and ran focused checks:
+
+- Web typecheck at `f641e655`: **FAIL** on a test-only TypeScript
+  signature (`timeline-drag-geometry.test.tsx:98`, overly general
+  `EventTarget` passed to `fireEvent`). Not a production/runtime failure.
+- Focused `timeline-drag-geometry.test.tsx` Vitest:
+  **1/1 PASS**, 104 ms.
+- Focused `temporal-create-unified-ui.spec.ts` plus
+  `timeline-hardening.spec.ts` Playwright: **2/2 PASS**,
+  `PLAYWRIGHT=0`. Vite fixture built successfully.
+  The isolated fixture's optional API proxies emitted nonfatal
+  `ECONNREFUSED 127.0.0.1:8000` since the backend was not started.
+- Corrected the test-only type declaration to
+  `Document | HTMLElement` in code commit
+  `fb33977735451d1561037873c2d579186dd767ff`.
+- Owner fast-forwarded to exact `fb339777` and reran
+  `pnpm --filter @dante/web typecheck`:
+  **PASS**, `TYPECHECK=0`.
+
+**Focused automated verification now green.** Only an isolated test
+type signature was changed between the successful Vitest/Playwright
+run and the successful typecheck; no production source or CSS was
+changed in that correction. Authenticated manual visual check remains
+pending for drag crossing a live, updating now-line and final Quick /
+Advanced font fit. No need to rerun backend or full test gate. This
+handoff update changes documentation only.
+
 ## 2026-10-17 — Create control microtype and current-time drag jitter candidate
 
 Owner confirmed the previous changes in the real UI and requested two
