@@ -300,6 +300,73 @@ async def test_main_started_before_preview_exposes_all_children_and_preserves_ca
 
 
 @pytest.mark.asyncio
+async def test_past_unstarted_queue_disappears_on_real_main_play_and_never_revives(
+    migrated_database: Any,
+) -> None:
+    """Real PostgreSQL projection: expired owner + Play + Stop (no child execution)."""
+    actor, other = _seed_self(migrated_database), _seed_self(migrated_database)
+    runtime = create_database_runtime(migrated_database.runtime_settings())
+    request = _fake_request(runtime)
+    context = _fake_context(actor)
+    now = datetime.now(UTC)
+    try:
+        created = await TemporalAuthoringApplication(runtime.session_factory).create_activity(
+            self_person_ref=actor,
+            operation_id="panel:past-play:create",
+            title="Studio già scaduto",
+            placement=AbsoluteIntervalPlacement(
+                starts_at=now - timedelta(hours=3),
+                ends_at=now - timedelta(hours=2),
+            ),
+            planned_slices=(None, None),
+            planned_slice_names=("Ripasso", "Esercizi"),
+            session_capture_mode="live",
+        )
+        activity = created.item.subject_native_ref
+        initial = await list_resolution_queue(request, context)
+        pending = [
+            item for item in initial.items
+            if item.subject_ref == activity and item.reason_code == "session_unstarted"
+        ]
+        assert {item.summary for item in pending} == {
+            "Sessione attività · mai avviata",
+            "Ripasso · mai avviata",
+            "Esercizi · mai avviata",
+        }
+        outsider = await list_resolution_queue(request, _fake_context(other))
+        assert all(item.subject_ref != activity for item in outsider.items)
+
+        sessions = SessionApplication(runtime.session_factory)
+        started = await sessions.start(
+            self_person_ref=actor,
+            subject_kind="activity",
+            subject_native_ref=activity,
+            operation_id="panel:past-play:start",
+        )
+        assert started.open
+        active = await list_resolution_queue(request, context)
+        assert all(
+            not (item.subject_ref == activity and item.reason_code == "session_unstarted")
+            for item in active.items
+        )
+
+        ended = await sessions.end(
+            self_person_ref=actor,
+            session_ref=started.session_ref,
+            expected_material_state_ref=started.timing_material_state_ref,
+            operation_id="panel:past-play:stop",
+        )
+        assert not ended.open
+        stopped = await list_resolution_queue(request, context)
+        assert all(
+            not (item.subject_ref == activity and item.reason_code == "session_unstarted")
+            for item in stopped.items
+        )
+    finally:
+        await runtime.dispose()
+
+
+@pytest.mark.asyncio
 async def test_retired_untimed_row_cannot_start_and_is_not_projected(
     migrated_database: Any,
 ) -> None:
