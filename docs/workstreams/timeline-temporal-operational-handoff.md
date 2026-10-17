@@ -1,5 +1,44 @@
 # Timeline / Temporal-Operational — Workstream Handoff
 
+## 2026-10-17 — Exact Create vs Edit hour/minute chevron correction
+
+Owner visually compared Quick Create, Advanced Create and Activity Edit
+and clarified that **the only remaining desired visual change is
+the up/down hour/minute chevrons**. Date/time field shells, sizes,
+grid columns, timezone UI, duration, Activity plan logic and Objective
+editor are already acceptable and must not be changed.
+
+**Root cause:** `temporal-create-u1-polish.css` adds 22px-wide,
+10px-tall bordered/background mini-buttons to
+`.temporal-create-composer .temporal-create-time-segment > button`.
+Edit uses the same TimeControl markup *outside* the Create composer,
+so its base chevrons stay plain, borderless, transparent and 8px
+tall. Previous parity changes had targeted input color/borders/widths,
+not this actual cascade difference.
+
+**Fix:** only
+`temporal-create-time-visual-parity.css` now neutralizes the
+Create-only button decoration for the two main start/end clock fields
+in **Quick and Advanced Create** and for additional Advanced Activity
+interval clock fields. The triangles match Edit's 8px, borderless,
+transparent controls and 8/20/8 vertical segment rows.
+Keep all clock/date field containers, modal geometry and clock behavior
+intact. No new JS handlers or temporal/domain changes.
+
+**Focused browser regression:** extended
+`e2e/temporal-create-unified-ui.spec.ts` to require eight bare
+arrows in both Quick and Advanced. Assertions check the actual
+computed 8px height, zero border, transparent background and 5px
+triangle glyph, alongside the already established compact Quick
+field / full-size Advanced field assertions.
+
+**Verification:** source candidate PUBLISHED / final Playwright
+regression **NOT YET RUN** by assistant or owner. The prior
+Objective 48/48 Vitest and TypeScript checks remain valid for
+unchanged TS logic; do not claim visual acceptance until new browser
+test passes and owner verifies the screenshot comparison. No full
+gate warranted.
+
 ## 2026-10-17 — Owner verified i18n-independent Objective row
 
 Owner pulled `c03819b22b051ba1c13cf73e025f560fa1b2b49d`
