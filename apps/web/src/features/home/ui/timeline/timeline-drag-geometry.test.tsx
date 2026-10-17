@@ -79,8 +79,26 @@ describe('Timeline pointer drag geometry stability', () => {
       clientX: 140,
       clientY: 120,
     };
-    fireEvent.pointerDown(card, pointer);
-    fireEvent.pointerMove(document, { ...pointer, clientY: 190 });
+    // JSDOM's PointerEvent implementation varies across Node versions.
+    // Dispatch with explicit PointerEvent properties so React and the native
+    // document listeners receive the same primary mouse pointer identity.
+    const pointerEvent = (type: string, target: EventTarget, clientY: number) => {
+      const event = new MouseEvent(type, {
+        bubbles: true,
+        cancelable: true,
+        button: pointer.button,
+        clientX: pointer.clientX,
+        clientY,
+      });
+      Object.defineProperties(event, {
+        pointerId: { value: pointer.pointerId },
+        pointerType: { value: pointer.pointerType },
+        isPrimary: { value: pointer.isPrimary },
+      });
+      fireEvent(target, event);
+    };
+    pointerEvent('pointerdown', card, pointer.clientY);
+    pointerEvent('pointermove', document, 190);
     expect(document.querySelector('.timeline-event-drag-overlay')).not.toBeNull();
 
     rerender(
@@ -95,7 +113,7 @@ describe('Timeline pointer drag geometry stability', () => {
       container.querySelector('.timeline-now-line')?.getAttribute('style'),
     ).toContain(`${first.mapper.map(14 * 60 + 20)}px`);
 
-    fireEvent.pointerUp(document, { ...pointer, clientY: 190 });
+    pointerEvent('pointerup', document, 190);
     expect(document.querySelector('.timeline-event-drag-overlay')).toBeNull();
     expect(section()?.style.height).toBe(`${stretched.height}px`);
   });
