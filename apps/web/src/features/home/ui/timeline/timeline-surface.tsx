@@ -327,6 +327,11 @@ export function TimelineSurface({
   } | null>(null);
   const suppressExpansionClickRef = useRef(false);
   const renderedDaysRef = useRef<readonly TimelineRenderedDay[]>([]);
+  const dragActiveRef = useRef(false);
+  const [dragSnapshot, setDragSnapshot] = useState<{
+    days: readonly TimelineRenderedDay[];
+    nowMinute: number;
+  } | null>(null);
   const pendingScrollTargetRef = useRef<ScrollTarget | null>(null);
   const initialScrollDoneRef = useRef(false);
   const initialViewPublishedRef = useRef(false);
@@ -341,6 +346,7 @@ export function TimelineSurface({
     const grid = gridRef.current;
     if (
       !grid ||
+      dragActiveRef.current ||
       !initialScrollDoneRef.current ||
       pendingScrollTargetRef.current !== null ||
       windowTransitionRef.current
@@ -463,8 +469,11 @@ export function TimelineSurface({
     ],
   );
 
+  const visibleRenderedDays = dragSnapshot?.days ?? renderedDays;
+  const visibleNowMinute = dragSnapshot?.nowMinute ?? timelineNowMinute;
+
   useLayoutEffect(() => {
-    renderedDaysRef.current = renderedDays;
+    if (!dragActiveRef.current) renderedDaysRef.current = renderedDays;
   }, [renderedDays]);
 
   const showFeedback = useCallback((message: string) => {
@@ -1049,7 +1058,9 @@ export function TimelineSurface({
       const verticalDelta = scrollTop - previousScrollTop;
       lastScrollTopRef.current = scrollTop;
 
-      if (timelineView !== 'timeline') return;
+      // Keep native auto-scroll working but don't recycle timeline days
+      // under the dragged card when it crosses the live now marker.
+      if (dragActiveRef.current || timelineView !== 'timeline') return;
 
       let shiftDays = 0;
       if (
@@ -1162,7 +1173,9 @@ export function TimelineSurface({
 
   useLayoutEffect(() => {
     const grid = gridRef.current;
-    if (!grid) {
+    if (!grid || dragActiveRef.current) {
+      // The clock and Session projections may refresh every 15 seconds.
+      // Do not re-anchor the viewport or recalculate expansion mid-drag.
       return;
     }
 
@@ -1497,10 +1510,22 @@ export function TimelineSurface({
       )}
 
       <TimelineDayStream
-        days={renderedDays}
+        days={visibleRenderedDays}
         view={timelineView}
         today={timelineToday}
-        nowMinute={timelineNowMinute}
+        nowMinute={visibleNowMinute}
+        onDragActiveChange={(active) => {
+          if (active === dragActiveRef.current) return;
+          dragActiveRef.current = active;
+          if (active) {
+            setDragSnapshot({
+              days: renderedDaysRef.current,
+              nowMinute: timelineNowMinute,
+            });
+          } else {
+            setDragSnapshot(null);
+          }
+        }}
         state={
           presentationFilters === state.filters
             ? state
