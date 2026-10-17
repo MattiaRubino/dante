@@ -1,5 +1,57 @@
 # Timeline / Temporal-Operational — Workstream Handoff
 
+## 2026-10-17 — Create control microtype and current-time drag jitter candidate
+
+Owner confirmed the previous changes in the real UI and requested two
+precise follow-ups: (1) raise Quick/Advanced Create button and label text
+a *little more*, particularly `Opzioni avanzate`, `Salva bozza`,
+`Aggiungi`, `Attività`, `Evento` and the large Advanced option buttons,
+without changing any panel/container geometry; (2) remove a jump/hesitation
+when dragging a card near the moving current-time line.
+
+**Source changes:**
+
+- `timeline-day-stream.tsx`: when the pointer crosses drag activation,
+  snapshot the already-rendered elastic `TimelineRenderedDay[]` and
+  `nowMinute` for the duration of that one gesture. Render frozen
+  day mappings/positions and use the same pinned mappings in
+  `resolveDragPreview`, used by both preview and final drop. This
+  prevents 15-second live Session reality projections / clock ticks
+  from rebuilding the nonlinear minute↔pixel mapper under the pointer
+  near the now-line. On release, Escape, pointer cancel or drag cleanup,
+  restore live incoming days immediately. Existing 15-minute snap,
+  auto-scroll, ruler pin, Undo and canonical replan paths unchanged.
+  The now-line already has `pointer-events:none`; no new visible
+  ghost overlay or interaction was introduced.
+- `temporal-create-u1-polish.css`: modest fonts only:
+  type labels 14px, Quick toggles 13.5px, Advanced reality buttons
+  14px, Create footer actions 13px, secondary text about 12.5px.
+  Crucially, `Salva bozza` previously inherited a high-specificity
+  10px rule; the 13px footer rule now outranks it. Long labels stay
+  inside the *unchanged* button boxes using ellipsis when necessary.
+  No width/height/grid/padding/modal/footer/frame changes.
+- `e2e/temporal-create-unified-ui.spec.ts`: browser computed font
+  checks for Quick, Advanced and each footer action, plus unchanged
+  Quick button-bounds containment. Existing compact vs full-size
+  clock geometry assertions remain.
+- `timeline-drag-geometry.test.tsx`: JSDOM regression simulates a
+  real Session-time elastic geometry reproject after pointer-drag
+  activation. Verifies day height and now marker remain from the
+  original mapper during drag, and the updated mapper becomes visible
+  immediately after pointerup. Pointer identity is supplied explicitly
+  for deterministic native + React pointer listeners across JSDOM
+  versions. Existing Playwright card preview/drop equality test
+  continues to cover the full pointer pipeline.
+
+**Verification status:** SOURCE CANDIDATE PUBLISHED, **focused tests
+NOT YET EXECUTED** on the final commit by the assistant. Owner needs
+only TypeScript, the new Vitest freeze regression and two selected
+Playwright tests (Create readability and existing title drag preview).
+No backend changes, migration or full 27-group gate. Authenticated
+real-data visual confirmation around an actively updating Session
+is still pending; do not call the jitter fully solved until that
+scenario is checked on a real running Session.
+
 ## 2026-10-17 — Owner verification: post-Stop child review, cursor and typography
 
 Owner provided WSL test output against **exact code HEAD**
