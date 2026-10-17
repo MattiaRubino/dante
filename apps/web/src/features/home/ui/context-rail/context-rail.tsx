@@ -117,11 +117,13 @@ export function ContextRail() {
       }
     };
     window.addEventListener('focus', onVisible);
+    window.addEventListener('dante:session-changed', onVisible);
     window.addEventListener(REVIEW_QUEUE_INVALIDATED, onVisible);
     document.addEventListener('visibilitychange', onVisible);
     const interval = window.setInterval(onVisible, 60_000);
     return () => {
       window.removeEventListener('focus', onVisible);
+      window.removeEventListener('dante:session-changed', onVisible);
       window.removeEventListener(REVIEW_QUEUE_INVALIDATED, onVisible);
       document.removeEventListener('visibilitychange', onVisible);
       window.clearInterval(interval);
