@@ -107,7 +107,9 @@ describe('TimelineSurface production parity', () => {
     const indicator = card?.querySelector('.timeline-event-card__indicator');
     expect(indicator?.textContent).toBe('Scaletta3');
     expect(
-      indicator?.parentElement?.classList.contains('timeline-event-card__indicators'),
+      indicator?.parentElement?.classList.contains(
+        'timeline-event-card__indicators',
+      ),
     ).toBe(true);
     const dragSurface = card?.querySelector('.timeline-event-card__drag-zone');
     expect(
