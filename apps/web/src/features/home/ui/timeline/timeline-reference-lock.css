@@ -158,10 +158,12 @@
   .home-timeline--production
   .timeline-event-card--activity
   .timeline-event-card__title {
-  display: -webkit-box;
-  -webkit-box-orient: vertical;
-  -webkit-line-clamp: 2;
-  white-space: normal;
+  display: block;
+  min-width: 0;
+  width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .home-m1 .home-timeline--production .timeline-event-card__time,
