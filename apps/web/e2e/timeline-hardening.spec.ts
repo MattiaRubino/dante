@@ -55,13 +55,20 @@ test('a long Activity title stays on one ellipsized line', async ({
 }) => {
   await page.setViewportSize({ width: 1440, height: 900 });
   await page.goto('/home');
-  const card = page.locator('.timeline-event-card--activity').first();
+  // The non-auth /home fixture has generic Timeline cards but no persisted
+  // scheduled-activity owner. Apply only the Activity presentation class to a
+  // known fixture card: this checks the real browser CSS cascade without
+  // relying on unavailable backend records or fabricating a Session.
+  const card = page.locator('[data-timeline-event="7"]');
   await card.scrollIntoViewIfNeeded();
+  await card.evaluate((element) => {
+    element.classList.add('timeline-event-card--activity');
+  });
   const title = card.locator('.timeline-event-card__title');
   await expect(title).toBeVisible();
 
-  // Measure the actual production cascade, not jsdom or text truncation
-  // alone. A long name must not create a second title line.
+  // Measure the production Activity style (not jsdom). The full title
+  // remains accessible while its rendered preview is one ellipsized line.
   const result = await title.evaluate((element) => {
     element.textContent = 'L'.repeat(140);
     const css = getComputedStyle(element);
