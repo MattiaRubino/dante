@@ -41,8 +41,8 @@ export const TIMELINE_POLICY = {
     controlStepFactor: 1.18,
   },
   drag: {
-    defaultSnapMinutes: 1,
-    precisionSnapMinutes: 1,
+    defaultSnapMinutes: 15,
+    precisionSnapMinutes: 15,
     activationDistancePx: 7,
     autoScrollEdgePx: 56,
     autoScrollMinPxPerSecond: 100,
