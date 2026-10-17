@@ -51,13 +51,6 @@ export function timelineEventReadableHeight(event: TimelineEvent): number {
     height = Math.max(height, eventPolicy.subitemsMinimumHeightPx);
   }
 
-  if (
-    event.title.length > eventPolicy.longTitleThreshold &&
-    duration <= eventPolicy.longTitleMaxDurationMinutes
-  ) {
-    height += eventPolicy.longTitleExtraHeightPx;
-  }
-
   // Reserve room before Play for the planned time, actual time and optional
   // Session count. The card's runtime state never dictates this floor.
   if (event.canonicalBasis?.kind === 'scheduled-activity') {
@@ -65,7 +58,14 @@ export function timelineEventReadableHeight(event: TimelineEvent): number {
   } else {
     height = Math.max(height, eventPolicy.eventMinimumHeightPx);
   }
-  return Math.max(height, event.visualMinimumHeightPx ?? 0);
+  height = Math.max(height, event.visualMinimumHeightPx ?? 0);
+  if (
+    event.title.length > eventPolicy.longTitleThreshold &&
+    duration <= eventPolicy.longTitleMaxDurationMinutes
+  ) {
+    height += eventPolicy.longTitleExtraHeightPx;
+  }
+  return height;
 }
 
 export function computeTimelineDensityMetrics(
