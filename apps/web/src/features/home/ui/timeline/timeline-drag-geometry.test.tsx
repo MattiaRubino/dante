@@ -62,6 +62,7 @@ describe('Timeline pointer drag geometry stability', () => {
       onOpenSubitemDetail: vi.fn(),
       onMoveEvent: vi.fn(),
       onMoveFeedback: vi.fn(),
+      onDragActiveChange: vi.fn(),
     };
     const { container, rerender } = render(
       <TimelineDayStream {...props} days={original} nowMinute={14 * 60 + 20} />,
@@ -100,6 +101,7 @@ describe('Timeline pointer drag geometry stability', () => {
     pointerEvent('pointerdown', card, pointer.clientY);
     pointerEvent('pointermove', document, 190);
     expect(document.querySelector('.timeline-event-drag-overlay')).not.toBeNull();
+    expect(props.onDragActiveChange).toHaveBeenCalledWith(true);
 
     rerender(
       <TimelineDayStream
@@ -110,11 +112,18 @@ describe('Timeline pointer drag geometry stability', () => {
     );
     expect(section()?.style.height).toBe(`${first.height}px`);
     expect(
+      container.querySelector('.timeline-ruler-day')?.getAttribute('style'),
+    ).toContain(`${first.height}px`);
+    expect(
       container.querySelector('.timeline-now-line')?.getAttribute('style'),
     ).toContain(`${first.mapper.map(14 * 60 + 20)}px`);
 
     pointerEvent('pointerup', document, 190);
     expect(document.querySelector('.timeline-event-drag-overlay')).toBeNull();
+    expect(props.onDragActiveChange).toHaveBeenLastCalledWith(false);
     expect(section()?.style.height).toBe(`${stretched.height}px`);
+    expect(
+      container.querySelector('.timeline-ruler-day')?.getAttribute('style'),
+    ).toContain(`${stretched.height}px`);
   });
 });
