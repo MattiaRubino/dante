@@ -28,9 +28,26 @@ test('Quick keeps its compact clock field while Advanced uses the Edit interval 
   await expect(dialog).toHaveAttribute('data-temporal-create-surface', 'base');
   // Text sizing is independent of the fixed Quick panel dimensions.
   await expect(dialog.locator('.temporal-create-type-grid strong').first())
-    .toHaveCSS('font-size', '13px');
+    .toHaveCSS('font-size', '14px');
   await expect(dialog.locator('.temporal-create-choice-row > button').first())
-    .toHaveCSS('font-size', '12.5px');
+    .toHaveCSS('font-size', '13.5px');
+  const footer = dialog.locator('.temporal-create-actions');
+  for (const button of await footer.locator(':scope > button').all()) {
+    await expect(button).toHaveCSS('font-size', '13px');
+  }
+  // The fixed footer and all three actions stay inside the Quick panel.
+  const footerFits = await footer.evaluate((element) => {
+    const modal = element.closest('.temporal-create-composer');
+    if (!modal) return false;
+    const frame = modal.getBoundingClientRect();
+    return Array.from(element.querySelectorAll(':scope > button')).every(
+      (button) => {
+        const box = button.getBoundingClientRect();
+        return box.left >= frame.left - 1 && box.right <= frame.right + 1;
+      },
+    );
+  });
+  expect(footerFits).toBe(true);
   const quickClocks = dialog.locator(
     '.temporal-create-u2-when > .temporal-create-time-control .temporal-create-time-control__field',
   );
@@ -46,7 +63,10 @@ test('Quick keeps its compact clock field while Advanced uses the Edit interval 
   await expect(dialog).toHaveAttribute('data-temporal-create-surface', 'advanced');
   const advancedWhen = dialog.locator('.temporal-create-u2-when');
   await expect(dialog.locator('.temporal-create-reality-mode > button').first())
-    .toHaveCSS('font-size', '13px');
+    .toHaveCSS('font-size', '14px');
+  for (const button of await footer.locator(':scope > button').all()) {
+    await expect(button).toHaveCSS('font-size', '13px');
+  }
   await expect(advancedWhen).toHaveCSS('max-width', '820px');
   await expectEditStyleChevrons(advancedWhen);
   const advancedControls = advancedWhen.locator(
