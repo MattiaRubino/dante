@@ -8,6 +8,7 @@ import {
   useEffect,
   useLayoutEffect,
   useRef,
+  useState,
 } from 'react';
 import { useTranslation } from 'react-i18next';
 
@@ -633,6 +634,16 @@ export function TimelineDayStream({
   const scrubberRuntimeRef = useRef<TemporalScrubberRuntime | null>(null);
   const scrubberFrameRef = useRef<number | null>(null);
   const daysRef = useRef(days);
+  // Keep a stable immutable map and rendered heights for one pointer gesture.
+  // Live Session reality / the current-time tick may otherwise rebuild the
+  // nonlinear mapper during drag and cause a sudden target-minute jump.
+  const [dragGeometry, setDragGeometry] = useState<{
+    days: readonly TimelineRenderedDay[];
+    nowMinute: number;
+  } | null>(null);
+  const dragGeometryRef = useRef<readonly TimelineRenderedDay[] | null>(null);
+  const displayedDays = dragGeometry?.days ?? days;
+  const displayedNowMinute = dragGeometry?.nowMinute ?? nowMinute;
   const stateRef = useRef(state);
   const autoScrollFrameRef = useRef<number | null>(null);
   const revealFrameRef = useRef<number | null>(null);
@@ -688,7 +699,9 @@ export function TimelineDayStream({
   );
 
   useLayoutEffect(() => {
-    daysRef.current = days;
+    // The React view and inverse mapping must agree while a drag is active.
+    // The fresh data is rendered again immediately after the gesture ends.
+    if (dragGeometryRef.current === null) daysRef.current = days;
     stateRef.current = state;
   }, [days, state]);
 
@@ -866,6 +879,8 @@ export function TimelineDayStream({
 
     runtime.overlay = overlay;
     runtime.rulerMarker = rulerMarker;
+    dragGeometryRef.current = daysRef.current;
+    setDragGeometry({ days: daysRef.current, nowMinute });
     runtime.dragging = true;
     runtime.lastAutoFrame = performance.now();
     runtime.card.classList.add('is-drag-source');
@@ -883,6 +898,8 @@ export function TimelineDayStream({
       runtime.rulerMarker = null;
     }
     stopAutoScroll();
+    dragGeometryRef.current = null;
+    setDragGeometry(null);
   };
 
   const cancelDrag = () => {
@@ -1459,11 +1476,11 @@ export function TimelineDayStream({
         <div
           className={`timeline-day-stream${view === 'week' ? ' is-week' : ''}`}
         >
-          {days.map((day) => (
+          {displayedDays.map((day) => (
             <TimelineDay
               day={day}
               today={today}
-              nowMinute={nowMinute}
+              nowMinute={displayedNowMinute}
               state={state}
               focusedEvent={focusedEvent}
               key={day.dateKey}
