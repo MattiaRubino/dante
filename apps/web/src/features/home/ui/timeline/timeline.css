@@ -1040,10 +1040,33 @@
 .timeline-event-card__drag-zone {
   position: relative;
   z-index: 3;
-  flex: 1;
-  min-height: 10px;
+  flex: 1 1 auto;
+  min-height: 0;
   cursor: grab;
   touch-action: none;
+}
+
+/* The drag surface consumes elastic vertical room. Information strips stay
+ * immediately above the lower edge, not under the heading; Stop does not
+ * reorder the Activity's configured content. */
+.timeline-event-card__indicators {
+  position: relative;
+  z-index: 4;
+  display: grid;
+  flex: 0 0 auto;
+  align-content: end;
+  gap: 2px;
+  min-width: 0;
+  padding: 0 9px 7px 12px;
+  pointer-events: none;
+}
+
+.timeline-event-card__indicators:empty {
+  display: none;
+}
+
+.timeline-event-card__indicators.has-subitems {
+  padding-bottom: 30px;
 }
 
 .timeline-event-card:active .timeline-event-card__drag-zone {
