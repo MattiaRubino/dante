@@ -835,3 +835,59 @@
   overflow: hidden;
   text-overflow: ellipsis;
 }
+
+/* Advanced-only readability: target the true authoring surface rather than
+   a generic "font-size" on the container (many controls specify their own).
+   Keep every existing frame, grid, button and text-input dimension. */
+.temporal-create-backdrop.is-advanced
+  .temporal-create-composer.is-advanced
+  :is(
+    .temporal-create-type-grid > button strong,
+    .temporal-create-reality-mode > button,
+    .temporal-create-reality-objectives__block-copy strong,
+    .temporal-create-reality-objectives__heading h3,
+    .temporal-create-section__heading h3,
+    .temporal-create-choice-row > button,
+    .temporal-create-segmented > button,
+    .temporal-create-objectives__add,
+    .temporal-create-structure-add,
+    .temporal-create-timezone-current,
+    .temporal-create-repeat-summary,
+    .temporal-create-advanced-description-label
+  ) {
+  font-size: 14px;
+}
+
+.temporal-create-backdrop.is-advanced
+  .temporal-create-composer.is-advanced
+  :is(
+    .temporal-create-reality-objectives__heading p,
+    .temporal-create-reality-objectives__block-copy span,
+    .temporal-create-control > span,
+    .temporal-create-activity-interval__label,
+    .temporal-create-date-picker__trigger,
+    .temporal-create-timezone-label,
+    .temporal-create-structure-menu button,
+    .temporal-create-tree-row__title,
+    .temporal-create-field-error,
+    .temporal-create-reality-objectives__block-copy small
+  ) {
+  font-size: 13px;
+}
+
+.temporal-create-backdrop.is-advanced
+  .temporal-create-composer.is-advanced
+  :is(
+    .temporal-create-actions > button,
+    .temporal-create-actions .temporal-create-advanced-toggle
+  ) {
+  font-size: 14px;
+}
+
+.temporal-create-backdrop.is-advanced
+  .temporal-create-composer.is-advanced
+  :is(.temporal-create-reality-mode > button, .temporal-create-actions > button) {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
