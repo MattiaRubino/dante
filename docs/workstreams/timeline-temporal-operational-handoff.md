@@ -1,5 +1,61 @@
 # Timeline / Temporal-Operational — Workstream Handoff
 
+## 2026-10-17 — Card layout, Life Area edit colors and Stop-to-review candidate
+
+A separate conversation reported source changes prepared locally but not pushed.
+GitHub branch was verified at `657c23cf582a7f835ae8c7f8a5919b230888904f`,
+which had none of the new four screenshot fixes. The current candidate is
+implemented directly on the existing branch; this is **not** an assertion
+that the inaccessible local diff was cherry-picked.
+
+**Source corrections:**
+
+1. Activity card title is **one line with ellipsis** under both base and
+   production reference CSS. Removed now-obsolete second-row height from
+   `timelineEventReadableHeight` and its policy/test expectations. The
+   real full title remains available via accessible name and tooltip.
+2. Grouped **Sessioni / Obiettivi / Scaletta** indicator rows are rendered
+   after the elastic drag spacer, in one lower-edge footer. Week view
+   intentionally hides the entire footer. Event subitem expansion reserves
+   space for its lower expander.
+3. A completed main Session shorter than five minutes reserves **168px**
+   of layout/clock-local readable height, including the planned/actual
+   labels, Life Area and indicators. Longer completed Sessions keep their
+   existing dynamic geometry; this neither adjusts Schedule nor factual
+   Session times. Second-level Stop precision and mapper invariants remain.
+4. Activity edit now passes canonical `colorCode` from the Life Area catalog
+   into the already-shared `TemporalLifeAreaSelect` swatch control.
+5. Read-only **Da verificare** projection now recognizes a genuine stopped
+   main Activity Session as an immediate trigger for never-started named
+   Sessions, without awaiting all planned intervals to end. Existing
+   plan-expiry behavior remains. The owner-scoped read enriches existing
+   historical attempts with their stored `ended_at`; no new facts,
+   database objects or generated contracts. Previously started named
+   Sessions are not incorrectly classified as unstarted.
+
+**Added/updated focused regressions:**
+- Vitest `model/timeline-density.test.ts` (long-title no-height change),
+  `timeline-session-reality.test.ts` (short Stop readable floor),
+  `timeline-surface.test.tsx` (indicator footer placement), and
+  `activity-inspector-actions.test.tsx` (two distinct canonical Life Area
+  colors in edit option swatches).
+- Playwright `e2e/timeline-hardening.spec.ts` (production one-line
+  computed style and lower-edge Event indicator geometry).
+- Python `tests/test_session_panel.py` (explicit main Stop before a future
+  Activity interval; both untouched children require review; previously
+  attempted child excluded; no phantom children).
+- Real PostgreSQL `tests/integration/temporal/test_session_panel.py`:
+  the established early main/child Start-Stop sequence must show only
+  the untouched child under `session_unstarted` after main Stop.
+
+**Verification:** PUBLISHED SOURCE CANDIDATE / NOT RUN on final SHA.
+No assistant-side pnpm, Ruff, pytest, PostgreSQL or real-browser
+execution. Owner's previous 32 focused green tests were on
+`f047d50b` and do not certify this candidate. User explicitly requested
+**only changed-area focused tests, not the 27-group full gate.** Do not
+claim visual/product acceptance until owner checks the screenshot cases in
+the real application.
+
 ## 2026-10-16 — Owner WSL evidence for early-main child visibility
 
 User ran focused checks after a verified fast-forward to
