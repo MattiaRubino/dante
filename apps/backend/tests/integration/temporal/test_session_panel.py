@@ -12,6 +12,7 @@ from tests.integration.temporal.test_activity_quick_authoring_metadata import _s
 
 from dante.context.contracts import DanteContext
 from dante.modules.temporal.authoring import TemporalAuthoringApplication
+from dante.modules.temporal.resolution_queue_api import list_resolution_queue
 from dante.modules.temporal.schedule import AbsoluteIntervalPlacement
 from dante.modules.temporal.session_panel_api import get_session_panel
 from dante.modules.temporal.session_runtime import (
@@ -260,6 +261,20 @@ async def test_main_started_before_preview_exposes_all_children_and_preserves_ca
         assert not ended.open
         after = await get_session_panel(context, request, Response())
         assert all(group.activity_ref != activity for group in after.groups)
+
+        # Explicit main Stop at a time when the accepted plan is still two
+        # hours in the future must send the untouched second child to
+        # Da verificare immediately, not await the planned interval end.
+        pending = await list_resolution_queue(request, context)
+        pending_children = [
+            item for item in pending.items
+            if item.subject_ref == activity and item.reason_code == "session_unstarted"
+        ]
+        assert len(pending_children) == 1
+        assert pending_children[0].summary == "Esercizi · mai avviata"
+        assert pending_children[0].planned_schedule_ref == group.rows[2].planned_schedule_ref
+        assert pending_children[0].effective_at <= datetime.now(UTC)
+
         # The Activity and its two planned children were never deleted.
         async with runtime.session_factory() as session, session.begin():
             refs = (
