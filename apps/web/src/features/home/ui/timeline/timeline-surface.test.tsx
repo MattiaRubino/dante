@@ -104,8 +104,18 @@ describe('TimelineSurface production parity', () => {
     expect(card?.querySelector('.timeline-event-card__time')?.tagName).toBe(
       'DIV',
     );
-    expect(card?.querySelector('.timeline-event-card__indicator')?.textContent)
-      .toBe('Scaletta3');
+    const indicator = card?.querySelector('.timeline-event-card__indicator');
+    expect(indicator?.textContent).toBe('Scaletta3');
+    expect(
+      indicator?.parentElement?.classList.contains('timeline-event-card__indicators'),
+    ).toBe(true);
+    const dragSurface = card?.querySelector('.timeline-event-card__drag-zone');
+    expect(
+      Boolean(
+        (dragSurface?.compareDocumentPosition(indicator as Node) ?? 0) &
+          Node.DOCUMENT_POSITION_FOLLOWING,
+      ),
+    ).toBe(true);
     expect(card?.querySelector('.timeline-activity-session-card-controls'))
       .toBeNull();
   });
