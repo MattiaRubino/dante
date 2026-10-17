@@ -112,6 +112,58 @@ test('Session Objective and agenda indicators sit near the lower card edge', asy
   expect(distanceFromBottom).toBeLessThanOrEqual(38);
 });
 
+test('title drag previews the same 15-minute destination as drop', async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await page.goto('/home');
+  const card = page.locator('[data-timeline-event="12"]');
+  await card.scrollIntoViewIfNeeded();
+  const title = card.locator('.timeline-event-card__title');
+  const bounds = await title.boundingBox();
+  expect(bounds).not.toBeNull();
+  if (!bounds) return;
+
+  const x = bounds.x + Math.min(bounds.width / 2, 28);
+  const y = bounds.y + bounds.height / 2;
+  await page.mouse.move(x, y);
+  await page.mouse.down();
+  await page.mouse.move(x, y + 70, { steps: 8 });
+
+  const overlay = page.locator('.timeline-event-drag-overlay');
+  const marker = page.locator('[data-timeline-drag-ruler-marker]');
+  await expect(overlay).toBeVisible();
+  await expect(marker).toBeVisible();
+
+  const preview = await overlay.getAttribute('data-drag-preview-time');
+  expect(preview).toMatch(/^\\d{2}:\\d{2}–\\d{2}:\\d{2}$/);
+  if (!preview) return;
+  const start = preview.slice(0, 5);
+  const startMinute = Number(start.slice(0, 2)) * 60 + Number(start.slice(3));
+  expect(startMinute % 15).toBe(0);
+  await expect(marker).toHaveText(start);
+
+  await page.mouse.up();
+  await expect(overlay).toHaveCount(0);
+  await expect(marker).toHaveCount(0);
+  await expect(card.locator('.timeline-event-card__time')).toContainText(preview);
+  await expect(page.locator('.timeline-event-modal--inspector')).toHaveCount(0);
+});
+
+test('card clock is informative rather than hover-editable', async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await page.goto('/home');
+  const card = page.locator('[data-timeline-event="12"]');
+  await card.scrollIntoViewIfNeeded();
+  const clock = card.locator('.timeline-event-card__time');
+  const color = await clock.evaluate((element) => getComputedStyle(element).color);
+  await clock.hover();
+  await expect(clock).toHaveCSS('cursor', 'default');
+  await expect(clock).toHaveCSS('color', color);
+});
+
 test('a keyboard nudge preserves its feedback and Undo', async ({
   page,
 }) => {
