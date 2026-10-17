@@ -1004,10 +1004,11 @@
 }
 
 .timeline-event-card--activity .timeline-event-card__title {
-  display: -webkit-box;
-  -webkit-box-orient: vertical;
-  -webkit-line-clamp: 2;
-  white-space: normal;
+  display: block;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .timeline-event-card__title:hover {
