@@ -1,5 +1,65 @@
 # Timeline / Temporal-Operational — Workstream Handoff
 
+## 2026-10-17 — Owner screenshot feedback: cursor, Create typography, post-Stop child review
+
+Owner inspected real UI after prior green 56-test candidate and reported three
+misses. This patch intentionally **supersedes** the previous assumption that
+main Play permanently dismisses every child "mai avviata" item:
+
+1. Card title: production reference CSS removed the `cursor:pointer`
+   match for `.timeline-event-card__title`. Without a drag, the
+   mouse uses the normal arrow; once drag starts, the existing
+   `.is-drag-source` grabbing cursor remains active. No click/drag
+   dispatch logic was modified.
+2. Create typography: real screenshots exposed 7.5–11px type on large
+   Quick/Advanced controls despite the earlier limited CSS pass.
+   U1 polish now gives main type choices 13px, toggle/choice labels
+   12.5px, Advanced reality buttons 13px, descriptions 12px and
+   footer actions 12px, plus appropriately sized timezone/form labels.
+   **Widths, heights, padding, grid tracks, fixed footers, responsive
+   layout and time logic are unchanged**. Text remains ellipsized where
+   required. New browser assertions check actual computed font sizes.
+3. Operational policy:
+   - Past no-main-Play / no child history => main + unstarted named
+     Session review entries.
+   - Main started/open/paused => no unstarted review while in progress.
+   - Main explicitly stopped => ONLY named Sessions without any
+     historical attempt enter `Da verificare`, even if the plan has
+     not yet ended. The real main never re-enters "mai avviata".
+   - Named Sessions with a real attempt are historical, not unstarted.
+   - Internal-only past planned Sessions remain read-only review
+     without inventing autonomous child execution.
+   - `resolution_queue_api.py` reads accepted main `ended_at`
+     directly from owner-scoped Session history, not guessed UI state.
+     It neither creates Actual nor alters Schedule/Session records.
+4. Activity Inspector: previously rendered named Play buttons without
+   looking at the main's state, leading to rejected child Start after
+   the main was stopped. Detail-only Session listing now derives
+   main `open`/`paused`/`stopped` from existing authoritative
+   Activity Session GET; updates on `dante:session-changed`.
+   Child Play controls only mount while main is actively running.
+   Otherwise the inspector shows `Avvia prima la principale`,
+   `Principale in pausa`, `Da verificare` (never started,
+   main stopped), or `Registrata` (attempted child).
+   The planned-session indicator band remains unchanged.
+5. Tests updated:
+   - unit `tests/test_session_panel.py` for expiry, main Play,
+     Pause/open, Stop, future Stop and attempted child exclusion;
+   - PostgreSQL `test_session_panel.py::test_past_unstarted_review_pauses_on_main_play_and_returns_for_children_on_stop`;
+   - Web `activity-planned-sessions-card-detail.test.tsx` ensures
+     no invalid child Play before/while main paused/after Stop,
+     and only valid buttons while main running;
+   - browser `timeline-hardening.spec.ts` asserts neutral title
+     cursor; `temporal-create-unified-ui.spec.ts` asserts Create font.
+   
+**Verification:** SOURCE CANDIDATE PUBLISHED, new tests not run by
+assistant. Prior 56 green tests belong to preceding source and do NOT
+certify this new regression repair. Run only focused Ruff/backend
+unit/one PostgreSQL integration, typecheck, Inspector Vitest and two
+targeted browser cases. Manual authenticated acceptance of real
+Session history and label fit remains pending. Avoid full 27-group
+gate.
+
 ## 2026-10-17 — Owner verification: 56 focused tests green
 
 Owner provided WSL terminal output after fast-forwarding and checking exact
