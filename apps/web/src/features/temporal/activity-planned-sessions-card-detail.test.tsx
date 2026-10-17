@@ -1,7 +1,7 @@
 import { fetchRequestUrl } from '../../test-support/fetch-request';
 // @vitest-environment jsdom
 
-import { act, cleanup, render, screen } from '@testing-library/react';
+import { act, cleanup, render, screen, waitFor } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import { ActivityPlannedSessionsCardDetail } from './activity-planned-sessions-card-detail';
@@ -19,46 +19,45 @@ describe('Activity planned Sessions card detail', () => {
   });
 
   it('renders only Activity-owned named Sessions without calendar times', async () => {
+    const children = {
+      parent_activity_ref: ACTIVITY,
+      session_capture_mode: 'disabled',
+      child_guard_mode: 'none',
+      schedules: [
+        {
+          schedule_ref: ENVELOPE,
+          role_code: 'envelope',
+          presentation_order: 0,
+          display_name: null,
+          temporal_form: 'named_zone_local',
+          starts_local_at: '2026-10-04T18:00:00',
+          ends_local_at: '2026-10-04T21:00:00',
+        },
+        {
+          schedule_ref: SESSION_A,
+          role_code: 'planned',
+          presentation_order: 1,
+          display_name: 'Teoria',
+          temporal_form: 'named_zone_local',
+          starts_local_at: '2026-10-04T18:00:00',
+          ends_local_at: '2026-10-04T19:00:00',
+        },
+        {
+          schedule_ref: SESSION_B,
+          role_code: 'planned',
+          presentation_order: 2,
+          display_name: 'Esercizi',
+          temporal_form: 'named_zone_local',
+          starts_local_at: '2026-10-04T20:00:00',
+          ends_local_at: '2026-10-04T21:00:00',
+        },
+      ],
+      children: [],
+        };
     const fetchFn = vi.fn<typeof fetch>((input) =>
       Promise.resolve(
         Response.json(
-          fetchRequestUrl(input).endsWith('/sessions')
-            ? []
-            : {
-          parent_activity_ref: ACTIVITY,
-          session_capture_mode: 'disabled',
-          child_guard_mode: 'none',
-          schedules: [
-            {
-              schedule_ref: ENVELOPE,
-              role_code: 'envelope',
-              presentation_order: 0,
-              display_name: null,
-              temporal_form: 'named_zone_local',
-              starts_local_at: '2026-10-04T18:00:00',
-              ends_local_at: '2026-10-04T21:00:00',
-            },
-            {
-              schedule_ref: SESSION_A,
-              role_code: 'planned',
-              presentation_order: 1,
-              display_name: 'Teoria',
-              temporal_form: 'named_zone_local',
-              starts_local_at: '2026-10-04T18:00:00',
-              ends_local_at: '2026-10-04T19:00:00',
-            },
-            {
-              schedule_ref: SESSION_B,
-              role_code: 'planned',
-              presentation_order: 2,
-              display_name: 'Esercizi',
-              temporal_form: 'named_zone_local',
-              starts_local_at: '2026-10-04T20:00:00',
-              ends_local_at: '2026-10-04T21:00:00',
-            },
-          ],
-          children: [],
-        },
+          fetchRequestUrl(input).endsWith('/sessions') ? [] : children,
         ),
       ),
     );
@@ -94,8 +93,18 @@ describe('Activity planned Sessions card detail', () => {
     const children = {
       parent_activity_ref: ACTIVITY,
       schedules: [
-        { schedule_ref: SESSION_A, role_code: 'planned', presentation_order: 1, display_name: 'Teoria' },
-        { schedule_ref: SESSION_B, role_code: 'planned', presentation_order: 2, display_name: 'Esercizi' },
+        {
+          schedule_ref: SESSION_A,
+          role_code: 'planned',
+          presentation_order: 1,
+          display_name: 'Teoria',
+        },
+        {
+          schedule_ref: SESSION_B,
+          role_code: 'planned',
+          presentation_order: 2,
+          display_name: 'Esercizi',
+        },
       ],
     };
     const main = () => ({
@@ -116,7 +125,9 @@ describe('Activity planned Sessions card detail', () => {
     });
     const fetchFn = vi.fn<typeof fetch>((input) =>
       Promise.resolve(
-        Response.json(fetchRequestUrl(input).endsWith('/sessions') ? [main()] : children),
+        Response.json(
+          fetchRequestUrl(input).endsWith('/sessions') ? [main()] : children,
+        ),
       ),
     );
     vi.stubGlobal('fetch', fetchFn);
@@ -124,13 +135,9 @@ describe('Activity planned Sessions card detail', () => {
       <ActivityPlannedSessionsCardDetail activityRef={ACTIVITY} visible />,
     );
     await screen.findByText('Teoria');
-    await act(async () => {
-      await Promise.resolve();
-      await Promise.resolve();
-    });
-    expect(
-      container.querySelectorAll('[aria-label="Avvia"]'),
-    ).toHaveLength(2);
+    await waitFor(() =>
+      expect(container.querySelectorAll('[aria-label="Avvia"]')).toHaveLength(2),
+    );
 
     mainStopped = true;
     act(() =>
