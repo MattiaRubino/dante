@@ -367,7 +367,11 @@ function TimelineEventCard({
       <div className="timeline-event-card__drag-zone" aria-hidden="true" />
 
       <div
-        className={`timeline-event-card__indicators${event.subitems?.length ? ' has-subitems' : ''}`}
+        className={
+          event.subitems?.length
+            ? 'timeline-event-card__indicators has-subitems'
+            : 'timeline-event-card__indicators'
+        }
       >
         {sessionActivityRef === null ? null : (
           <ActivityPlannedSessionsCardDetail
