@@ -72,9 +72,6 @@ export const TIMELINE_POLICY = {
     subitemsMinimumHeightPx: 98,
     expandedSubitemsBaseExtraHeightPx: 18,
     expandedSubitemExtraHeightPx: 27,
-    longTitleThreshold: 34,
-    longTitleMaxDurationMinutes: 30,
-    longTitleExtraHeightPx: 12,
   },
   window: {
     pastBufferDays: 1,
