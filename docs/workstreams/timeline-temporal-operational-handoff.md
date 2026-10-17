@@ -1,5 +1,53 @@
 # Timeline / Temporal-Operational — Workstream Handoff
 
+## 2026-10-17 — Owner screenshot correction: live now-line drag and Edit font parity
+
+**Owner-reported reality after previous 3/3 focus tests:** dragging a card
+across the **current-time** line still leaps discontinuously from
+`00:00` to `21:15` with only a small physical move; Advanced Create
+and especially Activity Edit texts still look too small. Owner explicitly
+clarified that **midnight is NOT the bug trigger**; do not replace the
+15-minute snapping or day-boundary semantics to address this.
+
+**Root issue in earlier attempted drag freeze:** the child day stream only
+froze its own rendered days. The parent `TimelineSurface` still reprojected
+the live Session/clock mapper, scroll anchoring, ruler and recyclable day
+window, allowing different pixel-to-minute coordinate systems while
+dragging near now. The mapper itself remains nonlinear and the real
+current-time line stays informational.
+
+**Source candidate (not owner-tested):**
+- Added an optional `onDragActiveChange` event from
+  `TimelineDayStream` on begin/end to the parent, and moved the ruler
+  to `displayedDays`, sharing the same frozen projection as cards.
+- `TimelineSurface` now captures one frozen `renderedDays` and
+  `timelineNowMinute` on actual drag activation, displays the frozen
+  projection until release/cancel, suspends parent viewport re-anchoring,
+  keeps `renderedDaysRef` pinned, and skips live day-window recycling
+  during drag. Native auto-scroll still works; after drop the newest
+  live projection resumes. Snapping (15m), canonical replan, timezone,
+  actual Session timing and Undo are unchanged.
+- Typography fixes now explicitly cover Edit: appended scoped rules in
+  `activity-edit-panel.css` raise its legacy 10–12px body/buttons/
+  schedule/reality/objective copy to 13–14px; footer/modal geometry
+  remains unchanged. Advanced Create gains scoped 13–14px text rules
+  with greater CSS specificity in `temporal-create-u1-polish.css`.
+  Quick Create remains compact with existing buttons.
+- Extended `timeline-drag-geometry.test.tsx` to assert the frozen
+  **ruler** follows the same snapshot as card and now-line, and parent
+  drag notification balances begin/end.
+- Added browser CSS computed-style check in
+  `e2e/temporal-create-unified-ui.spec.ts` for Activity Edit primary,
+  secondary, verification, repeat and Objective-add typography.
+  Existing tests also cover Advanced and compact Quick fonts.
+
+**Verification:** code PUBLISHED / new source tests **NOT RUN** by
+assistant. Request a single focused WSL Web typecheck, the drag-geometry
+Vitest test, and Playwright selected drag+Create+Edit UI tests. Manual
+authenticated actual drag across updating now-line and rendered text
+sizing are still required; no basis yet to claim the reported jump
+is completely fixed. No backend changes, full DB gate, or migrations.
+
 ## 2026-10-17 — Owner verification: drag geometry and Create readability tests green
 
 Owner pulled branch `feature/timeline-temporal-operational` to
