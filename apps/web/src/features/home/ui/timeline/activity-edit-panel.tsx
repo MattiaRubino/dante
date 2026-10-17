@@ -2009,23 +2009,23 @@ export function ActivityEditPanel({
                     </button>
                   ) : null}
                   <div className="temporal-create-objectives__root-actions">
-                  <button
-                    type="button"
-                    className="temporal-create-objectives__add"
-                    disabled={pending || planPending || objectivePending}
-                    onClick={() => {
-                      const next = newObjectiveDraft(
-                        Math.max(
-                          -1,
-                          ...objectiveRows.map((row) => row.presentationOrder),
-                        ) + 1,
-                      );
-                      setObjectiveRows((rows) => [...rows, next]);
-                      setObjectiveError('');
-                    }}
-                  >
-                    ＋ Aggiungi obiettivo
-                  </button>
+                    <button
+                      type="button"
+                      className="temporal-create-objectives__add"
+                      disabled={pending || planPending || objectivePending}
+                      onClick={() => {
+                        const next = newObjectiveDraft(
+                          Math.max(
+                            -1,
+                            ...objectiveRows.map((row) => row.presentationOrder),
+                          ) + 1,
+                        );
+                        setObjectiveRows((rows) => [...rows, next]);
+                        setObjectiveError('');
+                      }}
+                    >
+                      ＋ Aggiungi obiettivo
+                    </button>
                   </div>
                   {objectiveError ? <p role="alert">{objectiveError}</p> : null}
                   {settings.objectives
