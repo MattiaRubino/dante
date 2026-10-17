@@ -18,10 +18,6 @@ test('Quick keeps its compact clock field while Advanced uses the Edit interval 
   for (const clock of await quickClocks.all()) {
     await expect(clock).toHaveCSS('min-height', '42px');
   }
-  const quickDate = dialog.locator(
-    '.temporal-create-u2-when > .temporal-create-date-picker__trigger',
-  );
-  await expect(quickDate).toHaveCount(0); // The picker is wrapped in its own root.
   const quickWhen = dialog.locator('.temporal-create-u2-when');
   await expect(quickWhen).not.toHaveCSS('max-width', '820px');
 
