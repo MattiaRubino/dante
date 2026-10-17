@@ -5,6 +5,7 @@ from typing import Any
 from uuid import uuid7
 
 from dante.modules.temporal.decomposition_api import ActivityScheduleResponse
+from dante.modules.temporal.resolution_queue_api import _unstarted_session_items
 from dante.modules.temporal.session_panel_api import SessionPanelResponse, build_panel
 
 
@@ -96,6 +97,61 @@ def test_independent_groups_and_unique_activity_with_multiple_intervals() -> Non
     panel = build_panel([first, second], at(10), "UTC")
     assert len(panel.groups) == 2
     assert len(panel.groups[0].rows) == 3  # generic main plus two planned internals
+
+
+def test_early_main_stop_sends_unstarted_children_to_review_now() -> None:
+    first = schedule(display_name="Ripasso")
+    second = schedule(display_name="Esercizi")
+    record = owner(
+        schedule("interval", at(23, 30), at(23, 59)),
+        first,
+        second,
+    )
+    record["historical_attempts"] = []
+    # Neither a future plan nor an open main is a reason to infer missed work.
+    assert _unstarted_session_items([record], at(20, 47), "UTC") == []
+
+    record["historical_attempts"] = [
+        {"planned_schedule_ref": None, "ended_at": at(20, 47).isoformat()},
+    ]
+    review = _unstarted_session_items([record], at(20, 48), "UTC")
+    assert {item.summary for item in review} == {
+        "Ripasso · mai avviata",
+        "Esercizi · mai avviata",
+    }
+    assert {item.planned_schedule_ref for item in review} == {
+        first["schedule_ref"],
+        second["schedule_ref"],
+    }
+    assert all(item.reason_code == "session_unstarted" for item in review)
+    assert all(item.effective_at == at(20, 47) for item in review)
+    assert all(item.session_ref is None for item in review)
+
+
+def test_main_stop_review_excludes_ever_attempted_children_and_main_itself() -> None:
+    first = schedule(display_name="Ripasso")
+    second = schedule(display_name="Esercizi")
+    record = owner(
+        schedule("interval", at(23, 30), at(23, 59)),
+        first,
+        second,
+    )
+    record["historical_attempts"] = [
+        {"planned_schedule_ref": None, "ended_at": at(20, 47).isoformat()},
+        {"planned_schedule_ref": first["schedule_ref"], "ended_at": at(20, 46).isoformat()},
+    ]
+    review = _unstarted_session_items([record], at(20, 48), "UTC")
+    assert len(review) == 1
+    assert review[0].summary == "Esercizi · mai avviata"
+    assert review[0].planned_schedule_ref == second["schedule_ref"]
+
+
+def test_stopped_main_does_not_invent_child_misses_when_no_children_exist() -> None:
+    record = owner(schedule("interval", at(23, 30), at(23, 59)))
+    record["historical_attempts"] = [
+        {"planned_schedule_ref": None, "ended_at": at(20, 47).isoformat()},
+    ]
+    assert _unstarted_session_items([record], at(20, 48), "UTC") == []
 
 
 def test_main_started_hours_early_exposes_all_unstarted_internal_sessions() -> None:
