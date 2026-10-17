@@ -237,6 +237,19 @@ export function applyTimelineSessionReality(
         ...event,
         startMinute,
         endMinute: Math.max(startMinute + 1 / 60, Math.min(1440, endMinute)),
+        // Stop can turn a 30-minute Activity into a five-second factual
+        // interval. The card still contains planned/actual labels and
+        // optional Session/Objective badges. Reserve a readable presentation
+        // floor within the precise second-level local time stretch rather
+        // than clipping these rows or altering the canonical Schedule.
+        ...(reality.endedAt !== null
+          ? {
+              visualMinimumHeightPx: Math.max(
+                event.visualMinimumHeightPx ?? 0,
+                168,
+              ),
+            }
+          : {}),
       };
     });
     return { day, visible, displayEvents };
