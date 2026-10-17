@@ -161,23 +161,23 @@ describe('B03-C Event placement lifecycle from Timeline', () => {
       throw new Error('Expected floating-local Event revision.');
     }
     expect(request.placement.startsLocalAt.toString()).toBe(
-      '2026-09-09T10:05:00',
+      '2026-09-09T10:01:00',
     );
     expect(request.placement.endsLocalAt.toString()).toBe(
-      '2026-09-09T11:05:00',
+      '2026-09-09T11:01:00',
     );
     expect(card.getAttribute('aria-label')).toContain('10:00–11:00');
     await waitFor(() => expect(loadWindow).toHaveBeenCalledTimes(2));
 
     revisedWindow.resolve(
-      eventWindow('2026-09-09T10:05', '2026-09-09T11:05', NEXT_STATE_REF),
+      eventWindow('2026-09-09T10:01', '2026-09-09T11:01', NEXT_STATE_REF),
     );
     await waitFor(() => {
       expect(
         container
           .querySelector<HTMLElement>(`[data-timeline-event="${SCHEDULE_REF}"]`)
           ?.getAttribute('aria-label'),
-      ).toContain('10:05–11:05');
+      ).toContain('10:01–11:01');
     });
   });
 });
