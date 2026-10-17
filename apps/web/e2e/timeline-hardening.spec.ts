@@ -120,6 +120,7 @@ test('title drag previews the same 15-minute destination as drop', async ({
   const card = page.locator('[data-timeline-event="12"]');
   await card.scrollIntoViewIfNeeded();
   const title = card.locator('.timeline-event-card__title');
+  await expect(title).toHaveCSS('cursor', 'default');
   const bounds = await title.boundingBox();
   expect(bounds).not.toBeNull();
   if (!bounds) return;
