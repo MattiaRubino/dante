@@ -1,5 +1,45 @@
 # Timeline / Temporal-Operational — Workstream Handoff
 
+## 2026-10-17 — Owner WSL focused UI evidence and i18n repair candidate
+
+Owner supplied terminal evidence pinned to
+`fd85869da30484496390cd792c75f86950fb02cc`:
+- `@dante/web typecheck`: **PASS**, exit 0.
+- Focused Vitest three files: **43 passed, 6 failed**, five caught
+  unhandled exceptions. All six failures belong to
+  `activity-inspector-actions.test.tsx`, covering persisted Objective
+  editing, recurring scope, result correction, staged addition,
+  X removal and undo.
+- The shared Objective presentation row called
+  `useTranslation('common')`, then unconditionally evaluated
+  `i18n.language.toLowerCase()`. In the Activity Inspector test
+  runtime there was **NO_I18NEXT_INSTANCE**, hence undefined language
+  caused a render-time TypeError, unmount and missing selectors.
+  The passing Advanced Create tests were not evidence that the Editor's
+  test/runtime setup supported that extra implicit dependency.
+- Focused non-auth `e2e/temporal-create-unified-ui.spec.ts`:
+  **1 PASS, PLAYWRIGHT=0**. Vite built successfully. Proxy
+  `ECONNREFUSED 127.0.0.1:8000` is fixture-only, not a passing
+  backend contract.
+
+**Repair now published, NOT YET OWNER-RETESTED:** the presentational
+`TemporalObjectiveEditorRow` no longer invokes `useTranslation`.
+It accepts a required explicit `italian: boolean` flag. The Create
+owner passes the language it already resolves with its own existing
+translation hook; the Activity Edit owner passes `italian`, preserving
+the pre-existing Italian editor labels. The shared row test no longer
+initializes global i18next and thus exercises the dependency-free row
+directly. No Objective persistence, mutation/retry/CAS, recurring
+lineage, recorded result correction or datetime logic changed.
+
+**Only required next verification:** `pnpm --filter @dante/web
+typecheck` and the two Objective-specific Vitest files
+(`temporal-objective-editor-row.test.tsx` and
+`activity-inspector-actions.test.tsx`) on one exact final SHA.
+The 1/1 browser test and unrelated Advanced Create test already
+passed on a source with unchanged layout. Do not launch full gate or
+claim the previous six Editor failures are green before owner retest.
+
 ## 2026-10-17 — Unified Objective editor and scoped Create clock visuals (candidate)
 
 Owner approved UI-only parity with an explicit exception: **Quick Create's
