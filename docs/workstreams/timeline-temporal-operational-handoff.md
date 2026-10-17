@@ -1,5 +1,42 @@
 # Timeline / Temporal-Operational — Workstream Handoff
 
+## 2026-10-17 — Owner focused tests / TypeScript and browser follow-up
+
+Owner supplied WSL results after verifying exact source SHA
+`4b284cebba41e494100f8b2e06af407a078d250c`:
+- Ruff changed Python files: **PASS** (exit 0).
+- Backend `tests/test_session_panel.py`: **24/24 PASS** (exit 0).
+- Real PostgreSQL session-panel main Stop-to-review integration: **1/1 PASS** (exit 0).
+- Four selected Vitest files: **84/84 PASS** (exit 0).
+- `@dante/web` TypeScript typecheck: **FAIL**, TS2322 at
+  `activity-edit-panel.tsx:1833`: optional catalog `colorCode` was
+  emitted explicitly as `string | null | undefined`; the shared select
+  accepts `colorCode?: string | null` with `exactOptionalPropertyTypes`.
+- Two selected Playwright checks: **1 PASS / 1 FAIL**. Event footer
+  lower-edge browser geometry passed. The Activity title test timed out
+  looking for `.timeline-event-card--activity` on the unauthenticated
+  static fixture page. That page has generic fixture cards but no real
+  persisted Activity owner, so the failure is a **test setup/selector
+  mismatch** rather than a demonstrated CSS wrapping defect.
+  The fixture Vite proxy logged expected backend
+  `ECONNREFUSED 127.0.0.1:8000` because real-stack API was not started.
+
+**Follow-up commits:**
+- Normalize dropdown `colorCode` to `area.colorCode ?? null` to satisfy
+  exact optional property typing without losing any canonical non-null
+  persisted Life Area color.
+- Check computed browser Activity title cascade by adding only
+  `timeline-event-card--activity` class to fixture card
+  `[data-timeline-event="7"]`, as the isolated non-auth fixture does
+  not instantiate a real scheduled Activity. This remains a CSS regression,
+  **not** authenticated Activity persistence proof.
+
+**Current verification status:** two specific fixes published, targeted
+TypeScript and the one previously failing Playwright test **NOT RE-RUN**
+on the updated HEAD. No repeat of 109 already passing tests or a
+27-group full gate is requested. Inspect visual screenshots and actual
+authenticated Activity independently in the real app.
+
 ## 2026-10-17 — Card layout, Life Area edit colors and Stop-to-review candidate
 
 A separate conversation reported source changes prepared locally but not pushed.
