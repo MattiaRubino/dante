@@ -19,9 +19,12 @@ describe('Activity planned Sessions card detail', () => {
   });
 
   it('renders only Activity-owned named Sessions without calendar times', async () => {
-    const fetchFn = vi.fn<typeof fetch>(() =>
+    const fetchFn = vi.fn<typeof fetch>((input) =>
       Promise.resolve(
-        Response.json({
+        Response.json(
+          fetchRequestUrl(input).endsWith('/sessions')
+            ? []
+            : {
           parent_activity_ref: ACTIVITY,
           session_capture_mode: 'disabled',
           child_guard_mode: 'none',
@@ -55,7 +58,8 @@ describe('Activity planned Sessions card detail', () => {
             },
           ],
           children: [],
-        }),
+        },
+        ),
       ),
     );
     vi.stubGlobal('fetch', fetchFn);
@@ -73,18 +77,69 @@ describe('Activity planned Sessions card detail', () => {
     );
     expect(rows).toHaveLength(2);
     for (const row of rows) {
-      expect(
-        row.querySelectorAll('.timeline-session-controls__runtime-button'),
-      ).toHaveLength(2);
-      expect(row.querySelector('[aria-label="Avvia"]')).toBeTruthy();
-      expect(row.querySelector('[aria-label="Termina"]')).toBeTruthy();
+      expect(row.querySelector('[aria-label="Avvia"]')).toBeNull();
+      expect(row.querySelector('[aria-label="Termina"]')).toBeNull();
     }
+    expect(screen.getAllByText('Avvia prima la principale')).toHaveLength(2);
     expect(
       container.querySelectorAll('[data-activity-planned-sessions]'),
     ).toHaveLength(1);
     expect(fetchRequestUrl(fetchFn.mock.calls[0]?.[0])).toContain(
       `/activities/${ACTIVITY}/children`,
     );
+  });
+
+  it('shows Play only while main is active and replaces it with review on Stop', async () => {
+    let mainStopped = false;
+    const children = {
+      parent_activity_ref: ACTIVITY,
+      schedules: [
+        { schedule_ref: SESSION_A, role_code: 'planned', presentation_order: 1, display_name: 'Teoria' },
+        { schedule_ref: SESSION_B, role_code: 'planned', presentation_order: 2, display_name: 'Esercizi' },
+      ],
+    };
+    const main = {
+      session_ref: '0199a8c0-6e72-7cd1-9be1-b3f514067293',
+      planned_schedule_ref: null,
+      subject_native_ref: ACTIVITY,
+      timing_material_state_ref: '0199a8c0-6e72-7cd1-9be1-b3f514067294',
+      started_at: '2026-10-17T19:00:00Z',
+      ended_at: mainStopped ? '2026-10-17T19:05:00Z' : null,
+      evaluated_at: '2026-10-17T19:05:00Z',
+      open: !mainStopped,
+      replayed: false,
+      paused: false,
+      elapsed_seconds: 300,
+      active_seconds: 300,
+      paused_seconds: 0,
+      duration_evaluations: [],
+    };
+    const fetchFn = vi.fn<typeof fetch>((input) =>
+      Promise.resolve(
+        Response.json(fetchRequestUrl(input).endsWith('/sessions') ? [main] : children),
+      ),
+    );
+    vi.stubGlobal('fetch', fetchFn);
+    const { container } = render(
+      <ActivityPlannedSessionsCardDetail activityRef={ACTIVITY} visible />,
+    );
+    await screen.findByText('Teoria');
+    await act(async () => {
+      await Promise.resolve();
+      await Promise.resolve();
+    });
+    expect(
+      container.querySelectorAll('[aria-label="Avvia"]'),
+    ).toHaveLength(2);
+
+    mainStopped = true;
+    act(() =>
+      window.dispatchEvent(
+        new CustomEvent('dante:session-changed', { detail: ACTIVITY }),
+      ),
+    );
+    expect(await screen.findAllByText('Da verificare')).toHaveLength(2);
+    expect(container.querySelectorAll('[aria-label="Avvia"]')).toHaveLength(0);
   });
 
   it('does not fetch or render nested detail while the Activity card is closed', () => {
