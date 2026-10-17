@@ -1,5 +1,36 @@
 # Timeline / Temporal-Operational — Workstream Handoff
 
+## 2026-10-17 — Owner verified i18n-independent Objective row
+
+Owner pulled `c03819b22b051ba1c13cf73e025f560fa1b2b49d`
+using `git pull --ff-only origin feature/timeline-temporal-operational`
+and verified exact HEAD before running the two outstanding focused
+checks:
+
+- `pnpm --filter @dante/web typecheck`: **PASS, TYPECHECK=0**.
+- `pnpm --filter @dante/web exec vitest run
+  src/features/temporal-create/ui/temporal-objective-editor-row.test.tsx
+  src/features/home/ui/timeline/activity-inspector-actions.test.tsx`:
+  **2/2 files PASS, 48/48 tests PASS, VITEST=0**. The shared-row tests
+  passed 4/4; Activity Inspector tests passed 44/44, including the six
+  previously failing Objective edit/recurrence/correction/add/remove/
+  undo scenarios. No unhandled exception or missing translation
+  context appeared in this run.
+
+The earlier focused Advanced Create Vitest (2/2) and isolated
+non-auth Quick/Advanced Playwright (1/1) had passed on the earlier
+`fd85869d` code candidate; the `c03819b2` update only changed
+the shared Objective row's locale dependency and related tests,
+not the clock UI geometry.
+
+**Automated changed-area verification is now green on these
+source-equivalent boundaries.** A manual authenticated, real-data UI
+comparison remains **NOT RUN**: Quick Create's hour/minute controls
+must stay compact, Advanced Create's datetime controls should
+visually match Edit, and Create/Edit Objectives should present the
+same fields and spacing. No 27-group full gate requested or run.
+This is an evidence-only handoff update.
+
 ## 2026-10-17 — Owner WSL focused UI evidence and i18n repair candidate
 
 Owner supplied terminal evidence pinned to
