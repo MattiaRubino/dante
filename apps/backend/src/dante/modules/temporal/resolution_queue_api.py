@@ -89,7 +89,8 @@ _UNSTARTED_INPUT = text("""
            COALESCE((
                SELECT jsonb_agg(jsonb_build_object(
                    'planned_schedule_ref',
-                   dante.get_self_session_planned_schedule(:actor,attempt.session_ref)
+                   dante.get_self_session_planned_schedule(:actor,attempt.session_ref),
+                   'ended_at', attempt.ended_at
                ))
                  FROM dante.list_self_subject_sessions(:actor,owner.activity_ref) AS attempt
            ),'[]'::jsonb) AS historical_attempts
@@ -100,11 +101,12 @@ _UNSTARTED_INPUT = text("""
 def _unstarted_session_items(
     records: list[Any], now: datetime, zone_id: str
 ) -> list[ResolutionQueueItem]:
-    """Project missed unstarted Sessions from an expired Activity plan.
+    """Derive never-started review without inventing execution facts.
 
-    An actual main Play (open or stopped) permanently retires the Activity's
-    *never started* review projection. It does not claim child completion.
-    Internal-only Activities without a main keep per-child review on expiry.
+    Before the first main Play, expired plans need review. While a main
+    Session is open (including pause), review is suspended. A real main
+    Stop makes only its never-started named children reviewable again;
+    the main itself was started and is never falsely called unstarted.
     """
     zone = ZoneInfo(zone_id)
     result: list[ResolutionQueueItem] = []
@@ -124,24 +126,43 @@ def _unstarted_session_items(
             if plan_expired
             else None
         )
-        if plan_ended_at is None:
+        history = owner["historical_attempts"]
+        main_enabled = owner["mode_code"] in {"live", "record_and_live"}
+        main_attempts = [
+            attempt for attempt in history if attempt["planned_schedule_ref"] is None
+        ]
+        if main_enabled and any(attempt.get("ended_at") is None for attempt in main_attempts):
+            # Play/Pause is an open real Session. No "mai avviata" notices
+            # while children can still be started under their active main.
             continue
-        # A real main Play ends the hypothesis that this Activity was entirely
-        # never started. Do not revive "mai avviata" after main Stop.
-        # The history is owner-scoped; no synthetic Actual or child execution.
-        if owner["mode_code"] in {"live", "record_and_live"} and any(
-            attempt["planned_schedule_ref"] is None
-            for attempt in owner["historical_attempts"]
-        ):
+        stopped_main_ats = [
+            datetime.fromisoformat(str(attempt["ended_at"]).replace("Z", "+00:00"))
+            for attempt in main_attempts
+            if attempt.get("ended_at") is not None
+        ]
+        last_stop = max(
+            (
+                stopped_at
+                for stopped_at in stopped_main_ats
+                if stopped_at.tzinfo is not None and stopped_at <= now
+            ),
+            default=None,
+        )
+        if plan_ended_at is None and (not main_enabled or last_stop is None):
             continue
+        # Stop is an accepted fact; it can require review before the planned
+        # end, and may not rewrite/cancel the accepted Schedule placement.
+        effective_at = max(
+            time for time in (plan_ended_at, last_stop) if time is not None
+        )
         attempted = {
             UUID(str(attempt["planned_schedule_ref"]))
             if attempt["planned_schedule_ref"] is not None
             else None
-            for attempt in owner["historical_attempts"]
+            for attempt in history
         }
         candidates: list[tuple[UUID | None, str]] = []
-        if owner["mode_code"] in {"live", "record_and_live"}:
+        if main_enabled and not main_attempts and plan_ended_at is not None:
             candidates.append((None, "Sessione attività"))
         candidates.extend(
             (schedule.schedule_ref, schedule.display_name or "Sessione interna")
@@ -158,7 +179,7 @@ def _unstarted_session_items(
                     subject_ref=UUID(str(owner["activity_ref"])),
                     title=str(owner["title"]),
                     summary=f"{name} · mai avviata",
-                    effective_at=plan_ended_at,
+                    effective_at=effective_at,
                     reconciliation_ref=None,
                     outcome_ref=None,
                     purpose_code="activity.session.unstarted",
@@ -182,8 +203,8 @@ async def list_resolution_queue(request: Request, context: Context) -> Resolutio
     A past planned Activity without execution may enter Reality review only
     under explicit review/auto policy, or Objective review when an Objective
     awaits assessment. A separately typed read-only item shows every enabled
-    Session with no attempt when the current Activity plan is wholly past
-    and no main Activity Session was ever started (if a main exists).
+    Unstarted Sessions after plan expiry or real main Stop; no child
+    is inferred complete just because its main has an execution history.
     Absence of Actual never means that the subject did not happen.
     """
     try:
