@@ -16,7 +16,7 @@
   flex-direction: column;
   gap: 14px;
   padding: 18px 4px 72px 0;
-  font-size: 12px;
+  font-size: 13px;
 }
 
 .timeline-event-modal--edit .timeline-activity-editor__visually-hidden {
