@@ -122,7 +122,7 @@ function renderTimeline() {
       windowAt('2026-09-09T10:00', '2026-09-09T11:00', CURRENT_STATE_REF),
     )
     .mockResolvedValue(
-      windowAt('2026-09-09T10:05', '2026-09-09T11:05', NEXT_STATE_REF),
+      windowAt('2026-09-09T10:01', '2026-09-09T11:01', NEXT_STATE_REF),
     );
   const reviseSchedule = vi.fn<TemporalScheduleDataSource['reviseSchedule']>();
   const scheduleDataSource: TemporalScheduleDataSource = {
@@ -207,8 +207,8 @@ describe('Activity Timeline coordinated replan', () => {
       {
         times: {
           [SCHEDULE_REF]: {
-            start: '2026-09-09T10:05:00',
-            end: '2026-09-09T11:05:00',
+            start: '2026-09-09T10:01:00',
+            end: '2026-09-09T11:01:00',
           },
         },
         removedIntervals: [],
@@ -227,7 +227,7 @@ describe('Activity Timeline coordinated replan', () => {
         container
           .querySelector<HTMLElement>(`[data-timeline-event="${SCHEDULE_REF}"]`)
           ?.getAttribute('aria-label'),
-      ).toContain('10:05–11:05'),
+      ).toContain('10:01–11:01'),
     );
   });
 
