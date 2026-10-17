@@ -69,17 +69,13 @@ test('custom event dragging never falls back to a native browser drag ghost', as
   await expect(card).toBeVisible();
 
   for (let index = 0; index < 6; index += 1) {
-    const box = await card.boundingBox();
     const gridBox = await grid.boundingBox();
-    expect(box).not.toBeNull();
     expect(gridBox).not.toBeNull();
-    if (!box || !gridBox) {
+    if (!gridBox) {
       throw new Error('Expected stable Timeline drag geometry');
     }
 
-    const startX = box.x + Math.max(12, box.width - 16);
-    const startY =
-      box.y + Math.min(box.height - 12, Math.max(18, box.height * 0.62));
+    const { x: startX, y: startY } = await cardBodyPoint(card);
     const deltaY = index % 2 === 0 ? 52 : -52;
 
     await page.mouse.move(startX, startY);
