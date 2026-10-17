@@ -1,5 +1,51 @@
 # Timeline / Temporal-Operational — Workstream Handoff
 
+## 2026-10-17 — Unified Objective editor and scoped Create clock visuals (candidate)
+
+Owner approved UI-only parity with an explicit exception: **Quick Create's
+hour/minute controls alone may change their styling; the quick form must
+remain compact and otherwise unchanged**. Advanced Create and Activity Edit
+are the full-size surfaces.
+
+**Implementation on this branch:**
+
+1. Extracted `TemporalObjectiveEditorRow` as one shared presentational
+   renderer for Advanced Create and Activity Edit: labels, result kind,
+   comparator, numeric target/range, unit, move/remove controls and primary
+   input use the same markup and CSS. `TemporalCreateObjectives` retains
+   U2 authoring state/patches; `ActivityObjectiveRow` retains existing
+   Objective identities, CAS revisions, persisted/recorded-result guards,
+   recurring edit scope and the single-commit Activity Edit save. The
+   existing result-correction flow is untouched. Edit can reorder staged
+   Objective presentation order; changes stay staged for the same final Save.
+   Retired the duplicated editor-specific row CSS.
+2. `TimeControl` and `TemporalCreateDatePicker` were already shared by
+   Create and Edit. Added a dedicated
+   `temporal-create-time-visual-parity.css` imported only alongside
+   `temporal-create-core-u2.tsx`, with full-sized Advanced Create
+   date/time row matching Edit's five-track/820px layout and 46px controls.
+   Quick Create rules affect only its two `TimeControl` faces: **no Quick
+   date-picker, timezone, row width, modal geometry or 42px minimum size
+   alteration**. No new date/clock logic, persistence semantics, or
+   timezone/DST conversion. The pre-existing Activity polish file is
+   unchanged, avoiding unrelated session/interval CSS side effects.
+3. Tests added:
+   - `temporal-objective-editor-row.test.tsx`: shared field structure,
+     equivalent edit labels, callbacks for content/kind/order/remove and
+     disabled-state protection.
+   - `e2e/temporal-create-unified-ui.spec.ts`: Quick remains compact at
+     42px; Advanced uses 820px full interval and 46px clock fields;
+     Advanced Objective rows retain common markup.
+   - Existing `activity-inspector-actions.test.tsx` and
+     `temporal-create-advanced-activity-ia.test.tsx` cover staged
+     persisted-edit Objective actions and Advanced Create identity.
+
+**Verification:** candidate SOURCE PUBLISHED / local pnpm TypeScript,
+Vitest, ESLint/Prettier and browser tests **NOT RUN** by assistant.
+Must not call this fully accepted until the owner runs **only focused Web
+checks** and visually confirms Quick vs Advanced vs Edit on the same final
+source. User explicitly rejected the unrelated 27-group full gate.
+
 ## 2026-10-17 — Owner recheck on `fcb95fc3`: focused Web blockers green
 
 Owner provided direct WSL terminal evidence after fast-forwarding from
