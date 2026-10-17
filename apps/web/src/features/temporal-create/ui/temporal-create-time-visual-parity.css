@@ -1,0 +1,111 @@
+/* Visual parity only: same datetime components and domain handlers are
+   used by Create and Edit. Quick keeps its original five-track compact row. */
+
+/* Full-size Advanced Create uses the same five tracks and width as Edit.
+   Specificity intentionally wins over the older activity-interval polish. */
+.temporal-create-composer.is-advanced
+  .temporal-create-u2-when.temporal-create-u2-when {
+  grid-template-columns:
+    minmax(92px, 0.8fr) minmax(132px, 1.2fr) 22px
+    minmax(132px, 1.2fr) minmax(92px, 0.8fr);
+  column-gap: 8px;
+  row-gap: 6px;
+  max-width: 820px;
+}
+
+.temporal-create-composer.is-advanced
+  .temporal-create-activity-interval__fields.temporal-create-activity-interval__fields {
+  grid-template-columns:
+    minmax(92px, 0.8fr) minmax(132px, 1.2fr) 22px
+    minmax(132px, 1.2fr) minmax(92px, 0.8fr) 28px;
+  max-width: 848px;
+  gap: 8px;
+}
+
+.temporal-create-composer.is-advanced
+  .temporal-create-u2-when
+  :is(.temporal-create-date-picker__trigger, .temporal-create-time-control__field),
+.temporal-create-composer.is-advanced
+  .temporal-create-activity-interval__fields
+  :is(.temporal-create-date-picker__trigger, .temporal-create-time-control__field) {
+  box-sizing: border-box;
+  min-height: 46px;
+  border: 1px solid
+    var(--dante-semantic-color-home-border-subtle, rgba(255, 255, 255, 0.09));
+  border-radius: 11px;
+  background: color-mix(
+    in srgb,
+    var(--dante-semantic-color-home-surface-control, #151f2e) 72%,
+    transparent
+  );
+  font-variant-numeric: tabular-nums;
+}
+
+.temporal-create-composer.is-advanced
+  .temporal-create-u2-when
+  :is(.temporal-create-date-picker__trigger, .temporal-create-time-control__field):focus-within,
+.temporal-create-composer.is-advanced
+  .temporal-create-activity-interval__fields
+  :is(.temporal-create-date-picker__trigger, .temporal-create-time-control__field):focus-within {
+  border-color: var(--dante-semantic-color-home-chrome-active, #ea5c12);
+}
+
+/* Quick: only the visual face of the hour/minute controls changes.
+   Do not touch date pickers, modal width, grid, spacing, or 42px height. */
+.temporal-create-composer:not(.is-advanced)
+  .temporal-create-u2-when
+  .temporal-create-time-control__field {
+  border: 1px solid
+    var(--dante-semantic-color-home-border-subtle, rgba(255, 255, 255, 0.09));
+  border-radius: 10px;
+  background: color-mix(
+    in srgb,
+    var(--dante-semantic-color-home-surface-control, #151f2e) 72%,
+    transparent
+  );
+  font-variant-numeric: tabular-nums;
+}
+
+.temporal-create-composer:not(.is-advanced)
+  .temporal-create-u2-when
+  .temporal-create-time-control__field:focus-within {
+  border-color: var(--dante-semantic-color-home-chrome-active, #ea5c12);
+}
+
+.temporal-create-composer:not(.is-advanced)
+  .temporal-create-u2-when
+  .temporal-create-time-segment input {
+  color: var(--dante-semantic-color-home-text-primary, #edf2f8);
+  font-weight: 650;
+}
+
+.temporal-create-composer:not(.is-advanced)
+  .temporal-create-u2-when
+  .temporal-create-time-segment > button {
+  color: var(--dante-semantic-color-home-text-muted, #8f9bad);
+  border-radius: 4px;
+}
+
+.temporal-create-composer:not(.is-advanced)
+  .temporal-create-u2-when
+  .temporal-create-time-segment > button:is(:hover, :focus-visible) {
+  color: var(--dante-semantic-color-home-chrome-active-text, #f0a06f);
+}
+
+@media (max-width: 720px) {
+  .temporal-create-composer.is-advanced
+    .temporal-create-u2-when.temporal-create-u2-when {
+    grid-template-columns:
+      minmax(74px, 0.8fr) minmax(104px, 1fr) 18px
+      minmax(104px, 1fr) minmax(74px, 0.8fr);
+    gap: 4px;
+  }
+
+  .temporal-create-composer.is-advanced
+    .temporal-create-activity-interval__fields.temporal-create-activity-interval__fields {
+    grid-template-columns:
+      minmax(74px, 0.8fr) minmax(104px, 1fr) 18px
+      minmax(104px, 1fr) minmax(74px, 0.8fr) 28px;
+    gap: 4px;
+  }
+}
