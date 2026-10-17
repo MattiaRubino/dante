@@ -1,5 +1,74 @@
 # Timeline / Temporal-Operational — Workstream Handoff
 
+## 2026-10-17 — Timeline interactions, review-on-Play, conservative typography (candidate)
+
+**Approved exact scope:**
+- Move cards in **15-minute increments** (including Alt+arrow keyboard
+  nudge). During the pointer drag, the same elastic inverse-mapper/boundary
+  calculation controls BOTH live time inside the dragged card and the
+  final drop. Show one small ruler time pin; **no full-width ghost line**.
+  Preserve the established Undo/governed canonical replan flow.
+- Keep the card time informative, without fake hover/click affordance.
+  Title single-click still opens Inspector, while motion past the drag
+  threshold initiates card movement. Ordinary body single/double clicks
+  and real Play/Pause/Stop buttons retain their original priorities.
+  Empty Session-action wrapper regions must not block card drag/click.
+- Modest typography uplift, without changing any panel/card/modal width,
+  height, grid tracks or general structure. Start with readable card
+  title/time/meta, Create/Edit Objective rows and reality copy, Edit body
+  labels, and Session Panel labels. Italian first; English overflow needs
+  owner visual review.
+- **New normative B08 review policy:** once the real main Activity Session
+  has ANY historical attempt (running, paused or ended), remove the
+  Activity's "mai avviata" review rows permanently from the projection.
+  Expired, wholly unattempted main-enabled Activities expose main and
+  missing named Sessions. Expired internal-only Activities without
+  main capability retain only unattempted named items. No fake Actual,
+  automatic child Play, mutation of historical Sessions or new DB state.
+  The separate manual resolution flow for internal-only past Sessions
+  remains **deferred**. This policy supersedes the previous
+  "main Stop immediately queues unstarted children" rule.
+
+**Changes published on this branch:**
+1. `timeline-day-stream.tsx`: shared `resolveDragPreview` returns
+   clamped 15-minute placement from the current elastic day mapper,
+   called both for live cloned card time/ruler marker and commit. Marker
+   removed on cancel/drop/unmount; title is an allowed drag source
+   while real Session buttons remain protected; drag-created native
+   clicks are suppressed without swallowing later real title clicks.
+2. `model/timeline-policy.ts`: pointer/keyboard move snap at 15m;
+   `timeline-surface.test.tsx` keyboard nudge expectations updated.
+3. `timeline-reference-lock.css` and `timeline.css`: remove
+   informational clock hover, keep a neutral cursor, restore click/drag
+   in otherwise empty Session controls area, lightly enlarge labels,
+   add tiny fixed ruler time marker (without timeline geometry edits).
+4. Scoped typography increments only in
+   `temporal-create-objectives.css`,
+   `temporal-create-reality-objectives-section.css`,
+   `activity-edit-panel.css` and
+   `timeline-session-panel.css`, no structural changes.
+5. Backend `resolution_queue_api.py`: expiry-only unstarted
+   projection, suppression once the main has ever been started,
+   internal-only fallback per planned child. Unit tests updated
+   `tests/test_session_panel.py` and PostgreSQL
+   `tests/integration/temporal/test_session_panel.py` for:
+   historical main Play/Stop, no future synthetic review, internal-only
+   expired review, owner isolation and main Session attempt persisted.
+6. `context-rail.tsx`: listens to the existing
+   `dante:session-changed` event to refetch the resolution queue
+   **immediately** after accepted Play/Pause/Stop, rather than only
+   on focus/60s polling. Existing rail test covers the event.
+7. `e2e/timeline-hardening.spec.ts`: browser regression checks
+   title pointer-drag, live snapped time pin, final drop equality,
+   and read-only clock hover. The established browser Undo test stays.
+
+**Verification status: code PUBLISHED, focused tests NOT EXECUTED by
+assistant.** Owner should run Web typecheck and focused Vitest files,
+one Playwright file plus Ruff, backend unit and one real PostgreSQL
+test file/method (avoid the 27-group full gate). These are regression
+**candidates**, not green evidence. Authenticated real-world visual
+acceptance of drag and typography remains pending.
+
 ## 2026-10-17 — Owner verified Create clock chevrons via Playwright
 
 Owner fast-forwarded `feature/timeline-temporal-operational` to exact
