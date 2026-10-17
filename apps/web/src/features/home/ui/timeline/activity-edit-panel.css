@@ -496,3 +496,63 @@
     min-width: 0;
   }
 }
+
+/* Readability parity: the Edit modal was still rendering explicit 10–12px
+   typography despite the Create adjustments. These are text-only overrides:
+   keep editor/panel/button geometry, spacing and responsive grids unchanged. */
+.timeline-event-modal--edit .timeline-activity-editor__body {
+  font-size: 14px;
+}
+
+.timeline-event-modal--edit
+  .timeline-activity-editor__body
+  :is(
+    .timeline-activity-editor__title-tools > button,
+    .timeline-activity-editor__title-tools > label,
+    .timeline-activity-editor__repeat,
+    .timeline-activity-editor__timezone,
+    .timeline-activity-editor__placement span,
+    .timeline-activity-editor__schedule-label,
+    .timeline-activity-editor__schedule-time,
+    .timeline-activity-editor__planning-help,
+    .temporal-create-type-grid > button strong,
+    .temporal-create-choice-row > button,
+    .temporal-create-reality-mode > button,
+    .temporal-create-reality-objectives__block-copy strong,
+    .temporal-create-objectives__add,
+    .temporal-create-structure-add
+  ) {
+  font-size: 14px;
+}
+
+.timeline-event-modal--edit
+  .timeline-activity-editor__body
+  :is(
+    .temporal-create-reality-objectives__heading p,
+    .temporal-create-reality-objectives__block-copy span,
+    .temporal-create-timezone-label,
+    .temporal-create-date-picker__trigger,
+    .temporal-create-activity-tree__group-label,
+    .temporal-create-reality-objectives__block-copy small
+  ) {
+  font-size: 13px;
+}
+
+.timeline-event-modal--edit
+  .timeline-activity-editor__body
+  :is(
+    .temporal-create-reality-mode > button,
+    .temporal-create-objectives__add,
+    .timeline-activity-editor__title-tools > label,
+    .timeline-activity-editor__title-tools > button
+  ) {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.timeline-event-modal--edit
+  .timeline-activity-editor__body
+  :is(input:not([type='checkbox']):not([type='radio']), textarea, select) {
+  font-size: 14px;
+}
