@@ -1,5 +1,32 @@
 # Timeline / Temporal-Operational — Workstream Handoff
 
+## 2026-10-17 — Owner recheck on `fcb95fc3`: focused Web blockers green
+
+Owner provided direct WSL terminal evidence after fast-forwarding from
+`4b284ceb` to `fcb95fc3520b259bdce59a1659c90493ef03fe27`:
+
+- `pnpm --filter @dante/web typecheck`: **PASS** — `tsc --noEmit`
+  completed with no diagnostic and the following Playwright command ran.
+  The optional Life Area `colorCode` TypeScript error is closed.
+- `pnpm --filter @dante/web exec playwright test --config playwright.config.ts
+  e2e/timeline-hardening.spec.ts -g "a long Activity title"`:
+  **1 passed in 7.9s; PLAYWRIGHT=0**. The isolated non-auth browser
+  test verifies Activity CSS ellipsis using the known fixture card.
+- Vite build and the entry/size budget check completed successfully.
+  Vite emitted a non-fatal large-chunk warning and the non-auth page's
+  optional API proxy emitted `ECONNREFUSED 127.0.0.1:8000` because the
+  real backend was not running; neither is a new failed test.
+
+Together with the earlier owner results on `4b284ceb` (Ruff PASS,
+24 Python unit PASS, 1 real PostgreSQL PASS, 84 Vitest PASS and the
+Event indicator browser geometry test PASS), **all changed-area
+automated checks have evidence of PASS**. The newer commit only
+normalizes the dropdown optional color and the isolated browser fixture
+selector and updates handoff. The user explicitly rejected running the
+full 27-group gate for this task. **Actual authenticated real-app visual
+acceptance of title, footer, short Stop and Life Area dropdown is still
+pending**; do not claim it was browser-verified against owner data.
+
 ## 2026-10-17 — Owner focused tests / TypeScript and browser follow-up
 
 Owner supplied WSL results after verifying exact source SHA
