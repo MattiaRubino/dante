@@ -507,8 +507,8 @@ export function ActivityEditPanel({
         reordered[target]!,
         reordered[index]!,
       ];
-      const ordered = new Map(
-        reordered.map((row, order) => [
+      const ordered = new Map<string, ActivityObjectiveDraft>(
+        reordered.map((row, order): [string, ActivityObjectiveDraft] => [
           row.id,
           order === row.presentationOrder
             ? row
