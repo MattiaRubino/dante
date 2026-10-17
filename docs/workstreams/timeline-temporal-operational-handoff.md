@@ -1,5 +1,35 @@
 # Timeline / Temporal-Operational — Workstream Handoff
 
+## 2026-10-17 — Owner verification: post-Stop child review, cursor and typography
+
+Owner provided WSL test output against **exact code HEAD**
+`7810b80f873588a5d368df89ed00442c8fe88979`.
+
+- Ruff on modified backend + tests: **PASS** (`RUFF=0`).
+- Backend session-panel projection unit tests: **25/25 PASS**
+  (`BACKEND_UNIT=0`).
+- PostgreSQL real integration
+  `test_past_unstarted_review_pauses_on_main_play_and_returns_for_children_on_stop`:
+  **1/1 PASS** (`POSTGRES=0`).
+- Web TypeScript `tsc --noEmit`: **PASS** (`TYPECHECK=0`).
+- Web `activity-planned-sessions-card-detail.test.tsx`:
+  **4/4 PASS**. Main active, paused and stopped Inspector behavior covered.
+- Browser selected cases from `timeline-hardening.spec.ts` and
+  `temporal-create-unified-ui.spec.ts`: **2/2 PASS**
+  (`PLAYWRIGHT=0`), including normal title cursor and computed Quick /
+  Advanced text size checks. The Vite fixture build succeeded.
+- Browser fixture emitted `ECONNREFUSED 127.0.0.1:8000` on proxy
+  requests to an unstarted local API. These were nonfatal to the
+  selected UI tests.
+
+**Total: 32 targeted tests passed; zero failures.** Previous 56-test
+candidate is separate evidence and must not be combined with these
+counts. The new behavior is source/test-verified but still requires
+**authenticated, real-app visual acceptance** of unchanged modal geometry,
+readable labels (including English), and actual past-Activity main Stop
+followed by named Session review/Inspector states. No further test
+rerun required solely for this documentation commit.
+
 ## 2026-10-17 — Owner screenshot feedback: cursor, Create typography, post-Stop child review
 
 Owner inspected real UI after prior green 56-test candidate and reported three
