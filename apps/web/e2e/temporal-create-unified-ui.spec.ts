@@ -84,3 +84,48 @@ test('Quick keeps its compact clock field while Advanced uses the Edit interval 
     dialog.getByRole('textbox', { name: 'Obiettivo 1' }),
   ).toBeVisible();
 });
+
+test('Activity Edit applies readable font sizes rather than inherited tiny labels', async ({
+  page,
+}) => {
+  await page.goto('/home');
+  // Inspector editing requires an authenticated persisted Activity. Isolate
+  // its actual globally loaded CSS rules without depending on an API fixture.
+  const fonts = await page.evaluate(() => {
+    const root = document.createElement('div');
+    root.className = 'timeline-event-modal--edit';
+    root.innerHTML = `
+      <div class="timeline-activity-editor__body">
+        <div class="temporal-create-reality-objectives__block-copy">
+          <strong>Svolgimento dell’attività</strong>
+          <span>Come vuoi gestire la conferma?</span>
+        </div>
+        <div class="temporal-create-reality-mode">
+          <button>Nessuna verifica</button>
+        </div>
+        <div class="timeline-activity-editor__repeat">Ripeti · Mai</div>
+        <div class="temporal-create-objectives__root-actions">
+          <button class="temporal-create-objectives__add">Aggiungi obiettivo</button>
+        </div>
+      </div>`;
+    document.body.appendChild(root);
+    const size = (selector: string) =>
+      getComputedStyle(root.querySelector(selector)!).fontSize;
+    const result = {
+      primary: size('.temporal-create-reality-objectives__block-copy strong'),
+      secondary: size('.temporal-create-reality-objectives__block-copy span'),
+      verification: size('.temporal-create-reality-mode > button'),
+      repeat: size('.timeline-activity-editor__repeat'),
+      objective: size('.temporal-create-objectives__add'),
+    };
+    root.remove();
+    return result;
+  });
+  expect(fonts).toEqual({
+    primary: '14px',
+    secondary: '13px',
+    verification: '14px',
+    repeat: '14px',
+    objective: '14px',
+  });
+});
