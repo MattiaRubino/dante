@@ -300,10 +300,10 @@ async def test_main_started_before_preview_exposes_all_children_and_preserves_ca
 
 
 @pytest.mark.asyncio
-async def test_past_unstarted_queue_disappears_on_real_main_play_and_never_revives(
+async def test_past_unstarted_review_pauses_on_main_play_and_returns_for_children_on_stop(
     migrated_database: Any,
 ) -> None:
-    """Real PostgreSQL projection: expired owner + Play + Stop (no child execution)."""
+    """Real PostgreSQL projection: expired owner: main Play suspends review; Stop restores untouched children."""
     actor, other = _seed_self(migrated_database), _seed_self(migrated_database)
     runtime = create_database_runtime(migrated_database.runtime_settings())
     request = _fake_request(runtime)
@@ -358,10 +358,14 @@ async def test_past_unstarted_queue_disappears_on_real_main_play_and_never_reviv
         )
         assert not ended.open
         stopped = await list_resolution_queue(request, context)
-        assert all(
-            not (item.subject_ref == activity and item.reason_code == "session_unstarted")
-            for item in stopped.items
-        )
+        remaining = [
+            item for item in stopped.items
+            if item.subject_ref == activity and item.reason_code == "session_unstarted"
+        ]
+        assert {item.summary for item in remaining} == {
+            "Ripasso · mai avviata", "Esercizi · mai avviata",
+        }
+        assert all(item.planned_schedule_ref is not None for item in remaining)
     finally:
         await runtime.dispose()
 
