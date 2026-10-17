@@ -494,6 +494,39 @@ export function ActivityEditPanel({
     setObjectiveError('');
   };
 
+  const moveObjective = (id: string, direction: -1 | 1) => {
+    setObjectiveRows((rows) => {
+      const visible = rows.filter(
+        (row) => !removedObjectives.includes(row.id),
+      );
+      const index = visible.findIndex((row) => row.id === id);
+      const target = index + direction;
+      if (index < 0 || target < 0 || target >= visible.length) return rows;
+      const reordered = [...visible];
+      [reordered[index], reordered[target]] = [
+        reordered[target]!,
+        reordered[index]!,
+      ];
+      const ordered = new Map(
+        reordered.map((row, order) => [
+          row.id,
+          order === row.presentationOrder
+            ? row
+            : {
+                ...row,
+                presentationOrder: order,
+                operationId: crypto.randomUUID(),
+                revisionBasis: null,
+              },
+        ]),
+      );
+      return rows
+        .map((row) => ordered.get(row.id) ?? row)
+        .sort((a, b) => a.presentationOrder - b.presentationOrder);
+    });
+    setObjectiveError('');
+  };
+
   const inspectObjective = (row: ActivityObjectiveDraft) => {
     if (
       !row.objectiveRef ||
@@ -1938,13 +1971,16 @@ export function ActivityEditPanel({
                 <div className="timeline-activity-editor__objectives">
                   {objectiveRows
                     .filter((row) => !removedObjectives.includes(row.id))
-                    .map((row) => (
+                    .map((row, index, visible) => (
                       <ActivityObjectiveRow
                         key={row.id}
                         row={row}
+                        index={index}
+                        total={visible.length}
                         disabled={pending || planPending || objectivePending}
                         onInspect={() => inspectObjective(row)}
                         onChange={(patch) => patchObjective(row.id, patch)}
+                        onMove={(direction) => moveObjective(row.id, direction)}
                         onRemove={() => {
                           if (row.objectiveRef) {
                             setRemovedObjectives((current) => [
