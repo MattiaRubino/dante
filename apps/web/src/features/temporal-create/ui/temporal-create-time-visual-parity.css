@@ -79,17 +79,62 @@
   font-weight: 650;
 }
 
-.temporal-create-composer:not(.is-advanced)
+/* Edit already renders the very same TimeControl with bare 8px chevrons.
+   Create's older U1 polish turned only its chevrons into bordered 10px
+   buttons. Restore the Edit styling for primary Quick/Advanced hours and
+   minutes, plus additional Advanced Activity intervals. Do not resize the
+   surrounding clock field, datetime grid, or date controls. */
+.temporal-create-composer
   .temporal-create-u2-when
-  .temporal-create-time-segment > button {
-  color: var(--dante-semantic-color-home-text-muted, #8f9bad);
-  border-radius: 4px;
+  > .temporal-create-time-control
+  .temporal-create-time-segment.temporal-create-time-segment,
+.temporal-create-composer
+  .temporal-create-activity-interval__fields
+  > .temporal-create-time-control
+  .temporal-create-time-segment.temporal-create-time-segment {
+  grid-template-rows: 8px 20px 8px;
 }
 
-.temporal-create-composer:not(.is-advanced)
+.temporal-create-composer
   .temporal-create-u2-when
-  .temporal-create-time-segment > button:is(:hover, :focus-visible) {
+  > .temporal-create-time-control
+  .temporal-create-time-segment.temporal-create-time-segment
+  > button,
+.temporal-create-composer
+  .temporal-create-activity-interval__fields
+  > .temporal-create-time-control
+  .temporal-create-time-segment.temporal-create-time-segment
+  > button {
+  width: 24px;
+  min-width: 24px;
+  height: 8px;
+  padding: 0;
+  border: 0;
+  border-radius: 3px;
+  color: var(--dante-semantic-color-home-text-muted, #7f8b9d);
+  background: transparent;
+  box-shadow: none;
+  font-size: 5px;
+  line-height: 1;
+}
+
+.temporal-create-composer
+  .temporal-create-u2-when
+  > .temporal-create-time-control
+  .temporal-create-time-segment.temporal-create-time-segment
+  > button:is(:hover, :focus-visible),
+.temporal-create-composer
+  .temporal-create-activity-interval__fields
+  > .temporal-create-time-control
+  .temporal-create-time-segment.temporal-create-time-segment
+  > button:is(:hover, :focus-visible) {
+  border: 0;
   color: var(--dante-semantic-color-home-chrome-active-text, #f0a06f);
+  background: var(
+    --dante-semantic-color-home-chrome-active-soft,
+    rgba(234, 92, 18, 0.095)
+  );
+  box-shadow: none;
 }
 
 @media (max-width: 720px) {
