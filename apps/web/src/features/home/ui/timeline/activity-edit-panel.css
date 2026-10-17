@@ -480,123 +480,14 @@
   border-radius: 0;
 }
 
-/* Every Objective is an editable row, identical for new and persisted definitions. */
+/* Create and Edit use the same .temporal-create-objective renderer.
+   Do not add a second, editor-specific Objective visual cascade. */
 .timeline-event-modal--edit .timeline-activity-editor__objectives {
-  display: flex;
-  flex-direction: column;
-  gap: 9px;
-  min-width: 0;
-}
-.timeline-event-modal--edit .timeline-activity-editor__objective-row {
   display: grid;
-  gap: 0;
-  min-width: 0;
-  padding: 0;
-  border: 1px solid var(--dante-semantic-color-home-border-subtle, #3c4655);
-  border-radius: 11px;
-  background: color-mix(
-    in srgb,
-    var(--dante-semantic-color-home-surface-control, #151f2e) 65%,
-    transparent
-  );
-  overflow: hidden;
-}
-.timeline-event-modal--edit .timeline-activity-editor__objective-head {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  min-width: 0;
-  padding: 9px 10px 7px 12px;
-}
-.timeline-event-modal--edit .timeline-activity-editor__objective-name {
-  box-sizing: border-box;
-  display: block;
-  flex: 1;
-  min-width: 0;
-  min-height: 39px;
-  width: 100%;
-  padding: 0 11px;
-  border: 1px solid var(--dante-semantic-color-home-border-subtle, #3c4655);
-  border-radius: 8px;
-  background: color-mix(
-    in srgb,
-    var(--dante-semantic-color-home-surface-control, #151f2e) 58%,
-    transparent
-  );
-  color: var(--dante-semantic-color-home-text-primary, #edf2f8);
-  font: inherit;
-  font-size: 12px;
-  font-weight: 600;
-}
-.timeline-event-modal--edit .timeline-activity-editor__objective-name:focus {
-  border-color: var(--dante-semantic-color-home-chrome-active, #ea5c12);
-  outline: none;
-}
-.timeline-event-modal--edit .timeline-activity-editor__objective-remove {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  flex: 0 0 31px;
-  width: 31px;
-  height: 31px;
-  padding: 0;
-  border: 0;
-  border-radius: 8px;
-  background: transparent;
-  color: var(--dante-semantic-color-home-text-secondary, #b7c0cf);
-  font-size: 19px;
-  cursor: pointer;
-}
-.timeline-event-modal--edit .timeline-activity-editor__objective-remove:hover {
-  background: color-mix(
-    in srgb,
-    var(--dante-semantic-color-home-chrome-active, #ea5c12) 13%,
-    transparent
-  );
-  color: var(--dante-semantic-color-home-text-primary, #edf2f8);
-}
-.timeline-event-modal--edit .timeline-activity-editor__objective-fields {
-  display: flex;
-  flex-direction: column;
-  gap: 9px;
-  min-width: 0;
-  padding: 0 12px 12px;
-}
-.timeline-event-modal--edit .timeline-activity-editor__objective-fields > label,
-.timeline-event-modal--edit
-  .timeline-activity-editor__objective-fields
-  .timeline-activity-editor__fields
-  > label {
-  display: flex;
-  flex-direction: column;
-  gap: 5px;
-  min-width: 0;
-  color: var(--dante-semantic-color-home-text-secondary, #b7c0cf);
-}
-.timeline-event-modal--edit
-  .timeline-activity-editor__objective-fields
-  :is(input, select) {
-  box-sizing: border-box;
-  min-width: 0;
-  width: 100%;
-}
-.timeline-event-modal--edit
-  .timeline-activity-editor__objective-fields
-  input[type='radio'] {
-  width: auto;
-}
-.timeline-event-modal--edit
-  .timeline-activity-editor__objective-fields
-  fieldset {
-  border: 0;
-  padding: 3px 0;
+  gap: 7px;
   min-width: 0;
 }
-.timeline-event-modal--edit
-  .timeline-activity-editor__objective-remove:focus-visible {
-  outline: 2px solid var(--dante-semantic-color-home-chrome-active, #ea5c12);
-  outline-offset: 2px;
-}
+
 @media (max-width: 720px) {
   .timeline-event-modal--edit .timeline-activity-editor__title-row {
     grid-template-columns: minmax(0, 1fr);
