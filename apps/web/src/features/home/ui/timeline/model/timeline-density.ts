@@ -421,8 +421,17 @@ export function createTimelineTimeMapper(
  * and quarter-hour labels. Positions use the same non-linear map as cards. */
 export function timelineRulerLabels(
   mapper: TimelineTimeMapper,
+  zoom = 1,
 ): readonly Readonly<{ minute: number; minor: boolean }>[] {
   const labels: Array<{ minute: number; minor: boolean }> = [];
+  const locallyStretched = (minute: number) => {
+    const from = Math.max(0, minute - 10);
+    const to = Math.min(TIMELINE_MINUTES_PER_DAY, minute + 10);
+    return (
+      mapper.map(to) - mapper.map(from) >
+      mapper.pxPerMinute * (to - from) * 1.35
+    );
+  };
   const canPlace = (minute: number) =>
     labels.every(
       (label) => Math.abs(mapper.map(label.minute) - mapper.map(minute)) >= 28,
@@ -432,7 +441,8 @@ export function timelineRulerLabels(
   for (const offset of [30, 15, 45]) {
     for (let hour = 0; hour < TIMELINE_MINUTES_PER_DAY; hour += 60) {
       const minute = hour + offset;
-      if (canPlace(minute)) labels.push({ minute, minor: true });
+      if ((zoom > 1.25 || locallyStretched(minute)) && canPlace(minute))
+        labels.push({ minute, minor: true });
     }
   }
   return labels.sort((a, b) => a.minute - b.minute);

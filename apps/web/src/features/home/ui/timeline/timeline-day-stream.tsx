@@ -1283,7 +1283,7 @@ export function TimelineDayStream({
               key={day.dateKey}
               style={{ height: day.height }}
             >
-              {timelineRulerLabels(day.mapper).map(({ minute, minor }) => (
+              {timelineRulerLabels(day.mapper, state.zoom).map(({ minute, minor }) => (
                 <span
                   className={`timeline-ruler-label${minor ? ' is-minor' : ''}`}
                   key={minute}

@@ -2,6 +2,7 @@ import { fetchRequestBody } from '../../test-support/fetch-request';
 import { describe, expect, it, vi } from 'vitest';
 
 import { createRemoteRealityObjectiveDataSource } from './remote-reality-objective-data-source';
+import { subscribeTemporalTimelineInvalidation } from './timeline-invalidation';
 
 const ref = '0199a567-8888-7888-8888-012345678901';
 
@@ -13,6 +14,44 @@ function response(data: unknown, status = 200): Response {
 }
 
 describe('M2 Objective corrections', () => {
+  it('refreshes Timeline card details only after an accepted batch edit', async () => {
+    let accepted = false;
+    const refresh = vi.fn();
+    const unsubscribe = subscribeTemporalTimelineInvalidation(refresh);
+    const fetchFn = vi.fn(
+      (input: RequestInfo | URL): Promise<Response> => {
+        const uri =
+          typeof input === 'string'
+            ? input
+            : input instanceof URL
+              ? input.href
+              : input.url;
+        if (uri.endsWith('/auth/session'))
+          return Promise.resolve(
+            response({ authenticated: true, csrf_token: 'csrf' }),
+          );
+        if (uri.endsWith('/objective-edits'))
+          return Promise.resolve(
+            accepted ? response([]) : response({ detail: 'Conflict' }, 409),
+          );
+        throw new Error(`Unexpected request ${uri}`);
+      },
+    );
+    const source = createRemoteRealityObjectiveDataSource(fetchFn);
+    const edit = { add: [], revise: [], retire: [] };
+    try {
+      await expect(source.applyActivityEdits(ref, edit)).rejects.toThrow(
+        'Conflict',
+      );
+      expect(refresh).not.toHaveBeenCalled();
+      accepted = true;
+      await source.applyActivityEdits(ref, edit);
+      expect(refresh).toHaveBeenCalledTimes(1);
+    } finally {
+      unsubscribe();
+    }
+  });
+
   it('loads current version, revises the same Objective and corrects one Observation', async () => {
     const posts: unknown[] = [];
     const fetchFn = vi.fn(

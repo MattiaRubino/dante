@@ -712,7 +712,7 @@ export function EventDetailDialog({
   const isOpen = detail !== null;
   useEffect(() => {
     if (!isOpen) return;
-    return () => opener?.focus();
+    return () => opener?.focus({ preventScroll: true });
   }, [isOpen, opener]);
 
   if (!detail) {

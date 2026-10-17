@@ -52,8 +52,8 @@ export const TIMELINE_POLICY = {
       upTo60Minutes: 60,
       upTo90Minutes: 90,
     },
-    activityMinimumHeightPx: 156,
-    eventMinimumHeightPx: 116,
+    activityMinimumHeightPx: 118,
+    eventMinimumHeightPx: 78,
     readableHeightPx: {
       upTo5Minutes: 50,
       upTo15Minutes: 68,
@@ -68,7 +68,7 @@ export const TIMELINE_POLICY = {
     expandedSubitemExtraHeightPx: 27,
     longTitleThreshold: 34,
     longTitleMaxDurationMinutes: 30,
-    longTitleExtraHeightPx: 6,
+    longTitleExtraHeightPx: 12,
   },
   window: {
     pastBufferDays: 1,

@@ -181,6 +181,50 @@ describe('timeline viewport runtime', () => {
     expect(restoredAnchor?.viewportOffset).toBe(viewportOffset);
   });
 
+  it('preserves the same clock position when removing a card changes the elastic scale', () => {
+    const state = createInitialTimelineState(TIMELINE_PROTOTYPE_TODAY);
+    const original = buildReferenceDays();
+    const dateKey = TIMELINE_PROTOTYPE_TODAY.toString();
+    const today = original.find((day) => day.dateKey === dateKey);
+    expect(today).toBeDefined();
+    if (!today) return;
+    const viewportOffset = 190;
+    const originalScrollTop =
+      today.offsetTop + today.mapper.map(10 * 60) - viewportOffset;
+    const anchor = captureTimelineViewportAnchor(
+      original,
+      originalScrollTop,
+      viewportOffset,
+    );
+    expect(anchor).not.toBeNull();
+    if (!anchor) return;
+    const after = buildTimelineRenderedDays(
+      TIMELINE_PROTOTYPE_TODAY,
+      TIMELINE_POLICY.window.pastBufferDays,
+      TIMELINE_POLICY.window.futureBufferDays,
+      {
+        eventsByDate: {
+          ...state.eventsByDate,
+          [dateKey]: (state.eventsByDate[dateKey] ?? []).slice(1),
+        },
+        groups: state.groups,
+        zoom: state.zoom,
+        expandedEventIds: state.expandedEventIds,
+      },
+    );
+    const restored = timelineScrollTopForViewportAnchor(after, anchor);
+    expect(restored).not.toBeNull();
+    if (restored === null) return;
+    const sameTime = captureTimelineViewportAnchor(
+      after,
+      restored,
+      viewportOffset,
+    );
+    expect(sameTime?.dateKey).toBe(dateKey);
+    expect(sameTime?.minute).toBeCloseTo(10 * 60, 3);
+    expect(restored).not.toBe(originalScrollTop);
+  });
+
   it('keeps the mounted window size constant even for distant anchors', () => {
     const state = createInitialTimelineState(TIMELINE_PROTOTYPE_TODAY);
     const inputs = {

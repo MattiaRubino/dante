@@ -60,6 +60,36 @@ describe('timeline density engine', () => {
     );
   });
 
+  it('keeps empty Activity and Event cards compact without hiding richer rows', () => {
+    const plain: TimelineEvent = {
+      id: 'plain',
+      title: 'Poco',
+      groupId: 'health',
+      startMinute: 600,
+      endMinute: 630,
+    };
+    const activity: TimelineEvent = {
+      ...plain,
+      canonicalBasis: {
+        kind: 'scheduled-activity',
+        activityRef: 'activity',
+        scheduleRef: 'schedule',
+        placementMaterialStateRef: 'state',
+        placement: {
+          kind: 'absolute',
+          startsAt: Temporal.Instant.from('2026-10-10T10:00:00Z'),
+          endsAt: Temporal.Instant.from('2026-10-10T10:30:00Z'),
+        },
+      },
+    };
+    expect(timelineEventReadableHeight(plain)).toBeLessThan(90);
+    expect(timelineEventReadableHeight(activity)).toBeLessThan(130);
+    expect(timelineEventReadableHeight(activity)).toBeGreaterThanOrEqual(110);
+    expect(
+      timelineEventReadableHeight({ ...activity, title: 'X'.repeat(80) }),
+    ).toBeGreaterThan(timelineEventReadableHeight(activity));
+  });
+
   it('keeps a 30-minute card compact around a readable overlapping one-minute card', () => {
     const long: TimelineEvent = {
       id: 'long',
@@ -155,6 +185,24 @@ describe('timeline density engine', () => {
             28,
       ),
     ).toBe(true);
+  });
+
+  it('retains hourly labels far from activity while showing local elastic and explicit zoom detail', () => {
+    const event: TimelineEvent = {
+      id: 'late',
+      title: 'Attività',
+      groupId: 'health',
+      startMinute: 12 * 60,
+      endMinute: 12 * 60 + 30,
+    };
+    const mapper = createTimelineTimeMapper([event], 1);
+    const labels = timelineRulerLabels(mapper);
+    expect(
+      labels.filter((label) => label.minute > 5 * 60 && label.minute < 6 * 60),
+    ).toEqual([]);
+    expect(labels.some((label) => label.minute === 12 * 60 + 15)).toBe(true);
+    const zoomed = timelineRulerLabels(createTimelineTimeMapper([], 2), 2);
+    expect(zoomed.some((label) => label.minute === 5 * 60 + 30)).toBe(true);
   });
 
   it('adds 10:45 inside a genuinely stretched 10:30–11:00 interval', () => {

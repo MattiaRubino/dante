@@ -331,13 +331,32 @@ export function TimelineSurface({
   const pendingScrollTargetRef = useRef<ScrollTarget | null>(null);
   const initialScrollDoneRef = useRef(false);
   const initialViewPublishedRef = useRef(false);
-  const rawScrollRestoreRef = useRef<number | null>(null);
   const windowTransitionRef = useRef(false);
   const lastScrollTopRef = useRef<number | null>(null);
   const scrollFrameRef = useRef<number | null>(null);
   const toastTimerRef = useRef<number | null>(null);
   const scheduleNoticeTimerRef = useRef<number | null>(null);
   const pendingScheduleRefsRef = useRef(new Set<string>());
+
+  const preserveViewportTime = useCallback(() => {
+    const grid = gridRef.current;
+    if (
+      !grid ||
+      !initialScrollDoneRef.current ||
+      pendingScrollTargetRef.current !== null ||
+      windowTransitionRef.current
+    ) {
+      return;
+    }
+    const anchor = captureTimelineViewportAnchor(
+      renderedDaysRef.current,
+      grid.scrollTop,
+      grid.clientHeight * TIMELINE_POLICY.viewport.contextProbeRatio,
+    );
+    if (anchor) {
+      pendingScrollTargetRef.current = { ...anchor, behavior: 'auto' };
+    }
+  }, []);
 
   const reconcileAuthoritativeEvents = useCallback(
     (
@@ -346,9 +365,10 @@ export function TimelineSurface({
         event: TimelineEvent;
       }>[],
     ) => {
+      preserveViewportTime();
       dispatch({ type: 'reconcile-authoritative-events', projections });
     },
-    [],
+    [preserveViewportTime],
   );
   const reconcileAuthoritativeDateLane = useCallback(
     (items: readonly TimelineAllDayItem[]) => {
@@ -1102,10 +1122,6 @@ export function TimelineSurface({
     [state.groups],
   );
 
-  const preserveRawScroll = useCallback(() => {
-    rawScrollRestoreRef.current = gridRef.current?.scrollTop ?? null;
-  }, []);
-
   const closeCalendar = useCallback((restoreFocus = true) => {
     setCalendarOpen(false);
     if (restoreFocus) {
@@ -1174,12 +1190,6 @@ export function TimelineSurface({
           );
         }
       }
-    }
-
-    const rawScroll = rawScrollRestoreRef.current;
-    if (rawScroll !== null) {
-      grid.scrollTop = rawScroll;
-      rawScrollRestoreRef.current = null;
     }
 
     const target = pendingScrollTargetRef.current;
@@ -1503,7 +1513,7 @@ export function TimelineSurface({
         onZoomAt={zoomAt}
         onFocusEvent={(eventId) => dispatch({ type: 'focus-event', eventId })}
         onToggleSubitems={(eventId) => {
-          preserveRawScroll();
+          preserveViewportTime();
           dispatch({ type: 'toggle-event-subitems', eventId });
         }}
         onOpenEventDetail={(event, opener) =>
@@ -1543,9 +1553,8 @@ export function TimelineSurface({
             (day) => day.dateKey === move.toDateKey,
           );
           if (targetIsRendered) {
-            preserveRawScroll();
+            preserveViewportTime();
           } else {
-            rawScrollRestoreRef.current = null;
             pendingScrollTargetRef.current = {
               dateKey: move.toDateKey,
               minute: move.startMinute,
@@ -1732,6 +1741,7 @@ export function TimelineSurface({
           if (!detailState) return;
           const existing = findTimelineEvent(state, detailState.event.id);
           if (existing) {
+            preserveViewportTime();
             const {
               appearanceColorCode: _previousColor,
               ...eventWithoutColor
@@ -1759,8 +1769,10 @@ export function TimelineSurface({
         }}
         onActivityDeleted={() => {
           window.dispatchEvent(new Event(REVIEW_QUEUE_INVALIDATED));
-          if (detailState)
+          if (detailState) {
+            preserveViewportTime();
             dispatch({ type: 'remove-event', eventId: detailState.event.id });
+          }
           setDetailState(null);
           showScheduleNotice({
             kind: 'status',
@@ -1790,7 +1802,7 @@ export function TimelineSurface({
             undoCanonicalSchedule();
             return;
           }
-          preserveRawScroll();
+          preserveViewportTime();
           dispatch({ type: 'undo-last-event-change' });
           setToastVisible(false);
         }}

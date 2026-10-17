@@ -1,4 +1,5 @@
 import { createWebFetch } from '../../platform/api/web-fetch';
+import { invalidateTemporalTimelineRead } from './timeline-invalidation';
 
 export type RealitySubjectKind = 'activity' | 'event' | 'occurrence';
 export type RealityMode = 'manual' | 'review_on_end' | 'auto_confirm_outcome';
@@ -383,7 +384,9 @@ export function createRemoteRealityObjectiveDataSource(
             if (!Array.isArray(payload)) {
               throw new Error('Risposta Obiettivi non valida.');
             }
-            return Object.freeze(payload.map(parseObjectiveView));
+            const saved = Object.freeze(payload.map(parseObjectiveView));
+            invalidateTemporalTimelineRead();
+            return saved;
           })(),
           timeout,
         ]);

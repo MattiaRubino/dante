@@ -200,6 +200,33 @@ describe('TimelineSurface production parity', () => {
     expect(grid!.scrollTop).toBe(nextDayTop + 100);
   });
 
+  it('keeps the viewed clock point fixed when a card changes the elastic layout', () => {
+    const { container } = renderTimeline();
+    fireEvent.click(
+      screen.getByRole('button', { name: 'Scegli vista Timeline' }),
+    );
+    fireEvent.click(screen.getByRole('menuitemradio', { name: 'Giorno' }));
+    const grid = container.querySelector<HTMLElement>('.timeline-grid');
+    const hour = () =>
+      container.querySelectorAll<HTMLElement>(
+        `[data-timeline-date="${TIMELINE_PROTOTYPE_TODAY.toString()}"] .timeline-hour-line`,
+      )[40];
+    expect(grid).not.toBeNull();
+    expect(hour()).toBeDefined();
+    Object.defineProperty(grid!, 'clientHeight', {
+      configurable: true,
+      value: 500,
+    });
+    const before = Number.parseFloat(hour()?.style.top ?? '0');
+    grid!.scrollTop = before - 170;
+    fireEvent.click(
+      screen.getByRole('button', { name: '3 sotto-attività · espandi' }),
+    );
+    const after = Number.parseFloat(hour()?.style.top ?? '0');
+    expect(after).not.toBe(before);
+    expect(after - grid!.scrollTop).toBeCloseTo(170, 1);
+  });
+
   it('opens the three-level calendar and keeps today distinct from the viewed date', () => {
     renderTimeline({ viewedDateIso: '2026-08-04' });
 
