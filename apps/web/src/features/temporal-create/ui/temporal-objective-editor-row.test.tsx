@@ -1,8 +1,6 @@
 // @vitest-environment jsdom
 import { cleanup, fireEvent, render, screen, within } from '@testing-library/react';
-import { afterEach, beforeAll, describe, expect, it, vi } from 'vitest';
-
-import { i18n } from '../../../bootstrap/i18n';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import type { TemporalCreateObjectiveDraft } from '../model/temporal-create-u2-authoring';
 import { TemporalObjectiveEditorRow } from './temporal-objective-editor-row';
@@ -39,10 +37,6 @@ function show(variant: 'create' | 'edit', disabled = false) {
   );
   return { ...result, update, changeKind, move, remove };
 }
-
-beforeAll(async () => {
-  await i18n.changeLanguage('it');
-});
 
 afterEach(cleanup);
 
