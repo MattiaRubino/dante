@@ -25,14 +25,14 @@
 .temporal-create-reality-objectives__heading h3 {
   margin: 0;
   color: var(--dante-semantic-color-home-text-primary, #edf2f8);
-  font-size: 13px;
+  font-size: 14px;
   font-weight: 700;
 }
 
 .temporal-create-reality-objectives__heading p {
   margin: 3px 0 0;
   color: var(--dante-semantic-color-home-text-muted, #8f9bad);
-  font-size: 10px;
+  font-size: 11px;
   line-height: 1.4;
 }
 
@@ -57,14 +57,14 @@
 
 .temporal-create-reality-objectives__block-copy strong {
   color: var(--dante-semantic-color-home-text-secondary, #b7c0cf);
-  font-size: 11px;
+  font-size: 12px;
   font-weight: 700;
 }
 
 .temporal-create-reality-objectives__block-copy span {
   max-width: 320px;
   color: var(--dante-semantic-color-home-text-muted, #8f9bad);
-  font-size: 9px;
+  font-size: 10px;
   line-height: 1.45;
 }
 
@@ -93,7 +93,7 @@
   color: var(--dante-semantic-color-home-text-secondary, #b7c0cf);
   background: rgba(255, 255, 255, 0.02);
   font: inherit;
-  font-size: 10px;
+  font-size: 11px;
   font-weight: 620;
   cursor: pointer;
   white-space: nowrap;
