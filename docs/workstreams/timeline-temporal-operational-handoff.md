@@ -1,5 +1,32 @@
 # Timeline / Temporal-Operational — Workstream Handoff
 
+## 2026-10-17 — Owner final retry: 2/2 browser tests green
+
+Owner fast-forwarded `feature/timeline-temporal-operational` to
+`13207d0dbf2780a90caf66a6607a8378d918323b` and reran only the
+two previously failed cases in `e2e/temporal-create-unified-ui.spec.ts`
+with `-g "Quick keeps|Activity Edit applies"`.
+
+**Playwright: 2/2 PASS**, `PLAYWRIGHT=0` (10.2 s). Browser build succeeded
+(1546 transformed modules; lazy Faro split reporter PASS).
+The isolated fixture emitted nonfatal `ECONNREFUSED 127.0.0.1:8000`
+for optional API queries because the backend was not running.
+
+Combining non-overlapping targeted test evidence from this same code
+candidate (plus test-only correction):
+- Web typecheck **PASS** on source commit `3832e976`.
+- Drag-geometry Vitest **1/1 PASS** on source commit `3832e976`.
+- Drag Playwright **1/1 PASS** on source commit `3832e976`.
+- Quick/Advanced and Edit typography Playwright **2/2 PASS** after
+  correcting fixture expectations and loading real lazy Edit CSS.
+
+**Total distinct targeted tests: 4 PASS, 0 outstanding failures.**
+Production code did not change between these test runs. Authenticated
+manual UI verification remains pending, in particular the actual
+jump around the live now-line and the visual fit/readability of
+Advanced Create and Edit. Do not conflate test green with owner
+visual acceptance. This handoff update is documentation-only.
+
 ## 2026-10-17 — Owner browser-test report: 1/3 Playwright, test-only fixture repair
 
 Owner pulled exact code commit `3832e97690ca10e0cf403e37dd6f83775bfd95e1`
