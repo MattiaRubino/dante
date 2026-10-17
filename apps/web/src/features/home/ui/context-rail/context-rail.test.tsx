@@ -160,6 +160,23 @@ describe('Home resolution rail', () => {
     expect(within(panel).getAllByText('Studio')).toHaveLength(2);
     expect(within(panel).queryByText('Registra Sessione passata')).toBeNull();
     future = true;
+    // A real main Play publishes this existing event. "Mai avviata"
+    // disappears without waiting for the 60-second rail polling cycle.
+    fireEvent(window, new CustomEvent('dante:session-changed', {
+      detail: main.subject_ref,
+    }));
+    await waitFor(() =>
+      expect(
+        within(panel).getByText('Niente da verificare per ora.'),
+      ).toBeTruthy(),
+    );
+
+    future = false;
+    fireEvent(window, new Event(REVIEW_QUEUE_INVALIDATED));
+    await waitFor(() =>
+      expect(within(panel).getByText('Ripasso · mai avviata')).toBeTruthy(),
+    );
+    future = true;
     fireEvent(window, new Event(REVIEW_QUEUE_INVALIDATED));
     await waitFor(() =>
       expect(
