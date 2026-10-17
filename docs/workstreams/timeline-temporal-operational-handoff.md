@@ -1,5 +1,37 @@
 # Timeline / Temporal-Operational — Workstream Handoff
 
+## 2026-10-17 — Owner browser-test report: 1/3 Playwright, test-only fixture repair
+
+Owner pulled exact code commit `3832e97690ca10e0cf403e37dd6f83775bfd95e1`
+and provided WSL results:
+
+- Web typecheck: **PASS**, `TYPECHECK=0`.
+- `timeline-drag-geometry.test.tsx`: **1/1 Vitest PASS**.
+- Playwright targeted three cases: **1 PASS, 2 FAIL**, `PLAYWRIGHT=1`.
+  - Advanced Create browser case: the footer had computed **14px**,
+    but the test still asserted **13px** after entering Advanced.
+    14px matches the explicitly published Advanced style; Quick
+    continues to assert 13px.
+  - Edit typography case: the fabricated unauthenticated DOM yielded
+    browser default **16px** for every measured node, because the
+    Edit stylesheet is code-split/lazy-loaded with the authenticated
+    editor and was not present on the unauthenticated `/home` fixture.
+    The test was not checking the Edit CSS at all.
+- Code commit `84dabdabfaca7dba777478c353a57c117c656dfb`
+  adjusts **tests only**:
+  - Quick footer still expects 13px, Advanced footer now 14px.
+  - The Edit fixture calls Playwright `page.addStyleTag` using the
+    **real repository file** `src/features/home/ui/timeline/activity-edit-panel.css`
+    before asserting the computed 13–14px editor label sizes.
+    No mocked CSS declarations or production changes.
+
+**Verification pending:** owner should rerun ONLY the two previously
+failing Playwright cases (`Quick keeps|Activity Edit applies`).
+The browser drag test, Vitest and TypeScript previously passed on
+unchanged production code. Note this selected browser suite does not
+replace manual authenticated visual testing of the now-line drag and
+typography.
+
 ## 2026-10-17 — Owner screenshot correction: live now-line drag and Edit font parity
 
 **Owner-reported reality after previous 3/3 focus tests:** dragging a card
