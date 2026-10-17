@@ -136,7 +136,7 @@ test('title drag previews the same 15-minute destination as drop', async ({
   await expect(marker).toBeVisible();
 
   const preview = await overlay.getAttribute('data-drag-preview-time');
-  expect(preview).toMatch(/^\\d{2}:\\d{2}–\\d{2}:\\d{2}$/);
+  expect(preview).toMatch(/^\d{2}:\d{2}–\d{2}:\d{2}$/);
   if (!preview) return;
   const start = preview.slice(0, 5);
   const startMinute = Number(start.slice(0, 2)) * 60 + Number(start.slice(3));
@@ -146,7 +146,9 @@ test('title drag previews the same 15-minute destination as drop', async ({
   await page.mouse.up();
   await expect(overlay).toHaveCount(0);
   await expect(marker).toHaveCount(0);
-  await expect(card.locator('.timeline-event-card__time')).toContainText(preview);
+  await expect(card.locator('.timeline-event-card__time')).toContainText(
+    preview,
+  );
   await expect(page.locator('.timeline-event-modal--inspector')).toHaveCount(0);
 });
 
@@ -158,7 +160,9 @@ test('card clock is informative rather than hover-editable', async ({
   const card = page.locator('[data-timeline-event="12"]');
   await card.scrollIntoViewIfNeeded();
   const clock = card.locator('.timeline-event-card__time');
-  const color = await clock.evaluate((element) => getComputedStyle(element).color);
+  const color = await clock.evaluate(
+    (element) => getComputedStyle(element).color,
+  );
   await clock.hover();
   await expect(clock).toHaveCSS('cursor', 'default');
   await expect(clock).toHaveCSS('color', color);
