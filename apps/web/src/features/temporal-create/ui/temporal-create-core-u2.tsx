@@ -31,6 +31,7 @@ import { useTemporalCreateU2Draft } from './temporal-create-u2-draft-context';
 import type { TemporalCreateContextOption } from './temporal-create-ui-types';
 
 import './temporal-create-core-u2.css';
+import './temporal-create-time-visual-parity.css';
 
 type Props = Readonly<{
   fields: TemporalCreateFields;
