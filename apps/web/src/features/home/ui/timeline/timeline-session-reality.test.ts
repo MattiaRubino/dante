@@ -87,6 +87,9 @@ describe('one-card Activity actual Session projection', () => {
     );
     const card = projected?.layouts[0];
     expect(card?.sessionReality?.state).toBe('ended');
+    // Main Stop after five seconds must keep the title, planned/actual
+    // timestamps and both Session/Objective badges readable on one card.
+    expect(card?.height).toBeGreaterThanOrEqual(168);
     expect(card?.top).toBeCloseTo(
       projected?.mapper.map(19 * 60 + 31 + 20 / 60) ?? 0,
       3,
