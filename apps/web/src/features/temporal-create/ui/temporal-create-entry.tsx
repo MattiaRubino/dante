@@ -83,6 +83,7 @@ import {
 import './temporal-create.css';
 import './temporal-create-u1.css';
 import './temporal-create-u1-polish.css';
+import './temporal-create-activity-polish.css';
 
 type InvocationAnchor = Readonly<{
   left: number;
