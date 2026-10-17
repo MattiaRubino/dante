@@ -1108,9 +1108,12 @@ export function TimelineDayStream({
     const candidateStart = event.startMinute + delta;
 
     if (candidateStart < 0) {
+      const lastSlot = Math.floor(
+        Math.max(0, TIMELINE_MINUTES_PER_DAY - duration) / snap,
+      ) * snap;
       commitKeyboardMove(
         timelineDateKey(addTimelineDays(parseTimelineDate(dateKey), -1)),
-        Math.max(0, TIMELINE_MINUTES_PER_DAY - duration),
+        lastSlot,
         t(($) => $.common.home.timeline.feedback.movedDay),
       );
       return;
