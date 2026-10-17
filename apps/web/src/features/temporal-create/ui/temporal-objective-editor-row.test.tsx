@@ -29,6 +29,7 @@ function show(variant: 'create' | 'edit', disabled = false) {
       index={0}
       total={2}
       variant={variant}
+      italian
       disabled={disabled}
       update={update}
       changeKind={changeKind}
@@ -92,6 +93,17 @@ describe('shared Objective row presentation', () => {
     expect(control.move).toHaveBeenCalledWith(0, 1);
     fireEvent.click(screen.getByRole('button', { name: 'Rimuovi obiettivo' }));
     expect(control.remove).toHaveBeenCalledWith('local-objective');
+  });
+
+  it('renders without i18next context for Activity Edit', () => {
+    const view = show('edit');
+    expect(
+      screen.getByRole('textbox', { name: 'Nome obiettivo' }),
+    ).toBeTruthy();
+    expect(
+      screen.getByRole('button', { name: 'Rimuovi obiettivo Corsa' }),
+    ).toBeTruthy();
+    view.unmount();
   });
 
   it('disables edit controls during a pending Activity mutation', () => {
