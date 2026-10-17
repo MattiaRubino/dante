@@ -117,9 +117,12 @@ def _unstarted_session_items(
                 schedule for schedule in schedules if schedule.role_code in {None, "envelope"}
             ]
         bounds = [_bounds(schedule, zone) for schedule in intervals]
+        plan_expired = bool(bounds) and all(
+            bound is not None and bound[1] <= now for bound in bounds
+        )
         plan_ended_at = (
             max(bound[1] for bound in bounds if bound is not None)
-            if bounds and all(bound is not None and bound[1] <= now for bound in bounds)
+            if plan_expired
             else None
         )
         # A deliberate Stop of the main Activity Session is sufficient to
