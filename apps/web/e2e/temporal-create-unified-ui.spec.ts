@@ -2,6 +2,21 @@ import { expect, test } from '@playwright/test';
 
 test.use({ locale: 'it-IT' });
 
+/** Match the bare Edit arrows, not Create's obsolete bordered mini-buttons. */
+async function expectEditStyleChevrons(when: import('@playwright/test').Locator) {
+  const arrows = when.locator(
+    ':scope > .temporal-create-time-control .temporal-create-time-segment > button',
+  );
+  await expect(arrows).toHaveCount(8);
+  for (const arrow of await arrows.all()) {
+    await expect(arrow).toHaveCSS('height', '8px');
+    await expect(arrow).toHaveCSS('border-top-width', '0px');
+    await expect(arrow).toHaveCSS('background-color', 'rgba(0, 0, 0, 0)');
+    await expect(arrow).toHaveCSS('font-size', '5px');
+  }
+}
+
+
 test('Quick keeps its compact clock field while Advanced uses the Edit interval visual scale', async ({
   page,
 }) => {
@@ -20,11 +35,13 @@ test('Quick keeps its compact clock field while Advanced uses the Edit interval 
   }
   const quickWhen = dialog.locator('.temporal-create-u2-when');
   await expect(quickWhen).not.toHaveCSS('max-width', '820px');
+  await expectEditStyleChevrons(quickWhen);
 
   await dialog.getByRole('button', { name: /Opzioni avanzate/ }).click();
   await expect(dialog).toHaveAttribute('data-temporal-create-surface', 'advanced');
   const advancedWhen = dialog.locator('.temporal-create-u2-when');
   await expect(advancedWhen).toHaveCSS('max-width', '820px');
+  await expectEditStyleChevrons(advancedWhen);
   const advancedControls = advancedWhen.locator(
     ':scope > .temporal-create-time-control .temporal-create-time-control__field',
   );
