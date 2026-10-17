@@ -156,6 +156,7 @@ export function ActivityObjectiveRow({
       index={index}
       total={total}
       variant="edit"
+      italian
       disabled={disabled}
       onInspect={onInspect}
       update={(_id, patch) => onChange(patch)}
