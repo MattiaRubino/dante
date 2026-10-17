@@ -242,7 +242,7 @@ export function applyTimelineSessionReality(
         // optional Session/Objective badges. Reserve a readable presentation
         // floor within the precise second-level local time stretch rather
         // than clipping these rows or altering the canonical Schedule.
-        ...(reality.endedAt !== null
+        ...(reality.endedAt !== null && endMinute - startMinute < 5
           ? {
               visualMinimumHeightPx: Math.max(
                 event.visualMinimumHeightPx ?? 0,
