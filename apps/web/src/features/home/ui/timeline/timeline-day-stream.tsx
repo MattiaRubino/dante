@@ -78,6 +78,8 @@ type TimelineDayStreamProps = Readonly<{
   ) => void;
   onMoveEvent: (move: TimelineEventMove) => void;
   onMoveFeedback: (message: string) => void;
+  /** Freeze the parent ruler, scroll anchoring and day recycling during drag. */
+  onDragActiveChange?: (active: boolean) => void;
 }>;
 
 type DragRuntime = {
@@ -625,6 +627,7 @@ export function TimelineDayStream({
   onOpenSubitemDetail,
   onMoveEvent,
   onMoveFeedback,
+  onDragActiveChange,
 }: TimelineDayStreamProps) {
   const { t } = useTranslation('common');
   const rulerStreamRef = useRef<HTMLDivElement | null>(null);
@@ -880,6 +883,7 @@ export function TimelineDayStream({
     runtime.overlay = overlay;
     runtime.rulerMarker = rulerMarker;
     dragGeometryRef.current = daysRef.current;
+    onDragActiveChange?.(true);
     setDragGeometry({ days: daysRef.current, nowMinute });
     runtime.dragging = true;
     runtime.lastAutoFrame = performance.now();
@@ -898,6 +902,7 @@ export function TimelineDayStream({
       runtime.rulerMarker = null;
     }
     stopAutoScroll();
+    if (dragGeometryRef.current !== null) onDragActiveChange?.(false);
     dragGeometryRef.current = null;
     setDragGeometry(null);
   };
@@ -1367,7 +1372,7 @@ export function TimelineDayStream({
     >
       <div className="timeline-ruler" aria-hidden="true">
         <div ref={rulerStreamRef} className="timeline-ruler-stream">
-          {(view === 'week' ? days.slice(0, 1) : days).map((day) => (
+          {(view === 'week' ? displayedDays.slice(0, 1) : displayedDays).map((day) => (
             <div
               className="timeline-ruler-day"
               key={day.dateKey}
