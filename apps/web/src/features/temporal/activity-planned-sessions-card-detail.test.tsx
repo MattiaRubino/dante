@@ -53,7 +53,7 @@ describe('Activity planned Sessions card detail', () => {
         },
       ],
       children: [],
-        };
+    };
     const fetchFn = vi.fn<typeof fetch>((input) =>
       Promise.resolve(
         Response.json(
