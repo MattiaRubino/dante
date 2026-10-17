@@ -189,6 +189,14 @@ async def test_main_started_before_preview_exposes_all_children_and_preserves_ca
         )
         assert started.open
 
+        # Main Play is historical evidence: no never-started Activity items
+        # may remain, even if the planned interval is later in the future.
+        started_queue = await list_resolution_queue(request, context)
+        assert all(
+            not (item.subject_ref == activity and item.reason_code == "session_unstarted")
+            for item in started_queue.items
+        )
+
         panel = await get_session_panel(context, request, Response())
         group = next(group for group in panel.groups if group.activity_ref == activity)
         assert len(group.rows) == 3
@@ -262,18 +270,13 @@ async def test_main_started_before_preview_exposes_all_children_and_preserves_ca
         after = await get_session_panel(context, request, Response())
         assert all(group.activity_ref != activity for group in after.groups)
 
-        # Explicit main Stop at a time when the accepted plan is still two
-        # hours in the future must send the untouched second child to
-        # Da verificare immediately, not await the planned interval end.
+        # Stopping the once-started main must not revive unstarted child
+        # notices. It also must not silently start either child.
         pending = await list_resolution_queue(request, context)
-        pending_children = [
-            item for item in pending.items
-            if item.subject_ref == activity and item.reason_code == "session_unstarted"
-        ]
-        assert len(pending_children) == 1
-        assert pending_children[0].summary == "Esercizi · mai avviata"
-        assert pending_children[0].planned_schedule_ref == group.rows[2].planned_schedule_ref
-        assert pending_children[0].effective_at <= datetime.now(UTC)
+        assert all(
+            not (item.subject_ref == activity and item.reason_code == "session_unstarted")
+            for item in pending.items
+        )
 
         # The Activity and its two planned children were never deleted.
         async with runtime.session_factory() as session, session.begin():
