@@ -1,5 +1,29 @@
 # Timeline / Temporal-Operational — Workstream Handoff
 
+## 2026-10-17 — Owner verified Create clock chevrons via Playwright
+
+Owner fast-forwarded `feature/timeline-temporal-operational` to exact
+`418ef21d3fd6744ee4ae025f5e255e679144cd93` and ran:
+
+`pnpm --filter @dante/web exec playwright test --config playwright.config.ts e2e/temporal-create-unified-ui.spec.ts`
+
+**PASS: 1/1 browser test in 5.2s, PLAYWRIGHT=0**. Vite
+transformed 1546 modules and the production preview build succeeded.
+The test checks both Quick and Advanced Create eight-hour/minute arrow
+computed styles (8px, borderless, transparent, matching Edit's
+chevrons), while preserving the tested compact/full-size clock
+field bounds and the Advanced shared Objective row.
+
+Vite warned about large chunks; the unauthenticated isolated
+`/home` fixture emitted non-fatal proxy `ECONNREFUSED
+127.0.0.1:8000` for optional backend requests because the real
+backend was not running. These did not fail Playwright.
+
+**Automated acceptance of the isolated Create chevrons fix is
+complete**. Owner's manual visual comparison in the authenticated
+real-data UI is still pending. This entry is documentation only:
+no additional source code or test reruns requested.
+
 ## 2026-10-17 — Exact Create vs Edit hour/minute chevron correction
 
 Owner visually compared Quick Create, Advanced Create and Activity Edit
