@@ -119,7 +119,7 @@ def test_early_main_stop_sends_unstarted_children_to_review_now() -> None:
         "Ripasso · mai avviata",
         "Esercizi · mai avviata",
     }
-    assert {item.planned_schedule_ref for item in review} == {
+    assert {str(item.planned_schedule_ref) for item in review} == {
         first["schedule_ref"],
         second["schedule_ref"],
     }
@@ -143,7 +143,7 @@ def test_main_stop_review_excludes_ever_attempted_children_and_main_itself() -> 
     review = _unstarted_session_items([record], at(20, 48), "UTC")
     assert len(review) == 1
     assert review[0].summary == "Esercizi · mai avviata"
-    assert review[0].planned_schedule_ref == second["schedule_ref"]
+    assert str(review[0].planned_schedule_ref) == second["schedule_ref"]
 
 
 def test_stopped_main_does_not_invent_child_misses_when_no_children_exist() -> None:
