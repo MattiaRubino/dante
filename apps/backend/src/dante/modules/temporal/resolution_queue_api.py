@@ -89,7 +89,8 @@ _UNSTARTED_INPUT = text("""
            COALESCE((
                SELECT jsonb_agg(jsonb_build_object(
                    'planned_schedule_ref',
-                   dante.get_self_session_planned_schedule(:actor,attempt.session_ref)
+                   dante.get_self_session_planned_schedule(:actor,attempt.session_ref),
+                   'ended_at', attempt.ended_at
                ))
                  FROM dante.list_self_subject_sessions(:actor,owner.activity_ref) AS attempt
            ),'[]'::jsonb) AS historical_attempts
@@ -100,7 +101,12 @@ _UNSTARTED_INPUT = text("""
 def _unstarted_session_items(
     records: list[Any], now: datetime, zone_id: str
 ) -> list[ResolutionQueueItem]:
-    """Project only currently expired plans; clock passage creates no execution fact."""
+    """Project unstarted Sessions on plan expiry or explicit main Stop.
+
+    A stopped main is a real accepted execution fact, not an inferred
+    completion of its never-started children. Neither trigger starts or
+    completes a child; the queue remains a read-only review projection.
+    """
     zone = ZoneInfo(zone_id)
     result: list[ResolutionQueueItem] = []
     for owner in records:
@@ -111,10 +117,38 @@ def _unstarted_session_items(
                 schedule for schedule in schedules if schedule.role_code in {None, "envelope"}
             ]
         bounds = [_bounds(schedule, zone) for schedule in intervals]
-        # An unknown or future current interval cannot establish a missed row.
-        if not bounds or any(bound is None or bound[1] > now for bound in bounds):
+        plan_ended_at = (
+            max(bound[1] for bound in bounds if bound is not None)
+            if bounds and all(bound is not None and bound[1] <= now for bound in bounds)
+            else None
+        )
+        # A deliberate Stop of the main Activity Session is sufficient to
+        # require review of configured children that have *never* been
+        # started. Waiting for a future Schedule end silently loses that user
+        # decision. Keep the fact separate from the accepted placement.
+        ended_main_attempts = [
+            datetime.fromisoformat(str(attempt["ended_at"]).replace("Z", "+00:00"))
+            for attempt in owner["historical_attempts"]
+            if attempt.get("planned_schedule_ref") is None
+            and attempt.get("ended_at") is not None
+        ]
+        last_main_stop = max(
+            (
+                stopped_at
+                for stopped_at in ended_main_attempts
+                if stopped_at.tzinfo is not None and stopped_at <= now
+            ),
+            default=None,
+        )
+        if plan_ended_at is None and last_main_stop is None:
             continue
-        ended_at = max(bound[1] for bound in bounds if bound is not None)
+        effective_at = (
+            last_main_stop
+            if plan_ended_at is None
+            else plan_ended_at
+            if last_main_stop is None
+            else max(plan_ended_at, last_main_stop)
+        )
         attempted = {
             UUID(str(attempt["planned_schedule_ref"]))
             if attempt["planned_schedule_ref"] is not None
@@ -139,7 +173,7 @@ def _unstarted_session_items(
                     subject_ref=UUID(str(owner["activity_ref"])),
                     title=str(owner["title"]),
                     summary=f"{name} · mai avviata",
-                    effective_at=ended_at,
+                    effective_at=effective_at,
                     reconciliation_ref=None,
                     outcome_ref=None,
                     purpose_code="activity.session.unstarted",
@@ -163,8 +197,9 @@ async def list_resolution_queue(request: Request, context: Context) -> Resolutio
     A past planned Activity without execution may enter Reality review only
     under explicit review/auto policy, or Objective review when an Objective
     awaits assessment. A separately typed read-only item shows every enabled
-    Session with no attempt while the current Activity plan is wholly past.
-    Absence of Actual never means that the subject did not happen.
+    Session with no attempt when the current Activity plan is wholly past
+    or the real main Activity Session was explicitly stopped. Absence of
+    Actual never means that the subject did not happen.
     """
     try:
         async with (
