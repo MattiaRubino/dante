@@ -799,9 +799,8 @@
 }
 
 .temporal-create-composer
-  .temporal-create-actions
-  .temporal-create-advanced-toggle,
-.temporal-create-composer .temporal-create-actions > button {
+  .temporal-create-actions.temporal-create-actions
+  > button {
   font-size: 13px;
 }
 
