@@ -90,6 +90,7 @@ describe('Activity planned Sessions card detail', () => {
 
   it('shows Play only while main is active and replaces it with review on Stop', async () => {
     let mainStopped = false;
+    let mainPaused = false;
     const children = {
       parent_activity_ref: ACTIVITY,
       schedules: [
@@ -117,7 +118,7 @@ describe('Activity planned Sessions card detail', () => {
       evaluated_at: '2026-10-17T19:05:00Z',
       open: !mainStopped,
       replayed: false,
-      paused: false,
+      paused: mainPaused,
       elapsed_seconds: 300,
       active_seconds: 300,
       paused_seconds: 0,
@@ -139,12 +140,23 @@ describe('Activity planned Sessions card detail', () => {
       expect(container.querySelectorAll('[aria-label="Avvia"]')).toHaveLength(2),
     );
 
-    mainStopped = true;
-    act(() =>
+    // Paused main cannot admit a child Start either.
+    mainPaused = true;
+    act(() => {
       window.dispatchEvent(
         new CustomEvent('dante:session-changed', { detail: ACTIVITY }),
-      ),
-    );
+      );
+    });
+    expect(await screen.findAllByText('Principale in pausa')).toHaveLength(2);
+    expect(container.querySelectorAll('[aria-label="Avvia"]')).toHaveLength(0);
+
+    mainStopped = true;
+    mainPaused = false;
+    act(() => {
+      window.dispatchEvent(
+        new CustomEvent('dante:session-changed', { detail: ACTIVITY }),
+      );
+    });
     expect(await screen.findAllByText('Da verificare')).toHaveLength(2);
     expect(container.querySelectorAll('[aria-label="Avvia"]')).toHaveLength(0);
   });
