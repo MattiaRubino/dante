@@ -50,6 +50,59 @@ function dayDistance(fromDateKey: string, toDateKey: string): number {
   );
 }
 
+test('a long Activity title stays on one ellipsized line', async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await page.goto('/home');
+  const card = page.locator('.timeline-event-card--activity').first();
+  await card.scrollIntoViewIfNeeded();
+  const title = card.locator('.timeline-event-card__title');
+  await expect(title).toBeVisible();
+
+  // Measure the actual production cascade, not jsdom or text truncation
+  // alone. A long name must not create a second title line.
+  const result = await title.evaluate((element) => {
+    element.textContent = 'L'.repeat(140);
+    const css = getComputedStyle(element);
+    return {
+      whitespace: css.whiteSpace,
+      overflow: css.overflow,
+      textOverflow: css.textOverflow,
+      height: element.getBoundingClientRect().height,
+      lineHeight: Number.parseFloat(css.lineHeight),
+      scrollWidth: element.scrollWidth,
+      clientWidth: element.clientWidth,
+    };
+  });
+  expect(result.whitespace).toBe('nowrap');
+  expect(result.overflow).toBe('hidden');
+  expect(result.textOverflow).toBe('ellipsis');
+  expect(result.height).toBeLessThan(result.lineHeight * 1.5);
+  expect(result.scrollWidth).toBeGreaterThan(result.clientWidth);
+});
+
+test('Session Objective and agenda indicators sit near the lower card edge', async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await page.goto('/home');
+  const event = page.locator('[data-timeline-event="2"]');
+  await event.scrollIntoViewIfNeeded();
+  const footer = event.locator('.timeline-event-card__indicators');
+  const agenda = footer.locator('.timeline-event-card__indicator');
+  await expect(agenda).toContainText('Scaletta');
+  const distanceFromBottom = await event.evaluate((element) => {
+    const indicator = element.querySelector('.timeline-event-card__indicator');
+    if (!indicator) return Infinity;
+    return element.getBoundingClientRect().bottom -
+      indicator.getBoundingClientRect().bottom;
+  });
+  // With an Event expander, reserve 30px for its command at the bottom.
+  expect(distanceFromBottom).toBeGreaterThanOrEqual(0);
+  expect(distanceFromBottom).toBeLessThanOrEqual(38);
+});
+
 test('a keyboard nudge preserves its feedback and Undo', async ({
   page,
 }) => {
