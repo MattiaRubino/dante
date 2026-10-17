@@ -1013,6 +1013,14 @@ export function TimelineDayStream({
       }
       if (runtime.dragging) {
         commitDrag(eventUp.clientX, eventUp.clientY);
+        // Native click (if emitted after pointerup) must be suppressed, but a
+        // future independent title click must still open the Inspector.
+        const draggedEventId = runtime.event.id;
+        window.setTimeout(() => {
+          if (suppressClickRef.current === draggedEventId) {
+            suppressClickRef.current = null;
+          }
+        }, 0);
       }
       dragCleanupRef.current?.();
       dragCleanupRef.current = null;
