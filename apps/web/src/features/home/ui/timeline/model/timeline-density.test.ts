@@ -129,7 +129,7 @@ describe('timeline density engine', () => {
     expect(timelineEventReadableHeight(activity)).toBeGreaterThanOrEqual(110);
     expect(
       timelineEventReadableHeight({ ...activity, title: 'X'.repeat(80) }),
-    ).toBeGreaterThan(timelineEventReadableHeight(activity));
+    ).toBe(timelineEventReadableHeight(activity));
   });
 
   it('keeps a 30-minute card compact around a readable overlapping one-minute card', () => {
@@ -266,7 +266,7 @@ describe('timeline density engine', () => {
     });
   });
 
-  it('reserves a second title row for a long Activity before Session Play', () => {
+  it('never reserves an extra title row for a long Activity', () => {
     const activity: TimelineEvent = {
       id: 'long',
       title:
@@ -286,7 +286,9 @@ describe('timeline density engine', () => {
         },
       },
     };
-    expect(timelineEventReadableHeight(activity)).toBeGreaterThanOrEqual(108);
+    expect(timelineEventReadableHeight(activity)).toBe(
+      timelineEventReadableHeight({ ...activity, title: 'Breve' }),
+    );
   });
 
   it('keeps the nonlinear minute-to-pixel map strictly monotonic', () => {
