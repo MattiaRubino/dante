@@ -64,8 +64,9 @@ test('Quick keeps its compact clock field while Advanced uses the Edit interval 
   const advancedWhen = dialog.locator('.temporal-create-u2-when');
   await expect(dialog.locator('.temporal-create-reality-mode > button').first())
     .toHaveCSS('font-size', '14px');
+  // Advanced intentionally increases the footer labels from Quick's 13px.
   for (const button of await footer.locator(':scope > button').all()) {
-    await expect(button).toHaveCSS('font-size', '13px');
+    await expect(button).toHaveCSS('font-size', '14px');
   }
   await expect(advancedWhen).toHaveCSS('max-width', '820px');
   await expectEditStyleChevrons(advancedWhen);
@@ -89,8 +90,12 @@ test('Activity Edit applies readable font sizes rather than inherited tiny label
   page,
 }) => {
   await page.goto('/home');
-  // Inspector editing requires an authenticated persisted Activity. Isolate
-  // its actual globally loaded CSS rules without depending on an API fixture.
+  // The Edit stylesheet is imported by the lazy-loaded authenticated editor,
+  // so an unauthenticated /home fixture will not have fetched it. Load the
+  // actual repo stylesheet (not a mock) before measuring computed styles.
+  await page.addStyleTag({
+    path: 'src/features/home/ui/timeline/activity-edit-panel.css',
+  });
   const fonts = await page.evaluate(() => {
     const root = document.createElement('div');
     root.className = 'timeline-event-modal--edit';
