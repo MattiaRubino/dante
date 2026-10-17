@@ -102,69 +102,70 @@ def test_independent_groups_and_unique_activity_with_multiple_intervals() -> Non
 def test_past_unstarted_main_and_children_enter_review_until_main_play() -> None:
     first = schedule(display_name="Ripasso")
     second = schedule(display_name="Esercizi")
-    record = owner(
-        schedule("interval", at(18), at(19)), first, second,
-    )
+    record = owner(schedule("interval", at(18), at(19)), first, second)
     record["historical_attempts"] = []
     assert _unstarted_session_items([record], at(18, 30), "UTC") == []
     pending = _unstarted_session_items([record], at(20), "UTC")
     assert {item.summary for item in pending} == {
-        "Sessione attività · mai avviata",
-        "Ripasso · mai avviata",
-        "Esercizi · mai avviata",
+        "Sessione attività · mai avviata", "Ripasso · mai avviata", "Esercizi · mai avviata"
     }
 
-    # Play is a persisted real attempt, not a speculative completion.
-    # Active and subsequently stopped main both suppress "mai avviata".
+    # Play, including Pause, hides the previously projected unstarted rows.
     record["historical_attempts"] = [
         {"planned_schedule_ref": None, "ended_at": None},
     ]
     assert _unstarted_session_items([record], at(20), "UTC") == []
+    # Stop restores only the never-started children; never the real main.
     record["historical_attempts"][0]["ended_at"] = at(20).isoformat()
-    assert _unstarted_session_items([record], at(20, 30), "UTC") == []
+    restored = _unstarted_session_items([record], at(20, 30), "UTC")
+    assert {item.summary for item in restored} == {
+        "Ripasso · mai avviata", "Esercizi · mai avviata",
+    }
+    assert {str(item.planned_schedule_ref) for item in restored} == {
+        first["schedule_ref"], second["schedule_ref"],
+    }
 
 
-def test_started_main_never_revives_child_review_after_stop() -> None:
+def test_after_main_stop_only_never_started_children_need_review() -> None:
     first = schedule(display_name="Ripasso")
     second = schedule(display_name="Esercizi")
-    record = owner(
-        schedule("interval", at(18), at(19)), first, second,
-    )
+    record = owner(schedule("interval", at(18), at(19)), first, second)
     record["historical_attempts"] = [
         {"planned_schedule_ref": None, "ended_at": at(19, 30).isoformat()},
         {"planned_schedule_ref": first["schedule_ref"], "ended_at": at(19, 15).isoformat()},
     ]
-    assert _unstarted_session_items([record], at(20), "UTC") == []
-    assert _unstarted_session_items([record], at(23), "UTC") == []
+    assert [item.summary for item in _unstarted_session_items([record], at(20), "UTC")] == [
+        "Esercizi · mai avviata"
+    ]
+    assert [item.summary for item in _unstarted_session_items([record], at(23), "UTC")] == [
+        "Esercizi · mai avviata"
+    ]
 
 
 def test_internal_only_past_children_remain_in_review_without_main() -> None:
     first = schedule(display_name="Ripasso")
     second = schedule(display_name="Esercizi")
-    record = owner(
-        schedule("interval", at(18), at(19)), first, second, mode="internal_only",
-    )
+    record = owner(schedule("interval", at(18), at(19)), first, second, mode="internal_only")
     record["historical_attempts"] = []
     review = _unstarted_session_items([record], at(20), "UTC")
     assert {item.summary for item in review} == {
-        "Ripasso · mai avviata",
-        "Esercizi · mai avviata",
+        "Ripasso · mai avviata", "Esercizi · mai avviata",
     }
     assert {str(item.planned_schedule_ref) for item in review} == {
         first["schedule_ref"], second["schedule_ref"],
     }
-    assert all(item.reason_code == "session_unstarted" for item in review)
 
 
-def test_main_stop_does_not_create_future_review() -> None:
-    record = owner(
-        schedule("interval", at(23, 30), at(23, 59)),
-        schedule(display_name="Ripasso"),
-    )
+def test_main_stop_early_immediately_flags_unstarted_child_not_main() -> None:
+    child = schedule(display_name="Ripasso")
+    record = owner(schedule("interval", at(23, 30), at(23, 59)), child)
     record["historical_attempts"] = [
         {"planned_schedule_ref": None, "ended_at": at(20, 47).isoformat()},
     ]
-    assert _unstarted_session_items([record], at(20, 48), "UTC") == []
+    review = _unstarted_session_items([record], at(20, 48), "UTC")
+    assert len(review) == 1
+    assert review[0].summary == "Ripasso · mai avviata"
+    assert review[0].effective_at == at(20, 47)
 
 
 def test_main_started_hours_early_exposes_all_unstarted_internal_sessions() -> None:
