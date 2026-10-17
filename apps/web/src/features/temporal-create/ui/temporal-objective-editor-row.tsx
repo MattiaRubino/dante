@@ -1,5 +1,4 @@
 import type { ReactNode } from 'react';
-import { useTranslation } from 'react-i18next';
 
 import type {
   TemporalCreateObjectiveComparator,
@@ -15,6 +14,7 @@ export function TemporalObjectiveEditorRow({
   index,
   total,
   variant = 'create',
+  italian,
   disabled = false,
   onInspect,
   update,
@@ -27,6 +27,7 @@ export function TemporalObjectiveEditorRow({
   index: number;
   total: number;
   variant?: 'create' | 'edit';
+  italian: boolean;
   disabled?: boolean;
   onInspect?: () => void;
   update: (id: string, patch: Partial<TemporalCreateObjectiveDraft>) => void;
@@ -35,8 +36,6 @@ export function TemporalObjectiveEditorRow({
   remove: (id: string) => void;
   extras?: ReactNode;
 }>) {
-  const { i18n } = useTranslation('common');
-  const italian = i18n.language.toLowerCase().startsWith('it');
   return (
     <div
       className="temporal-create-objective"
