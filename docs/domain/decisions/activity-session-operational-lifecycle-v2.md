@@ -90,7 +90,7 @@ scope:
 Both deletion paths are one atomic operation. A partial series deletion or a
 deleted occurrence that later rematerializes is invalid.
 
-Moving an Activity removes its unstarted rows from the panel when the current interval no longer makes them available. They appear in **Da verificare** only if the Activity's current accepted plan has ended. Moving the Activity into the future removes those rows from **Da verificare** and makes them available again at the new preview time. Retained open/paused rows remain in the panel and completed rows remain historical.
+Moving an Activity removes its unstarted rows from the Session Panel when the current interval no longer makes them available. With no historical main Play, they appear in **Da verificare** when the current accepted plan has ended; moving the plan into the future clears only that time-derived review. A **real stopped main Session** independently requires review of never-started internal Sessions even before the planned end, and a later plan movement cannot erase that accepted Stop fact. Retained open/paused rows remain in the panel and completed rows remain historical.
 
 
 ## Event parity — deletion, recurrence scope and scheduling
