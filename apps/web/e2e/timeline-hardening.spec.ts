@@ -95,8 +95,10 @@ test('Session Objective and agenda indicators sit near the lower card edge', asy
   const distanceFromBottom = await event.evaluate((element) => {
     const indicator = element.querySelector('.timeline-event-card__indicator');
     if (!indicator) return Infinity;
-    return element.getBoundingClientRect().bottom -
-      indicator.getBoundingClientRect().bottom;
+    return (
+      element.getBoundingClientRect().bottom -
+      indicator.getBoundingClientRect().bottom
+    );
   });
   // With an Event expander, reserve 30px for its command at the bottom.
   expect(distanceFromBottom).toBeGreaterThanOrEqual(0);
