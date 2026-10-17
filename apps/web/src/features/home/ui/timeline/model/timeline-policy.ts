@@ -1,5 +1,23 @@
 export const TIMELINE_MINUTES_PER_DAY = 24 * 60;
 
+const CARD_TITLE_PREVIEW_LENGTH = 72;
+const cardTitleSegmenter = new Intl.Segmenter(undefined, {
+  granularity: 'grapheme',
+});
+
+export function timelineCardTitlePreview(title: string): string {
+  let end = 0;
+  let count = 0;
+  for (const { index, segment } of cardTitleSegmenter.segment(title)) {
+    if (count === CARD_TITLE_PREVIEW_LENGTH) {
+      return `${title.slice(0, end).trimEnd()}…`;
+    }
+    end = index + segment.length;
+    count += 1;
+  }
+  return title;
+}
+
 export const TIMELINE_POLICY = {
   density: {
     baseScale: 0.72,

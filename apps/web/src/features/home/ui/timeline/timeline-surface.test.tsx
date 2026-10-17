@@ -4,6 +4,7 @@ import { afterEach, beforeAll, describe, expect, it, vi } from 'vitest';
 import { i18n } from '../../../../bootstrap/i18n';
 import { TemporalTimelineRuntimeBoundary } from '../../../temporal/timeline-runtime-boundary';
 import { TIMELINE_PROTOTYPE_TODAY } from './model/timeline-fixtures';
+import { timelineCardTitlePreview } from './model/timeline-policy';
 import { TimelineSurface } from './timeline-surface';
 
 beforeAll(async () => {
@@ -53,6 +54,13 @@ function renderTimeline(options: RenderTimelineOptions = {}) {
 }
 
 describe('TimelineSurface production parity', () => {
+  it('ends long card titles with an ellipsis without splitting a grapheme', () => {
+    const title = `${'X'.repeat(71)}👩‍🚀${'Y'.repeat(40)}`;
+    expect(timelineCardTitlePreview(title)).toBe(`${'X'.repeat(71)}👩‍🚀…`);
+    expect(timelineCardTitlePreview('X'.repeat(72))).toBe('X'.repeat(72));
+    expect(timelineCardTitlePreview('Titolo breve')).toBe('Titolo breve');
+  });
+
   it('renders the bounded multi-day stream with real timeline controls', () => {
     const { container } = renderTimeline();
 

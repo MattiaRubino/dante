@@ -17,6 +17,7 @@ import { computeTimelineGaps } from './model/timeline-layout';
 import {
   TIMELINE_MINUTES_PER_DAY,
   TIMELINE_POLICY,
+  timelineCardTitlePreview,
   timelineDragSnapMinutes,
   timelineStableCardWidth,
 } from './model/timeline-policy';
@@ -207,6 +208,7 @@ function TimelineEventCard({
   // The immutable title/category determines card width. Running Session state,
   // planned/actual time, move and overlap cluster may only change position.
   const stableWidth = timelineStableCardWidth(event.title, isActivity);
+  const titlePreview = timelineCardTitlePreview(event.title);
 
   if (filtered) {
     return null;
@@ -301,12 +303,14 @@ function TimelineEventCard({
           <button
             className="timeline-event-card__title"
             type="button"
+            aria-label={event.title}
+            title={event.title}
             onClick={(clickEvent) => {
               clickEvent.stopPropagation();
               onOpenEventDetail(event, clickEvent.currentTarget);
             }}
           >
-            {event.title}
+            {titlePreview}
           </button>
           {sessionActivityRef === null ? null : (
             <ActivitySessionCardControls
