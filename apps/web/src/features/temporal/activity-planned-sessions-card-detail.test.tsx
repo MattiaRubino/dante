@@ -98,7 +98,7 @@ describe('Activity planned Sessions card detail', () => {
         { schedule_ref: SESSION_B, role_code: 'planned', presentation_order: 2, display_name: 'Esercizi' },
       ],
     };
-    const main = {
+    const main = () => ({
       session_ref: '0199a8c0-6e72-7cd1-9be1-b3f514067293',
       planned_schedule_ref: null,
       subject_native_ref: ACTIVITY,
@@ -113,10 +113,10 @@ describe('Activity planned Sessions card detail', () => {
       active_seconds: 300,
       paused_seconds: 0,
       duration_evaluations: [],
-    };
+    });
     const fetchFn = vi.fn<typeof fetch>((input) =>
       Promise.resolve(
-        Response.json(fetchRequestUrl(input).endsWith('/sessions') ? [main] : children),
+        Response.json(fetchRequestUrl(input).endsWith('/sessions') ? [main()] : children),
       ),
     );
     vi.stubGlobal('fetch', fetchFn);
