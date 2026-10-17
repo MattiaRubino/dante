@@ -54,7 +54,6 @@ import {
 } from './model/timeline-state';
 import {
   addTimelineDays,
-  formatTimelineMinute,
   parseTimelineDate,
   timelineDateKey,
   timelineMinuteOfClock,
