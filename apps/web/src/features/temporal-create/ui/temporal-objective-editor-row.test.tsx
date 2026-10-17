@@ -1,5 +1,8 @@
-import { fireEvent, render, screen, within } from '@testing-library/react';
-import { describe, expect, it, vi } from 'vitest';
+// @vitest-environment jsdom
+import { cleanup, fireEvent, render, screen, within } from '@testing-library/react';
+import { afterEach, beforeAll, describe, expect, it, vi } from 'vitest';
+
+import { i18n } from '../../../bootstrap/i18n';
 
 import type { TemporalCreateObjectiveDraft } from '../model/temporal-create-u2-authoring';
 import { TemporalObjectiveEditorRow } from './temporal-objective-editor-row';
@@ -35,6 +38,12 @@ function show(variant: 'create' | 'edit', disabled = false) {
   );
   return { ...result, update, changeKind, move, remove };
 }
+
+beforeAll(async () => {
+  await i18n.changeLanguage('it');
+});
+
+afterEach(cleanup);
 
 describe('shared Objective row presentation', () => {
   it('uses one identical structure for Advanced Create and Activity Edit', () => {
