@@ -2,6 +2,10 @@ import { useEffect, useState } from 'react';
 
 import { createWebFetch } from '../../platform/api/web-fetch';
 import { subscribeTemporalPlanningInvalidation } from './timeline-invalidation';
+import {
+  createRemoteTemporalSessionDataSource,
+  type TemporalSessionView,
+} from './remote-session-data-source';
 import { SessionSubjectControls } from './session-subject-controls';
 import './activity-planned-sessions-card-detail.css';
 
@@ -83,7 +87,36 @@ function PlannedSessionCardContent({
   variant = 'detail',
 }: PlannedSessionCardProps) {
   const [rows, setRows] = useState<readonly PlannedSession[] | null>(null);
+  const [sessions, setSessions] = useState<readonly TemporalSessionView[] | null>(null);
   const [revision, setRevision] = useState(0);
+  const [sessionRevision, setSessionRevision] = useState(0);
+
+  useEffect(() => {
+    const onChange = (event: Event) => {
+      if (event instanceof CustomEvent && event.detail === activityRef) {
+        setSessionRevision((value) => value + 1);
+      }
+    };
+    window.addEventListener('dante:session-changed', onChange);
+    return () => window.removeEventListener('dante:session-changed', onChange);
+  }, [activityRef]);
+
+  useEffect(() => {
+    if (variant === 'indicator') return;
+    let cancelled = false;
+    const source = createRemoteTemporalSessionDataSource();
+    void source
+      .list('activity', activityRef)
+      .then((next) => {
+        if (!cancelled) setSessions(next);
+      })
+      .catch(() => {
+        if (!cancelled) setSessions(null); // fail closed; no invalid Play
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [activityRef, sessionRevision, variant]);
 
   useEffect(
     () =>
@@ -137,6 +170,19 @@ function PlannedSessionCardContent({
     );
   }
 
+  const mainSessions = (sessions ?? []).filter(
+    (session) => session.plannedScheduleRef == null,
+  );
+  const mainRunning = mainSessions.some(
+    (session) => session.open && !session.paused,
+  );
+  const mainPaused = mainSessions.some(
+    (session) => session.open && session.paused,
+  );
+  const mainStopped = mainSessions.length > 0 && !mainSessions.some(
+    (session) => session.open,
+  );
+
   return (
     <div
       className="timeline-activity-planned-sessions"
@@ -155,14 +201,28 @@ function PlannedSessionCardContent({
               {row.name}
             </span>
           </span>
-          <SessionSubjectControls
-            kind="activity"
-            subjectRef={activityRef}
-            plannedScheduleRef={row.scheduleRef}
-            label={row.name}
-            variant="detail"
-            compactRuntime
-          />
+          {mainRunning ? (
+            <SessionSubjectControls
+              kind="activity"
+              subjectRef={activityRef}
+              plannedScheduleRef={row.scheduleRef}
+              label={row.name}
+              variant="detail"
+              compactRuntime
+            />
+          ) : (
+            <span className="timeline-activity-planned-sessions__state">
+              {mainStopped
+                ? (sessions ?? []).some(
+                    (session) => session.plannedScheduleRef === row.scheduleRef,
+                  )
+                  ? 'Registrata'
+                  : 'Da verificare'
+                : mainPaused
+                  ? 'Principale in pausa'
+                  : 'Avvia prima la principale'}
+            </span>
+          )}
         </div>
       ))}
     </div>
