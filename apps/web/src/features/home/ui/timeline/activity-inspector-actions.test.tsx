@@ -196,6 +196,38 @@ describe('Activity Inspector actions', () => {
 });
 
 describe('Recurring Activity profile scope', () => {
+  it('renders the persisted Life Area colors in edit choices', async () => {
+    loadLifeAreaChoice.mockResolvedValueOnce({
+      currentRef: null,
+      currentRevision: 0,
+      options: [
+        { ref: 'area-blue', name: 'test4', revision: 1, colorCode: '#4759CD' },
+        { ref: 'area-green', name: 'test2', revision: 1, colorCode: '#2AB783' },
+      ],
+    });
+    render(
+      <ActivityEditPanel
+        profile={profile}
+        closeRequestRef={createRef()}
+        onSaved={() => undefined}
+        onCancel={() => undefined}
+      />,
+    );
+    const select = await screen.findByRole('textbox', {
+      name: 'Area assegnata',
+    });
+    fireEvent.focus(select);
+    const blue = await screen.findByRole('option', { name: 'test4' });
+    const green = await screen.findByRole('option', { name: 'test2' });
+    const swatch = (option: HTMLElement) =>
+      option.querySelector<HTMLElement>(
+        '.temporal-create-life-area-field__swatch',
+      )?.style.backgroundColor;
+    expect(swatch(blue)).toBe('rgb(71, 89, 205)');
+    expect(swatch(green)).toBe('rgb(42, 183, 131)');
+  });
+
+
   it('labels retained named and generic attempts with their factual lifecycle state', async () => {
     loadSettings.mockResolvedValueOnce({
       ...currentSettings,
