@@ -26,6 +26,11 @@ test('Quick keeps its compact clock field while Advanced uses the Edit interval 
 
   const dialog = page.locator('[data-temporal-create="composer"]');
   await expect(dialog).toHaveAttribute('data-temporal-create-surface', 'base');
+  // Text sizing is independent of the fixed Quick panel dimensions.
+  await expect(dialog.locator('.temporal-create-type-grid strong').first())
+    .toHaveCSS('font-size', '13px');
+  await expect(dialog.locator('.temporal-create-choice-row > button').first())
+    .toHaveCSS('font-size', '12.5px');
   const quickClocks = dialog.locator(
     '.temporal-create-u2-when > .temporal-create-time-control .temporal-create-time-control__field',
   );
@@ -40,6 +45,8 @@ test('Quick keeps its compact clock field while Advanced uses the Edit interval 
   await dialog.getByRole('button', { name: /Opzioni avanzate/ }).click();
   await expect(dialog).toHaveAttribute('data-temporal-create-surface', 'advanced');
   const advancedWhen = dialog.locator('.temporal-create-u2-when');
+  await expect(dialog.locator('.temporal-create-reality-mode > button').first())
+    .toHaveCSS('font-size', '13px');
   await expect(advancedWhen).toHaveCSS('max-width', '820px');
   await expectEditStyleChevrons(advancedWhen);
   const advancedControls = advancedWhen.locator(
