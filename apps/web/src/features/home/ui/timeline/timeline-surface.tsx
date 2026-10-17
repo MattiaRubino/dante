@@ -473,8 +473,10 @@ export function TimelineSurface({
   const visibleNowMinute = dragSnapshot?.nowMinute ?? timelineNowMinute;
 
   useLayoutEffect(() => {
+    // Also refresh after the snapshot is released: renderedDays may have
+    // updated while dragging without changing again on pointerup.
     if (!dragActiveRef.current) renderedDaysRef.current = renderedDays;
-  }, [renderedDays]);
+  }, [renderedDays, dragSnapshot]);
 
   const showFeedback = useCallback((message: string) => {
     setCanonicalUndo(null);
