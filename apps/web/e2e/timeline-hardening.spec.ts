@@ -135,6 +135,8 @@ test('title drag previews the same 15-minute destination as drop', async ({
   const marker = page.locator('[data-timeline-drag-ruler-marker]');
   await expect(overlay).toBeVisible();
   await expect(marker).toBeVisible();
+  await expect(page.locator('[data-home-region="timeline"]'))
+    .toHaveAttribute('data-timeline-card-dragging', 'true');
 
   const preview = await overlay.getAttribute('data-drag-preview-time');
   expect(preview).toMatch(/^\d{2}:\d{2}–\d{2}:\d{2}$/);
@@ -147,6 +149,8 @@ test('title drag previews the same 15-minute destination as drop', async ({
   await page.mouse.up();
   await expect(overlay).toHaveCount(0);
   await expect(marker).toHaveCount(0);
+  await expect(page.locator('[data-home-region="timeline"]'))
+    .toHaveAttribute('data-timeline-card-dragging', 'false');
   await expect(card.locator('.timeline-event-card__time')).toContainText(
     preview,
   );
