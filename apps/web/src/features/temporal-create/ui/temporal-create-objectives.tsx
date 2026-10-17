@@ -1,7 +1,6 @@
 import { useTranslation } from 'react-i18next';
 
 import type {
-  TemporalCreateObjectiveComparator,
   TemporalCreateObjectiveDraft,
   TemporalCreateObjectiveKind,
 } from '../model/temporal-create-u2-authoring';
