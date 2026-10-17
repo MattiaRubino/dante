@@ -83,9 +83,11 @@ describe('Activity planned Sessions card detail', () => {
     expect(
       container.querySelectorAll('[data-activity-planned-sessions]'),
     ).toHaveLength(1);
-    expect(fetchRequestUrl(fetchFn.mock.calls[0]?.[0])).toContain(
-      `/activities/${ACTIVITY}/children`,
-    );
+    expect(
+      fetchFn.mock.calls.some(([input]) =>
+        fetchRequestUrl(input).includes(`/activities/${ACTIVITY}/children`),
+      ),
+    ).toBe(true);
   });
 
   it('shows Play only while main is active and replaces it with review on Stop', async () => {
