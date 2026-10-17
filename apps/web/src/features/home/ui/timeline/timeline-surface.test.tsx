@@ -4,7 +4,10 @@ import { afterEach, beforeAll, describe, expect, it, vi } from 'vitest';
 import { i18n } from '../../../../bootstrap/i18n';
 import { TemporalTimelineRuntimeBoundary } from '../../../temporal/timeline-runtime-boundary';
 import { TIMELINE_PROTOTYPE_TODAY } from './model/timeline-fixtures';
-import { timelineCardTitlePreview } from './model/timeline-policy';
+import {
+  timelineCardTitlePreview,
+  timelineDragSnapMinutes,
+} from './model/timeline-policy';
 import { TimelineSurface } from './timeline-surface';
 
 beforeAll(async () => {
@@ -54,6 +57,13 @@ function renderTimeline(options: RenderTimelineOptions = {}) {
 }
 
 describe('TimelineSurface production parity', () => {
+  it('uses 15-minute drag slots at both low and high elastic zoom', () => {
+    expect(timelineDragSnapMinutes(0.75)).toBe(15);
+    expect(timelineDragSnapMinutes(1)).toBe(15);
+    expect(timelineDragSnapMinutes(2.1)).toBe(15);
+  });
+
+
   it('ends long card titles with an ellipsis without splitting a grapheme', () => {
     const title = `${'X'.repeat(71)}👩‍🚀${'Y'.repeat(40)}`;
     expect(timelineCardTitlePreview(title)).toBe(`${'X'.repeat(71)}👩‍🚀…`);
