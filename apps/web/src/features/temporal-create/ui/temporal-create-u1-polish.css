@@ -703,3 +703,66 @@
   > .temporal-create-operation-error {
   order: -50;
 }
+
+/* Readability pass: preserve the geometry of Quick, Advanced and fixed footer.
+ * Previously many full-width controls rendered at 9–11px. This changes only
+ * typography, not widths, heights, padding, grid tracks or modal boundaries. */
+.temporal-create-composer .temporal-create-type-grid > button strong {
+  font-size: 13px;
+}
+
+.temporal-create-composer .temporal-create-type-grid.is-four > button small {
+  font-size: 9.5px;
+}
+
+.temporal-create-composer .temporal-create-choice-row > button,
+.temporal-create-composer .temporal-create-segmented > button {
+  font-size: 12.5px;
+}
+
+.temporal-create-composer .temporal-create-reality-mode > button {
+  font-size: 13px;
+}
+
+.temporal-create-composer
+  .temporal-create-reality-objectives__block-copy strong {
+  font-size: 13px;
+}
+
+.temporal-create-composer
+  .temporal-create-reality-objectives__block-copy span,
+.temporal-create-composer
+  .temporal-create-reality-objectives__heading p {
+  font-size: 12px;
+}
+
+.temporal-create-composer
+  .temporal-create-actions
+  .temporal-create-advanced-toggle,
+.temporal-create-composer .temporal-create-actions > button {
+  font-size: 12px;
+}
+
+.temporal-create-composer .temporal-create-timezone-current,
+.temporal-create-composer .temporal-create-timezone-label,
+.temporal-create-composer .temporal-create-timezone-list > button {
+  font-size: 13px;
+}
+
+.temporal-create-composer .temporal-create-control > span,
+.temporal-create-composer .temporal-create-type-fieldset > legend,
+.temporal-create-composer .temporal-create-choice-group > legend,
+.temporal-create-composer .temporal-create-activity-interval__label {
+  font-size: 12px;
+}
+
+.temporal-create-composer .temporal-create-date-picker__trigger {
+  font-size: 11.5px;
+}
+
+.temporal-create-composer
+  :is(.temporal-create-type-grid > button, .temporal-create-choice-row > button,
+    .temporal-create-segmented > button, .temporal-create-reality-mode > button) {
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
