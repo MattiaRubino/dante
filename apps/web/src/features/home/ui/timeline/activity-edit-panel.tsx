@@ -2008,9 +2008,10 @@ export function ActivityEditPanel({
                       Ripristina obiettivi rimossi
                     </button>
                   ) : null}
+                  <div className="temporal-create-objectives__root-actions">
                   <button
                     type="button"
-                    className="timeline-activity-editor__add-objective"
+                    className="temporal-create-objectives__add"
                     disabled={pending || planPending || objectivePending}
                     onClick={() => {
                       const next = newObjectiveDraft(
@@ -2025,6 +2026,7 @@ export function ActivityEditPanel({
                   >
                     ＋ Aggiungi obiettivo
                   </button>
+                  </div>
                   {objectiveError ? <p role="alert">{objectiveError}</p> : null}
                   {settings.objectives
                     .filter((row) => row.observationRef)
