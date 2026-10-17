@@ -960,6 +960,27 @@
     0 20px 48px rgba(0, 0, 0, 0.3);
 }
 
+/* One time pin alongside the ruler during a 15-minute snap drag.
+ * It is body-portaled and never changes the elastic map or ruler geometry. */
+.timeline-drag-ruler-marker {
+  position: fixed;
+  z-index: 2001;
+  box-sizing: border-box;
+  min-width: 50px;
+  padding: 3px 5px;
+  border: 1px solid rgba(255, 150, 86, 0.58);
+  border-radius: 6px;
+  color: #fff2e5;
+  background: #753014;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.28);
+  font-size: 11px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  text-align: center;
+  pointer-events: none;
+  transform: translateY(-50%);
+}
+
 .timeline-event-card__top {
   position: relative;
   z-index: 4;
@@ -1024,11 +1045,11 @@
 .timeline-event-card__time {
   margin-top: 3px;
   color: var(--dante-semantic-color-home-text-secondary, #b2bdc1);
-  font-size: 8.5px;
+  font-size: 9.5px;
   font-weight: 500;
   font-variant-numeric: tabular-nums;
   line-height: 1.15;
-  cursor: pointer;
+  cursor: default;
 }
 
 .timeline-event-card__meta {
