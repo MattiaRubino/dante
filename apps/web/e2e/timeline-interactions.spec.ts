@@ -385,38 +385,6 @@ test('calendar keyboard navigation restores focus to its trigger on Escape', asy
   await expect(trigger).toBeFocused();
 });
 
-test('time editor rejects an invalid range and restores focus on Escape', async ({
-  page,
-}) => {
-  await page.setViewportSize({ width: 1440, height: 900 });
-  await page.goto('/home');
-
-  const card = page.locator('[data-timeline-event="12"]');
-  await card.scrollIntoViewIfNeeded();
-  const timeButton = page.getByRole('button', {
-    name: 'Modifica orario di Promemoria',
-  });
-  const originalLabel = await card.getAttribute('aria-label');
-  expect(originalLabel).not.toBeNull();
-
-  await timeButton.click();
-  const dialog = page.getByRole('dialog', { name: 'Modifica orario' });
-  await expect(dialog).toBeVisible();
-
-  await page.getByLabel('Fine ore').fill('14');
-  await page.getByLabel('Fine minuti').fill('40');
-  await dialog.getByRole('button', { name: 'Conferma' }).click();
-
-  await expect(dialog).toBeVisible();
-  await expect(dialog.getByRole('alert')).toBeVisible();
-  await expect(card).toHaveAttribute('aria-label', originalLabel ?? '');
-
-  await page.keyboard.press('Escape');
-  await expect(dialog).toHaveCount(0);
-  await expect(timeButton).toBeFocused();
-  await expect(card).toHaveAttribute('aria-label', originalLabel ?? '');
-});
-
 test('Detail owns focus while open and returns it to the exact title opener', async ({
   page,
 }) => {

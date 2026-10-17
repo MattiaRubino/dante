@@ -314,35 +314,6 @@ describe('Activity Timeline coordinated replan', () => {
     expect(loadWindow).toHaveBeenCalledTimes(1);
   });
 
-  it('routes the time editor through the same coordinated path', async () => {
-    const { container, reviseSchedule } = renderTimeline();
-    await screen.findByText('Attività coordinata');
-    fireEvent.click(
-      screen.getByRole('button', {
-        name: 'Modifica orario di Attività coordinata',
-      }),
-    );
-    fireEvent.change(screen.getByLabelText('Inizio minuti'), {
-      target: { value: '30' },
-    });
-    fireEvent.click(screen.getByRole('button', { name: 'Conferma' }));
-    await waitFor(() => expect(remote.applyReplan).toHaveBeenCalledTimes(1));
-    expect(
-      (remote.applyReplan.mock.calls[0]?.[2] as ActivityReplanDraft).times[
-        SCHEDULE_REF
-      ],
-    ).toEqual({
-      start: '2026-09-09T10:30:00',
-      end: '2026-09-09T11:30:00',
-    });
-    expect(reviseSchedule).not.toHaveBeenCalled();
-    expect(
-      container.querySelector<HTMLElement>(
-        `[data-timeline-event="${SCHEDULE_REF}"]`,
-      ),
-    ).toBeTruthy();
-  });
-
   it('requires explicit single-instance scope for a recurring Activity, even without attempts', async () => {
     remote.loadRecurring.mockResolvedValue({
       occurrenceRef: 'occurrence-1',

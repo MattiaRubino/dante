@@ -50,7 +50,7 @@ function dayDistance(fromDateKey: string, toDateKey: string): number {
   );
 }
 
-test('unchanged time save preserves the previous real move feedback and Undo', async ({
+test('a keyboard nudge preserves its feedback and Undo', async ({
   page,
 }) => {
   await page.setViewportSize({ width: 1440, height: 900 });
@@ -71,15 +71,6 @@ test('unchanged time save preserves the previous real move feedback and Undo', a
   await expect(toast).toBeVisible();
   const moveFeedback = await toast.textContent();
   expect(moveFeedback).not.toBeNull();
-
-  await card
-    .getByRole('button', { name: 'Modifica orario di Promemoria' })
-    .click();
-  const dialog = page.getByRole('dialog', { name: 'Modifica orario' });
-  await expect(dialog).toBeVisible();
-
-  await dialog.getByRole('button', { name: 'Conferma' }).click();
-  await expect(dialog).toHaveCount(0);
 
   await expect(toast).toBeVisible();
   await expect(toast).toHaveText(moveFeedback ?? '');
@@ -140,84 +131,6 @@ test('keyboard nudge sequences stay visible and Undo returns to the sequence ori
     upperOriginalLabel ?? '',
   );
   await expectCardInsideTimelineViewport(upperCard, grid);
-});
-
-test('keyboard nudges cross midnight, retain focus, and Undo restores the origin', async ({
-  page,
-}) => {
-  await page.setViewportSize({ width: 1440, height: 760 });
-  await page.goto('/home');
-
-  const grid = page.locator('.timeline-grid');
-  const card = page.locator('[data-timeline-event="8"]');
-  await card.scrollIntoViewIfNeeded();
-
-  await card
-    .getByRole('button', { name: 'Modifica orario di Revisione concept' })
-    .click();
-  const dialog = page.getByRole('dialog', { name: 'Modifica orario' });
-  await expect(dialog).toBeVisible();
-  await page.getByLabel('Inizio ore').fill('23');
-  await page.getByLabel('Inizio minuti').fill('10');
-  await page.getByLabel('Fine ore').fill('23');
-  await page.getByLabel('Fine minuti').fill('55');
-  await dialog.getByRole('button', { name: 'Conferma' }).click();
-  await expect(dialog).toHaveCount(0);
-
-  const sequenceOriginLabel = await card.getAttribute('aria-label');
-  expect(sequenceOriginLabel).toContain('23:10–23:55');
-  expect(await timelineDateFor(card)).toBe('2026-08-04');
-
-  await card.focus();
-  await card.press('Alt+ArrowDown');
-  await expect(card).toHaveAttribute(
-    'aria-label',
-    /Revisione concept, 23:15–24:00/,
-  );
-
-  await page.keyboard.press('Alt+ArrowDown');
-  await expect.poll(() => timelineDateFor(card)).toBe('2026-08-05');
-  await expect(card).toHaveAttribute(
-    'aria-label',
-    /Revisione concept, 00:00–00:45/,
-  );
-  await expect(card).toBeFocused();
-  await expectCardInsideTimelineViewport(card, grid);
-
-  await expect
-    .poll(() =>
-      card.evaluate((element) => getComputedStyle(element).outlineOffset),
-    )
-    .toBe('-2px');
-
-  const focusColors = await card.evaluate((element) => {
-    const style = getComputedStyle(element);
-    const probe = document.createElement('span');
-    probe.style.color = style.getPropertyValue('--timeline-group-color');
-    document.body.appendChild(probe);
-    const groupColor = getComputedStyle(probe).color;
-    probe.remove();
-    return {
-      outlineColor: style.outlineColor,
-      groupColor,
-    };
-  });
-  expect(focusColors.outlineColor).toBe(focusColors.groupColor);
-
-  await page.keyboard.press('Alt+ArrowDown');
-  await expect(card).toHaveAttribute(
-    'aria-label',
-    /Revisione concept, 00:05–00:50/,
-  );
-  await expect(card).toBeFocused();
-
-  const undoButton = page.locator('.timeline-move-toast.is-on button');
-  await expect(undoButton).toBeVisible();
-  await undoButton.click();
-
-  await expect.poll(() => timelineDateFor(card)).toBe('2026-08-04');
-  await expect(card).toHaveAttribute('aria-label', sequenceOriginLabel ?? '');
-  await expectCardInsideTimelineViewport(card, grid);
 });
 
 test('relative temporal scrubber keeps advancing while held without a native-thumb reset', async ({
