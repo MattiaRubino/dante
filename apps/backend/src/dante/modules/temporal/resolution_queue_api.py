@@ -89,8 +89,7 @@ _UNSTARTED_INPUT = text("""
            COALESCE((
                SELECT jsonb_agg(jsonb_build_object(
                    'planned_schedule_ref',
-                   dante.get_self_session_planned_schedule(:actor,attempt.session_ref),
-                   'ended_at', attempt.ended_at
+                   dante.get_self_session_planned_schedule(:actor,attempt.session_ref)
                ))
                  FROM dante.list_self_subject_sessions(:actor,owner.activity_ref) AS attempt
            ),'[]'::jsonb) AS historical_attempts
@@ -101,11 +100,11 @@ _UNSTARTED_INPUT = text("""
 def _unstarted_session_items(
     records: list[Any], now: datetime, zone_id: str
 ) -> list[ResolutionQueueItem]:
-    """Project unstarted Sessions on plan expiry or explicit main Stop.
+    """Project missed unstarted Sessions from an expired Activity plan.
 
-    A stopped main is a real accepted execution fact, not an inferred
-    completion of its never-started children. Neither trigger starts or
-    completes a child; the queue remains a read-only review projection.
+    An actual main Play (open or stopped) permanently retires the Activity's
+    *never started* review projection. It does not claim child completion.
+    Internal-only Activities without a main keep per-child review on expiry.
     """
     zone = ZoneInfo(zone_id)
     result: list[ResolutionQueueItem] = []
@@ -125,33 +124,16 @@ def _unstarted_session_items(
             if plan_expired
             else None
         )
-        # A deliberate Stop of the main Activity Session is sufficient to
-        # require review of configured children that have *never* been
-        # started. Waiting for a future Schedule end silently loses that user
-        # decision. Keep the fact separate from the accepted placement.
-        ended_main_attempts = [
-            datetime.fromisoformat(str(attempt["ended_at"]).replace("Z", "+00:00"))
-            for attempt in owner["historical_attempts"]
-            if attempt.get("planned_schedule_ref") is None
-            and attempt.get("ended_at") is not None
-        ]
-        last_main_stop = max(
-            (
-                stopped_at
-                for stopped_at in ended_main_attempts
-                if stopped_at.tzinfo is not None and stopped_at <= now
-            ),
-            default=None,
-        )
-        if plan_ended_at is None and last_main_stop is None:
+        if plan_ended_at is None:
             continue
-        effective_at = (
-            last_main_stop
-            if plan_ended_at is None
-            else plan_ended_at
-            if last_main_stop is None
-            else max(plan_ended_at, last_main_stop)
-        )
+        # A real main Play ends the hypothesis that this Activity was entirely
+        # never started. Do not revive "mai avviata" after main Stop.
+        # The history is owner-scoped; no synthetic Actual or child execution.
+        if owner["mode_code"] in {"live", "record_and_live"} and any(
+            attempt["planned_schedule_ref"] is None
+            for attempt in owner["historical_attempts"]
+        ):
+            continue
         attempted = {
             UUID(str(attempt["planned_schedule_ref"]))
             if attempt["planned_schedule_ref"] is not None
@@ -176,7 +158,7 @@ def _unstarted_session_items(
                     subject_ref=UUID(str(owner["activity_ref"])),
                     title=str(owner["title"]),
                     summary=f"{name} · mai avviata",
-                    effective_at=effective_at,
+                    effective_at=plan_ended_at,
                     reconciliation_ref=None,
                     outcome_ref=None,
                     purpose_code="activity.session.unstarted",
@@ -201,8 +183,8 @@ async def list_resolution_queue(request: Request, context: Context) -> Resolutio
     under explicit review/auto policy, or Objective review when an Objective
     awaits assessment. A separately typed read-only item shows every enabled
     Session with no attempt when the current Activity plan is wholly past
-    or the real main Activity Session was explicitly stopped. Absence of
-    Actual never means that the subject did not happen.
+    and no main Activity Session was ever started (if a main exists).
+    Absence of Actual never means that the subject did not happen.
     """
     try:
         async with (
