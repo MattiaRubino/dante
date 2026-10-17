@@ -388,14 +388,14 @@ describe('TimelineSurface production parity', () => {
     for (let step = 0; step < 5; step += 1) {
       moveReminder('ArrowDown');
     }
-    // Keyboard placement now moves by one exact minute, never a hidden
-    // five-minute grid step. Focus changes must not change that precision.
-    expect(getReminder()?.getAttribute('aria-label')).toContain('14:50–15:05');
+    // Keyboard placement moves in visible 15-minute slots, independent
+    // of focus and elastic Timeline density.
+    expect(getReminder()?.getAttribute('aria-label')).toContain('16:00–16:15');
 
     for (let cycle = 0; cycle < 8; cycle += 1) {
       moveReminder('ArrowDown');
       expect(getReminder()?.getAttribute('aria-label')).toContain(
-        '14:51–15:06',
+        '16:15–16:30',
       );
 
       const isolatedReminder = getReminder();
@@ -406,7 +406,7 @@ describe('TimelineSurface production parity', () => {
 
       moveReminder('ArrowUp');
       expect(getReminder()?.getAttribute('aria-label')).toContain(
-        '14:50–15:05',
+        '16:00–16:15',
       );
     }
 
