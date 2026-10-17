@@ -58,12 +58,6 @@ export function timelineEventReadableHeight(event: TimelineEvent): number {
     height = Math.max(height, eventPolicy.eventMinimumHeightPx);
   }
   height = Math.max(height, event.visualMinimumHeightPx ?? 0);
-  if (
-    event.title.length > eventPolicy.longTitleThreshold &&
-    duration <= eventPolicy.longTitleMaxDurationMinutes
-  ) {
-    height += eventPolicy.longTitleExtraHeightPx;
-  }
   return height;
 }
 
