@@ -369,32 +369,31 @@ function TimelineEventCard({
       <div
         className={`timeline-event-card__indicators${event.subitems?.length ? ' has-subitems' : ''}`}
       >
-          {sessionActivityRef === null ? null : (
-            <ActivityPlannedSessionsCardDetail
-              activityRef={sessionActivityRef}
-              visible
-              variant="indicator"
-            />
-          )}
-          {details && details.objectiveCount > 0 ? (
-            <div
-              className="timeline-event-card__indicator"
-              aria-label={`${details.objectiveCount} obiettivi impostati`}
-            >
-              <span>Obiettivi</span>
-              <strong>{details.objectiveCount}</strong>
-            </div>
-          ) : null}
-          {!isActivity && agendaCount > 0 ? (
-            <div
-              className="timeline-event-card__indicator"
-              aria-label={`${agendaCount} voci in scaletta`}
-            >
-              <span>Scaletta</span>
-              <strong>{agendaCount}</strong>
-            </div>
-          ) : null}
-
+        {sessionActivityRef === null ? null : (
+          <ActivityPlannedSessionsCardDetail
+            activityRef={sessionActivityRef}
+            visible
+            variant="indicator"
+          />
+        )}
+        {details && details.objectiveCount > 0 ? (
+          <div
+            className="timeline-event-card__indicator"
+            aria-label={`${details.objectiveCount} obiettivi impostati`}
+          >
+            <span>Obiettivi</span>
+            <strong>{details.objectiveCount}</strong>
+          </div>
+        ) : null}
+        {!isActivity && agendaCount > 0 ? (
+          <div
+            className="timeline-event-card__indicator"
+            aria-label={`${agendaCount} voci in scaletta`}
+          >
+            <span>Scaletta</span>
+            <strong>{agendaCount}</strong>
+          </div>
+        ) : null}
       </div>
 
       {event.subitems?.length ? (
