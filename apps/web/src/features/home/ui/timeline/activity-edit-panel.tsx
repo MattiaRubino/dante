@@ -1833,6 +1833,7 @@ export function ActivityEditPanel({
                         options={areaChoice.options.map((area) => ({
                           id: area.ref,
                           label: area.name,
+                          colorCode: area.colorCode,
                         }))}
                         selectedId={selectedArea || null}
                         disabled={pending || planPending}
