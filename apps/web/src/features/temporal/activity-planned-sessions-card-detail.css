@@ -100,3 +100,16 @@
   background: color-mix(in srgb, var(--timeline-group-color) 11%, transparent);
   font-size: 10.5px;
 }
+
+/* Never present an actionable child Play after the main has stopped.
+ * This is a review state, not a synthetic child Session. */
+.timeline-activity-planned-sessions__state {
+  justify-self: end;
+  max-width: 100%;
+  overflow: hidden;
+  color: var(--dante-semantic-color-home-text-secondary, #b7c0cf);
+  font-size: 12px;
+  line-height: 1.3;
+  text-align: right;
+  text-overflow: ellipsis;
+}
