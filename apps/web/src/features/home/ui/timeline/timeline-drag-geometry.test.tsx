@@ -82,7 +82,7 @@ describe('Timeline pointer drag geometry stability', () => {
     // JSDOM's PointerEvent implementation varies across Node versions.
     // Dispatch with explicit PointerEvent properties so React and the native
     // document listeners receive the same primary mouse pointer identity.
-    const pointerEvent = (type: string, target: EventTarget, clientY: number) => {
+    const pointerEvent = (type: string, target: Document | HTMLElement, clientY: number) => {
       const event = new MouseEvent(type, {
         bubbles: true,
         cancelable: true,
