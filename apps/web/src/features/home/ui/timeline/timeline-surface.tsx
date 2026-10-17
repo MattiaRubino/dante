@@ -1376,6 +1376,7 @@ export function TimelineSurface({
       data-timeline-view={timelineView}
       data-home-region="timeline"
       data-home-timeline-state={expanded ? 'expanded' : 'normal'}
+      data-timeline-card-dragging={dragSnapshot === null ? 'false' : 'true'}
       aria-label={t(($) => $.common.home.timeline.label)}
     >
       <TimelineHeader
