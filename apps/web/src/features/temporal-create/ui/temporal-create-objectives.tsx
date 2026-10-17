@@ -81,6 +81,7 @@ export function TemporalCreateObjectives() {
               objective={objective}
               index={index}
               total={draft.objectives.length}
+              italian={italian}
               update={update}
               changeKind={changeKind}
               move={move}
