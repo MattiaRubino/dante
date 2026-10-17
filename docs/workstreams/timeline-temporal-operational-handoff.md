@@ -1,5 +1,39 @@
 # Timeline / Temporal-Operational — Workstream Handoff
 
+## 2026-10-17 — Owner verification: 56 focused tests green
+
+Owner provided WSL terminal output after fast-forwarding and checking exact
+source HEAD `b50742c05f5aacf05fa5411bfe4d730716ba2e5a`:
+
+- Ruff changed Python files: **PASS**, `RUFF=0`.
+- Backend targeted `tests/test_session_panel.py`: **25/25 PASS**,
+  `BACKEND_UNIT=0`.
+- Real PostgreSQL targeted Session Panel integrations (past unstarted queue
+  disappears on main Play/Stop; main started before preview retains the
+  permitted cascade): **2/2 PASS**, `POSTGRES=0`.
+- Web `tsc --noEmit -p tsconfig.json`: **PASS**, `TYPECHECK=0`.
+- Web focused `timeline-surface.test.tsx` and
+  `context-rail.test.tsx`: **25/25 PASS** over two files.
+  A non-fatal `react-i18next` NO_I18NEXT_INSTANCE diagnostic appeared
+  within the test run; neither file failed.
+- Browser selected `timeline-hardening.spec.ts` tests covering
+  title drag, live snapped preview / ruler pin, informational time hover,
+  and keyboard nudge/Undo: **4/4 PASS**, `PLAYWRIGHT=0`.
+  Browser test build succeeded (1546 modules transformed).
+  Local fixture proxy `ECONNREFUSED 127.0.0.1:8000` for optional
+  endpoint reads is expected without the backend in the isolated
+  browser run and did not fail tests.
+
+**Total: 56 focused tests passed; no test failures.** No full suite
+or 27-group gate requested or run. This is source/test acceptance;
+manual authenticated visual acceptance is **still pending** for elastic
+drag target position across densities/zoom, card title/control hit
+zones, typography fit in unchanged panel bounds, and a real past
+Activity disappearing from Da verificare on main Play.
+
+This commit records owner test evidence only; it does not alter code
+or require repeat of already green tests.
+
 ## 2026-10-17 — Timeline interactions, review-on-Play, conservative typography (candidate)
 
 **Approved exact scope:**
