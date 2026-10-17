@@ -748,6 +748,12 @@
   padding-left: 6px;
 }
 
+/* Week columns intentionally hide card detail badges entirely: no invisible
+ * footer can reserve space or clip a narrow seven-column card. */
+.timeline-day-stream.is-week .timeline-event-card__indicators {
+  display: none;
+}
+
 .timeline-day-section {
   overflow: visible;
   border-bottom: 1px solid var(--dante-semantic-color-home-border-subtle);
