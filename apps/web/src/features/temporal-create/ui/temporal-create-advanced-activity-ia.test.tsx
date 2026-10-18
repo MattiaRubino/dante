@@ -54,6 +54,27 @@ function openAdvanced() {
 }
 
 describe('Temporal Create Advanced Activity IA', () => {
+  it('keeps title and header actions aligned when an empty title is rejected', () => {
+    openAdvanced();
+    const title = screen.getByPlaceholderText('Titolo');
+    fireEvent.change(title, { target: { value: '' } });
+    fireEvent.click(screen.getByRole('button', { name: 'Aggiungi' }));
+
+    const row = title.closest('.temporal-create-title-row');
+    expect(row?.querySelector('.temporal-create-field-error')).toBeNull();
+    expect(
+      row?.nextElementSibling?.classList.contains(
+        'temporal-create-field-error',
+      ),
+    ).toBe(true);
+    expect(row?.nextElementSibling?.textContent).toContain(
+      'Inserisci un titolo',
+    );
+    expect(
+      row?.querySelector('.temporal-create-title-row__tools'),
+    ).toBeTruthy();
+  });
+
   it('keeps Activity planning compact and exposes only root capabilities', () => {
     openAdvanced();
 

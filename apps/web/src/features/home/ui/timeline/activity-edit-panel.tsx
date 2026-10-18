@@ -54,6 +54,7 @@ import {
 
 import '../../../temporal-create/ui/temporal-create-reality-objectives-section.css';
 import '../../../temporal-create/ui/temporal-create-core-u2.css';
+import '../../../temporal-create/ui/temporal-create-activity-polish.css';
 import '../../../temporal-create/ui/temporal-create-advanced-activity-structure.css';
 import '../../../temporal-create/ui/temporal-create-session-time-polish.css';
 import './activity-edit-panel.css';
@@ -137,6 +138,95 @@ function shiftedDate(value: string, days: number): string {
   } catch {
     return '';
   }
+}
+
+function nextIntervalAfter(value: string): ActivityReplanTime {
+  const start = Temporal.PlainDateTime.from(value.slice(0, 16)).add({
+    minutes: 30,
+  });
+  return {
+    start: start.toString({ smallestUnit: 'minute' }),
+    end: start.add({ hours: 1 }).toString({ smallestUnit: 'minute' }),
+  };
+}
+
+function ActivityIntervalFields({
+  value,
+  onChange,
+  onRemove,
+  removeLabel,
+  error,
+  disabled,
+}: Readonly<{
+  value: ActivityReplanTime;
+  onChange: (field: keyof ActivityReplanTime, value: string) => void;
+  onRemove?: () => void;
+  removeLabel?: string;
+  error?: string | undefined;
+  disabled: boolean;
+}>) {
+  return (
+    <div
+      className="temporal-create-activity-interval__fields timeline-activity-editor__interval-fields"
+      data-edit-invalid={!!error}
+      inert={disabled || undefined}
+    >
+      <TemporalCreateDatePicker
+        label="Data inizio"
+        locale="it"
+        value={value.start.slice(0, 10)}
+        onChange={(date) =>
+          onChange('start', `${date}T${value.start.slice(11, 16)}`)
+        }
+      />
+      <TimeControl
+        label="Inizio"
+        value={value.start.slice(11, 16)}
+        dataPath="editInterval.startTime"
+        onChange={(time) =>
+          onChange('start', `${value.start.slice(0, 10)}T${time}`)
+        }
+      />
+      <span
+        className="temporal-create-activity-interval__arrow"
+        aria-hidden="true"
+      >
+        →
+      </span>
+      <TimeControl
+        label="Fine"
+        value={value.end.slice(11, 16)}
+        dataPath="editInterval.endTime"
+        onChange={(time) =>
+          onChange('end', `${value.end.slice(0, 10)}T${time}`)
+        }
+      />
+      <TemporalCreateDatePicker
+        label="Data fine"
+        locale="it"
+        value={value.end.slice(0, 10)}
+        onChange={(date) =>
+          onChange('end', `${date}T${value.end.slice(11, 16)}`)
+        }
+      />
+      {onRemove ? (
+        <button
+          type="button"
+          className="temporal-create-activity-interval__remove"
+          aria-label={removeLabel}
+          title={removeLabel}
+          onClick={onRemove}
+        >
+          ×
+        </button>
+      ) : null}
+      {error ? (
+        <small className="temporal-create-field-error" role="alert">
+          {error}
+        </small>
+      ) : null}
+    </div>
+  );
 }
 
 export function ActivityEditPanel({
@@ -1635,17 +1725,21 @@ export function ActivityEditPanel({
               ) : settings.schedules.length ? (
                 <ul>
                   {settings.schedules
-                    .filter((schedule) => schedule.role !== 'planned')
-                    .map((schedule) => (
-                      <li key={schedule.scheduleRef}>
-                        <div className="timeline-activity-editor__schedule-label">
-                          {schedule.name ||
-                            (schedule.role === 'planned'
-                              ? 'Sessione programmata'
-                              : schedule.role === 'envelope'
-                                ? 'Intervallo complessivo'
-                                : 'Intervallo')}
-                        </div>
+                    .filter(
+                      (schedule) =>
+                        schedule.role !== 'planned' &&
+                        (schedule.role !== 'envelope' || !hasIntervals),
+                    )
+                    .map((schedule, index) => (
+                      <li
+                        key={schedule.scheduleRef}
+                        className="temporal-create-activity-interval"
+                      >
+                        {hasIntervals || newIntervals.length > 0 ? (
+                          <span className="temporal-create-activity-interval__label">
+                            Intervallo {index + 1}
+                          </span>
+                        ) : null}
                         {schedule.start && schedule.end && !canReplan ? (
                           <div
                             className="timeline-activity-editor__schedule-time"
@@ -1680,115 +1774,50 @@ export function ActivityEditPanel({
                           </div>
                         ) : null}
                         {canReplan &&
-                        (schedule.role === 'interval' ||
-                          (schedule.role === 'envelope' && !hasIntervals)) &&
                         !removedIntervals.includes(schedule.scheduleRef) ? (
-                          <div
-                            className="temporal-create-u2-when timeline-activity-editor__when"
-                            inert={planPending || undefined}
-                            data-edit-invalid={
-                              !!planErrors[schedule.scheduleRef]
+                          <ActivityIntervalFields
+                            value={
+                              planDraft[schedule.scheduleRef] ?? {
+                                start: schedule.start ?? '',
+                                end: schedule.end ?? '',
+                              }
                             }
-                          >
-                            <TemporalCreateDatePicker
-                              label="Data inizio"
-                              locale="it"
-                              value={(
-                                planDraft[schedule.scheduleRef]?.start ??
-                                schedule.start ??
-                                ''
-                              ).slice(0, 10)}
-                              onChange={(date) =>
-                                changePlan(
-                                  schedule.scheduleRef,
-                                  'start',
-                                  `${date}${(planDraft[schedule.scheduleRef]?.start ?? schedule.start ?? '').slice(10, 16)}`,
-                                )
-                              }
-                            />
-                            <TimeControl
-                              label="Inizio"
-                              dataPath={`startTime-${schedule.scheduleRef}`}
-                              value={(
-                                planDraft[schedule.scheduleRef]?.start ??
-                                schedule.start ??
-                                ''
-                              ).slice(11, 16)}
-                              onChange={(time) =>
-                                changePlan(
-                                  schedule.scheduleRef,
-                                  'start',
-                                  `${(planDraft[schedule.scheduleRef]?.start ?? schedule.start ?? '').slice(0, 10)}T${time}`,
-                                )
-                              }
-                            />
-                            <span
-                              className="timeline-activity-editor__when-arrow"
-                              aria-hidden="true"
-                            >
-                              →
-                            </span>
-                            <TimeControl
-                              label="Fine"
-                              dataPath={`endTime-${schedule.scheduleRef}`}
-                              value={(
-                                planDraft[schedule.scheduleRef]?.end ??
-                                schedule.end ??
-                                ''
-                              ).slice(11, 16)}
-                              onChange={(time) =>
-                                changePlan(
-                                  schedule.scheduleRef,
-                                  'end',
-                                  `${(planDraft[schedule.scheduleRef]?.end ?? schedule.end ?? '').slice(0, 10)}T${time}`,
-                                )
-                              }
-                            />
-                            <TemporalCreateDatePicker
-                              label="Data fine"
-                              locale="it"
-                              value={(
-                                planDraft[schedule.scheduleRef]?.end ??
-                                schedule.end ??
-                                ''
-                              ).slice(0, 10)}
-                              onChange={(date) =>
-                                changePlan(
-                                  schedule.scheduleRef,
-                                  'end',
-                                  `${date}${(planDraft[schedule.scheduleRef]?.end ?? schedule.end ?? '').slice(10, 16)}`,
-                                )
-                              }
-                            />
-                            {planErrors[schedule.scheduleRef] ? (
-                              <small
-                                className="temporal-create-field-error"
-                                role="alert"
-                              >
-                                {planErrors[schedule.scheduleRef]}
-                              </small>
-                            ) : null}
-                          </div>
+                            onChange={(field, value) =>
+                              changePlan(schedule.scheduleRef, field, value)
+                            }
+                            error={planErrors[schedule.scheduleRef]}
+                            disabled={planPending}
+                            {...(schedule.role === 'interval'
+                              ? {
+                                  removeLabel: `Rimuovi intervallo ${index + 1}`,
+                                  onRemove: () => {
+                                    setRemovedIntervals((current) => [
+                                      ...current,
+                                      schedule.scheduleRef,
+                                    ]);
+                                    setPlanOperation(null);
+                                    setPlanError('');
+                                  },
+                                }
+                              : {})}
+                          />
                         ) : null}
-                        {canReplan && schedule.role === 'interval' ? (
+                        {canReplan &&
+                        removedIntervals.includes(schedule.scheduleRef) ? (
                           <button
                             type="button"
                             disabled={planPending}
                             onClick={() => {
                               setRemovedIntervals((current) =>
-                                current.includes(schedule.scheduleRef)
-                                  ? current.filter(
-                                      (ref) => ref !== schedule.scheduleRef,
-                                    )
-                                  : [...current, schedule.scheduleRef],
+                                current.filter(
+                                  (ref) => ref !== schedule.scheduleRef,
+                                ),
                               );
                               setPlanOperation(null);
                               setPlanError('');
                             }}
                           >
-                            {removedIntervals.includes(schedule.scheduleRef)
-                              ? 'Mantieni intervallo'
-                              : 'Rimuovi intervallo'}
+                            Mantieni intervallo {index + 1}
                           </button>
                         ) : null}
                       </li>
@@ -1810,49 +1839,37 @@ export function ActivityEditPanel({
                 </details>
               ) : null}
               {canReplan && !allDay ? (
-                <div>
-                  {newIntervals.map((item) => (
+                <div className="temporal-create-activity-intervals timeline-activity-editor__intervals">
+                  {newIntervals.map((item, index) => (
                     <div
                       key={item.clientRef}
-                      className="timeline-activity-editor__fields"
-                      data-edit-invalid={!!planErrors[item.clientRef]}
+                      className="temporal-create-activity-interval"
                     >
-                      <label>
-                        Inizio nuovo intervallo
-                        <input
-                          type="datetime-local"
-                          required
-                          disabled={planPending}
-                          value={item.start.slice(0, 16)}
-                          onChange={(event) =>
-                            changeNewInterval(
-                              item.clientRef,
-                              'start',
-                              event.target.value,
-                            )
-                          }
-                        />
-                      </label>
-                      <label>
-                        Fine nuovo intervallo
-                        <input
-                          type="datetime-local"
-                          required
-                          disabled={planPending}
-                          value={item.end.slice(0, 16)}
-                          onChange={(event) =>
-                            changeNewInterval(
-                              item.clientRef,
-                              'end',
-                              event.target.value,
-                            )
-                          }
-                        />
-                      </label>
-                      <button
-                        type="button"
+                      <span className="temporal-create-activity-interval__label">
+                        Intervallo{' '}
+                        {editablePlan.filter((row) => row.role === 'interval')
+                          .length -
+                          removedIntervals.length +
+                          (hasIntervals ? 0 : 1) +
+                          index +
+                          1}
+                      </span>
+                      <ActivityIntervalFields
+                        value={item}
+                        onChange={(field, value) =>
+                          changeNewInterval(item.clientRef, field, value)
+                        }
+                        error={planErrors[item.clientRef]}
                         disabled={planPending}
-                        onClick={() => {
+                        removeLabel={`Rimuovi intervallo ${
+                          editablePlan.filter((row) => row.role === 'interval')
+                            .length -
+                          removedIntervals.length +
+                          (hasIntervals ? 0 : 1) +
+                          index +
+                          1
+                        }`}
+                        onRemove={() => {
                           setNewIntervals((current) =>
                             current.filter(
                               (row) => row.clientRef !== item.clientRef,
@@ -1861,22 +1878,13 @@ export function ActivityEditPanel({
                           setPlanOperation(null);
                           setPlanError('');
                         }}
-                      >
-                        Rimuovi nuovo intervallo
-                      </button>
-                      {planErrors[item.clientRef] ? (
-                        <small
-                          role="alert"
-                          className="temporal-create-field-error"
-                        >
-                          {planErrors[item.clientRef]}
-                        </small>
-                      ) : null}
+                      />
                     </div>
                   ))}
                   {!originalAllDay ? (
                     <button
                       type="button"
+                      className="temporal-create-activity-intervals__add"
                       disabled={
                         planPending ||
                         (hasIntervals
@@ -1889,19 +1897,38 @@ export function ActivityEditPanel({
                           100
                       }
                       onClick={() => {
-                        setNewIntervals((current) => [
-                          ...current,
-                          {
-                            clientRef: crypto.randomUUID(),
-                            start: '',
-                            end: '',
-                          },
-                        ]);
+                        setNewIntervals((current) => {
+                          const lastEnd =
+                            current.at(-1)?.end ??
+                            editablePlan
+                              .filter(
+                                (row) =>
+                                  !removedIntervals.includes(row.scheduleRef),
+                              )
+                              .map(
+                                (row) =>
+                                  planDraft[row.scheduleRef]?.end ??
+                                  row.end ??
+                                  '',
+                              )
+                              .sort()
+                              .at(-1) ??
+                            envelope?.end ??
+                            envelope?.start ??
+                            '';
+                          return [
+                            ...current,
+                            {
+                              clientRef: crypto.randomUUID(),
+                              ...nextIntervalAfter(lastEnd),
+                            },
+                          ];
+                        });
                         setPlanOperation(null);
                         setPlanError('');
                       }}
                     >
-                      Aggiungi intervallo
+                      <span aria-hidden="true">＋</span> Aggiungi intervallo
                     </button>
                   ) : null}
                 </div>

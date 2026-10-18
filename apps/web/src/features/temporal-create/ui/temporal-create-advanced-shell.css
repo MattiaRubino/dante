@@ -97,6 +97,9 @@
   > .temporal-create-title-row
   + .temporal-create-field-error {
   order: -29;
+  margin-top: -10px;
+  padding-left: 34px;
+  line-height: 16px;
 }
 
 .temporal-create-title-row {

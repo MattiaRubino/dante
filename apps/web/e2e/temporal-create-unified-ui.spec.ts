@@ -2,8 +2,46 @@ import { expect, test } from '@playwright/test';
 
 test.use({ locale: 'it-IT' });
 
+test('Advanced Create keeps its header aligned when the title is empty', async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await page.goto('/home');
+  await page.getByRole('button', { name: 'Aggiungi alla timeline' }).click();
+  const dialog = page.locator('[data-temporal-create="composer"]');
+  await dialog.getByRole('button', { name: /Opzioni avanzate/ }).click();
+  await dialog.getByRole('button', { name: 'Aggiungi', exact: true }).click();
+
+  const row = dialog.locator('.temporal-create-title-row');
+  const error = dialog.locator(
+    '.temporal-create-title-row + .temporal-create-field-error',
+  );
+  await expect(error).toContainText('Inserisci un titolo');
+  const geometry = await row.evaluate((element) => {
+    const title = element.querySelector(
+      '.temporal-create-title-row__name input',
+    );
+    const tools = element.querySelector('.temporal-create-title-row__tools');
+    if (!title || !tools) return null;
+    const bar = element.getBoundingClientRect();
+    const name = title.getBoundingClientRect();
+    const actions = tools.getBoundingClientRect();
+    return {
+      height: bar.height,
+      aligned: Math.abs(name.top - actions.top) < 10,
+      inside: actions.right <= bar.right + 1,
+    };
+  });
+  expect(geometry).not.toBeNull();
+  expect(geometry?.height).toBeLessThan(80);
+  expect(geometry?.aligned).toBe(true);
+  expect(geometry?.inside).toBe(true);
+});
+
 /** Match the bare Edit arrows, not Create's obsolete bordered mini-buttons. */
-async function expectEditStyleChevrons(when: import('@playwright/test').Locator) {
+async function expectEditStyleChevrons(
+  when: import('@playwright/test').Locator,
+) {
   const arrows = when.locator(
     ':scope > .temporal-create-time-control .temporal-create-time-segment > button',
   );
@@ -16,7 +54,6 @@ async function expectEditStyleChevrons(when: import('@playwright/test').Locator)
   }
 }
 
-
 test('Quick keeps its compact clock field while Advanced uses the Edit interval visual scale', async ({
   page,
 }) => {
@@ -27,10 +64,12 @@ test('Quick keeps its compact clock field while Advanced uses the Edit interval 
   const dialog = page.locator('[data-temporal-create="composer"]');
   await expect(dialog).toHaveAttribute('data-temporal-create-surface', 'base');
   // Text sizing is independent of the fixed Quick panel dimensions.
-  await expect(dialog.locator('.temporal-create-type-grid strong').first())
-    .toHaveCSS('font-size', '14px');
-  await expect(dialog.locator('.temporal-create-choice-row > button').first())
-    .toHaveCSS('font-size', '13.5px');
+  await expect(
+    dialog.locator('.temporal-create-type-grid strong').first(),
+  ).toHaveCSS('font-size', '14px');
+  await expect(
+    dialog.locator('.temporal-create-choice-row > button').first(),
+  ).toHaveCSS('font-size', '13.5px');
   const footer = dialog.locator('.temporal-create-actions');
   for (const button of await footer.locator(':scope > button').all()) {
     await expect(button).toHaveCSS('font-size', '13px');
@@ -60,10 +99,14 @@ test('Quick keeps its compact clock field while Advanced uses the Edit interval 
   await expectEditStyleChevrons(quickWhen);
 
   await dialog.getByRole('button', { name: /Opzioni avanzate/ }).click();
-  await expect(dialog).toHaveAttribute('data-temporal-create-surface', 'advanced');
+  await expect(dialog).toHaveAttribute(
+    'data-temporal-create-surface',
+    'advanced',
+  );
   const advancedWhen = dialog.locator('.temporal-create-u2-when');
-  await expect(dialog.locator('.temporal-create-reality-mode > button').first())
-    .toHaveCSS('font-size', '14px');
+  await expect(
+    dialog.locator('.temporal-create-reality-mode > button').first(),
+  ).toHaveCSS('font-size', '14px');
   // Advanced intentionally increases the footer labels from Quick's 13px.
   for (const button of await footer.locator(':scope > button').all()) {
     await expect(button).toHaveCSS('font-size', '14px');
@@ -80,7 +123,9 @@ test('Quick keeps its compact clock field while Advanced uses the Edit interval 
 
   // A full objective form exists only in Advanced, and uses the shared row.
   await dialog.getByRole('button', { name: 'Aggiungi obiettivo' }).click();
-  await expect(dialog.locator('.temporal-create-objective__row')).toHaveCount(1);
+  await expect(dialog.locator('.temporal-create-objective__row')).toHaveCount(
+    1,
+  );
   await expect(
     dialog.getByRole('textbox', { name: 'Obiettivo 1' }),
   ).toBeVisible();

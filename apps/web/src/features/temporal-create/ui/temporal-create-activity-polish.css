@@ -11,7 +11,7 @@
   row-gap: 6px;
 }
 
-.temporal-create-composer.is-advanced
+:is(.temporal-create-composer.is-advanced, .timeline-event-modal--edit)
   .temporal-create-activity-interval__fields {
   grid-template-columns: 158px 150px 20px 150px 158px 28px minmax(0, 1fr);
   gap: 8px;
@@ -20,7 +20,7 @@
 .temporal-create-composer.is-advanced
   .temporal-create-u2-when
   .temporal-create-inline-time-editor,
-.temporal-create-composer.is-advanced
+:is(.temporal-create-composer.is-advanced, .timeline-event-modal--edit)
   .temporal-create-activity-interval__fields
   .temporal-create-inline-time-editor {
   grid-template-columns: 42px 7px 42px !important;
@@ -31,7 +31,7 @@
 .temporal-create-composer.is-advanced
   .temporal-create-u2-when
   .temporal-create-time-segment,
-.temporal-create-composer.is-advanced
+:is(.temporal-create-composer.is-advanced, .timeline-event-modal--edit)
   .temporal-create-activity-interval__fields
   .temporal-create-time-segment {
   min-width: 0;
@@ -95,17 +95,19 @@ html[lang^='en']
   content: 'Interval 1';
 }
 
-.temporal-create-composer.is-advanced .temporal-create-activity-intervals {
+:is(.temporal-create-composer.is-advanced, .timeline-event-modal--edit)
+  .temporal-create-activity-intervals {
   gap: 6px;
   margin-top: -3px;
   padding-top: 0;
 }
 
-.temporal-create-composer.is-advanced .temporal-create-activity-interval {
+:is(.temporal-create-composer.is-advanced, .timeline-event-modal--edit)
+  .temporal-create-activity-interval {
   gap: 4px;
 }
 
-.temporal-create-composer.is-advanced
+:is(.temporal-create-composer.is-advanced, .timeline-event-modal--edit)
   .temporal-create-activity-interval__label {
   margin-left: 2px;
   color: var(--dante-semantic-color-home-text-muted, #8f9bad);
@@ -118,7 +120,7 @@ html[lang^='en']
 
 /* Match the compact + Sessione action and keep it immediately below the last
    interval instead of letting it float as a separate form row. */
-.temporal-create-composer.is-advanced
+:is(.temporal-create-composer.is-advanced, .timeline-event-modal--edit)
   .temporal-create-activity-intervals
   > .temporal-create-activity-intervals__add {
   display: inline-flex;
@@ -137,21 +139,21 @@ html[lang^='en']
   line-height: 1;
 }
 
-.temporal-create-composer.is-advanced
+:is(.temporal-create-composer.is-advanced, .timeline-event-modal--edit)
   .temporal-create-activity-intervals
   > .temporal-create-activity-intervals__add
   > span {
   display: none;
 }
 
-.temporal-create-composer.is-advanced
+:is(.temporal-create-composer.is-advanced, .timeline-event-modal--edit)
   .temporal-create-activity-intervals
   > .temporal-create-activity-intervals__add::before {
   content: '＋';
   font-size: 11px;
 }
 
-.temporal-create-composer.is-advanced
+:is(.temporal-create-composer.is-advanced, .timeline-event-modal--edit)
   .temporal-create-activity-intervals
   > .temporal-create-activity-intervals__add::after {
   content: 'Intervallo';
@@ -159,16 +161,16 @@ html[lang^='en']
 }
 
 html[lang^='en']
-  .temporal-create-composer.is-advanced
+  :is(.temporal-create-composer.is-advanced, .timeline-event-modal--edit)
   .temporal-create-activity-intervals
   > .temporal-create-activity-intervals__add::after {
   content: 'Interval';
 }
 
-.temporal-create-composer.is-advanced
+:is(.temporal-create-composer.is-advanced, .timeline-event-modal--edit)
   .temporal-create-activity-intervals
   > .temporal-create-activity-intervals__add:hover,
-.temporal-create-composer.is-advanced
+:is(.temporal-create-composer.is-advanced, .timeline-event-modal--edit)
   .temporal-create-activity-intervals
   > .temporal-create-activity-intervals__add:focus-visible {
   border-color: color-mix(in srgb, #ea5c12 55%, transparent) !important;
@@ -185,11 +187,41 @@ html[lang^='en']
     gap: 4px;
   }
 
-  .temporal-create-composer.is-advanced
+  :is(.temporal-create-composer.is-advanced, .timeline-event-modal--edit)
     .temporal-create-activity-interval__fields {
     grid-template-columns:
       minmax(92px, 1fr) minmax(118px, 0.82fr) 18px
       minmax(118px, 0.82fr) minmax(92px, 1fr) 28px;
     gap: 4px;
+  }
+}
+
+@media (max-width: 560px) {
+  :is(.temporal-create-composer.is-advanced, .timeline-event-modal--edit)
+    .temporal-create-activity-interval__fields {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) 28px;
+  }
+
+  :is(.temporal-create-composer.is-advanced, .timeline-event-modal--edit)
+    .temporal-create-activity-interval__arrow {
+    display: none;
+  }
+
+  :is(.temporal-create-composer.is-advanced, .timeline-event-modal--edit)
+    .temporal-create-activity-interval__fields
+    > .temporal-create-date-picker:first-child {
+    grid-column: 1;
+  }
+
+  :is(.temporal-create-composer.is-advanced, .timeline-event-modal--edit)
+    .temporal-create-activity-interval__fields
+    > .temporal-create-time-control:nth-child(2) {
+    grid-column: 2;
+  }
+
+  :is(.temporal-create-composer.is-advanced, .timeline-event-modal--edit)
+    .temporal-create-activity-interval__fields
+    > .temporal-create-time-control:nth-child(4) {
+    grid-column: 1;
   }
 }

@@ -214,12 +214,6 @@
   background: transparent;
 }
 
-.timeline-event-modal--edit .timeline-activity-editor__schedule-label {
-  margin: 8px 0;
-  color: var(--dante-semantic-color-home-text-muted, #8f9bad);
-  font-size: 11px;
-}
-
 .timeline-event-modal--edit .timeline-activity-editor__schedule-time {
   display: grid;
   grid-template-columns:
@@ -255,13 +249,15 @@
   text-align: center;
 }
 
-.timeline-event-modal--edit .timeline-activity-editor__when {
-  grid-template-columns:
-    minmax(92px, 0.8fr) minmax(132px, 1.2fr) 22px
-    minmax(132px, 1.2fr) minmax(92px, 0.8fr);
-  gap: 8px;
-  max-width: 820px;
-  align-items: center;
+.timeline-event-modal--edit .timeline-activity-editor__readback ul {
+  display: grid;
+  gap: 6px;
+  padding: 0;
+  list-style: none;
+}
+
+.timeline-event-modal--edit .timeline-activity-editor__interval-fields {
+  width: 100%;
 }
 
 .timeline-event-modal--edit
@@ -269,24 +265,18 @@
   [data-edit-invalid='true']
   :is(
     .temporal-create-date-picker__trigger,
-    .temporal-create-time-control__field,
-    input[type='datetime-local']
+    .temporal-create-inline-time-editor
   ) {
   border-color: var(--dante-timeline-tone-urgent, #ff5b64);
 }
 
 .timeline-event-modal--edit
-  .timeline-activity-editor__when
+  .timeline-activity-editor__interval-fields
   > .temporal-create-field-error {
   grid-column: 1 / -1;
   margin: 0;
   color: var(--dante-timeline-tone-urgent, #ff5b64);
   font-size: 11px;
-}
-
-.timeline-event-modal--edit .timeline-activity-editor__when-arrow {
-  color: var(--dante-semantic-color-home-chrome-active, #ea5c12);
-  text-align: center;
 }
 
 .timeline-event-modal--edit .timeline-activity-editor__planning-help {
@@ -440,12 +430,6 @@
   .timeline-event-modal--edit
     .timeline-activity-editor__schedule-time
     > span:nth-child(3) {
-    display: none;
-  }
-  .timeline-event-modal--edit .timeline-activity-editor__when {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-  .timeline-event-modal--edit .timeline-activity-editor__when-arrow {
     display: none;
   }
   .timeline-event-modal--edit

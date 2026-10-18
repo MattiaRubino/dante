@@ -7,6 +7,7 @@ import {
   render,
   screen,
   waitFor,
+  within,
 } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
@@ -150,6 +151,24 @@ async function submitEditor() {
     ).toHaveProperty('disabled', false),
   );
   fireEvent.click(screen.getByRole('button', { name: 'Salva modifiche' }));
+}
+
+function newIntervalRow(): HTMLElement {
+  const row = document.querySelector<HTMLElement>(
+    '.timeline-activity-editor__intervals .temporal-create-activity-interval',
+  );
+  if (!row) throw new Error('Expected the new interval controls.');
+  return row;
+}
+
+function setNewIntervalTime(label: 'Inizio' | 'Fine', hour: string) {
+  const row = within(newIntervalRow());
+  fireEvent.change(row.getByRole('textbox', { name: `${label}: ore` }), {
+    target: { value: hour },
+  });
+  fireEvent.change(row.getByRole('textbox', { name: `${label}: minuti` }), {
+    target: { value: '00' },
+  });
 }
 
 const currentSettings = {
@@ -908,7 +927,7 @@ describe('Activity Inspector', () => {
     expect(
       screen
         .getAllByRole('group', { name: 'Fine' })[0]!
-        .querySelector('[data-create-path="endTime-interval"]'),
+        .querySelector('.temporal-create-time-raw-input'),
     ).toHaveProperty('value', '10:00');
     fireEvent.click(
       screen.getAllByRole('button', { name: 'Fine: aumenta ora' })[0]!,
@@ -1263,12 +1282,26 @@ describe('Activity Inspector', () => {
     fireEvent.click(
       await screen.findByRole('button', { name: 'Aggiungi intervallo' }),
     );
-    fireEvent.change(screen.getByLabelText('Inizio nuovo intervallo'), {
-      target: { value: '2026-10-10T09:00' },
-    });
-    fireEvent.change(screen.getByLabelText('Fine nuovo intervallo'), {
-      target: { value: '2026-10-10T10:00' },
-    });
+    const row = newIntervalRow();
+    expect(
+      row.querySelector('.temporal-create-activity-interval__fields'),
+    ).toBeTruthy();
+    expect(
+      within(row).getByRole('button', { name: 'Rimuovi intervallo 2' }),
+    ).toBeTruthy();
+    for (const label of ['Data inizio', 'Data fine']) {
+      fireEvent.click(
+        within(row).getByRole('button', { name: new RegExp(`^${label}:`) }),
+      );
+      fireEvent.click(
+        within(screen.getByRole('dialog', { name: label })).getByRole(
+          'button',
+          { name: '10' },
+        ),
+      );
+    }
+    setNewIntervalTime('Inizio', '09');
+    setNewIntervalTime('Fine', '10');
     await submitEditor();
     await waitFor(() =>
       expect(applyReplan).toHaveBeenCalledWith(
@@ -1417,7 +1450,9 @@ describe('Activity Inspector', () => {
     expect(
       screen.getByRole('button', { name: 'Salva modifiche' }),
     ).toHaveProperty('disabled', false);
-    const time = document.querySelector('.timeline-activity-editor__when')!;
+    const time = document.querySelector(
+      '.timeline-activity-editor__interval-fields',
+    )!;
     expect(time.getAttribute('data-edit-invalid')).toBe('true');
     expect(time.textContent).toContain('La fine deve seguire l’inizio.');
     await submitEditor();
@@ -1661,17 +1696,13 @@ describe('Activity Inspector', () => {
       />,
     );
     fireEvent.click(
-      await screen.findByRole('button', { name: 'Rimuovi intervallo' }),
+      await screen.findByRole('button', { name: 'Rimuovi intervallo 1' }),
     );
     fireEvent.click(
       screen.getByRole('button', { name: 'Aggiungi intervallo' }),
     );
-    fireEvent.change(screen.getByLabelText('Inizio nuovo intervallo'), {
-      target: { value: '2026-10-09T10:00' },
-    });
-    fireEvent.change(screen.getByLabelText('Fine nuovo intervallo'), {
-      target: { value: '2026-10-09T11:00' },
-    });
+    setNewIntervalTime('Inizio', '10');
+    setNewIntervalTime('Fine', '11');
     await submitEditor();
     await waitFor(() =>
       expect(applyReplan).toHaveBeenCalledWith(

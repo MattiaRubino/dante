@@ -1,5 +1,26 @@
 # Timeline / Temporal-Operational — Workstream Handoff
 
+## 2026-10-18 — Activity Edit interval parity and Create title error
+
+Activity Edit interval rows now use the same date/time controls, numbered labels,
+inline remove action and compact add button as Advanced Create. New intervals
+start 30 minutes after the last period and last one hour. The Advanced Create
+empty-title error is a sibling below the title bar so it does not stretch the
+input and header actions. Component regressions cover interval replacement and
+the title error; a browser geometry case was added to the existing browser file.
+
+On this worktree the owning Web tests passed 51/51, Web typecheck and build
+passed, and the full Web suite passed 1121/1124. Its three failures are the
+unchanged Timeline snap expectations (1 minute expected versus 15 minute
+implementation). API client, Time and I18n passed 28/28; affected-file lint
+and format passed. Full Web lint reports two existing unnecessary assertions in
+`temporal-objective-editor-row.test.tsx`. Test integrity still lists three
+existing unregistered files. Browser execution stopped at the local pnpm
+version mismatch (11.25.0 versus required 11.22.0); this environment also has
+no Chromium executable. Backend pytest cannot launch because the checked-out
+venv points to an unavailable Python 3.14. WSL full-gate and visual acceptance
+are pending; there is no global PASS claim.
+
 ## 2026-10-18 — User visual follow-up to Inspector candidate
 
 The user's authenticated screenshots after `1bec642d` found four UI defects:
