@@ -828,7 +828,11 @@ describe('Activity Inspector', () => {
       name: 'Nome Sessione',
     });
     fireEvent.change(input, { target: { value: 'Nuova Sessione' } });
-    expect(screen.queryByRole('button', { name: 'Orario' })).toBeNull();
+    expect(
+      screen
+        .getByRole('button', { name: 'Orario' })
+        .getAttribute('aria-pressed'),
+    ).toBe('true');
     await submitEditor();
     await waitFor(() =>
       expect(applyReplan).toHaveBeenCalledWith(
@@ -1178,8 +1182,204 @@ describe('Activity Inspector', () => {
       ),
     );
     expect(
+      screen.getByRole('button', { name: 'Aggiungi intervallo' }),
+    ).toBeTruthy();
+  });
+
+  it('converts one timed period to an inclusive all-day date range', async () => {
+    const settings = {
+      ...currentSettings,
+      schedules: [
+        {
+          scheduleRef: 'envelope',
+          role: 'envelope',
+          name: null,
+          order: 0,
+          placementStateRef: 'state-0',
+          temporalForm: 'named_zone_local',
+          start: '2026-10-09T09:00:00',
+          end: '2026-10-09T12:00:00',
+          zoneId: 'Europe/Rome',
+        },
+      ],
+    };
+    loadSettings.mockResolvedValueOnce(settings);
+    render(
+      <ActivityEditPanel
+        profile={profile}
+        closeRequestRef={createRef()}
+        onSaved={() => undefined}
+        onCancel={() => undefined}
+      />,
+    );
+    fireEvent.click(
+      await screen.findByRole('button', { name: 'Tutto il giorno' }),
+    );
+    expect(screen.queryByText('Da collocare')).toBeNull();
+    expect(
+      screen
+        .getByRole('button', { name: 'Tutto il giorno' })
+        .getAttribute('aria-pressed'),
+    ).toBe('true');
+    await submitEditor();
+    await waitFor(() =>
+      expect(applyReplan).toHaveBeenCalledWith(
+        ref,
+        settings,
+        containing({
+          dateSpan: { startDate: '2026-10-09', endDateExclusive: '2026-10-10' },
+        }),
+        expect.any(String),
+      ),
+    );
+  });
+
+  it('splits an existing single period when adding a second interval', async () => {
+    const settings = {
+      ...currentSettings,
+      schedules: [
+        {
+          scheduleRef: 'envelope',
+          role: 'envelope',
+          name: null,
+          order: 0,
+          placementStateRef: 'state-0',
+          temporalForm: 'named_zone_local',
+          start: '2026-10-09T09:00:00',
+          end: '2026-10-09T12:00:00',
+          zoneId: 'Europe/Rome',
+        },
+      ],
+    };
+    loadSettings.mockResolvedValueOnce(settings);
+    render(
+      <ActivityEditPanel
+        profile={profile}
+        closeRequestRef={createRef()}
+        onSaved={() => undefined}
+        onCancel={() => undefined}
+      />,
+    );
+    fireEvent.click(
+      await screen.findByRole('button', { name: 'Aggiungi intervallo' }),
+    );
+    fireEvent.change(screen.getByLabelText('Inizio nuovo intervallo'), {
+      target: { value: '2026-10-10T09:00' },
+    });
+    fireEvent.change(screen.getByLabelText('Fine nuovo intervallo'), {
+      target: { value: '2026-10-10T10:00' },
+    });
+    await submitEditor();
+    await waitFor(() =>
+      expect(applyReplan).toHaveBeenCalledWith(
+        ref,
+        settings,
+        containing({
+          splitEnvelope: true,
+          newIntervals: [
+            containing({ start: '2026-10-10T09:00', end: '2026-10-10T10:00' }),
+          ],
+        }),
+        expect.any(String),
+      ),
+    );
+  });
+
+  it('converts an existing all-day period back to a timed period', async () => {
+    const settings = {
+      ...currentSettings,
+      schedules: [
+        {
+          scheduleRef: 'envelope',
+          role: 'envelope',
+          name: null,
+          order: 0,
+          placementStateRef: 'state-0',
+          temporalForm: 'date_span',
+          start: '2026-10-09',
+          end: '2026-10-11',
+          zoneId: null,
+        },
+      ],
+    };
+    loadSettings.mockResolvedValueOnce(settings);
+    render(
+      <ActivityEditPanel
+        profile={profile}
+        timeZone="Europe/Rome"
+        closeRequestRef={createRef()}
+        onSaved={() => undefined}
+        onCancel={() => undefined}
+      />,
+    );
+    expect(
+      (
+        await screen.findByRole('button', { name: 'Tutto il giorno' })
+      ).getAttribute('aria-pressed'),
+    ).toBe('true');
+    expect(
       screen.queryByRole('button', { name: 'Aggiungi intervallo' }),
     ).toBeNull();
+    fireEvent.click(screen.getByRole('button', { name: 'Orario' }));
+    await submitEditor();
+    await waitFor(() =>
+      expect(applyReplan).toHaveBeenCalledWith(
+        ref,
+        settings,
+        containing({
+          targetZoneId: 'Europe/Rome',
+          times: containing({
+            envelope: { start: '2026-10-09T09:00', end: '2026-10-09T10:00' },
+          }),
+        }),
+        expect.any(String),
+      ),
+    );
+  });
+
+  it('edits the inclusive final date of an existing all-day period', async () => {
+    const settings = {
+      ...currentSettings,
+      schedules: [
+        {
+          scheduleRef: 'envelope',
+          role: 'envelope',
+          name: null,
+          order: 0,
+          placementStateRef: 'state-0',
+          temporalForm: 'date_span',
+          start: '2026-10-09',
+          end: '2026-10-11',
+          zoneId: null,
+        },
+      ],
+    };
+    loadSettings.mockResolvedValueOnce(settings);
+    const { container } = render(
+      <ActivityEditPanel
+        profile={profile}
+        closeRequestRef={createRef()}
+        onSaved={() => undefined}
+        onCancel={() => undefined}
+      />,
+    );
+    fireEvent.click(await screen.findByRole('button', { name: /^Data fine:/ }));
+    const selected = container.querySelector<HTMLButtonElement>(
+      'button[data-temporal-date="2026-10-12"]',
+    );
+    expect(selected).toBeTruthy();
+    fireEvent.click(selected!);
+    await submitEditor();
+    await waitFor(() =>
+      expect(applyReplan).toHaveBeenCalledWith(
+        ref,
+        settings,
+        containing({
+          dateSpan: { startDate: '2026-10-09', endDateExclusive: '2026-10-13' },
+        }),
+        expect.any(String),
+      ),
+    );
   });
 
   it('marks the incorrect time and leaves Save usable while the interval is invalid', async () => {

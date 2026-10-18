@@ -1,7 +1,7 @@
 """Real PostgreSQL contract for Activity intervals and named Session configuration."""
 
 import hashlib
-from datetime import datetime
+from datetime import date, datetime
 from types import SimpleNamespace
 from typing import Any, cast
 from uuid import uuid7
@@ -20,6 +20,7 @@ from dante.modules.temporal.activity_replan_api import (
     DeletePlannedRow,
     NewIntervalRow,
     NewPlannedRow,
+    ReplanDateSpanRow,
     ReplanRow,
     RetainedPlannedRow,
     apply_activity_replan,
@@ -82,6 +83,81 @@ async def _snapshot(runtime: Any, actor: object, activity: object) -> ActivityEd
         return ActivityEditSnapshot.model_validate(
             await session.scalar(_SNAPSHOT, {"actor": actor, "activity": activity})
         )
+
+
+@pytest.mark.asyncio
+async def test_single_period_can_change_precision_and_split_without_a_second_activity(
+    migrated_database: Any,
+) -> None:
+    actor = _seed_self(migrated_database)
+    runtime = create_database_runtime(migrated_database.runtime_settings())
+    try:
+        created = await TemporalAuthoringApplication(runtime.session_factory).create_activity(
+            self_person_ref=actor,
+            operation_id="edit:precision:original",
+            title="Studio",
+            placement=_window(9, 12),
+        )
+        activity = created.item.subject_native_ref
+        before = await _snapshot(runtime, actor, activity)
+        envelope = next(row for row in before.schedules if row.role_code == "envelope")
+        assert not any(row.role_code == "interval" for row in before.schedules)
+        assert envelope.placement_material_state_ref is not None
+        all_day = await apply_activity_replan(
+            activity,
+            ActivityReplanCommand(
+                operation_id="edit:precision:all-day",
+                date_span=ReplanDateSpanRow(
+                    schedule_ref=envelope.schedule_ref,
+                    expected_material_state_ref=envelope.placement_material_state_ref,
+                    start_date=date(2026, 10, 9),
+                    end_date_exclusive=date(2026, 10, 11),
+                ),
+            ),
+            _context(actor),
+            _request(runtime),
+            Response(),
+        )
+        root = next(row for row in all_day.schedules if row.role_code == "envelope")
+        assert root.schedule_ref == envelope.schedule_ref
+        assert root.temporal_form == "date_span"
+        assert root.placement_material_state_ref is not None
+        exact = await apply_activity_replan(
+            activity,
+            ActivityReplanCommand(
+                operation_id="edit:precision:exact",
+                envelope=_move(root, 9, 12),
+                target_zone_id="Europe/Rome",
+            ),
+            _context(actor),
+            _request(runtime),
+            Response(),
+        )
+        root = next(row for row in exact.schedules if row.role_code == "envelope")
+        assert root.temporal_form == "named_zone_local"
+        split = await apply_activity_replan(
+            activity,
+            ActivityReplanCommand(
+                operation_id="edit:precision:split",
+                envelope=_move(root, 9, 12),
+                split_envelope=True,
+                new_intervals=[
+                    NewIntervalRow(
+                        client_ref=uuid7(),
+                        starts_local_at=datetime(2026, 10, 10, 9),  # noqa: DTZ001
+                        ends_local_at=datetime(2026, 10, 10, 10),  # noqa: DTZ001
+                    )
+                ],
+            ),
+            _context(actor),
+            _request(runtime),
+            Response(),
+        )
+        assert {row.role_code for row in split.schedules} == {"envelope", "interval"}
+        assert len([row for row in split.schedules if row.role_code == "interval"]) == 2
+        assert split.activity_ref == activity
+    finally:
+        await runtime.dispose()
 
 
 @pytest.mark.asyncio

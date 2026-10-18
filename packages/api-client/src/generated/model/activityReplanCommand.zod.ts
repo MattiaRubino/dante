@@ -28,7 +28,19 @@ export const activityReplanCommandRemoveIntervalsMax = 100;
 
 export const activityReplanCommandRemovePlannedSessionsMax = 0;
 
+export const activityReplanCommandSplitEnvelopeDefault = false;
 export const ActivityReplanCommand = /*#__PURE__*/ zod.object({
+  date_span: /*#__PURE__*/ zod.optional(
+    /*#__PURE__*/ zod.union([
+      /*#__PURE__*/ zod.object({
+        end_date_exclusive: /*#__PURE__*/ zod.iso.date(),
+        expected_material_state_ref: /*#__PURE__*/ zod.uuid(),
+        schedule_ref: /*#__PURE__*/ zod.uuid(),
+        start_date: /*#__PURE__*/ zod.iso.date(),
+      }),
+      /*#__PURE__*/ zod.null(),
+    ]),
+  ),
   delete_planned_sessions: /*#__PURE__*/ zod.optional(
     /*#__PURE__*/ zod
       .array(
@@ -200,6 +212,16 @@ export const ActivityReplanCommand = /*#__PURE__*/ zod.object({
   session_disposition: /*#__PURE__*/ zod.optional(
     /*#__PURE__*/ zod.union([
       /*#__PURE__*/ zod.enum(['keep', 'delete']),
+      /*#__PURE__*/ zod.null(),
+    ]),
+  ),
+  split_envelope: /*#__PURE__*/ zod._default(
+    /*#__PURE__*/ zod.boolean(),
+    activityReplanCommandSplitEnvelopeDefault,
+  ),
+  target_zone_id: /*#__PURE__*/ zod.optional(
+    /*#__PURE__*/ zod.union([
+      /*#__PURE__*/ zod.string(),
       /*#__PURE__*/ zod.null(),
     ]),
   ),

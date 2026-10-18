@@ -139,11 +139,40 @@
   margin: 0 0 14px;
 }
 
-.timeline-event-modal--edit .timeline-activity-editor__placement span {
+.timeline-event-modal--edit .timeline-activity-editor__placement button {
   min-height: 38px;
   padding: 0 14px;
   border-radius: 11px;
   font-size: 11px;
+  border: 1px solid var(--dante-semantic-color-home-border-subtle);
+  color: var(--dante-semantic-color-home-text-secondary, #b7c0cf);
+  background: var(--dante-semantic-color-home-surface-control, #151f2e);
+  cursor: pointer;
+}
+
+.timeline-event-modal--edit
+  .timeline-activity-editor__placement
+  button.is-selected {
+  border-color: var(--dante-semantic-color-home-chrome-active, #ea5c12);
+  color: var(--dante-semantic-color-home-text-primary, #edf2f8);
+}
+
+.timeline-event-modal--edit
+  .timeline-activity-editor__placement
+  button:disabled {
+  cursor: default;
+  opacity: 0.6;
+}
+
+.timeline-event-modal--edit .timeline-activity-editor__all-day {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+}
+
+.timeline-event-modal--edit .timeline-activity-editor__planning-hint {
+  color: var(--dante-semantic-color-home-text-muted, #8f9bad);
 }
 
 .timeline-event-modal--edit .timeline-activity-editor__timezone {
@@ -511,7 +540,7 @@
     .timeline-activity-editor__title-tools > label,
     .timeline-activity-editor__repeat,
     .timeline-activity-editor__timezone,
-    .timeline-activity-editor__placement span,
+    .timeline-activity-editor__placement button,
     .timeline-activity-editor__schedule-label,
     .timeline-activity-editor__schedule-time,
     .timeline-activity-editor__planning-help,

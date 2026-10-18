@@ -1,6 +1,6 @@
 """Activity interval edits never turn named Sessions into calendar placements."""
 
-from datetime import datetime
+from datetime import date, datetime
 from typing import Literal
 from uuid import uuid7
 
@@ -14,7 +14,9 @@ from dante.modules.temporal.activity_edit_snapshot_api import (
 from dante.modules.temporal.activity_replan_api import (
     ActivityReplanCommand,
     DeletePlannedRow,
+    NewIntervalRow,
     NewPlannedRow,
+    ReplanDateSpanRow,
     ReplanRow,
     RetainedPlannedRow,
     _validated_plan,
@@ -155,6 +157,95 @@ def test_replan_adds_an_untimed_named_session() -> None:
     assert [(change.role, change.client_ref) for change in changes] == [
         ("planned_added", added.client_ref)
     ]
+
+
+def test_all_day_replan_keeps_the_envelope_identity_and_requires_a_valid_range() -> None:
+    envelope = _row("envelope", 9, 12).model_copy(
+        update={
+            "temporal_form": "date_span",
+            "zone_id": None,
+            "starts_local_at": None,
+            "ends_local_at": None,
+            "start_date": date(2026, 10, 9),
+            "end_date_exclusive": date(2026, 10, 11),
+        }
+    )
+    span = ReplanDateSpanRow(
+        schedule_ref=envelope.schedule_ref,
+        expected_material_state_ref=envelope.placement_material_state_ref,
+        start_date=date(2026, 10, 10),
+        end_date_exclusive=date(2026, 10, 12),
+    )
+    changes, placements = _validated_plan(
+        _snapshot(envelope),
+        ActivityReplanCommand(
+            operation_id="all-day",
+            date_span=span,
+        ),
+    )
+    assert changes[0].proposed_start_date == date(2026, 10, 10)
+    assert placements[0][0].schedule_ref == envelope.schedule_ref
+    assert placements[0][1].end_date_exclusive == date(2026, 10, 12)
+    with pytest.raises(ValidationError):
+        ReplanDateSpanRow.model_validate(
+            {**span.model_dump(), "end_date_exclusive": date(2026, 10, 10)}
+        )
+
+
+def test_single_timed_envelope_can_split_into_nonoverlapping_intervals() -> None:
+    envelope = _row("envelope", 9, 10)
+    added = NewIntervalRow(client_ref=uuid7(), starts_local_at=_time(11), ends_local_at=_time(12))
+    changes, placements = _validated_plan(
+        _snapshot(envelope),
+        ActivityReplanCommand(
+            operation_id="split",
+            envelope=_interval(envelope, 9, 10),
+            split_envelope=True,
+            new_intervals=[added],
+        ),
+    )
+    assert [change.role for change in changes].count("interval_added") == 2
+    assert placements[0][0].schedule_ref == envelope.schedule_ref
+    assert placements[0][1].ends_local_at == _time(12)
+    with pytest.raises(ProblemError) as overlap:
+        _validated_plan(
+            _snapshot(envelope),
+            ActivityReplanCommand(
+                operation_id="overlap",
+                envelope=_interval(envelope, 9, 10),
+                split_envelope=True,
+                new_intervals=[
+                    NewIntervalRow(
+                        client_ref=uuid7(), starts_local_at=_time(9), ends_local_at=_time(11)
+                    )
+                ],
+            ),
+        )
+    assert overlap.value.status == 422
+
+
+def test_date_span_converts_to_one_exact_interval_without_changing_activity_identity() -> None:
+    envelope = _row("envelope", 9, 12).model_copy(
+        update={
+            "temporal_form": "date_span",
+            "zone_id": None,
+            "starts_local_at": None,
+            "ends_local_at": None,
+            "start_date": date(2026, 10, 9),
+            "end_date_exclusive": date(2026, 10, 11),
+        }
+    )
+    changes, placements = _validated_plan(
+        _snapshot(envelope),
+        ActivityReplanCommand(
+            operation_id="exact",
+            envelope=_interval(envelope, 9, 12),
+            target_zone_id="Europe/Rome",
+        ),
+    )
+    assert changes[0].previous_start_date == date(2026, 10, 9)
+    assert placements[0][0].schedule_ref == envelope.schedule_ref
+    assert placements[0][1].zone_id == "Europe/Rome"
 
 
 def test_replan_rejects_overlapping_activity_intervals_even_with_named_sessions() -> None:

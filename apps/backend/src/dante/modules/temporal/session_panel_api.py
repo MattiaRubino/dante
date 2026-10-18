@@ -160,20 +160,20 @@ def build_panel(
             for s in intervals
             if (b := bounds[s.schedule_ref]) and b[0] - PREVIEW_LEAD <= now < b[1]
         ]
-        # Main Sessions have no planned-Schedule link yet. Associate a stopped
-        # main attempt with its closest accepted Activity interval, so an early
-        # stop suppresses that row without hiding a different later interval.
-        # Carry a non-optional interval alongside its schedule: the mapper
-        # returns None for coarse/undetermined placements, and re-indexing
-        # bounds inside the min() key loses the null guard in type checking.
+        # A main Stop belongs to the Activity, not to one of its interval
+        # Schedules. Future intervals cannot offer a fresh ready row after it.
+        # Named Session Stops still use the nearest-interval association below.
         bounded_intervals = [
             (schedule, interval)
             for schedule in intervals
             if (interval := bounds[schedule.schedule_ref]) is not None
         ]
         current_refs = {s.schedule_ref for s in current_intervals}
-        main_stopped_in_window = _stopped_in_interval(
-            stopped, owner["activity_ref"], None, bounded_intervals, current_refs
+        main_stopped_in_window = any(
+            str(item["activity_ref"]) == str(owner["activity_ref"])
+            and item["planned_schedule_ref"] is None
+            and item["ended_at"] <= now
+            for item in stopped
         )
         executions: dict[str | None, list[Any]] = {}
         for execution in owner["executions"]:
@@ -191,6 +191,8 @@ def build_panel(
         # while the Web panel prevents starting/resuming a child until main
         # capture is running again.
         main_open = bool(executions.get(None))
+        if main_open:
+            main_stopped_in_window = False
         # The same read includes current and completed Session visuals. Use the
         # current main attempt's factual start to distinguish a child stopped
         # within this attempt from a child stopped in a previous main attempt.

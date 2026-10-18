@@ -102,7 +102,7 @@ The Session panel uses the Activity interval, not an internal Session time:
 
 If generic Activity capture is enabled, a named Session requires the generic Session to be running. Pausing or stopping generic capture pauses or stops open named Sessions. Resuming the generic Session does not resume a named Session. With generic capture disabled, named Sessions run independently.
 
-Multiple Activity intervals remain planning only. There is no Session per interval. Pausing during one interval then resuming during another resumes the same real Session; Stop then Play creates a new attempt.
+Multiple Activity intervals remain planning only. There is no Session per interval. Pausing during one interval then resuming during another resumes the same real Session. A main Stop ends the shared attempt and removes later interval cards of that Activity from the Timeline and future Session-panel availability. The accepted Schedule intervals remain intact for editing and history; Stop does not create separate Activity identities or reset named Session facts. A completed main attempt does not offer Play again on a later interval card.
 
 ## Reminder
 

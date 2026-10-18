@@ -74,6 +74,9 @@ export type ActivitySessionDisposition = Readonly<{
 
 export type ActivityReplanDraft = Readonly<{
   times: Record<string, ActivityReplanTime>;
+  dateSpan?: Readonly<{ startDate: string; endDateExclusive: string }>;
+  targetZoneId?: string;
+  splitEnvelope?: boolean;
   removedIntervals: readonly string[];
   newIntervals: readonly ActivityNewInterval[];
   removedPlanned: readonly string[];
@@ -297,13 +300,31 @@ export function createRemoteActivityEditSettings(
     });
     return {
       operation_id: operationId,
+      ...(draft.dateSpan
+        ? {
+            date_span: {
+              schedule_ref: settings.schedules.find(
+                (item) => item.role === 'envelope',
+              )?.scheduleRef,
+              expected_material_state_ref: settings.schedules.find(
+                (item) => item.role === 'envelope',
+              )?.placementStateRef,
+              start_date: draft.dateSpan.startDate,
+              end_date_exclusive: draft.dateSpan.endDateExclusive,
+            },
+          }
+        : {}),
+      ...(draft.targetZoneId ? { target_zone_id: draft.targetZoneId } : {}),
+      ...(draft.splitEnvelope ? { split_envelope: true } : {}),
       ...(settings.schedules.some((item) => item.role === 'interval')
         ? {}
-        : {
-            envelope: settings.schedules
-              .filter((item) => item.role === 'envelope')
-              .map(timedRow)[0],
-          }),
+        : draft.dateSpan
+          ? {}
+          : {
+              envelope: settings.schedules
+                .filter((item) => item.role === 'envelope')
+                .map(timedRow)[0],
+            }),
       intervals: settings.schedules
         .filter(
           (item) =>

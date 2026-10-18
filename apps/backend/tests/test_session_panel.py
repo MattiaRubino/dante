@@ -107,7 +107,9 @@ def test_past_unstarted_main_and_children_enter_review_until_main_play() -> None
     assert _unstarted_session_items([record], at(18, 30), "UTC") == []
     pending = _unstarted_session_items([record], at(20), "UTC")
     assert {item.summary for item in pending} == {
-        "Sessione attività · mai avviata", "Ripasso · mai avviata", "Esercizi · mai avviata"
+        "Sessione attività · mai avviata",
+        "Ripasso · mai avviata",
+        "Esercizi · mai avviata",
     }
 
     # Play, including Pause, hides the previously projected unstarted rows.
@@ -119,10 +121,12 @@ def test_past_unstarted_main_and_children_enter_review_until_main_play() -> None
     record["historical_attempts"][0]["ended_at"] = at(20).isoformat()
     restored = _unstarted_session_items([record], at(20, 30), "UTC")
     assert {item.summary for item in restored} == {
-        "Ripasso · mai avviata", "Esercizi · mai avviata",
+        "Ripasso · mai avviata",
+        "Esercizi · mai avviata",
     }
     assert {str(item.planned_schedule_ref) for item in restored} == {
-        first["schedule_ref"], second["schedule_ref"],
+        first["schedule_ref"],
+        second["schedule_ref"],
     }
 
 
@@ -149,10 +153,12 @@ def test_internal_only_past_children_remain_in_review_without_main() -> None:
     record["historical_attempts"] = []
     review = _unstarted_session_items([record], at(20), "UTC")
     assert {item.summary for item in review} == {
-        "Ripasso · mai avviata", "Esercizi · mai avviata",
+        "Ripasso · mai avviata",
+        "Esercizi · mai avviata",
     }
     assert {str(item.planned_schedule_ref) for item in review} == {
-        first["schedule_ref"], second["schedule_ref"],
+        first["schedule_ref"],
+        second["schedule_ref"],
     }
 
 
@@ -285,9 +291,7 @@ def test_new_main_attempt_re_admits_children_stopped_in_previous_attempt() -> No
         "started_at": at(23, 33),
         "ended_at": at(23, 34),
     }
-    after_child_stop = build_panel(
-        [activity], at(23, 35), "UTC", [*previous, new_child_stop]
-    )
+    after_child_stop = build_panel([activity], at(23, 35), "UTC", [*previous, new_child_stop])
     assert names(after_child_stop) == ["Sessione attività"]
 
 
@@ -436,7 +440,7 @@ def test_completed_internal_exits_desk_while_main_stays_available() -> None:
     ]
 
 
-def test_old_stopped_execution_does_not_hide_new_unrelated_interval() -> None:
+def test_main_stop_retires_later_intervals_of_the_same_activity() -> None:
     first = schedule("interval", at(9), at(10))
     second = schedule("interval", at(18), at(19))
     named = schedule()
@@ -450,10 +454,7 @@ def test_old_stopped_execution_does_not_hide_new_unrelated_interval() -> None:
         }
     ]
     assert names(build_panel([activity], at(9, 30), "UTC", stopped)) == []
-    assert names(build_panel([activity], at(18), "UTC", stopped)) == [
-        "Sessione attività",
-        "Ripasso",
-    ]
+    assert names(build_panel([activity], at(18), "UTC", stopped)) == []
 
     stopped_named = [{**stopped[0], "planned_schedule_ref": named["schedule_ref"]}]
     assert names(build_panel([activity], at(9, 30), "UTC", stopped_named)) == ["Sessione attività"]

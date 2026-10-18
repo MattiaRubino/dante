@@ -414,19 +414,26 @@ export function TimelineSurface({
         : resolveAppearanceColorCode,
   );
 
-  const dateLaneActivityRefs = useMemo(
-    () =>
-      [
-        ...new Set(
-          state.allDayItems.flatMap((item) =>
-            item.canonicalBasis?.kind === 'scheduled-activity'
-              ? [item.canonicalBasis.activityRef]
-              : [],
-          ),
+  const dateLaneActivityRefs = useMemo(() => {
+    const timedActivities = new Set<string>();
+    for (const events of Object.values(state.eventsByDate)) {
+      for (const event of events) {
+        const basis = event.canonicalBasis;
+        if (basis?.kind !== 'scheduled-activity') continue;
+        timedActivities.add(basis.activityRef);
+      }
+    }
+    return [
+      ...new Set([
+        ...state.allDayItems.flatMap((item) =>
+          item.canonicalBasis?.kind === 'scheduled-activity'
+            ? [item.canonicalBasis.activityRef]
+            : [],
         ),
-      ].sort(),
-    [state.allDayItems],
-  );
+        ...timedActivities,
+      ]),
+    ].sort();
+  }, [state.allDayItems, state.eventsByDate]);
   const dateLaneActivityKey = dateLaneActivityRefs.join('|');
   const dateLaneSessionSource = useMemo(
     () => createRemoteTemporalSessionDataSource(),
@@ -528,6 +535,7 @@ export function TimelineSurface({
         visibleGroups,
         state.zoom,
         state.expandedEventIds,
+        dateLaneSessions,
       ),
     [
       baseRenderedDays,
@@ -535,6 +543,7 @@ export function TimelineSurface({
       presentationFilters,
       timelineView,
       sessionPanel.snapshot,
+      dateLaneSessions,
       clockZone,
       realityClock,
       visibleGroups,

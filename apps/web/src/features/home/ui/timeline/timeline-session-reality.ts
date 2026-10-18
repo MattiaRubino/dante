@@ -1,6 +1,7 @@
 import { Temporal } from '@dante/time';
 
 import type { SessionVisual } from '../../../temporal/use-session-panel';
+import type { TemporalSessionView } from '../../../temporal/remote-session-data-source';
 import { createTimelineTimeMapper } from './model/timeline-density';
 import { computeTimelineEventLayouts } from './model/timeline-layout';
 import type { TimelineGroup } from './model/timeline-types';
@@ -174,14 +175,65 @@ export function applyTimelineSessionReality(
   groups: readonly TimelineGroup[],
   zoom: number,
   expandedEventIds: ReadonlySet<string>,
+  sessionsByActivity: ReadonlyMap<
+    string,
+    readonly TemporalSessionView[]
+  > = new Map(),
 ): readonly TimelineRenderedDay[] {
-  if (visuals.length === 0) return days;
+  if (visuals.length === 0 && sessionsByActivity.size === 0) return days;
   const now = Number.isFinite(Date.parse(evaluatedAt)) ? clockAt : Date.now();
+  const visualRefs = new Set(visuals.map((visual) => visual.session_ref));
+  const executionVisuals: readonly SessionVisual[] = [
+    ...visuals,
+    ...[...sessionsByActivity].flatMap(([activityRef, sessions]) =>
+      sessions
+        .filter(
+          (session) =>
+            session.plannedScheduleRef == null &&
+            !visualRefs.has(session.sessionRef),
+        )
+        .map((session) => ({
+          activity_ref: activityRef,
+          session_ref: session.sessionRef,
+          planned_schedule_ref: null,
+          started_at: session.startedAt,
+          ended_at: session.endedAt,
+          pause_ranges: [],
+        })),
+    ),
+  ];
   const allEvents = days.flatMap((day) =>
     day.events.map((event) => ({ event, plannedDay: day })),
   );
+  const plannedAt = (entry: (typeof allEvents)[number]) =>
+    Temporal.PlainDate.from(entry.plannedDay.dateKey)
+      .toZonedDateTime({ timeZone: zone, plainTime: '00:00' })
+      .toInstant().epochMilliseconds +
+    entry.event.startMinute * 60_000;
+  const openActivities = new Set<string>();
+  const stoppedAt = new Map<string, number>();
+  const record = (activityRef: string, endedAt: string | null) => {
+    if (endedAt === null) {
+      openActivities.add(activityRef);
+      return;
+    }
+    const value = Date.parse(endedAt);
+    if (Number.isFinite(value))
+      stoppedAt.set(
+        activityRef,
+        Math.max(stoppedAt.get(activityRef) ?? -Infinity, value),
+      );
+  };
+  for (const visual of executionVisuals)
+    if (visual.planned_schedule_ref === null)
+      record(visual.activity_ref, visual.ended_at);
+  for (const [activityRef, sessions] of sessionsByActivity)
+    for (const session of sessions)
+      if (session.plannedScheduleRef == null)
+        record(activityRef, session.endedAt);
+  for (const activityRef of openActivities) stoppedAt.delete(activityRef);
   const mainByEvent = new Map<string, SessionVisual>();
-  for (const visual of visuals) {
+  for (const visual of executionVisuals) {
     if (visual.planned_schedule_ref !== null) continue;
     const started = Date.parse(visual.started_at);
     if (!Number.isFinite(started)) continue;
@@ -191,11 +243,6 @@ export function applyTimelineSessionReality(
         event.canonicalBasis.activityRef === visual.activity_ref,
     );
     const nearest = candidates.sort((a, b) => {
-      const plannedAt = (entry: (typeof candidates)[number]) =>
-        Temporal.PlainDate.from(entry.plannedDay.dateKey)
-          .toZonedDateTime({ timeZone: zone, plainTime: '00:00' })
-          .toInstant().epochMilliseconds +
-        entry.event.startMinute * 60_000;
       return (
         Math.abs(plannedAt(a) - started) - Math.abs(plannedAt(b) - started) ||
         a.event.id.localeCompare(b.event.id)
@@ -207,21 +254,38 @@ export function applyTimelineSessionReality(
       mainByEvent.set(nearest.event.id, visual);
   }
 
-  const placements = allEvents.map(({ event, plannedDay }) => {
-    const visual = mainByEvent.get(event.id);
-    const realDate = visual
-      ? Temporal.Instant.from(visual.started_at)
-          .toZonedDateTimeISO(zone)
-          .toPlainDate()
-          .toString()
-      : plannedDay.dateKey;
-    const displayDay = days.find((day) => day.dateKey === realDate);
-    const target = displayDay ?? plannedDay;
-    const overlay = visual
-      ? project([visual], target.dateKey, zone, now)
-      : null;
-    return { event, plannedDay, target, reality: overlay?.reality };
-  });
+  const retiredIds = new Set(
+    allEvents
+      .filter((entry) => {
+        const basis = entry.event.canonicalBasis;
+        if (
+          basis?.kind !== 'scheduled-activity' ||
+          mainByEvent.has(entry.event.id)
+        )
+          return false;
+        const stop = stoppedAt.get(basis.activityRef);
+        return stop !== undefined && plannedAt(entry) > stop;
+      })
+      .map(({ event }) => event.id),
+  );
+
+  const placements = allEvents
+    .filter(({ event }) => !retiredIds.has(event.id))
+    .map(({ event, plannedDay }) => {
+      const visual = mainByEvent.get(event.id);
+      const realDate = visual
+        ? Temporal.Instant.from(visual.started_at)
+            .toZonedDateTimeISO(zone)
+            .toPlainDate()
+            .toString()
+        : plannedDay.dateKey;
+      const displayDay = days.find((day) => day.dateKey === realDate);
+      const target = displayDay ?? plannedDay;
+      const overlay = visual
+        ? project([visual], target.dateKey, zone, now)
+        : null;
+      return { event, plannedDay, target, reality: overlay?.reality };
+    });
 
   const prepared = days.map((day) => {
     const visible = placements.filter((placement) => placement.target === day);
@@ -257,16 +321,20 @@ export function applyTimelineSessionReality(
   // The clock never changes the scale while an attempt is running/paused.
   // Once stopped, the real interval owns its readable height: recomputing at
   // that transition prevents a short card from painting beyond its end time.
-  const hasEnded = prepared.some(({ visible }) =>
-    visible.some(({ reality }) => reality?.endedAt != null),
-  );
+  const hasEnded =
+    retiredIds.size > 0 ||
+    prepared.some(({ visible }) =>
+      visible.some(({ reality }) => reality?.endedAt != null),
+    );
   const endedIds = new Set(
     placements
       .filter(({ reality }) => reality?.endedAt != null)
       .map(({ event }) => event.id),
   );
   const densityEvents = prepared.map(({ day, visible, displayEvents }) => [
-    ...day.events.filter((event) => !endedIds.has(event.id)),
+    ...day.events.filter(
+      (event) => !endedIds.has(event.id) && !retiredIds.has(event.id),
+    ),
     ...displayEvents.filter(
       (event, index) => visible[index]?.reality?.endedAt != null,
     ),
@@ -281,7 +349,9 @@ export function applyTimelineSessionReality(
   return prepared.map(({ day, visible, displayEvents }, index) => {
     const dayChanged =
       densityEvents[index]?.some((event) => endedIds.has(event.id)) ||
-      day.events.some((event) => endedIds.has(event.id));
+      day.events.some(
+        (event) => endedIds.has(event.id) || retiredIds.has(event.id),
+      );
     const mapper =
       weekMapper ??
       (hasEnded && dayChanged

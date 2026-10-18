@@ -14096,7 +14096,8 @@ export const getTemporalListResolutionQueueUrl = () => {
  * A past planned Activity without execution may enter Reality review only
  * under explicit review/auto policy, or Objective review when an Objective
  * awaits assessment. A separately typed read-only item shows every enabled
- * Session with no attempt while the current Activity plan is wholly past.
+ * Unstarted Sessions after plan expiry or real main Stop; no child
+ * is inferred complete just because its main has an execution history.
  * Absence of Actual never means that the subject did not happen.
  * @summary List Resolution Queue
  */

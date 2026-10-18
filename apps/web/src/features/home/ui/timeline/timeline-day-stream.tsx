@@ -154,6 +154,7 @@ function TimelineEventCard({
   onPointerPress,
   onKeyboardMove,
   suppressClickRef,
+  openActivityRefs,
 }: Readonly<{
   dateKey: string;
   layout: TimelineEventLayout;
@@ -180,6 +181,7 @@ function TimelineEventCard({
     direction: 'earlier' | 'later' | 'previous-day' | 'next-day',
   ) => void;
   suppressClickRef: RefObject<string | null>;
+  openActivityRefs: ReadonlySet<string>;
 }>) {
   const { t } = useTranslation('common');
   const event = layout.event;
@@ -220,6 +222,10 @@ function TimelineEventCard({
       : null;
 
   const isActivity = sessionActivityRef !== null;
+  const siblingSessionOpen =
+    sessionActivityRef !== null &&
+    layout.sessionReality === undefined &&
+    openActivityRefs.has(sessionActivityRef);
   // The immutable title/category determines card width. Running Session state,
   // planned/actual time, move and overlap cluster may only change position.
   const stableWidth = timelineStableCardWidth(event.title, isActivity);
@@ -340,7 +346,9 @@ function TimelineEventCard({
               label={event.title}
               interactive={inlineActionsEnabled}
               showPlanned={false}
-              completed={layout.sessionReality?.state === 'ended'}
+              completed={
+                layout.sessionReality?.state === 'ended' || siblingSessionOpen
+              }
               visibleSessionRefs={layout.sessionReality?.sessionRefs ?? []}
             />
           )}
@@ -356,6 +364,11 @@ function TimelineEventCard({
             title={`Sessione dell'attività: ${layout.sessionReality.actualLabel}`}
           >
             Sessione attività · {layout.sessionReality.actualLabel}
+          </div>
+        ) : null}
+        {siblingSessionOpen ? (
+          <div className="timeline-event-card__reality-status">
+            Sessione attività già in corso
           </div>
         ) : null}
         {cardMeta ? (
@@ -467,6 +480,7 @@ function TimelineDay({
   onPointerPress,
   onKeyboardMove,
   suppressClickRef,
+  openActivityRefs,
 }: Readonly<{
   day: TimelineRenderedDay;
   today: PlainDate;
@@ -496,6 +510,7 @@ function TimelineDay({
     direction: 'earlier' | 'later' | 'previous-day' | 'next-day',
   ) => void;
   suppressClickRef: RefObject<string | null>;
+  openActivityRefs: ReadonlySet<string>;
 }>) {
   const { t, i18n } = useTranslation('common');
   const isToday = day.date.equals(today);
@@ -621,6 +636,7 @@ function TimelineDay({
             onPointerPress={onPointerPress}
             onKeyboardMove={onKeyboardMove}
             suppressClickRef={suppressClickRef}
+            openActivityRefs={openActivityRefs}
           />
         ))}
       </div>
@@ -664,6 +680,18 @@ export function TimelineDayStream({
   } | null>(null);
   const dragGeometryRef = useRef<readonly TimelineRenderedDay[] | null>(null);
   const displayedDays = dragGeometry?.days ?? days;
+  const openActivityRefs = new Set(
+    displayedDays.flatMap((day) =>
+      day.layouts.flatMap((layout) => {
+        const basis = layout.event.canonicalBasis;
+        return basis?.kind === 'scheduled-activity' &&
+          layout.sessionReality &&
+          layout.sessionReality.state !== 'ended'
+          ? [basis.activityRef]
+          : [];
+      }),
+    ),
+  );
   const displayedNowMinute = dragGeometry?.nowMinute ?? nowMinute;
   const stateRef = useRef(state);
   const autoScrollFrameRef = useRef<number | null>(null);
@@ -1532,6 +1560,7 @@ export function TimelineDayStream({
               onPointerPress={startPointerPress}
               onKeyboardMove={keyboardMove}
               suppressClickRef={suppressClickRef}
+              openActivityRefs={openActivityRefs}
             />
           ))}
           {view === 'timeline' ? (

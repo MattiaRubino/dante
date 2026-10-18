@@ -1360,6 +1360,16 @@
       "ActivityReplanCommand": {
         "additionalProperties": false,
         "properties": {
+          "date_span": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ReplanDateSpanRow"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
           "delete_planned_sessions": {
             "items": {
               "$ref": "#/components/schemas/DeletePlannedRow"
@@ -1463,6 +1473,22 @@
               }
             ],
             "title": "Session Disposition"
+          },
+          "split_envelope": {
+            "default": false,
+            "title": "Split Envelope",
+            "type": "boolean"
+          },
+          "target_zone_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Target Zone Id"
           }
         },
         "required": ["operation_id"],
@@ -12619,6 +12645,18 @@
             ],
             "title": "Previous End"
           },
+          "previous_end_date_exclusive": {
+            "anyOf": [
+              {
+                "format": "date",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Previous End Date Exclusive"
+          },
           "previous_start": {
             "anyOf": [
               {
@@ -12630,6 +12668,18 @@
               }
             ],
             "title": "Previous Start"
+          },
+          "previous_start_date": {
+            "anyOf": [
+              {
+                "format": "date",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Previous Start Date"
           },
           "proposed_end": {
             "anyOf": [
@@ -12643,6 +12693,18 @@
             ],
             "title": "Proposed End"
           },
+          "proposed_end_date_exclusive": {
+            "anyOf": [
+              {
+                "format": "date",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Proposed End Date Exclusive"
+          },
           "proposed_start": {
             "anyOf": [
               {
@@ -12654,6 +12716,18 @@
               }
             ],
             "title": "Proposed Start"
+          },
+          "proposed_start_date": {
+            "anyOf": [
+              {
+                "format": "date",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Proposed Start Date"
           },
           "role": {
             "title": "Role",
@@ -12674,6 +12748,39 @@
         },
         "required": ["role"],
         "title": "ReplanChange",
+        "type": "object"
+      },
+      "ReplanDateSpanRow": {
+        "additionalProperties": false,
+        "properties": {
+          "end_date_exclusive": {
+            "format": "date",
+            "title": "End Date Exclusive",
+            "type": "string"
+          },
+          "expected_material_state_ref": {
+            "format": "uuid",
+            "title": "Expected Material State Ref",
+            "type": "string"
+          },
+          "schedule_ref": {
+            "format": "uuid",
+            "title": "Schedule Ref",
+            "type": "string"
+          },
+          "start_date": {
+            "format": "date",
+            "title": "Start Date",
+            "type": "string"
+          }
+        },
+        "required": [
+          "schedule_ref",
+          "expected_material_state_ref",
+          "start_date",
+          "end_date_exclusive"
+        ],
+        "title": "ReplanDateSpanRow",
         "type": "object"
       },
       "ReplanPostponedEventRequest": {
@@ -35697,7 +35804,7 @@
     },
     "/api/v1/temporal/resolution-queue": {
       "get": {
-        "description": "Derived current product work, never inferred failure from time passage.\n\nA past planned Activity without execution may enter Reality review only\nunder explicit review/auto policy, or Objective review when an Objective\nawaits assessment. A separately typed read-only item shows every enabled\nSession with no attempt while the current Activity plan is wholly past.\nAbsence of Actual never means that the subject did not happen.",
+        "description": "Derived current product work, never inferred failure from time passage.\n\nA past planned Activity without execution may enter Reality review only\nunder explicit review/auto policy, or Objective review when an Objective\nawaits assessment. A separately typed read-only item shows every enabled\nUnstarted Sessions after plan expiry or real main Stop; no child\nis inferred complete just because its main has an execution history.\nAbsence of Actual never means that the subject did not happen.",
         "operationId": "temporal_list_resolution_queue",
         "responses": {
           "200": {

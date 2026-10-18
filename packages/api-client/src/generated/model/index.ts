@@ -311,6 +311,7 @@ export * from './replaceEventAgendaRequest.zod';
 export * from './replacePlanBody.zod';
 export * from './replaceRecurrenceRequest.zod';
 export * from './replanChange.zod';
+export * from './replanDateSpanRow.zod';
 export * from './replanPostponedEventRequest.zod';
 export * from './replanRow.zod';
 export * from './resolutionQueueItem.zod';

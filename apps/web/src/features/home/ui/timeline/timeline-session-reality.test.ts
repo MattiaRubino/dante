@@ -286,6 +286,27 @@ describe('one-card Activity actual Session projection', () => {
     expect(projected?.layouts[1]?.sessionReality?.state).toBe('ended');
   });
 
+  it('retires later cards of the same Activity after the main Session stops, preserving its factual card', () => {
+    const first = activity('first', 1080, 1110);
+    const second = activity('second', 1140, 1200);
+    const unrelated = { ...activity('unrelated', 1140, 1200), canonicalBasis: {
+      ...activity('unrelated', 1140, 1200).canonicalBasis!,
+      activityRef: 'activity-two',
+    } } as TimelineEvent;
+    const [projected] = applyTimelineSessionReality(
+      [day(first, second, unrelated)],
+      [{ ...ended, started_at: '2026-10-10T18:00:00Z', ended_at: '2026-10-10T18:20:00Z', pause_ranges: [] }],
+      'UTC', '2026-10-10T18:30:00Z', Date.parse('2026-10-10T18:30:00Z'),
+      groups, zoom, expanded,
+    );
+    expect(projected?.layouts.map((layout) => layout.event.id)).toContain('first');
+    expect(projected?.layouts.map((layout) => layout.event.id)).not.toContain('second');
+    expect(projected?.layouts.map((layout) => layout.event.id)).toContain('unrelated');
+    expect(projected?.layouts.find((layout) => layout.event.id === 'first')?.sessionReality?.state).toBe('ended');
+    expect(first.startMinute).toBe(1080);
+    expect(second.startMinute).toBe(1140);
+  });
+
   it('does not paint a named Session as the Activity main Session', () => {
     const planned = activity('interval1', 1080, 1140);
     const current = day(planned);

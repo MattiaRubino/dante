@@ -880,6 +880,7 @@ export function EventDetailDialog({
           <ActivityEditPanel
             key={`${currentEditingProfile.activityRef}:${currentEditingProfile.revision}`}
             profile={currentEditingProfile}
+            {...(timeZone ? { timeZone } : {})}
             closeRequestRef={editCloseRequestRef}
             onSaved={(saved) => {
               onActivitySaved?.(saved);

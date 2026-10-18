@@ -22,9 +22,21 @@ export const ActivityReplanPreview = /*#__PURE__*/ zod.object({
           /*#__PURE__*/ zod.null(),
         ]),
       ),
+      previous_end_date_exclusive: /*#__PURE__*/ zod.optional(
+        /*#__PURE__*/ zod.union([
+          /*#__PURE__*/ zod.iso.date(),
+          /*#__PURE__*/ zod.null(),
+        ]),
+      ),
       previous_start: /*#__PURE__*/ zod.optional(
         /*#__PURE__*/ zod.union([
           /*#__PURE__*/ zod.iso.datetime({ offset: true }),
+          /*#__PURE__*/ zod.null(),
+        ]),
+      ),
+      previous_start_date: /*#__PURE__*/ zod.optional(
+        /*#__PURE__*/ zod.union([
+          /*#__PURE__*/ zod.iso.date(),
           /*#__PURE__*/ zod.null(),
         ]),
       ),
@@ -34,9 +46,21 @@ export const ActivityReplanPreview = /*#__PURE__*/ zod.object({
           /*#__PURE__*/ zod.null(),
         ]),
       ),
+      proposed_end_date_exclusive: /*#__PURE__*/ zod.optional(
+        /*#__PURE__*/ zod.union([
+          /*#__PURE__*/ zod.iso.date(),
+          /*#__PURE__*/ zod.null(),
+        ]),
+      ),
       proposed_start: /*#__PURE__*/ zod.optional(
         /*#__PURE__*/ zod.union([
           /*#__PURE__*/ zod.iso.datetime({ offset: true }),
+          /*#__PURE__*/ zod.null(),
+        ]),
+      ),
+      proposed_start_date: /*#__PURE__*/ zod.optional(
+        /*#__PURE__*/ zod.union([
+          /*#__PURE__*/ zod.iso.date(),
           /*#__PURE__*/ zod.null(),
         ]),
       ),

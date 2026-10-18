@@ -5,6 +5,7 @@ import {
   useState,
   type RefObject,
 } from 'react';
+import { Temporal, detectDeviceTimeZone } from '@dante/time';
 
 import {
   createRemoteActivityInspector,
@@ -67,6 +68,13 @@ function planValidation(
   draft: ActivityReplanDraft,
 ) {
   const errors: Record<string, string> = {};
+  if (draft.dateSpan) {
+    const { startDate, endDateExclusive } = draft.dateSpan;
+    if (!startDate || !endDateExclusive || endDateExclusive <= startDate) {
+      errors.dateSpan = 'La fine deve seguire l’inizio.';
+    }
+    return errors;
+  }
   const spans: { ref: string; start: string; end: string }[] = [];
   const check = (ref: string, start: string, end: string) => {
     start = start.slice(0, 16);
@@ -102,7 +110,13 @@ function planValidation(
             start: (draft.times[root.scheduleRef]?.start ?? '').slice(0, 16),
             end: (draft.times[root.scheduleRef]?.end ?? '').slice(0, 16),
           },
-        ]
+        ].concat(
+          draft.newIntervals.map((row) => ({
+            ref: row.clientRef,
+            start: row.start.slice(0, 16),
+            end: row.end.slice(0, 16),
+          })),
+        )
       : [];
   bounds.forEach(({ ref, start, end }) => check(ref, start, end));
   const orderedBounds = bounds
@@ -116,13 +130,24 @@ function planValidation(
   return errors;
 }
 
+function shiftedDate(value: string, days: number): string {
+  if (!value) return '';
+  try {
+    return Temporal.PlainDate.from(value).add({ days }).toString();
+  } catch {
+    return '';
+  }
+}
+
 export function ActivityEditPanel({
   profile,
+  timeZone,
   onSaved,
   onCancel,
   closeRequestRef,
 }: Readonly<{
   profile: ActivityProfile;
+  timeZone?: string;
   onSaved: (profile: ActivityProfile) => void;
   onCancel: () => void;
   closeRequestRef: RefObject<(() => void) | null>;
@@ -205,6 +230,8 @@ export function ActivityEditPanel({
   const [planDraft, setPlanDraft] = useState<
     Record<string, ActivityReplanTime>
   >({});
+  const [allDay, setAllDay] = useState(false);
+  const [dateSpanDraft, setDateSpanDraft] = useState({ start: '', end: '' });
   const [newPlanned, setNewPlanned] = useState<ActivityNewPlanned[]>([]);
   const [deletedPlanned, setDeletedPlanned] = useState<string[]>([]);
   const [newIntervals, setNewIntervals] = useState<ActivityNewInterval[]>([]);
@@ -250,6 +277,8 @@ export function ActivityEditPanel({
         schedule.role === 'interval' ||
         (schedule.role === 'envelope' && !hasIntervals),
     ) ?? [];
+  const envelope = settings?.schedules.find((row) => row.role === 'envelope');
+  const originalAllDay = envelope?.temporalForm === 'date_span';
   const metadataDirty =
     draft.title !== profile.title ||
     draft.description !== (profile.description ?? '') ||
@@ -266,10 +295,10 @@ export function ActivityEditPanel({
         reminderLeadMinutes !== settings.reminderLeadMinutes));
   const canReplan =
     !!settings &&
-    settings.schedules.some((schedule) => schedule.role === 'envelope') &&
+    !!envelope &&
     editablePlan.every(
       (schedule) =>
-        ['floating_local', 'named_zone_local'].includes(
+        ['floating_local', 'named_zone_local', 'date_span'].includes(
           schedule.temporalForm ?? '',
         ) &&
         !!schedule.start &&
@@ -277,7 +306,11 @@ export function ActivityEditPanel({
     );
   const planDirty =
     canReplan &&
-    (removedIntervals.length > 0 ||
+    (allDay !== originalAllDay ||
+      (allDay &&
+        (dateSpanDraft.start !== envelope?.start ||
+          shiftedDate(dateSpanDraft.end, 1) !== envelope?.end)) ||
+      removedIntervals.length > 0 ||
       newIntervals.length > 0 ||
       newPlanned.length > 0 ||
       deletedPlanned.length > 0 ||
@@ -290,6 +323,17 @@ export function ActivityEditPanel({
       ));
   const replanDraft = {
     times: planDraft,
+    ...(allDay
+      ? {
+          dateSpan: {
+            startDate: dateSpanDraft.start,
+            endDateExclusive: shiftedDate(dateSpanDraft.end, 1),
+          },
+        }
+      : originalAllDay
+        ? { targetZoneId: timeZone ?? detectDeviceTimeZone() }
+        : {}),
+    splitEnvelope: !hasIntervals && newIntervals.length > 0,
     removedIntervals,
     newIntervals,
     removedPlanned: [],
@@ -380,6 +424,15 @@ export function ActivityEditPanel({
             ]),
           ),
         );
+        const root = loaded.schedules.find((row) => row.role === 'envelope');
+        setAllDay(root?.temporalForm === 'date_span');
+        setDateSpanDraft({
+          start: root?.start?.slice(0, 10) ?? '',
+          end: shiftedDate(
+            root?.end?.slice(0, 10) ?? '',
+            root?.temporalForm === 'date_span' ? -1 : 0,
+          ),
+        });
         setNewPlanned([]);
         setPlannedNames(
           Object.fromEntries(
@@ -496,9 +549,7 @@ export function ActivityEditPanel({
 
   const moveObjective = (id: string, direction: -1 | 1) => {
     setObjectiveRows((rows) => {
-      const visible = rows.filter(
-        (row) => !removedObjectives.includes(row.id),
-      );
+      const visible = rows.filter((row) => !removedObjectives.includes(row.id));
       const index = visible.findIndex((row) => row.id === id);
       const target = index + direction;
       if (index < 0 || target < 0 || target >= visible.length) return rows;
@@ -901,6 +952,17 @@ export function ActivityEditPanel({
                 ]),
               ),
             );
+            const root = currentSettings.schedules.find(
+              (row) => row.role === 'envelope',
+            );
+            setAllDay(root?.temporalForm === 'date_span');
+            setDateSpanDraft({
+              start: root?.start?.slice(0, 10) ?? '',
+              end: shiftedDate(
+                root?.end?.slice(0, 10) ?? '',
+                root?.temporalForm === 'date_span' ? -1 : 0,
+              ),
+            });
             setNewPlanned([]);
             setDeletedPlanned([]);
             setNewIntervals([]);
@@ -1459,58 +1521,75 @@ export function ActivityEditPanel({
                 role="group"
                 aria-label="Collocazione attuale"
               >
-                <span
-                  className={
-                    settings.schedules.some(
-                      (row) =>
-                        row.role === 'envelope' &&
-                        row.temporalForm !== null &&
-                        row.temporalForm !== 'date_span',
-                    )
-                      ? 'is-selected'
-                      : ''
-                  }
+                <button
+                  type="button"
+                  className={!allDay ? 'is-selected' : ''}
+                  aria-pressed={!allDay}
+                  disabled={!canReplan || planPending}
+                  onClick={() => {
+                    if (originalAllDay && envelope) {
+                      setPlanDraft((current) => ({
+                        ...current,
+                        [envelope.scheduleRef]: {
+                          start: `${dateSpanDraft.start}T09:00`,
+                          end: `${dateSpanDraft.start}T10:00`,
+                        },
+                      }));
+                    }
+                    setAllDay(false);
+                    setPlanOperation(null);
+                    setPlanError('');
+                  }}
                 >
                   Orario
-                </span>
-                <span
-                  className={
-                    settings.schedules.some(
-                      (row) =>
-                        row.role === 'envelope' &&
-                        row.temporalForm === 'date_span',
-                    )
-                      ? 'is-selected'
-                      : ''
-                  }
+                </button>
+                <button
+                  type="button"
+                  className={allDay ? 'is-selected' : ''}
+                  aria-pressed={allDay}
+                  disabled={!canReplan || hasIntervals || planPending}
+                  onClick={() => {
+                    if (envelope) {
+                      setDateSpanDraft({
+                        start: (
+                          planDraft[envelope.scheduleRef]?.start ??
+                          envelope.start ??
+                          ''
+                        ).slice(0, 10),
+                        end: (
+                          planDraft[envelope.scheduleRef]?.end ??
+                          envelope.end ??
+                          ''
+                        ).slice(0, 10),
+                      });
+                    }
+                    setNewIntervals([]);
+                    setAllDay(true);
+                    setPlanOperation(null);
+                    setPlanError('');
+                  }}
                 >
                   Tutto il giorno
-                </span>
-                <span
-                  className={
-                    !settings.schedules.some(
-                      (row) =>
-                        row.role === 'envelope' &&
-                        row.placementStateRef !== null,
-                    )
-                      ? 'is-selected'
-                      : ''
-                  }
-                >
-                  Da collocare
-                </span>
+                </button>
               </div>
+              {hasIntervals ? (
+                <p className="timeline-activity-editor__planning-hint">
+                  Tutto il giorno è disponibile per le attività con un solo
+                  periodo, senza intervalli separati.
+                </p>
+              ) : null}
               <h3 className="timeline-activity-editor__visually-hidden">
                 Programmazione attuale
               </h3>
-              {settings.schedules.find((schedule) => schedule.zoneId)
-                ?.zoneId ? (
+              {!allDay &&
+              (settings.schedules.find((schedule) => schedule.zoneId)?.zoneId ||
+                originalAllDay) ? (
                 <p className="timeline-activity-editor__timezone">
                   <span aria-hidden="true">◎</span> Fuso orario ·{' '}
-                  {
-                    settings.schedules.find((schedule) => schedule.zoneId)
-                      ?.zoneId
-                  }
+                  {originalAllDay
+                    ? (timeZone ?? detectDeviceTimeZone())
+                    : settings.schedules.find((schedule) => schedule.zoneId)
+                        ?.zoneId}
                 </p>
               ) : null}
               {planError ? <p role="alert">{planError}</p> : null}
@@ -1521,7 +1600,39 @@ export function ActivityEditPanel({
                   ancora supportata. Seleziona «Solo questa».
                 </p>
               ) : null}
-              {settings.schedules.length ? (
+              {allDay && canReplan ? (
+                <div
+                  className="timeline-activity-editor__all-day"
+                  data-edit-invalid={!!planErrors.dateSpan}
+                >
+                  <TemporalCreateDatePicker
+                    label="Data inizio"
+                    locale="it"
+                    value={dateSpanDraft.start}
+                    onChange={(start) => {
+                      setDateSpanDraft((current) => ({ ...current, start }));
+                      setPlanOperation(null);
+                      setPlanError('');
+                    }}
+                  />
+                  <span aria-hidden="true">→</span>
+                  <TemporalCreateDatePicker
+                    label="Data fine"
+                    locale="it"
+                    value={dateSpanDraft.end}
+                    onChange={(end) => {
+                      setDateSpanDraft((current) => ({ ...current, end }));
+                      setPlanOperation(null);
+                      setPlanError('');
+                    }}
+                  />
+                  {planErrors.dateSpan ? (
+                    <small className="temporal-create-field-error" role="alert">
+                      {planErrors.dateSpan}
+                    </small>
+                  ) : null}
+                </div>
+              ) : settings.schedules.length ? (
                 <ul>
                   {settings.schedules
                     .filter((schedule) => schedule.role !== 'planned')
@@ -1698,7 +1809,7 @@ export function ActivityEditPanel({
                   </p>
                 </details>
               ) : null}
-              {canReplan ? (
+              {canReplan && !allDay ? (
                 <div>
                   {newIntervals.map((item) => (
                     <div
@@ -1763,13 +1874,16 @@ export function ActivityEditPanel({
                       ) : null}
                     </div>
                   ))}
-                  {hasIntervals ? (
+                  {!originalAllDay ? (
                     <button
                       type="button"
                       disabled={
                         planPending ||
-                        editablePlan.filter((row) => row.role === 'interval')
-                          .length -
+                        (hasIntervals
+                          ? editablePlan.filter(
+                              (row) => row.role === 'interval',
+                            ).length
+                          : 1) -
                           removedIntervals.length +
                           newIntervals.length >=
                           100
@@ -1813,6 +1927,14 @@ export function ActivityEditPanel({
                       setDeletedPlanned([]);
                       setNewIntervals([]);
                       setRemovedIntervals([]);
+                      setAllDay(originalAllDay);
+                      setDateSpanDraft({
+                        start: envelope?.start?.slice(0, 10) ?? '',
+                        end: shiftedDate(
+                          envelope?.end?.slice(0, 10) ?? '',
+                          originalAllDay ? -1 : 0,
+                        ),
+                      });
                       setPlanOperation(null);
                     }}
                   >
@@ -2017,7 +2139,9 @@ export function ActivityEditPanel({
                         const next = newObjectiveDraft(
                           Math.max(
                             -1,
-                            ...objectiveRows.map((row) => row.presentationOrder),
+                            ...objectiveRows.map(
+                              (row) => row.presentationOrder,
+                            ),
                           ) + 1,
                         );
                         setObjectiveRows((rows) => [...rows, next]);

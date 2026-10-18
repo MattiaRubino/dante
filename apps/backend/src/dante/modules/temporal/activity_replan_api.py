@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import hashlib
 import json
-from datetime import datetime
+from datetime import date, datetime
 from itertools import pairwise
 from typing import Annotated, Literal
 from uuid import UUID, uuid7
@@ -20,6 +20,7 @@ from dante.context.dependencies import require_dante_context, require_mutating_d
 from dante.modules.temporal.activity_edit_snapshot_api import _SNAPSHOT, ActivityEditSnapshot
 from dante.modules.temporal.decomposition_api import ActivityScheduleResponse
 from dante.modules.temporal.schedule import (
+    DateSpanPlacement,
     FloatingLocalIntervalPlacement,
     NamedZoneLocalIntervalPlacement,
     ScheduleInputError,
@@ -52,6 +53,21 @@ class ReplanRow(BaseModel):
             or self.ends_local_at <= self.starts_local_at
         ):
             raise ValueError("Planning requires ordered local timestamps without an offset.")
+        return self
+
+
+class ReplanDateSpanRow(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    schedule_ref: UUID
+    expected_material_state_ref: UUID
+    start_date: date
+    end_date_exclusive: date
+
+    @model_validator(mode="after")
+    def valid_span(self) -> ReplanDateSpanRow:
+        if self.end_date_exclusive <= self.start_date:
+            raise ValueError("The final day must follow the first day.")
         return self
 
 
@@ -130,6 +146,9 @@ class ActivityReplanCommand(BaseModel):
 
     operation_id: str = Field(min_length=1, max_length=200)
     envelope: ReplanRow | None = None
+    date_span: ReplanDateSpanRow | None = None
+    target_zone_id: str | None = None
+    split_envelope: bool = False
     intervals: list[ReplanRow] = Field(default_factory=list, max_length=100)
     new_intervals: list[NewIntervalRow] = Field(default_factory=list, max_length=100)
     remove_intervals: list[ReplanRow] = Field(default_factory=list, max_length=100)
@@ -163,6 +182,10 @@ class ReplanChange(BaseModel):
     previous_end: datetime | None = None
     proposed_start: datetime | None = None
     proposed_end: datetime | None = None
+    previous_start_date: date | None = None
+    previous_end_date_exclusive: date | None = None
+    proposed_start_date: date | None = None
+    proposed_end_date_exclusive: date | None = None
 
 
 class ActivityReplanPreview(BaseModel):
@@ -190,12 +213,40 @@ def _conflict(detail: str = "Reload the Activity and review the proposed times."
     )
 
 
+def _validate_planned_rows(
+    planned: list[ActivityScheduleResponse], command: ActivityReplanCommand
+) -> None:
+    if (
+        len(command.planned_sessions) + len(command.delete_planned_sessions) != len(planned)
+        or len(planned) - len(command.delete_planned_sessions) + len(command.new_planned_sessions)
+        > 100
+    ):
+        raise _invalid("Every named Session must be retained or deleted (at most 100).")
+    existing = {row.schedule_ref: row for row in planned}
+    retained: list[RetainedPlannedRow | DeletePlannedRow] = [
+        *command.planned_sessions,
+        *command.delete_planned_sessions,
+    ]
+    if len({row.schedule_ref for row in retained}) != len(existing) or any(
+        row.schedule_ref not in existing
+        or row.expected_material_state_ref
+        != existing[row.schedule_ref].placement_material_state_ref
+        for row in retained
+    ):
+        raise _conflict()
+
+
 def _validated_plan(
     snapshot: ActivityEditSnapshot,
     command: ActivityReplanCommand,
 ) -> tuple[
     list[ReplanChange],
-    list[tuple[ReplanRow, FloatingLocalIntervalPlacement | NamedZoneLocalIntervalPlacement]],
+    list[
+        tuple[
+            ReplanRow | ReplanDateSpanRow,
+            DateSpanPlacement | FloatingLocalIntervalPlacement | NamedZoneLocalIntervalPlacement,
+        ]
+    ],
 ]:
     """Pure preflight. Every dependent row is explicit, so none move silently."""
     rows = snapshot.schedules
@@ -204,12 +255,114 @@ def _validated_plan(
     planned = [row for row in rows if row.role_code == "planned"]
     if envelope is None:
         raise _invalid("This Activity does not have an editable time frame.")
+    if command.date_span is not None:
+        span = command.date_span
+        if (
+            intervals
+            or command.envelope is not None
+            or command.new_intervals
+            or command.remove_intervals
+            or command.intervals
+            or command.split_envelope
+            or command.target_zone_id is not None
+            or envelope.temporal_form not in {"date_span", "floating_local", "named_zone_local"}
+        ):
+            raise _invalid("All-day placement requires one Activity period.")
+        if (
+            span.schedule_ref != envelope.schedule_ref
+            or span.expected_material_state_ref != envelope.placement_material_state_ref
+        ):
+            raise _conflict()
+        _validate_planned_rows(planned, command)
+        unchanged = (
+            envelope.temporal_form == "date_span"
+            and envelope.start_date == span.start_date
+            and envelope.end_date_exclusive == span.end_date_exclusive
+        )
+        changes = (
+            []
+            if unchanged
+            else [
+                ReplanChange(
+                    schedule_ref=envelope.schedule_ref,
+                    role="envelope",
+                    previous_start=envelope.starts_local_at,
+                    previous_end=envelope.ends_local_at,
+                    previous_start_date=envelope.start_date,
+                    previous_end_date_exclusive=envelope.end_date_exclusive,
+                    proposed_start_date=span.start_date,
+                    proposed_end_date_exclusive=span.end_date_exclusive,
+                )
+            ]
+        )
+        changes.extend(
+            ReplanChange(schedule_ref=row.schedule_ref, role="planned_deleted")
+            for row in command.delete_planned_sessions
+        )
+        changes.extend(
+            ReplanChange(client_ref=row.client_ref, role="planned_added")
+            for row in command.new_planned_sessions
+        )
+        return changes, [] if unchanged else [
+            (span, DateSpanPlacement(span.start_date, span.end_date_exclusive))
+        ]
+    if envelope.temporal_form == "date_span":
+        timed_envelope = command.envelope
+        if (
+            timed_envelope is None
+            or intervals
+            or command.intervals
+            or command.remove_intervals
+            or command.new_intervals
+            or command.split_envelope
+            or not command.target_zone_id
+        ):
+            raise _invalid(
+                "Changing an all-day period to a time requires one exact interval and a zone."
+            )
+        if (
+            timed_envelope.schedule_ref != envelope.schedule_ref
+            or timed_envelope.expected_material_state_ref != envelope.placement_material_state_ref
+        ):
+            raise _conflict()
+        _validate_planned_rows(planned, command)
+        try:
+            conversion_placement = NamedZoneLocalIntervalPlacement(
+                starts_local_at=timed_envelope.starts_local_at,
+                ends_local_at=timed_envelope.ends_local_at,
+                zone_id=command.target_zone_id,
+            )
+        except ScheduleInputError as exc:
+            raise _invalid(str(exc)) from exc
+        changes = [
+            ReplanChange(
+                schedule_ref=timed_envelope.schedule_ref,
+                role="envelope",
+                previous_start_date=envelope.start_date,
+                previous_end_date_exclusive=envelope.end_date_exclusive,
+                proposed_start=timed_envelope.starts_local_at,
+                proposed_end=timed_envelope.ends_local_at,
+            )
+        ]
+        changes.extend(
+            ReplanChange(schedule_ref=item.schedule_ref, role="planned_deleted")
+            for item in command.delete_planned_sessions
+        )
+        changes.extend(
+            ReplanChange(client_ref=item.client_ref, role="planned_added")
+            for item in command.new_planned_sessions
+        )
+        return changes, [(timed_envelope, conversion_placement)]
+    if command.target_zone_id is not None or (
+        command.split_envelope and (intervals or not command.new_intervals)
+    ):
+        raise _invalid("The requested Activity time frame is inconsistent.")
     if (
         not intervals
         and (
             command.envelope is None
             or command.intervals
-            or command.new_intervals
+            or (command.new_intervals and not command.split_envelope)
             or command.remove_intervals
         )
     ) or (intervals and command.envelope is not None):
@@ -217,7 +370,7 @@ def _validated_plan(
     if (
         len(command.intervals) + len(command.remove_intervals) != len(intervals)
         or (intervals and not command.intervals and not command.new_intervals)
-        or len(command.intervals) + len(command.new_intervals) > 100
+        or len(command.intervals) + len(command.new_intervals) + int(command.split_envelope) > 100
         or len(command.planned_sessions) + len(command.delete_planned_sessions) != len(planned)
         or len(planned) - len(command.delete_planned_sessions) + len(command.new_planned_sessions)
         > 100
@@ -247,6 +400,7 @@ def _validated_plan(
         raise _invalid("A planning row is missing, repeated or assigned the wrong role.")
     if envelope.temporal_form not in {"floating_local", "named_zone_local"}:
         raise _invalid("This time frame is not supported for coordinated replanning.")
+    _validate_planned_rows(planned, command)
     deleted = {row.schedule_ref for row in command.delete_planned_sessions}
     if len(deleted) != len(command.delete_planned_sessions) or deleted | {
         row.schedule_ref for row in command.planned_sessions
@@ -290,7 +444,11 @@ def _validated_plan(
     else:
         if command.envelope is None:
             raise _invalid("An Activity without intervals must revise its envelope.")
-        ordered_spans = [(command.envelope.starts_local_at, command.envelope.ends_local_at)]
+        ordered_spans = sorted(
+            [(command.envelope.starts_local_at, command.envelope.ends_local_at)]
+            + [(row.starts_local_at, row.ends_local_at) for row in command.new_intervals],
+            key=lambda span: span[0],
+        )
     if any(a[1] > b[0] for a, b in pairwise(ordered_spans)):
         raise _invalid("Activity intervals overlap.")
     start, end = ordered_spans[0][0], ordered_spans[-1][1]
@@ -306,9 +464,12 @@ def _validated_plan(
         starts_local_at=start,
         ends_local_at=end,
     )
-    changes: list[ReplanChange] = []
+    changes = []
     placements: list[
-        tuple[ReplanRow, FloatingLocalIntervalPlacement | NamedZoneLocalIntervalPlacement]
+        tuple[
+            ReplanRow | ReplanDateSpanRow,
+            DateSpanPlacement | FloatingLocalIntervalPlacement | NamedZoneLocalIntervalPlacement,
+        ]
     ] = []
     # Removed rows are handled by the unschedule path, never by placement revision.
     # Only retained rows can be looked up in by_ref.
@@ -327,7 +488,7 @@ def _validated_plan(
         ):
             continue
         try:
-            placement = (
+            placement: FloatingLocalIntervalPlacement | NamedZoneLocalIntervalPlacement = (
                 NamedZoneLocalIntervalPlacement(
                     starts_local_at=next_row.starts_local_at,
                     ends_local_at=next_row.ends_local_at,
@@ -373,6 +534,14 @@ def _validated_plan(
         )
         for row in command.new_intervals
     )
+    if command.split_envelope and command.envelope is not None:
+        changes.append(
+            ReplanChange(
+                role="interval_added",
+                proposed_start=command.envelope.starts_local_at,
+                proposed_end=command.envelope.ends_local_at,
+            )
+        )
     changes.extend(
         ReplanChange(schedule_ref=row.schedule_ref, role="planned_deleted")
         for row in command.delete_planned_sessions
@@ -604,7 +773,7 @@ async def apply_activity_replan(
                         "fingerprint": current_session_fingerprint,
                     },
                 )
-            if body.new_intervals:
+            if body.new_intervals or body.split_envelope:
                 next_interval_order = await session.scalar(
                     text("""
                     SELECT COALESCE(MAX(presentation_order),0)
@@ -614,19 +783,36 @@ async def apply_activity_replan(
                 """),
                     {"actor": actor, "activity": activity_ref},
                 )
-                for new_interval in body.new_intervals:
+                additions = [
+                    *(
+                        [
+                            (
+                                "split-first",
+                                body.envelope.starts_local_at,
+                                body.envelope.ends_local_at,
+                            )
+                        ]
+                        if body.split_envelope and body.envelope is not None
+                        else []
+                    ),
+                    *(
+                        (str(row.client_ref), row.starts_local_at, row.ends_local_at)
+                        for row in body.new_intervals
+                    ),
+                ]
+                for client_ref, starts_local_at, ends_local_at in additions:
                     next_interval_order += 1
                     try:
                         placement = (
                             NamedZoneLocalIntervalPlacement(
-                                starts_local_at=new_interval.starts_local_at,
-                                ends_local_at=new_interval.ends_local_at,
+                                starts_local_at=starts_local_at,
+                                ends_local_at=ends_local_at,
                                 zone_id=_checked_zone(envelope),
                             )
                             if envelope.temporal_form == "named_zone_local"
                             else FloatingLocalIntervalPlacement(
-                                starts_local_at=new_interval.starts_local_at,
-                                ends_local_at=new_interval.ends_local_at,
+                                starts_local_at=starts_local_at,
+                                ends_local_at=ends_local_at,
                             )
                         )
                     except ScheduleInputError as exc:
@@ -634,7 +820,7 @@ async def apply_activity_replan(
                     created = await establish_schedule_in_session(
                         session,
                         self_person_ref=NativeRef(actor),
-                        operation_id=f"replan:add-interval:{digest}:{new_interval.client_ref}",
+                        operation_id=f"replan:add-interval:{digest}:{client_ref}",
                         subject_native_ref=NativeRef(activity_ref),
                         placement=placement,
                     )
