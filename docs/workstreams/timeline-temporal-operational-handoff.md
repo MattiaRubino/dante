@@ -2632,3 +2632,23 @@ The next supplied WSL log reports Mypy **PASS, 495 source files**, all **15 sele
 Both new deletion journeys failed before opening the Inspector: substring matching of the title button also selected the time-edit button, whose accessible name includes the same title. Both selectors now use `exact: true`. Two later Schedule journeys stopped at signin with HTTP 429: four scenarios shared one project account while the real-stack harness intentionally permits only two sign-ins. Each Schedule scenario now has a dedicated seeded account per browser (65–76); Event scenarios likewise use distinct accounts per Chromium/Firefox (77–80), avoiding their previous shared account across projects. The disposable harness seeds 80 accounts. The rate limit remains two; no retries, skips, production changes or relaxed assertions are introduced.
 
 Local verification of this repair: targeted ESLint PASS; Prettier PASS; Python syntax PASS; all sixteen scenario/project accounts are distinct and within the seeded range; Playwright discovery lists exactly the existing six Chromium cases. Real-stack execution is **NOT RUN here**, because Docker is unavailable. Rerun only these two Playwright files, preserving the actual candidate SHA in the output. Do not repeat the already passing Backend/PostgreSQL/API checks for this test-fixture-only repair. This is scoped repair evidence, not a 27-group/global acceptance claim; manual Activity/Session lifecycle acceptance remains separate.
+
+## 2026-10-18 — Create Life Area length and independent Inspector Sessions
+
+The Create Life Area name is bounded to 100 characters by the transactional
+authoring API. The input now exposes that bound, and all three U2 submit paths
+reject an oversized staged draft locally with a field-specific Italian/English
+message before HTTP. This targets the reported generic 422; it does not alter
+the server contract. The Inspector reads the parent Activity capture mode from
+its existing decomposition response. Named Sessions are startable without a
+generic main when mode is `disabled` or `record`; `live` and
+`record_and_live` continue to require an active main. Existing paused/stopped
+attempt history and controls stay on their current path.
+
+Focused Web component regressions, typecheck and lint are the local verification
+boundary; PostgreSQL/full-stack browser and the complete 27-group gate remain
+unrun for this candidate. Create/replan accept up to 100 planned Sessions and
+100 Activity intervals; Event agenda create/replace accepts 100 steps. The
+Objective edit batch accepts up to 100 commands, which is a request size bound
+and not an established total-per-Activity cap. No new product-level cap was
+introduced by this correction.

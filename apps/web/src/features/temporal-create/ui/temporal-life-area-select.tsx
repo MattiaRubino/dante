@@ -66,6 +66,8 @@ export function TemporalLifeAreaSelect({
         value={query}
         placeholder={placeholder}
         aria-label={label}
+        maxLength={100}
+        title="Massimo 100 caratteri per una nuova Life Area"
         disabled={disabled}
         autoComplete="off"
         onFocus={() => setOpen(true)}

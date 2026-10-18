@@ -527,9 +527,23 @@ export function TemporalCreateEntry({
     }
   };
 
+  const rejectInvalidLifeAreaName = (): boolean => {
+    const area = u2DraftRef.current.lifeArea;
+    if (area.kind !== 'new' || area.name.length <= 100) return false;
+    setFailureTarget('contextId');
+    setFailureMessage(
+      i18n.language.toLowerCase().startsWith('it')
+        ? 'Il nome della Life Area può contenere al massimo 100 caratteri.'
+        : 'A Life Area name can contain at most 100 characters.',
+    );
+    setLifecycle('failed');
+    return true;
+  };
+
   const executeU2Quick = async (
     fields: TemporalCreateSession['draft']['current'],
   ): Promise<boolean> => {
+    if (rejectInvalidLifeAreaName()) return false;
     const structureIssue = validateTemporalCreateU6StructureIssue(
       fields,
       u2DraftRef.current,
@@ -680,6 +694,7 @@ export function TemporalCreateEntry({
   const executeRecurringActivity = async (
     fields: TemporalCreateSession['draft']['current'],
   ): Promise<boolean> => {
+    if (rejectInvalidLifeAreaName()) return false;
     const structureIssue = validateTemporalCreateU6StructureIssue(
       fields,
       u2DraftRef.current,
@@ -751,6 +766,7 @@ export function TemporalCreateEntry({
   const executeRecurringEvent = async (
     fields: TemporalCreateSession['draft']['current'],
   ): Promise<boolean> => {
+    if (rejectInvalidLifeAreaName()) return false;
     const validation = validateTemporalCreateU2QuickFields(fields);
     if (validation.length > 0) {
       setIssues(validation);

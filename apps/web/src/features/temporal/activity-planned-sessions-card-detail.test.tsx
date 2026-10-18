@@ -18,83 +18,99 @@ describe('Activity planned Sessions card detail', () => {
     vi.unstubAllGlobals();
   });
 
-  it('renders only Activity-owned named Sessions without calendar times', async () => {
-    const children = {
-      parent_activity_ref: ACTIVITY,
-      session_capture_mode: 'disabled',
-      child_guard_mode: 'none',
-      schedules: [
-        {
-          schedule_ref: ENVELOPE,
-          role_code: 'envelope',
-          presentation_order: 0,
-          display_name: null,
-          temporal_form: 'named_zone_local',
-          starts_local_at: '2026-10-04T18:00:00',
-          ends_local_at: '2026-10-04T21:00:00',
-        },
-        {
-          schedule_ref: SESSION_A,
-          role_code: 'planned',
-          presentation_order: 1,
-          display_name: 'Teoria',
-          temporal_form: 'named_zone_local',
-          starts_local_at: '2026-10-04T18:00:00',
-          ends_local_at: '2026-10-04T19:00:00',
-        },
-        {
-          schedule_ref: SESSION_B,
-          role_code: 'planned',
-          presentation_order: 2,
-          display_name: 'Esercizi',
-          temporal_form: 'named_zone_local',
-          starts_local_at: '2026-10-04T20:00:00',
-          ends_local_at: '2026-10-04T21:00:00',
-        },
-      ],
-      children: [],
-    };
-    const fetchFn = vi.fn<typeof fetch>((input) =>
-      Promise.resolve(
-        Response.json(
-          fetchRequestUrl(input).endsWith('/sessions') ? [] : children,
+  it.each(['disabled', 'record'])(
+    'renders independently startable named Sessions without a live main in %s mode',
+    async (mode) => {
+      const children = {
+        parent_activity_ref: ACTIVITY,
+        session_capture_mode: mode,
+        child_guard_mode: 'none',
+        schedules: [
+          {
+            schedule_ref: ENVELOPE,
+            role_code: 'envelope',
+            presentation_order: 0,
+            display_name: null,
+            temporal_form: 'named_zone_local',
+            starts_local_at: '2026-10-04T18:00:00',
+            ends_local_at: '2026-10-04T21:00:00',
+          },
+          {
+            schedule_ref: SESSION_A,
+            role_code: 'planned',
+            presentation_order: 1,
+            display_name: 'Teoria',
+            temporal_form: 'named_zone_local',
+            starts_local_at: '2026-10-04T18:00:00',
+            ends_local_at: '2026-10-04T19:00:00',
+          },
+          {
+            schedule_ref: SESSION_B,
+            role_code: 'planned',
+            presentation_order: 2,
+            display_name: 'Esercizi',
+            temporal_form: 'named_zone_local',
+            starts_local_at: '2026-10-04T20:00:00',
+            ends_local_at: '2026-10-04T21:00:00',
+          },
+        ],
+        children: [],
+      };
+      const fetchFn = vi.fn<typeof fetch>((input) =>
+        Promise.resolve(
+          Response.json(
+            fetchRequestUrl(input).endsWith('/sessions') ? [] : children,
+          ),
         ),
-      ),
-    );
-    vi.stubGlobal('fetch', fetchFn);
+      );
+      vi.stubGlobal('fetch', fetchFn);
 
-    const { container } = render(
-      <ActivityPlannedSessionsCardDetail activityRef={ACTIVITY} visible />,
-    );
+      const { container } = render(
+        <ActivityPlannedSessionsCardDetail activityRef={ACTIVITY} visible />,
+      );
 
-    expect(await screen.findByText('Teoria')).toBeTruthy();
-    expect(screen.getByText('Esercizi')).toBeTruthy();
-    expect(screen.queryByText('18:00–19:00')).toBeNull();
-    expect(screen.queryByText('20:00–21:00')).toBeNull();
-    const rows = container.querySelectorAll(
-      '.timeline-activity-planned-sessions__row',
-    );
-    expect(rows).toHaveLength(2);
-    for (const row of rows) {
-      expect(row.querySelector('[aria-label="Avvia"]')).toBeNull();
-      expect(row.querySelector('[aria-label="Termina"]')).toBeNull();
-    }
-    expect(screen.getAllByText('Avvia prima la principale')).toHaveLength(2);
-    expect(
-      container.querySelectorAll('[data-activity-planned-sessions]'),
-    ).toHaveLength(1);
-    expect(
-      fetchFn.mock.calls.some(([input]) =>
-        fetchRequestUrl(input).includes(`/activities/${ACTIVITY}/children`),
-      ),
-    ).toBe(true);
-  });
+      expect(await screen.findByText('Teoria')).toBeTruthy();
+      expect(screen.getByText('Esercizi')).toBeTruthy();
+      expect(screen.queryByText('18:00–19:00')).toBeNull();
+      expect(screen.queryByText('20:00–21:00')).toBeNull();
+      const rows = container.querySelectorAll(
+        '.timeline-activity-planned-sessions__row',
+      );
+      expect(rows).toHaveLength(2);
+      for (const row of rows) {
+        expect(row.querySelector('[aria-label="Avvia"]')).not.toBeNull();
+        expect(
+          row.querySelector<HTMLButtonElement>('[aria-label="Termina"]')
+            ?.disabled,
+        ).toBe(true);
+      }
+      await waitFor(() =>
+        expect(
+          [
+            ...container.querySelectorAll<HTMLButtonElement>(
+              '[aria-label="Avvia"]',
+            ),
+          ].every((button) => !button.disabled),
+        ).toBe(true),
+      );
+      expect(screen.queryByText('Avvia prima la principale')).toBeNull();
+      expect(
+        container.querySelectorAll('[data-activity-planned-sessions]'),
+      ).toHaveLength(1);
+      expect(
+        fetchFn.mock.calls.some(([input]) =>
+          fetchRequestUrl(input).includes(`/activities/${ACTIVITY}/children`),
+        ),
+      ).toBe(true);
+    },
+  );
 
   it('shows Play only while main is active and replaces it with review on Stop', async () => {
     let mainStopped = false;
     let mainPaused = false;
     const children = {
       parent_activity_ref: ACTIVITY,
+      session_capture_mode: 'live',
       schedules: [
         {
           schedule_ref: SESSION_A,

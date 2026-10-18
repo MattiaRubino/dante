@@ -379,6 +379,26 @@ describe('Temporal Create U2 entry', () => {
     });
   });
 
+  it('explains the Life Area name limit before sending an invalid create request', () => {
+    const { activityRequests } = renderEntry();
+    fireEvent.change(screen.getByPlaceholderText('Titolo'), {
+      target: { value: 'Studio' },
+    });
+    const input = screen.getByLabelText<HTMLInputElement>(
+      'Life Area (opzionale)',
+    );
+    expect(input.maxLength).toBe(100);
+    fireEvent.change(input, { target: { value: 'A'.repeat(101) } });
+    fireEvent.click(screen.getByRole('button', { name: 'Aggiungi' }));
+
+    expect(activityRequests).toHaveLength(0);
+    expect(
+      screen.getByText(
+        'Il nome della Life Area può contenere al massimo 100 caratteri.',
+      ),
+    ).toBeTruthy();
+  });
+
   it('preserves the selected item color when typing a new Life Area name', async () => {
     const { activityRequests } = renderEntry();
 

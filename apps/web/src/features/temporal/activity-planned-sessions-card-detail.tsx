@@ -14,6 +14,10 @@ type PlannedSession = Readonly<{
   name: string;
   order: number;
 }>;
+type PlannedSessionStructure = Readonly<{
+  rows: readonly PlannedSession[];
+  independentChildren: boolean;
+}>;
 
 function record(value: unknown): Record<string, unknown> {
   if (typeof value !== 'object' || value === null || Array.isArray(value)) {
@@ -25,7 +29,7 @@ function record(value: unknown): Record<string, unknown> {
 function parsePlannedSessions(
   value: unknown,
   activityRef: string,
-): readonly PlannedSession[] {
+): PlannedSessionStructure {
   const payload = record(value);
   if (
     payload.parent_activity_ref !== activityRef ||
@@ -34,31 +38,37 @@ function parsePlannedSessions(
     throw new Error('Struttura Activity non valida.');
   }
 
-  return Object.freeze(
-    payload.schedules
-      .map(record)
-      .filter((row) => row.role_code === 'planned')
-      .map((row, index) => {
-        if (typeof row.schedule_ref !== 'string') {
-          throw new Error('Sessione pianificata non valida.');
-        }
-        const order =
-          typeof row.presentation_order === 'number' &&
-          Number.isInteger(row.presentation_order)
-            ? row.presentation_order
-            : index + 1;
-        return Object.freeze({
-          scheduleRef: row.schedule_ref,
-          name:
-            typeof row.display_name === 'string' &&
-            row.display_name.trim().length > 0
-              ? row.display_name
-              : `Sessione ${order}`,
-          order,
-        });
-      })
-      .sort((left, right) => left.order - right.order),
-  );
+  return Object.freeze({
+    // An absent capability cannot grant independent child Play.
+    independentChildren:
+      payload.session_capture_mode === 'disabled' ||
+      payload.session_capture_mode === 'record',
+    rows: Object.freeze(
+      payload.schedules
+        .map(record)
+        .filter((row) => row.role_code === 'planned')
+        .map((row, index) => {
+          if (typeof row.schedule_ref !== 'string') {
+            throw new Error('Sessione pianificata non valida.');
+          }
+          const order =
+            typeof row.presentation_order === 'number' &&
+            Number.isInteger(row.presentation_order)
+              ? row.presentation_order
+              : index + 1;
+          return Object.freeze({
+            scheduleRef: row.schedule_ref,
+            name:
+              typeof row.display_name === 'string' &&
+              row.display_name.trim().length > 0
+                ? row.display_name
+                : `Sessione ${order}`,
+            order,
+          });
+        })
+        .sort((left, right) => left.order - right.order),
+    ),
+  });
 }
 
 /**
@@ -90,7 +100,9 @@ function PlannedSessionCardContent({
   locale,
   timeZone,
 }: PlannedSessionCardProps) {
-  const [rows, setRows] = useState<readonly PlannedSession[] | null>(null);
+  const [structure, setStructure] = useState<PlannedSessionStructure | null>(
+    null,
+  );
   const [sessions, setSessions] = useState<
     readonly TemporalSessionView[] | null
   >(null);
@@ -146,12 +158,11 @@ function PlannedSessionCardContent({
       })
       .then((result) => {
         if (!cancelled) {
-          setRows(result);
+          setStructure(result);
         }
       })
       .catch(() => {
-        if (!cancelled && !controller.signal.aborted)
-          setRows(Object.freeze([]));
+        if (!cancelled && !controller.signal.aborted) setStructure(null);
       });
 
     return () => {
@@ -160,7 +171,9 @@ function PlannedSessionCardContent({
     };
   }, [activityRef, visible, revision]);
 
-  if (!visible || rows === null || rows.length === 0) return null;
+  if (!visible || structure === null || structure.rows.length === 0)
+    return null;
+  const { rows, independentChildren } = structure;
 
   if (variant === 'indicator') {
     return (
@@ -206,7 +219,8 @@ function PlannedSessionCardContent({
               {row.name}
             </span>
           </span>
-          {mainRunning ||
+          {independentChildren ||
+          mainRunning ||
           mainPaused ||
           (sessions ?? []).some(
             (session) => session.plannedScheduleRef === row.scheduleRef,
@@ -221,9 +235,11 @@ function PlannedSessionCardContent({
               inspectorSummary
               showUnstartedStatus
               unstartedStatus={
-                mainPaused ? 'Principale in pausa' : 'Non avviata'
+                !independentChildren && mainPaused
+                  ? 'Principale in pausa'
+                  : 'Non avviata'
               }
-              playEnabled={mainRunning}
+              playEnabled={independentChildren || mainRunning}
               {...(locale ? { locale } : {})}
               {...(timeZone ? { timeZone } : {})}
             />
