@@ -274,6 +274,34 @@ export function canonicalScheduledDateLaneItem(
   appearanceColorCode?: string | null,
 ): TimelineAllDayItem | null {
   const itemAppearance = appearanceColor(appearanceColorCode);
+  const interval = displayedInterval(item);
+  if (
+    interval !== null &&
+    interval.end.since(interval.start).total('hours') > 24
+  ) {
+    const endsAtMidnight = minuteOfLocalDay(interval.end) === 0;
+    return Object.freeze({
+      id: item.scheduleRef,
+      startDateKey: interval.start.toPlainDate().toString(),
+      endDateExclusiveKey: endsAtMidnight
+        ? interval.end.toPlainDate().toString()
+        : interval.end.toPlainDate().add({ days: 1 }).toString(),
+      title: item.title,
+      groupId,
+      ...(groupId === 'personale'
+        ? { appearanceTone: 'personal' as const }
+        : {}),
+      ...itemAppearance,
+      canonicalBasis: canonicalBasis(item),
+      laneKind: 'multi-day' as const,
+      plannedStartTime: interval.start
+        .toPlainTime()
+        .toString({ smallestUnit: 'minute' }),
+      plannedEndTime: interval.end
+        .toPlainTime()
+        .toString({ smallestUnit: 'minute' }),
+    });
+  }
   if (item.temporalForm === 'date-span') {
     return Object.freeze({
       id: item.scheduleRef,
@@ -314,7 +342,10 @@ export function canonicalScheduledTimelineEvents(
   appearanceColorCode?: string | null,
 ): readonly Readonly<{ dateKey: string; event: TimelineEvent }>[] {
   const interval = displayedInterval(item);
-  if (interval === null) {
+  if (
+    interval === null ||
+    interval.end.since(interval.start).total('hours') > 24
+  ) {
     return Object.freeze([]);
   }
 

@@ -1,13 +1,17 @@
 import { Temporal } from '@dante/time';
 import { describe, expect, it } from 'vitest';
 
+import type { TemporalSessionView } from '../../../temporal/remote-session-data-source';
 import { timelineAllDayLaneHeightPx } from './model/timeline-all-day-layout';
 import type {
   TimelineAllDayItem,
   TimelineEventLayout,
   TimelineTimeMapper,
 } from './model/timeline-types';
-import { applyTimelineAllDayGeometry } from './timeline-all-day-runtime';
+import {
+  applyTimelineAllDayGeometry,
+  projectTimelineDateLaneSessions,
+} from './timeline-all-day-runtime';
 import type { TimelineRenderedDay } from './timeline-viewport-runtime';
 
 function mapper(): TimelineTimeMapper {
@@ -60,7 +64,89 @@ const spanningItem: TimelineAllDayItem = Object.freeze({
   groupId: 'work',
 });
 
+const activityRef = '0199a8c0-5e71-7bc0-8ad0-a2f403f5617d';
+const activityItem: TimelineAllDayItem = Object.freeze({
+  ...spanningItem,
+  startDateKey: '2026-10-18',
+  endDateExclusiveKey: '2026-10-29',
+  canonicalBasis: {
+    kind: 'scheduled-activity' as const,
+    activityRef,
+    scheduleRef: '0199a8c0-5e72-7bc0-8ad0-a2f403f5617d',
+    placementMaterialStateRef: '0199a8c0-5e73-7bc0-8ad0-a2f403f5617d',
+    placement: {
+      kind: 'date-span' as const,
+      startDate: Temporal.PlainDate.from('2026-10-18'),
+      endDateExclusive: Temporal.PlainDate.from('2026-10-29'),
+    },
+  },
+});
+
+function mainSession(endedAt: string | null): TemporalSessionView {
+  return {
+    sessionRef: '0199a8c0-5e74-7bc0-8ad0-a2f403f5617d',
+    plannedScheduleRef: null,
+    subjectNativeRef: activityRef,
+    timingMaterialStateRef: '0199a8c0-5e75-7bc0-8ad0-a2f403f5617d',
+    startedAt: '2026-10-19T09:00:00Z',
+    endedAt,
+    open: endedAt === null,
+    paused: false,
+    replayed: false,
+    evaluatedAt: endedAt ?? '2026-10-19T09:20:00Z',
+    elapsedSeconds: 1200,
+    activeSeconds: 1200,
+    pausedSeconds: 0,
+    durationEvaluations: [],
+  };
+}
+
 describe('Timeline all-day runtime geometry', () => {
+  it('keeps the whole planned range during Play and clips future bars on main Stop only', () => {
+    const pending = projectTimelineDateLaneSessions(
+      [activityItem],
+      new Map(),
+      'Europe/Rome',
+    );
+    const active = projectTimelineDateLaneSessions(
+      [activityItem],
+      new Map([[activityRef, [mainSession(null)]]]),
+      'Europe/Rome',
+    );
+    const stopped = projectTimelineDateLaneSessions(
+      [activityItem],
+      new Map([[activityRef, [mainSession('2026-10-20T13:03:00Z')]]]),
+      'Europe/Rome',
+    );
+
+    expect(pending[0]?.endDateExclusiveKey).toBe('2026-10-29');
+    expect(active[0]?.endDateExclusiveKey).toBe('2026-10-29');
+    expect(active[0]?.mainSession?.state).toBe('running');
+    expect(stopped[0]?.endDateExclusiveKey).toBe('2026-10-21');
+    expect(stopped[0]?.plannedEndDateExclusiveKey).toBe('2026-10-29');
+    expect(stopped[0]?.canonicalBasis).toBe(activityItem.canonicalBasis);
+    expect(
+      projectTimelineDateLaneSessions(
+        [spanningItem],
+        new Map([[activityRef, [mainSession('2026-10-20T13:03:00Z')]]]),
+        'Europe/Rome',
+      )[0],
+    ).toBe(spanningItem);
+  });
+
+  it('does not retire future bars when only a named internal Session ends', () => {
+    const child = {
+      ...mainSession('2026-10-20T13:03:00Z'),
+      plannedScheduleRef: '0199a8c0-5e76-7bc0-8ad0-a2f403f5617d',
+    };
+    const [visible] = projectTimelineDateLaneSessions(
+      [activityItem],
+      new Map([[activityRef, [child]]]),
+      'Europe/Rome',
+    );
+    expect(visible?.endDateExclusiveKey).toBe('2026-10-29');
+    expect(visible?.mainSession).toBeUndefined();
+  });
   it('adds lane height to every covered day and recomputes cumulative offsets', () => {
     const laneHeight = timelineAllDayLaneHeightPx(1);
     const result = applyTimelineAllDayGeometry(
@@ -98,6 +184,25 @@ describe('Timeline all-day runtime geometry', () => {
     expect(result[1]?.height).toBe(1440);
     expect(result[1]?.mapper.map(0)).toBe(0);
     expect(result[1]?.layouts[0]?.top).toBe(120);
+  });
+
+  it('aligns a week ruler across columns with different numbers of date bars', () => {
+    const extra = {
+      ...spanningItem,
+      id: 'all-day:extra',
+      endDateExclusiveKey: '2026-09-04',
+    };
+    const result = applyTimelineAllDayGeometry(
+      [day('2026-09-03', 0), day('2026-09-04', 0)],
+      [spanningItem, extra],
+      new Set(),
+      true,
+    );
+    expect(result[0]?.mapper.map(0)).toBe(timelineAllDayLaneHeightPx(2));
+    expect(result[1]?.mapper.map(0)).toBe(timelineAllDayLaneHeightPx(2));
+    expect(result[1]?.layouts[0]?.top).toBe(
+      120 + timelineAllDayLaneHeightPx(2),
+    );
   });
 
   it('removes all-day geometry when Context filters hide every all-day item', () => {

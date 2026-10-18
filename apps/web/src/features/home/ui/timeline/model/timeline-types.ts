@@ -118,13 +118,15 @@ export type TimelineEvent = Readonly<{
 }>;
 
 export type TimelineDateLaneKind =
-  'all-day' | 'coarse' | 'expectation' | 'flexible';
+  'all-day' | 'multi-day' | 'coarse' | 'expectation' | 'flexible';
 export type TimelineCoarsePeriod = 'morning' | 'afternoon' | 'evening';
 
 export type TimelineAllDayItem = Readonly<{
   id: string;
   startDateKey: string;
   endDateExclusiveKey: string;
+  /** Original end before a real Session Stop clips future display days. */
+  plannedEndDateExclusiveKey?: string;
   title: string;
   groupId: TimelineGroupId;
   /** Presentation-only semantic override; grouping and filters continue to use groupId. */
@@ -139,6 +141,17 @@ export type TimelineAllDayItem = Readonly<{
   laneKind?: TimelineDateLaneKind;
   /** Present only for accepted coarse-local-period placement. */
   coarsePeriod?: TimelineCoarsePeriod;
+  /** Planned local clock boundaries for a multi-day exact placement. */
+  plannedStartTime?: string;
+  plannedEndTime?: string;
+  /** A factual main Stop clips only this view, never the accepted Schedule. */
+  mainSession?: Readonly<{
+    state: 'running' | 'paused' | 'ended';
+    startedAt: string;
+    endedAt: string | null;
+    activeSeconds: number;
+    evaluatedAt: string;
+  }>;
   origin?: 'create';
   meta?: string;
 }>;

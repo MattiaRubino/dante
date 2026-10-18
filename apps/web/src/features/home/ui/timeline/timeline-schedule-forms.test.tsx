@@ -1,6 +1,6 @@
 import { Temporal } from '@dante/time';
-import { cleanup, render, screen } from '@testing-library/react';
-import { afterEach, beforeAll, describe, expect, it } from 'vitest';
+import { cleanup, fireEvent, render, screen } from '@testing-library/react';
+import { afterEach, beforeAll, describe, expect, it, vi } from 'vitest';
 
 import { i18n } from '../../../../bootstrap/i18n';
 import type { TemporalTimelineScheduledActivityItem } from '../../../temporal/timeline-read';
@@ -32,6 +32,39 @@ function common() {
 }
 
 describe('B02-E3 Schedule form rendering', () => {
+  it('shows two sticky date bars, expands overflow and opens the selected Inspector', () => {
+    const onOpen = vi.fn();
+    const items = ['Primo', 'Secondo', 'Terzo'].map((title, index) => ({
+      id: `local-${index}`,
+      title,
+      groupId: 'personale',
+      startDateKey: '2026-09-16',
+      endDateExclusiveKey: '2026-09-20',
+      laneKind: 'all-day' as const,
+    }));
+    const { container } = render(
+      <TimelineAllDayLane
+        dateKey="2026-09-17"
+        items={items}
+        groups={[{ id: 'personale', label: 'Personale', tone: 'personal' }]}
+        filters={new Set()}
+        onOpenItemDetail={onOpen}
+      />,
+    );
+
+    expect(
+      container
+        .querySelector('[data-timeline-all-day-lane]')
+        ?.getAttribute('style'),
+    ).toContain('94px');
+    expect(screen.queryByText('Terzo')).toBeNull();
+    fireEvent.click(screen.getByRole('button', { name: '+ 1' }));
+    fireEvent.click(
+      screen.getByRole('button', { name: /Terzo · Tutto il giorno/ }),
+    );
+    expect(onOpen).toHaveBeenCalledWith(items[2], expect.any(HTMLElement));
+  });
+
   it('projects date-span into the date lane with exact half-open canonical basis', () => {
     const item = Object.freeze({
       ...common(),
@@ -86,9 +119,9 @@ describe('B02-E3 Schedule form rendering', () => {
       />,
     );
 
-    expect(screen.getByText('Fascia')).toBeTruthy();
+    expect(screen.getByText('16 set · Fascia')).toBeTruthy();
     expect(screen.getByText('Scrivere relazione')).toBeTruthy();
-    expect(screen.getByText(/Pomeriggio · Personale/)).toBeTruthy();
+    expect(screen.getByText(/Pomeriggio · 16 set · Personale/)).toBeTruthy();
     const coarseButton = screen.getByRole('button', {
       name: 'Scrivere relazione · Pomeriggio · Personale',
     });

@@ -24,6 +24,10 @@ import {
   type ActivitySessionDisposition,
 } from '../../../temporal/remote-activity-edit-settings';
 import { createRemoteActivityInspector } from '../../../temporal/remote-activity-inspector';
+import {
+  createRemoteTemporalSessionDataSource,
+  type TemporalSessionView,
+} from '../../../temporal/remote-session-data-source';
 import { createRemoteRecurringProfileEdit } from '../../../temporal/remote-recurring-profile-edit';
 import { useTemporalTimelineRuntime } from '../../../temporal/timeline-runtime-boundary';
 import { REVIEW_QUEUE_INVALIDATED } from '../context-rail/review-events';
@@ -65,7 +69,10 @@ import type {
   TimelineGroupId,
   TimelineSemanticTone,
 } from './model/timeline-types';
-import { applyTimelineAllDayGeometry } from './timeline-all-day-runtime';
+import {
+  applyTimelineAllDayGeometry,
+  projectTimelineDateLaneSessions,
+} from './timeline-all-day-runtime';
 import { TimelineDayStream } from './timeline-day-stream';
 import { TimelineHeader } from './timeline-header';
 import {
@@ -407,6 +414,73 @@ export function TimelineSurface({
         : resolveAppearanceColorCode,
   );
 
+  const dateLaneActivityRefs = useMemo(
+    () =>
+      [
+        ...new Set(
+          state.allDayItems.flatMap((item) =>
+            item.canonicalBasis?.kind === 'scheduled-activity'
+              ? [item.canonicalBasis.activityRef]
+              : [],
+          ),
+        ),
+      ].sort(),
+    [state.allDayItems],
+  );
+  const dateLaneActivityKey = dateLaneActivityRefs.join('|');
+  const dateLaneSessionSource = useMemo(
+    () => createRemoteTemporalSessionDataSource(),
+    [],
+  );
+  const [dateLaneSessions, setDateLaneSessions] = useState<
+    ReadonlyMap<string, readonly TemporalSessionView[]>
+  >(new Map());
+  const [dateLaneSessionRevision, setDateLaneSessionRevision] = useState(0);
+  useEffect(() => {
+    if (prototypeMode) return;
+    const refresh = () =>
+      setDateLaneSessionRevision((revision) => revision + 1);
+    window.addEventListener('dante:session-changed', refresh);
+    return () => window.removeEventListener('dante:session-changed', refresh);
+  }, [prototypeMode]);
+  useEffect(() => {
+    if (prototypeMode || !dateLaneActivityKey) return;
+    let cancelled = false;
+    void Promise.all(
+      dateLaneActivityRefs.map(async (activityRef) => {
+        try {
+          return [
+            activityRef,
+            await dateLaneSessionSource.list('activity', activityRef),
+          ] as const;
+        } catch {
+          return null;
+        }
+      }),
+    ).then((entries) => {
+      if (!cancelled)
+        setDateLaneSessions(new Map(entries.filter((entry) => entry !== null)));
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [
+    dateLaneActivityKey,
+    dateLaneActivityRefs,
+    dateLaneSessionRevision,
+    dateLaneSessionSource,
+    prototypeMode,
+  ]);
+  const projectedDateLaneItems = useMemo(
+    () =>
+      projectTimelineDateLaneSessions(
+        state.allDayItems,
+        dateLaneSessions,
+        clockZone,
+      ),
+    [state.allDayItems, dateLaneSessions, clockZone],
+  );
+
   const renderedDayInputs = useMemo(
     () => ({
       eventsByDate: state.eventsByDate,
@@ -435,7 +509,7 @@ export function TimelineSurface({
       applyTimelineSessionReality(
         applyTimelineAllDayGeometry(
           baseRenderedDays,
-          state.allDayItems,
+          projectedDateLaneItems,
           presentationFilters,
           timelineView === 'week',
         ),
@@ -457,7 +531,7 @@ export function TimelineSurface({
       ),
     [
       baseRenderedDays,
-      state.allDayItems,
+      projectedDateLaneItems,
       presentationFilters,
       timelineView,
       sessionPanel.snapshot,
@@ -1529,11 +1603,11 @@ export function TimelineSurface({
             setDragSnapshot(null);
           }
         }}
-        state={
-          presentationFilters === state.filters
-            ? state
-            : { ...state, filters: presentationFilters }
-        }
+        state={{
+          ...state,
+          allDayItems: projectedDateLaneItems,
+          filters: presentationFilters,
+        }}
         expanded={expanded}
         gridRef={gridRef}
         onScroll={handleScroll}
@@ -1555,6 +1629,26 @@ export function TimelineSurface({
             opener,
           })
         }
+        onOpenDateLaneDetail={(item, opener) => {
+          const event: TimelineEvent = {
+            id: item.id,
+            title: item.title,
+            groupId: item.groupId,
+            startMinute: 0,
+            endMinute: 1440,
+            ...(item.canonicalBasis
+              ? { canonicalBasis: item.canonicalBasis }
+              : {}),
+            ...(item.appearanceColorCode
+              ? { appearanceColorCode: item.appearanceColorCode }
+              : {}),
+          };
+          setDetailState({
+            detail: detailFromEvent(event, state.groups, item.startDateKey),
+            event,
+            opener,
+          });
+        }}
         onOpenSubitemDetail={(event, subitem, opener) =>
           setDetailState({
             detail: detailFromSubitem(

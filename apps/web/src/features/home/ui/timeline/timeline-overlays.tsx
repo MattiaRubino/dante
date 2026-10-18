@@ -1,4 +1,4 @@
-import type { PlainDate } from '@dante/time';
+import { Temporal, type PlainDate } from '@dante/time';
 import {
   type CSSProperties,
   type KeyboardEvent,
@@ -555,6 +555,7 @@ export type TimelineDetail = Readonly<{
   ownerKind?: 'activity' | 'event';
   eventRef?: string;
   eventPlacement?: TimelineCanonicalSchedulePlacement;
+  schedulePlacement?: TimelineCanonicalSchedulePlacement;
   realitySubject?: Readonly<{
     kind: 'activity' | 'event' | 'occurrence';
     ref: string;
@@ -581,6 +582,63 @@ type EventDetailDialogProps = Readonly<{
   onActivityDeleted?: () => void;
   onClose: () => void;
 }>;
+
+function detailScheduleLabel(
+  detail: TimelineDetail,
+  locale: string,
+  timeZone?: string,
+): string {
+  const dateLabel = (
+    dateKey: string,
+    options: Intl.DateTimeFormatOptions = {},
+  ) =>
+    new Intl.DateTimeFormat(locale, {
+      day: 'numeric',
+      month: 'short',
+      timeZone: 'UTC',
+      ...options,
+    }).format(new Date(`${dateKey}T12:00:00Z`));
+  const placement = detail.schedulePlacement;
+  if (placement?.kind === 'date-span') {
+    return `${dateLabel(placement.startDate.toString())}–${dateLabel(placement.endDateExclusive.subtract({ days: 1 }).toString())} · ${locale.startsWith('it') ? 'Tutto il giorno' : 'All day'}`;
+  }
+  if (
+    placement &&
+    detail.startMinute === 0 &&
+    detail.endMinute === 1440 &&
+    placement.kind !== 'coarse-local-period'
+  ) {
+    const start =
+      placement.kind === 'absolute'
+        ? placement.startsAt
+            .toZonedDateTimeISO(timeZone ?? 'UTC')
+            .toPlainDateTime()
+        : placement.startsLocalAt;
+    const end =
+      placement.kind === 'absolute'
+        ? placement.endsAt
+            .toZonedDateTimeISO(timeZone ?? 'UTC')
+            .toPlainDateTime()
+        : placement.endsLocalAt;
+    const boundary = (value: Temporal.PlainDateTime) =>
+      `${dateLabel(value.toPlainDate().toString())} ${value.toPlainTime().toString({ smallestUnit: 'minute' })}`;
+    return `${boundary(start)} → ${boundary(end)}`;
+  }
+  const day = detail.dateKey
+    ? `${new Intl.DateTimeFormat(locale, {
+        weekday: 'long',
+        day: 'numeric',
+        month: 'long',
+        ...(Number(detail.dateKey.slice(0, 4)) !== new Date().getFullYear()
+          ? { year: 'numeric' }
+          : {}),
+        timeZone: 'UTC',
+      })
+        .format(new Date(`${detail.dateKey}T12:00:00Z`))
+        .replace(/^./, (letter) => letter.toLocaleUpperCase(locale))} · `
+    : '';
+  return `${day}${formatTimelineMinute(detail.startMinute)}–${formatTimelineMinute(detail.endMinute)}`;
+}
 
 export function EventDetailDialog({
   detail,
@@ -852,24 +910,7 @@ export function EventDetailDialog({
             ) : null}
             <div className="timeline-event-modal__schedule-row">
               <p className="timeline-event-modal__time">
-                {detail.dateKey
-                  ? `${new Intl.DateTimeFormat(locale, {
-                      weekday: 'long',
-                      day: 'numeric',
-                      month: 'long',
-                      ...(Number(detail.dateKey.slice(0, 4)) !==
-                      new Date().getFullYear()
-                        ? { year: 'numeric' }
-                        : {}),
-                      timeZone: 'UTC',
-                    })
-                      .format(new Date(`${detail.dateKey}T12:00:00Z`))
-                      .replace(/^./, (letter) =>
-                        letter.toLocaleUpperCase(locale),
-                      )} · `
-                  : ''}
-                {formatTimelineMinute(detail.startMinute)}–
-                {formatTimelineMinute(detail.endMinute)}
+                {detailScheduleLabel(detail, locale, timeZone)}
               </p>
               {sessionSubject?.kind === 'activity' ? (
                 <ActivitySessionCardControls
@@ -1049,6 +1090,9 @@ export function detailFromEvent(
     ...(eventRef === undefined ? {} : { eventRef }),
     ...(event.canonicalBasis?.kind === 'scheduled-event'
       ? { eventPlacement: event.canonicalBasis.placement }
+      : {}),
+    ...(event.canonicalBasis
+      ? { schedulePlacement: event.canonicalBasis.placement }
       : {}),
     ...(realitySubject === undefined ? {} : { realitySubject }),
   };

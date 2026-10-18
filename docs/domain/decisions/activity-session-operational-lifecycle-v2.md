@@ -68,6 +68,24 @@ right-hand expansion; the week uses a shared minute scale across columns.
 Quarter-hour ruler labels are shown only where their actual mapped positions
 have sufficient room; they do not imply a fixed linear 15-minute grid.
 
+### Date bars for all-day and long intervals (2026-10-18)
+
+Date-span schedules appear in a sticky lane before 00:00 on each covered day.
+Exact intervals longer than 24 hours use the same lane with their planned
+clock boundaries and `Su più giorni` precision. Up to two bars stay visible;
+`+N` opens the remaining bars. A bar shows the title, planned period, Life Area
+when assigned, and counts for configured Sessions and Objectives. Clicking it
+opens the existing Inspector. The Inspector expresses date spans as `Tutto il
+giorno` and shows the original planned range even after an early Stop.
+
+The bar stays at its planned date coordinates during Play/Pause. Only the
+current-day segment exposes available Session controls. The generic Activity
+Session's Stop ends its active internal Sessions and retires bar segments on
+days after the actual Stop day; the Stop day and earlier segments remain.
+Internal Session Stop alone does not retire bars. Neither action rewrites the
+Schedule or deletes the factual Session history. An Event's date bar does not
+gain an Activity Session.
+
 ## Availability and timer rules
 
 The Session panel uses the Activity interval, not an internal Session time:

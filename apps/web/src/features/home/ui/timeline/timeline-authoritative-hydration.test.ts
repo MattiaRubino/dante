@@ -10,6 +10,7 @@ import {
   canonicalScheduledTimelineEvent,
   canonicalScheduledActivityTimelineEvent,
   canonicalScheduledActivityTimelineEvents,
+  canonicalScheduledActivityDateLaneItem,
   expectedOccurrenceDateLaneItem,
 } from './timeline-authoritative-hydration';
 
@@ -31,6 +32,32 @@ function scheduledActivity(): TemporalTimelineScheduledActivityItem {
 }
 
 describe('authoritative Timeline hydration', () => {
+  it('projects a ten-day timed Activity as one date-lane identity with planned clock ends', () => {
+    const item = Object.freeze({
+      ...scheduledActivity(),
+      startsLocalAt: Temporal.PlainDateTime.from('2026-10-18T14:00'),
+      endsLocalAt: Temporal.PlainDateTime.from('2026-10-28T11:00'),
+    });
+    expect(canonicalScheduledActivityTimelineEvents(item)).toEqual([]);
+    expect(canonicalScheduledActivityDateLaneItem(item)).toMatchObject({
+      id: SCHEDULE_REF,
+      startDateKey: '2026-10-18',
+      endDateExclusiveKey: '2026-10-29',
+      laneKind: 'multi-day',
+      plannedStartTime: '14:00',
+      plannedEndTime: '11:00',
+    });
+  });
+
+  it('keeps an overnight interval shorter than 24 hours on the clock grid', () => {
+    const item = Object.freeze({
+      ...scheduledActivity(),
+      startsLocalAt: Temporal.PlainDateTime.from('2026-10-18T23:00'),
+      endsLocalAt: Temporal.PlainDateTime.from('2026-10-19T03:00'),
+    });
+    expect(canonicalScheduledActivityDateLaneItem(item)).toBeNull();
+    expect(canonicalScheduledActivityTimelineEvents(item)).toHaveLength(2);
+  });
   it('keys the visible projection on Schedule identity and retains its exact canonical basis', () => {
     const projection =
       canonicalScheduledActivityTimelineEvent(scheduledActivity());
