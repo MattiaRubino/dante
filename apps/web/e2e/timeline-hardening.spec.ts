@@ -119,11 +119,17 @@ test('Activity Edit keeps quantity fields on one row at desktop width', async ({
       </div>
     </div>`;
     document.body.appendChild(root);
-    const definition = root.querySelector('.temporal-create-objective__definition')!;
-    const bounds = [...definition.querySelectorAll('label')].map((field) => field.getBoundingClientRect());
+    const definition = root.querySelector(
+      '.temporal-create-objective__definition',
+    )!;
+    const bounds = [...definition.querySelectorAll('label')].map((field) =>
+      field.getBoundingClientRect(),
+    );
     const right = definition.getBoundingClientRect().right;
     const result = {
-      sameRow: bounds.every((field) => Math.abs(field.top - bounds[0]!.top) < 1),
+      sameRow: bounds.every(
+        (field) => Math.abs(field.top - bounds[0]!.top) < 1,
+      ),
       fits: bounds.every((field) => field.right <= right + 1),
     };
     root.remove();

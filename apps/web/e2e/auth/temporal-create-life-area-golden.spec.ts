@@ -202,14 +202,26 @@ async function expectTimedCardColor(
       );
       return {
         afterPlanned:
-          !!time && !!meta &&
-          Boolean(time.compareDocumentPosition(meta) & Node.DOCUMENT_POSITION_FOLLOWING),
+          !!time &&
+          !!meta &&
+          Boolean(
+            time.compareDocumentPosition(meta) &
+            Node.DOCUMENT_POSITION_FOLLOWING,
+          ),
         afterReality:
-          !reality || (!!meta &&
-          Boolean(reality.compareDocumentPosition(meta) & Node.DOCUMENT_POSITION_FOLLOWING)),
+          !reality ||
+          (!!meta &&
+            Boolean(
+              reality.compareDocumentPosition(meta) &
+              Node.DOCUMENT_POSITION_FOLLOWING,
+            )),
         beforeSessions:
-          !sessions || (!!meta &&
-          Boolean(meta.compareDocumentPosition(sessions) & Node.DOCUMENT_POSITION_FOLLOWING)),
+          !sessions ||
+          (!!meta &&
+            Boolean(
+              meta.compareDocumentPosition(sessions) &
+              Node.DOCUMENT_POSITION_FOLLOWING,
+            )),
       };
     });
     expect(order).toEqual({

@@ -72,12 +72,14 @@ describe('one-card Activity actual Session projection', () => {
     const planned = activity('short-session', 20 * 60 + 2, 20 * 60 + 32);
     const [projected] = applyTimelineSessionReality(
       [day(planned)],
-      [{
-        ...ended,
-        started_at: '2026-10-10T19:31:20Z',
-        ended_at: '2026-10-10T19:31:25Z',
-        pause_ranges: [],
-      }],
+      [
+        {
+          ...ended,
+          started_at: '2026-10-10T19:31:20Z',
+          ended_at: '2026-10-10T19:31:25Z',
+          pause_ranges: [],
+        },
+      ],
       'UTC',
       '2026-10-10T19:31:30Z',
       Date.parse('2026-10-10T19:31:30Z'),
@@ -111,9 +113,9 @@ describe('one-card Activity actual Session projection', () => {
       3,
     );
     expect(mapper.inv(mapper.map(middle))).toBeCloseTo(middle, 3);
-    expect(
-      mapper.map(19 * 60 + 32) - mapper.map(19 * 60 + 31),
-    ).toBeLessThan(220);
+    expect(mapper.map(19 * 60 + 32) - mapper.map(19 * 60 + 31)).toBeLessThan(
+      220,
+    );
   });
 
   it('moves immediately on Play without resizing during Play or Pause', () => {
@@ -191,7 +193,9 @@ describe('one-card Activity actual Session projection', () => {
     // Under a denser planned scale the visible Activity was taller than
     // the default short-event minimum. Play moves its top, not its height.
     const basis = day(planned, neighbor);
-    const original = basis.layouts.find((layout) => layout.event.id === planned.id)!;
+    const original = basis.layouts.find(
+      (layout) => layout.event.id === planned.id,
+    )!;
     const crowded: TimelineRenderedDay = {
       ...basis,
       layouts: basis.layouts.map((layout) =>
@@ -215,8 +219,12 @@ describe('one-card Activity actual Session projection', () => {
       zoom,
       expanded,
     );
-    const moving = projected?.layouts.find((layout) => layout.event.id === planned.id);
-    const adjacent = projected?.layouts.find((layout) => layout.event.id === neighbor.id);
+    const moving = projected?.layouts.find(
+      (layout) => layout.event.id === planned.id,
+    );
+    const adjacent = projected?.layouts.find(
+      (layout) => layout.event.id === neighbor.id,
+    );
     expect(original.height).toBeLessThan(240);
     expect(moving?.height).toBe(240);
     expect((moving?.top ?? 0) + (moving?.height ?? 0)).toBeGreaterThan(
@@ -251,9 +259,9 @@ describe('one-card Activity actual Session projection', () => {
     expect(layout?.height).toBeLessThanOrEqual(
       (current.layouts[0]?.height ?? Infinity) + 0.001,
     );
-    expect(
-      (layout?.top ?? 0) + (layout?.height ?? 0),
-    ).toBeLessThanOrEqual((projected?.mapper.map(1110) ?? 0) + 0.001);
+    expect((layout?.top ?? 0) + (layout?.height ?? 0)).toBeLessThanOrEqual(
+      (projected?.mapper.map(1110) ?? 0) + 0.001,
+    );
     expect(layout?.event.startMinute).toBe(1080); // Schedule not rewritten
     expect(layout?.sessionReality?.state).toBe('ended');
     expect(layout?.sessionReality?.fill).toContain('rgba(234, 92, 18, .12)');
@@ -289,20 +297,43 @@ describe('one-card Activity actual Session projection', () => {
   it('retires later cards of the same Activity after the main Session stops, preserving its factual card', () => {
     const first = activity('first', 1080, 1110);
     const second = activity('second', 1140, 1200);
-    const unrelated = { ...activity('unrelated', 1140, 1200), canonicalBasis: {
-      ...activity('unrelated', 1140, 1200).canonicalBasis!,
-      activityRef: 'activity-two',
-    } } as TimelineEvent;
+    const unrelated = {
+      ...activity('unrelated', 1140, 1200),
+      canonicalBasis: {
+        ...activity('unrelated', 1140, 1200).canonicalBasis!,
+        activityRef: 'activity-two',
+      },
+    } as TimelineEvent;
     const [projected] = applyTimelineSessionReality(
       [day(first, second, unrelated)],
-      [{ ...ended, started_at: '2026-10-10T18:00:00Z', ended_at: '2026-10-10T18:20:00Z', pause_ranges: [] }],
-      'UTC', '2026-10-10T18:30:00Z', Date.parse('2026-10-10T18:30:00Z'),
-      groups, zoom, expanded,
+      [
+        {
+          ...ended,
+          started_at: '2026-10-10T18:00:00Z',
+          ended_at: '2026-10-10T18:20:00Z',
+          pause_ranges: [],
+        },
+      ],
+      'UTC',
+      '2026-10-10T18:30:00Z',
+      Date.parse('2026-10-10T18:30:00Z'),
+      groups,
+      zoom,
+      expanded,
     );
-    expect(projected?.layouts.map((layout) => layout.event.id)).toContain('first');
-    expect(projected?.layouts.map((layout) => layout.event.id)).not.toContain('second');
-    expect(projected?.layouts.map((layout) => layout.event.id)).toContain('unrelated');
-    expect(projected?.layouts.find((layout) => layout.event.id === 'first')?.sessionReality?.state).toBe('ended');
+    expect(projected?.layouts.map((layout) => layout.event.id)).toContain(
+      'first',
+    );
+    expect(projected?.layouts.map((layout) => layout.event.id)).not.toContain(
+      'second',
+    );
+    expect(projected?.layouts.map((layout) => layout.event.id)).toContain(
+      'unrelated',
+    );
+    expect(
+      projected?.layouts.find((layout) => layout.event.id === 'first')
+        ?.sessionReality?.state,
+    ).toBe('ended');
     expect(first.startMinute).toBe(1080);
     expect(second.startMinute).toBe(1140);
   });

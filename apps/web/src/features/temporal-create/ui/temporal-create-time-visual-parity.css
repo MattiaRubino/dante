@@ -24,10 +24,16 @@
 
 .temporal-create-composer.is-advanced
   .temporal-create-u2-when
-  :is(.temporal-create-date-picker__trigger, .temporal-create-time-control__field),
+  :is(
+    .temporal-create-date-picker__trigger,
+    .temporal-create-time-control__field
+  ),
 .temporal-create-composer.is-advanced
   .temporal-create-activity-interval__fields
-  :is(.temporal-create-date-picker__trigger, .temporal-create-time-control__field) {
+  :is(
+    .temporal-create-date-picker__trigger,
+    .temporal-create-time-control__field
+  ) {
   box-sizing: border-box;
   min-height: 46px;
   border: 1px solid
@@ -43,10 +49,16 @@
 
 .temporal-create-composer.is-advanced
   .temporal-create-u2-when
-  :is(.temporal-create-date-picker__trigger, .temporal-create-time-control__field):focus-within,
+  :is(
+    .temporal-create-date-picker__trigger,
+    .temporal-create-time-control__field
+  ):focus-within,
 .temporal-create-composer.is-advanced
   .temporal-create-activity-interval__fields
-  :is(.temporal-create-date-picker__trigger, .temporal-create-time-control__field):focus-within {
+  :is(
+    .temporal-create-date-picker__trigger,
+    .temporal-create-time-control__field
+  ):focus-within {
   border-color: var(--dante-semantic-color-home-chrome-active, #ea5c12);
 }
 
@@ -74,7 +86,8 @@
 
 .temporal-create-composer:not(.is-advanced)
   .temporal-create-u2-when
-  .temporal-create-time-segment input {
+  .temporal-create-time-segment
+  input {
   color: var(--dante-semantic-color-home-text-primary, #edf2f8);
   font-weight: 650;
 }

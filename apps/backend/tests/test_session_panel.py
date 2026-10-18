@@ -162,16 +162,14 @@ def test_internal_only_past_children_remain_in_review_without_main() -> None:
     }
 
 
-def test_main_stop_early_immediately_flags_unstarted_child_not_main() -> None:
+def test_main_stop_before_a_future_plan_does_not_flag_its_unstarted_child() -> None:
     child = schedule(display_name="Ripasso")
     record = owner(schedule("interval", at(23, 30), at(23, 59)), child)
     record["historical_attempts"] = [
         {"planned_schedule_ref": None, "ended_at": at(20, 47).isoformat()},
     ]
     review = _unstarted_session_items([record], at(20, 48), "UTC")
-    assert len(review) == 1
-    assert review[0].summary == "Ripasso · mai avviata"
-    assert review[0].effective_at == at(20, 47)
+    assert review == []
 
 
 def test_main_started_hours_early_exposes_all_unstarted_internal_sessions() -> None:

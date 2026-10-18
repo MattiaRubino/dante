@@ -264,7 +264,11 @@ export function TimeControl({
         listRef.current?.querySelectorAll<HTMLElement>('[data-time-value]') ??
           [],
       )
-        .find((candidate) => candidate.dataset.timeValue === lastValidRef.current || candidate.dataset.timeValue === selected)
+        .find(
+          (candidate) =>
+            candidate.dataset.timeValue === lastValidRef.current ||
+            candidate.dataset.timeValue === selected,
+        )
         ?.scrollIntoView({ block: 'center' });
     });
     return () => cancelAnimationFrame(frame);
@@ -459,9 +463,7 @@ export function TimeControl({
                 key={option}
                 type="button"
                 data-time-value={option}
-                className={
-                  committedValue === option ? 'is-selected' : ''
-                }
+                className={committedValue === option ? 'is-selected' : ''}
                 onClick={() => {
                   syncDraft(option);
                   setPickerOpen(false);

@@ -57,12 +57,11 @@ function renderTimeline(options: RenderTimelineOptions = {}) {
 }
 
 describe('TimelineSurface production parity', () => {
-  it('uses 15-minute drag slots at both low and high elastic zoom', () => {
+  it('uses one-minute drag slots only after zooming into precision', () => {
     expect(timelineDragSnapMinutes(0.75)).toBe(15);
     expect(timelineDragSnapMinutes(1)).toBe(15);
-    expect(timelineDragSnapMinutes(2.1)).toBe(15);
+    expect(timelineDragSnapMinutes(2.1)).toBe(1);
   });
-
 
   it('ends long card titles with an ellipsis without splitting a grapheme', () => {
     const title = `${'X'.repeat(71)}👩‍🚀${'Y'.repeat(40)}`;
@@ -100,7 +99,7 @@ describe('TimelineSurface production parity', () => {
     expect(
       Boolean(
         (time?.compareDocumentPosition(meta as Node) ?? 0) &
-          Node.DOCUMENT_POSITION_FOLLOWING,
+        Node.DOCUMENT_POSITION_FOLLOWING,
       ),
     ).toBe(true);
     expect(meta?.textContent).not.toContain('Senza Life Area');
@@ -125,11 +124,12 @@ describe('TimelineSurface production parity', () => {
     expect(
       Boolean(
         (dragSurface?.compareDocumentPosition(indicator as Node) ?? 0) &
-          Node.DOCUMENT_POSITION_FOLLOWING,
+        Node.DOCUMENT_POSITION_FOLLOWING,
       ),
     ).toBe(true);
-    expect(card?.querySelector('.timeline-activity-session-card-controls'))
-      .toBeNull();
+    expect(
+      card?.querySelector('.timeline-activity-session-card-controls'),
+    ).toBeNull();
   });
 
   it('switches between continuous, one-day and seven-column views without changing the frame', () => {

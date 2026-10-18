@@ -23,6 +23,10 @@ from dante.modules.temporal.activity_replan_api import (
 )
 from dante.modules.temporal.decomposition_api import ActivityScheduleResponse
 from dante.modules.temporal.reality_objective_api import RealityPolicyResponse
+from dante.modules.temporal.schedule import (
+    DateSpanPlacement,
+    NamedZoneLocalIntervalPlacement,
+)
 from dante.platform.http.problem import ProblemError
 
 
@@ -170,6 +174,7 @@ def test_all_day_replan_keeps_the_envelope_identity_and_requires_a_valid_range()
             "end_date_exclusive": date(2026, 10, 11),
         }
     )
+    assert envelope.placement_material_state_ref is not None
     span = ReplanDateSpanRow(
         schedule_ref=envelope.schedule_ref,
         expected_material_state_ref=envelope.placement_material_state_ref,
@@ -185,7 +190,9 @@ def test_all_day_replan_keeps_the_envelope_identity_and_requires_a_valid_range()
     )
     assert changes[0].proposed_start_date == date(2026, 10, 10)
     assert placements[0][0].schedule_ref == envelope.schedule_ref
-    assert placements[0][1].end_date_exclusive == date(2026, 10, 12)
+    placement = placements[0][1]
+    assert isinstance(placement, DateSpanPlacement)
+    assert placement.end_date_exclusive == date(2026, 10, 12)
     with pytest.raises(ValidationError):
         ReplanDateSpanRow.model_validate(
             {**span.model_dump(), "end_date_exclusive": date(2026, 10, 10)}
@@ -206,7 +213,9 @@ def test_single_timed_envelope_can_split_into_nonoverlapping_intervals() -> None
     )
     assert [change.role for change in changes].count("interval_added") == 2
     assert placements[0][0].schedule_ref == envelope.schedule_ref
-    assert placements[0][1].ends_local_at == _time(12)
+    placement = placements[0][1]
+    assert isinstance(placement, NamedZoneLocalIntervalPlacement)
+    assert placement.ends_local_at == _time(12)
     with pytest.raises(ProblemError) as overlap:
         _validated_plan(
             _snapshot(envelope),
@@ -245,7 +254,9 @@ def test_date_span_converts_to_one_exact_interval_without_changing_activity_iden
     )
     assert changes[0].previous_start_date == date(2026, 10, 9)
     assert placements[0][0].schedule_ref == envelope.schedule_ref
-    assert placements[0][1].zone_id == "Europe/Rome"
+    placement = placements[0][1]
+    assert isinstance(placement, NamedZoneLocalIntervalPlacement)
+    assert placement.zone_id == "Europe/Rome"
 
 
 def test_replan_rejects_overlapping_activity_intervals_even_with_named_sessions() -> None:

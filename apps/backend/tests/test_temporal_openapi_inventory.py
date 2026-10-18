@@ -413,7 +413,6 @@ _EXPECTED_TEMPORAL_OPERATIONS = {
         "/api/v1/temporal/events/{event_ref}/deletion-occurrences",
         "get",
     ): "temporal_list_event_deletion_occurrences",
-
 }
 
 

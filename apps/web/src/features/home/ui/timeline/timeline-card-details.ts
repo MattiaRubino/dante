@@ -14,7 +14,9 @@ type CardDetails = Readonly<{
 type LoadedCardDetails = Readonly<{ key: string; details: CardDetails }>;
 
 /** Presentation data only; the Timeline Schedule remains the placement authority. */
-export function useTimelineCardDetails(event: TimelineEvent): CardDetails | null {
+export function useTimelineCardDetails(
+  event: TimelineEvent,
+): CardDetails | null {
   const basis = event.canonicalBasis;
   const kind = basis?.kind;
   const subjectRef =
@@ -30,7 +32,8 @@ export function useTimelineCardDetails(event: TimelineEvent): CardDetails | null
   const [revision, setRevision] = useState(0);
 
   useEffect(
-    () => subscribeTemporalTimelineInvalidation(() => setRevision((n) => n + 1)),
+    () =>
+      subscribeTemporalTimelineInvalidation(() => setRevision((n) => n + 1)),
     [],
   );
 
@@ -40,7 +43,8 @@ export function useTimelineCardDetails(event: TimelineEvent): CardDetails | null
     const controller = new AbortController();
     const load = async (): Promise<CardDetails> => {
       if (kind === 'scheduled-activity') {
-        const snapshot = await createRemoteActivityEditSettings().load(subjectRef);
+        const snapshot =
+          await createRemoteActivityEditSettings().load(subjectRef);
         return {
           lifeAreaRef: snapshot.lifeAreaRef,
           objectiveCount: snapshot.objectives.length,

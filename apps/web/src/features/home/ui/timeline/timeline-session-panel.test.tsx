@@ -213,9 +213,7 @@ describe('Timeline Session panel integration', () => {
     // After main Stop, those early-ready rows disappear again until preview.
     current = feed([]);
     fireEvent(window, new Event('dante:session-changed'));
-    await waitFor(() =>
-      expect(screen.queryByRole('complementary')).toBeNull(),
-    );
+    await waitFor(() => expect(screen.queryByRole('complementary')).toBeNull());
   });
 
   it('executes start → pause → resume → stop with CSRF and accepted CAS; reads once per panel, not per row', async () => {

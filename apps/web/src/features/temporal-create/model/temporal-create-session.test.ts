@@ -40,8 +40,9 @@ describe('timed one-minute Activity/Event validation', () => {
           ...oneMinute,
           durationMinutes: minutes,
         });
-        expect(validateTemporalCreateFields(invalid).map((issue) => issue.code))
-          .toContain('temporal.create.duration.invalid');
+        expect(
+          validateTemporalCreateFields(invalid).map((issue) => issue.code),
+        ).toContain('temporal.create.duration.invalid');
       }
     },
   );

@@ -69,7 +69,9 @@ describe('Timeline pointer drag geometry stability', () => {
     );
     const section = () =>
       container.querySelector<HTMLElement>('.timeline-day-section');
-    const card = container.querySelector<HTMLElement>('[data-timeline-event="7"]');
+    const card = container.querySelector<HTMLElement>(
+      '[data-timeline-event="7"]',
+    );
     expect(card).not.toBeNull();
     if (!card) return;
     const pointer = {
@@ -83,7 +85,11 @@ describe('Timeline pointer drag geometry stability', () => {
     // JSDOM's PointerEvent implementation varies across Node versions.
     // Dispatch with explicit PointerEvent properties so React and the native
     // document listeners receive the same primary mouse pointer identity.
-    const pointerEvent = (type: string, target: Document | HTMLElement, clientY: number) => {
+    const pointerEvent = (
+      type: string,
+      target: Document | HTMLElement,
+      clientY: number,
+    ) => {
       const event = new MouseEvent(type, {
         bubbles: true,
         cancelable: true,
@@ -100,7 +106,9 @@ describe('Timeline pointer drag geometry stability', () => {
     };
     pointerEvent('pointerdown', card, pointer.clientY);
     pointerEvent('pointermove', document, 190);
-    expect(document.querySelector('.timeline-event-drag-overlay')).not.toBeNull();
+    expect(
+      document.querySelector('.timeline-event-drag-overlay'),
+    ).not.toBeNull();
     expect(props.onDragActiveChange).toHaveBeenCalledWith(true);
 
     rerender(

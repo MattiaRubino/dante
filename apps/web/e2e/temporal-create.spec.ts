@@ -443,41 +443,59 @@ async function emptyTimedCanvasPoint(
   day: VisibleTimelineDay,
   travel = 0,
 ): Promise<{ x: number; y: number }> {
-  return day.section.evaluate((section, { requiredTravel, timedTop }) => {
-    const sectionRect = section.getBoundingClientRect();
-    const grid = section.closest('.timeline-grid');
-    const gridRect = grid?.getBoundingClientRect();
-    if (!gridRect) throw new Error('No Timeline grid for timed Create.');
-    const left = Math.max(sectionRect.left + 20, gridRect.left + 20, 20);
-    const right = Math.min(sectionRect.right - 20, gridRect.right - 20, window.innerWidth - 20);
-    const top = Math.max(
-      sectionRect.top + Math.max(20, timedTop + 20),
-      gridRect.top + 20,
-      20,
-    );
-    const bottom = Math.min(sectionRect.bottom - 20, gridRect.bottom - 20, window.innerHeight - 20);
-    const available = bottom - top - requiredTravel;
-    if (right <= left || available < 20) throw new Error('Timed canvas not visible.');
-    const clear = (x: number, y: number) => {
-      const hit = document.elementFromPoint(x, y);
-      return !!hit && section.contains(hit) &&
-        !hit.closest('.timeline-event-card,button,input,select,.timeline-milestone,.timeline-margin-label');
-    };
-    // Prefer the area to the right of scheduled content; test the whole
-    // path rather than a single point, since Shift+drag spans time.
-    for (const xf of [0.92, 0.75, 0.55, 0.35, 0.15]) {
-      const x = left + (right - left) * xf;
-      for (const yf of [0.12, 0.32, 0.52, 0.72, 0.92]) {
-        const y = top + available * yf;
-        if (
-          clear(x, y) &&
-          clear(x, y + requiredTravel * 0.5) &&
-          clear(x, y + requiredTravel)
-        ) return { x, y };
+  return day.section.evaluate(
+    (section, { requiredTravel, timedTop }) => {
+      const sectionRect = section.getBoundingClientRect();
+      const grid = section.closest('.timeline-grid');
+      const gridRect = grid?.getBoundingClientRect();
+      if (!gridRect) throw new Error('No Timeline grid for timed Create.');
+      const left = Math.max(sectionRect.left + 20, gridRect.left + 20, 20);
+      const right = Math.min(
+        sectionRect.right - 20,
+        gridRect.right - 20,
+        window.innerWidth - 20,
+      );
+      const top = Math.max(
+        sectionRect.top + Math.max(20, timedTop + 20),
+        gridRect.top + 20,
+        20,
+      );
+      const bottom = Math.min(
+        sectionRect.bottom - 20,
+        gridRect.bottom - 20,
+        window.innerHeight - 20,
+      );
+      const available = bottom - top - requiredTravel;
+      if (right <= left || available < 20)
+        throw new Error('Timed canvas not visible.');
+      const clear = (x: number, y: number) => {
+        const hit = document.elementFromPoint(x, y);
+        return (
+          !!hit &&
+          section.contains(hit) &&
+          !hit.closest(
+            '.timeline-event-card,button,input,select,.timeline-milestone,.timeline-margin-label',
+          )
+        );
+      };
+      // Prefer the area to the right of scheduled content; test the whole
+      // path rather than a single point, since Shift+drag spans time.
+      for (const xf of [0.92, 0.75, 0.55, 0.35, 0.15]) {
+        const x = left + (right - left) * xf;
+        for (const yf of [0.12, 0.32, 0.52, 0.72, 0.92]) {
+          const y = top + available * yf;
+          if (
+            clear(x, y) &&
+            clear(x, y + requiredTravel * 0.5) &&
+            clear(x, y + requiredTravel)
+          )
+            return { x, y };
+        }
       }
-    }
-    throw new Error('No unobstructed timed canvas for contextual Create.');
-  }, { requiredTravel: travel, timedTop: day.visibleTop });
+      throw new Error('No unobstructed timed canvas for contextual Create.');
+    },
+    { requiredTravel: travel, timedTop: day.visibleTop },
+  );
 }
 
 test('double-click and Shift-drag only use the timed canvas for contextual Create', async ({

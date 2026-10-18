@@ -41,17 +41,14 @@ function buildReferenceDays() {
 }
 
 describe('timeline viewport runtime', () => {
-  it('never rounds manual card moves or keyboard nudges to a five-minute grid', () => {
-    for (const zoom of [
-      TIMELINE_POLICY.zoom.min,
-      1,
-      TIMELINE_POLICY.zoom.precisionThreshold,
-      TIMELINE_POLICY.zoom.max,
-    ]) {
-      expect(timelineDragSnapMinutes(zoom)).toBe(1);
-    }
+  it('uses one-minute movement only at precision zoom', () => {
+    expect(timelineDragSnapMinutes(TIMELINE_POLICY.zoom.min)).toBe(15);
+    expect(timelineDragSnapMinutes(1)).toBe(15);
+    expect(
+      timelineDragSnapMinutes(TIMELINE_POLICY.zoom.precisionThreshold),
+    ).toBe(1);
+    expect(timelineDragSnapMinutes(TIMELINE_POLICY.zoom.max)).toBe(1);
   });
-
 
   it('parses external view dates defensively', () => {
     expect(parseTimelineViewedDate('2034-02-17')?.toString()).toBe(
@@ -299,13 +296,17 @@ describe('timeline viewport runtime', () => {
   it('keeps DOM card width invariant as group tracks expand and collision lanes change', () => {
     const previousWidth = window.innerWidth;
     Object.defineProperty(window, 'innerWidth', {
-      configurable: true, value: 1440,
+      configurable: true,
+      value: 1440,
     });
     try {
       const root = document.createElement('div');
       root.dataset.timelineView = 'timeline';
       const grid = document.createElement('div');
-      Object.defineProperty(grid, 'clientWidth', { configurable: true, value: 980 });
+      Object.defineProperty(grid, 'clientWidth', {
+        configurable: true,
+        value: 980,
+      });
       const stream = document.createElement('div');
       stream.className = 'timeline-day-stream';
       const day = document.createElement('section');
@@ -358,7 +359,8 @@ describe('timeline viewport runtime', () => {
       expect(parseFloat(cards[2]!.style.width)).toBe(414);
     } finally {
       Object.defineProperty(window, 'innerWidth', {
-        configurable: true, value: previousWidth,
+        configurable: true,
+        value: previousWidth,
       });
     }
   });
@@ -376,7 +378,13 @@ describe('timeline viewport runtime', () => {
     for (const lane of [0, 1, 2, 3]) {
       for (const progress of [0, 0.2, 0.5, 0.8, 1]) {
         const card = timelinePackedCardGeometry(
-          expected, lane, 1, lane, pitch, 3 * pitch, progress,
+          expected,
+          lane,
+          1,
+          lane,
+          pitch,
+          3 * pitch,
+          progress,
         );
         expect(card.width).toBe(expected);
       }
@@ -396,11 +404,41 @@ describe('timeline viewport runtime', () => {
       { id: 'other', label: 'Other', tone: 'creative' },
     ];
     const source: readonly TimelineEvent[] = [
-      { id: 'a', title: 'A', groupId: 'work', startMinute: 720, endMinute: 750 },
-      { id: 'b', title: 'B', groupId: 'home', startMinute: 720, endMinute: 750 },
-      { id: 'c', title: 'C', groupId: 'home', startMinute: 721, endMinute: 722 },
-      { id: 'd', title: 'D', groupId: 'other', startMinute: 722, endMinute: 752 },
-      { id: 'e', title: 'E', groupId: 'work', startMinute: 800, endMinute: 825 },
+      {
+        id: 'a',
+        title: 'A',
+        groupId: 'work',
+        startMinute: 720,
+        endMinute: 750,
+      },
+      {
+        id: 'b',
+        title: 'B',
+        groupId: 'home',
+        startMinute: 720,
+        endMinute: 750,
+      },
+      {
+        id: 'c',
+        title: 'C',
+        groupId: 'home',
+        startMinute: 721,
+        endMinute: 722,
+      },
+      {
+        id: 'd',
+        title: 'D',
+        groupId: 'other',
+        startMinute: 722,
+        endMinute: 752,
+      },
+      {
+        id: 'e',
+        title: 'E',
+        groupId: 'work',
+        startMinute: 800,
+        endMinute: 825,
+      },
     ];
     const mapper = {
       height: 2880,
@@ -417,16 +455,22 @@ describe('timeline viewport runtime', () => {
           : event,
       );
       const layouts = computeTimelineEventLayouts(events, groups, mapper);
-      const widths = layouts.map((layout) => timelineStableCardWidth(
-        layout.event.title,
-        layout.event.canonicalBasis?.kind === 'scheduled-activity',
-      ));
-      const pitch = Math.max(
-        TIMELINE_POLICY.layout.activityCardMinimumWidthPx, ...widths,
-      ) + TIMELINE_POLICY.layout.cardLaneGapPx;
-      const groupsLanes = Math.max(...layouts.map((layout) => layout.groupLaneCount));
+      const widths = layouts.map((layout) =>
+        timelineStableCardWidth(
+          layout.event.title,
+          layout.event.canonicalBasis?.kind === 'scheduled-activity',
+        ),
+      );
+      const pitch =
+        Math.max(TIMELINE_POLICY.layout.activityCardMinimumWidthPx, ...widths) +
+        TIMELINE_POLICY.layout.cardLaneGapPx;
+      const groupsLanes = Math.max(
+        ...layouts.map((layout) => layout.groupLaneCount),
+      );
       const groupedWidth = timelineExpandedTrackGeometry(
-        1560, groups.length, pitch * groupsLanes,
+        1560,
+        groups.length,
+        pitch * groupsLanes,
       ).groupWidth;
       for (const progress of [0, 0.1, 0.25, 0.5, 0.75, 0.9, 1]) {
         const geometries = layouts.map((layout, index) =>
@@ -449,8 +493,7 @@ describe('timeline viewport runtime', () => {
             const x = geometries[left]!;
             const y = geometries[right]!;
             expect(
-              x.left + x.width + 1 <= y.left ||
-              y.left + y.width + 1 <= x.left,
+              x.left + x.width + 1 <= y.left || y.left + y.width + 1 <= x.left,
               `Overlap at move=${moveTo}, expansion=${progress}, ${a.event.id}/${b.event.id}`,
             ).toBe(true);
           }
@@ -465,8 +508,24 @@ describe('timeline viewport runtime', () => {
     const grouped = timelineExpandedTrackGeometry(1100, 4, pitch * 3);
     expect(grouped.groupWidth).toBeGreaterThanOrEqual(pitch * 3);
     expect(grouped.expandedTrackWidth).toBeGreaterThan(1100);
-    const left = timelinePackedCardGeometry(width, 0, 2, 0, pitch, grouped.groupWidth, 1);
-    const right = timelinePackedCardGeometry(width, 1, 2, 1, pitch, grouped.groupWidth, 1);
+    const left = timelinePackedCardGeometry(
+      width,
+      0,
+      2,
+      0,
+      pitch,
+      grouped.groupWidth,
+      1,
+    );
+    const right = timelinePackedCardGeometry(
+      width,
+      1,
+      2,
+      1,
+      pitch,
+      grouped.groupWidth,
+      1,
+    );
     expect(left.width).toBe(width);
     expect(right.width).toBe(width);
     expect(right.left).toBeGreaterThanOrEqual(left.left + width);

@@ -725,14 +725,13 @@
 }
 
 .temporal-create-composer
-  .temporal-create-reality-objectives__block-copy strong {
+  .temporal-create-reality-objectives__block-copy
+  strong {
   font-size: 13px;
 }
 
-.temporal-create-composer
-  .temporal-create-reality-objectives__block-copy span,
-.temporal-create-composer
-  .temporal-create-reality-objectives__heading p {
+.temporal-create-composer .temporal-create-reality-objectives__block-copy span,
+.temporal-create-composer .temporal-create-reality-objectives__heading p {
   font-size: 12px;
 }
 
@@ -761,8 +760,12 @@
 }
 
 .temporal-create-composer
-  :is(.temporal-create-type-grid > button, .temporal-create-choice-row > button,
-    .temporal-create-segmented > button, .temporal-create-reality-mode > button) {
+  :is(
+    .temporal-create-type-grid > button,
+    .temporal-create-choice-row > button,
+    .temporal-create-segmented > button,
+    .temporal-create-reality-mode > button
+  ) {
   overflow: hidden;
   text-overflow: ellipsis;
 }
@@ -787,14 +790,13 @@
 }
 
 .temporal-create-composer
-  .temporal-create-reality-objectives__block-copy strong {
+  .temporal-create-reality-objectives__block-copy
+  strong {
   font-size: 14px;
 }
 
-.temporal-create-composer
-  .temporal-create-reality-objectives__block-copy span,
-.temporal-create-composer
-  .temporal-create-reality-objectives__heading p {
+.temporal-create-composer .temporal-create-reality-objectives__block-copy span,
+.temporal-create-composer .temporal-create-reality-objectives__heading p {
   font-size: 12.5px;
 }
 
@@ -829,8 +831,7 @@
   white-space: nowrap;
 }
 
-.temporal-create-composer
-  .temporal-create-advanced-toggle > span:first-child {
+.temporal-create-composer .temporal-create-advanced-toggle > span:first-child {
   min-width: 0;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -886,7 +887,10 @@
 
 .temporal-create-backdrop.is-advanced
   .temporal-create-composer.is-advanced
-  :is(.temporal-create-reality-mode > button, .temporal-create-actions > button) {
+  :is(
+    .temporal-create-reality-mode > button,
+    .temporal-create-actions > button
+  ) {
   min-width: 0;
   overflow: hidden;
   text-overflow: ellipsis;

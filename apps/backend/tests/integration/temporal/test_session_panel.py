@@ -210,9 +210,7 @@ async def test_main_started_before_preview_exposes_all_children_and_preserves_ca
         assert all(row.execution is None for row in group.rows[1:])
         assert all(row.starts_at is None for row in group.rows[1:])
         assert len({row.planned_schedule_ref for row in group.rows[1:]}) == 2
-        outsider_panel = await get_session_panel(
-            _fake_context(outsider), request, Response()
-        )
+        outsider_panel = await get_session_panel(_fake_context(outsider), request, Response())
         assert all(group.activity_ref != activity for group in outsider_panel.groups)
 
         # Explicit early child Play works once the main is running. Stopping
@@ -325,7 +323,8 @@ async def test_past_unstarted_review_pauses_on_main_play_and_returns_for_childre
         activity = created.item.subject_native_ref
         initial = await list_resolution_queue(request, context)
         pending = [
-            item for item in initial.items
+            item
+            for item in initial.items
             if item.subject_ref == activity and item.reason_code == "session_unstarted"
         ]
         assert {item.summary for item in pending} == {
@@ -359,11 +358,13 @@ async def test_past_unstarted_review_pauses_on_main_play_and_returns_for_childre
         assert not ended.open
         stopped = await list_resolution_queue(request, context)
         remaining = [
-            item for item in stopped.items
+            item
+            for item in stopped.items
             if item.subject_ref == activity and item.reason_code == "session_unstarted"
         ]
         assert {item.summary for item in remaining} == {
-            "Ripasso · mai avviata", "Esercizi · mai avviata",
+            "Ripasso · mai avviata",
+            "Esercizi · mai avviata",
         }
         assert all(item.planned_schedule_ref is not None for item in remaining)
     finally:

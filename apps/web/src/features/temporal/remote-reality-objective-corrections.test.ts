@@ -18,25 +18,23 @@ describe('M2 Objective corrections', () => {
     let accepted = false;
     const refresh = vi.fn();
     const unsubscribe = subscribeTemporalTimelineInvalidation(refresh);
-    const fetchFn = vi.fn(
-      (input: RequestInfo | URL): Promise<Response> => {
-        const uri =
-          typeof input === 'string'
-            ? input
-            : input instanceof URL
-              ? input.href
-              : input.url;
-        if (uri.endsWith('/auth/session'))
-          return Promise.resolve(
-            response({ authenticated: true, csrf_token: 'csrf' }),
-          );
-        if (uri.endsWith('/objective-edits'))
-          return Promise.resolve(
-            accepted ? response([]) : response({ detail: 'Conflict' }, 409),
-          );
-        throw new Error(`Unexpected request ${uri}`);
-      },
-    );
+    const fetchFn = vi.fn((input: RequestInfo | URL): Promise<Response> => {
+      const uri =
+        typeof input === 'string'
+          ? input
+          : input instanceof URL
+            ? input.href
+            : input.url;
+      if (uri.endsWith('/auth/session'))
+        return Promise.resolve(
+          response({ authenticated: true, csrf_token: 'csrf' }),
+        );
+      if (uri.endsWith('/objective-edits'))
+        return Promise.resolve(
+          accepted ? response([]) : response({ detail: 'Conflict' }, 409),
+        );
+      throw new Error(`Unexpected request ${uri}`);
+    });
     const source = createRemoteRealityObjectiveDataSource(fetchFn);
     const edit = { add: [], revise: [], retire: [] };
     try {

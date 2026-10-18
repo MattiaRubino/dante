@@ -51,9 +51,10 @@ test('Create stays in the desktop Context Rail, keeps Timeline scroll available,
   expect(quickBox.x + quickBox.width, geometry).toBeLessThanOrEqual(
     railBox.x + railBox.width + 1,
   );
-  expect(Math.abs(quickBox.height - railBox.height), geometry).toBeLessThanOrEqual(
-    2,
-  );
+  expect(
+    Math.abs(quickBox.height - railBox.height),
+    geometry,
+  ).toBeLessThanOrEqual(2);
 
   const backdrop = page.locator('[data-temporal-create="backdrop"]');
   const backdropStyle = await backdrop.evaluate((element) => {
@@ -150,7 +151,9 @@ test('Quick Create keeps the Timeline rail origin and height while its fields ch
   const assertRailGeometry = async () => {
     // The replacement must not shrink during the generic Create entrance.
     expect(
-      await dialog.evaluate((element) => getComputedStyle(element).animationName),
+      await dialog.evaluate(
+        (element) => getComputedStyle(element).animationName,
+      ),
     ).toBe('none');
     const [timelineBox, railBox, quickBox] = await Promise.all([
       timeline.boundingBox(),

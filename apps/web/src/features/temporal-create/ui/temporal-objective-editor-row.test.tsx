@@ -1,5 +1,11 @@
 // @vitest-environment jsdom
-import { cleanup, fireEvent, render, screen, within } from '@testing-library/react';
+import {
+  cleanup,
+  fireEvent,
+  render,
+  screen,
+  within,
+} from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import type { TemporalCreateObjectiveDraft } from '../model/temporal-create-u2-authoring';
@@ -62,9 +68,15 @@ describe('shared Objective row presentation', () => {
         '.temporal-create-objective__definition label',
       ),
     ).toHaveLength(labels);
-    expect(screen.getByRole('textbox', { name: 'Nome obiettivo' })).toBeTruthy();
-    expect(screen.getByRole('combobox', { name: 'Tipo obiettivo' })).toBeTruthy();
-    expect(screen.getByRole('spinbutton', { name: 'Valore obiettivo' })).toBeTruthy();
+    expect(
+      screen.getByRole('textbox', { name: 'Nome obiettivo' }),
+    ).toBeTruthy();
+    expect(
+      screen.getByRole('combobox', { name: 'Tipo obiettivo' }),
+    ).toBeTruthy();
+    expect(
+      screen.getByRole('spinbutton', { name: 'Valore obiettivo' }),
+    ).toBeTruthy();
     expect(
       screen.getByRole('button', { name: 'Rimuovi obiettivo Corsa' }),
     ).toBeTruthy();
@@ -83,7 +95,9 @@ describe('shared Objective row presentation', () => {
       { target: { value: 'range' } },
     );
     expect(control.changeKind).toHaveBeenCalledWith('local-objective', 'range');
-    fireEvent.click(screen.getByRole('button', { name: 'Sposta obiettivo giù' }));
+    fireEvent.click(
+      screen.getByRole('button', { name: 'Sposta obiettivo giù' }),
+    );
     expect(control.move).toHaveBeenCalledWith(0, 1);
     fireEvent.click(screen.getByRole('button', { name: 'Rimuovi obiettivo' }));
     expect(control.remove).toHaveBeenCalledWith('local-objective');
@@ -108,15 +122,13 @@ describe('shared Objective row presentation', () => {
     expect(row).not.toBeNull();
     if (!row) return;
     for (const element of within(row).getAllByRole('button')) {
-      expect((element as HTMLButtonElement).disabled).toBe(true);
+      expect(element.hasAttribute('disabled')).toBe(true);
     }
     expect(
-      (screen.getByRole('textbox', { name: 'Nome obiettivo' }) as HTMLInputElement)
-        .disabled,
-    ).toBe(true);
+      screen.getByRole('textbox', { name: 'Nome obiettivo' }),
+    ).toHaveProperty('disabled', true);
     expect(
-      (screen.getByRole('combobox', { name: 'Tipo obiettivo' }) as HTMLSelectElement)
-        .disabled,
-    ).toBe(true);
+      screen.getByRole('combobox', { name: 'Tipo obiettivo' }),
+    ).toHaveProperty('disabled', true);
   });
 });

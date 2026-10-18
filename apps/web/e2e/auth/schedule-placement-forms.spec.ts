@@ -193,11 +193,17 @@ async function assertPlanningTrayContainsActivity(
     items: Array<{ activity_ref: string; title: string }>;
   };
   expect(payload.kind).toBe('unplaced');
-  expect(payload.items.filter((item) => item.activity_ref === activityRef)).toHaveLength(1);
-  await expect(page.locator(`[data-timeline-event="${activityRef}"]`)).toHaveCount(0);
+  expect(
+    payload.items.filter((item) => item.activity_ref === activityRef),
+  ).toHaveLength(1);
+  await expect(
+    page.locator(`[data-timeline-event="${activityRef}"]`),
+  ).toHaveCount(0);
   await page.getByRole('button', { name: 'Apri Bozze' }).click();
   await expect(
-    page.locator(`[data-timeline-draft-vault="true"] [data-temporal-subject-ref="${activityRef}"]`),
+    page.locator(
+      `[data-timeline-draft-vault="true"] [data-temporal-subject-ref="${activityRef}"]`,
+    ),
   ).toHaveCount(0);
   await page.getByRole('button', { name: 'Chiudi Bozze' }).click();
 }
@@ -405,8 +411,8 @@ test.describe('Timeline B02-E full-stack Schedule forms', () => {
       expect(body.envelope).toMatchObject({
         schedule_ref: scheduleRef,
         expected_material_state_ref: created.placement_material_state_ref,
-        starts_local_at: `${day}T10:05:00`,
-        ends_local_at: `${day}T11:05:00`,
+        starts_local_at: `${day}T10:15:00`,
+        ends_local_at: `${day}T11:15:00`,
       });
       expect(body.session_disposition).toBeUndefined();
 
@@ -418,9 +424,9 @@ test.describe('Timeline B02-E full-stack Schedule forms', () => {
       const persisted = window.items?.find(
         (item) => item.schedule_ref === scheduleRef,
       );
-      expect(String(persisted?.starts_local_at)).toContain(`${day}T10:05`);
-      expect(String(persisted?.ends_local_at)).toContain(`${day}T11:05`);
-      await expect(card).toHaveAttribute('aria-label', /10:05/);
+      expect(String(persisted?.starts_local_at)).toContain(`${day}T10:15`);
+      expect(String(persisted?.ends_local_at)).toContain(`${day}T11:15`);
+      await expect(card).toHaveAttribute('aria-label', /10:15/);
     } finally {
       await context.close();
     }

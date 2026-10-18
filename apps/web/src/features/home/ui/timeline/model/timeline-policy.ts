@@ -42,7 +42,7 @@ export const TIMELINE_POLICY = {
   },
   drag: {
     defaultSnapMinutes: 15,
-    precisionSnapMinutes: 15,
+    precisionSnapMinutes: 1,
     activationDistancePx: 7,
     autoScrollEdgePx: 56,
     autoScrollMinPxPerSecond: 100,
@@ -190,7 +190,6 @@ export function timelineSupportsExpandedLayout(viewportWidth: number): boolean {
   return viewportWidth >= TIMELINE_POLICY.viewport.expandedMinWidthPx;
 }
 
-
 /**
  * Immutable presentation width for one Activity/Event. The title is permitted
  * to enlarge a card within a hard cap; excessively long titles are ellipsized
@@ -204,9 +203,8 @@ export function timelineStableCardWidth(
   const minimum = activity
     ? policy.activityCardMinimumWidthPx
     : policy.eventCardMinimumWidthPx;
-  const additional = Math.max(
-    0,
-    title.length - policy.cardLongTitleThreshold,
-  ) * policy.cardLongTitleGrowthPerCharacterPx;
+  const additional =
+    Math.max(0, title.length - policy.cardLongTitleThreshold) *
+    policy.cardLongTitleGrowthPerCharacterPx;
   return Math.min(policy.cardMaximumWidthPx, minimum + additional);
 }

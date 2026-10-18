@@ -232,19 +232,27 @@ describe('Temporal Create U1 top controls', () => {
         within(screen.getByRole('group', { name: 'Fine' })).getByText('1 min'),
       ).toBeTruthy();
 
-      fireEvent.click(screen.getByRole('button', { name: 'Fine: scegli orario' }));
+      fireEvent.click(
+        screen.getByRole('button', { name: 'Fine: scegli orario' }),
+      );
       const picker = screen.getByRole('dialog', { name: 'Fine' });
       const custom = within(picker).getByRole('button', { name: '10:31' });
       expect(custom.classList.contains('is-selected')).toBe(true);
       expect(
-        within(picker).getByRole('button', { name: '10:30' }).classList.contains('is-selected'),
+        within(picker)
+          .getByRole('button', { name: '10:30' })
+          .classList.contains('is-selected'),
       ).toBe(false);
       fireEvent.click(custom);
       expect(clockValues().end.value).toBe('10:31');
 
-      fireEvent.click(screen.getByRole('button', { name: 'Fine: aumenta 1 minuto' }));
+      fireEvent.click(
+        screen.getByRole('button', { name: 'Fine: aumenta 1 minuto' }),
+      );
       expect(clockValues().end.value).toBe('10:32');
-      fireEvent.click(screen.getByRole('button', { name: 'Fine: diminuisci 1 minuto' }));
+      fireEvent.click(
+        screen.getByRole('button', { name: 'Fine: diminuisci 1 minuto' }),
+      );
       expect(clockValues().end.value).toBe('10:31');
 
       setClock('Inizio', '10:29');

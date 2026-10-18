@@ -40,7 +40,6 @@ async function cardBodyPoint(card: Locator): Promise<{ x: number; y: number }> {
   });
 }
 
-
 test('custom event dragging never falls back to a native browser drag ghost', async ({
   page,
 }) => {

@@ -2993,6 +2993,16 @@
       "audit_note": "Needs contract/assertion review, rejection cases, and executable evidence; filename alone is not proof."
     },
     {
+      "path": "apps/web/e2e/temporal-create-unified-ui.spec.ts",
+      "suite": "browser-fixture",
+      "contract_id": "T01",
+      "candidate_behavior": "Create and Activity Edit shared authoring geometry",
+      "purpose": "Verify shared timing controls and title-header geometry in a real browser fixture.",
+      "invariant": "An empty-title validation error cannot stretch the Advanced title row or displace its header actions.",
+      "status": "QUALIFIED",
+      "audit_note": "Covers the browser geometry boundary for the unified Create/Edit authoring surface."
+    },
+    {
       "path": "apps/web/e2e/timeline-controls.spec.ts",
       "suite": "browser-fixture",
       "contract_id": "P-OTHER",
@@ -3523,6 +3533,16 @@
       "audit_note": "Needs contract/assertion review, rejection cases, and executable evidence; filename alone is not proof."
     },
     {
+      "path": "apps/web/src/features/home/ui/timeline/timeline-drag-geometry.test.tsx",
+      "suite": "web-unit-component",
+      "contract_id": "T02",
+      "candidate_behavior": "Timeline drag geometry during elastic density changes",
+      "purpose": "Verify that dragging preserves its initial geometry while live density updates and restores the mapper after drop.",
+      "invariant": "A live density update cannot make an in-progress drag jump to a different time coordinate.",
+      "status": "QUALIFIED",
+      "audit_note": "Covers the interaction boundary between drag state and elastic Timeline geometry."
+    },
+    {
       "path": "apps/web/src/features/home/ui/timeline/timeline-event-agenda-editor.test.tsx",
       "suite": "web-unit-component",
       "contract_id": "T04",
@@ -3941,6 +3961,16 @@
       "invariant": "",
       "status": "UNREVIEWED",
       "audit_note": "Needs contract/assertion review, rejection cases, and executable evidence; filename alone is not proof."
+    },
+    {
+      "path": "apps/web/src/features/temporal-create/ui/temporal-objective-editor-row.test.tsx",
+      "suite": "web-unit-component",
+      "contract_id": "T09",
+      "candidate_behavior": "Shared Objective row editing",
+      "purpose": "Verify identical Create/Edit Objective controls, owner callback routing and pending-state disabling.",
+      "invariant": "An Objective edit keeps its owner-specific callback while pending mutations disable every interactive control.",
+      "status": "QUALIFIED",
+      "audit_note": "Covers the shared Objective editor component used by Create and Activity Edit."
     },
     {
       "path": "apps/web/src/features/temporal/activity-planned-sessions-card-detail.test.tsx",

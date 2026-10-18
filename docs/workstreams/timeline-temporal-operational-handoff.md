@@ -1,5 +1,28 @@
 # Timeline / Temporal-Operational — Workstream Handoff
 
+## 2026-10-18 — Parallel-gate remediation
+
+The first complete WSL parallel gate on commit `412050a` was source-stable
+but red. The real functional correction restores the documented Timeline
+precision rule: normal zoom moves in 15-minute increments, while precision
+zoom moves in one-minute increments. Component and browser expectations now
+exercise both modes rather than expecting one-minute movement at the default
+zoom.
+
+The Resolution Queue no longer treats an old main-Session Stop as an
+unstarted review for a later plan: only a plan whose own end has passed can
+become overdue. This preserves the current plan's named child review after a
+Stop while keeping future plans quiet. The remediation also registers the
+three discovered tests and fixes repository formatting, ESLint, Ruff and
+mypy issues reported by that gate.
+
+Local verification: Backend Ruff format/check and mypy are green; the focused
+Session projection tests are 28/28 green; test integrity is green (495
+registered/discovered); Web ESLint, typecheck, Prettier and full Web Vitest
+(224 files, 1124 tests) are green. The owner's WSL gate remains the final
+confirmation: Docker-backed Postgres and authenticated browser suites cannot
+run in this checkout. No global PASS is claimed until that rerun completes.
+
 ## 2026-10-18 — Activity Edit interval parity and Create title error
 
 Activity Edit interval rows now use the same date/time controls, numbered labels,

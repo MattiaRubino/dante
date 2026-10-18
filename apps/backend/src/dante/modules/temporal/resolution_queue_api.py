@@ -105,8 +105,9 @@ def _unstarted_session_items(
 
     Before the first main Play, expired plans need review. While a main
     Session is open (including pause), review is suspended. A real main
-    Stop makes only its never-started named children reviewable again;
-    the main itself was started and is never falsely called unstarted.
+    Stop never makes a future plan overdue; once an expired plan is reviewed,
+    only its never-started named children remain eligible because the main
+    itself was started.
     """
     zone = ZoneInfo(zone_id)
     result: list[ResolutionQueueItem] = []
@@ -122,39 +123,18 @@ def _unstarted_session_items(
             bound is not None and bound[1] <= now for bound in bounds
         )
         plan_ended_at = (
-            max(bound[1] for bound in bounds if bound is not None)
-            if plan_expired
-            else None
+            max(bound[1] for bound in bounds if bound is not None) if plan_expired else None
         )
         history = owner["historical_attempts"]
         main_enabled = owner["mode_code"] in {"live", "record_and_live"}
-        main_attempts = [
-            attempt for attempt in history if attempt["planned_schedule_ref"] is None
-        ]
+        main_attempts = [attempt for attempt in history if attempt["planned_schedule_ref"] is None]
         if main_enabled and any(attempt.get("ended_at") is None for attempt in main_attempts):
             # Play/Pause is an open real Session. No "mai avviata" notices
             # while children can still be started under their active main.
             continue
-        stopped_main_ats = [
-            datetime.fromisoformat(str(attempt["ended_at"]).replace("Z", "+00:00"))
-            for attempt in main_attempts
-            if attempt.get("ended_at") is not None
-        ]
-        last_stop = max(
-            (
-                stopped_at
-                for stopped_at in stopped_main_ats
-                if stopped_at.tzinfo is not None and stopped_at <= now
-            ),
-            default=None,
-        )
-        if plan_ended_at is None and (not main_enabled or last_stop is None):
+        if plan_ended_at is None:
             continue
-        # Stop is an accepted fact; it can require review before the planned
-        # end, and may not rewrite/cancel the accepted Schedule placement.
-        effective_at = max(
-            time for time in (plan_ended_at, last_stop) if time is not None
-        )
+        effective_at = plan_ended_at
         attempted = {
             UUID(str(attempt["planned_schedule_ref"]))
             if attempt["planned_schedule_ref"] is not None

@@ -470,8 +470,7 @@ export function applyTimelineExpansion(
   // Expose horizontal scroll only while the current geometry needs it.
   grid.classList.toggle(
     'is-overflowing',
-    (week ? weekTrackWidth : trackWidth) >
-      viewportWidth + syncTolerance,
+    (week ? weekTrackWidth : trackWidth) > viewportWidth + syncTolerance,
   );
   root.style.setProperty(
     '--timeline-group-opacity',

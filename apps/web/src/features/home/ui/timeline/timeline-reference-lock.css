@@ -125,9 +125,7 @@
   min-width: 0;
 }
 
-.home-m1
-  .home-timeline--production
-  .timeline-event-card__reality-status,
+.home-m1 .home-timeline--production .timeline-event-card__reality-status,
 .home-m1
   .home-timeline--production
   .timeline-activity-planned-sessions__indicator {
@@ -198,25 +196,21 @@
 .home-m1
   .home-timeline--production
   .timeline-event-card__heading
-  .timeline-activity-session-card-controls button {
+  .timeline-activity-session-card-controls
+  button {
   pointer-events: auto;
 }
 
 .home-m1
   .home-timeline--production
-  :is(
-    .timeline-event-card__subitem,
-    .timeline-event-card__expander
-  ) {
+  :is(.timeline-event-card__subitem, .timeline-event-card__expander) {
   cursor: pointer;
 }
 
 /* Title supports click-to-Inspector AND pointer drag. Neither action should
  * display the link/button hand. The existing .is-drag-source rule shows
  * grabbing only after the pointer has crossed the drag threshold. */
-.home-m1
-  .home-timeline--production
-  .timeline-event-card__title {
+.home-m1 .home-timeline--production .timeline-event-card__title {
   cursor: default;
 }
 
@@ -295,7 +289,9 @@
 }
 
 .home-m1 .home-timeline--production .timeline-event-card__indicator,
-.home-m1 .home-timeline--production .timeline-activity-planned-sessions__indicator {
+.home-m1
+  .home-timeline--production
+  .timeline-activity-planned-sessions__indicator {
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -314,9 +310,13 @@
   font-variant-numeric: tabular-nums;
 }
 
-.home-m1 .home-timeline--production .timeline-day-stream.is-week
+.home-m1
+  .home-timeline--production
+  .timeline-day-stream.is-week
   .timeline-event-card__indicator,
-.home-m1 .home-timeline--production .timeline-day-stream.is-week
+.home-m1
+  .home-timeline--production
+  .timeline-day-stream.is-week
   .timeline-activity-planned-sessions__indicator {
   display: none;
 }

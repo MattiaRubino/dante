@@ -30,7 +30,9 @@ describe('minute-exact U2 submit mappings', () => {
       const draft = createTemporalCreateU2AuthoringDraft(fields);
       expect(validateTemporalCreateU2QuickFields(fields)).toEqual([]);
       const result = buildTemporalCreateU2Request(
-        fields, draft, `minute-precision:${kind}`,
+        fields,
+        draft,
+        `minute-precision:${kind}`,
       );
       expect(result.kind).toBe(kind);
       expect(result.request.placement?.kind).toBe('floating-local-interval');
@@ -68,7 +70,9 @@ describe('minute-exact U2 submit mappings', () => {
     });
     expect(validateTemporalCreateU6Structure(fields, draft)).toBeNull();
     const result = buildTemporalCreateU2Request(
-      fields, draft, 'minute-precision:bands',
+      fields,
+      draft,
+      'minute-precision:bands',
     );
     if (result.kind !== 'activity') throw new Error('Expected Activity.');
     const placements = result.request.activityIntervals;

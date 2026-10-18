@@ -391,7 +391,7 @@ test.describe('Timeline B03-E real-stack Event closure', () => {
         'placement_material_state_ref',
       );
       expect(revisedStateRef).not.toBe(initialStateRef);
-      await expect(timedCard).toHaveAttribute('aria-label', /10:05/);
+      await expect(timedCard).toHaveAttribute('aria-label', /10:15/);
 
       const singleDayTitle = `B03 E all-day ${browserTag}`;
       const singleDay = await createScheduledEvent(

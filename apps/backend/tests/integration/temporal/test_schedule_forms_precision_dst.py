@@ -13,7 +13,6 @@ from tests.integration.temporal.support.life_area import ensure_test_life_area
 from dante.auth.contracts import Principal
 from dante.context.contracts import DanteContext
 from dante.modules.temporal.activity import TemporalActivityApplication
-from dante.modules.temporal.event import TemporalEventApplication
 from dante.modules.temporal.application import (
     TemporalTimelineApplication,
     TimelineAbsoluteActivityItem,
@@ -24,6 +23,7 @@ from dante.modules.temporal.application import (
     TimelineNamedZoneLocalActivityItem,
 )
 from dante.modules.temporal.contracts import TimelineWindowQuery
+from dante.modules.temporal.event import TemporalEventApplication
 from dante.modules.temporal.schedule import (
     AbsoluteIntervalPlacement,
     CoarseLocalPeriodPlacement,
@@ -98,7 +98,7 @@ def _context(
 async def test_one_minute_activity_and_event_schedules_remain_exact_across_database_read(
     migrated_database: Any,
 ) -> None:
-    """Authoring, persistence, replan and Timeline must NEVER pad 10:30–10:31."""
+    """Authoring, persistence, replan and Timeline must NEVER pad 10:30-10:31."""
     owner = _seed_self_person(migrated_database)
     area_ref = ensure_test_life_area(migrated_database, owner)
     runtime = create_database_runtime(migrated_database.runtime_settings())
@@ -141,9 +141,11 @@ async def test_one_minute_activity_and_event_schedules_remain_exact_across_datab
         )
         by_title = {item.title: item for item in first_read.items}
         assert len(by_title) == 2
-        assert isinstance(by_title["One minute Activity"], TimelineFloatingLocalActivityItem)
-        assert isinstance(by_title["One minute Event"], TimelineFloatingLocalEventItem)
-        for item in by_title.values():
+        activity_item = by_title["One minute Activity"]
+        event_item = by_title["One minute Event"]
+        assert isinstance(activity_item, TimelineFloatingLocalActivityItem)
+        assert isinstance(event_item, TimelineFloatingLocalEventItem)
+        for item in (activity_item, event_item):
             assert item.starts_local_at == _local(2026, 10, 16, 10, 30)
             assert item.ends_local_at == _local(2026, 10, 16, 10, 31)
 
@@ -165,9 +167,13 @@ async def test_one_minute_activity_and_event_schedules_remain_exact_across_datab
             context=_context(owner),
         )
         assert len(after_replan.items) == 2
-        for item in after_replan.items:
-            assert item.starts_local_at == _local(2026, 10, 16, 10, 37)
-            assert item.ends_local_at == _local(2026, 10, 16, 10, 38)
+        for replanned_item in after_replan.items:
+            assert isinstance(
+                replanned_item,
+                (TimelineFloatingLocalActivityItem, TimelineFloatingLocalEventItem),
+            )
+            assert replanned_item.starts_local_at == _local(2026, 10, 16, 10, 37)
+            assert replanned_item.ends_local_at == _local(2026, 10, 16, 10, 38)
     finally:
         await runtime.dispose()
 

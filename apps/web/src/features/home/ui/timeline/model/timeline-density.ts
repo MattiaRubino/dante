@@ -162,10 +162,7 @@ export function createTimelineTimeMapper(
       0,
       Math.min(minuteCount, Math.floor(event.startMinute)),
     );
-    const to = Math.max(
-      0,
-      Math.min(minuteCount, Math.ceil(event.endMinute)),
-    );
+    const to = Math.max(0, Math.min(minuteCount, Math.ceil(event.endMinute)));
     let alreadyReservedPx = 0;
     for (let minute = from; minute < to; minute += 1) {
       const overlap = Math.max(
@@ -174,10 +171,8 @@ export function createTimelineTimeMapper(
           Math.max(event.startMinute, minute),
       );
       alreadyReservedPx +=
-        Math.max(
-          valueAt(smoothScale, minute),
-          valueAt(requiredScale, minute),
-        ) * overlap;
+        Math.max(valueAt(smoothScale, minute), valueAt(requiredScale, minute)) *
+        overlap;
     }
     const missingPx = Math.max(
       0,
@@ -187,10 +182,8 @@ export function createTimelineTimeMapper(
     const increasePerMinute = missingPx / exactDuration;
     for (let minute = from; minute < to; minute += 1) {
       requiredScale[minute] =
-        Math.max(
-          valueAt(smoothScale, minute),
-          valueAt(requiredScale, minute),
-        ) + increasePerMinute;
+        Math.max(valueAt(smoothScale, minute), valueAt(requiredScale, minute)) +
+        increasePerMinute;
     }
 
     for (

@@ -162,9 +162,12 @@ describe('Home resolution rail', () => {
     future = true;
     // A real main Play publishes this existing event. "Mai avviata"
     // disappears without waiting for the 60-second rail polling cycle.
-    fireEvent(window, new CustomEvent('dante:session-changed', {
-      detail: main.subject_ref,
-    }));
+    fireEvent(
+      window,
+      new CustomEvent('dante:session-changed', {
+        detail: main.subject_ref,
+      }),
+    );
     await waitFor(() =>
       expect(
         within(panel).getByText('Niente da verificare per ora.'),

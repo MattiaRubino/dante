@@ -39,12 +39,14 @@ export function clampTimelineMinute(minute: number): number {
 }
 
 /** Keep the now ruler on the same sub-minute axis as real Session timestamps. */
-export function timelineMinuteOfClock(clock: Readonly<{
-  hour: number;
-  minute: number;
-  second: number;
-  millisecond: number;
-}>): number {
+export function timelineMinuteOfClock(
+  clock: Readonly<{
+    hour: number;
+    minute: number;
+    second: number;
+    millisecond: number;
+  }>,
+): number {
   return (
     clock.hour * 60 +
     clock.minute +

@@ -179,7 +179,6 @@ test.describe('Timeline B01 canonical Activity vertical', () => {
         ),
       ).toHaveLength(1);
 
-
       await expect(page.locator('[data-timeline-event]')).toHaveCount(0);
       await page.getByRole('button', { name: 'Apri Bozze' }).click();
       await expect(
