@@ -1562,7 +1562,7 @@
   border-radius: 18px;
   border-color: color-mix(
     in srgb,
-    var(--dante-semantic-color-home-chrome-active, #ea5c12) 28%,
+    var(--timeline-inspector-accent, #ea5c12) 72%,
     var(--dante-semantic-color-home-border-subtle)
   );
   background:
@@ -1605,17 +1605,16 @@
   min-width: 0;
 }
 
-.timeline-event-modal--inspector
-  .timeline-event-modal__title-row
-  .timeline-event-modal__title {
-  min-width: 0;
+.timeline-event-modal--inspector .timeline-event-modal__context {
+  margin: -2px 0 8px;
+  color: var(--dante-semantic-color-home-text-muted, #8f9bad);
+  font-size: 12px;
 }
 
 .timeline-event-modal--inspector
   .timeline-event-modal__title-row
-  .timeline-activity-session-card-controls {
-  flex: 0 0 auto;
-  align-self: flex-start;
+  .timeline-event-modal__title {
+  min-width: 0;
 }
 
 .timeline-event-modal--inspector .timeline-event-modal__time,
@@ -1623,6 +1622,93 @@
   margin: 0 0 6px;
   font-size: 13px;
   color: var(--dante-semantic-color-home-text-secondary, #b2bdc1);
+}
+
+.timeline-event-modal--inspector .timeline-event-modal__schedule-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 4px 12px;
+  margin-bottom: 16px;
+}
+
+.timeline-event-modal--inspector
+  .timeline-event-modal__schedule-row
+  .timeline-event-modal__time {
+  min-width: 0;
+  margin: 0;
+  font-size: 13px;
+  line-height: 1.4;
+}
+
+.timeline-event-modal--inspector
+  .timeline-event-modal__schedule-row
+  :is(.timeline-activity-session-card-controls, .timeline-session-controls) {
+  display: contents;
+}
+
+.timeline-event-modal--inspector
+  .timeline-event-modal__schedule-row
+  .timeline-session-controls__runtime-actions {
+  grid-column: 2;
+  grid-row: 1;
+}
+
+.timeline-event-modal--inspector .timeline-session-controls__inspector-summary {
+  min-width: 0;
+  color: var(--dante-semantic-color-home-text-secondary, #b9c6d5);
+  font-size: 12px;
+  font-variant-numeric: tabular-nums;
+  line-height: 1.4;
+}
+
+.timeline-event-modal--inspector
+  .timeline-event-modal__schedule-row
+  .timeline-session-controls__inspector-summary {
+  grid-column: 1 / -1;
+  grid-row: 2;
+}
+
+.timeline-event-modal--inspector
+  :is(.timeline-event-modal__life-area, .timeline-event-modal__description) {
+  margin-top: 18px;
+}
+
+.timeline-event-modal--inspector
+  :is(.timeline-event-modal__life-area, .timeline-event-modal__description)
+  h4 {
+  margin: 0 0 8px;
+  color: var(--dante-semantic-color-home-text-muted, #aebbc7);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.timeline-event-modal--inspector
+  .timeline-event-modal__life-area
+  .timeline-event-modal__group {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0;
+  color: var(--dante-semantic-color-home-text-primary, #edf2f8);
+}
+
+.timeline-event-modal--inspector .timeline-event-modal__life-area-dot {
+  width: 10px;
+  height: 10px;
+  flex: none;
+  border: 1px solid rgba(255, 255, 255, 0.35);
+  border-radius: 50%;
+  background: var(--timeline-inspector-accent, #ea5c12);
+}
+
+.timeline-event-modal--inspector .timeline-event-modal__description p {
+  margin: 0;
+  font-size: 13px;
+  line-height: 1.5;
+  white-space: pre-wrap;
 }
 
 .timeline-event-modal--inspector .timeline-event-modal__group {
@@ -2201,25 +2287,49 @@
 
 .timeline-event-modal--inspector .timeline-activity-planned-sessions__row {
   grid-template-columns: minmax(0, 1fr) auto;
-  padding: 10px 0;
+  gap: 4px 12px;
+  padding: 10px 0 11px;
   border-top: 1px solid var(--dante-semantic-color-home-border-subtle);
 }
 
 .timeline-event-modal--inspector
   .timeline-activity-planned-sessions__row
   .timeline-session-controls {
+  display: contents;
+}
+
+.timeline-event-modal--inspector
+  .timeline-activity-planned-sessions__row
+  .timeline-session-controls__runtime-actions {
   grid-column: 2;
+  grid-row: 1;
+  justify-self: end;
+}
+
+.timeline-event-modal--inspector
+  .timeline-activity-planned-sessions__row
+  :is(
+    .timeline-session-controls__inspector-summary,
+    .timeline-activity-planned-sessions__state
+  ) {
+  grid-column: 1 / -1;
+  grid-row: 2;
+  justify-self: start;
+  text-align: left;
 }
 
 .timeline-event-modal--inspector .timeline-activity-planned-sessions {
+  position: relative;
+  z-index: auto;
+  top: auto;
+  right: auto;
+  left: auto;
   margin-top: 18px;
-  padding: 14px 16px;
-  border-radius: 12px;
-  background: color-mix(
-    in srgb,
-    var(--dante-semantic-color-home-surface-control, #151f2e) 54%,
-    transparent
-  );
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
   font-size: 12px;
 }
 

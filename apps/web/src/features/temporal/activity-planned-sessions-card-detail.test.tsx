@@ -139,7 +139,9 @@ describe('Activity planned Sessions card detail', () => {
     );
     await screen.findByText('Teoria');
     await waitFor(() =>
-      expect(container.querySelectorAll('[aria-label="Avvia"]')).toHaveLength(2),
+      expect(container.querySelectorAll('[aria-label="Avvia"]')).toHaveLength(
+        2,
+      ),
     );
 
     // Paused main cannot admit a child Start either.
@@ -161,6 +163,62 @@ describe('Activity planned Sessions card detail', () => {
     });
     expect(await screen.findAllByText('Da verificare')).toHaveLength(2);
     expect(container.querySelectorAll('[aria-label="Avvia"]')).toHaveLength(0);
+  });
+
+  it('keeps a recorded internal Session as one named row with its own final timing after main Stop', async () => {
+    const child = {
+      session_ref: '0199a8c0-6e72-7cd1-9be1-b3f514067299',
+      planned_schedule_ref: SESSION_A,
+      subject_native_ref: ACTIVITY,
+      timing_material_state_ref: '0199a8c0-6e72-7cd1-9be1-b3f514067298',
+      started_at: '2026-10-18T08:22:00Z',
+      ended_at: '2026-10-18T08:30:00Z',
+      evaluated_at: '2026-10-18T08:30:00Z',
+      open: false,
+      replayed: false,
+      paused: false,
+      elapsed_seconds: 480,
+      active_seconds: 420,
+      paused_seconds: 60,
+      duration_evaluations: [],
+    };
+    vi.stubGlobal(
+      'fetch',
+      vi.fn<typeof fetch>((input) =>
+        Promise.resolve(
+          Response.json(
+            fetchRequestUrl(input).endsWith('/sessions')
+              ? [child]
+              : {
+                  parent_activity_ref: ACTIVITY,
+                  schedules: [
+                    {
+                      schedule_ref: SESSION_A,
+                      role_code: 'planned',
+                      display_name: 'Teoria',
+                    },
+                  ],
+                },
+          ),
+        ),
+      ),
+    );
+    const { container } = render(
+      <ActivityPlannedSessionsCardDetail
+        activityRef={ACTIVITY}
+        visible
+        timeZone="Europe/Rome"
+      />,
+    );
+    expect(await screen.findByText('Teoria')).toBeTruthy();
+    expect(
+      await screen.findByText('10:22–10:30 · Totale attivo 00:07:00'),
+    ).toBeTruthy();
+    expect(
+      container.querySelectorAll('.timeline-activity-planned-sessions__row'),
+    ).toHaveLength(1);
+    expect(screen.queryByRole('button', { name: 'Avvia' })).toBeNull();
+    expect(screen.queryByText('Sessione principale')).toBeNull();
   });
 
   it('does not fetch or render nested detail while the Activity card is closed', () => {

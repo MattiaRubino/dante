@@ -1545,7 +1545,12 @@ export function TimelineSurface({
         }}
         onOpenEventDetail={(event, opener) =>
           setDetailState({
-            detail: detailFromEvent(event, state.groups),
+            detail: detailFromEvent(
+              event,
+              state.groups,
+              opener.closest<HTMLElement>('[data-timeline-date]')?.dataset
+                .timelineDate ?? findTimelineEvent(state, event.id)?.dateKey,
+            ),
             event,
             opener,
           })
@@ -1557,6 +1562,8 @@ export function TimelineSurface({
               subitem,
               state.groups,
               t(($) => $.common.home.timeline.detail.subitemParent),
+              opener.closest<HTMLElement>('[data-timeline-date]')?.dataset
+                .timelineDate ?? findTimelineEvent(state, event.id)?.dateKey,
             ),
             event,
             opener,
@@ -1729,6 +1736,8 @@ export function TimelineSurface({
       <EventDetailDialog
         detail={detailState?.detail ?? null}
         opener={detailState?.opener ?? null}
+        locale={locale}
+        timeZone={clockZone}
         sessionSubject={(() => {
           const basis = detailState?.event.canonicalBasis;
           if (basis?.kind === 'scheduled-activity') {

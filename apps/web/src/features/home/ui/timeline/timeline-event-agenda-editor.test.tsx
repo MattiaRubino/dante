@@ -35,6 +35,28 @@ function record(revision: number, agendaParts: readonly string[]) {
 }
 
 describe('B03-D canonical Event Agenda editor', () => {
+  it('uses the existing Event read to show a description after an empty agenda', async () => {
+    const loadEvent = vi.fn<TemporalEventAgendaDataSource['loadEvent']>(() =>
+      Promise.resolve({
+        ...record(0, []),
+        description: 'Preparare il materiale.',
+      }),
+    );
+    render(
+      <TimelineEventAgendaEditor
+        eventRef={EVENT_REF}
+        dataSource={{ loadEvent, replaceAgenda: vi.fn() }}
+        hideWhenEmpty
+        showDescription
+      />,
+    );
+    expect(
+      (await screen.findByRole('region', { name: 'Descrizione' })).textContent,
+    ).toContain('Preparare il materiale.');
+    expect(screen.queryByText('Scaletta')).toBeNull();
+    expect(loadEvent).toHaveBeenCalledOnce();
+  });
+
   it('reads backend truth and persists add, explicit edit, reorder and remove through CAS', async () => {
     let serverRevision = 0;
     let serverParts: readonly string[] = ['Apertura', 'Decisione'];

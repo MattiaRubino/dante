@@ -1,5 +1,32 @@
 # Timeline / Temporal-Operational — Workstream Handoff
 
+## 2026-10-18 — Activity Inspector layout candidate
+
+The Activity Inspector reuses its existing toolbar, main Session controls,
+internal Session rows and Objective controls. The main controls now sit beside
+the planned date/time. One runtime line shows start plus an active-only timer
+(frozen on pause), or start/end plus final active total. Named internal rows
+show the corresponding factual line below each name, and never duplicate the
+main Session. Life Area and optional description follow the internal rows and
+Objectives, respectively. The Inspector border takes the Life Area appearance
+when available. Timeline card colors were not changed.
+
+In the isolated checkout based on `0afe4eb9`, the final focused Web run passed
+26/26 tests across six component files; Web typecheck and lint limited to the
+changed files passed. The Web test build completed, but Playwright could not
+launch because its Chromium executable is missing in this environment, and
+the attempted download returned an invalid archive. Browser visual acceptance
+and the repository-wide gate remain outstanding.
+
+The broader Web Vitest run found 1105 passing and three failing tests in
+unmodified Timeline movement/replan paths: all three assert one-minute snap
+while the pre-existing `timelineDragSnapMinutes` source still returns the
+15-minute default. The full Web lint also reports two pre-existing unnecessary
+type assertions in `temporal-objective-editor-row.test.tsx`; the structural
+test inventory reports three pre-existing unregistered files. These are not
+evidence of an Inspector regression or a green complete gate. The existing
+checkout elsewhere contains unrelated local edits and was preserved.
+
 ## 2026-10-17 — Owner final retry: 2/2 browser tests green
 
 Owner fast-forwarded `feature/timeline-temporal-operational` to

@@ -2,6 +2,43 @@ import { expect, test, type Locator, type Page } from '@playwright/test';
 
 test.use({ locale: 'it-IT' });
 
+test('Inspector keeps its actions above the title and places date and Life Area on distinct rows', async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.goto('/home');
+  const card = page.locator('[data-timeline-event="12"]');
+  await card.scrollIntoViewIfNeeded();
+  await card.locator('.timeline-event-card__title').click();
+  const inspector = page.locator('.timeline-event-modal--inspector');
+  await expect(inspector).toBeVisible();
+  await expect(
+    inspector.locator('.timeline-event-modal__header-actions'),
+  ).toBeVisible();
+  await expect(
+    inspector.locator('.timeline-event-modal__schedule-row'),
+  ).toBeVisible();
+  await expect(
+    inspector.locator('.timeline-event-modal__time'),
+  ).not.toContainText('Europe/Rome');
+  const order = await inspector.evaluate((element) => {
+    const toolbar = element.querySelector('.timeline-event-modal__header');
+    const title = element.querySelector('.timeline-event-modal__title');
+    const schedule = element.querySelector(
+      '.timeline-event-modal__schedule-row',
+    );
+    return [toolbar, title, schedule].map(
+      (item) => item?.getBoundingClientRect().top ?? -1,
+    );
+  });
+  expect(order[0]).toBeLessThan(order[1]!);
+  expect(order[1]).toBeLessThan(order[2]!);
+  const rect = await inspector.boundingBox();
+  expect(rect).not.toBeNull();
+  expect(rect!.x).toBeGreaterThanOrEqual(0);
+  expect(rect!.x + rect!.width).toBeLessThanOrEqual(390);
+});
+
 async function expectCardInsideTimelineViewport(
   card: Locator,
   grid: Locator,

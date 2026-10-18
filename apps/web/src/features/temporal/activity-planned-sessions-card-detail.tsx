@@ -70,6 +70,8 @@ type PlannedSessionCardProps = Readonly<{
   activityRef: string;
   visible: boolean;
   variant?: 'detail' | 'indicator';
+  locale?: string;
+  timeZone?: string;
 }>;
 
 export function ActivityPlannedSessionsCardDetail(
@@ -85,9 +87,13 @@ function PlannedSessionCardContent({
   activityRef,
   visible,
   variant = 'detail',
+  locale,
+  timeZone,
 }: PlannedSessionCardProps) {
   const [rows, setRows] = useState<readonly PlannedSession[] | null>(null);
-  const [sessions, setSessions] = useState<readonly TemporalSessionView[] | null>(null);
+  const [sessions, setSessions] = useState<
+    readonly TemporalSessionView[] | null
+  >(null);
   const [revision, setRevision] = useState(0);
   const [sessionRevision, setSessionRevision] = useState(0);
 
@@ -179,9 +185,8 @@ function PlannedSessionCardContent({
   const mainPaused = mainSessions.some(
     (session) => session.open && session.paused,
   );
-  const mainStopped = mainSessions.length > 0 && !mainSessions.some(
-    (session) => session.open,
-  );
+  const mainStopped =
+    mainSessions.length > 0 && !mainSessions.some((session) => session.open);
 
   return (
     <div
@@ -201,7 +206,10 @@ function PlannedSessionCardContent({
               {row.name}
             </span>
           </span>
-          {mainRunning ? (
+          {mainRunning ||
+          (sessions ?? []).some(
+            (session) => session.plannedScheduleRef === row.scheduleRef,
+          ) ? (
             <SessionSubjectControls
               kind="activity"
               subjectRef={activityRef}
@@ -209,15 +217,16 @@ function PlannedSessionCardContent({
               label={row.name}
               variant="detail"
               compactRuntime
+              inspectorSummary
+              showUnstartedStatus
+              hideRuntimeActions={!mainRunning}
+              {...(locale ? { locale } : {})}
+              {...(timeZone ? { timeZone } : {})}
             />
           ) : (
             <span className="timeline-activity-planned-sessions__state">
               {mainStopped
-                ? (sessions ?? []).some(
-                    (session) => session.plannedScheduleRef === row.scheduleRef,
-                  )
-                  ? 'Registrata'
-                  : 'Da verificare'
+                ? 'Da verificare'
                 : mainPaused
                   ? 'Principale in pausa'
                   : 'Avvia prima la principale'}

@@ -5,6 +5,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import type { TimelineEvent, TimelineGroup } from './model/timeline-types';
 import { EventDetailDialog, detailFromEvent } from './timeline-overlays';
+import { fetchRequestUrl } from '../../../../test-support/fetch-request';
 
 vi.mock('../../../temporal/actual-realization-controls', () => ({
   ActualRealizationControls: ({
@@ -72,7 +73,10 @@ function baseEvent(): Omit<TimelineEvent, 'canonicalBasis'> {
   };
 }
 
-afterEach(() => cleanup());
+afterEach(() => {
+  cleanup();
+  vi.unstubAllGlobals();
+});
 
 describe('Timeline post-create runtime destinations', () => {
   it('anchors the Inspector beside the card without a dimming backdrop and truncates its title', () => {
@@ -100,7 +104,6 @@ describe('Timeline post-create runtime destinations', () => {
           startMinute: 600,
           endMinute: 660,
           groupLabel: 'Personale',
-          meta: '',
         }}
         opener={opener}
         onClose={close}
@@ -118,6 +121,95 @@ describe('Timeline post-create runtime destinations', () => {
     );
     expect(close).toHaveBeenCalledOnce();
     card.remove();
+  });
+
+  it('shows the planned calendar date and Life Area beneath the unchanged action bar without a timezone label', () => {
+    render(
+      <EventDetailDialog
+        detail={{
+          title: 'Scrivere',
+          dateKey: '2026-10-18',
+          startMinute: 870,
+          endMinute: 900,
+          groupLabel: 'Creatività',
+          accentColorCode: '#80aaff',
+        }}
+        opener={null}
+        locale="it-IT"
+        timeZone="Europe/Rome"
+        onClose={() => undefined}
+      />,
+    );
+    const dialog = screen.getByRole('dialog');
+    expect(screen.getByText('Domenica 18 ottobre · 14:30–15:00')).toBeTruthy();
+    expect(
+      screen.getByRole('region', { name: 'Life Area' }).textContent,
+    ).toContain('Creatività');
+    expect(dialog.style.getPropertyValue('--timeline-inspector-accent')).toBe(
+      '#80aaff',
+    );
+    expect(dialog.textContent).not.toContain('Europe/Rome');
+    expect(
+      dialog.querySelector('.timeline-event-modal__header-actions'),
+    ).toBeTruthy();
+  });
+
+  it('reads the existing Activity description and places it after Objectives without duplicating the main Session row', async () => {
+    vi.stubGlobal(
+      'fetch',
+      vi.fn<typeof fetch>((input) => {
+        const url = fetchRequestUrl(input);
+        if (url.endsWith('/profile')) {
+          return Promise.resolve(
+            Response.json({
+              activity_ref: ACTIVITY_REF,
+              title: 'Scrivere',
+              description: 'Preparare la bozza.',
+              location: null,
+              color_code: null,
+              revision: 1,
+            }),
+          );
+        }
+        if (url.endsWith('/children')) {
+          return Promise.resolve(
+            Response.json({
+              parent_activity_ref: ACTIVITY_REF,
+              schedules: [],
+            }),
+          );
+        }
+        return Promise.resolve(Response.json([]));
+      }),
+    );
+    render(
+      <EventDetailDialog
+        detail={{
+          title: 'Scrivere',
+          startMinute: 870,
+          endMinute: 900,
+          groupLabel: 'Creatività',
+          ownerKind: 'activity',
+          realitySubject: { kind: 'activity', ref: ACTIVITY_REF },
+        }}
+        opener={null}
+        sessionSubject={{ kind: 'activity', ref: ACTIVITY_REF }}
+        onClose={() => undefined}
+      />,
+    );
+    const description = await screen.findByRole('region', {
+      name: 'Descrizione',
+    });
+    expect(description.textContent).toContain('Preparare la bozza.');
+    const inspector = screen.getByRole('dialog');
+    const objectives = screen.getByTestId('reality-controls');
+    expect(
+      objectives.compareDocumentPosition(description) &
+        Node.DOCUMENT_POSITION_FOLLOWING,
+    ).toBeTruthy();
+    expect(
+      inspector.querySelectorAll('.timeline-activity-planned-sessions__row'),
+    ).toHaveLength(0);
   });
 
   it('derives B10 subjects for Activity, Event and Occurrence independently from Session', () => {
@@ -194,7 +286,6 @@ describe('Timeline post-create runtime destinations', () => {
           startMinute: 600,
           endMinute: 660,
           groupLabel: 'Personale',
-          meta: '',
           ownerKind: 'activity',
           realitySubject: { kind: 'activity', ref: ACTIVITY_REF },
         }}

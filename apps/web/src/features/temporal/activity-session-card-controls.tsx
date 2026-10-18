@@ -21,6 +21,8 @@ export function ActivitySessionCardControls({
   variant = 'card',
   completed = false,
   visibleSessionRefs,
+  locale,
+  timeZone,
   source = defaultActivitySessionSource,
 }: Readonly<{
   activityRef: string;
@@ -30,6 +32,8 @@ export function ActivitySessionCardControls({
   variant?: 'card' | 'inspector';
   completed?: boolean;
   visibleSessionRefs?: readonly string[];
+  locale?: string;
+  timeZone?: string;
   source?: TemporalSessionCapabilityDataSource;
 }>) {
   const [capability, setCapability] = useState<{
@@ -100,6 +104,9 @@ export function ActivitySessionCardControls({
             label={label}
             variant={variant === 'card' ? 'card' : 'detail'}
             compactRuntime
+            inspectorSummary={variant === 'inspector'}
+            {...(locale ? { locale } : {})}
+            {...(timeZone ? { timeZone } : {})}
             interactive={interactive}
             allowLive
             {...(visibleSessionRefs === undefined

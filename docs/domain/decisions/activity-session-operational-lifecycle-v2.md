@@ -31,6 +31,26 @@ Starting/stopping an internal Session alone neither relocates nor resizes the
 Activity card. The card only shows the count of configured internal Sessions;
 their names, controls and history belong in the Session panel/Inspector.
 
+### Activity Inspector presentation (2026-10-18)
+
+The existing action toolbar stays at the top. Beneath the Activity title, the
+Inspector shows the planned calendar date and time without a redundant zone
+label. The generic Activity Session has its Play/Pause/Stop controls beside
+that planned line; it must not also appear among the named internal Sessions.
+One line directly below shows its factual start and active timer while open
+(`Avviata alle … · In corso …` or `In pausa …`); the timer accumulates only
+active seconds and freezes during pause. After Stop the line shows factual
+start–end and total active duration. Named internal Sessions use the same
+summary beneath each name, with their own controls only when permitted by the
+current lifecycle. A never-started internal Session requiring review after
+main Stop shows `Da verificare` without a synthetic Session history row.
+
+The subsequent Inspector order is named Sessions (when configured), Life Area
+(when assigned), Objectives, and description (when present). The Life Area
+accent colors the Inspector border; absent one, the item's appearance color
+is used. Session status colors on Timeline cards are unchanged. These are
+presentation rules and do not modify Schedule or Session persistence.
+
 The Home Timeline provides a rolling **Timeline**, a single **Giorno**, and a
 seven-column **Settimana** view. The first two retain the elastic density and
 right-hand expansion; the week uses a shared minute scale across columns.

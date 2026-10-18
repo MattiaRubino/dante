@@ -1,5 +1,6 @@
 import type { PlainDate } from '@dante/time';
 import {
+  type CSSProperties,
   type KeyboardEvent,
   type PointerEvent as ReactPointerEvent,
   type RefObject,
@@ -19,6 +20,7 @@ import { ActivityPlannedSessionsCardDetail } from '../../../temporal/activity-pl
 import { ScheduleReminderControls } from '../../../temporal/schedule-reminder-controls';
 import { PlacementLockControls } from '../../../temporal/placement-lock-controls';
 import type { ActivityProfile } from '../../../temporal/remote-activity-inspector';
+import { createRemoteActivityInspector } from '../../../temporal/remote-activity-inspector';
 import { ActivityEditPanel } from './activity-edit-panel';
 import { requestTemporalCreateDuplicate } from '../../../temporal-create/ui/temporal-create-duplicate-request';
 import { TemporalPanelCloseButton } from '../../../temporal-create/ui/temporal-panel-close-button';
@@ -547,7 +549,9 @@ export type TimelineDetail = Readonly<{
   startMinute: number;
   endMinute: number;
   groupLabel: string;
-  meta: string;
+  contextLabel?: string;
+  dateKey?: string;
+  accentColorCode?: string;
   ownerKind?: 'activity' | 'event';
   eventRef?: string;
   eventPlacement?: TimelineCanonicalSchedulePlacement;
@@ -571,6 +575,8 @@ type EventDetailDialogProps = Readonly<{
   }> | null;
   reminderScheduleRef?: string | null;
   placementLockScheduleRef?: string | null;
+  locale?: string;
+  timeZone?: string;
   onActivitySaved?: (profile: ActivityProfile) => void;
   onActivityDeleted?: () => void;
   onClose: () => void;
@@ -583,6 +589,8 @@ export function EventDetailDialog({
   responsibilitySubject = null,
   reminderScheduleRef = null,
   placementLockScheduleRef = null,
+  locale = 'it-IT',
+  timeZone,
   onActivitySaved,
   onActivityDeleted,
   onClose,
@@ -601,6 +609,29 @@ export function EventDetailDialog({
   const [toolbarTarget, setToolbarTarget] = useState<HTMLDivElement | null>(
     null,
   );
+  const [activityDescription, setActivityDescription] = useState<{
+    ref: string;
+    value: string | null;
+  } | null>(null);
+  const activityRef =
+    sessionSubject?.kind === 'activity' ? sessionSubject.ref : null;
+  useEffect(() => {
+    if (!activityRef) return;
+    let active = true;
+    void createRemoteActivityInspector()
+      .get(activityRef)
+      .then((profile) => {
+        if (active)
+          setActivityDescription({
+            ref: activityRef,
+            value: profile.description,
+          });
+      })
+      .catch(() => undefined);
+    return () => {
+      active = false;
+    };
+  }, [activityRef]);
   const currentEditingProfile =
     editingProfile?.activityRef === sessionSubject?.ref ? editingProfile : null;
 
@@ -732,7 +763,18 @@ export function EventDetailDialog({
       <div
         ref={dialogRef}
         className={`timeline-event-modal${currentEditingProfile ? ' timeline-event-modal--edit' : ' timeline-event-modal--inspector'}`}
-        style={currentEditingProfile ? undefined : inspectorPosition}
+        style={
+          currentEditingProfile
+            ? undefined
+            : {
+                ...inspectorPosition,
+                ...(detail.accentColorCode
+                  ? ({
+                      '--timeline-inspector-accent': detail.accentColorCode,
+                    } as CSSProperties)
+                  : {}),
+              }
+        }
         role="dialog"
         aria-modal="true"
         aria-labelledby="timeline-event-dialog-title"
@@ -772,15 +814,10 @@ export function EventDetailDialog({
           >
             {currentEditingProfile ? 'Modifica attività' : detail.title}
           </h3>
-          {!currentEditingProfile && sessionSubject?.kind === 'activity' ? (
-            <ActivitySessionCardControls
-              activityRef={sessionSubject.ref}
-              label={detail.title}
-              variant="inspector"
-              showPlanned={false}
-            />
-          ) : null}
         </div>
+        {!currentEditingProfile && detail.contextLabel ? (
+          <p className="timeline-event-modal__context">{detail.contextLabel}</p>
+        ) : null}
         {currentEditingProfile ? (
           <ActivityEditPanel
             key={`${currentEditingProfile.activityRef}:${currentEditingProfile.revision}`}
@@ -788,6 +825,10 @@ export function EventDetailDialog({
             closeRequestRef={editCloseRequestRef}
             onSaved={(saved) => {
               onActivitySaved?.(saved);
+              setActivityDescription({
+                ref: saved.activityRef,
+                value: saved.description,
+              });
               setEditingProfile(null);
             }}
             onCancel={() => setEditingProfile(null)}
@@ -809,23 +850,62 @@ export function EventDetailDialog({
                 }}
               />
             ) : null}
-            <p className="timeline-event-modal__time">
-              {formatTimelineMinute(detail.startMinute)}–
-              {formatTimelineMinute(detail.endMinute)}
-              {detail.meta ? ` · ${detail.meta}` : ''}
-            </p>
+            <div className="timeline-event-modal__schedule-row">
+              <p className="timeline-event-modal__time">
+                {detail.dateKey
+                  ? `${new Intl.DateTimeFormat(locale, {
+                      weekday: 'long',
+                      day: 'numeric',
+                      month: 'long',
+                      ...(Number(detail.dateKey.slice(0, 4)) !==
+                      new Date().getFullYear()
+                        ? { year: 'numeric' }
+                        : {}),
+                      timeZone: 'UTC',
+                    })
+                      .format(new Date(`${detail.dateKey}T12:00:00Z`))
+                      .replace(/^./, (letter) =>
+                        letter.toLocaleUpperCase(locale),
+                      )} · `
+                  : ''}
+                {formatTimelineMinute(detail.startMinute)}–
+                {formatTimelineMinute(detail.endMinute)}
+              </p>
+              {sessionSubject?.kind === 'activity' ? (
+                <ActivitySessionCardControls
+                  activityRef={sessionSubject.ref}
+                  label={detail.title}
+                  variant="inspector"
+                  showPlanned={false}
+                  locale={locale}
+                  {...(timeZone ? { timeZone } : {})}
+                />
+              ) : null}
+            </div>
+            {sessionSubject?.kind === 'activity' ? (
+              <ActivityPlannedSessionsCardDetail
+                activityRef={sessionSubject.ref}
+                visible
+                locale={locale}
+                {...(timeZone ? { timeZone } : {})}
+              />
+            ) : null}
             {detail.groupLabel &&
             detail.groupLabel !== LEGACY_UNASSIGNED_GROUP &&
             detail.groupLabel !== 'Senza Life Area' ? (
-              <p className="timeline-event-modal__group">{detail.groupLabel}</p>
-            ) : null}
-            {sessionSubject?.kind === 'activity' ? (
-              <>
-                <ActivityPlannedSessionsCardDetail
-                  activityRef={sessionSubject.ref}
-                  visible
-                />
-              </>
+              <section
+                className="timeline-event-modal__life-area"
+                aria-label="Life Area"
+              >
+                <h4>Life Area</h4>
+                <p className="timeline-event-modal__group">
+                  <span
+                    className="timeline-event-modal__life-area-dot"
+                    aria-hidden="true"
+                  />
+                  {detail.groupLabel}
+                </p>
+              </section>
             ) : null}
             {sessionSubject?.kind === 'occurrence' ? (
               <TimelineInspectorOccurrenceSession
@@ -846,10 +926,6 @@ export function EventDetailDialog({
                     }}
                   />
                 ) : null}
-                <TimelineEventAgendaEditor
-                  eventRef={detail.eventRef}
-                  hideWhenEmpty
-                />
               </>
             ) : null}
             {detail.ownerKind === undefined ? (
@@ -870,6 +946,24 @@ export function EventDetailDialog({
                 subjectRef={detail.realitySubject.ref}
               />
             )}
+            {activityRef &&
+            activityDescription?.ref === activityRef &&
+            activityDescription.value?.trim() ? (
+              <section
+                className="timeline-event-modal__description"
+                aria-label="Descrizione"
+              >
+                <h4>Descrizione</h4>
+                <p>{activityDescription.value}</p>
+              </section>
+            ) : null}
+            {detail.ownerKind === 'event' && detail.eventRef ? (
+              <TimelineEventAgendaEditor
+                eventRef={detail.eventRef}
+                hideWhenEmpty
+                showDescription
+              />
+            ) : null}
             {responsibilitySubject === null ? null : (
               <div className="timeline-event-modal__actions">
                 <ResponsibilityControls
@@ -912,6 +1006,7 @@ export function UndoToast({ visible, message, onUndo }: UndoToastProps) {
 export function detailFromEvent(
   event: TimelineEvent,
   groups: readonly TimelineGroup[],
+  dateKey?: string,
 ): TimelineDetail {
   const group = groups.find((candidate) => candidate.id === event.groupId);
   const ownerKind =
@@ -946,7 +1041,10 @@ export function detailFromEvent(
     startMinute: event.startMinute,
     endMinute: event.endMinute,
     groupLabel: group?.label ?? event.groupId,
-    meta: event.meta ?? '',
+    ...(dateKey ? { dateKey } : {}),
+    ...(group?.colorCode || event.appearanceColorCode
+      ? { accentColorCode: group?.colorCode ?? event.appearanceColorCode }
+      : {}),
     ...(ownerKind === undefined ? {} : { ownerKind }),
     ...(eventRef === undefined ? {} : { eventRef }),
     ...(event.canonicalBasis?.kind === 'scheduled-event'
@@ -964,6 +1062,7 @@ export function detailFromSubitem(
   subitem: string,
   groups: readonly TimelineGroup[],
   parentLabel: string,
+  dateKey?: string,
 ): TimelineDetail {
   const group = groups.find((candidate) => candidate.id === event.groupId);
   return {
@@ -971,7 +1070,11 @@ export function detailFromSubitem(
     startMinute: event.startMinute,
     endMinute: event.endMinute,
     groupLabel: group?.label ?? event.groupId,
-    meta: `${parentLabel} ${event.title}`,
+    contextLabel: `${parentLabel} ${event.title}`,
+    ...(dateKey ? { dateKey } : {}),
+    ...(group?.colorCode || event.appearanceColorCode
+      ? { accentColorCode: group?.colorCode ?? event.appearanceColorCode }
+      : {}),
   };
 }
 

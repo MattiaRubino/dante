@@ -8,8 +8,6 @@ import {
   type TemporalSessionView,
 } from './remote-session-data-source';
 
-const source = createRemoteTemporalSessionDataSource();
-
 function operationId(): string {
   return crypto.randomUUID();
 }
@@ -23,6 +21,25 @@ function formatDuration(seconds: number): string {
     return `${hours}:${String(minutes).padStart(2, '0')}:${String(remainingSeconds).padStart(2, '0')}`;
   }
   return `${minutes}:${String(remainingSeconds).padStart(2, '0')}`;
+}
+
+function formatInspectorDuration(seconds: number): string {
+  const total = Math.max(0, Math.floor(seconds));
+  return [Math.floor(total / 3600), Math.floor((total % 3600) / 60), total % 60]
+    .map((part) => String(part).padStart(2, '0'))
+    .join(':');
+}
+
+function sessionClock(
+  instant: string,
+  locale: string,
+  timeZone?: string,
+): string {
+  return new Intl.DateTimeFormat(locale, {
+    hour: '2-digit',
+    minute: '2-digit',
+    ...(timeZone ? { timeZone } : {}),
+  }).format(new Date(instant));
 }
 
 function rejectionMessage(fallback: string, error: unknown): string {
@@ -72,6 +89,11 @@ export function SessionSubjectControls({
   compactRuntime = false,
   visibleSessionRefs,
   onRecorded,
+  inspectorSummary = false,
+  showUnstartedStatus = false,
+  hideRuntimeActions = false,
+  locale = 'it-IT',
+  timeZone,
 }: Readonly<{
   kind: SessionSubjectKind;
   subjectRef: string;
@@ -84,14 +106,21 @@ export function SessionSubjectControls({
   compactRuntime?: boolean;
   visibleSessionRefs?: readonly string[];
   onRecorded?: () => void;
+  inspectorSummary?: boolean;
+  showUnstartedStatus?: boolean;
+  hideRuntimeActions?: boolean;
+  locale?: string;
+  timeZone?: string;
 }>) {
   const [sessions, setSessions] = useState<readonly TemporalSessionView[]>([]);
+  const [source] = useState(createRemoteTemporalSessionDataSource);
   const [pending, setPending] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
   const [manualOpen, setManualOpen] = useState(false);
   const [manualStart, setManualStart] = useState('');
   const [manualEnd, setManualEnd] = useState('');
   const [localSessionRef, setLocalSessionRef] = useState<string | null>(null);
+  const [clockMs, setClockMs] = useState(() => Date.now());
   const visibleSessionKey = visibleSessionRefs?.join('|');
 
   const forThisCard = useCallback(
@@ -106,7 +135,8 @@ export function SessionSubjectControls({
   const reload = useCallback(async () => {
     const listed = await source.list(kind, subjectRef);
     setSessions(listed.filter(forThisCard));
-  }, [kind, subjectRef, forThisCard]);
+    setClockMs(Date.now());
+  }, [kind, subjectRef, forThisCard, source]);
 
   useEffect(() => {
     const refresh = (event: Event) => {
@@ -143,12 +173,26 @@ export function SessionSubjectControls({
     return () => {
       cancelled = true;
     };
-  }, [kind, subjectRef, forThisCard]);
+  }, [kind, subjectRef, forThisCard, source]);
 
   const openSession = sessions.find((session) => session.open) ?? null;
   const stopped =
     openSession === null && sessions.some((session) => !session.open);
   const durationSession = openSession ?? sessions[sessions.length - 1] ?? null;
+
+  useEffect(() => {
+    if (!inspectorSummary || openSession === null || openSession.paused) return;
+    const timer = window.setInterval(() => setClockMs(Date.now()), 1000);
+    return () => window.clearInterval(timer);
+  }, [inspectorSummary, openSession]);
+
+  const evaluatedMs = openSession ? Date.parse(openSession.evaluatedAt) : 0;
+  const activeSeconds = openSession
+    ? openSession.activeSeconds +
+      (!openSession.paused && Number.isFinite(evaluatedMs)
+        ? Math.max(0, (clockMs - evaluatedMs) / 1000)
+        : 0)
+    : 0;
 
   const recoverAfterRejection = (fallback: string, error: unknown) =>
     reload()
@@ -269,14 +313,14 @@ export function SessionSubjectControls({
 
   return (
     <div
-      className={`timeline-session-controls${card ? ' is-card' : ''}`}
+      className={`timeline-session-controls${card ? ' is-card' : ''}${inspectorSummary ? ' is-inspector-summary' : ''}`}
       data-timeline-session-subject={subjectRef}
     >
       <div
         className="timeline-session-controls__runtime-actions"
         aria-label={`Sessione · ${label}`}
       >
-        {allowLive && !stopped ? (
+        {hideRuntimeActions ? null : allowLive && !stopped ? (
           <>
             <RuntimeButton
               label={
@@ -363,7 +407,10 @@ export function SessionSubjectControls({
             />
           </>
         )}
-        {allowManual && !stopped && kind === 'activity' ? (
+        {!hideRuntimeActions &&
+        allowManual &&
+        !stopped &&
+        kind === 'activity' ? (
           <button
             type="button"
             disabled={pending || !interactive}
@@ -409,7 +456,34 @@ export function SessionSubjectControls({
         </form>
       ) : null}
 
-      {card || openSession === null ? null : (
+      {inspectorSummary && durationSession ? (
+        <span
+          className="timeline-session-controls__inspector-summary"
+          aria-label="Stato sessione"
+        >
+          {durationSession.open ? (
+            <>
+              Avviata alle{' '}
+              {sessionClock(durationSession.startedAt, locale, timeZone)}
+              {' · '}
+              {durationSession.paused ? 'In pausa' : 'In corso'}{' '}
+              {formatInspectorDuration(activeSeconds)}
+            </>
+          ) : durationSession.endedAt ? (
+            <>
+              {sessionClock(durationSession.startedAt, locale, timeZone)}–
+              {sessionClock(durationSession.endedAt, locale, timeZone)}
+              {' · '}Totale attivo{' '}
+              {formatInspectorDuration(durationSession.activeSeconds)}
+            </>
+          ) : null}
+        </span>
+      ) : inspectorSummary && showUnstartedStatus && !durationSession ? (
+        <span className="timeline-session-controls__inspector-summary">
+          Non avviata
+        </span>
+      ) : null}
+      {card || inspectorSummary || openSession === null ? null : (
         <span
           className="timeline-session-duration"
           aria-label="Durata sessione"
@@ -419,7 +493,7 @@ export function SessionSubjectControls({
           {formatDuration(openSession.elapsedSeconds)}
         </span>
       )}
-      {stopped && durationSession ? (
+      {!inspectorSummary && stopped && durationSession ? (
         <span className="timeline-session-controls__recorded">
           Registrata · {formatDuration(durationSession.elapsedSeconds)}
         </span>
@@ -434,7 +508,7 @@ export function SessionSubjectControls({
           {message}
         </span>
       )}
-      {card
+      {card || inspectorSummary
         ? null
         : durationSession?.durationEvaluations.map((item) => (
             <span

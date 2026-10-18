@@ -83,6 +83,77 @@ describe('SessionSubjectControls B08-D whole workflow', () => {
     fireEvent.click(pauseButton);
     await waitFor(() => expect(source.pause).toHaveBeenCalledTimes(1));
   });
+
+  it('shows one active clock line, freezes it on pause and replaces it with final active time on Stop', async () => {
+    const running = session({
+      startedAt: '2026-10-18T08:17:00Z',
+      evaluatedAt: '2026-10-18T08:17:10Z',
+      activeSeconds: 10,
+    });
+    const paused = session({
+      ...running,
+      paused: true,
+      evaluatedAt: '2026-10-18T08:17:12Z',
+      activeSeconds: 12,
+      timingMaterialStateRef: 'timing-paused',
+    });
+    const stopped = session({
+      ...paused,
+      open: false,
+      paused: false,
+      endedAt: '2026-10-18T08:20:00Z',
+      activeSeconds: 12,
+    });
+    let current = running;
+    source.list.mockImplementation(() => Promise.resolve([current]));
+    source.pause.mockImplementation(() => {
+      current = paused;
+      return Promise.resolve(paused);
+    });
+    source.end.mockImplementation(() => {
+      current = stopped;
+      return Promise.resolve(stopped);
+    });
+    const now = vi
+      .spyOn(Date, 'now')
+      .mockReturnValue(Date.parse(running.evaluatedAt));
+    try {
+      render(
+        <SessionSubjectControls
+          kind="activity"
+          subjectRef={activityRef}
+          label="Focus"
+          compactRuntime
+          inspectorSummary
+          locale="it-IT"
+          timeZone="Europe/Rome"
+        />,
+      );
+      expect(
+        await screen.findByText('Avviata alle 10:17 · In corso 00:00:10'),
+      ).toBeTruthy();
+      expect(screen.getAllByLabelText('Stato sessione')).toHaveLength(1);
+      now.mockReturnValue(Date.parse(running.evaluatedAt) + 2000);
+      expect(
+        await screen.findByText(
+          'Avviata alle 10:17 · In corso 00:00:12',
+          undefined,
+          { timeout: 2000 },
+        ),
+      ).toBeTruthy();
+      fireEvent.click(screen.getByRole('button', { name: 'Pausa' }));
+      expect(
+        await screen.findByText('Avviata alle 10:17 · In pausa 00:00:12'),
+      ).toBeTruthy();
+      fireEvent.click(screen.getByRole('button', { name: 'Termina' }));
+      expect(
+        await screen.findByText('10:17–10:20 · Totale attivo 00:00:12'),
+      ).toBeTruthy();
+      expect(screen.queryByRole('button', { name: 'Avvia' })).toBeNull();
+    } finally {
+      now.mockRestore();
+    }
+  });
   it('still closes a previously open live Session after switching to record mode', async () => {
     source.list.mockResolvedValue([session()]);
     render(
