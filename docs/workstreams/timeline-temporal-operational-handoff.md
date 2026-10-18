@@ -1,5 +1,28 @@
 # Timeline / Temporal-Operational — Workstream Handoff
 
+## 2026-10-18 — User visual follow-up to Inspector candidate
+
+The user's authenticated screenshots after `1bec642d` found four UI defects:
+Activity Edit wrapped the quantity Unit field, long Objective labels
+overlapped their target and unassessed status, the generic Session buttons
+were smaller than internal ones, and parent Pause hid internal controls. This
+candidate keeps the shared Create/Edit Objective renderer, adds an Edit-only
+four-column field layout, bounds the Objective name and shows a numeric target
+as `Obiettivo …` without an unearned assessment. Inspector generic buttons
+match internal ones. Internal rows keep their recorded paused clock and visible
+controls; Play/Resume is disabled while the parent is paused and Stop stays
+available for an open child, matching the existing Session panel. Unstarted
+rows are visibly blocked. No persistence, API, or Timeline card behavior was
+changed.
+
+The candidate passed 65/65 focused Web component tests across five owner
+files, Web typecheck, targeted ESLint and production Web build. The two new
+browser geometry cases are discoverable in `e2e/timeline-hardening.spec.ts`,
+but Chromium is not installed in this checkout; execution and authenticated
+visual acceptance require the owner's WSL. The structural test registry still
+reports the same three pre-existing unregistered files. The repository-wide
+gate remains open; no global PASS is asserted.
+
 ## 2026-10-18 — Activity Inspector layout candidate
 
 The Activity Inspector reuses its existing toolbar, main Session controls,

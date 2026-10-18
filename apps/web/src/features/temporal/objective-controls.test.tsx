@@ -128,3 +128,25 @@ it('loads a previously staged value without falsely confirming it', async () => 
   expect(screen.getByText('Bozza salvata · non confermata')).toBeTruthy();
   expect(source.confirmObjectiveInput).not.toHaveBeenCalled();
 });
+
+it('keeps a long name readable without overlapping the numeric target and omits empty assessments', async () => {
+  const longName = 'Obiettivo molto lungo per una finestra stretta '.repeat(4);
+  source.listObjectives.mockResolvedValue([
+    { ...quantity, label: longName },
+    {
+      ...quantity,
+      objectiveRef: 'objective-2',
+      label: 'Sì oppure no?',
+      resultKind: 'boolean',
+    },
+  ]);
+  source.listObjectiveInputDrafts.mockResolvedValue([]);
+
+  render(<ObjectiveControls kind="activity" subjectRef="activity-1" />);
+  await screen.findByText('Obiettivo ≥ 10 km');
+  const name = document.querySelector('.timeline-objective-controls__name');
+  expect(name?.getAttribute('title')).toBe(longName);
+  expect(screen.getByText('Obiettivo ≥ 10 km')).toBeTruthy();
+  expect(screen.queryByText('Da verificare')).toBeNull();
+  expect(screen.queryByText('Sì / No')).toBeNull();
+});

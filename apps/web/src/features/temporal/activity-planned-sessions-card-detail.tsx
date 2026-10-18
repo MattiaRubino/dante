@@ -207,6 +207,7 @@ function PlannedSessionCardContent({
             </span>
           </span>
           {mainRunning ||
+          mainPaused ||
           (sessions ?? []).some(
             (session) => session.plannedScheduleRef === row.scheduleRef,
           ) ? (
@@ -219,7 +220,10 @@ function PlannedSessionCardContent({
               compactRuntime
               inspectorSummary
               showUnstartedStatus
-              hideRuntimeActions={!mainRunning}
+              unstartedStatus={
+                mainPaused ? 'Principale in pausa' : 'Non avviata'
+              }
+              playEnabled={mainRunning}
               {...(locale ? { locale } : {})}
               {...(timeZone ? { timeZone } : {})}
             />

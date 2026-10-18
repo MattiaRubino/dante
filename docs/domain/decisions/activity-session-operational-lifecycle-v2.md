@@ -41,9 +41,20 @@ One line directly below shows its factual start and active timer while open
 (`Avviata alle … · In corso …` or `In pausa …`); the timer accumulates only
 active seconds and freezes during pause. After Stop the line shows factual
 start–end and total active duration. Named internal Sessions use the same
-summary beneath each name, with their own controls only when permitted by the
-current lifecycle. A never-started internal Session requiring review after
-main Stop shows `Da verificare` without a synthetic Session history row.
+summary beneath each name. While the generic Session is paused, internal
+Session controls remain visible: Play/Resume is disabled until the generic
+Session resumes, but Stop remains available for an already-started internal
+Session. Its factual active duration stays frozen through the pause; resuming
+the generic Session does not resume it automatically. A never-started internal
+Session requiring review after main Stop shows `Da verificare` without a
+synthetic Session history row.
+
+Objectives with quantity or range targets label the configured threshold as
+`Obiettivo …`; an unset assessment is not rendered as `Da verificare` beside
+every Objective. Boolean/qualitative Objectives show their name and the
+appropriate input, without a redundant target/status badge. Long names
+truncate within their own column and retain the complete text in a tooltip.
+In Activity Edit, the quantity/range fields share one row at desktop width.
 
 The subsequent Inspector order is named Sessions (when configured), Life Area
 (when assigned), Objectives, and description (when present). The Life Area

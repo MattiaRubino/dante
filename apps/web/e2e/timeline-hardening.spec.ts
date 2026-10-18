@@ -39,6 +39,99 @@ test('Inspector keeps its actions above the title and places date and Life Area 
   expect(rect!.x + rect!.width).toBeLessThanOrEqual(390);
 });
 
+test('Inspector uses equal main and internal buttons without overflowing a long Objective', async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 720, height: 840 });
+  await page.goto('/home');
+  for (const path of [
+    'src/features/temporal/session-subject-controls.css',
+    'src/features/temporal/activity-session-card-controls.css',
+    'src/features/temporal/objective-controls.css',
+    'src/features/home/ui/timeline/timeline.css',
+  ]) {
+    await page.addStyleTag({ path });
+  }
+  const geometry = await page.evaluate(() => {
+    const root = document.createElement('div');
+    root.className = 'timeline-event-modal timeline-event-modal--inspector';
+    root.innerHTML = `<div class="timeline-event-modal__schedule-row">
+      <p class="timeline-event-modal__time">Domenica 18 ottobre · 13:30–14:00</p>
+      <div class="timeline-activity-session-card-controls"><div class="timeline-session-controls">
+        <div class="timeline-session-controls__runtime-actions"><button class="timeline-session-controls__runtime-button">▶</button></div>
+      </div></div>
+    </div>
+    <div class="timeline-activity-planned-sessions"><div class="timeline-activity-planned-sessions__row">
+      <div class="timeline-activity-planned-sessions__summary">Sessione</div>
+      <div class="timeline-session-controls__runtime-actions"><button class="timeline-session-controls__runtime-button">▶</button></div>
+    </div></div>
+    <div class="timeline-objective-controls"><div class="timeline-objective-controls__item">
+      <div class="timeline-objective-controls__summary">
+        <span class="timeline-objective-controls__name">${'Obiettivo lunghissimo '.repeat(15)}</span>
+        <small>Obiettivo ≥ 12 mele</small>
+      </div>
+    </div></div>`;
+    document.body.appendChild(root);
+    const buttons = [
+      ...root.querySelectorAll('.timeline-session-controls__runtime-button'),
+    ].map((button) => button.getBoundingClientRect());
+    const name = root
+      .querySelector('.timeline-objective-controls__name')!
+      .getBoundingClientRect();
+    const target = root
+      .querySelector('.timeline-objective-controls__summary small')!
+      .getBoundingClientRect();
+    const result = {
+      buttonSizes: buttons.map((button) => [button.width, button.height]),
+      nameFits: name.right <= target.left + 1,
+      targetFits: target.right <= root.getBoundingClientRect().right + 1,
+    };
+    root.remove();
+    return result;
+  });
+  expect(geometry).toEqual({
+    buttonSizes: [
+      [30, 30],
+      [30, 30],
+    ],
+    nameFits: true,
+    targetFits: true,
+  });
+});
+
+test('Activity Edit keeps quantity fields on one row at desktop width', async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 900, height: 800 });
+  await page.goto('/home');
+  await page.addStyleTag({
+    path: 'src/features/temporal-create/ui/temporal-create-objectives.css',
+  });
+  const fields = await page.evaluate(() => {
+    const root = document.createElement('div');
+    root.style.width = '680px';
+    root.innerHTML = `<div class="temporal-create-objective is-edit">
+      <div class="temporal-create-objective__definition">
+        <label><span>Risultato</span><select><option>Quantità</option></select></label>
+        <label><span>Regola</span><select><option>≥</option></select></label>
+        <label><span>Target</span><input type="number" /></label>
+        <label><span>Unità</span><input value="mele" /></label>
+      </div>
+    </div>`;
+    document.body.appendChild(root);
+    const definition = root.querySelector('.temporal-create-objective__definition')!;
+    const bounds = [...definition.querySelectorAll('label')].map((field) => field.getBoundingClientRect());
+    const right = definition.getBoundingClientRect().right;
+    const result = {
+      sameRow: bounds.every((field) => Math.abs(field.top - bounds[0]!.top) < 1),
+      fits: bounds.every((field) => field.right <= right + 1),
+    };
+    root.remove();
+    return result;
+  });
+  expect(fields).toEqual({ sameRow: true, fits: true });
+});
+
 async function expectCardInsideTimelineViewport(
   card: Locator,
   grid: Locator,
@@ -87,9 +180,7 @@ function dayDistance(fromDateKey: string, toDateKey: string): number {
   );
 }
 
-test('a long Activity title stays on one ellipsized line', async ({
-  page,
-}) => {
+test('a long Activity title stays on one ellipsized line', async ({ page }) => {
   await page.setViewportSize({ width: 1440, height: 900 });
   await page.goto('/home');
   // The non-auth /home fixture has generic Timeline cards but no persisted
@@ -172,8 +263,10 @@ test('title drag previews the same 15-minute destination as drop', async ({
   const marker = page.locator('[data-timeline-drag-ruler-marker]');
   await expect(overlay).toBeVisible();
   await expect(marker).toBeVisible();
-  await expect(page.locator('[data-home-region="timeline"]'))
-    .toHaveAttribute('data-timeline-card-dragging', 'true');
+  await expect(page.locator('[data-home-region="timeline"]')).toHaveAttribute(
+    'data-timeline-card-dragging',
+    'true',
+  );
 
   const preview = await overlay.getAttribute('data-drag-preview-time');
   expect(preview).toMatch(/^\d{2}:\d{2}–\d{2}:\d{2}$/);
@@ -186,8 +279,10 @@ test('title drag previews the same 15-minute destination as drop', async ({
   await page.mouse.up();
   await expect(overlay).toHaveCount(0);
   await expect(marker).toHaveCount(0);
-  await expect(page.locator('[data-home-region="timeline"]'))
-    .toHaveAttribute('data-timeline-card-dragging', 'false');
+  await expect(page.locator('[data-home-region="timeline"]')).toHaveAttribute(
+    'data-timeline-card-dragging',
+    'false',
+  );
   await expect(card.locator('.timeline-event-card__time')).toContainText(
     preview,
   );
@@ -210,9 +305,7 @@ test('card clock is informative rather than hover-editable', async ({
   await expect(clock).toHaveCSS('color', color);
 });
 
-test('a keyboard nudge preserves its feedback and Undo', async ({
-  page,
-}) => {
+test('a keyboard nudge preserves its feedback and Undo', async ({ page }) => {
   await page.setViewportSize({ width: 1440, height: 900 });
   await page.goto('/home');
 

@@ -1654,6 +1654,15 @@
   grid-row: 1;
 }
 
+.timeline-event-modal--inspector
+  .timeline-activity-session-card-controls
+  .timeline-session-controls__runtime-button {
+  width: 30px;
+  height: 30px;
+  border-radius: 8px;
+  font-size: 12px;
+}
+
 .timeline-event-modal--inspector .timeline-session-controls__inspector-summary {
   min-width: 0;
   color: var(--dante-semantic-color-home-text-secondary, #b9c6d5);

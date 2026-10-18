@@ -20,13 +20,25 @@
 .timeline-objective-controls__summary {
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto auto;
+  min-width: 0;
   align-items: center;
   gap: 8px;
   font-size: 11px;
 }
 
+.timeline-objective-controls__name {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
 .timeline-objective-controls__summary small {
+  max-width: 150px;
+  overflow: hidden;
   color: var(--dante-semantic-color-home-text-muted, #8f9bad);
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .timeline-objective-controls__summary em {

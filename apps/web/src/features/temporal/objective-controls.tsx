@@ -200,9 +200,21 @@ function ObjectiveInputRow({
       data-objective-ref={objective.objectiveRef}
     >
       <div className="timeline-objective-controls__summary">
-        <span>{objective.label}</span>
-        <small>{targetLabel(objective)}</small>
-        <em>{assessmentLabel(objective.assessmentCode)}</em>
+        <span
+          className="timeline-objective-controls__name"
+          title={objective.label}
+        >
+          {objective.label}
+        </span>
+        {objective.resultKind === 'quantity' ||
+        objective.resultKind === 'range' ? (
+          <small title={targetLabel(objective)}>
+            Obiettivo {targetLabel(objective)}
+          </small>
+        ) : null}
+        {objective.assessmentCode !== null ? (
+          <em>{assessmentLabel(objective.assessmentCode)}</em>
+        ) : null}
       </div>
       {confirmed ? (
         <small className="timeline-objective-controls__observation">

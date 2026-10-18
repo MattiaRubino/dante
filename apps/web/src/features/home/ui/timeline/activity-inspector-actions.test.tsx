@@ -227,7 +227,6 @@ describe('Recurring Activity profile scope', () => {
     expect(swatch(green)).toBe('rgb(42, 183, 131)');
   });
 
-
   it('labels retained named and generic attempts with their factual lifecycle state', async () => {
     loadSettings.mockResolvedValueOnce({
       ...currentSettings,
@@ -677,6 +676,12 @@ describe('Activity Inspector', () => {
     fireEvent.change(screen.getByRole('combobox', { name: 'Tipo obiettivo' }), {
       target: { value: 'quantity' },
     });
+    expect(
+      screen
+        .getByRole('textbox', { name: 'Unità di misura' })
+        .closest('.temporal-create-objective')
+        ?.classList.contains('is-edit'),
+    ).toBe(true);
     fireEvent.change(
       screen.getByRole('spinbutton', { name: 'Valore obiettivo' }),
       { target: { value: '10' } },

@@ -91,7 +91,8 @@ export function SessionSubjectControls({
   onRecorded,
   inspectorSummary = false,
   showUnstartedStatus = false,
-  hideRuntimeActions = false,
+  unstartedStatus = 'Non avviata',
+  playEnabled = true,
   locale = 'it-IT',
   timeZone,
 }: Readonly<{
@@ -108,7 +109,8 @@ export function SessionSubjectControls({
   onRecorded?: () => void;
   inspectorSummary?: boolean;
   showUnstartedStatus?: boolean;
-  hideRuntimeActions?: boolean;
+  unstartedStatus?: string;
+  playEnabled?: boolean;
   locale?: string;
   timeZone?: string;
 }>) {
@@ -200,7 +202,7 @@ export function SessionSubjectControls({
       .then(() => setMessage(rejectionMessage(fallback, error)));
 
   const start = () => {
-    if (!interactive || stopped) return;
+    if (!interactive || !playEnabled || stopped) return;
     setPending(true);
     const command =
       plannedScheduleRef === null
@@ -256,7 +258,7 @@ export function SessionSubjectControls({
   };
 
   const resume = () => {
-    if (!interactive || openSession === null) return;
+    if (!interactive || !playEnabled || openSession === null) return;
     setPending(true);
     void source
       .resume(
@@ -320,7 +322,7 @@ export function SessionSubjectControls({
         className="timeline-session-controls__runtime-actions"
         aria-label={`Sessione · ${label}`}
       >
-        {hideRuntimeActions ? null : allowLive && !stopped ? (
+        {allowLive && !stopped ? (
           <>
             <RuntimeButton
               label={
@@ -340,6 +342,7 @@ export function SessionSubjectControls({
               pending={pending}
               interactive={
                 interactive &&
+                playEnabled &&
                 (compactRuntime || openSession === null || openSession.paused)
               }
               onClick={
@@ -407,10 +410,7 @@ export function SessionSubjectControls({
             />
           </>
         )}
-        {!hideRuntimeActions &&
-        allowManual &&
-        !stopped &&
-        kind === 'activity' ? (
+        {allowManual && !stopped && kind === 'activity' ? (
           <button
             type="button"
             disabled={pending || !interactive}
@@ -480,7 +480,7 @@ export function SessionSubjectControls({
         </span>
       ) : inspectorSummary && showUnstartedStatus && !durationSession ? (
         <span className="timeline-session-controls__inspector-summary">
-          Non avviata
+          {unstartedStatus}
         </span>
       ) : null}
       {card || inspectorSummary || openSession === null ? null : (

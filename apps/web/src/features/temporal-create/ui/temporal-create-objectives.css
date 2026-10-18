@@ -141,6 +141,27 @@
   padding: 0 7px;
 }
 
+.temporal-create-objective.is-edit .temporal-create-objective__definition {
+  display: grid;
+  grid-template-columns: minmax(0, 120px) minmax(0, 96px) repeat(
+      2,
+      minmax(0, 1fr)
+    );
+}
+
+.temporal-create-objective.is-edit
+  .temporal-create-objective__definition
+  label {
+  min-width: 0;
+}
+
+.temporal-create-objective.is-edit
+  .temporal-create-objective__definition
+  :is(input, select) {
+  width: 100%;
+  min-width: 0;
+}
+
 .temporal-create-objective__hint {
   align-self: center;
   color: var(--dante-semantic-color-home-text-muted, #8f9bad);
@@ -192,6 +213,10 @@
   .temporal-create-objective__definition {
     margin-left: 0;
   }
+
+  .temporal-create-objective.is-edit .temporal-create-objective__definition {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
 }
 
 /* Edit-only metadata uses the same Objective surface, without leaking
@@ -211,7 +236,8 @@
   gap: 6px;
   margin: 0;
   padding: 8px 10px;
-  border: 1px solid var(--dante-semantic-color-home-border-subtle, rgba(255, 255, 255, 0.09));
+  border: 1px solid
+    var(--dante-semantic-color-home-border-subtle, rgba(255, 255, 255, 0.09));
   border-radius: 9px;
 }
 

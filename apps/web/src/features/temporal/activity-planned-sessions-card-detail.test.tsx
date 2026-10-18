@@ -152,7 +152,11 @@ describe('Activity planned Sessions card detail', () => {
       );
     });
     expect(await screen.findAllByText('Principale in pausa')).toHaveLength(2);
-    expect(container.querySelectorAll('[aria-label="Avvia"]')).toHaveLength(0);
+    const pausedPlay = container.querySelectorAll<HTMLButtonElement>(
+      '[aria-label="Avvia"]',
+    );
+    expect(pausedPlay).toHaveLength(2);
+    expect([...pausedPlay].every((button) => button.disabled)).toBe(true);
 
     mainStopped = true;
     mainPaused = false;
@@ -163,6 +167,110 @@ describe('Activity planned Sessions card detail', () => {
     });
     expect(await screen.findAllByText('Da verificare')).toHaveLength(2);
     expect(container.querySelectorAll('[aria-label="Avvia"]')).toHaveLength(0);
+  });
+
+  it('keeps a paused child clock and Stop while parent Pause blocks child Resume', async () => {
+    let mainPaused = false;
+    let childPaused = false;
+    const started = '2026-10-18T09:44:00Z';
+    const listed = () => [
+      {
+        session_ref: '0199a8c0-6e72-7cd1-9be1-b3f514067293',
+        planned_schedule_ref: null,
+        subject_native_ref: ACTIVITY,
+        timing_material_state_ref: '0199a8c0-6e72-7cd1-9be1-b3f514067294',
+        started_at: started,
+        ended_at: null,
+        evaluated_at: new Date().toISOString(),
+        open: true,
+        replayed: false,
+        paused: mainPaused,
+        elapsed_seconds: 20,
+        active_seconds: 18,
+        paused_seconds: 2,
+        duration_evaluations: [],
+      },
+      {
+        session_ref: '0199a8c0-6e72-7cd1-9be1-b3f514067299',
+        planned_schedule_ref: SESSION_A,
+        subject_native_ref: ACTIVITY,
+        timing_material_state_ref: '0199a8c0-6e72-7cd1-9be1-b3f514067298',
+        started_at: started,
+        ended_at: null,
+        evaluated_at: new Date().toISOString(),
+        open: true,
+        replayed: false,
+        paused: childPaused,
+        elapsed_seconds: 9,
+        active_seconds: 6,
+        paused_seconds: 3,
+        duration_evaluations: [],
+      },
+    ];
+    vi.stubGlobal(
+      'fetch',
+      vi.fn<typeof fetch>((input) =>
+        Promise.resolve(
+          Response.json(
+            fetchRequestUrl(input).endsWith('/sessions')
+              ? listed()
+              : {
+                  parent_activity_ref: ACTIVITY,
+                  schedules: [
+                    {
+                      schedule_ref: SESSION_A,
+                      role_code: 'planned',
+                      display_name: 'Teoria',
+                    },
+                  ],
+                },
+          ),
+        ),
+      ),
+    );
+    const { container } = render(
+      <ActivityPlannedSessionsCardDetail
+        activityRef={ACTIVITY}
+        visible
+        timeZone="Europe/Rome"
+      />,
+    );
+    expect(await screen.findByText('Teoria')).toBeTruthy();
+    await waitFor(() =>
+      expect(container.querySelector('[aria-label="Pausa"]')).not.toBeNull(),
+    );
+
+    mainPaused = true;
+    childPaused = true;
+    await act(async () => {
+      window.dispatchEvent(
+        new CustomEvent('dante:session-changed', { detail: ACTIVITY }),
+      );
+      await Promise.resolve();
+    });
+    expect(
+      await screen.findByText('Avviata alle 11:44 · In pausa 00:00:06'),
+    ).toBeTruthy();
+    const resume = screen.getByRole<HTMLButtonElement>('button', {
+      name: 'Riprendi',
+    });
+    expect(resume.disabled).toBe(true);
+    expect(
+      screen.getByRole<HTMLButtonElement>('button', { name: 'Termina' })
+        .disabled,
+    ).toBe(false);
+
+    mainPaused = false;
+    await act(async () => {
+      window.dispatchEvent(
+        new CustomEvent('dante:session-changed', { detail: ACTIVITY }),
+      );
+      await Promise.resolve();
+    });
+    await waitFor(() => expect(resume.disabled).toBe(false));
+    expect(
+      screen.getByText('Avviata alle 11:44 · In pausa 00:00:06'),
+    ).toBeTruthy();
   });
 
   it('keeps a recorded internal Session as one named row with its own final timing after main Stop', async () => {
