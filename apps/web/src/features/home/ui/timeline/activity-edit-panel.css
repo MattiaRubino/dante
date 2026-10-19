@@ -158,12 +158,12 @@
 
 .timeline-activity-editor__record button:disabled,
 .timeline-activity-editor__record-hint {
-  opacity: .65;
+  opacity: 0.65;
 }
 
 .timeline-activity-editor__readback [inert],
 .timeline-activity-editor__capture:has(input:disabled) {
-  opacity: .55;
+  opacity: 0.55;
 }
 
 .timeline-event-modal--edit

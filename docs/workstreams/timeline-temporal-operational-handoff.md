@@ -1,5 +1,16 @@
 # Timeline / Temporal-Operational — Workstream Handoff
 
+## 2026-10-19 — Gate follow-up on `_160`
+
+The user's WSL full gate on `b4b4408074f076c85a5f281679adb235af8e8f68`
+completed all 27 groups with source stability PASS. Twenty-five groups passed,
+including generated drift, 1,132 Web tests, real-stack browser, and all
+PostgreSQL behavior/catalog shards apart from one migration-test expectation.
+`REPO_FORMAT` found one unformatted Activity Edit CSS file; `BACKEND_POSTGRES`
+found the head downgrade test still expected the previous migration's error
+text. The CSS has been formatted and the test now expects `_160`'s forward-only
+guard. A same-SHA rerun of those two groups and the complete gate is pending.
+
 ## 2026-10-19 — Recorded Session edit lock and individual deletion candidate
 
 The revised lifecycle rule freezes Activity time, intervals, all-day precision
