@@ -102,6 +102,18 @@ function UnscheduleProbe() {
   );
 }
 
+function RefreshProbe() {
+  const { state, refresh } = useTemporalTimelineRuntime();
+  return (
+    <>
+      <span data-testid="read-state">{state.status}</span>
+      <button type="button" onClick={refresh}>
+        refresh
+      </button>
+    </>
+  );
+}
+
 describe('TemporalTimelineRuntimeBoundary', () => {
   it('completes the explicit occurrence checkpoint before reading Timeline truth', async () => {
     const order: string[] = [];
@@ -202,6 +214,72 @@ describe('TemporalTimelineRuntimeBoundary', () => {
         .querySelector('[data-temporal-read-state="ready"]')
         ?.getAttribute('data-temporal-effective-zone'),
     ).toBe('Europe/Rome');
+  });
+
+  it('keeps accepted Timeline content visible during a same-window refresh', async () => {
+    const pending = deferred<TemporalTimelineWindow>();
+    const loadWindow = vi
+      .fn<TemporalTimelineDataSource['loadWindow']>()
+      .mockResolvedValueOnce(emptyWindow())
+      .mockImplementationOnce(() => pending.promise);
+    const { container } = render(
+      <TemporalTimelineRuntimeBoundary
+        viewedDateIso="2026-09-04"
+        dataSource={{ loadWindow }}
+        mode="production"
+      >
+        <RefreshProbe />
+      </TemporalTimelineRuntimeBoundary>,
+    );
+    await waitFor(() =>
+      expect(screen.getByTestId('read-state').textContent).toBe('ready'),
+    );
+
+    fireEvent.click(screen.getByRole('button', { name: 'refresh' }));
+    await waitFor(() => expect(loadWindow).toHaveBeenCalledTimes(2));
+    expect(screen.getByTestId('read-state').textContent).toBe('ready');
+    expect(screen.queryByText('Caricamento timeline…')).toBeNull();
+    expect(
+      container.querySelector('[data-temporal-read-state="ready"]'),
+    ).toBeTruthy();
+
+    await act(async () => {
+      pending.resolve(emptyWindow());
+      await pending.promise;
+    });
+    expect(screen.getByTestId('read-state').textContent).toBe('ready');
+  });
+
+  it('shows a loading state when navigation requests a different date range', async () => {
+    const pending = deferred<TemporalTimelineWindow>();
+    const loadWindow = vi
+      .fn<TemporalTimelineDataSource['loadWindow']>()
+      .mockResolvedValueOnce(emptyWindow())
+      .mockImplementationOnce(() => pending.promise);
+    const source: TemporalTimelineDataSource = { loadWindow };
+    const renderBoundary = (viewedDateIso: string) => (
+      <TemporalTimelineRuntimeBoundary
+        viewedDateIso={viewedDateIso}
+        dataSource={source}
+        mode="production"
+      >
+        <RefreshProbe />
+      </TemporalTimelineRuntimeBoundary>
+    );
+    const view = render(renderBoundary('2026-09-04'));
+    await waitFor(() =>
+      expect(screen.getByTestId('read-state').textContent).toBe('ready'),
+    );
+
+    view.rerender(renderBoundary('2026-10-04'));
+    expect(screen.getByTestId('read-state').textContent).toBe('loading');
+    expect(screen.getByRole('status').textContent).toContain(
+      'Caricamento timeline',
+    );
+    await act(async () => {
+      pending.resolve(emptyWindow());
+      await pending.promise;
+    });
   });
 
   it('surfaces backend failure instead of replacing it with fake Timeline success', async () => {

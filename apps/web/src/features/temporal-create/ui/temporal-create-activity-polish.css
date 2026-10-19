@@ -97,8 +97,8 @@ html[lang^='en']
 
 :is(.temporal-create-composer.is-advanced, .timeline-event-modal--edit)
   .temporal-create-activity-intervals {
-  gap: 6px;
-  margin-top: -3px;
+  gap: 12px;
+  margin-top: 10px;
   padding-top: 0;
 }
 
@@ -118,53 +118,29 @@ html[lang^='en']
   text-transform: uppercase;
 }
 
-/* Match the compact + Sessione action and keep it immediately below the last
-   interval instead of letting it float as a separate form row. */
+/* The action follows the whole interval row with its own tap target. Keep
+   the actual localized button text visible in both Create and Edit. */
 :is(.temporal-create-composer.is-advanced, .timeline-event-modal--edit)
   .temporal-create-activity-intervals
   > .temporal-create-activity-intervals__add {
   display: inline-flex;
-  min-height: 32px;
+  min-height: 36px;
   align-items: center;
   justify-self: start;
   gap: 6px;
-  margin: 0 0 0 28px;
-  padding: 0 10px;
-  border: 1px dashed color-mix(in srgb, currentColor 23%, transparent) !important;
-  border-radius: 8px;
+  margin: 0;
+  padding: 7px 12px;
+  border: 1px solid var(--dante-semantic-color-home-border-subtle) !important;
+  border-radius: 9px;
   color: var(--dante-semantic-color-home-text-secondary, #b7c0cf);
-  background: transparent !important;
-  font-size: 0 !important;
+  background: color-mix(
+    in srgb,
+    var(--dante-semantic-color-home-surface-control, #151f2e) 68%,
+    transparent
+  ) !important;
+  font-size: 12px;
   font-weight: 650;
-  line-height: 1;
-}
-
-:is(.temporal-create-composer.is-advanced, .timeline-event-modal--edit)
-  .temporal-create-activity-intervals
-  > .temporal-create-activity-intervals__add
-  > span {
-  display: none;
-}
-
-:is(.temporal-create-composer.is-advanced, .timeline-event-modal--edit)
-  .temporal-create-activity-intervals
-  > .temporal-create-activity-intervals__add::before {
-  content: '＋';
-  font-size: 11px;
-}
-
-:is(.temporal-create-composer.is-advanced, .timeline-event-modal--edit)
-  .temporal-create-activity-intervals
-  > .temporal-create-activity-intervals__add::after {
-  content: 'Intervallo';
-  font-size: 11px;
-}
-
-html[lang^='en']
-  :is(.temporal-create-composer.is-advanced, .timeline-event-modal--edit)
-  .temporal-create-activity-intervals
-  > .temporal-create-activity-intervals__add::after {
-  content: 'Interval';
+  line-height: 1.2;
 }
 
 :is(.temporal-create-composer.is-advanced, .timeline-event-modal--edit)

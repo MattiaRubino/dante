@@ -124,7 +124,19 @@ function resolveRuntimeState(
     return { status: 'ready', effectiveZoneId: 'Etc/UTC', window: null };
   }
   if (settledState?.attempt !== attempt) {
-    return { status: 'loading' };
+    // Refreshes of the same window keep the last accepted Timeline visible
+    // until the new authoritative read settles. A different date range or
+    // source cannot borrow that window's truth.
+    if (
+      settledState?.status !== 'ready' ||
+      attempt === null ||
+      settledState.attempt.source !== attempt.source ||
+      settledState.attempt.request.startDate !== attempt.request.startDate ||
+      settledState.attempt.request.endDateExclusive !==
+        attempt.request.endDateExclusive
+    ) {
+      return { status: 'loading' };
+    }
   }
   if (settledState.status === 'ready') {
     return {

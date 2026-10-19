@@ -138,6 +138,54 @@ test('Activity Edit keeps quantity fields on one row at desktop width', async ({
   expect(fields).toEqual({ sameRow: true, fits: true });
 });
 
+test('Activity Edit places Add interval below the time row with a readable button', async ({
+  page,
+}) => {
+  await page.goto('/home');
+  await page.addStyleTag({
+    path: 'src/features/home/ui/timeline/activity-edit-panel.css',
+  });
+  await page.addStyleTag({
+    path: 'src/features/temporal-create/ui/temporal-create-activity-polish.css',
+  });
+  const geometry = await page.evaluate(() => {
+    const root = document.createElement('section');
+    root.className = 'timeline-event-modal--edit';
+    root.style.width = '680px';
+    root.innerHTML = `<section class="timeline-activity-editor__readback" aria-label="Programmazione attuale">
+      <ul><li><div class="temporal-create-activity-interval__fields" style="height:46px">
+        <button type="button" style="height:46px">19 ott</button>
+      </div></li></ul>
+      <div class="temporal-create-activity-intervals timeline-activity-editor__intervals">
+        <button type="button" class="temporal-create-activity-intervals__add">
+          <span aria-hidden="true">＋</span> Aggiungi intervallo
+        </button>
+      </div>
+    </section>`;
+    document.body.appendChild(root);
+    const time = root.querySelector(
+      '.temporal-create-activity-interval__fields',
+    )!;
+    const button = root.querySelector<HTMLButtonElement>(
+      '.temporal-create-activity-intervals__add',
+    )!;
+    const result = {
+      gap:
+        button.getBoundingClientRect().top -
+        time.getBoundingClientRect().bottom,
+      height: button.getBoundingClientRect().height,
+      fontSize: Number.parseFloat(getComputedStyle(button).fontSize),
+      text: button.textContent?.trim(),
+    };
+    root.remove();
+    return result;
+  });
+  expect(geometry.gap).toBeGreaterThanOrEqual(8);
+  expect(geometry.height).toBeGreaterThanOrEqual(36);
+  expect(geometry.fontSize).toBeGreaterThanOrEqual(12);
+  expect(geometry.text).toContain('Aggiungi intervallo');
+});
+
 async function expectCardInsideTimelineViewport(
   card: Locator,
   grid: Locator,

@@ -1,5 +1,18 @@
 # Timeline / Temporal-Operational — Workstream Handoff
 
+## 2026-10-19 — Refresh presentation and interval action spacing
+
+During a same-window authoritative Timeline refresh, the runtime retains its
+last accepted window on screen until the next read settles, rather than
+briefly showing `Caricamento timeline…` after each mutation. Initial loads,
+date-range/source changes and failed reads retain their explicit loading or
+error treatment. This is presentation continuity, not a claim that network
+or checkpoint work is instantaneous. The Activity interval Add button now
+uses its real localized text and a distinct full-size control below the time
+fields in both Advanced Create and Edit. A runtime state regression and a
+browser geometry regression own the two visible defects; the latter and
+real-app acceptance still require the owner's WSL Chromium environment.
+
 ## 2026-10-19 — Live Activity ruler density follows the card
 
 Real-app screenshots show that starting a main Session at 09:23 moves its
