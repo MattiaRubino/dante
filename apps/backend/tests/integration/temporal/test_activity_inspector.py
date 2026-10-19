@@ -13,9 +13,12 @@ from sqlalchemy import text
 from tests.integration.temporal.test_activity_quick_authoring_metadata import _seed_self
 
 from dante.context.contracts import DanteContext
+from dante.modules.temporal.activity_edit_snapshot_api import _SNAPSHOT, ActivityEditSnapshot
 from dante.modules.temporal.activity_inspector_api import (
     ActivityHardDeleteCommand,
+    ActivitySessionAttemptDeleteCommand,
     delete_self_activity_hard,
+    delete_self_activity_session_attempt,
     get_self_activity_session_impact,
 )
 from dante.modules.temporal.authoring import ActivityChildIntent, TemporalAuthoringApplication
@@ -29,6 +32,85 @@ from dante.platform.database.runtime import create_database_runtime
 from dante.platform.http.problem import ProblemError
 
 pytestmark = pytest.mark.postgres
+
+
+@pytest.mark.asyncio
+async def test_single_attempt_delete_preserves_sibling_and_named_configuration(
+    migrated_database: Any,
+) -> None:
+    actor, other = _seed_self(migrated_database), _seed_self(migrated_database)
+    runtime = create_database_runtime(migrated_database.runtime_settings())
+    try:
+        created = await TemporalAuthoringApplication(runtime.session_factory).create_activity(
+            self_person_ref=actor,
+            operation_id="inspector:single:create",
+            title="Studio",
+            planned_slices=(None,),
+            planned_slice_names=("Ripasso",),
+            session_capture_mode="live",
+        )
+        activity = created.item.subject_native_ref
+        async with runtime.session_factory() as session, session.begin():
+            snapshot = ActivityEditSnapshot.model_validate(
+                await session.scalar(_SNAPSHOT, {"actor": actor, "activity": activity})
+            )
+        named = next(row for row in snapshot.schedules if row.role_code == "planned")
+        sessions = SessionApplication(runtime.session_factory)
+        main = await sessions.start(
+            self_person_ref=actor,
+            operation_id="inspector:single:main",
+            subject_kind="activity",
+            subject_native_ref=activity,
+        )
+        child = await sessions.start_planned(
+            self_person_ref=actor,
+            operation_id="inspector:single:child",
+            activity_ref=activity,
+            schedule_ref=ScopedRecordRef(named.schedule_ref),
+        )
+        request = cast(
+            Request,
+            SimpleNamespace(app=SimpleNamespace(state=SimpleNamespace(database_runtime=runtime))),
+        )
+        context = cast(DanteContext, SimpleNamespace(self_person_ref=actor))
+        other_context = cast(DanteContext, SimpleNamespace(self_person_ref=other))
+        impact = await get_self_activity_session_impact(activity, context, request, Response())
+        command = ActivitySessionAttemptDeleteCommand(
+            expected_session_fingerprint=impact.fingerprint
+        )
+        with pytest.raises(ProblemError) as foreign:
+            await delete_self_activity_session_attempt(
+                activity, child.session_ref, command, other_context, request, Response()
+            )
+        assert foreign.value.status == 404
+        await delete_self_activity_session_attempt(
+            activity, child.session_ref, command, context, request, Response()
+        )
+        remaining = await get_self_activity_session_impact(activity, context, request, Response())
+        assert [row.session_ref for row in remaining.attempts] == [main.session_ref]
+        async with runtime.session_factory() as session, session.begin():
+            snapshot = ActivityEditSnapshot.model_validate(
+                await session.scalar(_SNAPSHOT, {"actor": actor, "activity": activity})
+            )
+        assert any(row.schedule_ref == named.schedule_ref for row in snapshot.schedules)
+        with pytest.raises(ProblemError) as stale:
+            await delete_self_activity_session_attempt(
+                activity, main.session_ref, command, context, request, Response()
+            )
+        assert stale.value.status == 409
+        await delete_self_activity_session_attempt(
+            activity,
+            main.session_ref,
+            ActivitySessionAttemptDeleteCommand(expected_session_fingerprint=remaining.fingerprint),
+            context,
+            request,
+            Response(),
+        )
+        assert (
+            await get_self_activity_session_impact(activity, context, request, Response())
+        ).attempts == []
+    finally:
+        await runtime.dispose()
 
 
 @pytest.mark.asyncio

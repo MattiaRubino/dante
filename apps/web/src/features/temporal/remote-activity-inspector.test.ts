@@ -22,6 +22,38 @@ function json(value: unknown, status = 200) {
 }
 
 describe('remote Activity Inspector', () => {
+  it('deletes one factual attempt with CSRF and impact CAS, then invalidates the Timeline', async () => {
+    const invalidated = vi.fn();
+    const unsubscribe = subscribeTemporalTimelineInvalidation(invalidated);
+    const fingerprint = 'a'.repeat(64);
+    const fetchFn = vi.fn<typeof globalThis.fetch>((input, init) => {
+      if (input === '/api/v1/auth/session') {
+        return Promise.resolve(
+          json({ authenticated: true, csrf_token: 'token' }),
+        );
+      }
+      expect(input).toBe(
+        `/api/v1/temporal/activities/${ref}/session-attempts/${ref}`,
+      );
+      expect(init?.method).toBe('DELETE');
+      expect(new Headers(init?.headers).get('X-Dante-CSRF')).toBe('token');
+      expect(JSON.parse(fetchRequestBody(init?.body))).toEqual({
+        expected_session_fingerprint: fingerprint,
+      });
+      return Promise.resolve(new Response(null, { status: 204 }));
+    });
+    try {
+      await createRemoteActivityInspector(fetchFn).deleteSessionAttempt(
+        ref,
+        ref,
+        fingerprint,
+      );
+      expect(invalidated).toHaveBeenCalledOnce();
+    } finally {
+      unsubscribe();
+    }
+  });
+
   it('uses the authenticated session, CAS and Timeline invalidation for an edit', async () => {
     const invalidated = vi.fn();
     const unsubscribe = subscribeTemporalTimelineInvalidation(invalidated);

@@ -46,6 +46,7 @@ const sessionImpact = vi.fn().mockResolvedValue({
   fingerprint: 'a'.repeat(64),
   attempts: [],
 });
+const deleteSessionAttempt = vi.fn();
 const deleteHard = vi.fn();
 const loadSettings = vi.fn();
 const listActivitySessions = vi.fn().mockResolvedValue([]);
@@ -103,6 +104,7 @@ vi.mock('../../../temporal/remote-activity-inspector', () => ({
     revise,
     retire,
     sessionImpact,
+    deleteSessionAttempt,
     deleteHard,
   }),
 }));
@@ -269,18 +271,30 @@ describe('Recurring Activity profile scope', () => {
         plannedScheduleRef: null,
         open: true,
         paused: false,
+        startedAt: '2026-10-09T08:25:00Z',
+        endedAt: null,
+        activeSeconds: 180,
+        evaluatedAt: '2026-10-09T08:28:00Z',
       },
       {
         sessionRef: 'named1',
         plannedScheduleRef: 'named-schedule',
         open: true,
         paused: true,
+        startedAt: '2026-10-09T08:25:00Z',
+        endedAt: null,
+        activeSeconds: 120,
+        evaluatedAt: '2026-10-09T08:28:00Z',
       },
       {
         sessionRef: 'named2',
         plannedScheduleRef: 'named-schedule',
         open: false,
         paused: false,
+        startedAt: '2026-10-09T08:25:00Z',
+        endedAt: '2026-10-09T08:28:00Z',
+        activeSeconds: 180,
+        evaluatedAt: '2026-10-09T08:28:00Z',
       },
     ]);
     const { container } = render(
@@ -291,22 +305,112 @@ describe('Recurring Activity profile scope', () => {
         onCancel={() => undefined}
       />,
     );
-    const mainStatus = await screen.findByLabelText(
-      'Stato della Sessione principale',
-    );
-    expect(mainStatus.textContent).toContain('in corso');
+    const mainStatus = await screen.findByRole('region', {
+      name: 'Registrazioni Sessione attività',
+    });
+    expect(mainStatus.textContent).toContain('In corso');
     const namedRow = container.querySelector(
       '[data-edit-planned-session="named-schedule"]',
     );
     expect(namedRow).not.toBeNull();
     await waitFor(() => {
-      const status = namedRow?.querySelector(
-        '[aria-label="Stato delle Sessioni registrate"]',
-      );
-      expect(status?.textContent).toContain('in pausa');
-      expect(status?.textContent).toContain('conclusa');
+      expect(namedRow?.textContent).toContain('In pausa');
+      expect(namedRow?.textContent).toContain('Totale attivo');
     });
     expect(listActivitySessions).toHaveBeenCalledWith('activity', ref);
+  });
+
+  it('locks timing and capture until the only recorded attempt is explicitly deleted', async () => {
+    loadSettings.mockResolvedValueOnce({
+      ...currentSettings,
+      capture: { mode: 'live', stateRef: null },
+      schedules: [
+        {
+          scheduleRef: 'envelope',
+          role: 'envelope',
+          order: 0,
+          name: null,
+          placementStateRef: 'state',
+          temporalForm: 'named_zone_local',
+          start: '2026-10-09T09:00:00',
+          end: '2026-10-09T10:00:00',
+          zoneId: 'Europe/Rome',
+        },
+      ],
+    });
+    listActivitySessions
+      .mockResolvedValueOnce([
+        {
+          sessionRef: 'attempt',
+          plannedScheduleRef: null,
+          open: true,
+          paused: true,
+          startedAt: '2026-10-09T08:25:00Z',
+          endedAt: null,
+          activeSeconds: 180,
+          evaluatedAt: '2026-10-09T08:28:00Z',
+        },
+      ])
+      .mockResolvedValueOnce([]);
+    sessionImpact.mockResolvedValueOnce({
+      fingerprint: 'b'.repeat(64),
+      attempts: [{ sessionRef: 'attempt' }],
+    });
+    deleteSessionAttempt.mockResolvedValueOnce(undefined);
+    render(
+      <ActivityEditPanel
+        profile={profile}
+        closeRequestRef={createRef()}
+        onSaved={() => undefined}
+        onCancel={() => undefined}
+      />,
+    );
+    const record = await screen.findByRole('region', {
+      name: 'Registrazioni Sessione attività',
+    });
+    expect(record.textContent).toContain('In pausa 00:03:00');
+    expect(screen.getByRole('button', { name: 'Orario' })).toHaveProperty(
+      'disabled',
+      true,
+    );
+    expect(
+      screen.getByRole('button', { name: 'Tutto il giorno' }),
+    ).toHaveProperty('disabled', true);
+    expect(screen.getByRole('checkbox', { name: 'Sessione' })).toHaveProperty(
+      'disabled',
+      true,
+    );
+    fireEvent.click(
+      within(record).getByRole('button', {
+        name: 'Elimina registrazione attempt',
+      }),
+    );
+    const confirmation = await screen.findByRole('alertdialog', {
+      name: 'Elimina registrazione',
+    });
+    expect(deleteSessionAttempt).not.toHaveBeenCalled();
+    fireEvent.click(
+      within(confirmation).getByRole('button', {
+        name: 'Elimina registrazione',
+      }),
+    );
+    await waitFor(() =>
+      expect(deleteSessionAttempt).toHaveBeenCalledWith(
+        ref,
+        'attempt',
+        'b'.repeat(64),
+      ),
+    );
+    await waitFor(() =>
+      expect(screen.getByRole('button', { name: 'Orario' })).toHaveProperty(
+        'disabled',
+        false,
+      ),
+    );
+    expect(screen.getByRole('checkbox', { name: 'Sessione' })).toHaveProperty(
+      'disabled',
+      false,
+    );
   });
 
   it('keeps the Advanced create order in the edit surface', async () => {

@@ -5,6 +5,14 @@ the complete PostgreSQL inventory and real-browser acceptance have not run on
 that SHA. The normative product rules are in
 [`activity-session-operational-lifecycle-v2.md`](../domain/decisions/activity-session-operational-lifecycle-v2.md).
 
+**2026-10-19 candidate `_160`:** recorded attempts now lock Activity time,
+intervals and generic capture. Drag opens Edit without moving the plan. Edit
+deletes one confirmed factual attempt at a time; named configuration survives
+until separately removed on Save. Focused Web tests: 59/59; full Web: 1,132/1,132;
+backend non-PostgreSQL: 648/648. PostgreSQL migration,
+API graph isolation and real browser remain pending on this candidate. Older
+Keep/Delete results below are historical evidence for a superseded policy.
+
 An Activity interval is a plan; a named Session is a configuration; each real
 Session is an independent execution attempt. The database, API, editor,
 Timeline, review rail and browser must agree before a row is accepted.
@@ -17,12 +25,11 @@ Timeline, review rail and browser must agree before a row is accepted.
 | Multiple Activity intervals | one attempt resumes across intervals; Stop then Play creates a new attempt | Panel unit candidate; PostgreSQL pending |
 | Panel preview and Stop | availability follows Activity interval; ended attempt never gets Play again | Unit candidate; browser pending |
 | Never-started generic and named Sessions | separate read-only rows after the current plan ends; moving into the future clears them; real attempts suppress only their own row | Focused WSL PostgreSQL 21/21 and Web rail 6/6 passed on `5e87cc26`; browser real-stack pending. Resolution actions intentionally deferred |
-| Editor Keep/Delete/Cancel | choice before a mutation with attempts; stale fingerprint rejected | Candidate; PostgreSQL pending |
-| Keep after a plan change | real timestamps and open/paused state retained | Focused PostgreSQL case passed on `0e848943`; browser pending |
-| Delete attempts before edit | full linked graph, rollback, isolation and concurrency | Focused rollback case passed on `0e848943`; complete inventory pending |
-| Named X, Save and Cancel | Save removes configuration with its attempts atomically; Cancel leaves both | Focused PostgreSQL case passed on `0e848943`; browser pending |
+| Recorded attempt edit lock | time, intervals and generic capture disabled in Edit; direct API refuses; metadata still editable | Web candidate; PostgreSQL pending on `_160` |
+| Single attempt deletion | explicit per-row confirmation, owner/CAS check, bounded graph, sibling history and configuration retained | Web candidate; PostgreSQL pending on `_160` |
+| Named X, Save and Cancel | configuration X only after its real attempts are removed; Cancel leaves draft structure intact | Web candidate; PostgreSQL pending on `_160` |
 | Hard Activity deletion | one confirmation, complete owned graph, stale/owner checks | Focused PostgreSQL case passed on `0e848943`; browser pending |
-| Direct Timeline drag, time edit, unschedule and undo | same Keep/Delete/Cancel authority and coherent interval move | Candidate coordinates exact floating/named-zone Activity revisions, including Keep/Delete/Cancel and plan Undo with fresh Session choice. Targeted Web 14/14 and full Web 1,061/1,061 passed locally on `c298769`; a later browser real-stack case checks the card mutation and persistence but has not run in WSL. Unschedule still uses generic Schedule boundary and cannot remove a governed Activity interval |
+| Direct Timeline drag with recorded attempts | leave coordinates unchanged and open Edit; no automatic deletion or stale Undo | Focused Web candidate on `_160`; real browser and PostgreSQL pending. Unschedule still uses generic Schedule boundary and cannot remove a governed Activity interval |
 | Recurring instance versus future series | explicit scope, no rematerialization or unrelated loss | Timeline move/Undo now prompts for the scope of a recurring instance; its focused UI test passed 6/6 and full Web suite 1,062/1,062 in this later local candidate. **Missing** atomic hard deletion: Solo questa must skip the selected occurrence while cascading its Activity graph; Tutta la serie must delete source, all materialized/future instances and their graphs. Bare hard deletion remains fail-closed until that command exists. Browser and full gate pending |
 
 ## 2026-10-15 current integration candidate

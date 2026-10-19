@@ -15,7 +15,7 @@ pytestmark = pytest.mark.postgres
 
 # The current head is forward-only; the earlier B01/B02 downgrade guard
 # fixtures intentionally exercise the last historically reversible snapshot.
-_CURRENT_HEAD = "20261015_159"
+_CURRENT_HEAD = "20261019_160"
 _HISTORICAL_REVERSIBLE_HEAD = "20260917_29"
 _B02_REVISION_PARENT = "20260909_21"
 _B02_SCHEMA_HEAD = "20260909_20"
@@ -50,10 +50,14 @@ def test_activity_lifecycle_functions_expose_only_bounded_runtime_capabilities(
                        'dante_runtime',
                        'dante.delete_self_activity_hard(uuid,uuid,text)',
                        'EXECUTE'),
+                   has_function_privilege(
+                       'dante_runtime',
+                       'dante.delete_self_activity_session_attempt(uuid,uuid,uuid,text)',
+                       'EXECUTE'),
                    has_table_privilege('dante_runtime','dante.session','DELETE'),
                    has_table_privilege('dante_runtime','dante.activity','DELETE')
         """).fetchone()
-        assert grants == (False, True, True, False, False)
+        assert grants == (False, True, True, True, False, False)
 
 
 def _floating_local(year: int, month: int, day: int, hour: int, minute: int) -> datetime:

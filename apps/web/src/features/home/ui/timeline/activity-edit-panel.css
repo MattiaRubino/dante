@@ -105,6 +105,67 @@
   padding: 2px 0 6px;
 }
 
+.timeline-activity-editor__main-record,
+.timeline-activity-editor__record {
+  min-width: 0;
+  border: 1px solid var(--dante-semantic-color-home-border-subtle, #526071);
+  border-radius: 10px;
+  background: color-mix(in srgb, currentColor 4%, transparent);
+}
+
+.timeline-activity-editor__main-record {
+  display: grid;
+  gap: 8px;
+  padding: 12px;
+}
+
+.timeline-activity-editor__main-record h3 {
+  margin: 0;
+  font-size: 13px;
+}
+
+.timeline-activity-editor__record {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 8px 16px;
+  padding: 9px 11px;
+}
+
+.timeline-activity-editor__record-content {
+  display: flex;
+  min-width: 0;
+  flex-wrap: wrap;
+  gap: 4px 10px;
+  overflow-wrap: anywhere;
+  font-variant-numeric: tabular-nums;
+}
+
+.timeline-activity-editor__record-state {
+  color: var(--dante-semantic-color-home-text-secondary, #b7c0cf);
+}
+
+.timeline-activity-editor__record button {
+  flex: none;
+  min-height: 32px;
+  border: 1px solid var(--dante-semantic-color-home-border-subtle, #526071);
+  border-radius: 8px;
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+}
+
+.timeline-activity-editor__record button:disabled,
+.timeline-activity-editor__record-hint {
+  opacity: .65;
+}
+
+.timeline-activity-editor__readback [inert],
+.timeline-activity-editor__capture:has(input:disabled) {
+  opacity: .55;
+}
+
 .timeline-event-modal--edit
   .timeline-activity-editor__sessions
   .temporal-create-tree-time-editor {

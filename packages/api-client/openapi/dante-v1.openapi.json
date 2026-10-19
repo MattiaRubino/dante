@@ -1005,18 +1005,6 @@
               }
             ]
           },
-          "expected_session_fingerprint": {
-            "anyOf": [
-              {
-                "pattern": "^[a-f0-9]{64}$",
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Expected Session Fingerprint"
-          },
           "operation_id": {
             "maxLength": 200,
             "minLength": 1,
@@ -1052,18 +1040,6 @@
                 "type": "null"
               }
             ]
-          },
-          "session_disposition": {
-            "anyOf": [
-              {
-                "enum": ["keep", "delete"],
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Session Disposition"
           }
         },
         "required": ["operation_id"],
@@ -1388,18 +1364,6 @@
               }
             ]
           },
-          "expected_session_fingerprint": {
-            "anyOf": [
-              {
-                "pattern": "^[a-f0-9]{64}$",
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Expected Session Fingerprint"
-          },
           "intervals": {
             "items": {
               "$ref": "#/components/schemas/ReplanRow"
@@ -1461,18 +1425,6 @@
             "maxItems": 0,
             "title": "Remove Planned Sessions",
             "type": "array"
-          },
-          "session_disposition": {
-            "anyOf": [
-              {
-                "enum": ["keep", "delete"],
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Session Disposition"
           },
           "split_envelope": {
             "default": false,
@@ -1820,6 +1772,19 @@
           "period_code"
         ],
         "title": "ActivityScheduleResponse",
+        "type": "object"
+      },
+      "ActivitySessionAttemptDeleteCommand": {
+        "additionalProperties": false,
+        "properties": {
+          "expected_session_fingerprint": {
+            "pattern": "^[a-f0-9]{64}$",
+            "title": "Expected Session Fingerprint",
+            "type": "string"
+          }
+        },
+        "required": ["expected_session_fingerprint"],
+        "title": "ActivitySessionAttemptDeleteCommand",
         "type": "object"
       },
       "ActivitySessionAttemptImpact": {
@@ -28948,6 +28913,61 @@
           }
         },
         "summary": "Establish Activity Schedule",
+        "tags": ["temporal"]
+      }
+    },
+    "/api/v1/temporal/activities/{activity_ref}/session-attempts/{session_ref}": {
+      "delete": {
+        "description": "Remove exactly one owned factual attempt after a fresh impact read.",
+        "operationId": "temporal_delete_self_activity_session_attempt",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "activity_ref",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Activity Ref",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "session_ref",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Session Ref",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ActivitySessionAttemptDeleteCommand"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Delete Self Activity Session Attempt",
         "tags": ["temporal"]
       }
     },

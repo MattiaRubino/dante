@@ -11,7 +11,6 @@ from tests.integration.temporal.test_activity_quick_authoring_metadata import _s
 
 from dante.context.contracts import DanteContext
 from dante.modules.temporal.activity_edit_snapshot_api import _SNAPSHOT, ActivityEditSnapshot
-from dante.modules.temporal.activity_inspector_api import get_self_activity_session_impact
 from dante.modules.temporal.activity_replan_api import (
     ActivityReplanCommand,
     ReplanRow,
@@ -38,6 +37,7 @@ from dante.modules.temporal.schedule import (
 )
 from dante.modules.temporal.session_runtime import SessionApplication
 from dante.platform.database.runtime import create_database_runtime
+from dante.platform.http.problem import ProblemError
 
 pytestmark = pytest.mark.postgres
 
@@ -245,7 +245,6 @@ async def test_unstarted_named_session_review_tracks_current_plan_and_real_attem
 
     async def move(activity_ref: Any, start: datetime, operation: str) -> None:
         profile = await snapshot(activity_ref)
-        impact = await get_self_activity_session_impact(activity_ref, context, request, Response())
         envelope = next(row for row in profile.schedules if row.role_code == "envelope")
         planned = next(row for row in profile.schedules if row.role_code == "planned")
         assert envelope.placement_material_state_ref is not None
@@ -265,8 +264,6 @@ async def test_unstarted_named_session_review_tracks_current_plan_and_real_attem
                         expected_material_state_ref=planned.placement_material_state_ref,
                     )
                 ],
-                session_disposition="keep" if impact.attempts else None,
-                expected_session_fingerprint=impact.fingerprint if impact.attempts else None,
             ),
             context,
             request,
@@ -339,12 +336,9 @@ async def test_unstarted_named_session_review_tracks_current_plan_and_real_attem
         assert len(remaining) == 1
         assert remaining[0].planned_schedule_ref is not None
 
-        await move(activity, future, "review-plan:future")
-        assert not any(
-            item.reason_code == "session_unstarted" and item.subject_ref == activity
-            for item in (await list_resolution_queue(request, context)).items
-        )
-        await move(activity, past, "review-plan:past-again")
+        with pytest.raises(ProblemError) as locked:
+            await move(activity, future, "review-plan:future")
+        assert locked.value.status == 409
         again = [
             item
             for item in (await list_resolution_queue(request, context)).items

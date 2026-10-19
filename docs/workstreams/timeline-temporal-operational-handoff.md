@@ -1,5 +1,20 @@
 # Timeline / Temporal-Operational — Workstream Handoff
 
+## 2026-10-19 — Recorded Session edit lock and individual deletion candidate
+
+The revised lifecycle rule freezes Activity time, intervals, all-day precision
+and generic capture whenever a factual attempt exists. Drag opens Edit without
+moving the plan. Edit shows each main/named registration, asks separately before
+deleting a single attempt and retains sibling attempts and named configuration.
+The API rejects direct replans and capture changes until those attempts are
+removed. Migration `_160` extends the owner-scoped FK deletion graph to one
+Session root with a fresh impact fingerprint check. OpenAPI and Orval client
+were regenerated. Focused Web 59/59, full Web 1,132/1,132, backend non-PostgreSQL
+648/648 (with proxy variables removed for offline HTTP client tests), API
+client 11/11, Web/API typecheck, backend mypy, and Web build passed locally.
+Database, full gate and real-browser acceptance are still required on the
+final SHA.
+
 ## 2026-10-19 — Refresh presentation and interval action spacing
 
 During a same-window authoritative Timeline refresh, the runtime retains its

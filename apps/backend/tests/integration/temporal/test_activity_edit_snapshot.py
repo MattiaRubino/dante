@@ -44,7 +44,7 @@ def _request(runtime: Any) -> Request:
 
 
 @pytest.mark.asyncio
-async def test_delete_session_choice_rolls_back_with_stale_profile_then_commits_atomically(
+async def test_recorded_session_allows_metadata_but_refuses_capture_change(
     migrated_database: Any,
 ) -> None:
     actor = _seed_self(migrated_database)
@@ -66,20 +66,18 @@ async def test_delete_session_choice_rolls_back_with_stale_profile_then_commits_
         context = _context(actor)
         request = _request(runtime)
         impact = await get_self_activity_session_impact(activity, context, request, Response())
-        with pytest.raises(ProblemError) as stale:
+        with pytest.raises(ProblemError) as locked:
             await revise_activity_core(
                 activity,
                 ActivityCoreEditCommand(
-                    operation_id="core-lifecycle:stale",
-                    profile=EditProfileChange(expected_revision=9, title="Dopo"),
-                    session_disposition="delete",
-                    expected_session_fingerprint=impact.fingerprint,
+                    operation_id="core-lifecycle:locked",
+                    capture=EditPolicyChange(mode_code="disabled", expected_state_ref=None),
                 ),
                 context,
                 request,
                 Response(),
             )
-        assert stale.value.status == 409
+        assert locked.value.status == 409
         after_rollback = await get_self_activity_session_impact(
             activity, context, request, Response()
         )
@@ -88,10 +86,8 @@ async def test_delete_session_choice_rolls_back_with_stale_profile_then_commits_
         changed = await revise_activity_core(
             activity,
             ActivityCoreEditCommand(
-                operation_id="core-lifecycle:valid",
+                operation_id="core-lifecycle:metadata",
                 profile=EditProfileChange(expected_revision=0, title="Dopo"),
-                session_disposition="delete",
-                expected_session_fingerprint=impact.fingerprint,
             ),
             context,
             request,
@@ -100,7 +96,7 @@ async def test_delete_session_choice_rolls_back_with_stale_profile_then_commits_
         assert changed.profile.title == "Dopo"
         assert (
             await get_self_activity_session_impact(activity, context, request, Response())
-        ).attempts == []
+        ).fingerprint == impact.fingerprint
     finally:
         await runtime.dispose()
 

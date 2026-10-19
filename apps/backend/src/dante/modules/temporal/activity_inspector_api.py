@@ -197,6 +197,71 @@ def _unavailable() -> ProblemError:
     )
 
 
+class ActivitySessionAttemptDeleteCommand(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+    expected_session_fingerprint: str = Field(pattern=r"^[a-f0-9]{64}$")
+
+
+@router.delete(
+    "/{activity_ref}/session-attempts/{session_ref}",
+    status_code=204,
+    operation_id="temporal_delete_self_activity_session_attempt",
+)
+async def delete_self_activity_session_attempt(
+    activity_ref: UUID,
+    session_ref: UUID,
+    body: ActivitySessionAttemptDeleteCommand,
+    context: WriteContext,
+    request: Request,
+    response: Response,
+) -> None:
+    """Remove exactly one owned factual attempt after a fresh impact read."""
+    response.headers["Cache-Control"] = "no-store"
+    try:
+        async with request.app.state.database_runtime.session_factory() as session, session.begin():
+            await session.execute(text("SET TRANSACTION ISOLATION LEVEL SERIALIZABLE"))
+            await session.scalar(
+                text("""
+                    SELECT dante.delete_self_activity_session_attempt(
+                        :actor,:activity,:session,:fingerprint
+                    )
+                """),
+                {
+                    "actor": context.self_person_ref,
+                    "activity": activity_ref,
+                    "session": session_ref,
+                    "fingerprint": body.expected_session_fingerprint,
+                },
+            )
+    except DBAPIError as exc:
+        constraint = getattr(getattr(exc.orig, "diag", None), "constraint_name", None)
+        if constraint in (
+            "activity_lifecycle_unavailable",
+            "activity_lifecycle_session_unavailable",
+        ):
+            raise ProblemError(
+                status=404,
+                code="temporal.activity_session.not_found",
+                category="not_found",
+                title="Session unavailable",
+                detail="Session unavailable in this Activity.",
+            ) from exc
+        if (
+            constraint == "activity_lifecycle_stale"
+            or getattr(exc.orig, "sqlstate", None) == "40001"
+        ):
+            raise ProblemError(
+                status=409,
+                code="temporal.activity_session.conflict",
+                category="conflict",
+                title="Session changed",
+                detail="Refresh the recorded Sessions before deleting.",
+            ) from exc
+        raise _unavailable() from exc
+    except SQLAlchemyError as exc:
+        raise _unavailable() from exc
+
+
 @router.get(
     "/{activity_ref}/profile",
     response_model=ActivityProfileResponse,

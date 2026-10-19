@@ -18,7 +18,6 @@ import {
   type ActivityNewPlanned,
   type ActivityReplanDraft,
   type ActivityReplanTime,
-  type ActivitySessionDisposition,
   type ActivityEditSettings,
   type ActivityLifeAreaChoice,
 } from '../../../temporal/remote-activity-edit-settings';
@@ -129,6 +128,21 @@ function planValidation(
     }
   }
   return errors;
+}
+
+function recordedClock(value: string, zone?: string): string {
+  return new Intl.DateTimeFormat('it-IT', {
+    hour: '2-digit',
+    minute: '2-digit',
+    ...(zone ? { timeZone: zone } : {}),
+  }).format(new Date(value));
+}
+
+function recordedDuration(seconds: number): string {
+  const whole = Math.max(0, Math.floor(seconds));
+  return [Math.floor(whole / 3600), Math.floor((whole % 3600) / 60), whole % 60]
+    .map((part) => String(part).padStart(2, '0'))
+    .join(':');
 }
 
 function shiftedDate(value: string, days: number): string {
@@ -245,11 +259,13 @@ export function ActivityEditPanel({
   const [settingsSource] = useState(createRemoteActivityEditSettings);
   const [sessionSource] = useState(createRemoteTemporalSessionDataSource);
   const [sessionImpactSource] = useState(createRemoteActivityInspector);
-  const formRef = useRef<HTMLFormElement | null>(null);
-  const [sessionConfirmation, setSessionConfirmation] =
-    useState<ActivitySessionImpact | null>(null);
-  const [sessionDecision, setSessionDecision] =
-    useState<ActivitySessionDisposition | null>(null);
+  const [deletingAttempt, setDeletingAttempt] = useState<{
+    attempt: TemporalSessionView;
+    impact: ActivitySessionImpact;
+  } | null>(null);
+  const [attemptDeletePending, setAttemptDeletePending] = useState(false);
+  const [attemptDeleteError, setAttemptDeleteError] = useState('');
+  const [clockNow, setClockNow] = useState(() => Date.now());
   const [sessionAttempts, setSessionAttempts] = useState<
     readonly TemporalSessionView[] | null
   >(null);
@@ -282,8 +298,99 @@ export function ActivityEditPanel({
     };
   }, [profile.activityRef, sessionSource]);
 
+  useEffect(() => {
+    if (!sessionAttempts?.some((attempt) => attempt.open && !attempt.paused))
+      return;
+    const tick = window.setInterval(() => setClockNow(Date.now()), 1000);
+    return () => window.clearInterval(tick);
+  }, [sessionAttempts]);
+
   const attemptStatus = (attempt: TemporalSessionView) =>
     !attempt.open ? 'conclusa' : attempt.paused ? 'in pausa' : 'in corso';
+
+  const requestAttemptDeletion = (attempt: TemporalSessionView) => {
+    setAttemptDeletePending(true);
+    setAttemptDeleteError('');
+    void sessionImpactSource
+      .sessionImpact(profile.activityRef)
+      .then((impact) => {
+        if (
+          !impact.attempts.some((row) => row.sessionRef === attempt.sessionRef)
+        ) {
+          throw new Error('La registrazione è cambiata. Ricarica Modifica.');
+        }
+        setDeletingAttempt({ attempt, impact });
+      })
+      .catch((reason: unknown) =>
+        setAttemptDeleteError(
+          reason instanceof Error
+            ? reason.message
+            : 'Impossibile verificare la registrazione.',
+        ),
+      )
+      .finally(() => setAttemptDeletePending(false));
+  };
+
+  const confirmAttemptDeletion = () => {
+    if (!deletingAttempt) return;
+    setAttemptDeletePending(true);
+    setAttemptDeleteError('');
+    void sessionImpactSource
+      .deleteSessionAttempt(
+        profile.activityRef,
+        deletingAttempt.attempt.sessionRef,
+        deletingAttempt.impact.fingerprint,
+      )
+      .then(() => sessionSource.list('activity', profile.activityRef))
+      .then((attempts) => {
+        setSessionAttempts(attempts);
+        setDeletingAttempt(null);
+      })
+      .catch((reason: unknown) => {
+        setDeletingAttempt(null);
+        setAttemptDeleteError(
+          reason instanceof Error
+            ? reason.message
+            : 'Impossibile eliminare la registrazione.',
+        );
+        void sessionSource
+          .list('activity', profile.activityRef)
+          .then(setSessionAttempts)
+          .catch(() => setSessionAttempts(null));
+      })
+      .finally(() => setAttemptDeletePending(false));
+  };
+
+  const attemptLine = (attempt: TemporalSessionView) => {
+    const activeSeconds =
+      attempt.activeSeconds +
+      (attempt.open && !attempt.paused
+        ? Math.max(0, (clockNow - Date.parse(attempt.evaluatedAt)) / 1000)
+        : 0);
+    const period = attempt.endedAt
+      ? `${recordedClock(attempt.startedAt, timeZone)}–${recordedClock(attempt.endedAt, timeZone)}`
+      : `Avviata alle ${recordedClock(attempt.startedAt, timeZone)}`;
+    return `${period} · ${attempt.open ? (attempt.paused ? 'In pausa' : 'In corso') : 'Totale attivo'} ${recordedDuration(activeSeconds)}`;
+  };
+
+  const attemptRecord = (attempt: TemporalSessionView) => (
+    <div className="timeline-activity-editor__record" key={attempt.sessionRef}>
+      <div className="timeline-activity-editor__record-content">
+        <span className="timeline-activity-editor__record-state">
+          {attemptStatus(attempt)}
+        </span>
+        <span>{attemptLine(attempt)}</span>
+      </div>
+      <button
+        type="button"
+        disabled={pending || planPending || attemptDeletePending}
+        aria-label={`Elimina registrazione ${attempt.sessionRef}`}
+        onClick={() => requestAttemptDeletion(attempt)}
+      >
+        Elimina registrazione
+      </button>
+    </div>
+  );
 
   const [objectiveSource] = useState(createRemoteRealityObjectiveDataSource);
   const [recurringSource] = useState(createRemoteRecurringProfileEdit);
@@ -394,6 +501,7 @@ export function ActivityEditPanel({
         !!schedule.start &&
         !!schedule.end,
     );
+  const recordedLock = sessionAttempts === null || sessionAttempts.length > 0;
   const planDirty =
     canReplan &&
     (allDay !== originalAllDay ||
@@ -543,7 +651,30 @@ export function ActivityEditPanel({
         );
       })
       .finally(() => setLoadingSettings(false));
-  }, [profile.activityRef, settingsSource]);
+  }, [
+    profile.activityRef,
+    settingsSource,
+    setSettings,
+    setObjectiveRows,
+    setRemovedObjectives,
+    loadedObjectiveOrigins,
+    setObjectiveError,
+    setCaptureMode,
+    setRealityMode,
+    setReminderLeadMinutes,
+    setPlacementProtected,
+    setLockError,
+    setPlanDraft,
+    setAllDay,
+    setDateSpanDraft,
+    setNewPlanned,
+    setPlannedNames,
+    setDeletedPlanned,
+    setNewIntervals,
+    setRemovedIntervals,
+    setSettingsError,
+    setLoadingSettings,
+  ]);
 
   useEffect(() => {
     void loadSettings();
@@ -906,7 +1037,6 @@ export function ActivityEditPanel({
 
   return (
     <form
-      ref={formRef}
       className="timeline-activity-editor"
       onSubmit={(event) => {
         event.preventDefault();
@@ -949,43 +1079,12 @@ export function ActivityEditPanel({
           field?.focus();
           return;
         }
-        if (dirty && sessionAttempts.length > 0 && sessionDecision === null) {
-          setPending(true);
-          void sessionImpactSource
-            .sessionImpact(profile.activityRef)
-            .then((impact) => {
-              if (impact.attempts.length > 0) {
-                setSessionConfirmation(impact);
-              } else {
-                // An attempt ended or was removed while Edit was open.
-                // No destructive confirmation is necessary for an empty graph.
-                setSessionAttempts([]);
-                setSessionDecision({
-                  mode: 'keep',
-                  expectedFingerprint: impact.fingerprint,
-                });
-                requestAnimationFrame(() => formRef.current?.requestSubmit());
-              }
-            })
-            .catch((reason: unknown) => {
-              setError(
-                reason instanceof Error
-                  ? reason.message
-                  : 'Impossibile verificare le Sessioni registrate.',
-              );
-            })
-            .finally(() => setPending(false));
-          return;
-        }
         if (
-          sessionDecision?.mode === 'delete' &&
-          ((planDirty &&
-            (coreDirty || areaDirty || objectiveDirty || nameDirty)) ||
-            (!planDirty && !coreDirty))
+          sessionAttempts.length > 0 &&
+          (planDirty || captureMode !== settings.capture.mode)
         ) {
           setError(
-            'La rimozione delle Sessioni richiede un salvataggio atomico: ' +
-              'salva prima le altre modifiche o modifica soltanto il piano.',
+            'Elimina le registrazioni prima di cambiare orari, intervalli o Sessione dell’attività.',
           );
           return;
         }
@@ -1020,9 +1119,6 @@ export function ActivityEditPanel({
                 currentSettings,
                 replanDraft,
                 operationId,
-                ...(sessionDecision
-                  ? ([sessionDecision] as const)
-                  : ([] as const)),
               )
               .catch((reason: unknown) => {
                 errorHandled = true;
@@ -1278,7 +1374,6 @@ export function ActivityEditPanel({
               ...(reminderChanged ? { reminderLeadMinutes } : {}),
             },
             (operation.current ??= crypto.randomUUID()),
-            ...(sessionDecision ? ([sessionDecision] as const) : ([] as const)),
           );
           operation.current = undefined;
           setSettings(saved.settings);
@@ -1391,6 +1486,7 @@ export function ActivityEditPanel({
               <label className="temporal-create-structure-session-toggle timeline-activity-editor__capture">
                 <input
                   type="checkbox"
+                  disabled={recordedLock || pending || planPending}
                   checked={
                     (captureMode ?? settings.capture.mode) !== 'disabled'
                   }
@@ -1401,20 +1497,6 @@ export function ActivityEditPanel({
                 />
                 Sessione
               </label>
-              {sessionAttempts?.some(
-                (attempt) => !attempt.plannedScheduleRef,
-              ) ? (
-                <small
-                  className="timeline-activity-editor__session-attempt-status"
-                  aria-label="Stato della Sessione principale"
-                >
-                  Sessione principale:{' '}
-                  {sessionAttempts
-                    .filter((attempt) => !attempt.plannedScheduleRef)
-                    .map(attemptStatus)
-                    .join(' · ')}
-                </small>
-              ) : null}
             </div>
           ) : null}
         </div>
@@ -1478,41 +1560,40 @@ export function ActivityEditPanel({
                           }}
                         />
                         <div className="temporal-create-tree-row__actions">
-                          <button
-                            type="button"
-                            className="is-remove"
-                            aria-label="Rimuovi Sessione"
-                            disabled={!canReplan || pending || planPending}
-                            onClick={() => {
-                              setDeletedPlanned((current) => [
-                                ...current,
-                                row.scheduleRef,
-                              ]);
-                              setPlanOperation(null);
-                              setPlanError('');
-                            }}
-                          >
-                            ×
-                          </button>
+                          {!sessionAttempts?.some(
+                            (attempt) =>
+                              attempt.plannedScheduleRef === row.scheduleRef,
+                          ) ? (
+                            <button
+                              type="button"
+                              className="is-remove"
+                              aria-label="Rimuovi Sessione"
+                              disabled={
+                                !canReplan ||
+                                sessionAttempts === null ||
+                                pending ||
+                                planPending
+                              }
+                              onClick={() => {
+                                setDeletedPlanned((current) => [
+                                  ...current,
+                                  row.scheduleRef,
+                                ]);
+                                setPlanOperation(null);
+                                setPlanError('');
+                              }}
+                            >
+                              ×
+                            </button>
+                          ) : null}
                         </div>
                       </div>
-                      {sessionAttempts?.some(
-                        (attempt) =>
-                          attempt.plannedScheduleRef === row.scheduleRef,
-                      ) ? (
-                        <small
-                          className="timeline-activity-editor__session-attempt-status"
-                          aria-label="Stato delle Sessioni registrate"
-                        >
-                          {sessionAttempts
-                            .filter(
-                              (attempt) =>
-                                attempt.plannedScheduleRef === row.scheduleRef,
-                            )
-                            .map(attemptStatus)
-                            .join(' · ')}
-                        </small>
-                      ) : null}
+                      {sessionAttempts
+                        ?.filter(
+                          (attempt) =>
+                            attempt.plannedScheduleRef === row.scheduleRef,
+                        )
+                        .map(attemptRecord)}
                     </div>
                   );
                 })}
@@ -1600,6 +1681,24 @@ export function ActivityEditPanel({
             ＋ Sessione
           </button>
         ) : null}
+        {sessionAttempts?.some((attempt) => !attempt.plannedScheduleRef) ? (
+          <section
+            className="timeline-activity-editor__main-record"
+            aria-label="Registrazioni Sessione attività"
+          >
+            <h3>Sessione attività</h3>
+            {sessionAttempts
+              .filter((attempt) => !attempt.plannedScheduleRef)
+              .map(attemptRecord)}
+          </section>
+        ) : null}
+        {attemptDeleteError ? <p role="alert">{attemptDeleteError}</p> : null}
+        {sessionAttempts?.length ? (
+          <p className="timeline-activity-editor__record-hint">
+            Orari, intervalli e Sessione dell’attività sono bloccati finché
+            esistono registrazioni.
+          </p>
+        ) : null}
         {settings ? (
           <>
             <section
@@ -1615,7 +1714,7 @@ export function ActivityEditPanel({
                   type="button"
                   className={!allDay ? 'is-selected' : ''}
                   aria-pressed={!allDay}
-                  disabled={!canReplan || planPending}
+                  disabled={!canReplan || recordedLock || planPending}
                   onClick={() => {
                     if (originalAllDay && envelope) {
                       setPlanDraft((current) => ({
@@ -1637,7 +1736,9 @@ export function ActivityEditPanel({
                   type="button"
                   className={allDay ? 'is-selected' : ''}
                   aria-pressed={allDay}
-                  disabled={!canReplan || hasIntervals || planPending}
+                  disabled={
+                    !canReplan || recordedLock || hasIntervals || planPending
+                  }
                   onClick={() => {
                     if (envelope) {
                       setDateSpanDraft({
@@ -1694,6 +1795,7 @@ export function ActivityEditPanel({
                 <div
                   className="timeline-activity-editor__all-day"
                   data-edit-invalid={!!planErrors.dateSpan}
+                  inert={recordedLock || undefined}
                 >
                   <TemporalCreateDatePicker
                     label="Data inizio"
@@ -1786,7 +1888,7 @@ export function ActivityEditPanel({
                               changePlan(schedule.scheduleRef, field, value)
                             }
                             error={planErrors[schedule.scheduleRef]}
-                            disabled={planPending}
+                            disabled={recordedLock || planPending}
                             {...(schedule.role === 'interval'
                               ? {
                                   removeLabel: `Rimuovi intervallo ${index + 1}`,
@@ -1806,7 +1908,7 @@ export function ActivityEditPanel({
                         removedIntervals.includes(schedule.scheduleRef) ? (
                           <button
                             type="button"
-                            disabled={planPending}
+                            disabled={recordedLock || planPending}
                             onClick={() => {
                               setRemovedIntervals((current) =>
                                 current.filter(
@@ -1860,7 +1962,7 @@ export function ActivityEditPanel({
                           changeNewInterval(item.clientRef, field, value)
                         }
                         error={planErrors[item.clientRef]}
-                        disabled={planPending}
+                        disabled={recordedLock || planPending}
                         removeLabel={`Rimuovi intervallo ${
                           editablePlan.filter((row) => row.role === 'interval')
                             .length -
@@ -1886,6 +1988,7 @@ export function ActivityEditPanel({
                       type="button"
                       className="temporal-create-activity-intervals__add"
                       disabled={
+                        recordedLock ||
                         planPending ||
                         (hasIntervals
                           ? editablePlan.filter(
@@ -2376,40 +2479,32 @@ export function ActivityEditPanel({
           {pending ? 'Salvataggio…' : 'Salva modifiche'}
         </button>
       </div>
-      {sessionConfirmation ? (
+      {deletingAttempt ? (
         <div
           className="timeline-activity-editor__session-confirmation"
           role="alertdialog"
           aria-modal="true"
-          aria-label="Conferma Sessioni registrate"
+          aria-label="Elimina registrazione"
         >
           <p>
-            Questa attività contiene {sessionConfirmation.attempts.length}{' '}
-            Sessioni reali. Scegli come gestirle prima di salvare la modifica.
+            Eliminare questa registrazione? Tempi e pause saranno cancellati
+            definitivamente.
+            {deletingAttempt.attempt.open
+              ? ' Il cronometro in corso o in pausa sarà interrotto.'
+              : ''}
           </p>
-          <p>
-            {sessionConfirmation.attempts
-              .map((attempt) => attempt.status)
-              .join(' · ')}
-          </p>
-          {(['keep', 'delete'] as const).map((mode) => (
-            <button
-              key={mode}
-              type="button"
-              disabled={pending}
-              onClick={() => {
-                setSessionDecision({
-                  mode,
-                  expectedFingerprint: sessionConfirmation.fingerprint,
-                });
-                setSessionConfirmation(null);
-                requestAnimationFrame(() => formRef.current?.requestSubmit());
-              }}
-            >
-              {mode === 'keep' ? 'Mantieni Sessioni' : 'Elimina Sessioni'}
-            </button>
-          ))}
-          <button type="button" onClick={() => setSessionConfirmation(null)}>
+          <button
+            type="button"
+            disabled={attemptDeletePending}
+            onClick={confirmAttemptDeletion}
+          >
+            {attemptDeletePending ? 'Eliminazione…' : 'Elimina registrazione'}
+          </button>
+          <button
+            type="button"
+            disabled={attemptDeletePending}
+            onClick={() => setDeletingAttempt(null)}
+          >
             Annulla
           </button>
         </div>

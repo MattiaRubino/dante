@@ -110,17 +110,33 @@ Reminder belongs to the Activity interval/Schedule only. Internal Sessions have 
 
 ## Editing, moving and deleting
 
-Before an edit, move or card drag of an Activity that has real Session attempts, the UI asks for one explicit disposition:
+**Revised 2026-10-19:** any real Activity-owned Session attempt, whether
+running, paused or completed, freezes changes to its Activity's planned
+clock/date, all-day precision, and intervals, and to the generic Activity
+Session capture switch. It does not freeze unrelated metadata, Objectives or
+the names/addition of internal Session configuration. A drag attempt on such
+a card leaves its plan untouched and opens Activity Edit, where the reason is
+visible. The server enforces the same refusal even if a different client
+submits a direct replan. The former Keep/Delete/Cancel disposition at move or
+Save is retired; no implicit deletion is a side effect of replanning.
 
-| Choice | Effect |
-| --- | --- |
-| **Mantieni Sessioni** | Change the Activity plan only. Open/paused Sessions keep their runtime state; completed Sessions retain their timestamps. |
-| **Elimina Sessioni** | Remove every real Session of the Activity, including active/paused/completed attempts and their linked pause/runtime data, then apply the requested Activity change. |
-| **Annulla** | Apply nothing. |
+Edit shows each factual attempt under its named Session, or below the Session
+configuration block for a generic attempt. Each row labels the actual start,
+the end if stopped, active time (frozen on pause), and the runtime state.
+`Elimina registrazione` asks for a separate irreversible confirmation and
+deletes **only that attempt**, with its own pauses/runtime/owned dependent
+graph. Deleting an open attempt interrupts its clock; it does not silently
+record Stop. Ownership and the complete impact fingerprint are checked inside
+the transaction. If the fact has changed, the operation refuses and the UI
+reloads; unrelated attempts survive. After the last attempt disappears, the
+time/capture controls and card movement become available again.
 
-The editor clearly labels retained Session attempts as `in corso`, `in pausa`, or `conclusa`.
-
-Removing a named internal Session from the editor is a draft operation. On **Salva**, it removes the internal Session configuration and all real attempts linked to it. Closing/cancelling the editor does not remove anything.
+Removing a named internal Session without real attempts remains a draft
+operation applied on Save. A named Session with attempts cannot be removed
+with its configuration X until its individual factual attempts are explicitly
+deleted. Cancelling Edit does not apply draft configuration changes, while a
+confirmed factual deletion is committed immediately and cannot be undone by
+cancelling Edit.
 
 Deleting a non-recurring Activity is a hard cascade after one confirmation:
 Activity, Objectives, Schedule and intervals, reminders, named Session

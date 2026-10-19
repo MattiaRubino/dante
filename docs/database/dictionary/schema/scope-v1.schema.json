@@ -124,7 +124,7 @@
       "properties": {
         "completed_stages": {
           "type": "array",
-          "maxItems": 70,
+          "maxItems": 71,
           "uniqueItems": true,
           "items": {
             "enum": [
@@ -197,7 +197,8 @@
               "B14-COORDINATED-TIMELINE-UNDO",
               "B14-EVENT-DELETION-INSTANCE-CHOICES",
               "B14-EVENT-TIMELINE-PLACEMENT",
-              "B14-HARD-DELETE-REALITY-POLICY-GRAPH"
+              "B14-HARD-DELETE-REALITY-POLICY-GRAPH",
+              "B14-ACTIVITY-SESSION-SINGLE-DELETE"
             ]
           }
         },
@@ -506,7 +507,8 @@
                   "B14-COORDINATED-TIMELINE-UNDO",
                   "B14-EVENT-DELETION-INSTANCE-CHOICES",
                   "B14-EVENT-TIMELINE-PLACEMENT",
-                  "B14-HARD-DELETE-REALITY-POLICY-GRAPH"
+                  "B14-HARD-DELETE-REALITY-POLICY-GRAPH",
+                  "B14-ACTIVITY-SESSION-SINGLE-DELETE"
                 ]
               }
             }

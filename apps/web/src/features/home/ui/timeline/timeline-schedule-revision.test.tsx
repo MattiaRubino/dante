@@ -32,10 +32,17 @@ import type {
 import { TemporalTimelineRuntimeBoundary } from '../../../temporal/timeline-runtime-boundary';
 import { TimelineSurface } from './timeline-surface';
 
+vi.mock('./activity-edit-panel', () => ({
+  ActivityEditPanel: () => (
+    <div data-testid="activity-edit-panel">Modifica attività</div>
+  ),
+}));
+
 const remote = vi.hoisted(() => ({
   load: vi.fn(),
   applyReplan: vi.fn(),
   sessionImpact: vi.fn(),
+  get: vi.fn(),
   loadRecurring: vi.fn(),
 }));
 vi.mock('../../../temporal/remote-activity-edit-settings', () => ({
@@ -47,6 +54,7 @@ vi.mock('../../../temporal/remote-activity-edit-settings', () => ({
 vi.mock('../../../temporal/remote-activity-inspector', () => ({
   createRemoteActivityInspector: () => ({
     sessionImpact: remote.sessionImpact,
+    get: remote.get,
   }),
 }));
 vi.mock('../../../temporal/remote-recurring-profile-edit', () => ({
@@ -170,6 +178,14 @@ beforeAll(async () => {
   });
 });
 beforeEach(() => {
+  remote.get.mockReset().mockResolvedValue({
+    activityRef: ACTIVITY_REF,
+    title: 'Attività coordinata',
+    description: null,
+    location: null,
+    colorCode: null,
+    revision: 0,
+  });
   remote.load.mockReset().mockResolvedValue(settings());
   remote.sessionImpact
     .mockReset()
@@ -239,113 +255,32 @@ describe('Activity Timeline coordinated replan', () => {
     expect(container.querySelector('.timeline-move-toast.is-on')).toBeNull();
   });
 
-  it('asks Keep/Delete/Cancel for real attempts before any write, and passes the fresh fingerprint', async () => {
-    remote.sessionImpact.mockResolvedValue({
-      fingerprint,
-      attempts: [
-        {
-          sessionRef: 'session-1',
-          plannedScheduleRef: null,
-          timingMaterialStateRef: 'state-1',
-          status: 'in corso',
-        },
-      ],
-    });
-    const { container, reviseSchedule } = renderTimeline();
-    await moveCard(container);
-    const confirmation = await screen.findByRole('alertdialog', {
-      name: 'Conferma spostamento attività',
-    });
-    expect(remote.applyReplan).not.toHaveBeenCalled();
-    fireEvent.click(
-      within(confirmation).getByRole('button', { name: 'Annulla' }),
-    );
-    expect(remote.applyReplan).not.toHaveBeenCalled();
-    await moveCard(container);
-    fireEvent.click(
-      await screen.findByRole('button', { name: 'Mantieni Sessioni' }),
-    );
-    await waitFor(() => expect(remote.applyReplan).toHaveBeenCalledTimes(1));
-    expect(remote.applyReplan.mock.calls[0]?.[4]).toEqual({
-      mode: 'keep',
-      expectedFingerprint: fingerprint,
-    });
-    expect(reviseSchedule).not.toHaveBeenCalled();
-    fireEvent.click(screen.getByRole('button', { name: 'Annulla' }));
-    const undoConfirmation = await screen.findByRole('alertdialog', {
-      name: 'Conferma spostamento attività',
-    });
-    expect(remote.applyReplan).toHaveBeenCalledTimes(1);
-    fireEvent.click(
-      within(undoConfirmation).getByRole('button', {
-        name: 'Mantieni Sessioni',
-      }),
-    );
-    await waitFor(() => expect(remote.applyReplan).toHaveBeenCalledTimes(2));
-    expect(remote.applyReplan.mock.calls[1]?.[4]).toEqual({
-      mode: 'keep',
-      expectedFingerprint: fingerprint,
-    });
-  });
-
-  it('offers Delete, but a rejected coordinated mutation leaves the old card and does not reload', async () => {
-    remote.sessionImpact.mockResolvedValue({
-      fingerprint,
-      attempts: [
-        {
-          sessionRef: 'session-2',
-          plannedScheduleRef: null,
-          timingMaterialStateRef: 'state-2',
-          status: 'conclusa',
-        },
-      ],
-    });
-    remote.applyReplan.mockRejectedValue(
-      new Error('Session attempts changed. Reload before confirming.'),
-    );
-    const { container, loadWindow } = renderTimeline();
-    const card = await moveCard(container);
-    fireEvent.click(
-      await screen.findByRole('button', { name: 'Elimina Sessioni' }),
-    );
-    await waitFor(() => expect(remote.applyReplan).toHaveBeenCalledTimes(1));
-    expect(remote.applyReplan.mock.calls[0]?.[4]).toEqual({
-      mode: 'delete',
-      expectedFingerprint: fingerprint,
-    });
-    expect(
-      await screen.findByText(
-        'Session attempts changed. Reload before confirming.',
-      ),
-    ).toBeTruthy();
-    expect(card.getAttribute('aria-label')).toContain('10:00–11:00');
-    expect(loadWindow).toHaveBeenCalledTimes(1);
-  });
-
-  it('confirms a replan that deletes Sessions without offering a misleading undo', async () => {
-    remote.sessionImpact.mockResolvedValue({
-      fingerprint,
-      attempts: [
-        {
-          sessionRef: 'session-2',
-          plannedScheduleRef: null,
-          timingMaterialStateRef: 'state-2',
-          status: 'conclusa',
-        },
-      ],
-    });
-    const { container } = renderTimeline();
-    await moveCard(container);
-    fireEvent.click(
-      await screen.findByRole('button', { name: 'Elimina Sessioni' }),
-    );
-    await waitFor(() => expect(remote.applyReplan).toHaveBeenCalledTimes(1));
-    const confirmation = await screen.findByText(
-      'Attività riprogrammata per 9 set, 10:15–11:15',
-    );
-    expect(confirmation.parentElement?.getAttribute('role')).toBe('status');
-    expect(confirmation.parentElement?.querySelector('button')).toBeNull();
-  });
+  it.each([
+    ['principale', null, 'in corso'],
+    ['interna', 'planned-1', 'in pausa'],
+    ['conclusa', null, 'conclusa'],
+  ])(
+    'opens Edit after a drag with a %s registration and does not move the plan',
+    async (_label, plannedScheduleRef, status) => {
+      remote.sessionImpact.mockResolvedValue({
+        fingerprint,
+        attempts: [
+          {
+            sessionRef: 'session-1',
+            plannedScheduleRef,
+            timingMaterialStateRef: 'state-1',
+            status,
+          },
+        ],
+      });
+      const { container, reviseSchedule } = renderTimeline();
+      const card = await moveCard(container);
+      await screen.findByTestId('activity-edit-panel');
+      expect(remote.applyReplan).not.toHaveBeenCalled();
+      expect(reviseSchedule).not.toHaveBeenCalled();
+      expect(card.getAttribute('aria-label')).toContain('10:00–11:00');
+    },
+  );
 
   it('requires explicit single-instance scope for a recurring Activity, even without attempts', async () => {
     remote.loadRecurring.mockResolvedValue({

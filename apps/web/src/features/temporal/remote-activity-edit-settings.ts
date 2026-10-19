@@ -67,10 +67,6 @@ export type ActivityNewPlanned = Readonly<{ clientRef: string; name: string }>;
 export type ActivityNewInterval = Readonly<
   ActivityReplanTime & { clientRef: string }
 >;
-export type ActivitySessionDisposition = Readonly<{
-  mode: 'keep' | 'delete';
-  expectedFingerprint: string;
-}>;
 
 export type ActivityReplanDraft = Readonly<{
   times: Record<string, ActivityReplanTime>;
@@ -515,7 +511,6 @@ export function createRemoteActivityEditSettings(
       settings: ActivityEditSettings,
       draft: ActivityReplanDraft,
       operationId: string,
-      disposition?: ActivitySessionDisposition,
     ): Promise<ActivityEditSettings> {
       const controller = new AbortController();
       let timer: ReturnType<typeof setTimeout> | undefined;
@@ -542,13 +537,6 @@ export function createRemoteActivityEditSettings(
               },
               body: JSON.stringify({
                 ...replanBody(settings, draft, operationId),
-                ...(disposition
-                  ? {
-                      session_disposition: disposition.mode,
-                      expected_session_fingerprint:
-                        disposition.expectedFingerprint,
-                    }
-                  : {}),
               }),
             });
             if (!response.ok)
@@ -916,7 +904,6 @@ export function createRemoteActivityEditSettings(
         reminderLeadMinutes?: number | null;
       }>,
       operationId: string,
-      disposition?: ActivitySessionDisposition,
     ): Promise<{ profile: ActivityProfile; settings: ActivityEditSettings }> {
       const controller = new AbortController();
       let timer: ReturnType<typeof setTimeout> | undefined;
@@ -978,13 +965,6 @@ export function createRemoteActivityEditSettings(
                       enabled: changes.reminderLeadMinutes !== null,
                       lead_minutes: changes.reminderLeadMinutes ?? 0,
                     },
-                  }
-                : {}),
-              ...(disposition
-                ? {
-                    session_disposition: disposition.mode,
-                    expected_session_fingerprint:
-                      disposition.expectedFingerprint,
                   }
                 : {}),
             }),

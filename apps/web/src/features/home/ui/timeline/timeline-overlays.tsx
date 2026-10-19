@@ -578,6 +578,7 @@ type EventDetailDialogProps = Readonly<{
   placementLockScheduleRef?: string | null;
   locale?: string;
   timeZone?: string;
+  openActivityEdit?: boolean;
   onActivitySaved?: (profile: ActivityProfile) => void;
   onActivityDeleted?: () => void;
   onClose: () => void;
@@ -649,6 +650,7 @@ export function EventDetailDialog({
   placementLockScheduleRef = null,
   locale = 'it-IT',
   timeZone,
+  openActivityEdit = false,
   onActivitySaved,
   onActivityDeleted,
   onClose,
@@ -673,6 +675,19 @@ export function EventDetailDialog({
   } | null>(null);
   const activityRef =
     sessionSubject?.kind === 'activity' ? sessionSubject.ref : null;
+  useEffect(() => {
+    if (!activityRef || !openActivityEdit) return;
+    let active = true;
+    void createRemoteActivityInspector()
+      .get(activityRef)
+      .then((profile) => {
+        if (active) setEditingProfile(profile);
+      })
+      .catch(() => undefined);
+    return () => {
+      active = false;
+    };
+  }, [activityRef, openActivityEdit]);
   useEffect(() => {
     if (!activityRef) return;
     let active = true;

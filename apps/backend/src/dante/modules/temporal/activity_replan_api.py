@@ -6,7 +6,7 @@ import hashlib
 import json
 from datetime import date, datetime
 from itertools import pairwise
-from typing import Annotated, Literal
+from typing import Annotated
 from uuid import UUID, uuid7
 
 from fastapi import APIRouter, Depends, Request, Response
@@ -159,8 +159,6 @@ class ActivityReplanCommand(BaseModel):
     new_planned_sessions: list[NewPlannedRow] = Field(default_factory=list, max_length=100)
     remove_planned_sessions: list[RetainedPlannedRow] = Field(default_factory=list, max_length=0)
     delete_planned_sessions: list[DeletePlannedRow] = Field(default_factory=list, max_length=100)
-    session_disposition: Literal["keep", "delete"] | None = None
-    expected_session_fingerprint: str | None = Field(default=None, pattern=r"^[a-f0-9]{64}$")
 
     @model_validator(mode="after")
     def unique_new_rows(self) -> ActivityReplanCommand:
@@ -169,8 +167,6 @@ class ActivityReplanCommand(BaseModel):
         ]
         if len(set(refs)) != len(refs):
             raise ValueError("New Activity interval and planned Session identities must be unique.")
-        if (self.session_disposition is None) != (self.expected_session_fingerprint is None):
-            raise ValueError("Session disposition requires its expected impact fingerprint.")
         return self
 
 
@@ -621,20 +617,9 @@ async def apply_activity_replan(
             await session.execute(text("SET TRANSACTION ISOLATION LEVEL SERIALIZABLE"))
             snapshot = await _read(session, actor, activity_ref)
             _, placements = _validated_plan(snapshot, body)
-            changes_required = bool(
-                placements
-                or body.remove_intervals
-                or body.new_intervals
-                or body.new_planned_sessions
-                or body.delete_planned_sessions
-            )
-            # Accepted v2 lifecycle: planning never rewrites real attempts.
-            # A deliberate Keep/Delete decision is required when attempts exist,
-            # and the DB checks its CAS token again under SERIALIZABLE isolation.
-            current_session_fingerprint = await session.scalar(
-                text("SELECT dante.get_self_activity_session_impact_hash(:actor,:activity)"),
-                {"actor": actor, "activity": activity_ref},
-            )
+            # Recorded execution freezes the accepted temporal plan. A factual
+            # attempt must be removed explicitly, one at a time, before moving
+            # any interval. Adding unrecorded Session configuration is allowed.
             attempts_present = bool(
                 await session.scalar(
                     text("""
@@ -645,27 +630,35 @@ async def apply_activity_replan(
                     {"actor": actor, "activity": activity_ref},
                 )
             )
-            if changes_required and attempts_present and body.session_disposition is None:
-                raise _conflict("Scegli Mantieni Sessioni, Elimina Sessioni o Annulla.")
-            if body.session_disposition is not None:
-                if (
-                    current_session_fingerprint is None
-                    or current_session_fingerprint != body.expected_session_fingerprint
-                ):
-                    raise _conflict("Session attempts changed. Reload before confirming.")
-                if body.session_disposition == "delete":
-                    await session.scalar(
-                        text("""
-                            SELECT dante.delete_self_activity_sessions(
-                                :actor,:activity,:fingerprint
-                            )
+            if attempts_present and (
+                placements
+                or body.date_span
+                or body.remove_intervals
+                or body.new_intervals
+                or body.split_envelope
+            ):
+                raise _conflict("Elimina le registrazioni prima di modificare orari o intervalli.")
+            if attempts_present and body.delete_planned_sessions:
+                recorded_planned = {
+                    row.planned_schedule_ref
+                    for row in (
+                        (
+                            await session.execute(
+                                text("""
+                            SELECT dante.get_self_session_planned_schedule(:actor,s.session_ref) AS planned_schedule_ref
+                              FROM dante.list_self_subject_sessions(:actor,:activity) AS s
                         """),
-                        {
-                            "actor": actor,
-                            "activity": activity_ref,
-                            "fingerprint": current_session_fingerprint,
-                        },
+                                {"actor": actor, "activity": activity_ref},
+                            )
+                        )
+                        .mappings()
+                        .all()
                     )
+                }
+                if any(
+                    row.schedule_ref in recorded_planned for row in body.delete_planned_sessions
+                ):
+                    raise _conflict("Elimina la registrazione prima di rimuovere la Sessione.")
             envelope = next(row for row in snapshot.schedules if row.role_code == "envelope")
             # A placement lock freezes existing Schedule coordinates, not new
             # Activity structure. Adding a planned Session inside the already

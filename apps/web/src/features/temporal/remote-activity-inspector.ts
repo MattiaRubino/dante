@@ -167,6 +167,30 @@ export function createRemoteActivityInspector(
         await checked(await request(`${url(ref)}/session-impact`)),
       );
     },
+    async deleteSessionAttempt(
+      activityRef: string,
+      sessionRef: string,
+      expectedFingerprint: string,
+    ): Promise<void> {
+      const token = await csrf();
+      const response = await request(
+        `${url(activityRef)}/session-attempts/${encodeURIComponent(sessionRef)}`,
+        {
+          method: 'DELETE',
+          headers: {
+            'Content-Type': 'application/json',
+            'X-Dante-CSRF': token,
+          },
+          body: JSON.stringify({
+            expected_session_fingerprint: expectedFingerprint,
+          }),
+        },
+      );
+      if (!response.ok) await checked(response);
+      invalidateTemporalTimelineRead();
+      invalidateTemporalPlanningRead();
+      window.dispatchEvent(new Event('dante:session-changed'));
+    },
     async deleteHard(ref: string, expectedSessionFingerprint: string) {
       const token = await csrf();
       await checked(

@@ -7,8 +7,8 @@
 - **Protected-main Alembic head:** `20260906_18`
 - **Protected-main topology:** `89|5|18|77|173|91|272|0|0|0`
 - **Current candidate branch:** `feature/timeline-temporal-operational`
-- **Current candidate Alembic source head:** `20261015_159` (direct Timeline withdrawal functions retired; PostgreSQL acceptance pending)
-- **Measured whole-catalog topology:** `20261011_142` / `238|5|228|103|486|421|596|0|0|0`. **Current `_159` candidate expectation:** `238|5|239|104|486|421|596|0|0|0`; `_159` drops five unused direct Timeline withdrawal routines. The current head still needs a fresh PostgreSQL cross-representation check.
+- **Current candidate Alembic source head:** `20261019_160` (single Activity Session deletion; PostgreSQL acceptance pending)
+- **Measured whole-catalog topology:** `20261011_142` / `238|5|228|103|486|421|596|0|0|0`. **Current `_160` candidate expectation:** `238|5|240|104|486|421|596|0|0|0`; the current head still needs a fresh PostgreSQL cross-representation check.
 - **Frozen CP6 head:** `20260826_08`
 - **Last exact Dictionary/catalog gate:** B14 `_142` / 2026-10-11 (cumulative user-local gate; final current-catalog test 1 PASS)
 

@@ -420,7 +420,7 @@ async def test_placement_lock_allows_new_unplaced_named_session_but_blocks_movem
 
 
 @pytest.mark.asyncio
-async def test_keep_preserves_running_attempts_when_moving_and_named_x_deletes_only_its_attempt(
+async def test_running_attempts_block_moving_and_named_configuration_deletion(
     migrated_database: Any,
 ) -> None:
     actor = _seed_self(migrated_database)
@@ -469,61 +469,51 @@ async def test_keep_preserves_running_attempts_when_moving_and_named_x_deletes_o
                 Response(),
             )
         assert confirmation.value.status == 409
-        moved = await apply_activity_replan(
-            activity,
-            ActivityReplanCommand(
-                operation_id="lifecycle:keep:move",
-                intervals=[_move(interval, 10, 13)],
-                planned_sessions=[_retain(named)],
-                session_disposition="keep",
-                expected_session_fingerprint=impact.fingerprint,
-            ),
-            _context(actor),
-            _request(runtime),
-            Response(),
-        )
-        assert next(
-            r for r in moved.schedules if r.role_code == "interval"
-        ).starts_local_at == datetime(2026, 10, 9, 10)  # noqa: DTZ001
-        after_keep = await get_self_activity_session_impact(
+        with pytest.raises(ProblemError) as obsolete_choice:
+            await apply_activity_replan(
+                activity,
+                ActivityReplanCommand(
+                    operation_id="lifecycle:keep:move",
+                    intervals=[_move(interval, 10, 13)],
+                    planned_sessions=[_retain(named)],
+                ),
+                _context(actor),
+                _request(runtime),
+                Response(),
+            )
+        assert obsolete_choice.value.status == 409
+        after_refusal = await get_self_activity_session_impact(
             activity, _context(actor), _request(runtime), Response()
         )
-        assert after_keep.fingerprint == impact.fingerprint
-        assert {row.session_ref for row in after_keep.attempts} == {
+        assert after_refusal.fingerprint == impact.fingerprint
+        assert {row.session_ref for row in after_refusal.attempts} == {
             main.session_ref,
             child.session_ref,
         }
-
-        current_interval = next(r for r in moved.schedules if r.role_code == "interval")
-        without_named = await apply_activity_replan(
-            activity,
-            ActivityReplanCommand(
-                operation_id="lifecycle:keep:remove-named",
-                intervals=[_move(current_interval, 10, 13)],
-                delete_planned_sessions=[
-                    DeletePlannedRow(
-                        schedule_ref=named.schedule_ref,
-                        expected_material_state_ref=named.placement_material_state_ref,
-                    )
-                ],
-                session_disposition="keep",
-                expected_session_fingerprint=after_keep.fingerprint,
-            ),
-            _context(actor),
-            _request(runtime),
-            Response(),
-        )
-        assert not any(row.role_code == "planned" for row in without_named.schedules)
-        remaining = await get_self_activity_session_impact(
-            activity, _context(actor), _request(runtime), Response()
-        )
-        assert [row.session_ref for row in remaining.attempts] == [main.session_ref]
+        with pytest.raises(ProblemError) as named_recorded:
+            await apply_activity_replan(
+                activity,
+                ActivityReplanCommand(
+                    operation_id="lifecycle:keep:remove-named",
+                    intervals=[_move(interval, 9, 12)],
+                    delete_planned_sessions=[
+                        DeletePlannedRow(
+                            schedule_ref=named.schedule_ref,
+                            expected_material_state_ref=named.placement_material_state_ref,
+                        )
+                    ],
+                ),
+                _context(actor),
+                _request(runtime),
+                Response(),
+            )
+        assert named_recorded.value.status == 409
     finally:
         await runtime.dispose()
 
 
 @pytest.mark.asyncio
-async def test_direct_activity_envelope_revision_with_attempt_requires_confirmed_replan(
+async def test_direct_activity_envelope_revision_remains_blocked_with_an_attempt(
     migrated_database: Any,
 ) -> None:
     actor = _seed_self(migrated_database)
@@ -557,21 +547,18 @@ async def test_direct_activity_envelope_revision_with_attempt_requires_confirmed
         impact = await get_self_activity_session_impact(
             activity, _context(actor), _request(runtime), Response()
         )
-        after = await apply_activity_replan(
-            activity,
-            ActivityReplanCommand(
-                operation_id="lifecycle:direct:confirmed",
-                envelope=_move(envelope, 10, 13),
-                session_disposition="keep",
-                expected_session_fingerprint=impact.fingerprint,
-            ),
-            _context(actor),
-            _request(runtime),
-            Response(),
-        )
-        assert next(
-            row for row in after.schedules if row.role_code == "envelope"
-        ).starts_local_at == datetime(2026, 10, 9, 10)  # noqa: DTZ001
+        with pytest.raises(ProblemError) as locked:
+            await apply_activity_replan(
+                activity,
+                ActivityReplanCommand(
+                    operation_id="lifecycle:direct:confirmed",
+                    envelope=_move(envelope, 10, 13),
+                ),
+                _context(actor),
+                _request(runtime),
+                Response(),
+            )
+        assert locked.value.status == 409
         assert (
             await get_self_activity_session_impact(
                 activity, _context(actor), _request(runtime), Response()
@@ -599,6 +586,18 @@ async def test_generic_undo_cannot_restore_removed_activity_interval_around_a_ru
         activity = created.item.subject_native_ref
         before = await _snapshot(runtime, actor, activity)
         first, second = (row for row in before.schedules if row.role_code == "interval")
+        operation = "lifecycle:undo:remove"
+        await apply_activity_replan(
+            activity,
+            ActivityReplanCommand(
+                operation_id=operation,
+                intervals=[_move(second, 11, 12)],
+                remove_intervals=[_move(first, 9, 10)],
+            ),
+            _context(actor),
+            _request(runtime),
+            Response(),
+        )
         started = await SessionApplication(runtime.session_factory).start(
             self_person_ref=actor,
             subject_kind="activity",
@@ -607,20 +606,6 @@ async def test_generic_undo_cannot_restore_removed_activity_interval_around_a_ru
         )
         impact = await get_self_activity_session_impact(
             activity, _context(actor), _request(runtime), Response()
-        )
-        operation = "lifecycle:undo:remove"
-        await apply_activity_replan(
-            activity,
-            ActivityReplanCommand(
-                operation_id=operation,
-                intervals=[_move(second, 11, 12)],
-                remove_intervals=[_move(first, 9, 10)],
-                session_disposition="keep",
-                expected_session_fingerprint=impact.fingerprint,
-            ),
-            _context(actor),
-            _request(runtime),
-            Response(),
         )
         receipt = (
             f"replan:remove:{hashlib.sha256(operation.encode('utf-8')).hexdigest()}"

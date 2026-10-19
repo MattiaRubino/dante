@@ -8,8 +8,6 @@ import * as zod from 'zod/mini';
 
 export const activityReplanCommandDeletePlannedSessionsMax = 100;
 
-export const activityReplanCommandExpectedSessionFingerprintOneRegExp =
-  new RegExp('^[a-f0-9]{64}$');
 export const activityReplanCommandIntervalsMax = 100;
 
 export const activityReplanCommandNewIntervalsMax = 100;
@@ -66,18 +64,6 @@ export const ActivityReplanCommand = /*#__PURE__*/ zod.object({
         schedule_ref: /*#__PURE__*/ zod.uuid(),
         starts_local_at: /*#__PURE__*/ zod.iso.datetime({ offset: true }),
       }),
-      /*#__PURE__*/ zod.null(),
-    ]),
-  ),
-  expected_session_fingerprint: /*#__PURE__*/ zod.optional(
-    /*#__PURE__*/ zod.union([
-      /*#__PURE__*/ zod
-        .string()
-        .check(
-          /*#__PURE__*/ zod.regex(
-            activityReplanCommandExpectedSessionFingerprintOneRegExp,
-          ),
-        ),
       /*#__PURE__*/ zod.null(),
     ]),
   ),
@@ -208,12 +194,6 @@ export const ActivityReplanCommand = /*#__PURE__*/ zod.object({
           activityReplanCommandRemovePlannedSessionsMax,
         ),
       ),
-  ),
-  session_disposition: /*#__PURE__*/ zod.optional(
-    /*#__PURE__*/ zod.union([
-      /*#__PURE__*/ zod.enum(['keep', 'delete']),
-      /*#__PURE__*/ zod.null(),
-    ]),
   ),
   split_envelope: /*#__PURE__*/ zod._default(
     /*#__PURE__*/ zod.boolean(),

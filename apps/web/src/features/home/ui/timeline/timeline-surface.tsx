@@ -26,7 +26,6 @@ import {
   createRemoteActivityEditSettings,
   type ActivityEditSettings,
   type ActivityReplanDraft,
-  type ActivitySessionDisposition,
 } from '../../../temporal/remote-activity-edit-settings';
 import { createRemoteActivityInspector } from '../../../temporal/remote-activity-inspector';
 import {
@@ -131,6 +130,7 @@ type DetailState = Readonly<{
   detail: TimelineDetail;
   event: TimelineEvent;
   opener: HTMLElement;
+  openActivityEdit?: boolean;
 }>;
 
 type ScheduleNotice = Readonly<{
@@ -145,8 +145,6 @@ type PendingActivityReplan = Readonly<{
   title: string;
   settings: ActivityEditSettings;
   draft: ActivityReplanDraft;
-  fingerprint: string;
-  attemptCount: number;
   recurring: boolean;
   destination?: string;
   restoreDraft?: ActivityReplanDraft;
@@ -640,26 +638,18 @@ export function TimelineSurface({
   }, []);
 
   const applyActivityTimelineReplan = useCallback(
-    (
-      proposal: PendingActivityReplan,
-      disposition?: ActivitySessionDisposition,
-    ) => {
+    (proposal: PendingActivityReplan) => {
       void activityEditSource
         .applyReplan(
           proposal.activityRef,
           proposal.settings,
           proposal.draft,
           crypto.randomUUID(),
-          disposition,
         )
         .then((saved) => {
           window.dispatchEvent(new Event(REVIEW_QUEUE_INVALIDATED));
           setToastVisible(false);
-          if (
-            disposition?.mode !== 'delete' &&
-            !proposal.isUndo &&
-            proposal.restoreDraft
-          ) {
+          if (!proposal.isUndo && proposal.restoreDraft) {
             setCanonicalUndo({
               kind: 'activity-replan',
               activityRef: proposal.activityRef,
@@ -676,10 +666,7 @@ export function TimelineSurface({
             message: proposal.isUndo
               ? t(($) => $.common.home.timeline.feedback.scheduleUndoUpdated)
               : `${t(($) => $.common.home.timeline.feedback.activityRescheduled)} ${proposal.destination ?? ''}`.trim(),
-            undo:
-              !proposal.isUndo &&
-              disposition?.mode !== 'delete' &&
-              proposal.restoreDraft !== undefined,
+            undo: !proposal.isUndo && proposal.restoreDraft !== undefined,
           });
         })
         .catch((reason: unknown) => {
@@ -699,16 +686,11 @@ export function TimelineSurface({
     [activityEditSource, showScheduleNotice, t],
   );
 
-  const confirmActivityTimelineReplan = (mode: 'keep' | 'delete' | null) => {
+  const confirmActivityTimelineReplan = () => {
     const proposal = pendingActivityReplan;
     if (proposal === null) return;
     setPendingActivityReplan(null);
-    applyActivityTimelineReplan(
-      proposal,
-      mode === null
-        ? undefined
-        : { mode, expectedFingerprint: proposal.fingerprint },
-    );
+    applyActivityTimelineReplan(proposal);
   };
 
   const reviseCanonicalEvent = useCallback(
@@ -720,15 +702,6 @@ export function TimelineSurface({
       endMinute: number,
     ) => {
       const basis = event.canonicalBasis;
-      if (basis?.kind === 'scheduled-activity' && basis.placementLocked) {
-        showScheduleNotice({
-          kind: 'error',
-          message: i18n.language.startsWith('it')
-            ? 'Sblocca gli spostamenti prima di modificare l’orario.'
-            : 'Unlock placement before changing the time.',
-        });
-        return;
-      }
       if (
         basis === undefined ||
         effectiveZoneId === null ||
@@ -766,6 +739,25 @@ export function TimelineSurface({
           recurringEditSource.loadActivityContext(basis.activityRef),
         ])
           .then(([settings, impact, recurringContext]) => {
+            if (impact.attempts.length > 0) {
+              const opener =
+                rootRef.current?.querySelector<HTMLElement>(
+                  `[data-timeline-event="${event.id}"]`,
+                ) ?? rootRef.current;
+              if (opener)
+                setDetailState({
+                  event,
+                  detail: detailFromEvent(event, state.groups, fromDateKey),
+                  opener,
+                  openActivityEdit: true,
+                });
+              return;
+            }
+            if (basis.placementLocked) {
+              throw new Error(
+                'Sblocca gli spostamenti prima di modificare l’orario.',
+              );
+            }
             const draft = activityReplanForTimelineRevision(
               settings,
               basis,
@@ -782,8 +774,6 @@ export function TimelineSurface({
               title: event.title,
               settings,
               draft,
-              fingerprint: impact.fingerprint,
-              attemptCount: impact.attempts.length,
               recurring: recurringContext !== null,
               destination: formatReplannedPeriod(
                 revision.next,
@@ -812,7 +802,7 @@ export function TimelineSurface({
                 newPlanned: [],
               },
             };
-            if (impact.attempts.length > 0 || recurringContext !== null) {
+            if (recurringContext !== null) {
               setPendingActivityReplan(proposal);
             } else {
               applyActivityTimelineReplan(proposal);
@@ -873,8 +863,8 @@ export function TimelineSurface({
                 : 'Unlock placement before changing the time.'
               : intervalConflict
                 ? i18n.language.startsWith('it')
-                  ? 'Apri Modifica per coordinare il piano e scegliere se mantenere o eliminare le Sessioni.'
-                  : 'Open Edit to coordinate the plan and choose whether to keep or delete Sessions.'
+                  ? 'Apri Modifica per gestire le registrazioni prima di cambiare il periodo.'
+                  : 'Open Edit to manage recordings before changing the period.'
                 : conflict
                   ? t(
                       ($) =>
@@ -902,6 +892,7 @@ export function TimelineSurface({
       reviseSchedule,
       showScheduleNotice,
       locale,
+      state.groups,
       t,
     ],
   );
@@ -926,12 +917,17 @@ export function TimelineSurface({
             title: undo.title,
             settings: undo.settings,
             draft: undo.draft,
-            fingerprint: impact.fingerprint,
-            attemptCount: impact.attempts.length,
             recurring: recurringContext !== null,
             isUndo: true,
           };
-          if (impact.attempts.length > 0 || recurringContext !== null) {
+          if (impact.attempts.length > 0) {
+            showScheduleNotice({
+              kind: 'error',
+              message:
+                'Questa attività contiene registrazioni: apri Modifica per gestirle prima di annullare lo spostamento.',
+            });
+            pendingScheduleRefsRef.current.delete(undo.scheduleRef);
+          } else if (recurringContext !== null) {
             setPendingActivityReplan(proposal);
           } else {
             applyActivityTimelineReplan(proposal);
@@ -1831,39 +1827,14 @@ export function TimelineSurface({
                     ricorrenza. Le successive mantengono il proprio piano.
                   </p>
                 ) : null}
-                {pendingActivityReplan.attemptCount > 0 ? (
-                  <p>
-                    Questa attività contiene{' '}
-                    {pendingActivityReplan.attemptCount} Sessioni reali. Come
-                    vuoi gestirle durante lo spostamento?
-                  </p>
-                ) : null}
                 <div className="timeline-activity-replan-dialog__actions">
-                  {pendingActivityReplan.attemptCount === 0 ? (
-                    <button
-                      type="button"
-                      autoFocus
-                      onClick={() => confirmActivityTimelineReplan(null)}
-                    >
-                      Solo questa
-                    </button>
-                  ) : (
-                    <>
-                      <button
-                        type="button"
-                        autoFocus
-                        onClick={() => confirmActivityTimelineReplan('keep')}
-                      >
-                        Mantieni Sessioni
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => confirmActivityTimelineReplan('delete')}
-                      >
-                        Elimina Sessioni
-                      </button>
-                    </>
-                  )}
+                  <button
+                    type="button"
+                    autoFocus
+                    onClick={confirmActivityTimelineReplan}
+                  >
+                    Solo questa
+                  </button>
                   <button
                     type="button"
                     onClick={() => {
@@ -1922,6 +1893,7 @@ export function TimelineSurface({
           const basis = detailState?.event.canonicalBasis;
           return basis?.scheduleRef ?? null;
         })()}
+        openActivityEdit={detailState?.openActivityEdit === true}
         onActivitySaved={(profile) => {
           window.dispatchEvent(new Event(REVIEW_QUEUE_INVALIDATED));
           if (!detailState) return;

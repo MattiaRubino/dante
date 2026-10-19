@@ -19,6 +19,7 @@ import type {
   ActivityResponse,
   ActivityRetirementCommand,
   ActivityRetirementResponse,
+  ActivitySessionAttemptDeleteCommand,
   ActivitySessionImpactResponse,
   ActualRealizationCommand,
   ActualRealizationConditionRequest,
@@ -5512,6 +5513,80 @@ export const establishActivityScheduleApiV1TemporalActivitiesActivityRefSchedule
       headers: res.headers,
     } as establishActivityScheduleApiV1TemporalActivitiesActivityRefSchedulePostResponse;
   };
+
+export type temporalDeleteSelfActivitySessionAttemptResponse204 = {
+  data: void;
+  status: 204;
+};
+
+export type temporalDeleteSelfActivitySessionAttemptResponse422 = {
+  data: HTTPValidationError;
+  status: 422;
+};
+
+export type temporalDeleteSelfActivitySessionAttemptResponseSuccess =
+  temporalDeleteSelfActivitySessionAttemptResponse204 & {
+    headers: Headers;
+  };
+export type temporalDeleteSelfActivitySessionAttemptResponseError =
+  temporalDeleteSelfActivitySessionAttemptResponse422 & {
+    headers: Headers;
+  };
+
+export type temporalDeleteSelfActivitySessionAttemptResponse =
+  | temporalDeleteSelfActivitySessionAttemptResponseSuccess
+  | temporalDeleteSelfActivitySessionAttemptResponseError;
+
+export const getTemporalDeleteSelfActivitySessionAttemptUrl = (
+  activityRef: string,
+  sessionRef: string,
+) => {
+  return `/api/v1/temporal/activities/${activityRef}/session-attempts/${sessionRef}`;
+};
+
+/**
+ * Remove exactly one owned factual attempt after a fresh impact read.
+ * @summary Delete Self Activity Session Attempt
+ */
+export const temporalDeleteSelfActivitySessionAttempt = async (
+  activityRef: string,
+  sessionRef: string,
+  activitySessionAttemptDeleteCommand: ActivitySessionAttemptDeleteCommand,
+  options?: RequestInit,
+  fetchFn?: typeof globalThis.fetch,
+): Promise<temporalDeleteSelfActivitySessionAttemptResponse> => {
+  const getHeaders = (
+    h?: NonNullable<RequestInit['headers']>,
+  ): Record<string, string | readonly string[]> => {
+    if (!h) return {};
+    if (h instanceof Headers) return Object.fromEntries(h.entries());
+    if (Array.isArray(h)) return Object.fromEntries(h);
+    return h;
+  };
+  const res = await (fetchFn ?? fetch)(
+    getTemporalDeleteSelfActivitySessionAttemptUrl(activityRef, sessionRef),
+    {
+      ...options,
+      method: 'DELETE',
+      headers: {
+        'Content-Type': 'application/json',
+        ...getHeaders(options?.headers),
+      },
+      body: JSON.stringify(activitySessionAttemptDeleteCommand),
+    },
+  );
+
+  const body = [204, 205, 304].includes(res.status) ? null : await res.text();
+
+  const data: temporalDeleteSelfActivitySessionAttemptResponse['data'] = body
+    ? JSON.parse(body)
+    : undefined;
+  return {
+    data,
+    status: res.status,
+    headers: res.headers,
+  } as temporalDeleteSelfActivitySessionAttemptResponse;
+};
 
 export type temporalGetSelfActivitySessionImpactResponse200 = {
   data: ActivitySessionImpactResponse;

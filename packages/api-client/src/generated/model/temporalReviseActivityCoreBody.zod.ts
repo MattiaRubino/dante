@@ -6,8 +6,6 @@
  */
 import * as zod from 'zod/mini';
 
-export const temporalReviseActivityCoreBodyExpectedSessionFingerprintOneRegExp =
-  new RegExp('^[a-f0-9]{64}$');
 export const temporalReviseActivityCoreBodyOperationIdMax = 200;
 
 export const temporalReviseActivityCoreBodyProfileOneColorCodeOneRegExp =
@@ -31,18 +29,6 @@ export const TemporalReviseActivityCoreBody = /*#__PURE__*/ zod.object({
         ),
         mode_code: /*#__PURE__*/ zod.string(),
       }),
-      /*#__PURE__*/ zod.null(),
-    ]),
-  ),
-  expected_session_fingerprint: /*#__PURE__*/ zod.optional(
-    /*#__PURE__*/ zod.union([
-      /*#__PURE__*/ zod
-        .string()
-        .check(
-          /*#__PURE__*/ zod.regex(
-            temporalReviseActivityCoreBodyExpectedSessionFingerprintOneRegExp,
-          ),
-        ),
       /*#__PURE__*/ zod.null(),
     ]),
   ),
@@ -136,12 +122,6 @@ export const TemporalReviseActivityCoreBody = /*#__PURE__*/ zod.object({
           ),
         schedule_ref: /*#__PURE__*/ zod.uuid(),
       }),
-      /*#__PURE__*/ zod.null(),
-    ]),
-  ),
-  session_disposition: /*#__PURE__*/ zod.optional(
-    /*#__PURE__*/ zod.union([
-      /*#__PURE__*/ zod.enum(['keep', 'delete']),
       /*#__PURE__*/ zod.null(),
     ]),
   ),
