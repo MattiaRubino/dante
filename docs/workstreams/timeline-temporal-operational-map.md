@@ -758,3 +758,14 @@ After pulling GitHub branch head `59547421`, user ran `uv run --locked ruff chec
 The user successfully rebased their local `chore(b14-drafts): publish generated API client [skip ci]` commit onto GitHub `3f25c130` and pushed it as **`a3271cf9`** to `feature/timeline-temporal-operational`. GitHub comparison confirms this was precisely **one commit containing seven generated client files**: OpenAPI `dante-v1.openapi.json`, generated `dante.ts`, `model/index.ts`, and four newly generated draft Zod models. The user's `git status` reported **clean and aligned with origin**. Together with prior user-local proof (**10 PostgreSQL tests passed, Ruff green, full Draft Vault Web/Typecheck/Generate gates green**), **Draft Vault candidate technical verification and generated artifact publication are COMPLETE**. Do not repeatedly ask for old gates, commits or CI.
 
 **NEXT: real-app acceptance, NOT YET CLAIMED**. Ensure the actual local DANTE database is migrated to `20261009_134` before running the app (the previous PostgreSQL pytest gate created temporary migrated databases, not necessarily the persistent local instance). Check Quick and Advanced Create → Save draft without operational persistence; refresh/reopen saved drafts; Resume full configuration; Duplicate retains original; Add explicit confirm consumes only source draft after accepted creation; Delete requires confirmation; locked inert Session/notification/recurrence behavior; and legacy canonical ‘Elementi già creati’ remain distinct, safely placeable. Retire an existing Activity only where history guard permits. Existing Events currently support **Copia in Bozze**, not canonical Move; Event retirement parity and prior M5 real-app verification remain open. No Timeline/Home H0 cosmetic refactor, no CI. Assistant source/docs pushes require user-visible, standalone `cd ~/projects/dante && git pull --ff-only origin feature/timeline-temporal-operational` before local app check.
+## 2026-10-19 recurring edit scope decision
+
+The latest accepted scope rule is
+`docs/domain/decisions/recurring-series-edit-exception-policy-v1.md`.
+For an instance with recorded facts the series choice starts at the next
+instance; protected future exceptions retain their own plan and facts. This
+supersedes the historical M1 wording elsewhere in this ledger that says the clicked instance is
+always included or that any protected future causes a whole-series refusal.
+Candidate `_161` covers metadata scope and preview only; structural source,
+cadence and materialized-plan reconciliation remain open. See the latest
+workstream handoff for the implementation and verification boundary.

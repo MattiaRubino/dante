@@ -6,12 +6,32 @@
  */
 import * as zod from 'zod/mini';
 
+export const scopedProfileEditCommandExpectedPreviewFingerprintOneMin = 32;
+export const scopedProfileEditCommandExpectedPreviewFingerprintOneMax = 32;
+
 export const scopedProfileEditCommandExpectedRevisionMin = 0;
 
 export const scopedProfileEditCommandOperationIdMax = 200;
 
 export const ScopedProfileEditCommand = /*#__PURE__*/ zod
   .object({
+    expected_preview_fingerprint: /*#__PURE__*/ zod.optional(
+      /*#__PURE__*/ zod.union([
+        /*#__PURE__*/ zod
+          .string()
+          .check(
+            /*#__PURE__*/ zod.minLength(
+              scopedProfileEditCommandExpectedPreviewFingerprintOneMin,
+            ),
+          )
+          .check(
+            /*#__PURE__*/ zod.maxLength(
+              scopedProfileEditCommandExpectedPreviewFingerprintOneMax,
+            ),
+          ),
+        /*#__PURE__*/ zod.null(),
+      ]),
+    ),
     expected_recurrence_state_ref: /*#__PURE__*/ zod.union([
       /*#__PURE__*/ zod.uuid(),
       /*#__PURE__*/ zod.null(),
@@ -34,7 +54,11 @@ export const ScopedProfileEditCommand = /*#__PURE__*/ zod
         /*#__PURE__*/ zod.null(),
       ]),
     ),
-    scope_code: /*#__PURE__*/ zod.enum(['only_this', 'this_and_following']),
+    scope_code: /*#__PURE__*/ zod.enum([
+      'only_this',
+      'this_and_following',
+      'from_next',
+    ]),
   })
   .check(
     /*#__PURE__*/ zod.describe(

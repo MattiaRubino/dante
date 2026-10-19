@@ -12,6 +12,7 @@ from sqlalchemy import (
     Text,
     UniqueConstraint,
     Uuid,
+    text,
 )
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.orm import Mapped, mapped_column
@@ -49,7 +50,9 @@ class OccurrenceProfileEditRow(Base):
             "AND char_length(operation_id)<=200",
             name="operation",
         ),
-        CheckConstraint("scope_code IN ('only_this','this_and_following')", name="scope"),
+        CheckConstraint(
+            "scope_code IN ('only_this','this_and_following','from_next')", name="scope"
+        ),
         CheckConstraint(
             "jsonb_typeof(profile_patch)='object' AND profile_patch<>'{}'::jsonb", name="patch"
         ),
@@ -69,4 +72,9 @@ class OccurrenceProfileEditRow(Base):
     target_occurrence_refs: Mapped[list[NativeRef]] = mapped_column(
         ARRAY(Uuid()),
         nullable=False,
+    )
+    excluded_occurrence_refs: Mapped[list[NativeRef]] = mapped_column(
+        ARRAY(Uuid()),
+        nullable=False,
+        server_default=text("'{}'::uuid[]"),
     )

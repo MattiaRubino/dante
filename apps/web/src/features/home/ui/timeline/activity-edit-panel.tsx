@@ -61,6 +61,7 @@ import {
   createRemoteRecurringProfileEdit,
   type RecurringProfileContext,
   type RecurringProfileEditScope,
+  type RecurringProfileEditPreview,
 } from '../../../temporal/remote-recurring-profile-edit';
 
 function planValidation(
@@ -245,12 +246,14 @@ function ActivityIntervalFields({
 
 export function ActivityEditPanel({
   profile,
+  initialScope = 'only_this',
   timeZone,
   onSaved,
   onCancel,
   closeRequestRef,
 }: Readonly<{
   profile: ActivityProfile;
+  initialScope?: RecurringProfileEditScope;
   timeZone?: string;
   onSaved: (profile: ActivityProfile) => void;
   onCancel: () => void;
@@ -399,7 +402,10 @@ export function ActivityEditPanel({
   const [recurringLoading, setRecurringLoading] = useState(true);
   const [recurringError, setRecurringError] = useState('');
   const [editScope, setEditScope] =
-    useState<RecurringProfileEditScope>('only_this');
+    useState<RecurringProfileEditScope>(initialScope);
+  const [seriesPreview, setSeriesPreview] =
+    useState<RecurringProfileEditPreview | null>(null);
+  const [seriesPreviewError, setSeriesPreviewError] = useState('');
   const [settings, setSettings] = useState<ActivityEditSettings | null>(null);
   const [loadingSettings, setLoadingSettings] = useState(true);
   const [settingsError, setSettingsError] = useState('');
@@ -586,7 +592,7 @@ export function ActivityEditPanel({
     ) ||
     creatingArea;
   const scopedDomainUnsupported =
-    !!recurringContext && editScope === 'this_and_following';
+    !!recurringContext && editScope !== 'only_this';
   const nameDirty =
     !!settings &&
     settings.schedules.some(
@@ -692,7 +698,7 @@ export function ActivityEditPanel({
     queueMicrotask(() => {
       if (!active) return;
       setRecurringContext(null);
-      setEditScope('only_this');
+      setEditScope(initialScope);
       setRecurringLoading(true);
       setRecurringError('');
     });
@@ -715,7 +721,34 @@ export function ActivityEditPanel({
     return () => {
       active = false;
     };
-  }, [profile.activityRef, recurringSource]);
+  }, [profile.activityRef, recurringSource, initialScope]);
+
+  useEffect(() => {
+    if (!recurringContext || editScope === 'only_this') return;
+    let active = true;
+    queueMicrotask(() => {
+      if (active) {
+        setSeriesPreview(null);
+        setSeriesPreviewError('');
+      }
+    });
+    void recurringSource
+      .loadPreview(recurringContext, editScope)
+      .then((preview) => {
+        if (active) setSeriesPreview(preview);
+      })
+      .catch((reason: unknown) => {
+        if (active)
+          setSeriesPreviewError(
+            reason instanceof Error
+              ? reason.message
+              : 'Anteprima non disponibile.',
+          );
+      });
+    return () => {
+      active = false;
+    };
+  }, [recurringContext, editScope, recurringSource]);
 
   useEffect(() => {
     let active = true;
@@ -1064,6 +1097,35 @@ export function ActivityEditPanel({
         )
           return;
         if (planDirty && Object.keys(planErrors).length) return;
+        if (recurringContext && editScope !== 'only_this') {
+          if (!seriesPreview || seriesPreviewError) {
+            setError(
+              'Carica e controlla l’anteprima delle istanze interessate.',
+            );
+            return;
+          }
+          if (
+            planDirty ||
+            lockDirty ||
+            areaDirty ||
+            objectiveDirty ||
+            nameDirty ||
+            captureMode !== settings.capture.mode ||
+            realityMode !== settings.reality.mode ||
+            reminderLeadMinutes !== settings.reminderLeadMinutes
+          ) {
+            setError(
+              'La modifica della serie per orari, intervalli, Sessioni, obiettivi, Life Area o promemoria non è ancora disponibile. Scegli «Solo questa istanza» per queste modifiche.',
+            );
+            return;
+          }
+          if (!metadataDirty) {
+            setError(
+              'Modifica un dato generale per aggiornare le istanze della serie.',
+            );
+            return;
+          }
+        }
         if (areaDirty && (!areaQueryValid || scopedDomainUnsupported)) {
           setAreaError('Scegli una Life Area valida per questa attività.');
           return;
@@ -1364,12 +1426,13 @@ export function ActivityEditPanel({
               editScope,
               changedKeys,
               (operation.current ??= crypto.randomUUID()),
+              seriesPreview ?? undefined,
             );
             operation.current = undefined;
             onSaved(nextProfile);
             return;
           }
-          if (recurringContext && editScope === 'this_and_following') {
+          if (recurringContext && editScope !== 'only_this') {
             throw new Error(
               'Questa e le prossime richiede una modifica ai dati generali.',
             );
@@ -1408,6 +1471,13 @@ export function ActivityEditPanel({
       >
         {error ? <p role="alert">{error}</p> : null}
         {recurringError ? <p role="alert">{recurringError}</p> : null}
+        {recurringContext && editScope !== 'only_this' ? (
+          <p role="status">
+            Per questa scelta puoi salvare titolo, descrizione, località e
+            colore. Orari, intervalli, Sessioni, obiettivi, Life Area e
+            promemoria richiedono ancora la modifica della singola istanza.
+          </p>
+        ) : null}
         {loadingSettings ? (
           <p role="status">Caricamento impostazioni…</p>
         ) : null}
@@ -2425,40 +2495,61 @@ export function ActivityEditPanel({
           />
         </section>
       </div>
-      {recurringContext && (metadataDirty || areaDirty || nameDirty) ? (
+      {recurringContext ? (
         <fieldset className="timeline-activity-editor__fields">
           <legend>Ambito della modifica</legend>
-          <label>
-            <input
-              type="radio"
-              name="recurring-edit-scope"
-              checked={editScope === 'only_this'}
-              onChange={() => setEditScope('only_this')}
-            />
-            Solo questa
-          </label>
-          <label>
-            <input
-              type="radio"
-              name="recurring-edit-scope"
-              checked={editScope === 'this_and_following'}
-              disabled={!metadataDirty && (areaDirty || nameDirty)}
-              onChange={() => setEditScope('this_and_following')}
-            />
-            Questa e le prossime
-          </label>
-          {areaDirty || nameDirty ? (
-            <p role="status">
-              Life Area e nomi delle Session pianificate si salvano soltanto per
-              questa istanza. Per applicare i dati generali alle successive,
-              salva prima queste modifiche individuali.
-            </p>
-          ) : null}
           <p>
-            L’istanza selezionata è sempre compresa. Le altre istanze già
-            passate restano invariate; le modifiche future possono essere
-            rifiutate se esistono eccezioni o dati già registrati.
+            {editScope === 'only_this'
+              ? 'Solo questa istanza'
+              : editScope === 'from_next'
+                ? 'Dalla prossima istanza'
+                : 'Questa e le successive'}
           </p>
+          {editScope !== 'only_this' ? (
+            <>
+              {seriesPreviewError ? (
+                <p role="alert">{seriesPreviewError}</p>
+              ) : null}
+              {!seriesPreview && !seriesPreviewError ? (
+                <p role="status">Verifica delle istanze…</p>
+              ) : null}
+              {seriesPreview ? (
+                <div role="status">
+                  <p>
+                    {seriesPreview.targetOccurrenceRefs.length} istanze già
+                    create interessate; le future saranno governate dalla nuova
+                    modifica ai dati generali.
+                  </p>
+                  {seriesPreview.protectedOccurrences.length > 0 ? (
+                    <>
+                      <p>
+                        {seriesPreview.protectedOccurrences.length} eccezioni
+                        future conservate:
+                      </p>
+                      <ul>
+                        {seriesPreview.protectedOccurrences
+                          .slice(0, 10)
+                          .map((item) => (
+                            <li key={item.occurrenceRef}>
+                              {new Intl.DateTimeFormat('it-IT', {
+                                dateStyle: 'medium',
+                                timeStyle: 'short',
+                              }).format(new Date(item.expectedAt))}{' '}
+                              ·{' '}
+                              {item.reason === 'registration'
+                                ? 'registrazione'
+                                : item.reason === 'skipped'
+                                  ? 'saltata'
+                                  : 'modifica individuale'}
+                            </li>
+                          ))}
+                      </ul>
+                    </>
+                  ) : null}
+                </div>
+              ) : null}
+            </>
+          ) : null}
         </fieldset>
       ) : null}
       <div

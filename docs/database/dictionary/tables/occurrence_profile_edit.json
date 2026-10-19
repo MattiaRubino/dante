@@ -8,7 +8,7 @@
     "name": "occurrence_profile_edit",
     "ownership_class": "dante_owned"
   },
-  "purpose": "Append-only user-accepted scoped recurring metadata corrections. Every operation includes the selected Occurrence; only later, not-yet-occurred instances of that source inherit a following-scope policy.",
+  "purpose": "Append-only owner-scoped recurring metadata corrections. From-next edits exclude the selected registered instance; accepted series edits retain an immutable list of protected future exceptions.",
   "classification": {
     "persistence_role": "occurrence_scoped_profile_edit_history",
     "canonicality": "canonical",
@@ -92,7 +92,7 @@
           "kind": "none",
           "expression": null
         },
-        "meaning": "Clicked canonical Occurrence, always included",
+        "meaning": "Clicked canonical Occurrence, excluded from from-next application",
         "semantic_type": null,
         "value_contract": null
       },
@@ -140,7 +140,7 @@
           "kind": "none",
           "expression": null
         },
-        "meaning": "only_this or this_and_following",
+        "meaning": "only_this, this_and_following or from_next",
         "semantic_type": null,
         "value_contract": null
       },
@@ -203,6 +203,18 @@
         "meaning": "Exact already-materialized targets captured by this operation",
         "semantic_type": null,
         "value_contract": null
+      },
+      {
+        "name": "excluded_occurrence_refs",
+        "postgres_type": "uuid[]",
+        "nullable": false,
+        "default": {
+          "kind": "server",
+          "expression": "'{}'::uuid[]"
+        },
+        "meaning": "Future instances with an existing local change or registration protected from this accepted series metadata correction",
+        "semantic_type": "NativeRef",
+        "value_contract": "Immutable exclusion snapshot, empty for earlier accepted edits"
       }
     ],
     "primary_key": {
@@ -319,7 +331,7 @@
       },
       {
         "name": "ck_occurrence_profile_edit_scope",
-        "expression_contract": "scope_code IN ('only_this','this_and_following')",
+        "expression_contract": "scope_code IN ('only_this','this_and_following','from_next')",
         "reason": "No unanchored future-only scope",
         "enforced": true,
         "validated": true,
@@ -403,7 +415,7 @@
       "Actor-scoped CAS/replay and operation-fingerprint conflict",
       "Always include selected Occurrence",
       "Never mutate any other already-past instance",
-      "Reject skipped/protected future overrides or recorded Actual",
+      "Record skipped, locally changed, or recorded future instances as immutable exclusions from this series metadata edit",
       "Routine/Event parity and current immutable Recurrence state",
       "No table access for dante_runtime"
     ],

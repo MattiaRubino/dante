@@ -8,6 +8,9 @@ import * as zod from 'zod/mini';
 
 export const ScopedProfileEditResponse = /*#__PURE__*/ zod.object({
   accepted_at: /*#__PURE__*/ zod.iso.datetime({ offset: true }),
+  excluded_occurrence_refs: /*#__PURE__*/ zod.optional(
+    /*#__PURE__*/ zod.array(/*#__PURE__*/ zod.uuid()),
+  ),
   replayed: /*#__PURE__*/ zod.boolean(),
   revision: /*#__PURE__*/ zod.int(),
   selected_occurrence_ref: /*#__PURE__*/ zod.uuid(),

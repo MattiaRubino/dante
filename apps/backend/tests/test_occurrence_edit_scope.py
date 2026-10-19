@@ -1,4 +1,4 @@
-"""B14 M1-A selected anchor and protected future recurrence edit targeting."""
+"""Recurring edit scope: selected anchor and preserved future exceptions."""
 
 from datetime import UTC, datetime, timedelta
 from uuid import UUID
@@ -60,8 +60,11 @@ def timeline() -> tuple[RecurrenceEditCandidate, ...]:
         (2, "this_and_following", (2, 4, 5, 6)),
         (4, "only_this", (4,)),
         (4, "this_and_following", (4, 5, 6)),
+        (4, "from_next", (5, 6)),
         (5, "this_and_following", (5, 6)),
+        (5, "from_next", (6,)),
         (6, "this_and_following", (6,)),
+        (6, "from_next", ()),
     ],
 )
 def test_selected_instance_always_included_without_touching_other_past(
@@ -78,9 +81,9 @@ def test_selected_instance_always_included_without_touching_other_past(
         authoritative_inventory=True,
     )
     assert plan.target_occurrence_refs == tuple(_ref(n) for n in expected)
-    assert plan.update_future_source_template is (scope == "this_and_following")
+    assert plan.update_future_source_template is (scope != "only_this")
     assert plan.can_apply
-    if scope == "this_and_following":
+    if scope != "only_this":
         assert _ref(3) not in plan.target_occurrence_refs
     else:
         assert plan.untouched_past_occurrence_refs == ()
@@ -100,7 +103,7 @@ def test_past_selection_marks_other_past_as_untouched(
     assert result.target_occurrence_refs[0] == _ref(1)
 
 
-def test_overrides_skip_and_recorded_future_facts_block_propagation() -> None:
+def test_overrides_skip_and_recorded_future_facts_remain_visible_exceptions() -> None:
     rows = (
         _occurrence(1),
         _occurrence(4, has_override=True),
@@ -115,8 +118,35 @@ def test_overrides_skip_and_recorded_future_facts_block_propagation() -> None:
         authoritative_inventory=True,
     )
     assert result.target_occurrence_refs == (_ref(1),)
-    assert result.blocked_future_occurrence_refs == (_ref(4), _ref(5), _ref(6))
-    assert not result.can_apply
+    assert result.protected_future_occurrence_refs == (_ref(4), _ref(5), _ref(6))
+    assert result.protected_future_reasons == (
+        (_ref(4), "local_change"),
+        (_ref(5), "skipped"),
+        (_ref(6), "registration"),
+    )
+    assert result.can_apply
+
+
+def test_selected_recorded_instance_keeps_facts_and_starts_series_from_next() -> None:
+    rows = (_occurrence(4, has_recorded_facts=True), _occurrence(5), _occurrence(6))
+    with pytest.raises(EditScopeInputError, match="from-next"):
+        select_recurrence_edit_scope(
+            selected_occurrence_ref=_ref(4),
+            scope="this_and_following",
+            candidates=rows,
+            captured_at=NOW,
+            authoritative_inventory=True,
+        )
+    result = select_recurrence_edit_scope(
+        selected_occurrence_ref=_ref(4),
+        scope="from_next",
+        candidates=rows,
+        captured_at=NOW,
+        authoritative_inventory=True,
+    )
+    assert result.target_occurrence_refs == (_ref(5), _ref(6))
+    assert result.selected_occurrence_ref not in result.target_occurrence_refs
+    assert result.update_future_source_template
 
 
 def test_explicit_extra_is_not_a_recurring_successor() -> None:

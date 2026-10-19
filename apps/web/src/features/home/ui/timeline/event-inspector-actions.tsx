@@ -12,6 +12,12 @@ import {
 } from '../../../temporal/remote-event-profile-data-source';
 import { createRemoteEventRecurrenceGuard } from '../../../temporal/remote-event-recurrence-guard';
 import {
+  createRemoteRecurringProfileEdit,
+  type RecurringProfileContext,
+  type RecurringProfileEditPreview,
+  type RecurringProfileEditScope,
+} from '../../../temporal/remote-recurring-profile-edit';
+import {
   createRemoteTemporalHardDeletion,
   type TemporalHardDeletionPreview,
   type EventDeletionOccurrenceChoice,
@@ -50,6 +56,7 @@ export function EventInspectorActions({
     createRemoteTemporalResponsibilityDataSource,
   );
   const [recurrenceGuard] = useState(createRemoteEventRecurrenceGuard);
+  const [recurringSource] = useState(createRemoteRecurringProfileEdit);
   const [hardDelete] = useState(createRemoteTemporalHardDeletion);
   const [deletePreviews, setDeletePreviews] = useState<
     readonly TemporalHardDeletionPreview[] | null
@@ -76,13 +83,26 @@ export function EventInspectorActions({
   );
   const [areaSelection, setAreaSelection] = useState('');
   const [editingProfile, setEditingProfile] = useState(false);
+  const [editChoice, setEditChoice] = useState<{
+    context: RecurringProfileContext;
+    selectedHasFacts: boolean;
+  } | null>(null);
+  const [editScope, setEditScope] =
+    useState<RecurringProfileEditScope>('only_this');
+  const [recurringContext, setRecurringContext] =
+    useState<RecurringProfileContext | null>(null);
+  const [seriesPreview, setSeriesPreview] =
+    useState<RecurringProfileEditPreview | null>(null);
   const [editingArea, setEditingArea] = useState(false);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
   const [profileNotice, setProfileNotice] = useState('');
   const [areaNotice, setAreaNotice] = useState('');
 
-  const openProfileEditor = async () => {
+  const openProfileEditor = async (
+    selectedScope: RecurringProfileEditScope = 'only_this',
+    context: RecurringProfileContext | null = null,
+  ) => {
     if (busy) return;
     setBusy(true);
     setError('');
@@ -91,13 +111,25 @@ export function EventInspectorActions({
       if (loaded.profileRevision === undefined) {
         throw new Error('Revisione del profilo Event non disponibile.');
       }
-      setProfile(loaded);
+      const patch = context
+        ? await recurringSource.loadOccurrencePatch(context)
+        : {};
+      const effective = { ...loaded, ...patch };
+      setProfile(effective);
       setProfileDraft({
-        title: loaded.title,
-        description: loaded.description ?? null,
-        location: loaded.location ?? null,
-        colorCode: loaded.colorCode ?? null,
+        title: effective.title,
+        description: effective.description ?? null,
+        location: effective.location ?? null,
+        colorCode: effective.colorCode ?? null,
       });
+      setRecurringContext(context);
+      setEditScope(selectedScope);
+      setSeriesPreview(null);
+      if (context && selectedScope !== 'only_this') {
+        setSeriesPreview(
+          await recurringSource.loadPreview(context, selectedScope),
+        );
+      }
       setEditingProfile(true);
       setProfileNotice('');
     } catch (reason) {
@@ -105,6 +137,44 @@ export function EventInspectorActions({
         reason instanceof Error
           ? reason.message
           : 'Dettagli Event non disponibili.',
+      );
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const chooseProfileEditor = async () => {
+    if (busy) return;
+    setBusy(true);
+    setError('');
+    try {
+      const recurring = await recurrenceGuard.isRecurring(eventRef);
+      if (!recurring) {
+        await openProfileEditor();
+        return;
+      }
+      if (!occurrenceRef) {
+        throw new Error(
+          'Apri un’istanza della ricorrenza per scegliere l’ambito della modifica.',
+        );
+      }
+      const context =
+        await recurringSource.loadOccurrenceContext(occurrenceRef);
+      if (context.sourceRef !== eventRef) {
+        throw new Error(
+          'Questa istanza non appartiene all’Evento selezionato.',
+        );
+      }
+      const preview = await recurringSource.loadPreview(context, 'only_this');
+      setEditChoice({
+        context,
+        selectedHasFacts: preview.selectedProtection === 'registration',
+      });
+    } catch (reason) {
+      setError(
+        reason instanceof Error
+          ? reason.message
+          : 'Ricorrenza non disponibile.',
       );
     } finally {
       setBusy(false);
@@ -139,13 +209,31 @@ export function EventInspectorActions({
         location: profileDraft.location?.trim() || null,
         colorCode: profileDraft.colorCode?.trim().toUpperCase() || null,
       };
-      const saved = await profileSource.revise(
-        eventRef,
-        profile,
-        normalized,
-        systemTemporalIdFactory.operationId(),
-      );
-      setProfile(saved);
+      if (recurringContext) {
+        const changed = Object.fromEntries(
+          (Object.keys(normalized) as (keyof EventProfileDraft)[])
+            .filter((key) => normalized[key] !== (profile[key] ?? null))
+            .map((key) => [key, normalized[key]]),
+        );
+        if (Object.keys(changed).length === 0) {
+          throw new Error('Nessuna modifica da salvare.');
+        }
+        await recurringSource.saveEventProfile(
+          recurringContext,
+          editScope,
+          changed,
+          systemTemporalIdFactory.operationId(),
+          seriesPreview ?? undefined,
+        );
+      } else {
+        await profileSource.revise(
+          eventRef,
+          profile,
+          normalized,
+          systemTemporalIdFactory.operationId(),
+        );
+      }
+      setProfile(null);
       setProfileDraft(null);
       setEditingProfile(false);
       setProfileNotice('Metadati Event aggiornati.');
@@ -163,6 +251,11 @@ export function EventInspectorActions({
     setBusy(true);
     setError('');
     try {
+      if (await recurrenceGuard.isRecurring(eventRef)) {
+        throw new Error(
+          'La Life Area della ricorrenza richiede una modifica della serie. Non è stata cambiata.',
+        );
+      }
       const loaded = await areaSource.load(eventRef);
       setAreaChoice(loaded);
       setAreaSelection(loaded.currentRef ?? '');
@@ -356,7 +449,7 @@ export function EventInspectorActions({
         aria-label="Modifica"
         title="Modifica"
         onClick={() =>
-          editingProfile ? cancelProfile() : void openProfileEditor()
+          editingProfile ? cancelProfile() : void chooseProfileEditor()
         }
       >
         {toolbarTarget ? (
@@ -410,6 +503,52 @@ export function EventInspectorActions({
   return (
     <div className="timeline-activity-inspector__actions">
       {toolbarTarget ? createPortal(toolbar, toolbarTarget) : toolbar}
+      {editChoice ? (
+        <div
+          className="timeline-activity-inspector__confirmation"
+          role="group"
+          aria-label="Ambito modifica Event"
+        >
+          <p>
+            Questo Evento fa parte di una ricorrenza. Quali istanze vuoi
+            modificare?
+          </p>
+          <button
+            type="button"
+            disabled={busy}
+            onClick={() => {
+              const choice = editChoice;
+              setEditChoice(null);
+              void openProfileEditor('only_this', choice.context);
+            }}
+          >
+            Solo questa istanza
+          </button>
+          <button
+            type="button"
+            disabled={busy}
+            onClick={() => {
+              const choice = editChoice;
+              setEditChoice(null);
+              void openProfileEditor(
+                choice.selectedHasFacts ? 'from_next' : 'this_and_following',
+                choice.context,
+              );
+            }}
+          >
+            {editChoice.selectedHasFacts
+              ? 'Dalla prossima istanza'
+              : 'Questa e le successive'}
+          </button>
+          <button
+            type="button"
+            disabled={busy}
+            onClick={() => setEditChoice(null)}
+          >
+            Annulla
+          </button>
+        </div>
+      ) : null}
       {!toolbarTarget || editingProfile || editingArea ? (
         <button
           type="button"
@@ -427,6 +566,47 @@ export function EventInspectorActions({
           className="timeline-activity-editor__fields"
           aria-label="Modifica profilo Event"
         >
+          {recurringContext ? (
+            <div role="status">
+              <p>
+                Ambito:{' '}
+                {editScope === 'only_this'
+                  ? 'solo questa istanza'
+                  : editScope === 'from_next'
+                    ? 'dalla prossima istanza'
+                    : 'questa e le successive'}
+                .
+              </p>
+              {seriesPreview ? (
+                <>
+                  <p>
+                    {seriesPreview.targetOccurrenceRefs.length} istanze già
+                    create interessate;{' '}
+                    {seriesPreview.protectedOccurrences.length} eccezioni
+                    conservate.
+                  </p>
+                  <ul>
+                    {seriesPreview.protectedOccurrences
+                      .slice(0, 10)
+                      .map((item) => (
+                        <li key={item.occurrenceRef}>
+                          {new Intl.DateTimeFormat('it-IT', {
+                            dateStyle: 'medium',
+                            timeStyle: 'short',
+                          }).format(new Date(item.expectedAt))}{' '}
+                          ·{' '}
+                          {item.reason === 'registration'
+                            ? 'registrazione'
+                            : item.reason === 'skipped'
+                              ? 'saltata'
+                              : 'modifica individuale'}
+                        </li>
+                      ))}
+                  </ul>
+                </>
+              ) : null}
+            </div>
+          ) : null}
           <label>
             Titolo Event
             <input

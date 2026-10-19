@@ -15,7 +15,7 @@ from datetime import UTC, datetime
 from typing import Literal
 from uuid import UUID
 
-EditScope = Literal["only_this", "this_and_following"]
+EditScope = Literal["only_this", "this_and_following", "from_next"]
 MAX_EDIT_SCOPE_CANDIDATES = 10_000
 
 
@@ -49,18 +49,20 @@ class RecurrenceEditScopePlan:
     scope: EditScope
     captured_at: datetime
     target_occurrence_refs: tuple[UUID, ...]
-    blocked_future_occurrence_refs: tuple[UUID, ...]
+    protected_future_occurrence_refs: tuple[UUID, ...]
+    protected_future_reasons: tuple[tuple[UUID, str], ...]
     untouched_past_occurrence_refs: tuple[UUID, ...]
     update_future_source_template: bool
 
     @property
     def can_apply(self) -> bool:
-        """A complete local preview is free of known override conflicts.
+        """A complete local preview has a valid scope and candidate set.
 
         This is NOT authority to persist; source/Occurrence CAS must be
-        revalidated by the eventual database mutation.
+        revalidated by the eventual database mutation. Protected instances
+        are explicit exceptions, not a reason to discard all clean targets.
         """
-        return not self.blocked_future_occurrence_refs
+        return True
 
 
 def _instant(value: datetime | None, *, field: str) -> datetime:
@@ -77,7 +79,7 @@ def select_recurrence_edit_scope(
     captured_at: datetime,
     authoritative_inventory: bool,
 ) -> RecurrenceEditScopePlan:
-    """Select the clicked item plus *only* later future Occurrences if requested.
+    """Select the clicked item or later clean future Occurrences as requested.
 
     The provided inventory must include the selected item. For following-scope
     it must be a complete bounded authoritative inventory of already
@@ -85,17 +87,17 @@ def select_recurrence_edit_scope(
     future Occurrences are governed separately by the accepted source-template
     revision. Incomplete inventories are rejected, never partially applied.
 
-    The selected instance is ALWAYS included, even if skipped, past or
-    individually overridden. Every other already-past instance is untouched.
-    An overridden or already-realized future instance produces a BLOCKED
-    entry rather than being silently overwritten or dropped.
+    A local edit includes the selected instance. A structural edit of a
+    selected instance with facts must start at the next instance. Protected
+    future instances are returned with a reason and excluded from targets;
+    they retain their own identity and history when a source is revised.
     """
-    if scope not in {"only_this", "this_and_following"}:
+    if scope not in {"only_this", "this_and_following", "from_next"}:
         raise EditScopeInputError("Unsupported edit scope.")
     now = _instant(captured_at, field="captured_at")
     if not candidates or len(candidates) > MAX_EDIT_SCOPE_CANDIDATES:
         raise EditScopeInputError("Edit scope candidate count is outside 1-10000.")
-    if scope == "this_and_following" and not authoritative_inventory:
+    if scope != "only_this" and not authoritative_inventory:
         raise EditScopeInputError("Following scope requires an authoritative inventory.")
 
     indexed: dict[UUID, RecurrenceEditCandidate] = {}
@@ -116,16 +118,19 @@ def select_recurrence_edit_scope(
             scope=scope,
             captured_at=now,
             target_occurrence_refs=(selected_occurrence_ref,),
-            blocked_future_occurrence_refs=(),
+            protected_future_occurrence_refs=(),
+            protected_future_reasons=(),
             untouched_past_occurrence_refs=(),
             update_future_source_template=False,
         )
 
     if selected.origin_code != "recurrence_generated":
         raise EditScopeInputError("Following edit requires a recurrence-generated anchor.")
+    if scope == "this_and_following" and selected.has_recorded_facts:
+        raise EditScopeInputError("Recorded selected instance requires a from-next edit.")
     anchor = _instant(selected.expected_at, field="selected.expected_at")
     later: list[tuple[datetime, UUID]] = []
-    blocked: list[tuple[datetime, UUID]] = []
+    protected: list[tuple[datetime, UUID, str]] = []
     past: list[tuple[datetime, UUID]] = []
     for item in candidates:
         if item.occurrence_ref == selected_occurrence_ref:
@@ -136,8 +141,14 @@ def select_recurrence_edit_scope(
         if instant <= now:
             past.append((instant, item.occurrence_ref))
         elif instant > anchor:
-            if item.skipped or item.has_override or item.has_recorded_facts:
-                blocked.append((instant, item.occurrence_ref))
+            if item.has_recorded_facts or item.skipped or item.has_override:
+                if item.has_recorded_facts:
+                    reason = "registration"
+                elif item.skipped:
+                    reason = "skipped"
+                else:
+                    reason = "local_change"
+                protected.append((instant, item.occurrence_ref, reason))
             else:
                 later.append((instant, item.occurrence_ref))
     # Repeated equal coordinates have no canonical temporal successor relation.
@@ -158,8 +169,12 @@ def select_recurrence_edit_scope(
         source_native_ref=selected.source_native_ref,
         scope=scope,
         captured_at=now,
-        target_occurrence_refs=(selected_occurrence_ref, *refs(later)),
-        blocked_future_occurrence_refs=refs(blocked),
+        target_occurrence_refs=(
+            *((selected_occurrence_ref,) if scope == "this_and_following" else ()),
+            *refs(later),
+        ),
+        protected_future_occurrence_refs=tuple(ref for _, ref, _ in sorted(protected)),
+        protected_future_reasons=tuple((ref, reason) for _, ref, reason in sorted(protected)),
         untouched_past_occurrence_refs=refs(past),
         update_future_source_template=True,
     )

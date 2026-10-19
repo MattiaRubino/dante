@@ -94,13 +94,14 @@
       "B14-EVENT-DELETION-INSTANCE-CHOICES",
       "B14-EVENT-TIMELINE-PLACEMENT",
       "B14-HARD-DELETE-REALITY-POLICY-GRAPH",
-      "B14-ACTIVITY-SESSION-SINGLE-DELETE"
+      "B14-ACTIVITY-SESSION-SINGLE-DELETE",
+      "B14-RECURRING-PROFILE-EXCEPTIONS"
     ],
     "standalone_entries": {
       "tables": 238,
       "views": 5,
-      "routines": 240,
-      "total": 483
+      "routines": 243,
+      "total": 486
     },
     "embedded_objects": {
       "triggers": 104,

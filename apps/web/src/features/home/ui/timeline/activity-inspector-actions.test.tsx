@@ -91,10 +91,17 @@ vi.mock('../../../temporal/remote-reality-objective-data-source', () => ({
   }),
 }));
 const loadRecurringContext = vi.fn().mockResolvedValue(null);
+const loadRecurringPreview = vi.fn().mockResolvedValue({
+  fingerprint: 'a'.repeat(32),
+  selectedProtection: null,
+  targetOccurrenceRefs: [],
+  protectedOccurrences: [],
+});
 const saveRecurringProfile = vi.fn();
 vi.mock('../../../temporal/remote-recurring-profile-edit', () => ({
   createRemoteRecurringProfileEdit: () => ({
     loadActivityContext: loadRecurringContext,
+    loadPreview: loadRecurringPreview,
     saveActivityProfile: saveRecurringProfile,
   }),
 }));
@@ -588,7 +595,7 @@ describe('Recurring Activity profile scope', () => {
     }
   });
 
-  it('includes the clicked instance for both available save scopes', async () => {
+  it('previews the selected and future clean instances before a series metadata save', async () => {
     const occurrenceRef = '0199a222-2222-7222-8222-222222222222';
     const recurrenceStateRef = '0199a333-3333-7333-8333-333333333333';
     const context = {
@@ -598,11 +605,19 @@ describe('Recurring Activity profile scope', () => {
       recurrenceStateRef,
     };
     loadRecurringContext.mockResolvedValueOnce(context);
+    const preview = {
+      fingerprint: 'a'.repeat(32),
+      selectedProtection: null,
+      targetOccurrenceRefs: [occurrenceRef],
+      protectedOccurrences: [],
+    };
+    loadRecurringPreview.mockResolvedValueOnce(preview);
     saveRecurringProfile.mockResolvedValue({ ...profile, title: 'Dopo' });
     const onSaved = vi.fn();
     render(
       <ActivityEditPanel
         profile={profile}
+        initialScope="this_and_following"
         closeRequestRef={createRef()}
         onSaved={onSaved}
         onCancel={() => undefined}
@@ -611,8 +626,13 @@ describe('Recurring Activity profile scope', () => {
     fireEvent.change(await screen.findByRole('textbox', { name: 'Titolo' }), {
       target: { value: 'Dopo' },
     });
-    expect(await screen.findByLabelText('Solo questa')).toBeTruthy();
-    fireEvent.click(screen.getByLabelText('Questa e le prossime'));
+    expect(await screen.findByText('Questa e le successive')).toBeTruthy();
+    await waitFor(() =>
+      expect(loadRecurringPreview).toHaveBeenCalledWith(
+        context,
+        'this_and_following',
+      ),
+    );
     await submitEditor();
     await waitFor(() =>
       expect(saveRecurringProfile).toHaveBeenCalledWith(
@@ -621,6 +641,7 @@ describe('Recurring Activity profile scope', () => {
         'this_and_following',
         { title: 'Dopo' },
         expect.any(String),
+        preview,
       ),
     );
     expect(saveCore).not.toHaveBeenCalled();
@@ -814,6 +835,36 @@ describe('Objective correction in Activity Editor', () => {
 });
 
 describe('Activity Inspector', () => {
+  it('offers the next instance when the selected recurring Activity has a registration', async () => {
+    get.mockResolvedValue(profile);
+    const context = {
+      occurrenceRef: '0199a222-2222-7222-8222-222222222222',
+      sourceRef: '0199a444-4444-7444-8444-444444444444',
+      editRevision: 3,
+      recurrenceStateRef: null,
+    };
+    loadRecurringContext.mockResolvedValueOnce(context);
+    loadRecurringPreview.mockResolvedValueOnce({
+      fingerprint: 'a'.repeat(32),
+      selectedProtection: 'registration',
+      targetOccurrenceRefs: [context.occurrenceRef],
+      protectedOccurrences: [],
+    });
+    const onEdit = vi.fn();
+    render(
+      <ActivityInspectorActions
+        activityRef={ref}
+        onEdit={onEdit}
+        onDeleted={() => undefined}
+        onDuplicate={() => undefined}
+      />,
+    );
+    fireEvent.click(screen.getByRole('button', { name: 'Modifica' }));
+    fireEvent.click(
+      await screen.findByRole('button', { name: 'Dalla prossima istanza' }),
+    );
+    expect(onEdit).toHaveBeenCalledWith(profile, 'from_next');
+  });
   it('opens the separate editor with the persisted profile', async () => {
     get.mockResolvedValue(profile);
     const onEdit = vi.fn();
@@ -827,7 +878,9 @@ describe('Activity Inspector', () => {
     );
     expect(await screen.findByText('Nota')).toBeTruthy();
     fireEvent.click(screen.getByRole('button', { name: 'Modifica' }));
-    await waitFor(() => expect(onEdit).toHaveBeenCalledWith(profile));
+    await waitFor(() =>
+      expect(onEdit).toHaveBeenCalledWith(profile, 'only_this'),
+    );
     expect(screen.queryByRole('textbox', { name: 'Titolo' })).toBeNull();
   });
 
@@ -2471,13 +2524,8 @@ describe('Activity Inspector', () => {
         target: { value: 'Ripasso' },
       },
     );
-    const thisScope = await screen.findByLabelText('Solo questa');
-    const following = screen.getByLabelText('Questa e le prossime');
-    expect(thisScope).toHaveProperty('checked', true);
-    expect(following).toHaveProperty('disabled', true);
-    expect(
-      screen.getByText(/Life Area e nomi delle Session pianificate/),
-    ).toBeTruthy();
+    expect(await screen.findByText('Solo questa istanza')).toBeTruthy();
+    expect(screen.queryByText('Questa e le successive')).toBeNull();
     expect(
       screen.getByRole('button', { name: 'Salva modifiche' }),
     ).toHaveProperty('disabled', false);
@@ -2511,19 +2559,54 @@ describe('Activity Inspector', () => {
     fireEvent.click(
       await screen.findByRole('button', { name: 'Rimuovi Life Area' }),
     );
-    expect(await screen.findByLabelText('Solo questa')).toHaveProperty(
-      'checked',
-      true,
+    expect(await screen.findByText('Solo questa istanza')).toBeTruthy();
+    expect(screen.queryByText('Questa e le successive')).toBeNull();
+    expect(assignLifeArea).not.toHaveBeenCalled();
+    expect(saveRecurringProfile).not.toHaveBeenCalled();
+  });
+
+  it('refuses a mixed series title and Life Area save before any instance write', async () => {
+    const context = {
+      occurrenceRef: '0199a222-2222-7222-8222-222222222222',
+      sourceRef: '0199a444-4444-7444-8444-444444444444',
+      editRevision: 3,
+      recurrenceStateRef: null,
+    };
+    loadRecurringContext.mockResolvedValueOnce(context);
+    loadRecurringPreview.mockResolvedValueOnce({
+      fingerprint: 'a'.repeat(32),
+      selectedProtection: null,
+      targetOccurrenceRefs: [context.occurrenceRef],
+      protectedOccurrences: [],
+    });
+    loadSettings.mockResolvedValueOnce({
+      ...currentSettings,
+      lifeAreaRef: 'area-1',
+    });
+    loadLifeAreaChoice.mockResolvedValueOnce({
+      currentRef: 'area-1',
+      currentRevision: 2,
+      options: [{ ref: 'area-1', name: 'Lavoro' }],
+    });
+    render(
+      <ActivityEditPanel
+        profile={profile}
+        initialScope="this_and_following"
+        closeRequestRef={createRef()}
+        onSaved={() => undefined}
+        onCancel={() => undefined}
+      />,
     );
-    expect(screen.getByLabelText('Questa e le prossime')).toHaveProperty(
-      'disabled',
-      true,
+    fireEvent.change(await screen.findByRole('textbox', { name: 'Titolo' }), {
+      target: { value: 'Nuovo titolo' },
+    });
+    fireEvent.click(
+      await screen.findByRole('button', { name: 'Rimuovi Life Area' }),
     );
-    expect(
-      screen.getByText(
-        /Life Area e nomi delle Session pianificate si salvano soltanto/,
-      ),
-    ).toBeTruthy();
+    await submitEditor();
+    expect((await screen.findByRole('alert')).textContent).toContain(
+      'non è ancora disponibile',
+    );
     expect(assignLifeArea).not.toHaveBeenCalled();
     expect(saveRecurringProfile).not.toHaveBeenCalled();
   });

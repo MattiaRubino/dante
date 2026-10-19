@@ -220,6 +220,7 @@ import type {
   ScheduledEventFloatingResponse,
   ScheduledEventNamedZoneResponse,
   ScopedProfileEditCommand,
+  ScopedProfileEditPreviewResponse,
   ScopedProfileEditResponse,
   ScopedProfileEditStateResponse,
   SessionCommand,
@@ -245,6 +246,7 @@ import type {
   TemporalConstraintResponse,
   TemporalDiagnoseSelfPlanConflictsParams,
   TemporalFindActualRealizationConditionParams,
+  TemporalGetOccurrenceProfileEditPreviewParams,
   TemporalGetSessionPanelParams,
   TemporalHardDeleteCommand,
   TemporalHardDeletePreview,
@@ -11473,6 +11475,77 @@ export const temporalAcceptOccurrenceProfileEdit = async (
     status: res.status,
     headers: res.headers,
   } as temporalAcceptOccurrenceProfileEditResponse;
+};
+
+export type temporalGetOccurrenceProfileEditPreviewResponse200 = {
+  data: ScopedProfileEditPreviewResponse;
+  status: 200;
+};
+
+export type temporalGetOccurrenceProfileEditPreviewResponse422 = {
+  data: HTTPValidationError;
+  status: 422;
+};
+
+export type temporalGetOccurrenceProfileEditPreviewResponseSuccess =
+  temporalGetOccurrenceProfileEditPreviewResponse200 & {
+    headers: Headers;
+  };
+export type temporalGetOccurrenceProfileEditPreviewResponseError =
+  temporalGetOccurrenceProfileEditPreviewResponse422 & {
+    headers: Headers;
+  };
+
+export type temporalGetOccurrenceProfileEditPreviewResponse =
+  | temporalGetOccurrenceProfileEditPreviewResponseSuccess
+  | temporalGetOccurrenceProfileEditPreviewResponseError;
+
+export const getTemporalGetOccurrenceProfileEditPreviewUrl = (
+  occurrenceRef: string,
+  params: TemporalGetOccurrenceProfileEditPreviewParams,
+) => {
+  const normalizedParams = new URLSearchParams();
+
+  Object.entries(params || {}).forEach(([key, value]) => {
+    if (value !== undefined) {
+      normalizedParams.append(key, value === null ? 'null' : String(value));
+    }
+  });
+
+  const stringifiedParams = normalizedParams.toString();
+
+  return stringifiedParams.length > 0
+    ? `/api/v1/temporal/occurrences/${occurrenceRef}/profile-edit-preview?${stringifiedParams}`
+    : `/api/v1/temporal/occurrences/${occurrenceRef}/profile-edit-preview`;
+};
+
+/**
+ * @summary Get Occurrence Profile Edit Preview
+ */
+export const temporalGetOccurrenceProfileEditPreview = async (
+  occurrenceRef: string,
+  params: TemporalGetOccurrenceProfileEditPreviewParams,
+  options?: RequestInit,
+  fetchFn?: typeof globalThis.fetch,
+): Promise<temporalGetOccurrenceProfileEditPreviewResponse> => {
+  const res = await (fetchFn ?? fetch)(
+    getTemporalGetOccurrenceProfileEditPreviewUrl(occurrenceRef, params),
+    {
+      ...options,
+      method: 'GET',
+    },
+  );
+
+  const body = [204, 205, 304].includes(res.status) ? null : await res.text();
+
+  const data: temporalGetOccurrenceProfileEditPreviewResponse['data'] = body
+    ? JSON.parse(body)
+    : {};
+  return {
+    data,
+    status: res.status,
+    headers: res.headers,
+  } as temporalGetOccurrenceProfileEditPreviewResponse;
 };
 
 export type temporalGetOccurrenceProfileEditStateResponse200 = {

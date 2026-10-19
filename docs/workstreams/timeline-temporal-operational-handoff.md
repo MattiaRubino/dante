@@ -1,5 +1,30 @@
 # Timeline / Temporal-Operational — Workstream Handoff
 
+## 2026-10-19 — Recurring edit scope candidate (`_161`)
+
+The accepted product policy is recorded in
+`docs/domain/decisions/recurring-series-edit-exception-policy-v1.md`.
+This candidate adds an Inspector choice before Activity/Event recurring metadata
+editing: one instance, this and subsequent clean instances, or subsequent only
+when the selected instance has facts. Owner-scoped bounded preview lists
+protected future instances and reasons. PostgreSQL acceptance checks its
+fingerprint under the source lock and stores an immutable exclusion snapshot;
+future metadata projection excludes that snapshot. Event occurrence edits use
+this scoped capability rather than silently revising the global Event source.
+The Activity editor refuses series-scope structural changes before writing;
+the recurring Event agenda is read-only and its Life Area editor refuses the
+global write. The full structural template/cadence/interval/Session/Objective/
+reminder/Life Area/Event-agenda series vertical remains pending, with exact
+risks and prerequisites in the decision document. `_161` expects
+`238|5|243|104|486|421|596`; this is not a PostgreSQL-verified catalog.
+Local Web Vitest 1,146/1,146, generated-source determinism (548 files), Web/API typecheck, focused ESLint, backend Ruff,
+Python compilation, mypy, 22 recurrence-scope unit tests and the test
+registry pass. The backend non-PostgreSQL run had 648 passed and four red:
+two new registry expectations were fixed and their 13-case targeted rerun
+passed; two unrelated SOCKS proxy environment failures were rerun without
+proxy variables and passed. PostgreSQL and real-app acceptance must run on a
+same-SHA environment with Docker; do not mark the migration accepted yet.
+
 ## 2026-10-19 — Completed internal Session and Activity replanning
 
 The owner accepted a narrower planning lock: only completed named internal

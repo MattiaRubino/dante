@@ -8,7 +8,7 @@
     "name": "accept_self_occurrence_profile_edit",
     "ownership_class": "dante_owned"
   },
-  "purpose": "Accept one self-scoped idempotent metadata edit for the clicked Occurrence or the clicked Occurrence plus future successors; serialize the source, validate recurrence-state and revision CAS, fail on protected future facts, and retain immutable exact affected materialized references.",
+  "purpose": "Accept one self-scoped idempotent metadata edit for the clicked Occurrence or its clean future successors; serialize the source, validate recurrence-state and revision CAS, preserve protected future instances in an immutable exclusion snapshot, and retain exact affected materialized references.",
   "classification": {
     "persistence_role": "occurrence_scoped_edit_capability",
     "canonicality": "capability_surface",
@@ -86,7 +86,7 @@
   "state_history": {
     "material_state_behavior": null,
     "current_binding": "Reads or writes immutable accepted operation revisions; never replaces historical Actual, Observation or Evaluation.",
-    "chronology": "The clicked instance is always in scope, other already-past instances are never changed; future inheritance begins only after command acceptance.",
+    "chronology": "The clicked instance is included for only_this and this_and_following, excluded for from_next; past and protected future instances retain their effective metadata.",
     "immutability_policy": "Self-scoped and bounded; source revision CAS and operation replay for mutation; no direct runtime table DML."
   },
   "lifecycle": {
@@ -112,7 +112,7 @@
       "Selected self ownership through existing B06 get_self_occurrence",
       "Actual history is never overwritten",
       "Correct effective zone/DST handling and bounded candidate scan",
-      "Stable replay, stale CAS and protected future conflicts",
+      "Stable replay, stale CAS and immutable protected future exclusions",
       "Routine/Event source parity"
     ],
     "test_refs": [

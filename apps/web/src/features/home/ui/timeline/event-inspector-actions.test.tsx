@@ -22,6 +22,19 @@ const assignArea = vi.fn();
 const previewHardDeletion = vi.fn();
 const confirmHardDeletion = vi.fn();
 const eventOccurrences = vi.fn();
+const loadOccurrenceContext = vi.fn();
+const loadOccurrencePatch = vi.fn();
+const loadRecurringPreview = vi.fn();
+const saveRecurringEvent = vi.fn();
+
+vi.mock('../../../temporal/remote-recurring-profile-edit', () => ({
+  createRemoteRecurringProfileEdit: () => ({
+    loadOccurrenceContext,
+    loadOccurrencePatch,
+    loadPreview: loadRecurringPreview,
+    saveEventProfile: saveRecurringEvent,
+  }),
+}));
 
 vi.mock('../../../temporal/remote-temporal-hard-deletion', () => ({
   createRemoteTemporalHardDeletion: () => ({
@@ -73,6 +86,64 @@ afterEach(() => {
 });
 
 describe('Event Inspector actions', () => {
+  it('chooses from-next for a recorded recurring Event and saves only its metadata scope', async () => {
+    const occurrenceRef = '0199a555-5555-7555-8555-555555555555';
+    const context = {
+      occurrenceRef,
+      sourceRef: eventRef,
+      editRevision: 2,
+      recurrenceStateRef: '0199a666-6666-7666-8666-666666666666',
+    };
+    const preview = {
+      fingerprint: 'a'.repeat(32),
+      selectedProtection: 'registration',
+      targetOccurrenceRefs: [],
+      protectedOccurrences: [],
+    };
+    isRecurring.mockResolvedValue(true);
+    loadOccurrenceContext.mockResolvedValue(context);
+    loadOccurrencePatch.mockResolvedValue({});
+    loadRecurringPreview.mockResolvedValue(preview);
+    loadProfile.mockResolvedValue({
+      eventRef,
+      title: 'Conferenza',
+      description: null,
+      location: null,
+      colorCode: null,
+      profileRevision: 0,
+    });
+    render(
+      <EventInspectorActions
+        eventRef={eventRef}
+        occurrenceRef={occurrenceRef}
+        placement={placement}
+        onDuplicate={() => undefined}
+      />,
+    );
+    fireEvent.click(screen.getByRole('button', { name: /^Modifica$/ }));
+    fireEvent.click(
+      await screen.findByRole('button', { name: 'Dalla prossima istanza' }),
+    );
+    fireEvent.change(
+      await screen.findByRole('textbox', { name: 'Titolo Event' }),
+      {
+        target: { value: 'Nuova conferenza' },
+      },
+    );
+    fireEvent.click(
+      screen.getByRole('button', { name: 'Salva metadati Event' }),
+    );
+    await waitFor(() =>
+      expect(saveRecurringEvent).toHaveBeenCalledWith(
+        context,
+        'from_next',
+        { title: 'Nuova conferenza' },
+        expect.any(String),
+        preview,
+      ),
+    );
+    expect(reviseProfile).not.toHaveBeenCalled();
+  });
   it('offers a copy to Bozze without exposing canonical unplacement', () => {
     render(
       <EventInspectorActions

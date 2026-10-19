@@ -124,7 +124,7 @@
       "properties": {
         "completed_stages": {
           "type": "array",
-          "maxItems": 71,
+          "maxItems": 72,
           "uniqueItems": true,
           "items": {
             "enum": [
@@ -198,7 +198,8 @@
               "B14-EVENT-DELETION-INSTANCE-CHOICES",
               "B14-EVENT-TIMELINE-PLACEMENT",
               "B14-HARD-DELETE-REALITY-POLICY-GRAPH",
-              "B14-ACTIVITY-SESSION-SINGLE-DELETE"
+              "B14-ACTIVITY-SESSION-SINGLE-DELETE",
+              "B14-RECURRING-PROFILE-EXCEPTIONS"
             ]
           }
         },
@@ -508,7 +509,8 @@
                   "B14-EVENT-DELETION-INSTANCE-CHOICES",
                   "B14-EVENT-TIMELINE-PLACEMENT",
                   "B14-HARD-DELETE-REALITY-POLICY-GRAPH",
-                  "B14-ACTIVITY-SESSION-SINGLE-DELETE"
+                  "B14-ACTIVITY-SESSION-SINGLE-DELETE",
+                  "B14-RECURRING-PROFILE-EXCEPTIONS"
                 ]
               }
             }

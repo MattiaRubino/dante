@@ -27,6 +27,7 @@ from dante.modules.temporal.occurrence import OccurrenceApplication
 from dante.modules.temporal.occurrence_api import (
     ScopedProfileEditCommand,
     accept_occurrence_profile_edit,
+    get_occurrence_profile_edit_preview,
     get_occurrence_profile_edit_state,
 )
 from dante.modules.temporal.recurrence import CalendarRecurrence, RecurrenceApplication
@@ -34,6 +35,7 @@ from dante.modules.temporal.routine import RoutineApplication
 from dante.modules.temporal.schedule import DateSpanPlacement, TemporalScheduleApplication
 from dante.platform.database.references import NativeRef
 from dante.platform.database.runtime import create_database_runtime
+from dante.platform.http.problem import ProblemError
 
 pytestmark = pytest.mark.postgres
 ZONE = "Europe/Rome"
@@ -346,19 +348,49 @@ async def test_event_parity_and_protected_future_override(
         ]
         assert len(scheduled) == 1
         assert scheduled[0].title == "Evento personale"
-        with pytest.raises(DBAPIError):
-            await _edit(
-                runtime,
-                alice,
-                selected,
-                state.recurrence.material_state_ref,
-                "this_and_following",
-                {"title": "Serie nuova"},
-                "m1c:event-blocked",
-                expected=1,
-            )
-        assert await _patch(runtime, alice, selected) == {}
+        preview = await get_occurrence_profile_edit_preview(
+            selected, "this_and_following", ctx, req, Response()
+        )
+        assert preview.edit_revision == 1
+        assert [(item.occurrence_ref, item.reason) for item in preview.protected_occurrences] == [
+            (future, "local_change")
+        ]
+        command = ScopedProfileEditCommand(
+            operation_id="m1c:event-following-with-exception",
+            expected_revision=1,
+            expected_recurrence_state_ref=state.recurrence.material_state_ref,
+            scope_code="this_and_following",
+            profile_patch={"title": "Serie nuova", "description": "Nuova descrizione"},
+            expected_preview_fingerprint=preview.fingerprint,
+        )
+        series = await accept_occurrence_profile_edit(selected, command, ctx, req, Response())
+        assert series.revision == 2
+        assert future not in series.target_occurrence_refs
+        assert series.excluded_occurrence_refs == [future]
+        assert selected in series.target_occurrence_refs
+        clean_future = rows.occurrences[-2].occurrence_ref
+        assert clean_future in series.target_occurrence_refs
+        assert await _patch(runtime, alice, clean_future) == {
+            "title": "Serie nuova",
+            "description": "Nuova descrizione",
+        }
+        assert await _patch(runtime, alice, selected) == {
+            "title": "Serie nuova",
+            "description": "Nuova descrizione",
+        }
         assert await _patch(runtime, alice, future) == {"title": "Evento personale"}
+        replay = await accept_occurrence_profile_edit(selected, command, ctx, req, Response())
+        assert replay.replayed is True
+        assert replay.target_occurrence_refs == series.target_occurrence_refs
+        with pytest.raises(ProblemError) as stale:
+            await accept_occurrence_profile_edit(
+                selected,
+                command.model_copy(update={"operation_id": "m1c:event-stale-preview"}),
+                ctx,
+                req,
+                Response(),
+            )
+        assert stale.value.status == 409
         two = await _edit(
             runtime,
             alice,
@@ -367,12 +399,43 @@ async def test_event_parity_and_protected_future_override(
             "only_this",
             {"title": "Evento storico corretto"},
             "m1c:event-correction",
-            expected=1,
+            expected=2,
         )
-        assert two["revision"] == 2
+        assert two["revision"] == 3
         assert list(two["target_occurrence_refs"]) == [selected]
         assert await _patch(runtime, alice, selected) == {
             "title": "Evento storico corretto",
+            "description": "Nuova descrizione",
+        }
+        next_preview = await get_occurrence_profile_edit_preview(
+            selected, "from_next", ctx, req, Response()
+        )
+        assert selected not in next_preview.target_occurrence_refs
+        next_result = await accept_occurrence_profile_edit(
+            selected,
+            ScopedProfileEditCommand(
+                operation_id="m1c:event-from-next",
+                expected_revision=3,
+                expected_recurrence_state_ref=state.recurrence.material_state_ref,
+                scope_code="from_next",
+                profile_patch={"location": "Sala B"},
+                expected_preview_fingerprint=next_preview.fingerprint,
+            ),
+            ctx,
+            req,
+            Response(),
+        )
+        assert selected not in next_result.target_occurrence_refs
+        assert clean_future in next_result.target_occurrence_refs
+        assert await _patch(runtime, alice, selected) == {
+            "title": "Evento storico corretto",
+            "description": "Nuova descrizione",
+        }
+        assert await _patch(runtime, alice, future) == {"title": "Evento personale"}
+        assert await _patch(runtime, alice, clean_future) == {
+            "title": "Serie nuova",
+            "description": "Nuova descrizione",
+            "location": "Sala B",
         }
     finally:
         await runtime.dispose()

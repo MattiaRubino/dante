@@ -6,12 +6,32 @@
  */
 import * as zod from 'zod/mini';
 
+export const temporalAcceptOccurrenceProfileEditBodyExpectedPreviewFingerprintOneMin = 32;
+export const temporalAcceptOccurrenceProfileEditBodyExpectedPreviewFingerprintOneMax = 32;
+
 export const temporalAcceptOccurrenceProfileEditBodyExpectedRevisionMin = 0;
 
 export const temporalAcceptOccurrenceProfileEditBodyOperationIdMax = 200;
 
 export const TemporalAcceptOccurrenceProfileEditBody = /*#__PURE__*/ zod
   .object({
+    expected_preview_fingerprint: /*#__PURE__*/ zod.optional(
+      /*#__PURE__*/ zod.union([
+        /*#__PURE__*/ zod
+          .string()
+          .check(
+            /*#__PURE__*/ zod.minLength(
+              temporalAcceptOccurrenceProfileEditBodyExpectedPreviewFingerprintOneMin,
+            ),
+          )
+          .check(
+            /*#__PURE__*/ zod.maxLength(
+              temporalAcceptOccurrenceProfileEditBodyExpectedPreviewFingerprintOneMax,
+            ),
+          ),
+        /*#__PURE__*/ zod.null(),
+      ]),
+    ),
     expected_recurrence_state_ref: /*#__PURE__*/ zod.union([
       /*#__PURE__*/ zod.uuid(),
       /*#__PURE__*/ zod.null(),
@@ -38,7 +58,11 @@ export const TemporalAcceptOccurrenceProfileEditBody = /*#__PURE__*/ zod
         /*#__PURE__*/ zod.null(),
       ]),
     ),
-    scope_code: /*#__PURE__*/ zod.enum(['only_this', 'this_and_following']),
+    scope_code: /*#__PURE__*/ zod.enum([
+      'only_this',
+      'this_and_following',
+      'from_next',
+    ]),
   })
   .check(
     /*#__PURE__*/ zod.describe(

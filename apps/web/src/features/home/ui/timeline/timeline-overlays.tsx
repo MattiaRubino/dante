@@ -554,6 +554,7 @@ export type TimelineDetail = Readonly<{
   accentColorCode?: string;
   ownerKind?: 'activity' | 'event';
   eventRef?: string;
+  occurrenceRef?: string;
   eventPlacement?: TimelineCanonicalSchedulePlacement;
   schedulePlacement?: TimelineCanonicalSchedulePlacement;
   realitySubject?: Readonly<{
@@ -662,6 +663,9 @@ export function EventDetailDialog({
   const [editingProfile, setEditingProfile] = useState<ActivityProfile | null>(
     null,
   );
+  const [activityEditScope, setActivityEditScope] = useState<
+    'only_this' | 'this_and_following' | 'from_next'
+  >('only_this');
   const [inspectorPosition, setInspectorPosition] = useState({
     left: 12,
     top: 12,
@@ -895,6 +899,7 @@ export function EventDetailDialog({
           <ActivityEditPanel
             key={`${currentEditingProfile.activityRef}:${currentEditingProfile.revision}`}
             profile={currentEditingProfile}
+            initialScope={activityEditScope}
             {...(timeZone ? { timeZone } : {})}
             closeRequestRef={editCloseRequestRef}
             onSaved={(saved) => {
@@ -916,7 +921,10 @@ export function EventDetailDialog({
                 toolbarTarget={toolbarTarget}
                 activityRef={sessionSubject.ref}
                 subitemsCount={detail.subitemsCount ?? 0}
-                onEdit={setEditingProfile}
+                onEdit={(profile, scope) => {
+                  setActivityEditScope(scope);
+                  setEditingProfile(profile);
+                }}
                 onDeleted={onActivityDeleted}
                 onDuplicate={(seed) => {
                   onClose();
@@ -976,6 +984,7 @@ export function EventDetailDialog({
                   <EventInspectorActions
                     toolbarTarget={toolbarTarget}
                     eventRef={detail.eventRef}
+                    occurrenceRef={detail.occurrenceRef ?? null}
                     placement={detail.eventPlacement}
                     onDuplicate={(seed) => {
                       onClose();
@@ -1017,6 +1026,7 @@ export function EventDetailDialog({
             {detail.ownerKind === 'event' && detail.eventRef ? (
               <TimelineEventAgendaEditor
                 eventRef={detail.eventRef}
+                readOnly={detail.occurrenceRef !== undefined}
                 hideWhenEmpty
                 showDescription
               />
@@ -1070,13 +1080,19 @@ export function detailFromEvent(
   const ownerKind =
     event.canonicalBasis?.kind === 'scheduled-event'
       ? ('event' as const)
-      : event.canonicalBasis?.kind === 'scheduled-activity'
-        ? ('activity' as const)
-        : undefined;
+      : event.canonicalBasis?.kind === 'scheduled-occurrence' &&
+          event.canonicalBasis.sourceKind === 'event'
+        ? ('event' as const)
+        : event.canonicalBasis?.kind === 'scheduled-activity'
+          ? ('activity' as const)
+          : undefined;
   const eventRef =
     event.canonicalBasis?.kind === 'scheduled-event'
       ? event.canonicalBasis.eventRef
-      : undefined;
+      : event.canonicalBasis?.kind === 'scheduled-occurrence' &&
+          event.canonicalBasis.sourceKind === 'event'
+        ? event.canonicalBasis.sourceNativeRef
+        : undefined;
   const realitySubject =
     event.canonicalBasis?.kind === 'scheduled-activity'
       ? Object.freeze({
@@ -1105,7 +1121,12 @@ export function detailFromEvent(
       : {}),
     ...(ownerKind === undefined ? {} : { ownerKind }),
     ...(eventRef === undefined ? {} : { eventRef }),
-    ...(event.canonicalBasis?.kind === 'scheduled-event'
+    ...(event.canonicalBasis?.kind === 'scheduled-occurrence'
+      ? { occurrenceRef: event.canonicalBasis.occurrenceRef }
+      : {}),
+    ...(event.canonicalBasis?.kind === 'scheduled-event' ||
+    (event.canonicalBasis?.kind === 'scheduled-occurrence' &&
+      event.canonicalBasis.sourceKind === 'event')
       ? { eventPlacement: event.canonicalBasis.placement }
       : {}),
     ...(event.canonicalBasis

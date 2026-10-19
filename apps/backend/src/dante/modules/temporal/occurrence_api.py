@@ -234,8 +234,9 @@ class ScopedProfileEditCommand(BaseModel):
     operation_id: str = Field(min_length=1, max_length=200)
     expected_revision: int = Field(ge=0)
     expected_recurrence_state_ref: UUID | None
-    scope_code: Literal["only_this", "this_and_following"]
+    scope_code: Literal["only_this", "this_and_following", "from_next"]
     profile_patch: dict[str, str | None] = Field(min_length=1, max_length=4)
+    expected_preview_fingerprint: str | None = Field(default=None, min_length=32, max_length=32)
 
 
 class ScopedProfileEditResponse(BaseModel):
@@ -244,6 +245,7 @@ class ScopedProfileEditResponse(BaseModel):
     source_native_ref: UUID
     selected_occurrence_ref: UUID
     target_occurrence_refs: list[UUID]
+    excluded_occurrence_refs: list[UUID] = Field(default_factory=list)
     accepted_at: datetime
     replayed: bool
 
@@ -255,6 +257,24 @@ class ScopedProfileEditStateResponse(BaseModel):
     edit_revision: int
     recurrence_state_ref: UUID | None
     current_profile_patch: dict[str, str | None]
+
+
+class ScopedProfileEditProtectedOccurrence(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+    occurrence_ref: UUID
+    reason: Literal["registration", "skipped", "local_change"]
+    expected_at: datetime
+
+
+class ScopedProfileEditPreviewResponse(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+    source_native_ref: UUID
+    edit_revision: int
+    recurrence_state_ref: UUID | None
+    selected_protection: Literal["registration", "skipped", "local_change"] | None
+    target_occurrence_refs: list[UUID]
+    protected_occurrences: list[ScopedProfileEditProtectedOccurrence]
+    fingerprint: str
 
 
 class MaterializedActivityOriginResponse(BaseModel):
@@ -736,6 +756,8 @@ def _scoped_edit_problem(exc: DBAPIError) -> ProblemError:
         "occurrence_edit_stale",
         "occurrence_edit_recurrence_stale",
         "occurrence_edit_future_conflict",
+        "occurrence_edit_preview_stale",
+        "occurrence_edit_selected_facts",
     }:
         return ProblemError(
             status=409,
@@ -820,6 +842,46 @@ async def get_occurrence_profile_edit_state(
 
 
 @router.get(
+    "/occurrences/{occurrence_ref}/profile-edit-preview",
+    response_model=ScopedProfileEditPreviewResponse,
+    operation_id="temporal_get_occurrence_profile_edit_preview",
+)
+async def get_occurrence_profile_edit_preview(
+    occurrence_ref: UUID,
+    scope_code: Literal["only_this", "this_and_following", "from_next"],
+    context: Context,
+    request: Request,
+    response: Response,
+) -> ScopedProfileEditPreviewResponse:
+    response.headers["Cache-Control"] = "no-store"
+    try:
+        async with request.app.state.database_runtime.session_factory() as session, session.begin():
+            row = (
+                (
+                    await session.execute(
+                        text(
+                            "SELECT * FROM dante.get_self_occurrence_profile_edit_preview("
+                            ":actor,:selected,:scope,:zone)"
+                        ),
+                        {
+                            "actor": context.self_person_ref,
+                            "selected": occurrence_ref,
+                            "scope": scope_code,
+                            "zone": context.effective_zone_id,
+                        },
+                    )
+                )
+                .mappings()
+                .one()
+            )
+    except DBAPIError as exc:
+        raise _scoped_edit_problem(exc) from exc
+    except SQLAlchemyError as exc:
+        raise _problem(OccurrencePersistenceError()) from exc
+    return ScopedProfileEditPreviewResponse(**dict(row))
+
+
+@router.get(
     "/activities/{activity_ref}/recurrence-origin",
     response_model=MaterializedActivityOriginResponse,
     operation_id="temporal_get_materialized_activity_occurrence",
@@ -870,6 +932,8 @@ async def accept_occurrence_profile_edit(
     """One atomic source-lock/CAS operation, never a client supplied target list."""
     response.headers["Cache-Control"] = "no-store"
     patch = body.profile_patch
+    if body.scope_code != "only_this" and body.expected_preview_fingerprint is None:
+        raise _problem(OccurrenceInputError("Review the affected instances before saving."))
     if not set(patch).issubset({"title", "description", "location", "color_code"}):
         raise _problem(OccurrenceInputError("Only profile metadata can be edited here."))
     if (
@@ -903,7 +967,11 @@ async def accept_occurrence_profile_edit(
                 (
                     await session.execute(
                         text(
-                            "SELECT * FROM dante.accept_self_occurrence_profile_edit("
+                            "SELECT * FROM dante.accept_self_occurrence_profile_edit_previewed("
+                            ":actor,:selected,:operation,:expected,:recurrence,:scope,"
+                            ":zone,CAST(:patch AS jsonb),:fingerprint)"
+                            if body.expected_preview_fingerprint is not None
+                            else "SELECT * FROM dante.accept_self_occurrence_profile_edit("
                             ":actor,:selected,:operation,:expected,:recurrence,:scope,"
                             ":zone,CAST(:patch AS jsonb))"
                         ),
@@ -916,6 +984,7 @@ async def accept_occurrence_profile_edit(
                             "scope": body.scope_code,
                             "zone": context.effective_zone_id,
                             "patch": json.dumps(patch, sort_keys=True),
+                            "fingerprint": body.expected_preview_fingerprint,
                         },
                     )
                 )

@@ -9,7 +9,7 @@ from dante.bootstrap.openapi_export import openapi_document
 _PUBLISHED_OPENAPI = (
     Path(__file__).resolve().parents[3] / "packages/api-client/openapi/dante-v1.openapi.json"
 )
-_CURRENT_ACCEPTED_TEMPORAL_OPERATION_COUNT = 189
+_CURRENT_ACCEPTED_TEMPORAL_OPERATION_COUNT = 190
 
 _HTTP_METHODS = frozenset({"get", "post", "put", "patch", "delete", "options", "head", "trace"})
 

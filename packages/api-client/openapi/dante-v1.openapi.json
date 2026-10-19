@@ -15366,6 +15366,19 @@
         "additionalProperties": false,
         "description": "One authoritative metadata edit with selected-anchor semantics.",
         "properties": {
+          "expected_preview_fingerprint": {
+            "anyOf": [
+              {
+                "maxLength": 32,
+                "minLength": 32,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Expected Preview Fingerprint"
+          },
           "expected_recurrence_state_ref": {
             "anyOf": [
               {
@@ -15406,7 +15419,7 @@
             "type": "object"
           },
           "scope_code": {
-            "enum": ["only_this", "this_and_following"],
+            "enum": ["only_this", "this_and_following", "from_next"],
             "title": "Scope Code",
             "type": "string"
           }
@@ -15421,6 +15434,97 @@
         "title": "ScopedProfileEditCommand",
         "type": "object"
       },
+      "ScopedProfileEditPreviewResponse": {
+        "additionalProperties": false,
+        "properties": {
+          "edit_revision": {
+            "title": "Edit Revision",
+            "type": "integer"
+          },
+          "fingerprint": {
+            "title": "Fingerprint",
+            "type": "string"
+          },
+          "protected_occurrences": {
+            "items": {
+              "$ref": "#/components/schemas/ScopedProfileEditProtectedOccurrence"
+            },
+            "title": "Protected Occurrences",
+            "type": "array"
+          },
+          "recurrence_state_ref": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Recurrence State Ref"
+          },
+          "selected_protection": {
+            "anyOf": [
+              {
+                "enum": ["registration", "skipped", "local_change"],
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Selected Protection"
+          },
+          "source_native_ref": {
+            "format": "uuid",
+            "title": "Source Native Ref",
+            "type": "string"
+          },
+          "target_occurrence_refs": {
+            "items": {
+              "format": "uuid",
+              "type": "string"
+            },
+            "title": "Target Occurrence Refs",
+            "type": "array"
+          }
+        },
+        "required": [
+          "source_native_ref",
+          "edit_revision",
+          "recurrence_state_ref",
+          "selected_protection",
+          "target_occurrence_refs",
+          "protected_occurrences",
+          "fingerprint"
+        ],
+        "title": "ScopedProfileEditPreviewResponse",
+        "type": "object"
+      },
+      "ScopedProfileEditProtectedOccurrence": {
+        "additionalProperties": false,
+        "properties": {
+          "expected_at": {
+            "format": "date-time",
+            "title": "Expected At",
+            "type": "string"
+          },
+          "occurrence_ref": {
+            "format": "uuid",
+            "title": "Occurrence Ref",
+            "type": "string"
+          },
+          "reason": {
+            "enum": ["registration", "skipped", "local_change"],
+            "title": "Reason",
+            "type": "string"
+          }
+        },
+        "required": ["occurrence_ref", "reason", "expected_at"],
+        "title": "ScopedProfileEditProtectedOccurrence",
+        "type": "object"
+      },
       "ScopedProfileEditResponse": {
         "additionalProperties": false,
         "properties": {
@@ -15428,6 +15532,14 @@
             "format": "date-time",
             "title": "Accepted At",
             "type": "string"
+          },
+          "excluded_occurrence_refs": {
+            "items": {
+              "format": "uuid",
+              "type": "string"
+            },
+            "title": "Excluded Occurrence Refs",
+            "type": "array"
           },
           "replayed": {
             "title": "Replayed",
@@ -33421,6 +33533,57 @@
           }
         },
         "summary": "Accept Occurrence Profile Edit",
+        "tags": ["temporal"]
+      }
+    },
+    "/api/v1/temporal/occurrences/{occurrence_ref}/profile-edit-preview": {
+      "get": {
+        "operationId": "temporal_get_occurrence_profile_edit_preview",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "occurrence_ref",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Occurrence Ref",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "scope_code",
+            "required": true,
+            "schema": {
+              "enum": ["only_this", "this_and_following", "from_next"],
+              "title": "Scope Code",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ScopedProfileEditPreviewResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Get Occurrence Profile Edit Preview",
         "tags": ["temporal"]
       }
     },

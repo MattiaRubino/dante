@@ -8,6 +8,7 @@ import {
 } from '../../../temporal/remote-activity-inspector';
 import { createRemoteActivityEditSettings } from '../../../temporal/remote-activity-edit-settings';
 import { createRemoteRecurringProfileEdit } from '../../../temporal/remote-recurring-profile-edit';
+import type { RecurringProfileEditScope } from '../../../temporal/remote-recurring-profile-edit';
 import {
   createRemoteTemporalHardDeletion,
   type TemporalHardDeletionPreview,
@@ -33,7 +34,7 @@ export function ActivityInspectorActions({
 }: Readonly<{
   activityRef: string;
   subitemsCount?: number;
-  onEdit: (profile: ActivityProfile) => void;
+  onEdit: (profile: ActivityProfile, scope: RecurringProfileEditScope) => void;
   onDeleted: () => void;
   onDuplicate: (seed: ActivityDuplicateSeed) => void;
   toolbarTarget?: HTMLElement | null;
@@ -44,6 +45,10 @@ export function ActivityInspectorActions({
   const [hardDelete] = useState(createRemoteTemporalHardDeletion);
   const [draftVault] = useState(createRemoteDraftVault);
   const [profile, setProfile] = useState<ActivityProfile | null>(null);
+  const [editChoice, setEditChoice] = useState<{
+    profile: ActivityProfile;
+    selectedHasFacts: boolean;
+  } | null>(null);
   const [confirming, setConfirming] = useState(false);
   const [deleteImpact, setDeleteImpact] =
     useState<ActivitySessionImpact | null>(null);
@@ -97,7 +102,22 @@ export function ActivityInspectorActions({
         disabled={pending}
         onClick={() =>
           void action(async () => {
-            onEdit(await source.get(activityRef));
+            const [loaded, recurring] = await Promise.all([
+              source.get(activityRef),
+              recurringSource.loadActivityContext(activityRef),
+            ]);
+            if (!recurring) {
+              onEdit(loaded, 'only_this');
+              return;
+            }
+            const preview = await recurringSource.loadPreview(
+              recurring,
+              'only_this',
+            );
+            setEditChoice({
+              profile: loaded,
+              selectedHasFacts: preview.selectedProtection === 'registration',
+            });
           })
         }
       >
@@ -189,6 +209,55 @@ export function ActivityInspectorActions({
         </div>
       ) : null}
       {error ? <p role="alert">{error}</p> : null}
+      {editChoice ? (
+        <div
+          className="timeline-activity-inspector__confirmation"
+          role="group"
+          aria-label="Ambito modifica ricorrenza"
+        >
+          <p>
+            Questa attività fa parte di una ricorrenza. Quali istanze vuoi
+            modificare?
+          </p>
+          <button
+            type="button"
+            disabled={pending}
+            onClick={() => {
+              onEdit(editChoice.profile, 'only_this');
+              setEditChoice(null);
+            }}
+          >
+            Solo questa istanza
+          </button>
+          <button
+            type="button"
+            disabled={pending}
+            onClick={() => {
+              onEdit(
+                editChoice.profile,
+                editChoice.selectedHasFacts
+                  ? 'from_next'
+                  : 'this_and_following',
+              );
+              setEditChoice(null);
+            }}
+          >
+            {editChoice.selectedHasFacts
+              ? 'Dalla prossima istanza'
+              : 'Questa e le successive'}
+          </button>
+          {editChoice.selectedHasFacts ? (
+            <p>La registrazione di questa istanza rimane invariata.</p>
+          ) : null}
+          <button
+            type="button"
+            disabled={pending}
+            onClick={() => setEditChoice(null)}
+          >
+            Annulla
+          </button>
+        </div>
+      ) : null}
       {confirmingVault ? (
         <div className="timeline-activity-inspector__confirmation">
           <p>

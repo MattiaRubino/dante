@@ -42,6 +42,18 @@ describe('Recurring Activity metadata edit remote contract', () => {
               current_profile_patch: {},
             }),
           );
+        if (path.includes('/profile-edit-preview?'))
+          return Promise.resolve(
+            response({
+              source_native_ref: sourceRef,
+              edit_revision: 4,
+              recurrence_state_ref: recurrenceStateRef,
+              selected_protection: null,
+              target_occurrence_refs: [occurrenceRef],
+              protected_occurrences: [],
+              fingerprint: 'a'.repeat(32),
+            }),
+          );
         if (path.endsWith('/auth/session'))
           return Promise.resolve(
             response({
@@ -90,6 +102,7 @@ describe('Recurring Activity metadata edit remote contract', () => {
       recurrenceStateRef,
     });
     if (!context) throw new Error('Expected recurring context');
+    const preview = await remote.loadPreview(context, 'this_and_following');
     const next = await remote.saveActivityProfile(
       activityRef,
       context,
@@ -101,6 +114,7 @@ describe('Recurring Activity metadata edit remote contract', () => {
         colorCode: '#ABCDEF',
       },
       'operation-1',
+      preview,
     );
     expect(next.title).toBe('Nuovo titolo');
     expect(requests).toEqual([
@@ -109,6 +123,7 @@ describe('Recurring Activity metadata edit remote contract', () => {
         expected_revision: 4,
         expected_recurrence_state_ref: recurrenceStateRef,
         scope_code: 'this_and_following',
+        expected_preview_fingerprint: 'a'.repeat(32),
         profile_patch: {
           title: 'Nuovo titolo',
           description: null,
@@ -117,7 +132,7 @@ describe('Recurring Activity metadata edit remote contract', () => {
         },
       },
     ]);
-    expect(fetchFn).toHaveBeenCalledTimes(5);
+    expect(fetchFn).toHaveBeenCalledTimes(6);
   });
 
   it('does not present a recurrence scope for a one-off Activity', async () => {
