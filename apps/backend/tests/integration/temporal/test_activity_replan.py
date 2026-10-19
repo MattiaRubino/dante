@@ -559,6 +559,7 @@ async def test_completed_named_attempt_keeps_history_while_activity_plan_changes
             Response(),
         )
         root = next(row for row in moved.schedules if row.role_code == "envelope")
+        assert root.placement_material_state_ref is not None
         converted = await apply_activity_replan(
             activity,
             ActivityReplanCommand(
@@ -575,10 +576,9 @@ async def test_completed_named_attempt_keeps_history_while_activity_plan_changes
             _request(runtime),
             Response(),
         )
-        assert (
-            next(row for row in converted.schedules if row.role_code == "envelope").temporal_form
-            == "date_span"
-        )
+        converted_root = next(row for row in converted.schedules if row.role_code == "envelope")
+        assert converted_root.temporal_form == "date_span"
+        assert converted_root.placement_material_state_ref is not None
         impact_after = await get_self_activity_session_impact(
             activity, _context(actor), _request(runtime), Response()
         )
@@ -597,9 +597,7 @@ async def test_completed_named_attempt_keeps_history_while_activity_plan_changes
                     operation_id="lifecycle:finished-child:remove-named",
                     date_span=ReplanDateSpanRow(
                         schedule_ref=root.schedule_ref,
-                        expected_material_state_ref=next(
-                            row for row in converted.schedules if row.role_code == "envelope"
-                        ).placement_material_state_ref,
+                        expected_material_state_ref=converted_root.placement_material_state_ref,
                         start_date=date(2026, 10, 10),
                         end_date_exclusive=date(2026, 10, 12),
                     ),
