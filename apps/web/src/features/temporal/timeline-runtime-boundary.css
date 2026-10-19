@@ -28,6 +28,15 @@
   flex-wrap: wrap;
 }
 
+.temporal-timeline-runtime-status--with-undo {
+  flex-wrap: wrap;
+}
+
+.temporal-timeline-runtime-status--with-undo span {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
 .temporal-timeline-runtime-status--error strong {
   flex: 0 0 100%;
 }
@@ -36,8 +45,9 @@
   flex: 1 1 360px;
 }
 
-.temporal-timeline-runtime-status--error button {
+.temporal-timeline-runtime-status button {
   flex: 0 0 auto;
+  white-space: nowrap;
   min-height: 32px;
   padding: 5px 10px;
   border: 1px solid currentColor;
@@ -48,7 +58,7 @@
   cursor: pointer;
 }
 
-.temporal-timeline-runtime-status--error button:focus-visible {
+.temporal-timeline-runtime-status button:focus-visible {
   outline: 2px solid currentColor;
   outline-offset: 2px;
 }

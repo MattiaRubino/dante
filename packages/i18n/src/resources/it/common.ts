@@ -18,13 +18,12 @@ const homeWithB02D = {
     },
     feedback: {
       ...home.timeline.feedback,
-      scheduleRevisionUpdated:
-        'Pianificazione aggiornata. La Timeline sta rileggendo lo stato corrente.',
+      activityRescheduled: 'Attività riprogrammata per',
+      eventRescheduled: 'Evento riprogrammato per',
       scheduleRevisionConflict:
         'La pianificazione è cambiata altrove. Nessuna modifica è stata sovrascritta.',
       scheduleRevisionUnavailable:
         'Impossibile aggiornare questa pianificazione in sicurezza.',
-      scheduleUndoAvailable: 'Modifica salvata.',
       scheduleUndoUpdated:
         'Modifica precedente della pianificazione ripristinata.',
       scheduleUndoConflict:

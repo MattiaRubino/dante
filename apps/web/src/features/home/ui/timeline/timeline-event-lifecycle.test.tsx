@@ -1,5 +1,11 @@
 import { Temporal } from '@dante/time';
-import { cleanup, fireEvent, render, waitFor } from '@testing-library/react';
+import {
+  cleanup,
+  fireEvent,
+  render,
+  screen,
+  waitFor,
+} from '@testing-library/react';
 import { afterEach, beforeAll, describe, expect, it, vi } from 'vitest';
 
 import { i18n } from '../../../../bootstrap/i18n';
@@ -168,6 +174,14 @@ describe('B03-C Event placement lifecycle from Timeline', () => {
     );
     expect(card.getAttribute('aria-label')).toContain('10:00–11:00');
     await waitFor(() => expect(loadWindow).toHaveBeenCalledTimes(2));
+    const confirmation = await screen.findByText(
+      'Evento riprogrammato per 9 set, 10:15–11:15',
+    );
+    expect(confirmation.parentElement?.getAttribute('role')).toBe('status');
+    expect(
+      confirmation.parentElement?.querySelector('button')?.textContent,
+    ).toBe('Annulla');
+    expect(container.querySelector('.timeline-move-toast.is-on')).toBeNull();
 
     revisedWindow.resolve(
       eventWindow('2026-09-09T10:15', '2026-09-09T11:15', NEXT_STATE_REF),

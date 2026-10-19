@@ -1,4 +1,9 @@
-import { Temporal, detectDeviceTimeZone, type PlainDate } from '@dante/time';
+import {
+  Temporal,
+  detectDeviceTimeZone,
+  type PlainDate,
+  type PlainDateTime,
+} from '@dante/time';
 import {
   type KeyboardEvent,
   type PointerEvent as ReactPointerEvent,
@@ -60,6 +65,7 @@ import {
   addTimelineDays,
   parseTimelineDate,
   timelineDateKey,
+  formatTimelineMinute,
   timelineMinuteOfClock,
 } from './model/timeline-temporal';
 import type {
@@ -130,6 +136,7 @@ type DetailState = Readonly<{
 type ScheduleNotice = Readonly<{
   kind: 'status' | 'error';
   message: string;
+  undo?: boolean;
 }>;
 
 type PendingActivityReplan = Readonly<{
@@ -141,6 +148,7 @@ type PendingActivityReplan = Readonly<{
   fingerprint: string;
   attemptCount: number;
   recurring: boolean;
+  destination?: string;
   restoreDraft?: ActivityReplanDraft;
   isUndo?: boolean;
 }>;
@@ -160,6 +168,52 @@ type CanonicalScheduleUndo =
       expectedPlacementMaterialStateRef: string;
       placement: TemporalSchedulePlacementInput;
     }>;
+
+function formatReplannedPeriod(
+  placement: TemporalSchedulePlacementInput,
+  zoneId: string,
+  locale: string,
+): string {
+  let start: PlainDateTime;
+  let end: PlainDateTime;
+  switch (placement.kind) {
+    case 'floating-local-interval':
+      start = placement.startsLocalAt;
+      end = placement.endsLocalAt;
+      break;
+    case 'named-zone-local-interval':
+      start = placement.startsLocalAt
+        .toZonedDateTime(placement.zoneId, {
+          disambiguation: placement.disambiguation,
+        })
+        .withTimeZone(zoneId)
+        .toPlainDateTime();
+      end = placement.endsLocalAt
+        .toZonedDateTime(placement.zoneId, {
+          disambiguation: placement.disambiguation,
+        })
+        .withTimeZone(zoneId)
+        .toPlainDateTime();
+      break;
+    case 'absolute-interval':
+      start = placement.startsAt.toZonedDateTimeISO(zoneId).toPlainDateTime();
+      end = placement.endsAt.toZonedDateTimeISO(zoneId).toPlainDateTime();
+      break;
+    default:
+      return '';
+  }
+  const date = (value: PlainDateTime) =>
+    new Intl.DateTimeFormat(locale, {
+      day: 'numeric',
+      month: 'short',
+      timeZone: 'UTC',
+    }).format(new Date(Date.UTC(value.year, value.month - 1, value.day, 12)));
+  const startTime = formatTimelineMinute(start.hour * 60 + start.minute);
+  const endTime = formatTimelineMinute(end.hour * 60 + end.minute);
+  return start.toPlainDate().equals(end.toPlainDate())
+    ? `${date(start)}, ${startTime}–${endTime}`
+    : `${date(start)} ${startTime} – ${date(end)} ${endTime}`;
+}
 
 export function TimelineSurface({
   sessionPanelEnabled = import.meta.env.MODE !== 'test',
@@ -585,18 +639,6 @@ export function TimelineSurface({
     }, TIMELINE_POLICY.feedback.toastDurationMs);
   }, []);
 
-  const showCanonicalUndo = useCallback((message: string) => {
-    setToastMessage(message);
-    setToastVisible(true);
-    if (toastTimerRef.current !== null) {
-      window.clearTimeout(toastTimerRef.current);
-    }
-    toastTimerRef.current = window.setTimeout(() => {
-      setToastVisible(false);
-      toastTimerRef.current = null;
-    }, TIMELINE_POLICY.feedback.toastDurationMs);
-  }, []);
-
   const applyActivityTimelineReplan = useCallback(
     (
       proposal: PendingActivityReplan,
@@ -612,6 +654,7 @@ export function TimelineSurface({
         )
         .then((saved) => {
           window.dispatchEvent(new Event(REVIEW_QUEUE_INVALIDATED));
+          setToastVisible(false);
           if (
             disposition?.mode !== 'delete' &&
             !proposal.isUndo &&
@@ -625,18 +668,18 @@ export function TimelineSurface({
               settings: saved,
               draft: proposal.restoreDraft,
             });
-            showCanonicalUndo(
-              t(($) => $.common.home.timeline.feedback.scheduleUndoAvailable),
-            );
           } else {
             setCanonicalUndo(null);
-            setToastVisible(false);
           }
           showScheduleNotice({
             kind: 'status',
-            message: t(
-              ($) => $.common.home.timeline.feedback.scheduleRevisionUpdated,
-            ),
+            message: proposal.isUndo
+              ? t(($) => $.common.home.timeline.feedback.scheduleUndoUpdated)
+              : `${t(($) => $.common.home.timeline.feedback.activityRescheduled)} ${proposal.destination ?? ''}`.trim(),
+            undo:
+              !proposal.isUndo &&
+              disposition?.mode !== 'delete' &&
+              proposal.restoreDraft !== undefined,
           });
         })
         .catch((reason: unknown) => {
@@ -646,13 +689,14 @@ export function TimelineSurface({
               reason instanceof Error
                 ? reason.message
                 : 'Impossibile spostare l’attività. Ricarica e riprova.',
+            undo: proposal.isUndo === true,
           });
         })
         .finally(() => {
           pendingScheduleRefsRef.current.delete(proposal.scheduleRef);
         });
     },
-    [activityEditSource, showCanonicalUndo, showScheduleNotice, t],
+    [activityEditSource, showScheduleNotice, t],
   );
 
   const confirmActivityTimelineReplan = (mode: 'keep' | 'delete' | null) => {
@@ -741,6 +785,11 @@ export function TimelineSurface({
               fingerprint: impact.fingerprint,
               attemptCount: impact.attempts.length,
               recurring: recurringContext !== null,
+              destination: formatReplannedPeriod(
+                revision.next,
+                effectiveZoneId,
+                locale,
+              ),
               restoreDraft: {
                 times: Object.fromEntries(
                   settings.schedules
@@ -791,20 +840,17 @@ export function TimelineSurface({
       })
         .then((result) => {
           window.dispatchEvent(new Event(REVIEW_QUEUE_INVALIDATED));
+          setToastVisible(false);
           setCanonicalUndo({
             kind: 'revision',
             scheduleRef: result.scheduleRef,
             expectedPlacementMaterialStateRef: result.placementMaterialStateRef,
             placement: revision.previous,
           });
-          showCanonicalUndo(
-            t(($) => $.common.home.timeline.feedback.scheduleUndoAvailable),
-          );
           showScheduleNotice({
             kind: 'status',
-            message: t(
-              ($) => $.common.home.timeline.feedback.scheduleRevisionUpdated,
-            ),
+            message: `${t(($) => $.common.home.timeline.feedback.eventRescheduled)} ${formatReplannedPeriod(revision.next, effectiveZoneId, locale)}`,
+            undo: true,
           });
         })
         .catch((error: unknown) => {
@@ -854,8 +900,8 @@ export function TimelineSurface({
       effectiveZoneId,
       i18n,
       reviseSchedule,
-      showCanonicalUndo,
       showScheduleNotice,
+      locale,
       t,
     ],
   );
@@ -935,6 +981,7 @@ export function TimelineSurface({
           message: conflict
             ? t(($) => $.common.home.timeline.feedback.scheduleUndoConflict)
             : t(($) => $.common.home.timeline.feedback.scheduleUndoUnavailable),
+          undo: true,
         });
       })
       .finally(() => {
@@ -1923,24 +1970,23 @@ export function TimelineSurface({
 
       {scheduleNotice ? (
         <div
-          className={`temporal-timeline-runtime-status${scheduleNotice.kind === 'error' ? ' temporal-timeline-runtime-status--error' : ''}`}
+          className={`temporal-timeline-runtime-status${scheduleNotice.kind === 'error' ? ' temporal-timeline-runtime-status--error' : ''}${scheduleNotice.undo ? ' temporal-timeline-runtime-status--with-undo' : ''}`}
           role={scheduleNotice.kind === 'error' ? 'alert' : 'status'}
           aria-live={scheduleNotice.kind === 'error' ? undefined : 'polite'}
         >
-          {scheduleNotice.message}
+          <span>{scheduleNotice.message}</span>
+          {scheduleNotice.undo && canonicalUndo !== null ? (
+            <button type="button" onClick={undoCanonicalSchedule}>
+              {t(($) => $.common.home.timeline.undo)}
+            </button>
+          ) : null}
         </div>
       ) : null}
 
       <UndoToast
-        visible={
-          toastVisible && (state.undo !== null || canonicalUndo !== null)
-        }
+        visible={toastVisible && state.undo !== null}
         message={toastMessage}
         onUndo={() => {
-          if (canonicalUndo !== null) {
-            undoCanonicalSchedule();
-            return;
-          }
           preserveViewportTime();
           dispatch({ type: 'undo-last-event-change' });
           setToastVisible(false);

@@ -229,6 +229,14 @@ describe('Activity Timeline coordinated replan', () => {
           ?.getAttribute('aria-label'),
       ).toContain('10:15–11:15'),
     );
+    const confirmation = await screen.findByText(
+      'Attività riprogrammata per 9 set, 10:15–11:15',
+    );
+    expect(confirmation.parentElement?.getAttribute('role')).toBe('status');
+    expect(
+      confirmation.parentElement?.querySelector('button')?.textContent,
+    ).toBe('Annulla');
+    expect(container.querySelector('.timeline-move-toast.is-on')).toBeNull();
   });
 
   it('asks Keep/Delete/Cancel for real attempts before any write, and passes the fresh fingerprint', async () => {
@@ -312,6 +320,31 @@ describe('Activity Timeline coordinated replan', () => {
     ).toBeTruthy();
     expect(card.getAttribute('aria-label')).toContain('10:00–11:00');
     expect(loadWindow).toHaveBeenCalledTimes(1);
+  });
+
+  it('confirms a replan that deletes Sessions without offering a misleading undo', async () => {
+    remote.sessionImpact.mockResolvedValue({
+      fingerprint,
+      attempts: [
+        {
+          sessionRef: 'session-2',
+          plannedScheduleRef: null,
+          timingMaterialStateRef: 'state-2',
+          status: 'conclusa',
+        },
+      ],
+    });
+    const { container } = renderTimeline();
+    await moveCard(container);
+    fireEvent.click(
+      await screen.findByRole('button', { name: 'Elimina Sessioni' }),
+    );
+    await waitFor(() => expect(remote.applyReplan).toHaveBeenCalledTimes(1));
+    const confirmation = await screen.findByText(
+      'Attività riprogrammata per 9 set, 10:15–11:15',
+    );
+    expect(confirmation.parentElement?.getAttribute('role')).toBe('status');
+    expect(confirmation.parentElement?.querySelector('button')).toBeNull();
   });
 
   it('requires explicit single-instance scope for a recurring Activity, even without attempts', async () => {

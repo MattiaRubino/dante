@@ -19,12 +19,11 @@ const homeWithB02D = {
     },
     feedback: {
       ...home.timeline.feedback,
-      scheduleRevisionUpdated:
-        'Schedule updated. Timeline is reloading the current state.',
+      activityRescheduled: 'Activity rescheduled for',
+      eventRescheduled: 'Event rescheduled for',
       scheduleRevisionConflict:
         'The Schedule changed elsewhere. No change was overwritten.',
       scheduleRevisionUnavailable: 'This Schedule could not be updated safely.',
-      scheduleUndoAvailable: 'Change saved.',
       scheduleUndoUpdated: 'Previous Schedule change restored.',
       scheduleUndoConflict:
         'A later Schedule change prevents this undo. Nothing was overwritten.',

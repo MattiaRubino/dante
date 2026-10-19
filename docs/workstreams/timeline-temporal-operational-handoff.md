@@ -1,5 +1,21 @@
 # Timeline / Temporal-Operational — Workstream Handoff
 
+## 2026-10-19 — Timeline reschedule confirmation
+
+Real-app feedback after the green `1e5124c4` gate showed two overlapping
+messages after moving a canonical Activity or Event: a planning refresh notice
+and a separate small Undo toast. The candidate presents one confirmation with
+the accepted destination date and time range. The same panel holds Undo when
+the revision is reversible. Coordinated Activity replans that delete recorded
+Sessions have no Undo button. An undo failure replaces the panel message and
+keeps the retry action available. The old local prototype move toast remains
+for local-only movements, and a canonical save closes any stale local toast.
+
+Focused Web component tests cover Activity, Event, coordinated Session deletion
+and existing Undo behavior; i18n tests, Web typecheck/lint, format and test
+registry checks were run locally. This change follows the earlier full gate;
+the owner's WSL browser and complete gate remain pending on the new commit.
+
 ## 2026-10-18 — Parallel-gate remediation
 
 The first complete WSL parallel gate on commit `412050a` was source-stable

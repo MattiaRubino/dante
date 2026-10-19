@@ -1036,9 +1036,10 @@ export function UndoToast({ visible, message, onUndo }: UndoToastProps) {
       className={`timeline-move-toast${visible ? ' is-on' : ''}`}
       role="status"
       aria-live="polite"
+      aria-hidden={!visible}
     >
       <span>{message}</span>
-      <button type="button" onClick={onUndo}>
+      <button type="button" onClick={onUndo} tabIndex={visible ? 0 : -1}>
         {t(($) => $.common.home.timeline.undo)}
       </button>
     </div>
