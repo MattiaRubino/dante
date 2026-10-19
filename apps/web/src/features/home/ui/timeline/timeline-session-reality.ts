@@ -164,8 +164,8 @@ function project(
   };
 }
 
-/** Project execution over the unchanged plan-derived time scale. Starting
- * moves the card; only an ended attempt changes its visible duration. */
+/** Project execution onto its real start with a stable planned-size live card.
+ * Stop replaces that provisional visual span with the factual interval. */
 export function applyTimelineSessionReality(
   days: readonly TimelineRenderedDay[],
   visuals: readonly SessionVisual[],
@@ -318,57 +318,18 @@ export function applyTimelineSessionReality(
     });
     return { day, visible, displayEvents };
   });
-  // The clock never changes the scale while an attempt is running/paused.
-  // Once stopped, the real interval owns its readable height: recomputing at
-  // that transition prevents a short card from painting beyond its end time.
-  const hasEnded =
+  // Rebuild the ruler on Play as well as Stop: the density occupied by a
+  // relocated Activity must leave its old time slot. A live card retains a
+  // fixed planned duration, so subsequent clock ticks cannot keep stretching
+  // the ruler while the execution is running or paused.
+  const hasProjectedReality =
     retiredIds.size > 0 ||
     prepared.some(({ visible }) =>
-      visible.some(({ reality }) => reality?.endedAt != null),
+      visible.some(({ reality }) => reality !== undefined),
     );
-  const endedIds = new Set(
-    placements
-      .filter(({ reality }) => reality?.endedAt != null)
-      .map(({ event }) => event.id),
-  );
-  const densityEvents = prepared.map(({ day, visible, displayEvents }) => [
-    ...day.events.filter(
-      (event) => !endedIds.has(event.id) && !retiredIds.has(event.id),
-    ),
-    ...displayEvents.filter(
-      (event, index) => visible[index]?.reality?.endedAt != null,
-    ),
-  ]);
-  const isWeek =
-    days.length === 7 && days.every((candidate) => candidate.offsetTop === 0);
-  const weekMapper =
-    hasEnded && isWeek
-      ? createTimelineSharedWeekMapper(densityEvents, zoom, expandedEventIds)
-      : null;
-  let offsetTop = 0;
-  return prepared.map(({ day, visible, displayEvents }, index) => {
-    const dayChanged =
-      densityEvents[index]?.some((event) => endedIds.has(event.id)) ||
-      day.events.some(
-        (event) => endedIds.has(event.id) || retiredIds.has(event.id),
-      );
-    const mapper =
-      weekMapper ??
-      (hasEnded && dayChanged
-        ? createTimelineTimeMapper(densityEvents[index] ?? [], zoom, {
-            expandedEventIds,
-          })
-        : day.mapper);
-    // Reassign collision lanes using the rectangles that are actually painted,
-    // while preserving canonical event identity and the planned Schedule.
-    // Collision detection must use the *painted* height, not just the
-    // shifted clock duration. During Play/Pause the card intentionally keeps
-    // its original planned height, which may extend past the short actual
-    // interval and would otherwise overlap a neighbor assigned to its lane.
-    // This visual floor is fed only to packing, NEVER the time mapper: the
-    // clock's elastic scale must remain stable during live execution.
-    const paintSizedEvents = displayEvents.map((event, eventIndex) => {
-      const placement = visible[eventIndex];
+  const densityEvents = prepared.map(({ visible, displayEvents }) =>
+    displayEvents.map((event, index) => {
+      const placement = visible[index];
       if (!placement?.reality || placement.reality.endedAt !== null)
         return event;
       const plannedHeight = placement.plannedDay.layouts.find(
@@ -382,9 +343,34 @@ export function applyTimelineSessionReality(
           plannedHeight,
         ),
       };
-    });
+    }),
+  );
+  const isWeek =
+    days.length === 7 && days.every((candidate) => candidate.offsetTop === 0);
+  const weekMapper =
+    hasProjectedReality && isWeek
+      ? createTimelineSharedWeekMapper(densityEvents, zoom, expandedEventIds)
+      : null;
+  let offsetTop = 0;
+  return prepared.map(({ day, visible, displayEvents }, index) => {
+    const dayChanged =
+      visible.some(({ reality }) => reality !== undefined) ||
+      visible.length !== day.events.length ||
+      visible.some(({ event }) => !day.events.includes(event));
+    const mapper =
+      weekMapper ??
+      (hasProjectedReality && dayChanged
+        ? createTimelineTimeMapper(densityEvents[index] ?? [], zoom, {
+            expandedEventIds,
+          })
+        : day.mapper);
+    // Reassign collision lanes using the rectangles that are actually painted,
+    // while preserving canonical event identity and the planned Schedule.
+    // Reserve the original painted height in the relocated time scale before
+    // packing collision lanes. The start and provisional duration remain
+    // fixed across running/paused clock ticks.
     const displayed = computeTimelineEventLayouts(
-      paintSizedEvents,
+      densityEvents[index] ?? displayEvents,
       groups,
       mapper,
     );

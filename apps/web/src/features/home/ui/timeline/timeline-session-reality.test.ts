@@ -138,7 +138,7 @@ describe('one-card Activity actual Session projection', () => {
       expanded,
     );
     expect(projected?.layouts[0]?.top).toBeCloseTo(
-      current.mapper.map(548 + 50 / 60),
+      projected?.mapper.map(548 + 50 / 60) ?? 0,
       3,
     );
     expect(projected?.layouts[0]?.height).toBe(current.layouts[0]?.height);
@@ -187,8 +187,8 @@ describe('one-card Activity actual Session projection', () => {
       id: 'neighbor',
       title: 'Appuntamento vicino',
       groupId: 'area',
-      startMinute: 635,
-      endMinute: 645,
+      startMinute: 575,
+      endMinute: 585,
     };
     // Under a denser planned scale the visible Activity was taller than
     // the default short-event minimum. Play moves its top, not its height.
@@ -232,8 +232,77 @@ describe('one-card Activity actual Session projection', () => {
     );
     expect(moving?.compactLane).not.toBe(adjacent?.compactLane);
     expect(moving?.groupLane).not.toBe(adjacent?.groupLane);
-    expect(projected?.mapper).toBe(basis.mapper);
+    expect(
+      (projected?.mapper.map(610) ?? 0) - (projected?.mapper.map(600) ?? 0),
+    ).toBeLessThan(basis.mapper.map(610) - basis.mapper.map(600));
   });
+
+  it.each([360, 945])(
+    'moves elastic ruler density from the planned %i minute to the live clock',
+    (plannedMinute) => {
+      const planned = activity('moving', plannedMinute, plannedMinute + 30);
+      const before = day(planned);
+      const [live] = applyTimelineSessionReality(
+        [before],
+        [
+          {
+            ...ended,
+            started_at: '2026-10-10T09:23:00Z',
+            ended_at: null,
+            pause_ranges: [],
+          },
+        ],
+        'UTC',
+        '2026-10-10T09:24:00Z',
+        Date.parse('2026-10-10T09:24:00Z'),
+        groups,
+        zoom,
+        expanded,
+      );
+      const baseline = createTimelineTimeMapper([], zoom);
+      const span = (mapper: TimelineTimeMapper, minute: number) =>
+        mapper.map(minute + 30) - mapper.map(minute);
+      expect(span(before.mapper, plannedMinute)).toBeGreaterThan(
+        span(baseline, plannedMinute),
+      );
+      expect(span(live!.mapper, plannedMinute)).toBeCloseTo(
+        span(baseline, plannedMinute),
+        3,
+      );
+      expect(span(live!.mapper, 9 * 60 + 23)).toBeGreaterThan(
+        span(baseline, 9 * 60 + 23),
+      );
+      expect(live?.layouts[0]?.top).toBeCloseTo(
+        live?.mapper.map(9 * 60 + 23) ?? 0,
+        3,
+      );
+      expect(live?.layouts[0]?.event.startMinute).toBe(plannedMinute);
+      const [paused] = applyTimelineSessionReality(
+        [before],
+        [
+          {
+            ...ended,
+            started_at: '2026-10-10T09:23:00Z',
+            ended_at: null,
+            pause_ranges: [
+              { started_at: '2026-10-10T09:24:00Z', ended_at: null },
+            ],
+          },
+        ],
+        'UTC',
+        '2026-10-10T09:30:00Z',
+        Date.parse('2026-10-10T09:30:00Z'),
+        groups,
+        zoom,
+        expanded,
+      );
+      expect(paused?.layouts[0]?.sessionReality?.state).toBe('paused');
+      expect(paused?.mapper.map(9 * 60 + 23 + 30)).toBeCloseTo(
+        live?.mapper.map(9 * 60 + 23 + 30) ?? 0,
+        3,
+      );
+    },
+  );
 
   it('remodulates one Activity card without changing canonical schedule or identity', () => {
     const planned = activity('interval1', 1080, 1140);
@@ -440,6 +509,44 @@ describe('one-card Activity actual Session projection', () => {
     expect(
       (relocated?.top ?? 0) + (relocated?.height ?? 0),
     ).toBeLessThanOrEqual((actual?.mapper.map(541) ?? 0) + 0.001);
+  });
+
+  it('shares the relocated live density across week columns', () => {
+    const plan = activity('week-plan', 6 * 60, 6 * 60 + 30);
+    const week = buildTimelineRenderedWeek(
+      Temporal.PlainDate.from('2026-10-10'),
+      {
+        eventsByDate: { '2026-10-10': [plan] },
+        groups,
+        zoom,
+        expandedEventIds: expanded,
+      },
+    );
+    const projected = applyTimelineSessionReality(
+      week,
+      [
+        {
+          ...ended,
+          started_at: '2026-10-10T09:23:00Z',
+          ended_at: null,
+          pause_ranges: [],
+        },
+      ],
+      'UTC',
+      '2026-10-10T09:24:00Z',
+      Date.parse('2026-10-10T09:24:00Z'),
+      groups,
+      zoom,
+      expanded,
+    );
+    const liveDay = projected.find((day) => day.dateKey === '2026-10-10');
+    const emptyWeek = createTimelineTimeMapper([], zoom);
+    expect(projected.every((day) => day.mapper === liveDay?.mapper)).toBe(true);
+    expect(projected.every((day) => day.offsetTop === 0)).toBe(true);
+    expect(
+      (liveDay?.mapper.map(6 * 60 + 30) ?? 0) -
+        (liveDay?.mapper.map(6 * 60) ?? 0),
+    ).toBeCloseTo(emptyWeek.map(6 * 60 + 30) - emptyWeek.map(6 * 60), 3);
   });
 
   it('uses main timing over simultaneous internal execution without adding time twice', () => {

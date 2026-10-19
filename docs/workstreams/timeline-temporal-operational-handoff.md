@@ -1,5 +1,18 @@
 # Timeline / Temporal-Operational — Workstream Handoff
 
+## 2026-10-19 — Live Activity ruler density follows the card
+
+Real-app screenshots show that starting a main Session at 09:23 moves its
+Activity card from a planned 06:00 or 15:45 slot while the elastic ruler
+still reserves space at the empty planned slot. The live projection now builds
+the same day/week time mapper from the displayed Activity positions: it
+releases the former slot and reserves the unchanged planned-size card at the
+actual start. Subsequent running/paused clock ticks do not keep resizing the
+ruler; Stop still switches to the factual end. Accepted Schedule coordinates
+remain unchanged. Focused Web model regressions cover both directions,
+Play/Pause stability, collision lanes and shared week columns. User WSL full
+gate and real-app visual confirmation remain pending for this new candidate.
+
 ## 2026-10-19 — Timeline reschedule confirmation
 
 Real-app feedback after the green `1e5124c4` gate showed two overlapping
