@@ -744,13 +744,28 @@ export function TimelineSurface({
                 rootRef.current?.querySelector<HTMLElement>(
                   `[data-timeline-event="${event.id}"]`,
                 ) ?? rootRef.current;
-              if (opener)
+              if (opener) {
                 setDetailState({
                   event,
                   detail: detailFromEvent(event, state.groups, fromDateKey),
                   opener,
                   openActivityEdit: true,
                 });
+              }
+              // The gesture is complete: keeping this ref pending would make
+              // every later drag of the same card a silent no-op until reload.
+              pendingScheduleRefsRef.current.delete(basis.scheduleRef);
+              return;
+            }
+            // Crossing the pointer-drag threshold within the same snapped
+            // slot is still an attempt when recordings exist, but it must
+            // never submit a no-op replan for an unrecorded Activity.
+            if (
+              fromDateKey === toDateKey &&
+              event.startMinute === startMinute &&
+              event.endMinute === endMinute
+            ) {
+              pendingScheduleRefsRef.current.delete(basis.scheduleRef);
               return;
             }
             if (basis.placementLocked) {

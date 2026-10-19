@@ -33,8 +33,13 @@ import { TemporalTimelineRuntimeBoundary } from '../../../temporal/timeline-runt
 import { TimelineSurface } from './timeline-surface';
 
 vi.mock('./activity-edit-panel', () => ({
-  ActivityEditPanel: () => (
-    <div data-testid="activity-edit-panel">Modifica attività</div>
+  ActivityEditPanel: ({ onCancel }: { onCancel: () => void }) => (
+    <div data-testid="activity-edit-panel">
+      Modifica attività
+      <button type="button" onClick={onCancel}>
+        Chiudi modifica di test
+      </button>
+    </div>
   ),
 }));
 
@@ -102,6 +107,7 @@ function windowAt(
   start: string,
   end: string,
   state: string,
+  placementLocked = false,
 ): TemporalTimelineWindow {
   return {
     kind: 'window',
@@ -114,6 +120,7 @@ function windowAt(
         activityRef: ACTIVITY_REF,
         scheduleRef: SCHEDULE_REF,
         placementMaterialStateRef: state,
+        placementLocked,
         title: 'Attività coordinata',
         temporalForm: 'floating-local',
         startsLocalAt: Temporal.PlainDateTime.from(start),
@@ -123,14 +130,24 @@ function windowAt(
   };
 }
 
-function renderTimeline() {
+function renderTimeline(placementLocked = false) {
   const loadWindow = vi
     .fn<TemporalTimelineDataSource['loadWindow']>()
     .mockResolvedValueOnce(
-      windowAt('2026-09-09T10:00', '2026-09-09T11:00', CURRENT_STATE_REF),
+      windowAt(
+        '2026-09-09T10:00',
+        '2026-09-09T11:00',
+        CURRENT_STATE_REF,
+        placementLocked,
+      ),
     )
     .mockResolvedValue(
-      windowAt('2026-09-09T10:15', '2026-09-09T11:15', NEXT_STATE_REF),
+      windowAt(
+        '2026-09-09T10:15',
+        '2026-09-09T11:15',
+        NEXT_STATE_REF,
+        placementLocked,
+      ),
     );
   const reviseSchedule = vi.fn<TemporalScheduleDataSource['reviseSchedule']>();
   const scheduleDataSource: TemporalScheduleDataSource = {
@@ -166,6 +183,65 @@ async function moveCard(container: HTMLElement) {
     return found!;
   });
   fireEvent.keyDown(card, { key: 'ArrowDown', altKey: true });
+  return card;
+}
+
+async function dragCard(container: HTMLElement, sameSlot = false) {
+  const card = await waitFor(() => {
+    const found = container.querySelector<HTMLElement>(
+      `[data-timeline-event="${SCHEDULE_REF}"]`,
+    );
+    expect(found).toBeTruthy();
+    return found!;
+  });
+  const sections = Array.from(
+    container.querySelectorAll<HTMLElement>('.timeline-day-section'),
+  );
+  const cardSection = card.closest<HTMLElement>('.timeline-day-section');
+  const sectionIndex = sections.findIndex((section) => section === cardSection);
+  const paintedTop =
+    sections
+      .slice(0, sectionIndex)
+      .reduce((sum, section) => sum + parseFloat(section.style.height), 0) +
+    parseFloat(card.style.top) -
+    (container.querySelector<HTMLElement>('.timeline-grid')?.scrollTop ?? 0);
+  const cardTop = sameSlot ? paintedTop : 120;
+  const startY = cardTop + (sameSlot ? 20 : 0);
+  const endY = sameSlot ? startY : 190;
+  vi.spyOn(card, 'getBoundingClientRect').mockReturnValue({
+    left: 100,
+    right: 300,
+    top: cardTop,
+    bottom: cardTop + 80,
+    width: 200,
+    height: 80,
+    x: 100,
+    y: cardTop,
+    toJSON: () => ({}),
+  });
+  const pointer = (
+    type: string,
+    target: Document | HTMLElement,
+    clientY: number,
+    clientX: number,
+  ) => {
+    const event = new MouseEvent(type, {
+      bubbles: true,
+      cancelable: true,
+      button: 0,
+      clientX,
+      clientY,
+    });
+    Object.defineProperties(event, {
+      pointerId: { value: 3 },
+      pointerType: { value: 'mouse' },
+      isPrimary: { value: true },
+    });
+    fireEvent(target, event);
+  };
+  pointer('pointerdown', card, startY, 140);
+  pointer('pointermove', document, endY, sameSlot ? 160 : 140);
+  pointer('pointerup', document, endY, sameSlot ? 160 : 140);
   return card;
 }
 
@@ -279,6 +355,140 @@ describe('Activity Timeline coordinated replan', () => {
       expect(remote.applyReplan).not.toHaveBeenCalled();
       expect(reviseSchedule).not.toHaveBeenCalled();
       expect(card.getAttribute('aria-label')).toContain('10:00–11:00');
+    },
+  );
+
+  it.each([
+    ['principale conclusa', null, 'conclusa'],
+    ['sola sottosessione attiva', 'planned-1', 'in corso'],
+  ])(
+    'routes a pointer drag to Edit with a %s',
+    async (_label, plannedScheduleRef, status) => {
+      remote.sessionImpact.mockResolvedValue({
+        fingerprint,
+        attempts: [
+          {
+            sessionRef: 'session-1',
+            plannedScheduleRef,
+            timingMaterialStateRef: 'state-1',
+            status,
+          },
+        ],
+      });
+      const { container, reviseSchedule } = renderTimeline();
+      await dragCard(container);
+      await screen.findByTestId('activity-edit-panel');
+      expect(remote.applyReplan).not.toHaveBeenCalled();
+      expect(reviseSchedule).not.toHaveBeenCalled();
+    },
+  );
+
+  it('opens Edit for a recorded Activity even when its placement is manually locked', async () => {
+    remote.sessionImpact.mockResolvedValue({
+      fingerprint,
+      attempts: [
+        {
+          sessionRef: 'session-1',
+          plannedScheduleRef: 'planned-1',
+          timingMaterialStateRef: 'state-1',
+          status: 'in pausa',
+        },
+      ],
+    });
+    const { container } = renderTimeline(true);
+    await dragCard(container);
+    await screen.findByTestId('activity-edit-panel');
+    expect(remote.applyReplan).not.toHaveBeenCalled();
+  });
+
+  it('still refuses replanning a manually locked Activity without recordings', async () => {
+    const { container } = renderTimeline(true);
+    await dragCard(container);
+    const notice = await screen.findByRole('alert');
+    expect(notice.textContent).toContain(
+      'Sblocca gli spostamenti prima di modificare l’orario.',
+    );
+    expect(remote.applyReplan).not.toHaveBeenCalled();
+  });
+
+  it.each([false, true])(
+    'does not persist an unchanged snapped slot (recorded: %s)',
+    async (recorded) => {
+      if (recorded) {
+        remote.sessionImpact.mockResolvedValue({
+          fingerprint,
+          attempts: [
+            {
+              sessionRef: 'session-1',
+              plannedScheduleRef: null,
+              timingMaterialStateRef: 'state-1',
+              status: 'conclusa',
+            },
+          ],
+        });
+      }
+      const { container } = renderTimeline();
+      await dragCard(container, true);
+      if (recorded) {
+        await screen.findByTestId('activity-edit-panel');
+      } else {
+        await waitFor(() =>
+          expect(remote.sessionImpact).toHaveBeenCalledOnce(),
+        );
+        expect(screen.queryByTestId('activity-edit-panel')).toBeNull();
+      }
+      expect(remote.applyReplan).not.toHaveBeenCalled();
+    },
+  );
+
+  it.each([
+    ['principale conclusa', null, 'conclusa'],
+    ['sola sottosessione attiva', 'planned-1', 'in corso'],
+  ])(
+    'opens Edit again after a prior drag when the remaining registration is %s',
+    async (_label, plannedScheduleRef, status) => {
+      remote.sessionImpact.mockResolvedValueOnce({
+        fingerprint,
+        attempts: [
+          {
+            sessionRef: 'session-1',
+            plannedScheduleRef: null,
+            timingMaterialStateRef: 'state-1',
+            status: 'in corso',
+          },
+        ],
+      });
+      remote.sessionImpact.mockResolvedValue({
+        fingerprint,
+        attempts: [
+          {
+            sessionRef: 'session-2',
+            plannedScheduleRef,
+            timingMaterialStateRef: 'state-2',
+            status,
+          },
+        ],
+      });
+      const { container, reviseSchedule } = renderTimeline();
+      await moveCard(container);
+      await screen.findByTestId('activity-edit-panel');
+      fireEvent.click(
+        screen.getByRole('button', { name: 'Chiudi modifica di test' }),
+      );
+      fireEvent.click(
+        await screen.findByRole('button', { name: 'Chiudi Inspector' }),
+      );
+      await waitFor(() =>
+        expect(screen.queryByTestId('activity-edit-panel')).toBeNull(),
+      );
+
+      await moveCard(container);
+      await waitFor(() =>
+        expect(remote.sessionImpact).toHaveBeenCalledTimes(2),
+      );
+      await screen.findByTestId('activity-edit-panel');
+      expect(remote.applyReplan).not.toHaveBeenCalled();
+      expect(reviseSchedule).not.toHaveBeenCalled();
     },
   );
 

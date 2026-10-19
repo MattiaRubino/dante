@@ -1,5 +1,20 @@
 # Timeline / Temporal-Operational — Workstream Handoff
 
+## 2026-10-19 — Repeated drag of a recorded Activity
+
+The first Activity drag with a factual Session already opened Edit, but left
+the Schedule ref in the in-flight set. Later drags on the same card silently
+returned, especially visible after stopping the main Session or when only an
+internal Session remained. The recorded-attempt branch now releases that
+in-flight guard after opening Edit. Pointer and keyboard drags reach the same
+impact check even when the Schedule has a separate manual placement lock;
+without attempts, the lock still refuses a replan. A pointer gesture that
+crosses the drag threshold but stays inside the same snapped time slot checks
+for recordings without writing an unchanged plan. Component regressions cover
+completed main attempts, child-only attempts, repeated drags, the manual lock
+and unchanged-slot behavior. The owner still needs real-app confirmation of
+the pointer geometry and a same-SHA full gate for this follow-up.
+
 ## 2026-10-19 — Gate follow-up on `_160`
 
 The user's WSL full gate on `b4b4408074f076c85a5f281679adb235af8e8f68`

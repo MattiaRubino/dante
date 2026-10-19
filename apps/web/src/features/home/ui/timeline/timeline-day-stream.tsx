@@ -986,9 +986,12 @@ export function TimelineDayStream({
       finishDragVisual();
       return;
     }
-    if (
+    const unchangedPlacement =
       preview.day.dateKey === runtime.fromDateKey &&
-      preview.startMinute === runtime.event.startMinute
+      preview.startMinute === runtime.event.startMinute;
+    if (
+      unchangedPlacement &&
+      runtime.event.canonicalBasis?.kind !== 'scheduled-activity'
     ) {
       finishDragVisual();
       return;
@@ -1016,12 +1019,6 @@ export function TimelineDayStream({
     if (
       pointerEvent.button !== 0 ||
       (pointerEvent.pointerType !== 'mouse' && !pointerEvent.isPrimary)
-    ) {
-      return;
-    }
-    if (
-      event.canonicalBasis?.kind === 'scheduled-activity' &&
-      event.canonicalBasis.placementLocked
     ) {
       return;
     }
@@ -1146,12 +1143,6 @@ export function TimelineDayStream({
     dateKey: string,
     direction: 'earlier' | 'later' | 'previous-day' | 'next-day',
   ) => {
-    if (
-      event.canonicalBasis?.kind === 'scheduled-activity' &&
-      event.canonicalBasis.placementLocked
-    ) {
-      return;
-    }
     const commitKeyboardMove = (
       toDateKey: string,
       startMinute: number,
