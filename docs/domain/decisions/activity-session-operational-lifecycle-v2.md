@@ -110,15 +110,41 @@ Reminder belongs to the Activity interval/Schedule only. Internal Sessions have 
 
 ## Editing, moving and deleting
 
-**Revised 2026-10-19:** any real Activity-owned Session attempt, whether
-running, paused or completed, freezes changes to its Activity's planned
-clock/date, all-day precision, and intervals, and to the generic Activity
-Session capture switch. It does not freeze unrelated metadata, Objectives or
-the names/addition of internal Session configuration. A drag attempt on such
-a card leaves its plan untouched and opens Activity Edit, where the reason is
-visible. The server enforces the same refusal even if a different client
-submits a direct replan. The former Keep/Delete/Cancel disposition at move or
-Save is retired; no implicit deletion is a side effect of replanning.
+**Revised 2026-10-19:** plan and execution are independent. The generic
+Activity Session capture switch remains frozen while *any* real attempt
+exists, even if all attempts have ended. Planning has a narrower lock:
+
+| Factual attempts on this Activity | Clock/date, all-day, intervals | Generic capture switch |
+| --- | --- | --- |
+| None | Editable | Editable |
+| Only concluded named internal Sessions; no generic attempt | Editable | Locked |
+| Any running/paused named Session, or any generic Activity Session (including concluded) | Locked | Locked |
+
+Completed named attempts retain their actual times, active duration, identity
+and link to their named configuration when the Activity is replanned. They
+remain **svolte**: moving the planned interval does not reset or reopen that
+attempt. Whether a distinct new attempt can later be offered in a different
+Activity interval remains governed by the existing Session-panel availability
+rules, not by this edit. A named configuration linked to *any* attempt cannot be
+deleted until its linked attempts are explicitly deleted. Unrecorded named
+configurations can still be added; unrelated metadata, Objectives and named
+Session names are not frozen. A drag gesture with any attempt leaves the plan
+untouched and opens Activity Edit, even for the concluded-child-only case.
+Edit is the deliberate path to replan that case. The server rechecks current
+attempts on Save and refuses a stale or newly blocked temporal change; a
+concurrent Play must not silently bypass this policy. The former
+Keep/Delete/Cancel disposition at move or Save is retired. Replanning never
+deletes factual records implicitly.
+
+For a future AI authoring client, the same rule is authoritative: classify
+attempts by immutable generic-versus-named provenance and current open/ended
+state, not by card color, planned interval count, or a generated summary.
+Read current Activity settings and attempts, propose only the allowed edit,
+and submit through the existing owner-scoped guarded commands. A rejected
+write requires a fresh read and explicit user choice; the AI must neither
+delete attempts to make its proposal pass nor silently apply it to recurring
+siblings or their source. An ended named attempt is not a new unstarted
+Session, and its factual times never become new planned times automatically.
 
 Edit shows each factual attempt under its named Session, or below the Session
 configuration block for a generic attempt. Each row labels the actual start,
@@ -128,8 +154,10 @@ deletes **only that attempt**, with its own pauses/runtime/owned dependent
 graph. Deleting an open attempt interrupts its clock; it does not silently
 record Stop. Ownership and the complete impact fingerprint are checked inside
 the transaction. If the fact has changed, the operation refuses and the UI
-reloads; unrelated attempts survive. After the last attempt disappears, the
-time/capture controls and card movement become available again.
+reloads; unrelated attempts survive. Removing the last blocking attempt
+unlocks planning if the remaining attempts are all concluded named Sessions;
+only removing *all* attempts unlocks generic capture. Card drag without any
+attempt again uses the ordinary movement path.
 
 Removing a named internal Session without real attempts remains a draft
 operation applied on Save. A named Session with attempts cannot be removed

@@ -413,6 +413,153 @@ describe('Recurring Activity profile scope', () => {
     );
   });
 
+  it('allows replanning after only named Sessions have concluded but keeps capture locked', async () => {
+    const settings = {
+      ...currentSettings,
+      schedules: [
+        {
+          scheduleRef: 'envelope',
+          role: 'envelope',
+          order: 0,
+          name: null,
+          placementStateRef: 'state',
+          temporalForm: 'named_zone_local',
+          start: '2026-10-09T09:00:00',
+          end: '2026-10-09T10:00:00',
+          zoneId: 'Europe/Rome',
+        },
+        {
+          scheduleRef: 'named',
+          role: 'planned',
+          order: 1,
+          name: 'Ripasso',
+          placementStateRef: null,
+          temporalForm: null,
+          start: null,
+          end: null,
+          zoneId: null,
+        },
+      ],
+    };
+    loadSettings.mockResolvedValueOnce(settings);
+    listActivitySessions.mockResolvedValueOnce([
+      {
+        sessionRef: 'finished-child',
+        plannedScheduleRef: 'named',
+        open: false,
+        paused: false,
+        startedAt: '2026-10-09T08:25:00Z',
+        endedAt: '2026-10-09T08:28:00Z',
+        activeSeconds: 180,
+        evaluatedAt: '2026-10-09T08:28:00Z',
+      },
+    ]);
+    const onSaved = vi.fn();
+    render(
+      <ActivityEditPanel
+        profile={profile}
+        closeRequestRef={createRef()}
+        onSaved={onSaved}
+        onCancel={() => undefined}
+      />,
+    );
+    const named = await screen.findByRole('textbox', { name: 'Nome Sessione' });
+    expect(named.closest('[data-edit-planned-session]')?.textContent).toContain(
+      'conclusa',
+    );
+    expect(
+      screen.getByText(/registrazioni concluse restano svolte/),
+    ).toBeTruthy();
+    expect(screen.getByRole('button', { name: 'Orario' })).toHaveProperty(
+      'disabled',
+      false,
+    );
+    expect(
+      screen.getByRole('button', { name: 'Tutto il giorno' }),
+    ).toHaveProperty('disabled', false);
+    expect(
+      screen.getByRole('button', { name: 'Aggiungi intervallo' }),
+    ).toHaveProperty('disabled', false);
+    expect(screen.getByRole('checkbox', { name: 'Sessione' })).toHaveProperty(
+      'disabled',
+      true,
+    );
+    fireEvent.click(screen.getByRole('button', { name: 'Tutto il giorno' }));
+    await submitEditor();
+    await waitFor(() => expect(applyReplan).toHaveBeenCalledOnce());
+    expect(saveCore).not.toHaveBeenCalled();
+    expect(onSaved).toHaveBeenCalledWith(profile);
+  });
+
+  it.each([
+    [
+      'paused child',
+      {
+        sessionRef: 'paused',
+        plannedScheduleRef: 'named',
+        open: true,
+        paused: true,
+      },
+    ],
+    [
+      'completed main',
+      {
+        sessionRef: 'main',
+        plannedScheduleRef: null,
+        open: false,
+        paused: false,
+      },
+    ],
+  ])('keeps the plan locked with a %s attempt', async (_label, partial) => {
+    loadSettings.mockResolvedValueOnce({
+      ...currentSettings,
+      schedules: [
+        {
+          scheduleRef: 'envelope',
+          role: 'envelope',
+          order: 0,
+          name: null,
+          placementStateRef: 'state',
+          temporalForm: 'named_zone_local',
+          start: '2026-10-09T09:00:00',
+          end: '2026-10-09T10:00:00',
+          zoneId: 'Europe/Rome',
+        },
+      ],
+    });
+    listActivitySessions.mockResolvedValueOnce([
+      {
+        ...partial,
+        startedAt: '2026-10-09T08:25:00Z',
+        endedAt: partial.open ? null : '2026-10-09T08:28:00Z',
+        activeSeconds: 180,
+        evaluatedAt: '2026-10-09T08:28:00Z',
+      },
+    ]);
+    render(
+      <ActivityEditPanel
+        profile={profile}
+        closeRequestRef={createRef()}
+        onSaved={() => undefined}
+        onCancel={() => undefined}
+      />,
+    );
+    await screen.findByRole('group', { name: 'Collocazione attuale' });
+    await waitFor(() =>
+      expect(screen.getByRole('checkbox', { name: 'Sessione' })).toHaveProperty(
+        'disabled',
+        true,
+      ),
+    );
+    expect(screen.getByRole('button', { name: 'Orario' })).toHaveProperty(
+      'disabled',
+      true,
+    );
+    expect(
+      screen.getByRole('button', { name: 'Tutto il giorno' }),
+    ).toHaveProperty('disabled', true);
+  });
+
   it('keeps the Advanced create order in the edit surface', async () => {
     const { container } = render(
       <ActivityEditPanel

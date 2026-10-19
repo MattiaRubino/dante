@@ -501,8 +501,15 @@ export function ActivityEditPanel({
         !!schedule.start &&
         !!schedule.end,
     );
-  const recordedLock = sessionAttempts === null || sessionAttempts.length > 0;
-  const planDirty =
+  // Completed named attempts are factual history, not a lock on future planning.
+  // The generic capture setting still requires deleting every real attempt.
+  const captureLocked = sessionAttempts === null || sessionAttempts.length > 0;
+  const planningLocked =
+    sessionAttempts === null ||
+    sessionAttempts.some(
+      (attempt) => !attempt.plannedScheduleRef || attempt.open,
+    );
+  const temporalDirty =
     canReplan &&
     (allDay !== originalAllDay ||
       (allDay &&
@@ -510,15 +517,15 @@ export function ActivityEditPanel({
           shiftedDate(dateSpanDraft.end, 1) !== envelope?.end)) ||
       removedIntervals.length > 0 ||
       newIntervals.length > 0 ||
-      newPlanned.length > 0 ||
-      deletedPlanned.length > 0 ||
       editablePlan.some(
         (schedule) =>
-          !deletedPlanned.includes(schedule.scheduleRef) &&
           !removedIntervals.includes(schedule.scheduleRef) &&
           (planDraft[schedule.scheduleRef]?.start !== schedule.start ||
             planDraft[schedule.scheduleRef]?.end !== schedule.end),
       ));
+  const planDirty =
+    canReplan &&
+    (temporalDirty || newPlanned.length > 0 || deletedPlanned.length > 0);
   const replanDraft = {
     times: planDraft,
     ...(allDay
@@ -1079,12 +1086,15 @@ export function ActivityEditPanel({
           field?.focus();
           return;
         }
-        if (
-          sessionAttempts.length > 0 &&
-          (planDirty || captureMode !== settings.capture.mode)
-        ) {
+        if (planningLocked && temporalDirty) {
           setError(
-            'Elimina le registrazioni prima di cambiare orari, intervalli o Sessione dell’attività.',
+            'Elimina le registrazioni attive o della Sessione dell’attività prima di cambiare orari o intervalli.',
+          );
+          return;
+        }
+        if (captureLocked && captureMode !== settings.capture.mode) {
+          setError(
+            'Elimina tutte le registrazioni prima di cambiare Sessione dell’attività.',
           );
           return;
         }
@@ -1486,7 +1496,7 @@ export function ActivityEditPanel({
               <label className="temporal-create-structure-session-toggle timeline-activity-editor__capture">
                 <input
                   type="checkbox"
-                  disabled={recordedLock || pending || planPending}
+                  disabled={captureLocked || pending || planPending}
                   checked={
                     (captureMode ?? settings.capture.mode) !== 'disabled'
                   }
@@ -1695,8 +1705,9 @@ export function ActivityEditPanel({
         {attemptDeleteError ? <p role="alert">{attemptDeleteError}</p> : null}
         {sessionAttempts?.length ? (
           <p className="timeline-activity-editor__record-hint">
-            Orari, intervalli e Sessione dell’attività sono bloccati finché
-            esistono registrazioni.
+            {planningLocked
+              ? 'Orari e intervalli restano bloccati finché esistono registrazioni attive o della Sessione dell’attività. Per cambiare Sessione dell’attività elimina tutte le registrazioni.'
+              : 'Le registrazioni concluse restano svolte ai loro orari reali. Puoi riprogrammare l’attività; per cambiare Sessione dell’attività elimina tutte le registrazioni.'}
           </p>
         ) : null}
         {settings ? (
@@ -1714,7 +1725,7 @@ export function ActivityEditPanel({
                   type="button"
                   className={!allDay ? 'is-selected' : ''}
                   aria-pressed={!allDay}
-                  disabled={!canReplan || recordedLock || planPending}
+                  disabled={!canReplan || planningLocked || planPending}
                   onClick={() => {
                     if (originalAllDay && envelope) {
                       setPlanDraft((current) => ({
@@ -1737,7 +1748,7 @@ export function ActivityEditPanel({
                   className={allDay ? 'is-selected' : ''}
                   aria-pressed={allDay}
                   disabled={
-                    !canReplan || recordedLock || hasIntervals || planPending
+                    !canReplan || planningLocked || hasIntervals || planPending
                   }
                   onClick={() => {
                     if (envelope) {
@@ -1795,7 +1806,7 @@ export function ActivityEditPanel({
                 <div
                   className="timeline-activity-editor__all-day"
                   data-edit-invalid={!!planErrors.dateSpan}
-                  inert={recordedLock || undefined}
+                  inert={planningLocked || undefined}
                 >
                   <TemporalCreateDatePicker
                     label="Data inizio"
@@ -1888,7 +1899,7 @@ export function ActivityEditPanel({
                               changePlan(schedule.scheduleRef, field, value)
                             }
                             error={planErrors[schedule.scheduleRef]}
-                            disabled={recordedLock || planPending}
+                            disabled={planningLocked || planPending}
                             {...(schedule.role === 'interval'
                               ? {
                                   removeLabel: `Rimuovi intervallo ${index + 1}`,
@@ -1908,7 +1919,7 @@ export function ActivityEditPanel({
                         removedIntervals.includes(schedule.scheduleRef) ? (
                           <button
                             type="button"
-                            disabled={recordedLock || planPending}
+                            disabled={planningLocked || planPending}
                             onClick={() => {
                               setRemovedIntervals((current) =>
                                 current.filter(
@@ -1962,7 +1973,7 @@ export function ActivityEditPanel({
                           changeNewInterval(item.clientRef, field, value)
                         }
                         error={planErrors[item.clientRef]}
-                        disabled={recordedLock || planPending}
+                        disabled={planningLocked || planPending}
                         removeLabel={`Rimuovi intervallo ${
                           editablePlan.filter((row) => row.role === 'interval')
                             .length -
@@ -1988,7 +1999,7 @@ export function ActivityEditPanel({
                       type="button"
                       className="temporal-create-activity-intervals__add"
                       disabled={
-                        recordedLock ||
+                        planningLocked ||
                         planPending ||
                         (hasIntervals
                           ? editablePlan.filter(

@@ -617,44 +617,40 @@ async def apply_activity_replan(
             await session.execute(text("SET TRANSACTION ISOLATION LEVEL SERIALIZABLE"))
             snapshot = await _read(session, actor, activity_ref)
             _, placements = _validated_plan(snapshot, body)
-            # Recorded execution freezes the accepted temporal plan. A factual
-            # attempt must be removed explicitly, one at a time, before moving
-            # any interval. Adding unrecorded Session configuration is allowed.
-            attempts_present = bool(
-                await session.scalar(
-                    text("""
-                        SELECT EXISTS(
-                            SELECT 1 FROM dante.list_self_subject_sessions(:actor,:activity)
-                        )
-                    """),
-                    {"actor": actor, "activity": activity_ref},
-                )
-            )
-            if attempts_present and (
-                placements
-                or body.date_span
-                or body.remove_intervals
-                or body.new_intervals
-                or body.split_envelope
-            ):
-                raise _conflict("Elimina le registrazioni prima di modificare orari o intervalli.")
-            if attempts_present and body.delete_planned_sessions:
-                recorded_planned = {
-                    row.planned_schedule_ref
-                    for row in (
-                        (
-                            await session.execute(
-                                text("""
-                            SELECT dante.get_self_session_planned_schedule(:actor,s.session_ref) AS planned_schedule_ref
+            # Re-evaluate facts in this serializable Save transaction. A
+            # completed named attempt retains its history, but no longer
+            # freezes intended time. Main (even concluded) and open/paused
+            # named attempts still freeze it. No direct table lock: the runtime
+            # role has SELECT but not UPDATE on activity_intention.
+            attempt_rows = (
+                (
+                    await session.execute(
+                        text("""
+                            SELECT s.session_ref, s.ended_at,
+                                   dante.get_self_session_planned_schedule(
+                                       :actor,s.session_ref
+                                   ) AS planned_schedule_ref
                               FROM dante.list_self_subject_sessions(:actor,:activity) AS s
                         """),
-                                {"actor": actor, "activity": activity_ref},
-                            )
-                        )
-                        .mappings()
-                        .all()
+                        {"actor": actor, "activity": activity_ref},
                     )
-                }
+                )
+                .mappings()
+                .all()
+            )
+            attempts_present = bool(attempt_rows)
+            planning_locked = any(
+                row.ended_at is None or row.planned_schedule_ref is None for row in attempt_rows
+            )
+            if planning_locked and (
+                placements or body.remove_intervals or body.new_intervals or body.split_envelope
+            ):
+                raise _conflict(
+                    "Elimina le registrazioni attive o della Sessione principale "
+                    "prima di modificare orari o intervalli."
+                )
+            if attempts_present and body.delete_planned_sessions:
+                recorded_planned = {row.planned_schedule_ref for row in attempt_rows}
                 if any(
                     row.schedule_ref in recorded_planned for row in body.delete_planned_sessions
                 ):

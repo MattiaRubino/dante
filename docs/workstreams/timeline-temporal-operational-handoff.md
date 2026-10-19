@@ -1,5 +1,31 @@
 # Timeline / Temporal-Operational — Workstream Handoff
 
+## 2026-10-19 — Completed internal Session and Activity replanning
+
+The owner accepted a narrower planning lock: only completed named internal
+Session attempts (with no generic Activity Session attempt and no open/paused
+internal attempts) allow Edit to change the Activity's intended clock/date,
+all-day precision and intervals. The concluded attempts retain their factual
+timestamps, identity, active duration and named configuration link; changing
+the plan does not restart or erase them. Generic capture stays disabled for
+editing while **any** attempt exists. Running/paused named attempts and every
+generic attempt (even stopped) still lock planning. Drag on any recorded card
+still opens Edit first. The server rechecks the current attempts in its
+SERIALIZABLE replan transaction; deletion of linked named configuration still
+requires explicit deletion of its factual attempts. Unrecorded named
+configuration may be added independently. Normative matrix and AI-authoring
+implications are in `../domain/decisions/activity-session-operational-lifecycle-v2.md`.
+
+Candidate code is in Activity Edit and Activity replan, with focused UI and
+PostgreSQL regressions. Web typecheck, focused Vitest (52 tests), full Web
+Vitest (1,143 tests), backend Ruff and Python compilation passed in the
+coding workspace. PostgreSQL could not run there; the same-SHA PostgreSQL
+and complete gate, and real-app acceptance remain pending. After this
+candidate, inspect actual
+Routine/Recurrence edit scope behavior separately: do not interpret a
+multi-day Activity as a recurring series, and do not silently extend this
+per-Activity rule to sibling Occurrences or source templates.
+
 ## 2026-10-19 — Repeated drag of a recorded Activity
 
 The first Activity drag with a factual Session already opened Edit, but left

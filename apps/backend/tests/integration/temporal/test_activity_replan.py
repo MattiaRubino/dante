@@ -513,6 +513,181 @@ async def test_running_attempts_block_moving_and_named_configuration_deletion(
 
 
 @pytest.mark.asyncio
+async def test_completed_named_attempt_keeps_history_while_activity_plan_changes(
+    migrated_database: Any,
+) -> None:
+    actor = _seed_self(migrated_database)
+    runtime = create_database_runtime(migrated_database.runtime_settings())
+    try:
+        created = await TemporalAuthoringApplication(runtime.session_factory).create_activity(
+            self_person_ref=actor,
+            operation_id="lifecycle:finished-child:create",
+            title="Studio",
+            placement=_window(9, 12),
+            planned_slices=(None,),
+            planned_slice_names=("Ripasso",),
+        )
+        activity = created.item.subject_native_ref
+        before = await _snapshot(runtime, actor, activity)
+        named = next(row for row in before.schedules if row.role_code == "planned")
+        envelope = next(row for row in before.schedules if row.role_code == "envelope")
+        sessions = SessionApplication(runtime.session_factory)
+        started = await sessions.start_planned(
+            self_person_ref=actor,
+            operation_id="lifecycle:finished-child:start",
+            activity_ref=activity,
+            schedule_ref=ScopedRecordRef(named.schedule_ref),
+        )
+        ended = await sessions.end(
+            self_person_ref=actor,
+            operation_id="lifecycle:finished-child:end",
+            session_ref=started.session_ref,
+            expected_material_state_ref=started.timing_material_state_ref,
+        )
+        impact_before = await get_self_activity_session_impact(
+            activity, _context(actor), _request(runtime), Response()
+        )
+        moved = await apply_activity_replan(
+            activity,
+            ActivityReplanCommand(
+                operation_id="lifecycle:finished-child:move",
+                envelope=_move(envelope, 10, 13),
+                planned_sessions=[_retain(named)],
+            ),
+            _context(actor),
+            _request(runtime),
+            Response(),
+        )
+        root = next(row for row in moved.schedules if row.role_code == "envelope")
+        converted = await apply_activity_replan(
+            activity,
+            ActivityReplanCommand(
+                operation_id="lifecycle:finished-child:all-day",
+                date_span=ReplanDateSpanRow(
+                    schedule_ref=root.schedule_ref,
+                    expected_material_state_ref=root.placement_material_state_ref,
+                    start_date=date(2026, 10, 10),
+                    end_date_exclusive=date(2026, 10, 12),
+                ),
+                planned_sessions=[_retain(named)],
+            ),
+            _context(actor),
+            _request(runtime),
+            Response(),
+        )
+        assert (
+            next(row for row in converted.schedules if row.role_code == "envelope").temporal_form
+            == "date_span"
+        )
+        impact_after = await get_self_activity_session_impact(
+            activity, _context(actor), _request(runtime), Response()
+        )
+        assert impact_after.fingerprint == impact_before.fingerprint
+        assert {row.session_ref for row in impact_after.attempts} == {ended.session_ref}
+        async with runtime.session_factory() as session, session.begin():
+            linked = await session.scalar(
+                text("SELECT dante.get_self_session_planned_schedule(:actor,:session)"),
+                {"actor": actor, "session": ended.session_ref},
+            )
+        assert linked == named.schedule_ref
+        with pytest.raises(ProblemError) as recorded_configuration:
+            await apply_activity_replan(
+                activity,
+                ActivityReplanCommand(
+                    operation_id="lifecycle:finished-child:remove-named",
+                    date_span=ReplanDateSpanRow(
+                        schedule_ref=root.schedule_ref,
+                        expected_material_state_ref=next(
+                            row for row in converted.schedules if row.role_code == "envelope"
+                        ).placement_material_state_ref,
+                        start_date=date(2026, 10, 10),
+                        end_date_exclusive=date(2026, 10, 12),
+                    ),
+                    delete_planned_sessions=[
+                        DeletePlannedRow(
+                            schedule_ref=named.schedule_ref,
+                            expected_material_state_ref=named.placement_material_state_ref,
+                        )
+                    ],
+                ),
+                _context(actor),
+                _request(runtime),
+                Response(),
+            )
+        assert recorded_configuration.value.status == 409
+    finally:
+        await runtime.dispose()
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize("attempt_kind", ["paused_child", "completed_main"])
+async def test_paused_child_or_completed_main_still_freezes_plan(
+    migrated_database: Any, attempt_kind: str
+) -> None:
+    actor = _seed_self(migrated_database)
+    runtime = create_database_runtime(migrated_database.runtime_settings())
+    try:
+        created = await TemporalAuthoringApplication(runtime.session_factory).create_activity(
+            self_person_ref=actor,
+            operation_id=f"lifecycle:{attempt_kind}:create",
+            title="Studio",
+            placement=_window(9, 12),
+            planned_slices=(None,),
+            planned_slice_names=("Ripasso",),
+            session_capture_mode="live" if attempt_kind == "completed_main" else "disabled",
+        )
+        activity = created.item.subject_native_ref
+        before = await _snapshot(runtime, actor, activity)
+        named = next(row for row in before.schedules if row.role_code == "planned")
+        envelope = next(row for row in before.schedules if row.role_code == "envelope")
+        sessions = SessionApplication(runtime.session_factory)
+        started = (
+            await sessions.start(
+                self_person_ref=actor,
+                operation_id="lifecycle:completed-main:start",
+                subject_kind="activity",
+                subject_native_ref=activity,
+            )
+            if attempt_kind == "completed_main"
+            else await sessions.start_planned(
+                self_person_ref=actor,
+                operation_id="lifecycle:paused-child:start",
+                activity_ref=activity,
+                schedule_ref=ScopedRecordRef(named.schedule_ref),
+            )
+        )
+        if attempt_kind == "completed_main":
+            await sessions.end(
+                self_person_ref=actor,
+                operation_id="lifecycle:completed-main:end",
+                session_ref=started.session_ref,
+                expected_material_state_ref=started.timing_material_state_ref,
+            )
+        else:
+            await sessions.pause(
+                self_person_ref=actor,
+                operation_id="lifecycle:paused-child:pause",
+                session_ref=started.session_ref,
+                expected_material_state_ref=started.timing_material_state_ref,
+            )
+        with pytest.raises(ProblemError) as frozen:
+            await apply_activity_replan(
+                activity,
+                ActivityReplanCommand(
+                    operation_id=f"lifecycle:{attempt_kind}:move",
+                    envelope=_move(envelope, 10, 13),
+                    planned_sessions=[_retain(named)],
+                ),
+                _context(actor),
+                _request(runtime),
+                Response(),
+            )
+        assert frozen.value.status == 409
+    finally:
+        await runtime.dispose()
+
+
+@pytest.mark.asyncio
 async def test_direct_activity_envelope_revision_remains_blocked_with_an_attempt(
     migrated_database: Any,
 ) -> None:
