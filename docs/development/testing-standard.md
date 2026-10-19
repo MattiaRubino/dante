@@ -120,6 +120,10 @@ From a clean checkout of feature/timeline-temporal-operational, run:
 
     python3 tooling/testing/run_complete_gate.py
 
+For a clean review branch, set `DANTE_GATE_BRANCH` to the checked-out branch
+when invoking either the sequential or parallel runner. The runner still
+checks the branch, clean worktree, pinned SHA and full test inventory.
+
 The wrapper invokes the entire existing tooling/verify-all-current-tests-local.sh
 inventory: 27 checks across PostgreSQL/Alembic, backend, API/TypeScript,
 architecture, generation, build, mobile, lint, formatting, frontend, tooling

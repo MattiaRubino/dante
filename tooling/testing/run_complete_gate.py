@@ -3,6 +3,7 @@
 
 from __future__ import annotations
 
+import os
 import re
 import subprocess
 import sys
@@ -13,7 +14,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[2]
 GATE = ROOT / "tooling" / "verify-all-current-tests-local.sh"
-BRANCH = "feature/timeline-temporal-operational"
+BRANCH = os.environ.get("DANTE_GATE_BRANCH") or "feature/timeline-temporal-operational"
 
 
 def _git(*args: str) -> str:

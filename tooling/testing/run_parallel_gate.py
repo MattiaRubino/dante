@@ -24,7 +24,7 @@ from typing import TextIO
 
 ROOT = Path(__file__).resolve().parents[2]
 GATE = ROOT / "tooling/verify-all-current-tests-local.sh"
-BRANCH = "feature/timeline-temporal-operational"
+BRANCH = os.environ.get("DANTE_GATE_BRANCH") or "feature/timeline-temporal-operational"
 PG_TIMINGS = ROOT / "temp/POSTGRES_MODULE_TIMINGS.json"
 GROUP_TIMINGS = ROOT / "temp/GATE_GROUP_TIMINGS.json"
 _DISPOSABLE_VOLUME_LABEL = "dante.test.scope=postgres-acceptance"

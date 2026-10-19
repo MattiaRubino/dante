@@ -4,8 +4,9 @@
 set -u
 
 cd "$(dirname "$0")/.." || exit 1
-if [ "$(git branch --show-current)" != "feature/timeline-temporal-operational" ]; then
-  echo "Expected feature/timeline-temporal-operational"
+expected_branch="${DANTE_GATE_BRANCH:-feature/timeline-temporal-operational}"
+if [ "$(git branch --show-current)" != "$expected_branch" ]; then
+  echo "Expected $expected_branch"
   exit 1
 fi
 
