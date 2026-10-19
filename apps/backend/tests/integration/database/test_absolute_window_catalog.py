@@ -12,7 +12,7 @@ from dante.platform.database.mappings import MAPPED_TABLES
 
 pytestmark = pytest.mark.postgres
 
-_CURRENT_REVISION = "20261019_161"
+_CURRENT_REVISION = "20261019_162"
 _WINDOW_TABLES = {
     "temporal_constraint_window_state",
     "temporal_constraint_window_absolute_state",
