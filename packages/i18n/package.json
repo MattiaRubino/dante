@@ -12,6 +12,6 @@
     "test": "vitest run"
   },
   "devDependencies": {
-    "i18next": "26.3.6"
+    "i18next": "26.4.1"
   }
 }
