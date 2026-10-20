@@ -3,9 +3,9 @@
 from __future__ import annotations
 
 from datetime import date, datetime, timedelta
-from zoneinfo import ZoneInfo
 from types import SimpleNamespace
 from typing import Any, cast
+from zoneinfo import ZoneInfo
 
 import pytest
 from fastapi import Request, Response

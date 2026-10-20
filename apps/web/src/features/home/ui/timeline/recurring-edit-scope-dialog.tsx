@@ -17,22 +17,25 @@ export function RecurringEditScopeDialog({
   onCancel: () => void;
 }>) {
   const dialogRef = useRef<HTMLDivElement>(null);
-  const cancelRef = useRef(onCancel);
-  const busyRef = useRef(busy);
-  cancelRef.current = onCancel;
-  busyRef.current = busy;
-
   useEffect(() => {
     const previousFocus =
       document.activeElement instanceof HTMLElement
         ? document.activeElement
         : null;
     dialogRef.current?.querySelector<HTMLButtonElement>('button')?.focus();
+    return () => {
+      if (previousFocus?.isConnected) {
+        previousFocus.focus({ preventScroll: true });
+      }
+    };
+  }, []);
+
+  useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
       if (event.key === 'Escape') {
         event.preventDefault();
         event.stopImmediatePropagation();
-        if (!busyRef.current) cancelRef.current();
+        if (!busy) onCancel();
       } else if (event.key === 'Tab') {
         const buttons = Array.from(
           dialogRef.current?.querySelectorAll<HTMLButtonElement>(
@@ -53,11 +56,8 @@ export function RecurringEditScopeDialog({
     document.addEventListener('keydown', handleKeyDown, true);
     return () => {
       document.removeEventListener('keydown', handleKeyDown, true);
-      if (previousFocus?.isConnected) {
-        previousFocus.focus({ preventScroll: true });
-      }
     };
-  }, []);
+  }, [busy, onCancel]);
 
   return createPortal(
     <div className="timeline-recurring-edit-scope-backdrop">
