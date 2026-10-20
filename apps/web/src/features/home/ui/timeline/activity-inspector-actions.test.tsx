@@ -860,11 +860,44 @@ describe('Activity Inspector', () => {
       />,
     );
     fireEvent.click(screen.getByRole('button', { name: 'Modifica' }));
+    const dialog = await screen.findByRole('dialog', {
+      name: 'Ambito modifica ricorrenza',
+    });
+    expect(dialog.parentElement?.parentElement).toBe(document.body);
+    expect(onEdit).not.toHaveBeenCalled();
     fireEvent.click(
-      await screen.findByRole('button', { name: 'Dalla prossima istanza' }),
+      within(dialog).getByRole('button', { name: 'Dalla prossima istanza' }),
     );
     expect(onEdit).toHaveBeenCalledWith(profile, 'from_next');
   });
+  it('cancels the recurring scope dialog without opening Edit', async () => {
+    get.mockResolvedValue(profile);
+    loadRecurringContext.mockResolvedValueOnce({
+      occurrenceRef: '0199a222-2222-7222-8222-222222222222',
+      sourceRef: '0199a444-4444-7444-8444-444444444444',
+      editRevision: 0,
+      recurrenceStateRef: null,
+    });
+    const onEdit = vi.fn();
+    render(
+      <ActivityInspectorActions
+        activityRef={ref}
+        onEdit={onEdit}
+        onDeleted={() => undefined}
+        onDuplicate={() => undefined}
+      />,
+    );
+    fireEvent.click(screen.getByRole('button', { name: 'Modifica' }));
+    const dialog = await screen.findByRole('dialog', {
+      name: 'Ambito modifica ricorrenza',
+    });
+    fireEvent.click(within(dialog).getByRole('button', { name: 'Annulla' }));
+    expect(
+      screen.queryByRole('dialog', { name: 'Ambito modifica ricorrenza' }),
+    ).toBeNull();
+    expect(onEdit).not.toHaveBeenCalled();
+  });
+
   it('opens the separate editor with the persisted profile', async () => {
     get.mockResolvedValue(profile);
     const onEdit = vi.fn();

@@ -559,6 +559,23 @@ class RoutineOccurrenceMaterializationApplication:
             raise OccurrencePersistenceError()
         return row
 
+    async def _bound_activity(
+        self, *, self_person_ref: NativeRef, occurrence_ref: UUID
+    ) -> UUID | None:
+        """A bound Activity is complete; replaying authoring would reuse its create ID."""
+        try:
+            async with self._session_factory() as session, session.begin():
+                value = await session.scalar(
+                    text(
+                        "SELECT activity_ref FROM dante.list_self_routine_occurrence_activities("
+                        ":actor, CAST(ARRAY[:occurrence] AS uuid[]))"
+                    ),
+                    {"actor": self_person_ref, "occurrence": occurrence_ref},
+                )
+        except SQLAlchemyError as exc:
+            raise OccurrencePersistenceError() from exc
+        return None if value is None else UUID(str(value))
+
     async def _materialize_activity(
         self,
         *,
@@ -568,6 +585,14 @@ class RoutineOccurrenceMaterializationApplication:
         coordinate: CalendarCoordinate,
         policy: RoutineOccurrencePolicyView,
     ) -> None:
+        # The binding is the completion marker. Existing instances keep their
+        # factual structure and local corrections; profile edits are projected
+        # by the occurrence read and must never replay immutable Create intent.
+        if await self._bound_activity(
+            self_person_ref=self_person_ref, occurrence_ref=occurrence_ref
+        ) is not None:
+            return
+
         template = policy.activity_template
         title, life_area_ref = await self._routine_source(
             self_person_ref=self_person_ref,

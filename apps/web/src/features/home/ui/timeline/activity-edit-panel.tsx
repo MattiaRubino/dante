@@ -1471,13 +1471,6 @@ export function ActivityEditPanel({
       >
         {error ? <p role="alert">{error}</p> : null}
         {recurringError ? <p role="alert">{recurringError}</p> : null}
-        {recurringContext && editScope !== 'only_this' ? (
-          <p role="status">
-            Per questa scelta puoi salvare titolo, descrizione, località e
-            colore. Orari, intervalli, Sessioni, obiettivi, Life Area e
-            promemoria richiedono ancora la modifica della singola istanza.
-          </p>
-        ) : null}
         {loadingSettings ? (
           <p role="status">Caricamento impostazioni…</p>
         ) : null}

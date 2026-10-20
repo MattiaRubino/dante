@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 
 import {
@@ -23,6 +23,7 @@ import {
   type ActivityDuplicateSeed,
 } from '../../../temporal-create/application/activity-duplicate-seed';
 import { TimelineInspectorIcon } from './timeline-inspector-icon';
+import { RecurringEditScopeDialog } from './recurring-edit-scope-dialog';
 
 export function ActivityInspectorActions({
   activityRef,
@@ -31,6 +32,7 @@ export function ActivityInspectorActions({
   onDeleted,
   onDuplicate,
   toolbarTarget = null,
+  openEditChoiceOnMount = false,
 }: Readonly<{
   activityRef: string;
   subitemsCount?: number;
@@ -38,6 +40,7 @@ export function ActivityInspectorActions({
   onDeleted: () => void;
   onDuplicate: (seed: ActivityDuplicateSeed) => void;
   toolbarTarget?: HTMLElement | null;
+  openEditChoiceOnMount?: boolean;
 }>) {
   const [source] = useState(createRemoteActivityInspector);
   const [settingsSource] = useState(createRemoteActivityEditSettings);
@@ -58,6 +61,39 @@ export function ActivityInspectorActions({
   const [confirmingVault, setConfirmingVault] = useState(false);
   const [pending, setPending] = useState(false);
   const [error, setError] = useState('');
+  const autoOpenedRef = useRef<string | null>(null);
+
+  const requestEdit = useCallback(async () => {
+    setPending(true);
+    setError('');
+    try {
+      const [loaded, recurring] = await Promise.all([
+        source.get(activityRef),
+        recurringSource.loadActivityContext(activityRef),
+      ]);
+      if (!recurring) {
+        onEdit(loaded, 'only_this');
+        return;
+      }
+      const preview = await recurringSource.loadPreview(recurring, 'only_this');
+      setEditChoice({
+        profile: loaded,
+        selectedHasFacts: preview.selectedProtection === 'registration',
+      });
+    } catch (reason) {
+      setError(
+        reason instanceof Error ? reason.message : 'Modifica non disponibile.',
+      );
+    } finally {
+      setPending(false);
+    }
+  }, [activityRef, onEdit, recurringSource, source]);
+
+  useEffect(() => {
+    if (!openEditChoiceOnMount || autoOpenedRef.current === activityRef) return;
+    autoOpenedRef.current = activityRef;
+    void requestEdit();
+  }, [activityRef, openEditChoiceOnMount, requestEdit]);
 
   useEffect(() => {
     let active = true;
@@ -100,26 +136,7 @@ export function ActivityInspectorActions({
         aria-label="Modifica"
         title="Modifica"
         disabled={pending}
-        onClick={() =>
-          void action(async () => {
-            const [loaded, recurring] = await Promise.all([
-              source.get(activityRef),
-              recurringSource.loadActivityContext(activityRef),
-            ]);
-            if (!recurring) {
-              onEdit(loaded, 'only_this');
-              return;
-            }
-            const preview = await recurringSource.loadPreview(
-              recurring,
-              'only_this',
-            );
-            setEditChoice({
-              profile: loaded,
-              selectedHasFacts: preview.selectedProtection === 'registration',
-            });
-          })
-        }
+        onClick={() => void requestEdit()}
       >
         {toolbarTarget ? <TimelineInspectorIcon name="edit" /> : 'Modifica'}
       </button>
@@ -210,53 +227,16 @@ export function ActivityInspectorActions({
       ) : null}
       {error ? <p role="alert">{error}</p> : null}
       {editChoice ? (
-        <div
-          className="timeline-activity-inspector__confirmation"
-          role="group"
-          aria-label="Ambito modifica ricorrenza"
-        >
-          <p>
-            Questa attività fa parte di una ricorrenza. Quali istanze vuoi
-            modificare?
-          </p>
-          <button
-            type="button"
-            disabled={pending}
-            onClick={() => {
-              onEdit(editChoice.profile, 'only_this');
-              setEditChoice(null);
-            }}
-          >
-            Solo questa istanza
-          </button>
-          <button
-            type="button"
-            disabled={pending}
-            onClick={() => {
-              onEdit(
-                editChoice.profile,
-                editChoice.selectedHasFacts
-                  ? 'from_next'
-                  : 'this_and_following',
-              );
-              setEditChoice(null);
-            }}
-          >
-            {editChoice.selectedHasFacts
-              ? 'Dalla prossima istanza'
-              : 'Questa e le successive'}
-          </button>
-          {editChoice.selectedHasFacts ? (
-            <p>La registrazione di questa istanza rimane invariata.</p>
-          ) : null}
-          <button
-            type="button"
-            disabled={pending}
-            onClick={() => setEditChoice(null)}
-          >
-            Annulla
-          </button>
-        </div>
+        <RecurringEditScopeDialog
+          owner="Activity"
+          selectedHasFacts={editChoice.selectedHasFacts}
+          busy={pending}
+          onSelect={(scope) => {
+            onEdit(editChoice.profile, scope);
+            setEditChoice(null);
+          }}
+          onCancel={() => setEditChoice(null)}
+        />
       ) : null}
       {confirmingVault ? (
         <div className="timeline-activity-inspector__confirmation">

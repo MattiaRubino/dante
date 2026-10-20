@@ -680,19 +680,6 @@ export function EventDetailDialog({
   const activityRef =
     sessionSubject?.kind === 'activity' ? sessionSubject.ref : null;
   useEffect(() => {
-    if (!activityRef || !openActivityEdit) return;
-    let active = true;
-    void createRemoteActivityInspector()
-      .get(activityRef)
-      .then((profile) => {
-        if (active) setEditingProfile(profile);
-      })
-      .catch(() => undefined);
-    return () => {
-      active = false;
-    };
-  }, [activityRef, openActivityEdit]);
-  useEffect(() => {
     if (!activityRef) return;
     let active = true;
     void createRemoteActivityInspector()
@@ -724,7 +711,9 @@ export function EventDetailDialog({
     document.body.style.overflow = 'hidden';
     document.documentElement.style.overflow = 'hidden';
     const siblings = Array.from(document.body.children).filter(
-      (element) => !element.classList.contains('timeline-modal-backdrop'),
+      (element) =>
+        !element.classList.contains('timeline-modal-backdrop') &&
+        !element.classList.contains('timeline-recurring-edit-scope-backdrop'),
     );
     const previousInert = siblings.map((element) =>
       element.hasAttribute('inert'),
@@ -789,6 +778,7 @@ export function EventDetailDialog({
     }
     closeButtonRef.current?.focus();
     const keydown = (event: globalThis.KeyboardEvent) => {
+      if (document.querySelector('[data-recurring-edit-scope-dialog]')) return;
       if (event.key === 'Escape') {
         event.preventDefault();
         requestCloseCurrent();
@@ -920,6 +910,7 @@ export function EventDetailDialog({
               <ActivityInspectorActions
                 toolbarTarget={toolbarTarget}
                 activityRef={sessionSubject.ref}
+                openEditChoiceOnMount={openActivityEdit}
                 subitemsCount={detail.subitemsCount ?? 0}
                 onEdit={(profile, scope) => {
                   setActivityEditScope(scope);

@@ -1,5 +1,22 @@
 # Timeline / Temporal-Operational — Workstream Handoff
 
+## 2026-10-20 — Scope dialog and recurring checkpoint replay candidate
+
+Real-app feedback found that Activity/Event scope was shown within Inspector,
+recorded Activity drag bypassed scope, and Activity series Edit displayed an
+intrusive metadata-only banner. The scope choice now uses a centered modal;
+recorded drag enters that same choice before opening Edit. The redundant banner
+is removed. Metadata-only series persistence still rejects structural edits
+until the structural template vertical is implemented.
+
+The reported Timeline failure was an Activity Create operation-id conflict
+during recurrence checkpoint after a profile correction. A checkpoint now
+checks the existing owner-scoped Activity binding before immutable Create
+replay. A PostgreSQL regression covers a profile edit followed by another
+checkpoint of the same occurrence. This candidate was prepared while the
+local execution environment was unavailable; its tests and real-app acceptance
+are **not yet verified**.
+
 ## 2026-10-19 — Recurring edit scope candidate (`_161`)
 
 The accepted product policy is recorded in

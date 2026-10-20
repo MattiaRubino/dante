@@ -62,6 +62,27 @@ Session/Actual/Objective observations remain factual even when a recurring
 source changes. An open or paused registration is protected just like a
 completed one. A series edit never deletes a registration automatically.
 
+## Scope choice and checkpoint replay
+
+A recurring Activity or Event presents the scope choice in a centered modal
+before entering Edit. The three actions are **Solo questa istanza**,
+**Questa e le successive** (or **Dalla prossima istanza** for an instance with
+registrations), and **Annulla**. A drag gesture on an Activity with a factual
+Session routes through the same scope choice before Edit; dragging does not
+move that Activity. Escape or Annulla closes the choice without changing
+the plan. One-off Activities do not have a series scope.
+
+Routine checkpoint materialization treats the owner-scoped
+Occurrence-to-Activity binding as the completion marker. A second checkpoint
+must not replay Activity Create for an already bound instance: its immutable
+create operation id would otherwise conflict with a later profile correction,
+and could overwrite locally changed structure. Profile edits remain projected
+through the Occurrence's effective profile. If Create has only partially
+completed and no binding exists, normal deterministic replay still applies;
+a conflicting partial replay must fail explicitly rather than silently
+discard a fact. Structural series reconciliation is a separate persistence
+operation and must not be approximated by re-running Create.
+
 ## Current implementation boundary (2026-10-19)
 
 The owner-scoped profile edit accepts title, description, location and color.

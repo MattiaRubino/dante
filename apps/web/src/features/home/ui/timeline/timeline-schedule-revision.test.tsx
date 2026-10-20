@@ -49,6 +49,7 @@ const remote = vi.hoisted(() => ({
   sessionImpact: vi.fn(),
   get: vi.fn(),
   loadRecurring: vi.fn(),
+  loadRecurringPreview: vi.fn(),
 }));
 vi.mock('../../../temporal/remote-activity-edit-settings', () => ({
   createRemoteActivityEditSettings: () => ({
@@ -65,6 +66,7 @@ vi.mock('../../../temporal/remote-activity-inspector', () => ({
 vi.mock('../../../temporal/remote-recurring-profile-edit', () => ({
   createRemoteRecurringProfileEdit: () => ({
     loadActivityContext: remote.loadRecurring,
+    loadPreview: remote.loadRecurringPreview,
   }),
 }));
 
@@ -267,6 +269,12 @@ beforeEach(() => {
     .mockReset()
     .mockResolvedValue({ fingerprint, attempts: [] });
   remote.loadRecurring.mockReset().mockResolvedValue(null);
+  remote.loadRecurringPreview.mockReset().mockResolvedValue({
+    fingerprint: 'b'.repeat(32),
+    selectedProtection: 'registration',
+    targetOccurrenceRefs: [],
+    protectedOccurrences: [],
+  });
   remote.applyReplan.mockReset().mockImplementation((_ref, current, draft) => {
     invalidateTemporalTimelineRead();
     const next = draft as ActivityReplanDraft;
@@ -382,6 +390,40 @@ describe('Activity Timeline coordinated replan', () => {
       expect(reviseSchedule).not.toHaveBeenCalled();
     },
   );
+
+  it('asks for recurrence scope before Edit after dragging a recorded instance', async () => {
+    remote.loadRecurring.mockResolvedValue({
+      occurrenceRef: '0199a8c0-5e75-7bc0-8ad0-a2f403f5617d',
+      sourceRef: '0199a8c0-5e76-7bc0-8ad0-a2f403f5617d',
+      editRevision: 0,
+      recurrenceStateRef: null,
+    });
+    remote.sessionImpact.mockResolvedValue({
+      fingerprint,
+      attempts: [
+        {
+          sessionRef: 'session-1',
+          plannedScheduleRef: null,
+          timingMaterialStateRef: 'state-1',
+          status: 'in corso',
+        },
+      ],
+    });
+    const { container, reviseSchedule } = renderTimeline();
+    await dragCard(container);
+    const scope = await screen.findByRole('dialog', {
+      name: 'Ambito modifica ricorrenza',
+    });
+    expect(scope.parentElement?.parentElement).toBe(document.body);
+    expect(scope.textContent).toContain('Dalla prossima istanza');
+    expect(screen.queryByTestId('activity-edit-panel')).toBeNull();
+    expect(remote.applyReplan).not.toHaveBeenCalled();
+    expect(reviseSchedule).not.toHaveBeenCalled();
+    fireEvent.click(
+      within(scope).getByRole('button', { name: 'Solo questa istanza' }),
+    );
+    await screen.findByTestId('activity-edit-panel');
+  });
 
   it('opens Edit for a recorded Activity even when its placement is manually locked', async () => {
     remote.sessionImpact.mockResolvedValue({

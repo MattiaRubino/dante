@@ -1487,6 +1487,52 @@
 
 /* Modal and feedback ------------------------------------------------------- */
 
+.timeline-recurring-edit-scope-backdrop {
+  position: fixed;
+  z-index: 2200;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  padding: 20px;
+  background: rgba(2, 6, 12, 0.76);
+}
+
+.timeline-recurring-edit-scope-dialog {
+  width: min(440px, 100%);
+  max-height: calc(100vh - 40px);
+  overflow: auto;
+  padding: 24px;
+  border: 1px solid var(--dante-semantic-color-home-border-strong, #52606b);
+  border-radius: 16px;
+  color: var(--dante-semantic-color-home-text-primary, #f2f4f2);
+  background: var(--dante-semantic-color-home-surface-overlay, #080f1d);
+  box-shadow: 0 24px 64px rgba(0, 0, 0, 0.38);
+}
+
+.timeline-recurring-edit-scope-dialog h2 {
+  margin: 0 0 12px;
+}
+
+.timeline-recurring-edit-scope-dialog__actions {
+  display: grid;
+  gap: 10px;
+  margin-top: 18px;
+}
+
+.timeline-recurring-edit-scope-dialog__actions button {
+  padding: 10px 12px;
+  border: 1px solid var(--dante-semantic-color-home-border-subtle);
+  border-radius: 8px;
+  color: inherit;
+  background: var(--dante-semantic-color-home-surface-control);
+  cursor: pointer;
+}
+
+.timeline-recurring-edit-scope-dialog__actions button:focus-visible {
+  outline: 2px solid var(--dante-semantic-color-home-text-primary, #f2f4f2);
+  outline-offset: 2px;
+}
+
 .timeline-modal-backdrop {
   position: fixed;
   z-index: 1300;

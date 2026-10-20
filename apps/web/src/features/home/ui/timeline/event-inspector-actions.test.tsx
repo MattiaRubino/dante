@@ -6,6 +6,7 @@ import {
   render,
   screen,
   waitFor,
+  within,
 } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
@@ -121,8 +122,12 @@ describe('Event Inspector actions', () => {
       />,
     );
     fireEvent.click(screen.getByRole('button', { name: /^Modifica$/ }));
+    const dialog = await screen.findByRole('dialog', {
+      name: 'Ambito modifica ricorrenza',
+    });
+    expect(dialog.parentElement?.parentElement).toBe(document.body);
     fireEvent.click(
-      await screen.findByRole('button', { name: 'Dalla prossima istanza' }),
+      within(dialog).getByRole('button', { name: 'Dalla prossima istanza' }),
     );
     fireEvent.change(
       await screen.findByRole('textbox', { name: 'Titolo Event' }),
