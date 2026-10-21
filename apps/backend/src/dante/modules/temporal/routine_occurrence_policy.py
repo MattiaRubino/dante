@@ -65,8 +65,9 @@ class RoutineOccurrencePolicyApplication:
     def __init__(self, session_factory: async_sessionmaker[AsyncSession]) -> None:
         self._session_factory = session_factory
 
-    async def set(
+    async def set_in_session(
         self,
+        session: AsyncSession,
         *,
         self_person_ref: NativeRef,
         routine_ref: UUID,
@@ -88,30 +89,29 @@ class RoutineOccurrencePolicyApplication:
                 "Routine Activity template version is unsupported."
             )
         try:
-            async with self._session_factory() as session, session.begin():
-                row = (
-                    (
-                        await session.execute(
-                            text(
-                                """SELECT * FROM dante.set_self_routine_occurrence_policy(
-                                 :actor,:routine,:duration,:reminder,CAST(:template AS jsonb))"""
+            row = (
+                (
+                    await session.execute(
+                        text(
+                            """SELECT * FROM dante.set_self_routine_occurrence_policy(
+                             :actor,:routine,:duration,:reminder,CAST(:template AS jsonb))"""
+                        ),
+                        {
+                            "actor": self_person_ref,
+                            "routine": routine_ref,
+                            "duration": duration_minutes,
+                            "reminder": reminder_lead_minutes,
+                            "template": json.dumps(
+                                normalized_template,
+                                separators=(",", ":"),
+                                sort_keys=True,
                             ),
-                            {
-                                "actor": self_person_ref,
-                                "routine": routine_ref,
-                                "duration": duration_minutes,
-                                "reminder": reminder_lead_minutes,
-                                "template": json.dumps(
-                                    normalized_template,
-                                    separators=(",", ":"),
-                                    sort_keys=True,
-                                ),
-                            },
-                        )
+                        },
                     )
-                    .mappings()
-                    .one()
                 )
+                .mappings()
+                .one()
+            )
         except DBAPIError as exc:
             raise _error(exc) from exc
         except SQLAlchemyError as exc:
@@ -127,6 +127,30 @@ class RoutineOccurrencePolicyApplication:
             created_at=row["created_at"],
             replayed=bool(row["replayed"]),
         )
+
+    async def set(
+        self,
+        *,
+        self_person_ref: NativeRef,
+        routine_ref: UUID,
+        duration_minutes: int,
+        reminder_lead_minutes: int | None,
+        activity_template: dict[str, object] | None = None,
+    ) -> RoutineOccurrencePolicyView:
+        try:
+            async with self._session_factory() as session, session.begin():
+                return await self.set_in_session(
+                    session,
+                    self_person_ref=self_person_ref,
+                    routine_ref=routine_ref,
+                    duration_minutes=duration_minutes,
+                    reminder_lead_minutes=reminder_lead_minutes,
+                    activity_template=activity_template,
+                )
+        except DBAPIError as exc:
+            raise _error(exc) from exc
+        except SQLAlchemyError as exc:
+            raise RoutineOccurrencePolicyPersistenceError(str(exc)) from exc
 
     async def get(
         self,

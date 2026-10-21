@@ -1,9 +1,10 @@
 """B06-D atomic authoring for recurring Routine and Event sources.
 
 The public Create flow must never leave a source committed without the Recurrence
-that made the user choose a recurring object.  This application composes the
-already-governed B06-A/B SQL capabilities in one database transaction; it adds
-no persistence model and never materializes Occurrences or Schedules.
+and occurrence policy that made the user choose a recurring object. This
+application composes the already-governed B06-A/B and B14 SQL capabilities in
+one database transaction; it adds no persistence model and never materializes
+Occurrences or Schedules.
 """
 
 from __future__ import annotations
@@ -45,6 +46,11 @@ from dante.modules.temporal.authoring import (
 )
 from dante.modules.temporal.authoring import (
     _title as _authoring_title,
+)
+from dante.modules.temporal.event_occurrence_policy import (
+    EventOccurrencePolicyApplication,
+    EventOccurrencePolicyInputError,
+    EventOccurrencePolicyPersistenceError,
 )
 from dante.modules.temporal.recurrence import (
     CalendarRecurrence,
@@ -93,6 +99,11 @@ from dante.modules.temporal.routine import (
 from dante.modules.temporal.routine import (
     _fingerprint as _routine_fingerprint,
 )
+from dante.modules.temporal.routine_occurrence_policy import (
+    RoutineOccurrencePolicyApplication,
+    RoutineOccurrencePolicyInputError,
+    RoutineOccurrencePolicyPersistenceError,
+)
 from dante.platform.database.references import NativeRef
 
 RecurringOwner = Literal["routine", "event"]
@@ -114,6 +125,23 @@ class RecurringAuthoringResult:
     created_at: datetime
     recurrence_material_state_ref: UUID
     replayed: bool
+
+
+@dataclass(frozen=True, slots=True)
+class RoutineAuthoringPolicy:
+    duration_minutes: int
+    reminder_lead_minutes: int | None
+    activity_template: dict[str, object] | None
+
+
+@dataclass(frozen=True, slots=True)
+class EventAuthoringPolicy:
+    placement_kind: Literal["timed", "all_day"]
+    duration_minutes: int | None
+    duration_days: int | None
+    reminder_lead_minutes: int | None
+    reality_mode: Literal["manual", "review_on_end", "auto_confirm_outcome"]
+    objectives: tuple[dict[str, object], ...]
 
 
 def _child_operation_id(parent: str, purpose: str) -> str:
@@ -355,12 +383,14 @@ async def _create_routine_source_in_session(
 
 
 class RecurringAuthoringApplication:
-    """Transaction-owning B06-D source + Recurrence authoring composition."""
+    """Transaction-owning B06-D source + Recurrence + policy composition."""
 
     def __init__(self, session_factory: async_sessionmaker[AsyncSession]) -> None:
         self._session_factory = session_factory
         self._routine_application = RoutineApplication(session_factory)
         self._authoring_application = TemporalAuthoringApplication(session_factory)
+        self._routine_policies = RoutineOccurrencePolicyApplication(session_factory)
+        self._event_policies = EventOccurrencePolicyApplication(session_factory)
 
     async def create_routine(
         self,
@@ -371,6 +401,7 @@ class RecurringAuthoringApplication:
         life_area_intent: AuthoringLifeAreaIntent | None,
         recurrence: RecurrenceSpec,
         tag_refs: tuple[UUID, ...] = (),
+        policy: RoutineAuthoringPolicy | None = None,
     ) -> RecurringAuthoringResult:
         _validate_recurrence(recurrence)
         normalized_operation_id = _bounded_routine_value(operation_id, 200, "Operation id")
@@ -411,6 +442,15 @@ class RecurringAuthoringApplication:
                 if source.replayed:
                     if current.recurrence != recurrence:
                         raise RecurringAuthoringOperationReuseError()
+                    if policy is not None:
+                        await self._routine_policies.set_in_session(
+                            session,
+                            self_person_ref=self_person_ref,
+                            routine_ref=source.routine_ref,
+                            duration_minutes=policy.duration_minutes,
+                            reminder_lead_minutes=policy.reminder_lead_minutes,
+                            activity_template=policy.activity_template,
+                        )
                     return RecurringAuthoringResult(
                         owner_kind="routine",
                         source_ref=source.routine_ref,
@@ -439,6 +479,16 @@ class RecurringAuthoringApplication:
                     )
                     current = mutation.recurrence
 
+                if policy is not None:
+                    await self._routine_policies.set_in_session(
+                        session,
+                        self_person_ref=self_person_ref,
+                        routine_ref=source.routine_ref,
+                        duration_minutes=policy.duration_minutes,
+                        reminder_lead_minutes=policy.reminder_lead_minutes,
+                        activity_template=policy.activity_template,
+                    )
+
                 return RecurringAuthoringResult(
                     owner_kind="routine",
                     source_ref=source.routine_ref,
@@ -451,7 +501,7 @@ class RecurringAuthoringApplication:
             raise
         except RecurrenceOperationReuseError as exc:
             raise RecurringAuthoringOperationReuseError() from exc
-        except RoutineInputError, RecurrenceInputError:
+        except RoutineInputError, RecurrenceInputError, RoutineOccurrencePolicyInputError:
             raise
         except (
             RoutineNotFoundError,
@@ -460,6 +510,7 @@ class RecurringAuthoringApplication:
             RecurrenceNotFoundError,
             RecurrenceStateConflictError,
             RecurrencePersistenceError,
+            RoutineOccurrencePolicyPersistenceError,
         ):
             raise
         except SQLAlchemyError as exc:
@@ -477,6 +528,7 @@ class RecurringAuthoringApplication:
         description: str | None = None,
         location: str | None = None,
         item_color_code: str | None = None,
+        policy: EventAuthoringPolicy | None = None,
     ) -> RecurringAuthoringResult:
         _validate_recurrence(recurrence)
         normalized_operation_id = _authoring_operation(operation_id)
@@ -538,6 +590,18 @@ class RecurringAuthoringApplication:
                 if replayed:
                     if current is None or current.recurrence != recurrence:
                         raise RecurringAuthoringOperationReuseError()
+                    if policy is not None:
+                        await self._event_policies.set_in_session(
+                            session,
+                            self_person_ref=self_person_ref,
+                            event_ref=event_ref,
+                            placement_kind=policy.placement_kind,
+                            duration_minutes=policy.duration_minutes,
+                            duration_days=policy.duration_days,
+                            reminder_lead_minutes=policy.reminder_lead_minutes,
+                            reality_mode=policy.reality_mode,
+                            objectives=policy.objectives,
+                        )
                     return RecurringAuthoringResult(
                         owner_kind="event",
                         source_ref=event_ref,
@@ -560,6 +624,18 @@ class RecurringAuthoringApplication:
                     expected_material_state_ref=None,
                     recurrence=recurrence,
                 )
+                if policy is not None:
+                    await self._event_policies.set_in_session(
+                        session,
+                        self_person_ref=self_person_ref,
+                        event_ref=event_ref,
+                        placement_kind=policy.placement_kind,
+                        duration_minutes=policy.duration_minutes,
+                        duration_days=policy.duration_days,
+                        reminder_lead_minutes=policy.reminder_lead_minutes,
+                        reality_mode=policy.reality_mode,
+                        objectives=policy.objectives,
+                    )
                 return RecurringAuthoringResult(
                     owner_kind="event",
                     source_ref=event_ref,
@@ -577,6 +653,8 @@ class RecurringAuthoringApplication:
             TemporalAuthoringLifeAreaUnavailableError,
             TemporalAuthoringLifeAreaConflictError,
             TemporalAuthoringPersistenceError,
+            EventOccurrencePolicyInputError,
+            EventOccurrencePolicyPersistenceError,
             RecurrenceInputError,
             RecurrenceNotFoundError,
             RecurrenceStateConflictError,

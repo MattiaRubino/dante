@@ -64,8 +64,9 @@ class EventOccurrencePolicyApplication:
     def __init__(self, session_factory: async_sessionmaker[AsyncSession]) -> None:
         self._session_factory = session_factory
 
-    async def set(
+    async def set_in_session(
         self,
+        session: AsyncSession,
         *,
         self_person_ref: NativeRef,
         event_ref: UUID,
@@ -108,34 +109,33 @@ class EventOccurrencePolicyApplication:
             raise EventOccurrencePolicyInputError("Event Objectives template is invalid.")
 
         try:
-            async with self._session_factory() as session, session.begin():
-                row = (
-                    (
-                        await session.execute(
-                            text(
-                                """SELECT * FROM dante.set_self_event_occurrence_policy_v2(
-                                 :actor,:event,:kind,:minutes,:days,:reminder,
-                                 :reality,CAST(:objectives AS jsonb))"""
+            row = (
+                (
+                    await session.execute(
+                        text(
+                            """SELECT * FROM dante.set_self_event_occurrence_policy_v2(
+                             :actor,:event,:kind,:minutes,:days,:reminder,
+                             :reality,CAST(:objectives AS jsonb))"""
+                        ),
+                        {
+                            "actor": self_person_ref,
+                            "event": event_ref,
+                            "kind": placement_kind,
+                            "minutes": duration_minutes,
+                            "days": duration_days,
+                            "reminder": reminder_lead_minutes,
+                            "reality": reality_mode,
+                            "objectives": json.dumps(
+                                list(objectives),
+                                sort_keys=True,
+                                separators=(",", ":"),
                             ),
-                            {
-                                "actor": self_person_ref,
-                                "event": event_ref,
-                                "kind": placement_kind,
-                                "minutes": duration_minutes,
-                                "days": duration_days,
-                                "reminder": reminder_lead_minutes,
-                                "reality": reality_mode,
-                                "objectives": json.dumps(
-                                    list(objectives),
-                                    sort_keys=True,
-                                    separators=(",", ":"),
-                                ),
-                            },
-                        )
+                        },
                     )
-                    .mappings()
-                    .one()
                 )
+                .mappings()
+                .one()
+            )
         except DBAPIError as exc:
             raise _error(exc) from exc
         except SQLAlchemyError as exc:
@@ -154,6 +154,36 @@ class EventOccurrencePolicyApplication:
             created_at=row["created_at"],
             replayed=bool(row["replayed"]),
         )
+
+    async def set(
+        self,
+        *,
+        self_person_ref: NativeRef,
+        event_ref: UUID,
+        placement_kind: EventOccurrencePlacementKind,
+        duration_minutes: int | None,
+        duration_days: int | None,
+        reminder_lead_minutes: int | None,
+        reality_mode: Literal["manual", "review_on_end", "auto_confirm_outcome"] = "manual",
+        objectives: tuple[dict[str, Any], ...] = (),
+    ) -> EventOccurrencePolicyView:
+        try:
+            async with self._session_factory() as session, session.begin():
+                return await self.set_in_session(
+                    session,
+                    self_person_ref=self_person_ref,
+                    event_ref=event_ref,
+                    placement_kind=placement_kind,
+                    duration_minutes=duration_minutes,
+                    duration_days=duration_days,
+                    reminder_lead_minutes=reminder_lead_minutes,
+                    reality_mode=reality_mode,
+                    objectives=objectives,
+                )
+        except DBAPIError as exc:
+            raise _error(exc) from exc
+        except SQLAlchemyError as exc:
+            raise EventOccurrencePolicyPersistenceError(str(exc)) from exc
 
     async def get(
         self,

@@ -101,6 +101,14 @@ as if the series scope could save them. AI authoring must use the same
 authoritative preview and acceptance contract, and must not compose separate
 local writes to imitate a series change.
 
+The recurring Create transport commits the Routine/Event source, its Recurrence,
+and its initial occurrence policy in one transaction. Its replay checks the
+same policy intent. This removes a partial-source failure window in Create;
+it does not implement revision or propagation of that policy in Edit. A series
+revision still requires a versioned policy, authoritative inventory, and
+atomic reconciliation of clean materialized instances before the full editor
+can submit structural changes.
+
 A completed Routine Occurrence → Activity binding is also an instance boundary.
 Subsequent Timeline checkpoint reads may create an unbound occurrence Activity
 or retry an incomplete materialization, but they must never replay authoring

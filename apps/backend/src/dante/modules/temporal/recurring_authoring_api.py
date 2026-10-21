@@ -29,7 +29,6 @@ from dante.modules.temporal.event import (
     EventPersistenceError,
 )
 from dante.modules.temporal.event_occurrence_policy import (
-    EventOccurrencePolicyApplication,
     EventOccurrencePolicyConflictError,
     EventOccurrencePolicyInputError,
     EventOccurrencePolicyNotFoundError,
@@ -44,9 +43,11 @@ from dante.modules.temporal.recurrence import (
 )
 from dante.modules.temporal.recurrence_api import RecurrenceRequest, _spec
 from dante.modules.temporal.recurring_authoring import (
+    EventAuthoringPolicy,
     RecurringAuthoringApplication,
     RecurringAuthoringOperationReuseError,
     RecurringAuthoringPersistenceError,
+    RoutineAuthoringPolicy,
 )
 from dante.modules.temporal.routine import (
     RoutineInputError,
@@ -56,7 +57,6 @@ from dante.modules.temporal.routine import (
     RoutineStateConflictError,
 )
 from dante.modules.temporal.routine_occurrence_policy import (
-    RoutineOccurrencePolicyApplication,
     RoutineOccurrencePolicyConflictError,
     RoutineOccurrencePolicyInputError,
     RoutineOccurrencePolicyNotFoundError,
@@ -112,19 +112,7 @@ def _application(request: Request) -> RecurringAuthoringApplication:
     return RecurringAuthoringApplication(request.app.state.database_runtime.session_factory)
 
 
-def _policy_application(request: Request) -> RoutineOccurrencePolicyApplication:
-    return RoutineOccurrencePolicyApplication(request.app.state.database_runtime.session_factory)
-
-
-def _event_policy_application(request: Request) -> EventOccurrencePolicyApplication:
-    return EventOccurrencePolicyApplication(request.app.state.database_runtime.session_factory)
-
-
 Application = Annotated[RecurringAuthoringApplication, Depends(_application)]
-PolicyApplication = Annotated[RoutineOccurrencePolicyApplication, Depends(_policy_application)]
-EventPolicyApplication = Annotated[
-    EventOccurrencePolicyApplication, Depends(_event_policy_application)
-]
 
 
 def _life_area_intent(payload: AuthoringLifeAreaRequest | None) -> AuthoringLifeAreaIntent | None:
@@ -245,7 +233,6 @@ async def create_recurring_routine(
     payload: CreateRecurringRoutineRequest,
     context: MutatingContext,
     application: Application,
-    policy_application: PolicyApplication,
     response: Response,
 ) -> RecurringAuthoringResponse:
     response.headers["Cache-Control"] = "no-store"
@@ -257,13 +244,11 @@ async def create_recurring_routine(
             life_area_intent=_life_area_intent(payload.life_area),
             tag_refs=tuple(payload.tag_refs),
             recurrence=_spec(payload.recurrence),
-        )
-        await policy_application.set(
-            self_person_ref=context.self_person_ref,
-            routine_ref=value.source_ref,
-            duration_minutes=payload.duration_minutes,
-            reminder_lead_minutes=payload.reminder_lead_minutes,
-            activity_template=payload.activity_template,
+            policy=RoutineAuthoringPolicy(
+                duration_minutes=payload.duration_minutes,
+                reminder_lead_minutes=payload.reminder_lead_minutes,
+                activity_template=payload.activity_template,
+            ),
         )
         return RecurringAuthoringResponse(**asdict(value))
     except Exception as exc:
@@ -279,7 +264,6 @@ async def create_recurring_event(
     payload: CreateRecurringEventRequest,
     context: MutatingContext,
     application: Application,
-    policy_application: EventPolicyApplication,
     response: Response,
 ) -> RecurringAuthoringResponse:
     response.headers["Cache-Control"] = "no-store"
@@ -294,16 +278,14 @@ async def create_recurring_event(
             location=payload.location,
             item_color_code=payload.item_color_code,
             recurrence=_spec(payload.recurrence),
-        )
-        await policy_application.set(
-            self_person_ref=context.self_person_ref,
-            event_ref=value.source_ref,
-            placement_kind=payload.placement_kind,
-            duration_minutes=payload.duration_minutes,
-            duration_days=payload.duration_days,
-            reminder_lead_minutes=payload.reminder_lead_minutes,
-            reality_mode=payload.reality_mode,
-            objectives=tuple(payload.objectives),
+            policy=EventAuthoringPolicy(
+                placement_kind=payload.placement_kind,
+                duration_minutes=payload.duration_minutes,
+                duration_days=payload.duration_days,
+                reminder_lead_minutes=payload.reminder_lead_minutes,
+                reality_mode=payload.reality_mode,
+                objectives=tuple(payload.objectives),
+            ),
         )
         return RecurringAuthoringResponse(**asdict(value))
     except Exception as exc:

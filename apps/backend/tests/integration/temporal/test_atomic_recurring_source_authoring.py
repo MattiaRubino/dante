@@ -1,15 +1,21 @@
-"""B06-D PostgreSQL proof for atomic source + Recurrence authoring."""
+"""B06-D PostgreSQL proof for atomic source + Recurrence + policy authoring."""
 
 from __future__ import annotations
 
 from datetime import date, time
 from typing import Any
 
+import psycopg
 import pytest
 from tests.integration.temporal.test_primary_life_area_assignment import _seed_self
 
 from dante.modules.temporal.authoring import AuthoringLifeAreaIntent
 from dante.modules.temporal.event import TemporalEventApplication
+from dante.modules.temporal.event_occurrence_policy import (
+    EventOccurrencePolicyApplication,
+    EventOccurrencePolicyConflictError,
+    EventOccurrencePolicyInputError,
+)
 from dante.modules.temporal.life_area import LifeAreaApplication
 from dante.modules.temporal.recurrence import (
     CalendarRecurrence,
@@ -17,10 +23,17 @@ from dante.modules.temporal.recurrence import (
     RecurrenceNotFoundError,
 )
 from dante.modules.temporal.recurring_authoring import (
+    EventAuthoringPolicy,
     RecurringAuthoringApplication,
     RecurringAuthoringOperationReuseError,
+    RoutineAuthoringPolicy,
 )
 from dante.modules.temporal.routine import RoutineApplication
+from dante.modules.temporal.routine_occurrence_policy import (
+    RoutineOccurrencePolicyApplication,
+    RoutineOccurrencePolicyConflictError,
+    RoutineOccurrencePolicyInputError,
+)
 from dante.platform.database.references import NativeRef
 from dante.platform.database.runtime import create_database_runtime
 
@@ -61,6 +74,12 @@ async def test_recurring_routine_authoring_is_atomic_replayable_and_self_scoped(
     authoring = RecurringAuthoringApplication(runtime.session_factory)
     routines = RoutineApplication(runtime.session_factory)
     recurrences = RecurrenceApplication(runtime.session_factory)
+    policies = RoutineOccurrencePolicyApplication(runtime.session_factory)
+    policy = RoutineAuthoringPolicy(
+        duration_minutes=45,
+        reminder_lead_minutes=10,
+        activity_template={"version": 1, "planned_slices": []},
+    )
     try:
         area = (
             await areas.create(
@@ -76,6 +95,7 @@ async def test_recurring_routine_authoring_is_atomic_replayable_and_self_scoped(
             title="Allenamento",
             life_area_intent=AuthoringLifeAreaIntent(life_area_ref=area.life_area_ref),
             recurrence=requested,
+            policy=policy,
         )
         assert created.owner_kind == "routine"
         assert not created.replayed
@@ -88,6 +108,9 @@ async def test_recurring_routine_authoring_is_atomic_replayable_and_self_scoped(
         assert current is not None
         assert current.material_state_ref == created.recurrence_material_state_ref
         assert current.recurrence == requested
+        saved_policy = await policies.get(self_person_ref=alice, routine_ref=created.source_ref)
+        assert saved_policy is not None
+        assert saved_policy.activity_template == policy.activity_template
         assert [item.routine_ref for item in await routines.list(self_person_ref=alice)] == [
             created.source_ref
         ]
@@ -98,10 +121,25 @@ async def test_recurring_routine_authoring_is_atomic_replayable_and_self_scoped(
             title="Allenamento",
             life_area_intent=AuthoringLifeAreaIntent(life_area_ref=area.life_area_ref),
             recurrence=requested,
+            policy=policy,
         )
         assert replay.replayed
         assert replay.source_ref == created.source_ref
         assert replay.recurrence_material_state_ref == created.recurrence_material_state_ref
+
+        with pytest.raises(RoutineOccurrencePolicyConflictError):
+            await authoring.create_routine(
+                self_person_ref=alice,
+                operation_id="b06-d:authoring:routine",
+                title="Allenamento",
+                life_area_intent=AuthoringLifeAreaIntent(life_area_ref=area.life_area_ref),
+                recurrence=requested,
+                policy=RoutineAuthoringPolicy(
+                    duration_minutes=60,
+                    reminder_lead_minutes=10,
+                    activity_template=policy.activity_template,
+                ),
+            )
 
         with pytest.raises(RecurringAuthoringOperationReuseError):
             await authoring.create_routine(
@@ -169,6 +207,7 @@ async def test_recurring_routine_authoring_creates_new_life_area_with_appearance
         )
         assert replay.replayed
         assert replay.source_ref == created.source_ref
+
         assert (
             len([item for item in await areas.list(self_person_ref=alice) if item.name == "Corpo"])
             == 1
@@ -188,6 +227,15 @@ async def test_recurring_event_authoring_commits_source_and_recurrence_together(
     authoring = RecurringAuthoringApplication(runtime.session_factory)
     events = TemporalEventApplication(runtime.session_factory)
     recurrences = RecurrenceApplication(runtime.session_factory)
+    policies = EventOccurrencePolicyApplication(runtime.session_factory)
+    policy = EventAuthoringPolicy(
+        placement_kind="timed",
+        duration_minutes=30,
+        duration_days=None,
+        reminder_lead_minutes=5,
+        reality_mode="manual",
+        objectives=(),
+    )
     try:
         area = (
             await areas.create(
@@ -204,6 +252,7 @@ async def test_recurring_event_authoring_commits_source_and_recurrence_together(
             life_area_intent=AuthoringLifeAreaIntent(life_area_ref=area.life_area_ref),
             agenda_parts=("Stato", "Blocchi"),
             recurrence=requested,
+            policy=policy,
         )
         assert created.owner_kind == "event"
         assert not created.replayed
@@ -221,6 +270,9 @@ async def test_recurring_event_authoring_commits_source_and_recurrence_together(
         assert current is not None
         assert current.recurrence == requested
         assert current.material_state_ref == created.recurrence_material_state_ref
+        saved_policy = await policies.get(self_person_ref=alice, event_ref=created.source_ref)
+        assert saved_policy is not None
+        assert saved_policy.duration_minutes == policy.duration_minutes
 
         replay = await authoring.create_event(
             self_person_ref=alice,
@@ -229,9 +281,28 @@ async def test_recurring_event_authoring_commits_source_and_recurrence_together(
             life_area_intent=AuthoringLifeAreaIntent(life_area_ref=area.life_area_ref),
             agenda_parts=("Stato", "Blocchi"),
             recurrence=requested,
+            policy=policy,
         )
         assert replay.replayed
         assert replay.source_ref == created.source_ref
+
+        with pytest.raises(EventOccurrencePolicyConflictError):
+            await authoring.create_event(
+                self_person_ref=alice,
+                operation_id="b06-d:authoring:event",
+                title="Sync progetto",
+                life_area_intent=AuthoringLifeAreaIntent(life_area_ref=area.life_area_ref),
+                agenda_parts=("Stato", "Blocchi"),
+                recurrence=requested,
+                policy=EventAuthoringPolicy(
+                    placement_kind="timed",
+                    duration_minutes=40,
+                    duration_days=None,
+                    reminder_lead_minutes=5,
+                    reality_mode="manual",
+                    objectives=(),
+                ),
+            )
 
         with pytest.raises(RecurringAuthoringOperationReuseError):
             await authoring.create_event(
@@ -250,5 +321,71 @@ async def test_recurring_event_authoring_commits_source_and_recurrence_together(
                 self_person_ref=bob,
                 owner_ref=created.source_ref,
             )
+    finally:
+        await runtime.dispose()
+
+
+@pytest.mark.asyncio
+async def test_recurring_routine_invalid_policy_rolls_back_source_and_recurrence(
+    migrated_database: Any,
+) -> None:
+    actor = _seed_self(migrated_database)
+    runtime = create_database_runtime(migrated_database.runtime_settings())
+    authoring = RecurringAuthoringApplication(runtime.session_factory)
+    routines = RoutineApplication(runtime.session_factory)
+    try:
+        with pytest.raises(RoutineOccurrencePolicyInputError):
+            await authoring.create_routine(
+                self_person_ref=actor,
+                operation_id="recurring:routine:invalid-policy",
+                title="Allenamento",
+                life_area_intent=None,
+                recurrence=_weekly(1),
+                policy=RoutineAuthoringPolicy(
+                    duration_minutes=0,
+                    reminder_lead_minutes=None,
+                    activity_template={"version": 1},
+                ),
+            )
+        assert not await routines.list(self_person_ref=actor)
+    finally:
+        await runtime.dispose()
+
+
+@pytest.mark.asyncio
+async def test_recurring_event_invalid_policy_rolls_back_source_agenda_and_recurrence(
+    migrated_database: Any,
+) -> None:
+    actor = _seed_self(migrated_database)
+    runtime = create_database_runtime(migrated_database.runtime_settings())
+    authoring = RecurringAuthoringApplication(runtime.session_factory)
+    try:
+        with pytest.raises(EventOccurrencePolicyInputError):
+            await authoring.create_event(
+                self_person_ref=actor,
+                operation_id="recurring:event:invalid-policy",
+                title="Sync",
+                life_area_intent=None,
+                agenda_parts=("Ordine del giorno",),
+                recurrence=_weekly(2),
+                policy=EventAuthoringPolicy(
+                    placement_kind="timed",
+                    duration_minutes=None,
+                    duration_days=None,
+                    reminder_lead_minutes=None,
+                    reality_mode="manual",
+                    objectives=(),
+                ),
+            )
+        with psycopg.connect(
+            **migrated_database.connection_kwargs(
+                "dante_migrator", migrated_database.cluster.migrator_password
+            )
+        ) as connection:
+            connection.execute("SET ROLE dante_owner")
+            assert connection.execute(
+                "SELECT count(*) FROM dante.event_expectation WHERE self_person_ref=%s",
+                (actor,),
+            ).fetchone() == (0,)
     finally:
         await runtime.dispose()
