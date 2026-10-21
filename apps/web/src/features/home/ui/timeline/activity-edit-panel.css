@@ -630,3 +630,90 @@
   :is(input:not([type='checkbox']):not([type='radio']), textarea, select) {
   font-size: 14px;
 }
+
+/* The same destructive affordance is used for generic and named attempts. */
+.timeline-activity-editor__record button.timeline-activity-editor__delete-trigger {
+  border-color: #c94b53;
+  color: #ffd4d5;
+  background: rgb(124 24 35 / 14%);
+}
+
+.timeline-activity-editor__record button.timeline-activity-editor__delete-trigger:hover:not(:disabled),
+.timeline-activity-editor__record button.timeline-activity-editor__delete-trigger:focus-visible {
+  border-color: #f1787a;
+  background: rgb(167 38 54 / 22%);
+}
+
+.timeline-session-attempt-delete__backdrop {
+  position: fixed;
+  z-index: 1600;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  padding: 16px;
+  background: rgb(2 6 10 / 68%);
+}
+
+.timeline-session-attempt-delete__dialog {
+  box-sizing: border-box;
+  display: grid;
+  width: min(100%, 390px);
+  max-height: min(80vh, 480px);
+  overflow-y: auto;
+  gap: 14px;
+  padding: 22px;
+  border: 1px solid #53616c;
+  border-radius: 14px;
+  color: #f0f4f5;
+  background: #192328;
+  box-shadow: 0 24px 64px rgb(0 0 0 / 55%);
+  font-size: 14px;
+  line-height: 1.45;
+}
+
+.timeline-session-attempt-delete__dialog h2,
+.timeline-session-attempt-delete__dialog p {
+  margin: 0;
+}
+
+.timeline-session-attempt-delete__dialog h2 {
+  font-size: 17px;
+  font-weight: 650;
+}
+
+.timeline-session-attempt-delete__dialog p {
+  color: #becbd0;
+}
+
+.timeline-session-attempt-delete__actions {
+  display: flex;
+  justify-content: flex-end;
+  flex-wrap: wrap;
+  gap: 9px;
+}
+
+.timeline-session-attempt-delete__actions button {
+  min-height: 36px;
+  padding: 8px 13px;
+  border: 1px solid #58656b;
+  border-radius: 9px;
+  color: #e5eded;
+  background: #26343b;
+  cursor: pointer;
+}
+
+.timeline-session-attempt-delete__actions button.timeline-session-attempt-delete__danger {
+  border-color: #cf545d;
+  color: #ffe2e3;
+  background: #722a34;
+}
+
+.timeline-session-attempt-delete__actions button:focus-visible {
+  outline: 2px solid #f1787a;
+  outline-offset: 2px;
+}
+
+.timeline-session-attempt-delete__actions button:disabled {
+  cursor: wait;
+  opacity: 0.55;
+}

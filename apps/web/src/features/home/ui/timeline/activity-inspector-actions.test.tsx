@@ -13,6 +13,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import { ActivityInspectorActions } from './activity-inspector-actions';
 import { ActivityEditPanel } from './activity-edit-panel';
+import { SessionAttemptDeleteDialog } from './session-attempt-delete-dialog';
 import type { ActivityDuplicateSeed } from '../../../temporal-create/application/activity-duplicate-seed';
 
 /** Vitest asymmetric matchers are typed as any; preserve their runtime
@@ -393,12 +394,14 @@ describe('Recurring Activity profile scope', () => {
       }),
     );
     const confirmation = await screen.findByRole('alertdialog', {
-      name: 'Elimina registrazione',
+      name: 'Eliminare la registrazione?',
     });
+    expect(confirmation.closest('form')).toBeNull();
+    expect(confirmation.textContent).toContain('Sessione principale.');
     expect(deleteSessionAttempt).not.toHaveBeenCalled();
     fireEvent.click(
       within(confirmation).getByRole('button', {
-        name: 'Elimina registrazione',
+        name: 'Sì, elimina',
       }),
     );
     await waitFor(() =>
@@ -418,6 +421,67 @@ describe('Recurring Activity profile scope', () => {
       'disabled',
       false,
     );
+  });
+
+
+  it('uses one centered destructive dialog for named and main attempts, with safe cancellation and focus', () => {
+    const confirm = vi.fn();
+    const cancel = vi.fn();
+    const { rerender } = render(
+      <SessionAttemptDeleteDialog
+        sessionType="named"
+        inProgress={false}
+        busy={false}
+        onConfirm={confirm}
+        onCancel={cancel}
+      />,
+    );
+    const dialog = screen.getByRole('alertdialog', {
+      name: 'Eliminare la registrazione?',
+    });
+    expect(dialog.textContent).toContain('Sessione interna.');
+    expect(dialog.closest('form')).toBeNull();
+    expect(dialog.parentElement?.className).toBe(
+      'timeline-session-attempt-delete__backdrop',
+    );
+    expect(document.activeElement).toBe(
+      within(dialog).getByRole('button', { name: 'Annulla' }),
+    );
+    fireEvent.keyDown(window, { key: 'Escape' });
+    expect(cancel).toHaveBeenCalledTimes(1);
+    expect(confirm).not.toHaveBeenCalled();
+    rerender(
+      <SessionAttemptDeleteDialog
+        sessionType="main"
+        inProgress
+        busy={false}
+        onConfirm={confirm}
+        onCancel={cancel}
+      />,
+    );
+    expect(dialog.textContent).toContain('Sessione principale.');
+    expect(dialog.textContent).toContain('cronometro');
+    fireEvent.click(within(dialog).getByRole('button', { name: 'Sì, elimina' }));
+    expect(confirm).toHaveBeenCalledTimes(1);
+    rerender(
+      <SessionAttemptDeleteDialog
+        sessionType="main"
+        inProgress
+        busy
+        onConfirm={confirm}
+        onCancel={cancel}
+      />,
+    );
+    expect(within(dialog).getByRole('button', { name: 'Annulla' })).toHaveProperty(
+      'disabled',
+      true,
+    );
+    expect(within(dialog).getByRole('button', { name: 'Eliminazione…' })).toHaveProperty(
+      'disabled',
+      true,
+    );
+    fireEvent.keyDown(window, { key: 'Escape' });
+    expect(cancel).toHaveBeenCalledTimes(1);
   });
 
   it('allows replanning after only named Sessions have concluded but keeps capture locked', async () => {

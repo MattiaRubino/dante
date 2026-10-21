@@ -57,6 +57,7 @@ import '../../../temporal-create/ui/temporal-create-activity-polish.css';
 import '../../../temporal-create/ui/temporal-create-advanced-activity-structure.css';
 import '../../../temporal-create/ui/temporal-create-session-time-polish.css';
 import './activity-edit-panel.css';
+import { SessionAttemptDeleteDialog } from './session-attempt-delete-dialog';
 import {
   createRemoteRecurringProfileEdit,
   type RecurringProfileContext,
@@ -386,6 +387,7 @@ export function ActivityEditPanel({
       </div>
       <button
         type="button"
+        className="timeline-activity-editor__delete-trigger"
         disabled={pending || planPending || attemptDeletePending}
         aria-label={`Elimina registrazione ${attempt.sessionRef}`}
         onClick={() => requestAttemptDeletion(attempt)}
@@ -2575,34 +2577,17 @@ export function ActivityEditPanel({
         </button>
       </div>
       {deletingAttempt ? (
-        <div
-          className="timeline-activity-editor__session-confirmation"
-          role="alertdialog"
-          aria-modal="true"
-          aria-label="Elimina registrazione"
-        >
-          <p>
-            Eliminare questa registrazione? Tempi e pause saranno cancellati
-            definitivamente.
-            {deletingAttempt.attempt.open
-              ? ' Il cronometro in corso o in pausa sarà interrotto.'
-              : ''}
-          </p>
-          <button
-            type="button"
-            disabled={attemptDeletePending}
-            onClick={confirmAttemptDeletion}
-          >
-            {attemptDeletePending ? 'Eliminazione…' : 'Elimina registrazione'}
-          </button>
-          <button
-            type="button"
-            disabled={attemptDeletePending}
-            onClick={() => setDeletingAttempt(null)}
-          >
-            Annulla
-          </button>
-        </div>
+        <SessionAttemptDeleteDialog
+          sessionType={
+            deletingAttempt.attempt.plannedScheduleRef === null
+              ? 'main'
+              : 'named'
+          }
+          inProgress={deletingAttempt.attempt.open}
+          busy={attemptDeletePending}
+          onConfirm={confirmAttemptDeletion}
+          onCancel={() => setDeletingAttempt(null)}
+        />
       ) : null}
       {confirmingDiscard ? (
         <div className="timeline-activity-editor__discard" role="alert">
