@@ -296,3 +296,28 @@ def test_calendar_preview_does_not_grant_write_with_partial_inventory() -> None:
             effective_zone_id="Europe/Rome",
             authoritative_inventory=False,
         )
+
+
+def test_calendar_preview_rejects_incomplete_scope_before_generation() -> None:
+    with pytest.raises(SeriesReconciliationError, match="complete source inventory"):
+        preview_calendar_series_reconciliation(
+            scope=_scope(),
+            materialized=_materialized(),
+            proposed_recurrence=_weekly_tuesday(),
+            window=WINDOW,
+            effective_zone_id="Invalid/Zone",
+            authoritative_inventory=False,
+        )
+
+
+def test_calendar_preview_never_allows_local_only_scope_to_revise_source() -> None:
+    local = replace(_scope(), scope="only_this", update_future_source_template=False)
+    with pytest.raises(SeriesReconciliationError, match="following scope"):
+        preview_calendar_series_reconciliation(
+            scope=local,
+            materialized=_materialized(),
+            proposed_recurrence=_weekly_tuesday(),
+            window=WINDOW,
+            effective_zone_id="Europe/Rome",
+            authoritative_inventory=True,
+        )

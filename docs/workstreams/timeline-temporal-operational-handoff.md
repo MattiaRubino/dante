@@ -1,5 +1,14 @@
 # Timeline / Temporal-Operational — Workstream Handoff
 
+## 2026-10-21 — B14 structural cadence reconciliation preparation (guarded pure candidate)
+
+Commits after `1df9bf6b` add a required `SeriesReconciliationWindow` to the **pure** series planner and a bounded calendar preview that invokes the existing canonical Occurrence calendar evaluator. The planner now explicitly fails closed for incomplete materialized inventories, results beyond the declared date horizon, and more than 10,000 materialized or proposed Occurrences; the preview rejects local-only scope and refuses a `this_and_following` structural edit of a past selected anchor. Canonical zone/DST generation is reused rather than approximated in the browser. New unit regressions cover safe clean/exception reconciliation, DST fold, cutover with recorded selected attempt, window limits and reject paths.
+
+**Not an accepted user-facing feature:** no structural series edit API, no versioned source policy revision, no atomic persistence of reconciled future instance graphs and no UI integration have been published. Metadata-only guards must remain enabled. No schema objects or OpenAPI/client snapshots were changed by this preparation.
+
+**Proof pending:** source was published through the GitHub connector without executing the user's WSL runtime. Before any structural series editing may be enabled, run the focused unit test and complete PostgreSQL/catalog/API/Web/browser/full gate at one clean SHA; then implement source revision + authoritative source lock + atomic instance reconciliation + preview fingerprint/revalidation and exception-preserving UI, with real-app acceptance. Do not treat this pure preview or its `authoritative_inventory` argument as durable write authority.
+
+
 ## 2026-10-21 — Individual Session attempt deletion confirmation (candidate)
 
 The Activity Edit registration rows for the optional generic Session and each named internal Session now use the same red-bordered destructive action. Confirmation is a compact, centered `alertdialog` mounted in a body portal above the scrolling Inspector, never appended below the editor footer. It distinguishes generic/named facts and warns when an open timer will be interrupted. Explicit Cancel, Escape, focus containment and a disabled pending state protect the action; no deletion occurs merely by opening the dialog.

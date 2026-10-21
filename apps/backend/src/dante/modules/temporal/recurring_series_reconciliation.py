@@ -159,6 +159,12 @@ def preview_calendar_series_reconciliation(
     """
     if scope.scope not in {"this_and_following", "from_next"}:
         raise SeriesReconciliationError("Calendar source changes require a following scope.")
+    if not authoritative_inventory or not scope.update_future_source_template:
+        raise SeriesReconciliationError("A following edit requires a complete source inventory.")
+    if len(materialized) > MAX_SERIES_INVENTORY:
+        raise SeriesReconciliationError("Reconciliation exceeds the bounded instance limit.")
+    if any(not window.contains(item.coordinate) for item in materialized):
+        raise SeriesReconciliationError("Source inventory escapes its declared horizon.")
     selected = next(
         (
             item.coordinate
