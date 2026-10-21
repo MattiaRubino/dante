@@ -13,7 +13,13 @@ from sqlalchemy import text
 from tests.integration.temporal.test_activity_quick_authoring_metadata import _seed_self
 
 from dante.context.contracts import DanteContext
-from dante.modules.temporal.activity_edit_snapshot_api import _SNAPSHOT, ActivityEditSnapshot
+from dante.modules.temporal.activity_edit_snapshot_api import (
+    _SNAPSHOT,
+    ActivityCoreEditCommand,
+    ActivityEditSnapshot,
+    EditPolicyChange,
+    revise_activity_core_in_session,
+)
 from dante.modules.temporal.activity_inspector_api import get_self_activity_session_impact
 from dante.modules.temporal.activity_replan_api import (
     ActivityReplanCommand,
@@ -24,6 +30,7 @@ from dante.modules.temporal.activity_replan_api import (
     ReplanRow,
     RetainedPlannedRow,
     apply_activity_replan,
+    apply_activity_replan_in_session,
     preview_activity_replan,
 )
 from dante.modules.temporal.authoring import TemporalAuthoringApplication
@@ -83,6 +90,60 @@ async def _snapshot(runtime: Any, actor: object, activity: object) -> ActivityEd
         return ActivityEditSnapshot.model_validate(
             await session.scalar(_SNAPSHOT, {"actor": actor, "activity": activity})
         )
+
+
+@pytest.mark.asyncio
+async def test_replan_in_shared_transaction_rolls_back_when_series_save_fails(
+    migrated_database: Any,
+) -> None:
+    actor = _seed_self(migrated_database)
+    runtime = create_database_runtime(migrated_database.runtime_settings())
+    try:
+        created = await TemporalAuthoringApplication(runtime.session_factory).create_activity(
+            self_person_ref=actor,
+            operation_id="series:transaction:activity",
+            title="Studio",
+            placement=_window(9, 12),
+        )
+        activity = created.item.subject_native_ref
+        before = await _snapshot(runtime, actor, activity)
+        envelope = next(row for row in before.schedules if row.role_code == "envelope")
+        with pytest.raises(RuntimeError, match="policy failed"):  # noqa: PT012
+            async with runtime.session_factory() as session, session.begin():
+                await session.execute(text("SET TRANSACTION ISOLATION LEVEL SERIALIZABLE"))
+                revised = await apply_activity_replan_in_session(
+                    session,
+                    actor=actor,
+                    activity_ref=activity,
+                    body=ActivityReplanCommand(
+                        operation_id="series:transaction:move",
+                        envelope=_move(envelope, 10, 13),
+                    ),
+                )
+                assert next(
+                    row for row in revised.schedules if row.role_code == "envelope"
+                ).starts_local_at == datetime(2026, 10, 9, 10)  # noqa: DTZ001
+                core = await revise_activity_core_in_session(
+                    session,
+                    actor=actor,
+                    activity_ref=activity,
+                    body=ActivityCoreEditCommand(
+                        operation_id="series:transaction:capture",
+                        capture=EditPolicyChange(mode_code="record"),
+                    ),
+                )
+                assert core.capture.mode_code == "record"
+                raise RuntimeError("policy failed")
+        after = await _snapshot(runtime, actor, activity)
+        assert (
+            next(
+                row for row in after.schedules if row.role_code == "envelope"
+            ).placement_material_state_ref
+            == envelope.placement_material_state_ref
+        )
+        assert after.execution_policy.mode_code == before.execution_policy.mode_code
+    finally:
+        await runtime.dispose()
 
 
 @pytest.mark.asyncio

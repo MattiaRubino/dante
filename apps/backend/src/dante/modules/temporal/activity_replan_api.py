@@ -597,6 +597,265 @@ async def preview_activity_replan(
     return ActivityReplanPreview(activity_ref=activity_ref, changes=changes)
 
 
+async def apply_activity_replan_in_session(
+    session: AsyncSession,
+    *,
+    actor: UUID,
+    activity_ref: UUID,
+    body: ActivityReplanCommand,
+) -> ActivityEditSnapshot:
+    """Apply a guarded Activity plan in the caller's transaction.
+
+    Series reconciliation can compose multiple clean instances without
+    publishing partial replans; the HTTP route uses the same path.
+    """
+    digest = hashlib.sha256(body.operation_id.encode("utf-8")).hexdigest()
+    snapshot = await _read(session, actor, activity_ref)
+    _, placements = _validated_plan(snapshot, body)
+    # Re-evaluate facts in this serializable Save transaction. A
+    # completed named attempt retains its history, but no longer
+    # freezes intended time. Main (even concluded) and open/paused
+    # named attempts still freeze it. No direct table lock: the runtime
+    # role has SELECT but not UPDATE on activity_intention.
+    attempt_rows = (
+        (
+            await session.execute(
+                text("""
+                    SELECT s.session_ref, s.ended_at,
+                           dante.get_self_session_planned_schedule(
+                               :actor,s.session_ref
+                           ) AS planned_schedule_ref
+                      FROM dante.list_self_subject_sessions(:actor,:activity) AS s
+                """),
+                {"actor": actor, "activity": activity_ref},
+            )
+        )
+        .mappings()
+        .all()
+    )
+    attempts_present = bool(attempt_rows)
+    planning_locked = any(
+        row.ended_at is None or row.planned_schedule_ref is None for row in attempt_rows
+    )
+    if planning_locked and (
+        placements or body.remove_intervals or body.new_intervals or body.split_envelope
+    ):
+        raise _conflict(
+            "Elimina le registrazioni attive o della Sessione principale "
+            "prima di modificare orari o intervalli."
+        )
+    if attempts_present and body.delete_planned_sessions:
+        recorded_planned = {row.planned_schedule_ref for row in attempt_rows}
+        if any(row.schedule_ref in recorded_planned for row in body.delete_planned_sessions):
+            raise _conflict("Elimina la registrazione prima di rimuovere la Sessione.")
+    envelope = next(row for row in snapshot.schedules if row.role_code == "envelope")
+    # A placement lock freezes existing Schedule coordinates, not new
+    # Activity structure. Adding a planned Session inside the already
+    # accepted envelope (timed or untimed) does not move that envelope.
+    # Real placement revisions, removals and interval changes stay guarded.
+    existing_placement_changes = bool(
+        placements or body.remove_intervals or body.new_intervals or body.delete_planned_sessions
+    )
+    if existing_placement_changes and await session.scalar(
+        text("""
+            SELECT locked FROM dante.get_self_schedule_placement_lock(:actor,:schedule)
+        """),
+        {"actor": actor, "schedule": envelope.schedule_ref},
+    ):
+        raise _conflict("Unlock the Activity placement before replanning.")
+    for removed_interval in body.remove_intervals:
+        if await session.scalar(
+            text("""
+            SELECT locked FROM dante.get_self_schedule_placement_lock(:actor,:schedule)
+        """),
+            {"actor": actor, "schedule": removed_interval.schedule_ref},
+        ):
+            raise _conflict("Unlock the Activity interval before removing it.")
+    for removed_schedule in body.delete_planned_sessions:
+        if await session.scalar(
+            text("SELECT locked FROM dante.get_self_schedule_placement_lock(:actor,:schedule)"),
+            {"actor": actor, "schedule": removed_schedule.schedule_ref},
+        ):
+            raise _conflict("Unlock the named Session placement before removing it.")
+    for revised_schedule, placement in placements:
+        locked = await session.scalar(
+            text("""
+            SELECT locked FROM dante.get_self_schedule_placement_lock(:actor,:schedule)
+        """),
+            {"actor": actor, "schedule": revised_schedule.schedule_ref},
+        )
+        if locked:
+            raise _conflict("Unlock the Activity placement before replanning.")
+        await session.execute(
+            text("""
+            SELECT * FROM dante.revise_self_schedule_placement(
+                :actor,:operation,:fingerprint,:schedule,:expected,
+                :state,CAST(:placement AS jsonb))
+        """),
+            {
+                "actor": actor,
+                "operation": f"replan:{digest}:{revised_schedule.schedule_ref}",
+                "fingerprint": _revision_fingerprint(
+                    schedule_ref=ScopedRecordRef(revised_schedule.schedule_ref),
+                    expected_material_state_ref=MaterialStateRef(
+                        revised_schedule.expected_material_state_ref
+                    ),
+                    placement=placement,
+                ),
+                "schedule": revised_schedule.schedule_ref,
+                "expected": revised_schedule.expected_material_state_ref,
+                "state": uuid7(),
+                "placement": json.dumps(_placement_payload(placement), sort_keys=True),
+            },
+        )
+    unscheduled_rows = [
+        (item.schedule_ref, item.expected_material_state_ref) for item in body.remove_intervals
+    ]
+    for schedule_ref, expected_state in unscheduled_rows:
+        await session.execute(
+            text("""
+            SELECT * FROM dante.unschedule_self_schedule(
+                :actor,:operation,:fingerprint,:schedule,:expected)
+            """),
+            {
+                "actor": actor,
+                "operation": f"replan:remove:{digest}:{schedule_ref}",
+                "fingerprint": _unschedule_fingerprint(
+                    schedule_ref=ScopedRecordRef(schedule_ref),
+                    expected_material_state_ref=MaterialStateRef(expected_state),
+                ),
+                "schedule": schedule_ref,
+                "expected": expected_state,
+            },
+        )
+    for retired_row in body.delete_planned_sessions:
+        # X is draft-only until Save. Here both the named configuration
+        # and its linked real attempts disappear in the SAME transaction;
+        # the other retained Session attempts remain unchanged.
+        current_session_fingerprint = await session.scalar(
+            text("SELECT dante.get_self_activity_session_impact_hash(:actor,:activity)"),
+            {"actor": actor, "activity": activity_ref},
+        )
+        await session.scalar(
+            text("""
+                SELECT dante.delete_self_named_activity_session(
+                    :actor,:activity,:schedule,:fingerprint
+                )
+            """),
+            {
+                "actor": actor,
+                "activity": activity_ref,
+                "schedule": retired_row.schedule_ref,
+                "fingerprint": current_session_fingerprint,
+            },
+        )
+    if body.new_intervals or body.split_envelope:
+        next_interval_order = await session.scalar(
+            text("""
+            SELECT COALESCE(MAX(presentation_order),0)
+              FROM dante.get_self_activity_schedule_roles(
+                  :actor, CAST(ARRAY[:activity] AS uuid[]))
+             WHERE role_code='interval'
+        """),
+            {"actor": actor, "activity": activity_ref},
+        )
+        additions = [
+            *(
+                [
+                    (
+                        "split-first",
+                        body.envelope.starts_local_at,
+                        body.envelope.ends_local_at,
+                    )
+                ]
+                if body.split_envelope and body.envelope is not None
+                else []
+            ),
+            *(
+                (str(row.client_ref), row.starts_local_at, row.ends_local_at)
+                for row in body.new_intervals
+            ),
+        ]
+        for client_ref, starts_local_at, ends_local_at in additions:
+            next_interval_order += 1
+            try:
+                placement = (
+                    NamedZoneLocalIntervalPlacement(
+                        starts_local_at=starts_local_at,
+                        ends_local_at=ends_local_at,
+                        zone_id=_checked_zone(envelope),
+                    )
+                    if envelope.temporal_form == "named_zone_local"
+                    else FloatingLocalIntervalPlacement(
+                        starts_local_at=starts_local_at,
+                        ends_local_at=ends_local_at,
+                    )
+                )
+            except ScheduleInputError as exc:
+                raise _invalid(str(exc)) from exc
+            created = await establish_schedule_in_session(
+                session,
+                self_person_ref=NativeRef(actor),
+                operation_id=f"replan:add-interval:{digest}:{client_ref}",
+                subject_native_ref=NativeRef(activity_ref),
+                placement=placement,
+            )
+            await session.execute(
+                text("""
+                SELECT * FROM dante.set_self_activity_schedule_role(
+                    :actor,:activity,:schedule,'interval',:position,NULL)
+            """),
+                {
+                    "actor": actor,
+                    "activity": activity_ref,
+                    "schedule": created.schedule_ref,
+                    "position": next_interval_order,
+                },
+            )
+    if body.new_planned_sessions:
+        used_orders = set(
+            (
+                await session.scalars(
+                    text("""
+            SELECT presentation_order
+              FROM dante.get_self_activity_schedule_roles(
+                  :actor, CAST(ARRAY[:activity] AS uuid[]))
+             WHERE role_code='planned'
+        """),
+                    {"actor": actor, "activity": activity_ref},
+                )
+            ).all()
+        )
+        last_order = max(used_orders, default=0)
+        free_orders = [
+            position for position in range(last_order + 1, 101) if position not in used_orders
+        ]
+        free_orders += [
+            position for position in range(1, last_order + 1) if position not in used_orders
+        ]
+        if len(free_orders) < len(body.new_planned_sessions):
+            raise _invalid("At most 100 current planned Sessions are supported.")
+        for new_planned, next_order in zip(
+            body.new_planned_sessions,
+            free_orders[: len(body.new_planned_sessions)],
+            strict=True,
+        ):
+            await session.execute(
+                text("""
+                SELECT * FROM dante.establish_self_unplaced_planned_schedule(
+                    :actor,:activity,:schedule,:position,:name)
+            """),
+                {
+                    "actor": actor,
+                    "activity": activity_ref,
+                    "schedule": uuid7(),
+                    "position": next_order,
+                    "name": new_planned.name,
+                },
+            )
+    return await _read(session, actor, activity_ref)
+
+
 @router.put(
     "/{activity_ref}/replan",
     response_model=ActivityEditSnapshot,
@@ -610,265 +869,13 @@ async def apply_activity_replan(
     response: Response,
 ) -> ActivityEditSnapshot:
     response.headers["Cache-Control"] = "no-store"
-    digest = hashlib.sha256(body.operation_id.encode("utf-8")).hexdigest()
     actor = context.self_person_ref
     try:
         async with request.app.state.database_runtime.session_factory() as session, session.begin():
             await session.execute(text("SET TRANSACTION ISOLATION LEVEL SERIALIZABLE"))
-            snapshot = await _read(session, actor, activity_ref)
-            _, placements = _validated_plan(snapshot, body)
-            # Re-evaluate facts in this serializable Save transaction. A
-            # completed named attempt retains its history, but no longer
-            # freezes intended time. Main (even concluded) and open/paused
-            # named attempts still freeze it. No direct table lock: the runtime
-            # role has SELECT but not UPDATE on activity_intention.
-            attempt_rows = (
-                (
-                    await session.execute(
-                        text("""
-                            SELECT s.session_ref, s.ended_at,
-                                   dante.get_self_session_planned_schedule(
-                                       :actor,s.session_ref
-                                   ) AS planned_schedule_ref
-                              FROM dante.list_self_subject_sessions(:actor,:activity) AS s
-                        """),
-                        {"actor": actor, "activity": activity_ref},
-                    )
-                )
-                .mappings()
-                .all()
+            return await apply_activity_replan_in_session(
+                session, actor=actor, activity_ref=activity_ref, body=body
             )
-            attempts_present = bool(attempt_rows)
-            planning_locked = any(
-                row.ended_at is None or row.planned_schedule_ref is None for row in attempt_rows
-            )
-            if planning_locked and (
-                placements or body.remove_intervals or body.new_intervals or body.split_envelope
-            ):
-                raise _conflict(
-                    "Elimina le registrazioni attive o della Sessione principale "
-                    "prima di modificare orari o intervalli."
-                )
-            if attempts_present and body.delete_planned_sessions:
-                recorded_planned = {row.planned_schedule_ref for row in attempt_rows}
-                if any(
-                    row.schedule_ref in recorded_planned for row in body.delete_planned_sessions
-                ):
-                    raise _conflict("Elimina la registrazione prima di rimuovere la Sessione.")
-            envelope = next(row for row in snapshot.schedules if row.role_code == "envelope")
-            # A placement lock freezes existing Schedule coordinates, not new
-            # Activity structure. Adding a planned Session inside the already
-            # accepted envelope (timed or untimed) does not move that envelope.
-            # Real placement revisions, removals and interval changes stay guarded.
-            existing_placement_changes = bool(
-                placements
-                or body.remove_intervals
-                or body.new_intervals
-                or body.delete_planned_sessions
-            )
-            if existing_placement_changes and await session.scalar(
-                text("""
-                    SELECT locked FROM dante.get_self_schedule_placement_lock(:actor,:schedule)
-                """),
-                {"actor": actor, "schedule": envelope.schedule_ref},
-            ):
-                raise _conflict("Unlock the Activity placement before replanning.")
-            for removed_interval in body.remove_intervals:
-                if await session.scalar(
-                    text("""
-                    SELECT locked FROM dante.get_self_schedule_placement_lock(:actor,:schedule)
-                """),
-                    {"actor": actor, "schedule": removed_interval.schedule_ref},
-                ):
-                    raise _conflict("Unlock the Activity interval before removing it.")
-            for removed_schedule in body.delete_planned_sessions:
-                if await session.scalar(
-                    text(
-                        "SELECT locked FROM dante.get_self_schedule_placement_lock(:actor,:schedule)"
-                    ),
-                    {"actor": actor, "schedule": removed_schedule.schedule_ref},
-                ):
-                    raise _conflict("Unlock the named Session placement before removing it.")
-            for revised_schedule, placement in placements:
-                locked = await session.scalar(
-                    text("""
-                    SELECT locked FROM dante.get_self_schedule_placement_lock(:actor,:schedule)
-                """),
-                    {"actor": actor, "schedule": revised_schedule.schedule_ref},
-                )
-                if locked:
-                    raise _conflict("Unlock the Activity placement before replanning.")
-                await session.execute(
-                    text("""
-                    SELECT * FROM dante.revise_self_schedule_placement(
-                        :actor,:operation,:fingerprint,:schedule,:expected,
-                        :state,CAST(:placement AS jsonb))
-                """),
-                    {
-                        "actor": actor,
-                        "operation": f"replan:{digest}:{revised_schedule.schedule_ref}",
-                        "fingerprint": _revision_fingerprint(
-                            schedule_ref=ScopedRecordRef(revised_schedule.schedule_ref),
-                            expected_material_state_ref=MaterialStateRef(
-                                revised_schedule.expected_material_state_ref
-                            ),
-                            placement=placement,
-                        ),
-                        "schedule": revised_schedule.schedule_ref,
-                        "expected": revised_schedule.expected_material_state_ref,
-                        "state": uuid7(),
-                        "placement": json.dumps(_placement_payload(placement), sort_keys=True),
-                    },
-                )
-            unscheduled_rows = [
-                (item.schedule_ref, item.expected_material_state_ref)
-                for item in body.remove_intervals
-            ]
-            for schedule_ref, expected_state in unscheduled_rows:
-                await session.execute(
-                    text("""
-                    SELECT * FROM dante.unschedule_self_schedule(
-                        :actor,:operation,:fingerprint,:schedule,:expected)
-                    """),
-                    {
-                        "actor": actor,
-                        "operation": f"replan:remove:{digest}:{schedule_ref}",
-                        "fingerprint": _unschedule_fingerprint(
-                            schedule_ref=ScopedRecordRef(schedule_ref),
-                            expected_material_state_ref=MaterialStateRef(expected_state),
-                        ),
-                        "schedule": schedule_ref,
-                        "expected": expected_state,
-                    },
-                )
-            for retired_row in body.delete_planned_sessions:
-                # X is draft-only until Save. Here both the named configuration
-                # and its linked real attempts disappear in the SAME transaction;
-                # the other retained Session attempts remain unchanged.
-                current_session_fingerprint = await session.scalar(
-                    text("SELECT dante.get_self_activity_session_impact_hash(:actor,:activity)"),
-                    {"actor": actor, "activity": activity_ref},
-                )
-                await session.scalar(
-                    text("""
-                        SELECT dante.delete_self_named_activity_session(
-                            :actor,:activity,:schedule,:fingerprint
-                        )
-                    """),
-                    {
-                        "actor": actor,
-                        "activity": activity_ref,
-                        "schedule": retired_row.schedule_ref,
-                        "fingerprint": current_session_fingerprint,
-                    },
-                )
-            if body.new_intervals or body.split_envelope:
-                next_interval_order = await session.scalar(
-                    text("""
-                    SELECT COALESCE(MAX(presentation_order),0)
-                      FROM dante.get_self_activity_schedule_roles(
-                          :actor, CAST(ARRAY[:activity] AS uuid[]))
-                     WHERE role_code='interval'
-                """),
-                    {"actor": actor, "activity": activity_ref},
-                )
-                additions = [
-                    *(
-                        [
-                            (
-                                "split-first",
-                                body.envelope.starts_local_at,
-                                body.envelope.ends_local_at,
-                            )
-                        ]
-                        if body.split_envelope and body.envelope is not None
-                        else []
-                    ),
-                    *(
-                        (str(row.client_ref), row.starts_local_at, row.ends_local_at)
-                        for row in body.new_intervals
-                    ),
-                ]
-                for client_ref, starts_local_at, ends_local_at in additions:
-                    next_interval_order += 1
-                    try:
-                        placement = (
-                            NamedZoneLocalIntervalPlacement(
-                                starts_local_at=starts_local_at,
-                                ends_local_at=ends_local_at,
-                                zone_id=_checked_zone(envelope),
-                            )
-                            if envelope.temporal_form == "named_zone_local"
-                            else FloatingLocalIntervalPlacement(
-                                starts_local_at=starts_local_at,
-                                ends_local_at=ends_local_at,
-                            )
-                        )
-                    except ScheduleInputError as exc:
-                        raise _invalid(str(exc)) from exc
-                    created = await establish_schedule_in_session(
-                        session,
-                        self_person_ref=NativeRef(actor),
-                        operation_id=f"replan:add-interval:{digest}:{client_ref}",
-                        subject_native_ref=NativeRef(activity_ref),
-                        placement=placement,
-                    )
-                    await session.execute(
-                        text("""
-                        SELECT * FROM dante.set_self_activity_schedule_role(
-                            :actor,:activity,:schedule,'interval',:position,NULL)
-                    """),
-                        {
-                            "actor": actor,
-                            "activity": activity_ref,
-                            "schedule": created.schedule_ref,
-                            "position": next_interval_order,
-                        },
-                    )
-            if body.new_planned_sessions:
-                used_orders = set(
-                    (
-                        await session.scalars(
-                            text("""
-                    SELECT presentation_order
-                      FROM dante.get_self_activity_schedule_roles(
-                          :actor, CAST(ARRAY[:activity] AS uuid[]))
-                     WHERE role_code='planned'
-                """),
-                            {"actor": actor, "activity": activity_ref},
-                        )
-                    ).all()
-                )
-                last_order = max(used_orders, default=0)
-                free_orders = [
-                    position
-                    for position in range(last_order + 1, 101)
-                    if position not in used_orders
-                ]
-                free_orders += [
-                    position for position in range(1, last_order + 1) if position not in used_orders
-                ]
-                if len(free_orders) < len(body.new_planned_sessions):
-                    raise _invalid("At most 100 current planned Sessions are supported.")
-                for new_planned, next_order in zip(
-                    body.new_planned_sessions,
-                    free_orders[: len(body.new_planned_sessions)],
-                    strict=True,
-                ):
-                    await session.execute(
-                        text("""
-                        SELECT * FROM dante.establish_self_unplaced_planned_schedule(
-                            :actor,:activity,:schedule,:position,:name)
-                    """),
-                        {
-                            "actor": actor,
-                            "activity": activity_ref,
-                            "schedule": uuid7(),
-                            "position": next_order,
-                            "name": new_planned.name,
-                        },
-                    )
-            return await _read(session, actor, activity_ref)
     except DBAPIError as exc:
         constraint = getattr(getattr(exc.orig, "diag", None), "constraint_name", None)
         if getattr(exc.orig, "sqlstate", None) in {"40001", "23505"} or (
