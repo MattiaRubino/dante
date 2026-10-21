@@ -5,6 +5,7 @@ type RecurringEditScopeDialogProps = Readonly<{
   subjectLabel: 'attività' | 'Evento';
   selectedHasFacts: boolean;
   busy?: boolean;
+  dragNotice?: string;
   onOnlyThis: () => void;
   onFollowing: () => void;
   onCancel: () => void;
@@ -20,6 +21,7 @@ export function RecurringEditScopeDialog({
   subjectLabel,
   selectedHasFacts,
   busy = false,
+  dragNotice,
   onOnlyThis,
   onFollowing,
   onCancel,
@@ -64,6 +66,11 @@ export function RecurringEditScopeDialog({
         {selectedHasFacts ? (
           <p className="timeline-recurring-edit-scope-dialog__fact-note">
             La registrazione di questa istanza rimane invariata.
+          </p>
+        ) : null}
+        {dragNotice ? (
+          <p className="timeline-recurring-edit-scope-dialog__fact-note">
+            {dragNotice}
           </p>
         ) : null}
         <div className="timeline-recurring-edit-scope-dialog__choices">

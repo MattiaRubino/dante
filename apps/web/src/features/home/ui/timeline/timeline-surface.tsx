@@ -80,6 +80,7 @@ import {
 } from './timeline-all-day-runtime';
 import { TimelineDayStream } from './timeline-day-stream';
 import { TimelineHeader } from './timeline-header';
+import { RecurringEditScopeDialog } from './recurring-edit-scope-dialog';
 import {
   canonicalOrganizationGroups,
   LEGACY_UNASSIGNED_GROUP,
@@ -131,6 +132,7 @@ type DetailState = Readonly<{
   event: TimelineEvent;
   opener: HTMLElement;
   openActivityEdit?: boolean;
+  activityEditScope?: 'this_and_following';
 }>;
 
 type ScheduleNotice = Readonly<{
@@ -145,11 +147,23 @@ type PendingActivityReplan = Readonly<{
   title: string;
   settings: ActivityEditSettings;
   draft: ActivityReplanDraft;
-  recurring: boolean;
   destination?: string;
   restoreDraft?: ActivityReplanDraft;
-  isUndo?: boolean;
-}>;
+}> &
+  (
+    | Readonly<{
+        kind: 'drag';
+        event: TimelineEvent;
+        fromDateKey: string;
+        recurring: boolean;
+        isUndo?: false;
+      }>
+    | Readonly<{
+        kind: 'undo';
+        recurring: boolean;
+        isUndo: true;
+      }>
+  );
 
 type CanonicalScheduleUndo =
   | Readonly<{
@@ -784,6 +798,9 @@ export function TimelineSurface({
               );
             }
             const proposal: PendingActivityReplan = {
+              kind: 'drag',
+              event,
+              fromDateKey,
               activityRef: basis.activityRef,
               scheduleRef: basis.scheduleRef,
               title: event.title,
@@ -927,6 +944,7 @@ export function TimelineSurface({
       ])
         .then(([impact, recurringContext]) => {
           const proposal: PendingActivityReplan = {
+            kind: 'undo',
             activityRef: undo.activityRef,
             scheduleRef: undo.scheduleRef,
             title: undo.title,
@@ -1816,58 +1834,88 @@ export function TimelineSurface({
         onClose={closeViewOptions}
       />
 
-      {pendingActivityReplan
-        ? createPortal(
-            <div className="timeline-activity-replan-backdrop">
-              <div
-                className="timeline-activity-replan-dialog"
-                role="alertdialog"
-                aria-modal="true"
-                aria-label="Conferma spostamento attività"
-                onKeyDown={(event) => {
-                  if (event.key === 'Escape') {
-                    event.preventDefault();
+      {pendingActivityReplan?.recurring &&
+      pendingActivityReplan.kind === 'drag' ? (
+        <RecurringEditScopeDialog
+          subjectLabel="attività"
+          selectedHasFacts={false}
+          dragNotice="Solo questa applica lo spostamento. Per questa e le successive si apre Modifica: gli orari della serie non sono ancora modificabili e il trascinamento non verrà salvato."
+          onOnlyThis={confirmActivityTimelineReplan}
+          onFollowing={() => {
+            const proposal = pendingActivityReplan;
+            setPendingActivityReplan(null);
+            pendingScheduleRefsRef.current.delete(proposal.scheduleRef);
+            const opener =
+              rootRef.current?.querySelector<HTMLElement>(
+                `[data-timeline-event="${proposal.event.id}"]`,
+              ) ?? rootRef.current;
+            if (opener) {
+              setDetailState({
+                event: proposal.event,
+                detail: detailFromEvent(
+                  proposal.event,
+                  state.groups,
+                  proposal.fromDateKey,
+                ),
+                opener,
+                openActivityEdit: true,
+                activityEditScope: 'this_and_following',
+              });
+            }
+          }}
+          onCancel={() => {
+            pendingScheduleRefsRef.current.delete(
+              pendingActivityReplan.scheduleRef,
+            );
+            setPendingActivityReplan(null);
+          }}
+        />
+      ) : pendingActivityReplan ? (
+        createPortal(
+          <div className="timeline-activity-replan-backdrop">
+            <div
+              className="timeline-activity-replan-dialog"
+              role="alertdialog"
+              aria-modal="true"
+              aria-label="Conferma spostamento attività"
+              onKeyDown={(event) => {
+                if (event.key === 'Escape') {
+                  event.preventDefault();
+                  pendingScheduleRefsRef.current.delete(
+                    pendingActivityReplan.scheduleRef,
+                  );
+
+                  setPendingActivityReplan(null);
+                }
+              }}
+            >
+              <h2>{pendingActivityReplan.title}</h2>
+              <div className="timeline-activity-replan-dialog__actions">
+                <button
+                  type="button"
+                  autoFocus
+                  onClick={confirmActivityTimelineReplan}
+                >
+                  Solo questa
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
                     pendingScheduleRefsRef.current.delete(
                       pendingActivityReplan.scheduleRef,
                     );
 
                     setPendingActivityReplan(null);
-                  }
-                }}
-              >
-                <h2>{pendingActivityReplan.title}</h2>
-                {pendingActivityReplan.recurring ? (
-                  <p>
-                    Lo spostamento modifica solo questa istanza della
-                    ricorrenza. Le successive mantengono il proprio piano.
-                  </p>
-                ) : null}
-                <div className="timeline-activity-replan-dialog__actions">
-                  <button
-                    type="button"
-                    autoFocus
-                    onClick={confirmActivityTimelineReplan}
-                  >
-                    Solo questa
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      pendingScheduleRefsRef.current.delete(
-                        pendingActivityReplan.scheduleRef,
-                      );
-
-                      setPendingActivityReplan(null);
-                    }}
-                  >
-                    Annulla
-                  </button>
-                </div>
+                  }}
+                >
+                  Annulla
+                </button>
               </div>
-            </div>,
-            document.body,
-          )
-        : null}
+            </div>
+          </div>,
+          document.body,
+        )
+      ) : null}
 
       <EventDetailDialog
         detail={detailState?.detail ?? null}
@@ -1909,6 +1957,7 @@ export function TimelineSurface({
           return basis?.scheduleRef ?? null;
         })()}
         openActivityEdit={detailState?.openActivityEdit === true}
+        initialActivityEditScope={detailState?.activityEditScope}
         onActivitySaved={(profile) => {
           window.dispatchEvent(new Event(REVIEW_QUEUE_INVALIDATED));
           if (!detailState) return;

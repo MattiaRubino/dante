@@ -79,6 +79,17 @@ for a selected recurring instance instead of revising the Event source
 globally. Life Area and agenda editing from a recurring Event occurrence are
 blocked until the structural series capability is implemented.
 
+Dragging an unrecorded recurring Activity also asks for the scope before any
+write. **Solo questa istanza** applies the local replan. **Questa e le
+successive** opens the existing series editor, but does not apply the dragged
+time: series Schedule changes remain outside the metadata-only capability.
+The choice explains this limitation before selection; it must never silently
+apply a single-instance move under a series label. A registered Activity drag
+still opens scope selection before Edit, under the Session safety rules.
+The scope prompt visually replaces the Inspector, and cancelling it closes
+the Inspector without saving. The current-time ruler is independent of these
+modals and keeps a visible line across the full day lane.
+
 **Pending persistence vertical:** authoritative versioned Activity template
 and Event structure, cadence replacements with clean-instance reconciliation,
 Schedule and reminder revisions, interval, capture, planned Session, Objective,

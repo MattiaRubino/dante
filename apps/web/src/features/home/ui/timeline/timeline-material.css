@@ -648,12 +648,7 @@
 
 /* v43 exact now chrome. */
 .home-m1 .home-timeline--production .timeline-now-line {
-  background: linear-gradient(
-    90deg,
-    var(--dante-timeline-accent),
-    rgba(234, 92, 18, 0.6),
-    transparent
-  );
+  background: color-mix(in srgb, var(--dante-timeline-accent) 72%, transparent);
 }
 
 .home-m1 .home-timeline--production .timeline-now-line::before {

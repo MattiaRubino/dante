@@ -1,5 +1,21 @@
 # Timeline / Temporal-Operational — Workstream Handoff
 
+## 2026-10-21 — Recurring scope presentation and current-time ruler candidate
+
+The scope dialog now stacks above the Inspector and visually replaces it while
+choosing; Cancel closes the Inspector. The Inspector's keyboard trap yields to
+the dialog. An unrecorded recurring Activity drag now offers the same scope
+choice instead of the legacy local-only confirmation. Only the local choice
+applies the dragged time. The series choice opens the metadata series editor
+with a clear notice that the dragged time is **not** saved; structural series
+Schedule edits remain pending per the accepted recurring-series decision.
+The orange now ruler no longer fades to transparent across the day lane.
+Focused Web typecheck and Vitest 81/81 passed on the candidate. Test registry,
+Prettier, focused ESLint and `git diff --check` passed. Two Playwright cases
+for scope layering and the now-line were added but could not start locally:
+the Chromium headless executable is absent. Real-browser visual acceptance,
+those cases in the owner's WSL, and the full gate remain pending.
+
 ## 2026-10-19 — Recurring edit scope candidate (`_161`)
 
 The accepted product policy is recorded in

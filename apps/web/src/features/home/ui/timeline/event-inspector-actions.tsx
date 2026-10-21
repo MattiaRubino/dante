@@ -43,6 +43,7 @@ export function EventInspectorActions({
   occurrenceRef = null,
   onDeleted,
   onDuplicate,
+  onCancelScope,
   toolbarTarget = null,
 }: Readonly<{
   eventRef: string;
@@ -50,6 +51,7 @@ export function EventInspectorActions({
   occurrenceRef?: string | null;
   onDeleted?: () => void;
   onDuplicate: (seed: ActivityDuplicateSeed) => void;
+  onCancelScope?: () => void;
   toolbarTarget?: HTMLElement | null;
 }>) {
   const [eventSource] = useState(createRemoteTemporalEventAgendaDataSource);
@@ -522,7 +524,10 @@ export function EventInspectorActions({
               choice.context,
             );
           }}
-          onCancel={() => setEditChoice(null)}
+          onCancel={() => {
+            setEditChoice(null);
+            onCancelScope?.();
+          }}
         />
       ) : null}
       {!toolbarTarget || editingProfile || editingArea ? (

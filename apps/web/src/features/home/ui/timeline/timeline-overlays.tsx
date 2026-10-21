@@ -582,6 +582,7 @@ type EventDetailDialogProps = Readonly<{
   locale?: string;
   timeZone?: string;
   openActivityEdit?: boolean;
+  initialActivityEditScope?: 'this_and_following' | undefined;
   onActivitySaved?: (profile: ActivityProfile) => void;
   onActivityDeleted?: () => void;
   onClose: () => void;
@@ -654,6 +655,7 @@ export function EventDetailDialog({
   locale = 'it-IT',
   timeZone,
   openActivityEdit = false,
+  initialActivityEditScope,
   onActivitySaved,
   onActivityDeleted,
   onClose,
@@ -696,6 +698,11 @@ export function EventDetailDialog({
     ])
       .then(async ([profile, recurring]) => {
         if (!active) return;
+        if (initialActivityEditScope) {
+          setActivityEditScope(initialActivityEditScope);
+          setEditingProfile(profile);
+          return;
+        }
         if (recurring === null) {
           setEditingProfile(profile);
           return;
@@ -715,7 +722,7 @@ export function EventDetailDialog({
     return () => {
       active = false;
     };
-  }, [activityRef, openActivityEdit]);
+  }, [activityRef, openActivityEdit, initialActivityEditScope]);
   useEffect(() => {
     if (!activityRef) return;
     let active = true;
@@ -813,6 +820,12 @@ export function EventDetailDialog({
     }
     closeButtonRef.current?.focus();
     const keydown = (event: globalThis.KeyboardEvent) => {
+      if (
+        event.target instanceof Element &&
+        event.target.closest('.timeline-recurring-edit-scope-dialog__backdrop')
+      ) {
+        return;
+      }
       if (event.key === 'Escape') {
         event.preventDefault();
         requestCloseCurrent();
@@ -949,6 +962,7 @@ export function EventDetailDialog({
                   setActivityEditScope(scope);
                   setEditingProfile(profile);
                 }}
+                onCancelScope={onClose}
                 onDeleted={onActivityDeleted}
                 onDuplicate={(seed) => {
                   onClose();
@@ -1010,6 +1024,7 @@ export function EventDetailDialog({
                     eventRef={detail.eventRef}
                     occurrenceRef={detail.occurrenceRef ?? null}
                     placement={detail.eventPlacement}
+                    onCancelScope={onClose}
                     onDuplicate={(seed) => {
                       onClose();
                       requestTemporalCreateDuplicate(seed);
@@ -1084,7 +1099,10 @@ export function EventDetailDialog({
               setEditingProfile(activityEditChoice.profile);
               setActivityEditChoice(null);
             }}
-            onCancel={() => setActivityEditChoice(null)}
+            onCancel={() => {
+              setActivityEditChoice(null);
+              onClose();
+            }}
           />
         ) : null}
       </div>

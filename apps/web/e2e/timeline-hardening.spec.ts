@@ -2,6 +2,56 @@ import { expect, test, type Locator, type Page } from '@playwright/test';
 
 test.use({ locale: 'it-IT' });
 
+test('recurrence scope replaces the Inspector visually and remains interactive', async ({
+  page,
+}) => {
+  await page.goto('/home');
+  const visibility = await page.evaluate(() => {
+    const inspector = document.createElement('div');
+    inspector.className =
+      'timeline-modal-backdrop timeline-modal-backdrop--inspector is-open';
+    const scope = document.createElement('div');
+    scope.className = 'timeline-recurring-edit-scope-dialog__backdrop';
+    scope.innerHTML =
+      '<section class="timeline-recurring-edit-scope-dialog"><button>Solo questa istanza</button></section>';
+    document.body.append(inspector, scope);
+    const inspectorStyle = getComputedStyle(inspector);
+    const scopeStyle = getComputedStyle(scope);
+    const result = {
+      inspector: inspectorStyle.visibility,
+      scope: scopeStyle.visibility,
+      onTop: Number(scopeStyle.zIndex) > Number(inspectorStyle.zIndex),
+    };
+    inspector.remove();
+    scope.remove();
+    return result;
+  });
+  expect(visibility).toEqual({
+    inspector: 'hidden',
+    scope: 'visible',
+    onTop: true,
+  });
+});
+
+test('current-time marker keeps a visible line across the whole day', async ({
+  page,
+}) => {
+  await page.goto('/home');
+  const line = page.locator('.timeline-now-line').first();
+  await expect(line).toBeVisible();
+  const style = await line.evaluate((element) => {
+    const computed = getComputedStyle(element);
+    return {
+      image: computed.backgroundImage,
+      color: computed.backgroundColor,
+      width: element.getBoundingClientRect().width,
+    };
+  });
+  expect(style.image).toBe('none');
+  expect(style.color).not.toBe('rgba(0, 0, 0, 0)');
+  expect(style.width).toBeGreaterThan(100);
+});
+
 test('Inspector keeps its actions above the title and places date and Life Area on distinct rows', async ({
   page,
 }) => {

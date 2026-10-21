@@ -31,6 +31,7 @@ export function ActivityInspectorActions({
   onEdit,
   onDeleted,
   onDuplicate,
+  onCancelScope,
   toolbarTarget = null,
 }: Readonly<{
   activityRef: string;
@@ -38,6 +39,7 @@ export function ActivityInspectorActions({
   onEdit: (profile: ActivityProfile, scope: RecurringProfileEditScope) => void;
   onDeleted: () => void;
   onDuplicate: (seed: ActivityDuplicateSeed) => void;
+  onCancelScope?: () => void;
   toolbarTarget?: HTMLElement | null;
 }>) {
   const [source] = useState(createRemoteActivityInspector);
@@ -226,7 +228,10 @@ export function ActivityInspectorActions({
             );
             setEditChoice(null);
           }}
-          onCancel={() => setEditChoice(null)}
+          onCancel={() => {
+            setEditChoice(null);
+            onCancelScope?.();
+          }}
         />
       ) : null}
       {confirmingVault ? (

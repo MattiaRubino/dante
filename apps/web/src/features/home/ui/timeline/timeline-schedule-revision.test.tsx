@@ -33,8 +33,14 @@ import { TemporalTimelineRuntimeBoundary } from '../../../temporal/timeline-runt
 import { TimelineSurface } from './timeline-surface';
 
 vi.mock('./activity-edit-panel', () => ({
-  ActivityEditPanel: ({ onCancel }: { onCancel: () => void }) => (
-    <div data-testid="activity-edit-panel">
+  ActivityEditPanel: ({
+    onCancel,
+    initialScope,
+  }: {
+    onCancel: () => void;
+    initialScope?: string;
+  }) => (
+    <div data-testid="activity-edit-panel" data-scope={initialScope}>
       Modifica attività
       <button type="button" onClick={onCancel}>
         Chiudi modifica di test
@@ -398,6 +404,41 @@ describe('Activity Timeline coordinated replan', () => {
     expect(remote.applyReplan).not.toHaveBeenCalled();
   });
 
+  it('closes the Inspector when a recorded drag scope choice is cancelled', async () => {
+    remote.loadRecurring.mockResolvedValue({
+      occurrenceRef: 'occurrence-1',
+      sourceRef: 'routine-1',
+      editRevision: 0,
+      recurrenceStateRef: null,
+    });
+    remote.sessionImpact.mockResolvedValue({
+      fingerprint,
+      attempts: [
+        {
+          sessionRef: 'session-1',
+          plannedScheduleRef: null,
+          timingMaterialStateRef: 'state-1',
+          status: 'in corso',
+        },
+      ],
+    });
+    const { container } = renderTimeline();
+    await dragCard(container);
+    const scope = await screen.findByRole('dialog', {
+      name: 'Modifica ricorrenza',
+    });
+    fireEvent.click(within(scope).getByRole('button', { name: 'Annulla' }));
+    await waitFor(() =>
+      expect(
+        screen.queryByRole('dialog', { name: 'Modifica ricorrenza' }),
+      ).toBeNull(),
+    );
+    expect(
+      screen.queryByRole('button', { name: 'Chiudi Inspector' }),
+    ).toBeNull();
+    expect(remote.applyReplan).not.toHaveBeenCalled();
+  });
+
   it.each([
     ['principale conclusa', null, 'conclusa'],
     ['sola sottosessione attiva', 'planned-1', 'in corso'],
@@ -532,7 +573,7 @@ describe('Activity Timeline coordinated replan', () => {
     },
   );
 
-  it('requires explicit single-instance scope for a recurring Activity, even without attempts', async () => {
+  it('asks for the recurring scope before moving an unrecorded instance', async () => {
     remote.loadRecurring.mockResolvedValue({
       occurrenceRef: 'occurrence-1',
       sourceRef: 'routine-1',
@@ -541,16 +582,37 @@ describe('Activity Timeline coordinated replan', () => {
     });
     const { container, reviseSchedule } = renderTimeline();
     await moveCard(container);
-    const dialog = await screen.findByRole('alertdialog', {
-      name: 'Conferma spostamento attività',
+    const dialog = await screen.findByRole('dialog', {
+      name: 'Modifica ricorrenza',
     });
-    expect(dialog.textContent).toContain('solo questa istanza');
+    expect(dialog.textContent).toContain('Questa e le successive');
     expect(remote.applyReplan).not.toHaveBeenCalled();
     fireEvent.click(
-      within(dialog).getByRole('button', { name: 'Solo questa' }),
+      within(dialog).getByRole('button', { name: 'Solo questa istanza' }),
     );
     await waitFor(() => expect(remote.applyReplan).toHaveBeenCalledTimes(1));
     expect(reviseSchedule).not.toHaveBeenCalled();
+  });
+
+  it('opens series Edit without silently applying a drag to one instance', async () => {
+    remote.loadRecurring.mockResolvedValue({
+      occurrenceRef: 'occurrence-1',
+      sourceRef: 'routine-1',
+      editRevision: 0,
+      recurrenceStateRef: null,
+    });
+    const { container } = renderTimeline();
+    await moveCard(container);
+    const dialog = await screen.findByRole('dialog', {
+      name: 'Modifica ricorrenza',
+    });
+    expect(dialog.textContent).toContain('il trascinamento non verrà salvato');
+    fireEvent.click(
+      within(dialog).getByRole('button', { name: 'Questa e le successive' }),
+    );
+    const editor = await screen.findByTestId('activity-edit-panel');
+    expect(editor.getAttribute('data-scope')).toBe('this_and_following');
+    expect(remote.applyReplan).not.toHaveBeenCalled();
   });
 
   it('Undo coordinates the prior Activity times from the new revision basis', async () => {
