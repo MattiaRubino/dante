@@ -193,6 +193,7 @@ def preview_calendar_series_reconciliation(
         window.end_date_exclusive,
         zone,
     )
+
     def is_in_scope(coordinate: CalendarCoordinate) -> bool:
         expected_at = _candidate_instant(coordinate, zone).astimezone(UTC)
         return expected_at > cutover if scope.scope == "from_next" else expected_at >= cutover

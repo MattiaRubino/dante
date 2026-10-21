@@ -7,17 +7,17 @@ from uuid import UUID
 import pytest
 
 from dante.modules.temporal.occurrence import CalendarCoordinate
-from dante.modules.temporal.recurrence import CalendarRecurrence
 from dante.modules.temporal.occurrence_edit_scope import (
     RecurrenceEditCandidate,
     select_recurrence_edit_scope,
 )
+from dante.modules.temporal.recurrence import CalendarRecurrence
 from dante.modules.temporal.recurring_series_reconciliation import (
     MaterializedSeriesInstance,
     SeriesReconciliationError,
     SeriesReconciliationWindow,
-    reconcile_materialized_series,
     preview_calendar_series_reconciliation,
+    reconcile_materialized_series,
 )
 
 SOURCE, FIRST, LOCAL, CLEAN = (UUID(int=n) for n in (1, 11, 12, 13))
