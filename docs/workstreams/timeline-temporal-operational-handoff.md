@@ -1,5 +1,14 @@
 # Timeline / Temporal-Operational — Workstream Handoff
 
+## 2026-10-21 — Individual Session attempt deletion confirmation (candidate)
+
+The Activity Edit registration rows for the optional generic Session and each named internal Session now use the same red-bordered destructive action. Confirmation is a compact, centered `alertdialog` mounted in a body portal above the scrolling Inspector, never appended below the editor footer. It distinguishes generic/named facts and warns when an open timer will be interrupted. Explicit Cancel, Escape, focus containment and a disabled pending state protect the action; no deletion occurs merely by opening the dialog.
+
+The existing single-attempt `DELETE /activities/{activity_ref}/session-attempts/{session_ref}` contract is unchanged: PostgreSQL retains its SERIALIZABLE owner/fingerprint check and deletes only the selected Session-owned graph. Tests were added to the existing Activity Inspector/Edit suite for portal, focus, cancellation, the generic attempt and the shared dialog's named mode. **Remote source commits only; Vitest, TypeScript, formatting, browser and PostgreSQL must still be executed against the final SHA in the user's WSL.** This UI change does not address structural recurring series editing.
+
+**Separate blocking frontier:** `Questa e le successive` currently accepts only metadata. The structural Activity/Event series capability still requires source-template/cadence revision, reconciled future Occurrences, exception preservation, intervals, Session configuration, Objective, Life Area, reminders and Event agenda in one governed end-to-end vertical. Keep the fail-closed edit guard until the persistence/API/client/browser proof exists; do not reinterpret local instance saves as a series save.
+
+
 ## 2026-10-21 — Recurring scope presentation and current-time ruler candidate
 
 The scope dialog now stacks above the Inspector and visually replaces it while
