@@ -115,7 +115,7 @@ function RefreshProbe() {
 }
 
 describe('TemporalTimelineRuntimeBoundary', () => {
-  it('completes the explicit occurrence checkpoint before reading Timeline truth', async () => {
+  it('shows existing accepted cards while recurrence checkpoint runs, then reconciles the final window', async () => {
     const order: string[] = [];
     const checkpoint = deferred<{
       startDate: string;
@@ -134,9 +134,14 @@ describe('TemporalTimelineRuntimeBoundary', () => {
         return result;
       });
     });
+    const initialWindow = deferred<TemporalTimelineWindow>();
+    let readCount = 0;
     const loadWindow = vi.fn<TemporalTimelineDataSource['loadWindow']>(() => {
       order.push('read');
-      return Promise.resolve(emptyWindow());
+      readCount += 1;
+      return readCount === 1
+        ? initialWindow.promise
+        : Promise.resolve(emptyWindow());
     });
 
     render(
@@ -158,7 +163,15 @@ describe('TemporalTimelineRuntimeBoundary', () => {
       },
       expect.any(AbortSignal),
     );
-    expect(loadWindow).not.toHaveBeenCalled();
+    expect(loadWindow).toHaveBeenCalledTimes(1);
+    await act(async () => {
+      initialWindow.resolve(emptyWindow());
+      await initialWindow.promise;
+    });
+    expect(screen.getByText('product-shell')).toBeTruthy();
+    expect(
+      document.querySelector('[data-temporal-read-state="ready"]'),
+    ).toBeTruthy();
 
     await act(async () => {
       checkpoint.resolve({
@@ -172,8 +185,82 @@ describe('TemporalTimelineRuntimeBoundary', () => {
       await checkpoint.promise;
     });
 
-    await waitFor(() => expect(loadWindow).toHaveBeenCalledTimes(1));
-    expect(order).toEqual(['checkpoint', 'checkpoint-complete', 'read']);
+    await waitFor(() => expect(loadWindow).toHaveBeenCalledTimes(2));
+    expect(order).toEqual([
+      'checkpoint',
+      'read',
+      'checkpoint-complete',
+      'read',
+    ]);
+  });
+
+  it('does not let a late pre-checkpoint read overwrite the reconciled window', async () => {
+    const first = deferred<TemporalTimelineWindow>();
+    const loadWindow = vi
+      .fn<TemporalTimelineDataSource['loadWindow']>()
+      .mockImplementationOnce(() => first.promise)
+      .mockResolvedValueOnce(emptyWindow());
+    const source: TemporalTimelineDataSource = {
+      checkpointWindow: vi.fn().mockResolvedValue({}),
+      loadWindow,
+    };
+    render(
+      <TemporalTimelineRuntimeBoundary
+        viewedDateIso="2026-09-04"
+        dataSource={source}
+        mode="production"
+      >
+        <RefreshProbe />
+      </TemporalTimelineRuntimeBoundary>,
+    );
+    await waitFor(() => expect(loadWindow).toHaveBeenCalledTimes(2));
+    await waitFor(() =>
+      expect(screen.getByTestId('read-state').textContent).toBe('ready'),
+    );
+    await act(async () => {
+      first.resolve({ ...emptyWindow(), effectiveZoneId: 'Etc/UTC' });
+      await first.promise;
+    });
+    expect(
+      document
+        .querySelector('[data-temporal-read-state="ready"]')
+        ?.getAttribute('data-temporal-effective-zone'),
+    ).toBe('Europe/Rome');
+  });
+
+  it('fails closed if checkpoint fails after an early accepted read', async () => {
+    const checkpoint = deferred<{
+      startDate: string;
+      endDateExclusive: string;
+      effectiveZoneId: string;
+      sourceCount: number;
+      occurrenceCount: number;
+      replayedSourceCount: number;
+    }>();
+    const source: TemporalTimelineDataSource = {
+      checkpointWindow: () => checkpoint.promise,
+      loadWindow: () => Promise.resolve(emptyWindow()),
+    };
+    render(
+      <TemporalTimelineRuntimeBoundary
+        viewedDateIso="2026-09-04"
+        dataSource={source}
+        mode="production"
+      >
+        <RefreshProbe />
+      </TemporalTimelineRuntimeBoundary>,
+    );
+    await waitFor(() =>
+      expect(screen.getByTestId('read-state').textContent).toBe('ready'),
+    );
+    await act(async () => {
+      checkpoint.reject(new Error('offline'));
+      await checkpoint.promise.catch(() => undefined);
+    });
+    expect(screen.getByTestId('read-state').textContent).toBe('error');
+    expect(screen.getByRole('alert').textContent).toContain(
+      'Timeline non disponibile',
+    );
   });
 
   it('keeps the product visible while truthfully exposing an in-flight real read', async () => {

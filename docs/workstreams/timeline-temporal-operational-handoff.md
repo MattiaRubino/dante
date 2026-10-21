@@ -2846,3 +2846,19 @@ unrun for this candidate. Create/replan accept up to 100 planned Sessions and
 Objective edit batch accepts up to 100 commands, which is a request size bound
 and not an established total-per-Activity cap. No new product-level cap was
 introduced by this correction.
+
+## 2026-10-21 — Timeline read latency and recurring scope visual follow-up
+
+The Timeline now starts a read of already accepted Schedule data while the
+explicit recurrence checkpoint is running, then re-reads and reconciles the
+window after checkpoint success. A late preliminary response cannot overwrite
+the reconciled result; checkpoint failure still fails closed. This improves
+perceived latency for existing instances without creating synthetic cards.
+First-time materialization of a newly created series remains bounded by the
+backend checkpoint and needs a real-stack latency measurement before any
+instant-load claim. The post-checkpoint organization refresh still resolves
+new Life Area assignments. The recurring scope portal has independent
+foreground/surface/button colors because it is mounted outside `.home-m1`;
+the current-time marker is drawn at full width above the sticky date lane in
+both day and complete Timeline views. Focused Web unit/typecheck are local
+checks only; authenticated browser acceptance remains user-side.

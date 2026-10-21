@@ -221,8 +221,30 @@ export function TemporalTimelineRuntimeBoundary({
             )
             .then(() => undefined);
 
+    // A checkpoint may materialize a large recurring window. Read the already
+    // accepted Schedule truth immediately, then reconcile once materialization
+    // completes. The first read is never synthetic and cannot overwrite the
+    // post-checkpoint result if its response arrives late.
+    let checkpointSettled = false;
+    if (attempt.source.checkpointWindow !== undefined) {
+      void attempt.source.loadWindow(attempt.request, controller.signal).then(
+        (window) => {
+          if (active && !checkpointSettled) {
+            setSettledState({ attempt, status: 'ready', window });
+          }
+        },
+        () => {
+          // The checkpoint's governed read below remains authoritative. An
+          // early read failure must not hide a successfully materialized view.
+        },
+      );
+    }
+
     void checkpoint
-      .then(() => attempt.source.loadWindow(attempt.request, controller.signal))
+      .then(() => {
+        checkpointSettled = true;
+        return attempt.source.loadWindow(attempt.request, controller.signal);
+      })
       .then((window) => {
         if (!active) {
           return;
@@ -234,6 +256,7 @@ export function TemporalTimelineRuntimeBoundary({
         });
       })
       .catch(() => {
+        checkpointSettled = true;
         if (!active || controller.signal.aborted) {
           return;
         }

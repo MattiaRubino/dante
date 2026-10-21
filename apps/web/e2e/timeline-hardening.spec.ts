@@ -14,14 +14,26 @@ test('recurrence scope replaces the Inspector visually and remains interactive',
     const scope = document.createElement('div');
     scope.className = 'timeline-recurring-edit-scope-dialog__backdrop';
     scope.innerHTML =
-      '<section class="timeline-recurring-edit-scope-dialog"><button>Solo questa istanza</button></section>';
+      '<section class="timeline-recurring-edit-scope-dialog"><h2>Modifica ricorrenza</h2><p>Questa attività fa parte di una ricorrenza.</p><button>Solo questa istanza</button></section>';
     document.body.append(inspector, scope);
     const inspectorStyle = getComputedStyle(inspector);
     const scopeStyle = getComputedStyle(scope);
+    const dialog = scope.querySelector('section')!;
+    const button = dialog.querySelector('button')!;
     const result = {
       inspector: inspectorStyle.visibility,
       scope: scopeStyle.visibility,
       onTop: Number(scopeStyle.zIndex) > Number(inspectorStyle.zIndex),
+      dialogColor: getComputedStyle(dialog).color,
+      dialogBackground: getComputedStyle(dialog).backgroundColor,
+      buttonColor: getComputedStyle(button).color,
+      buttonBackground: getComputedStyle(button).backgroundColor,
+      centered:
+        Math.abs(
+          dialog.getBoundingClientRect().left +
+            dialog.getBoundingClientRect().width / 2 -
+            window.innerWidth / 2,
+        ) < 2,
     };
     inspector.remove();
     scope.remove();
@@ -31,6 +43,11 @@ test('recurrence scope replaces the Inspector visually and remains interactive',
     inspector: 'hidden',
     scope: 'visible',
     onTop: true,
+    dialogColor: 'rgb(242, 244, 242)',
+    dialogBackground: 'rgb(25, 35, 40)',
+    buttonColor: 'rgb(242, 244, 242)',
+    buttonBackground: 'rgb(38, 52, 59)',
+    centered: true,
   });
 });
 
@@ -38,19 +55,28 @@ test('current-time marker keeps a visible line across the whole day', async ({
   page,
 }) => {
   await page.goto('/home');
-  const line = page.locator('.timeline-now-line').first();
-  await expect(line).toBeVisible();
-  const style = await line.evaluate((element) => {
-    const computed = getComputedStyle(element);
-    return {
-      image: computed.backgroundImage,
-      color: computed.backgroundColor,
-      width: element.getBoundingClientRect().width,
-    };
-  });
-  expect(style.image).toBe('none');
-  expect(style.color).not.toBe('rgba(0, 0, 0, 0)');
-  expect(style.width).toBeGreaterThan(100);
+  for (const view of ['Timeline', 'Giorno', 'Timeline']) {
+    await page.getByRole('button', { name: 'Scegli vista Timeline' }).click();
+    await page.getByRole('menuitemradio', { name: view }).click();
+    const line = page.locator('.timeline-now-line').first();
+    await expect(line).toBeVisible();
+    const style = await line.evaluate((element) => {
+      const computed = getComputedStyle(element);
+      return {
+        image: computed.backgroundImage,
+        color: computed.backgroundColor,
+        height: element.getBoundingClientRect().height,
+        width: element.getBoundingClientRect().width,
+        viewport: element.closest('.timeline-grid')?.getBoundingClientRect()
+          .width,
+      };
+    });
+    expect(style.image).toBe('none');
+    expect(style.color).not.toBe('rgba(0, 0, 0, 0)');
+    expect(style.height).toBeGreaterThanOrEqual(2);
+    expect(style.width).toBeGreaterThan(100);
+    expect(style.width).toBeGreaterThan((style.viewport ?? 0) * 0.9);
+  }
 });
 
 test('Inspector keeps its actions above the title and places date and Life Area on distinct rows', async ({
