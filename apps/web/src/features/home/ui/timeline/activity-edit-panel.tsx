@@ -2579,7 +2579,7 @@ export function ActivityEditPanel({
       {deletingAttempt ? (
         <SessionAttemptDeleteDialog
           sessionType={
-            deletingAttempt.attempt.plannedScheduleRef === null
+            deletingAttempt.attempt.plannedScheduleRef == null
               ? 'main'
               : 'named'
           }

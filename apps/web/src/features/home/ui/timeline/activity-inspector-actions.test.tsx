@@ -472,14 +472,12 @@ describe('Recurring Activity profile scope', () => {
         onCancel={cancel}
       />,
     );
-    expect(within(dialog).getByRole('button', { name: 'Annulla' })).toHaveProperty(
-      'disabled',
-      true,
-    );
-    expect(within(dialog).getByRole('button', { name: 'Eliminazione…' })).toHaveProperty(
-      'disabled',
-      true,
-    );
+    expect(
+      within(dialog).getByRole('button', { name: 'Annulla' }),
+    ).toHaveProperty('disabled', true);
+    expect(
+      within(dialog).getByRole('button', { name: 'Eliminazione…' }),
+    ).toHaveProperty('disabled', true);
     fireEvent.keyDown(window, { key: 'Escape' });
     expect(cancel).toHaveBeenCalledTimes(1);
   });

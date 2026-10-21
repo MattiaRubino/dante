@@ -638,8 +638,10 @@
   background: rgb(124 24 35 / 14%);
 }
 
-.timeline-activity-editor__record button.timeline-activity-editor__delete-trigger:hover:not(:disabled),
-.timeline-activity-editor__record button.timeline-activity-editor__delete-trigger:focus-visible {
+.timeline-activity-editor__record
+  button.timeline-activity-editor__delete-trigger:hover:not(:disabled),
+.timeline-activity-editor__record
+  button.timeline-activity-editor__delete-trigger:focus-visible {
   border-color: #f1787a;
   background: rgb(167 38 54 / 22%);
 }
@@ -702,7 +704,8 @@
   cursor: pointer;
 }
 
-.timeline-session-attempt-delete__actions button.timeline-session-attempt-delete__danger {
+.timeline-session-attempt-delete__actions
+  button.timeline-session-attempt-delete__danger {
   border-color: #cf545d;
   color: #ffe2e3;
   background: #722a34;
