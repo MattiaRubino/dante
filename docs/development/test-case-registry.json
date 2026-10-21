@@ -2764,6 +2764,15 @@
       "audit_note": "Needs contract/assertion review, rejection cases, and executable evidence; filename alone is not proof."
     },
     {
+      "path": "apps/backend/tests/unit/temporal/test_recurring_series_reconciliation.py",
+      "suite": "backend-unit",
+      "contract_id": "T05",
+      "candidate_behavior": "Bounded recurring calendar cadence reconciliation",
+      "purpose": "Verify retained, superseded and new coordinates while preserving recorded and locally edited occurrences.",
+      "invariant": "A following-series plan never replaces a protected identity or accepts an incomplete or ambiguous materialized inventory.",
+      "status": "QUALIFIED"
+    },
+    {
       "path": "apps/backend/tests/unit/temporal/test_unstarted_session_review.py",
       "suite": "backend-unit",
       "contract_id": "T08",
