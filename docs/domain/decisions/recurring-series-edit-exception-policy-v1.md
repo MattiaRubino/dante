@@ -103,6 +103,10 @@ but not the full revision path.
 The first manual Life Area assignment after Activity creation is protected,
 even when its expected revision is zero. An assignment made as part of the
 original Activity Create shares that operation identity and remains clean.
+Changes to Schedule roles, intervals, planned Sessions, capture, Reality,
+Objectives and Reminders accepted after the Routine Occurrence was bound to
+its Activity are also local exceptions. The binding is written last by the
+materializer; changes made during initial creation precede it.
 Until the remaining capabilities exist, do not expose those fields
 as if the series scope could save them. AI authoring must use the same
 authoritative preview and acceptance contract, and must not compose separate

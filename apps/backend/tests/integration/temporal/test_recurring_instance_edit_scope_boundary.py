@@ -326,6 +326,106 @@ async def test_selected_activity_life_area_and_planned_name_do_not_propagate(
 
 
 @pytest.mark.asyncio
+async def test_post_binding_planned_structure_is_preserved_as_future_exception(
+    migrated_database: Any,
+) -> None:
+    actor = _seed_self(migrated_database)
+    runtime = create_database_runtime(migrated_database.runtime_settings())
+    tomorrow = datetime.now(ZoneInfo(ZONE)).date() + timedelta(days=1)
+    authoring = RecurringAuthoringApplication(runtime.session_factory)
+    materializer = RoutineOccurrenceMaterializationApplication(runtime.session_factory)
+    try:
+        source = await authoring.create_routine(
+            self_person_ref=actor,
+            operation_id="structure-exception:source",
+            title="Routine con Session aggiunta dopo",
+            life_area_intent=None,
+            recurrence=replace(
+                _daily(tomorrow),
+                clock_basis_code="named_zone",
+                zone_id=ZONE,
+                nonexistent_local_time_policy="skip_civil_candidate",
+                ambiguous_local_time_policy="earlier",
+            ),
+        )
+        await RoutineOccurrencePolicyApplication(runtime.session_factory).set(
+            self_person_ref=actor,
+            routine_ref=source.source_ref,
+            duration_minutes=60,
+            reminder_lead_minutes=None,
+            activity_template={"version": 1},
+        )
+        await materializer.checkpoint_window(
+            self_person_ref=actor,
+            operation_id="structure-exception:window",
+            start_date=tomorrow,
+            end_date_exclusive=tomorrow + timedelta(days=2),
+            effective_zone_id=ZONE,
+        )
+        selected, later = await _read_checkpoint_refs(
+            runtime,
+            actor,
+            source.source_ref,
+            owner="routine",
+            operation="structure-exception:window",
+            start=tomorrow,
+            end=tomorrow + timedelta(days=2),
+        )
+        async with runtime.session_factory() as session, session.begin():
+            clean = await session.scalar(
+                text("SELECT dante.get_self_occurrence_edit_protection(:actor,:occurrence)"),
+                {"actor": actor, "occurrence": later},
+            )
+            assert clean is None
+
+        activity = await _activity(runtime, actor, later)
+        start = datetime.combine(tomorrow + timedelta(days=1), time(10, 0))
+        added = await TemporalScheduleApplication(runtime.session_factory).establish_schedule(
+            self_person_ref=actor,
+            operation_id="structure-exception:planned",
+            subject_native_ref=NativeRef(activity),
+            placement=NamedZoneLocalIntervalPlacement(
+                starts_local_at=start,
+                ends_local_at=start + timedelta(minutes=30),
+                zone_id=ZONE,
+                disambiguation="earlier",
+            ),
+        )
+        async with runtime.session_factory() as session, session.begin():
+            await session.execute(
+                text(
+                    "SELECT * FROM dante.set_self_activity_schedule_role("
+                    ":actor,:activity,:schedule,'planned',1,'Aggiunta locale')"
+                ),
+                {
+                    "actor": actor,
+                    "activity": activity,
+                    "schedule": added.schedule_ref,
+                },
+            )
+            preview = (
+                (
+                    await session.execute(
+                        text(
+                            "SELECT * FROM dante.get_self_occurrence_profile_edit_preview("
+                            ":actor,:selected,'this_and_following',:zone)"
+                        ),
+                        {"actor": actor, "selected": selected, "zone": ZONE},
+                    )
+                )
+                .mappings()
+                .one()
+            )
+            assert later not in preview["target_occurrence_refs"]
+            assert any(
+                item["occurrence_ref"] == str(later) and item["reason"] == "local_change"
+                for item in preview["protected_occurrences"]
+            )
+    finally:
+        await runtime.dispose()
+
+
+@pytest.mark.asyncio
 async def test_checkpoint_does_not_recreate_a_replanned_materialized_activity(
     migrated_database: Any,
 ) -> None:
