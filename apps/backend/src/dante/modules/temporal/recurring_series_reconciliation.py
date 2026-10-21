@@ -10,8 +10,14 @@ from dataclasses import dataclass
 from datetime import UTC, date
 from uuid import UUID
 
-from dante.modules.temporal.occurrence import CalendarCoordinate
+from dante.modules.temporal.occurrence import (
+    CalendarCoordinate,
+    _calendar_candidates,
+    _candidate_instant,
+    _zone,
+)
 from dante.modules.temporal.occurrence_edit_scope import RecurrenceEditScopePlan
+from dante.modules.temporal.recurrence import CalendarRecurrence, _validate
 
 
 class SeriesReconciliationError(ValueError):
@@ -133,4 +139,65 @@ def reconcile_materialized_series(
             value for key, value in sorted(proposed.items()) if key not in existing_by_key
         ),
         protected_occurrence_refs=scope.protected_future_occurrence_refs,
+    )
+
+
+def preview_calendar_series_reconciliation(
+    *,
+    scope: RecurrenceEditScopePlan,
+    materialized: tuple[MaterializedSeriesInstance, ...],
+    proposed_recurrence: CalendarRecurrence,
+    window: SeriesReconciliationWindow,
+    effective_zone_id: str,
+    authoritative_inventory: bool,
+) -> SeriesReconciliation:
+    """Generate a bounded calendar change preview without writing canonical truth.
+
+    This never grants persistence authority. The eventual acceptance must lock
+    its source, re-read the inventory and revision, then atomically reconcile
+    the same coordinates with the new versioned source policy.
+    """
+    if scope.scope not in {"this_and_following", "from_next"}:
+        raise SeriesReconciliationError("Calendar source changes require a following scope.")
+    selected = next(
+        (item.coordinate for item in materialized
+         if item.occurrence_ref == scope.selected_occurrence_ref),
+        None,
+    )
+    if selected is None:
+        raise SeriesReconciliationError("Selected Occurrence is absent from source inventory.")
+
+    _validate(proposed_recurrence)
+    zone = _zone(effective_zone_id)
+    anchor = _candidate_instant(selected, zone).astimezone(UTC)
+    accepted = scope.captured_at.astimezone(UTC)
+    if scope.scope == "this_and_following" and anchor < accepted:
+        raise SeriesReconciliationError("Structural series edits cannot rewrite a past anchor.")
+    cutover = max(anchor, accepted)
+
+    # The canonical generator enforces named-zone DST ambiguity/gap semantics
+    # and expected-count limits; never approximate calendar rules in the UI.
+    candidates = _calendar_candidates(
+        scope.source_native_ref,
+        proposed_recurrence,
+        window.start_date,
+        window.end_date_exclusive,
+        zone,
+    )
+    regenerated = tuple(
+        candidate.coordinate
+        for candidate in candidates
+        if isinstance(candidate.coordinate, CalendarCoordinate)
+        and (
+            _candidate_instant(candidate.coordinate, zone).astimezone(UTC) > cutover
+            if scope.scope == "from_next"
+            else _candidate_instant(candidate.coordinate, zone).astimezone(UTC) >= cutover
+        )
+    )
+    return reconcile_materialized_series(
+        scope=scope,
+        materialized=materialized,
+        regenerated=regenerated,
+        window=window,
+        authoritative_inventory=authoritative_inventory,
     )

@@ -7,6 +7,7 @@ from uuid import UUID
 import pytest
 
 from dante.modules.temporal.occurrence import CalendarCoordinate
+from dante.modules.temporal.recurrence import CalendarRecurrence
 from dante.modules.temporal.occurrence_edit_scope import (
     RecurrenceEditCandidate,
     select_recurrence_edit_scope,
@@ -16,6 +17,7 @@ from dante.modules.temporal.recurring_series_reconciliation import (
     SeriesReconciliationError,
     SeriesReconciliationWindow,
     reconcile_materialized_series,
+    preview_calendar_series_reconciliation,
 )
 
 SOURCE, FIRST, LOCAL, CLEAN = (UUID(int=n) for n in (1, 11, 12, 13))
@@ -211,4 +213,83 @@ def test_reconciliation_fails_closed_when_proposed_cadence_exceeds_limit() -> No
             regenerated=(_coordinate(27),) * 10001,
             window=WINDOW,
             authoritative_inventory=True,
+        )
+
+
+def _weekly_tuesday() -> CalendarRecurrence:
+    return CalendarRecurrence(
+        family_code="calendar_wall_clock",
+        range_kind="open",
+        expected_occurrence_count=None,
+        effective_from=date(2026, 10, 20),
+        effective_until=None,
+        pattern_code="weekly_weekdays",
+        interval_count=1,
+        clock_basis_code="named_zone",
+        zone_id="Europe/Rome",
+        pattern_anchor_date=date(2026, 10, 20),
+        wall_times=(time(10),),
+        weekdays=(2,),
+        month_days=(),
+        ordinal_weekdays=(),
+        year_month_days=(),
+        nonexistent_local_time_policy="skip_civil_candidate",
+        ambiguous_local_time_policy="earlier",
+    )
+
+
+def test_calendar_preview_reconciles_weekly_cadence_without_touching_local_edit() -> None:
+    result = preview_calendar_series_reconciliation(
+        scope=_scope(),
+        materialized=_materialized(),
+        proposed_recurrence=_weekly_tuesday(),
+        window=WINDOW,
+        effective_zone_id="Europe/Rome",
+        authoritative_inventory=True,
+    )
+    assert result.retained_occurrence_refs == (FIRST,)
+    assert result.superseded_occurrence_refs == (CLEAN,)
+    assert result.protected_occurrence_refs == (LOCAL,)
+    assert [value.generated_date for value in result.new_coordinates] == [date(2026, 10, 27)]
+    assert [value.resolved_at for value in result.new_coordinates] == [
+        datetime(2026, 10, 27, 9, tzinfo=UTC)
+    ]
+
+
+def test_calendar_preview_starts_after_recorded_selected_instance() -> None:
+    result = preview_calendar_series_reconciliation(
+        scope=_scope(recorded=True),
+        materialized=_materialized(),
+        proposed_recurrence=_weekly_tuesday(),
+        window=WINDOW,
+        effective_zone_id="Europe/Rome",
+        authoritative_inventory=True,
+    )
+    assert FIRST not in result.superseded_occurrence_refs
+    assert result.protected_occurrence_refs == (LOCAL,)
+    assert result.superseded_occurrence_refs == (CLEAN,)
+    assert len(result.new_coordinates) == 1
+
+
+def test_calendar_preview_cannot_rewrite_a_past_selected_anchor() -> None:
+    with pytest.raises(SeriesReconciliationError, match="past anchor"):
+        preview_calendar_series_reconciliation(
+            scope=replace(_scope(), captured_at=datetime(2026, 10, 22, 8, tzinfo=UTC)),
+            materialized=_materialized(),
+            proposed_recurrence=_weekly_tuesday(),
+            window=WINDOW,
+            effective_zone_id="Europe/Rome",
+            authoritative_inventory=True,
+        )
+
+
+def test_calendar_preview_does_not_grant_write_with_partial_inventory() -> None:
+    with pytest.raises(SeriesReconciliationError, match="complete source inventory"):
+        preview_calendar_series_reconciliation(
+            scope=_scope(),
+            materialized=_materialized(),
+            proposed_recurrence=_weekly_tuesday(),
+            window=WINDOW,
+            effective_zone_id="Europe/Rome",
+            authoritative_inventory=False,
         )
