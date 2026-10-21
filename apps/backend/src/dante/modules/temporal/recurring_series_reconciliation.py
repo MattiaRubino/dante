@@ -160,8 +160,11 @@ def preview_calendar_series_reconciliation(
     if scope.scope not in {"this_and_following", "from_next"}:
         raise SeriesReconciliationError("Calendar source changes require a following scope.")
     selected = next(
-        (item.coordinate for item in materialized
-         if item.occurrence_ref == scope.selected_occurrence_ref),
+        (
+            item.coordinate
+            for item in materialized
+            if item.occurrence_ref == scope.selected_occurrence_ref
+        ),
         None,
     )
     if selected is None:
@@ -184,15 +187,15 @@ def preview_calendar_series_reconciliation(
         window.end_date_exclusive,
         zone,
     )
+    def is_in_scope(coordinate: CalendarCoordinate) -> bool:
+        expected_at = _candidate_instant(coordinate, zone).astimezone(UTC)
+        return expected_at > cutover if scope.scope == "from_next" else expected_at >= cutover
+
     regenerated = tuple(
         candidate.coordinate
         for candidate in candidates
         if isinstance(candidate.coordinate, CalendarCoordinate)
-        and (
-            _candidate_instant(candidate.coordinate, zone).astimezone(UTC) > cutover
-            if scope.scope == "from_next"
-            else _candidate_instant(candidate.coordinate, zone).astimezone(UTC) >= cutover
-        )
+        and is_in_scope(candidate.coordinate)
     )
     return reconcile_materialized_series(
         scope=scope,

@@ -162,10 +162,13 @@ def test_dst_overlap_resolution_changes_occurrence_identity() -> None:
     assert result.superseded_occurrence_refs == (FIRST,)
     assert result.new_coordinates == (later,)
 
+
 @pytest.mark.parametrize(
     ("start", "end"),
-    [(date(2026, 10, 20), date(2026, 10, 20)),
-     (date(2026, 10, 21), date(2026, 10, 20))],
+    [
+        (date(2026, 10, 20), date(2026, 10, 20)),
+        (date(2026, 10, 21), date(2026, 10, 20)),
+    ],
 )
 def test_reconciliation_rejects_empty_or_backward_window(start: date, end: date) -> None:
     with pytest.raises(SeriesReconciliationError, match="horizon"):
@@ -227,7 +230,7 @@ def _weekly_tuesday() -> CalendarRecurrence:
         interval_count=1,
         clock_basis_code="named_zone",
         zone_id="Europe/Rome",
-        pattern_anchor_date=date(2026, 10, 20),
+        pattern_anchor_date=None,
         wall_times=(time(10),),
         weekdays=(2,),
         month_days=(),
