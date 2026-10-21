@@ -21,6 +21,7 @@ import { ScheduleReminderControls } from '../../../temporal/schedule-reminder-co
 import { PlacementLockControls } from '../../../temporal/placement-lock-controls';
 import type { ActivityProfile } from '../../../temporal/remote-activity-inspector';
 import { createRemoteActivityInspector } from '../../../temporal/remote-activity-inspector';
+import { createRemoteRecurringProfileEdit } from '../../../temporal/remote-recurring-profile-edit';
 import { ActivityEditPanel } from './activity-edit-panel';
 import { requestTemporalCreateDuplicate } from '../../../temporal-create/ui/temporal-create-duplicate-request';
 import { TemporalPanelCloseButton } from '../../../temporal-create/ui/temporal-panel-close-button';
@@ -54,6 +55,7 @@ import type {
   TimelineCanonicalSchedulePlacement,
 } from './model/timeline-types';
 import { TimelineEventAgendaEditor } from './timeline-event-agenda-editor';
+import { RecurringEditScopeDialog } from './recurring-edit-scope-dialog';
 
 type PopoverPosition = Readonly<{
   left: number;
@@ -666,6 +668,10 @@ export function EventDetailDialog({
   const [activityEditScope, setActivityEditScope] = useState<
     'only_this' | 'this_and_following' | 'from_next'
   >('only_this');
+  const [activityEditChoice, setActivityEditChoice] = useState<{
+    profile: ActivityProfile;
+    selectedHasFacts: boolean;
+  } | null>(null);
   const [inspectorPosition, setInspectorPosition] = useState({
     left: 12,
     top: 12,
@@ -682,10 +688,28 @@ export function EventDetailDialog({
   useEffect(() => {
     if (!activityRef || !openActivityEdit) return;
     let active = true;
-    void createRemoteActivityInspector()
-      .get(activityRef)
-      .then((profile) => {
-        if (active) setEditingProfile(profile);
+    const activitySource = createRemoteActivityInspector();
+    const recurringSource = createRemoteRecurringProfileEdit();
+    void Promise.all([
+      activitySource.get(activityRef),
+      recurringSource.loadActivityContext(activityRef),
+    ])
+      .then(async ([profile, recurring]) => {
+        if (!active) return;
+        if (recurring === null) {
+          setEditingProfile(profile);
+          return;
+        }
+        const preview = await recurringSource.loadPreview(
+          recurring,
+          'only_this',
+        );
+        if (active) {
+          setActivityEditChoice({
+            profile,
+            selectedHasFacts: preview.selectedProtection === 'registration',
+          });
+        }
       })
       .catch(() => undefined);
     return () => {
@@ -1042,6 +1066,27 @@ export function EventDetailDialog({
             )}
           </>
         )}
+        {activityEditChoice ? (
+          <RecurringEditScopeDialog
+            subjectLabel="attività"
+            selectedHasFacts={activityEditChoice.selectedHasFacts}
+            onOnlyThis={() => {
+              setActivityEditScope('only_this');
+              setEditingProfile(activityEditChoice.profile);
+              setActivityEditChoice(null);
+            }}
+            onFollowing={() => {
+              setActivityEditScope(
+                activityEditChoice.selectedHasFacts
+                  ? 'from_next'
+                  : 'this_and_following',
+              );
+              setEditingProfile(activityEditChoice.profile);
+              setActivityEditChoice(null);
+            }}
+            onCancel={() => setActivityEditChoice(null)}
+          />
+        ) : null}
       </div>
     </div>,
     document.body,

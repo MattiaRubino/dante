@@ -23,6 +23,7 @@ import {
   type ActivityDuplicateSeed,
 } from '../../../temporal-create/application/activity-duplicate-seed';
 import { TimelineInspectorIcon } from './timeline-inspector-icon';
+import { RecurringEditScopeDialog } from './recurring-edit-scope-dialog';
 
 export function ActivityInspectorActions({
   activityRef,
@@ -210,53 +211,23 @@ export function ActivityInspectorActions({
       ) : null}
       {error ? <p role="alert">{error}</p> : null}
       {editChoice ? (
-        <div
-          className="timeline-activity-inspector__confirmation"
-          role="group"
-          aria-label="Ambito modifica ricorrenza"
-        >
-          <p>
-            Questa attività fa parte di una ricorrenza. Quali istanze vuoi
-            modificare?
-          </p>
-          <button
-            type="button"
-            disabled={pending}
-            onClick={() => {
-              onEdit(editChoice.profile, 'only_this');
-              setEditChoice(null);
-            }}
-          >
-            Solo questa istanza
-          </button>
-          <button
-            type="button"
-            disabled={pending}
-            onClick={() => {
-              onEdit(
-                editChoice.profile,
-                editChoice.selectedHasFacts
-                  ? 'from_next'
-                  : 'this_and_following',
-              );
-              setEditChoice(null);
-            }}
-          >
-            {editChoice.selectedHasFacts
-              ? 'Dalla prossima istanza'
-              : 'Questa e le successive'}
-          </button>
-          {editChoice.selectedHasFacts ? (
-            <p>La registrazione di questa istanza rimane invariata.</p>
-          ) : null}
-          <button
-            type="button"
-            disabled={pending}
-            onClick={() => setEditChoice(null)}
-          >
-            Annulla
-          </button>
-        </div>
+        <RecurringEditScopeDialog
+          subjectLabel="attività"
+          selectedHasFacts={editChoice.selectedHasFacts}
+          busy={pending}
+          onOnlyThis={() => {
+            onEdit(editChoice.profile, 'only_this');
+            setEditChoice(null);
+          }}
+          onFollowing={() => {
+            onEdit(
+              editChoice.profile,
+              editChoice.selectedHasFacts ? 'from_next' : 'this_and_following',
+            );
+            setEditChoice(null);
+          }}
+          onCancel={() => setEditChoice(null)}
+        />
       ) : null}
       {confirmingVault ? (
         <div className="timeline-activity-inspector__confirmation">

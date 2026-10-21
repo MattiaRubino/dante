@@ -35,6 +35,7 @@ import type { ActivityDuplicateSeed } from '../../../temporal-create/application
 import { buildEventDuplicateSeed } from '../../../temporal-create/application/event-duplicate-seed';
 import type { TimelineCanonicalSchedulePlacement } from './model/timeline-types';
 import { TimelineInspectorIcon } from './timeline-inspector-icon';
+import { RecurringEditScopeDialog } from './recurring-edit-scope-dialog';
 
 export function EventInspectorActions({
   eventRef,
@@ -504,50 +505,25 @@ export function EventInspectorActions({
     <div className="timeline-activity-inspector__actions">
       {toolbarTarget ? createPortal(toolbar, toolbarTarget) : toolbar}
       {editChoice ? (
-        <div
-          className="timeline-activity-inspector__confirmation"
-          role="group"
-          aria-label="Ambito modifica Event"
-        >
-          <p>
-            Questo Evento fa parte di una ricorrenza. Quali istanze vuoi
-            modificare?
-          </p>
-          <button
-            type="button"
-            disabled={busy}
-            onClick={() => {
-              const choice = editChoice;
-              setEditChoice(null);
-              void openProfileEditor('only_this', choice.context);
-            }}
-          >
-            Solo questa istanza
-          </button>
-          <button
-            type="button"
-            disabled={busy}
-            onClick={() => {
-              const choice = editChoice;
-              setEditChoice(null);
-              void openProfileEditor(
-                choice.selectedHasFacts ? 'from_next' : 'this_and_following',
-                choice.context,
-              );
-            }}
-          >
-            {editChoice.selectedHasFacts
-              ? 'Dalla prossima istanza'
-              : 'Questa e le successive'}
-          </button>
-          <button
-            type="button"
-            disabled={busy}
-            onClick={() => setEditChoice(null)}
-          >
-            Annulla
-          </button>
-        </div>
+        <RecurringEditScopeDialog
+          subjectLabel="Evento"
+          selectedHasFacts={editChoice.selectedHasFacts}
+          busy={busy}
+          onOnlyThis={() => {
+            const choice = editChoice;
+            setEditChoice(null);
+            void openProfileEditor('only_this', choice.context);
+          }}
+          onFollowing={() => {
+            const choice = editChoice;
+            setEditChoice(null);
+            void openProfileEditor(
+              choice.selectedHasFacts ? 'from_next' : 'this_and_following',
+              choice.context,
+            );
+          }}
+          onCancel={() => setEditChoice(null)}
+        />
       ) : null}
       {!toolbarTarget || editingProfile || editingArea ? (
         <button

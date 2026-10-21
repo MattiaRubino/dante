@@ -49,6 +49,7 @@ const remote = vi.hoisted(() => ({
   sessionImpact: vi.fn(),
   get: vi.fn(),
   loadRecurring: vi.fn(),
+  loadRecurringPreview: vi.fn(),
 }));
 vi.mock('../../../temporal/remote-activity-edit-settings', () => ({
   createRemoteActivityEditSettings: () => ({
@@ -65,6 +66,7 @@ vi.mock('../../../temporal/remote-activity-inspector', () => ({
 vi.mock('../../../temporal/remote-recurring-profile-edit', () => ({
   createRemoteRecurringProfileEdit: () => ({
     loadActivityContext: remote.loadRecurring,
+    loadPreview: remote.loadRecurringPreview,
   }),
 }));
 
@@ -267,6 +269,12 @@ beforeEach(() => {
     .mockReset()
     .mockResolvedValue({ fingerprint, attempts: [] });
   remote.loadRecurring.mockReset().mockResolvedValue(null);
+  remote.loadRecurringPreview.mockReset().mockResolvedValue({
+    fingerprint: 'a'.repeat(32),
+    selectedProtection: null,
+    targetOccurrenceRefs: [],
+    protectedOccurrences: [],
+  });
   remote.applyReplan.mockReset().mockImplementation((_ref, current, draft) => {
     invalidateTemporalTimelineRead();
     const next = draft as ActivityReplanDraft;
@@ -357,6 +365,38 @@ describe('Activity Timeline coordinated replan', () => {
       expect(card.getAttribute('aria-label')).toContain('10:00–11:00');
     },
   );
+
+  it('asks for the recurring scope before opening Edit after a recorded drag', async () => {
+    remote.loadRecurring.mockResolvedValue({
+      occurrenceRef: 'occurrence-1',
+      sourceRef: 'routine-1',
+      editRevision: 0,
+      recurrenceStateRef: null,
+    });
+    remote.sessionImpact.mockResolvedValue({
+      fingerprint,
+      attempts: [
+        {
+          sessionRef: 'session-1',
+          plannedScheduleRef: null,
+          timingMaterialStateRef: 'state-1',
+          status: 'in corso',
+        },
+      ],
+    });
+    const { container } = renderTimeline();
+    await dragCard(container);
+    const scope = await screen.findByRole('dialog', {
+      name: 'Modifica ricorrenza',
+    });
+    expect(scope.textContent).toContain('Solo questa istanza');
+    expect(screen.queryByTestId('activity-edit-panel')).toBeNull();
+    fireEvent.click(
+      within(scope).getByRole('button', { name: 'Solo questa istanza' }),
+    );
+    await screen.findByTestId('activity-edit-panel');
+    expect(remote.applyReplan).not.toHaveBeenCalled();
+  });
 
   it.each([
     ['principale conclusa', null, 'conclusa'],

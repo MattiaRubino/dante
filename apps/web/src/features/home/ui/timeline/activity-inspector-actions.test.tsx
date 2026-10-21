@@ -860,6 +860,9 @@ describe('Activity Inspector', () => {
       />,
     );
     fireEvent.click(screen.getByRole('button', { name: 'Modifica' }));
+    expect(
+      await screen.findByRole('dialog', { name: 'Modifica ricorrenza' }),
+    ).toBeTruthy();
     fireEvent.click(
       await screen.findByRole('button', { name: 'Dalla prossima istanza' }),
     );

@@ -65,9 +65,10 @@ completed one. A series edit never deletes a registration automatically.
 ## Current implementation boundary (2026-10-19)
 
 The owner-scoped profile edit accepts title, description, location and color.
-The Inspector asks for the scope before editing, provides a bounded materialized
-preview with protected exception reasons, and the server checks its fingerprint
-again under the source lock. A registered selected instance uses `from_next`;
+The Inspector asks for the scope in a centered modal before opening any editor,
+including an Edit reached by dragging a recorded recurring Activity. It provides
+a bounded materialized preview with protected exception reasons, and the server
+checks its fingerprint again under the source lock. A registered selected instance uses `from_next`;
 its selected profile is not changed. Materialized protected future instances
 are excluded from each accepted metadata policy and preserve their effective
 profile snapshot. Unmaterialized future instances inherit the accepted policy.
@@ -88,6 +89,14 @@ for concurrent instance writes. Until these exist, do not expose those fields
 as if the series scope could save them. AI authoring must use the same
 authoritative preview and acceptance contract, and must not compose separate
 local writes to imitate a series change.
+
+A completed Routine Occurrence → Activity binding is also an instance boundary.
+Subsequent Timeline checkpoint reads may create an unbound occurrence Activity
+or retry an incomplete materialization, but they must never replay authoring
+for a bound Activity. In particular, a local date/time replan remains the
+Activity's accepted plan when the user navigates to another Timeline day; the
+old template must not be replayed with the same create id, and no checkpoint
+may fail because that plan differs from the original template.
 
 ## Non-goals
 

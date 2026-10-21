@@ -375,6 +375,39 @@ class RoutineOccurrenceMaterializationApplication:
         except SQLAlchemyError as exc:
             raise OccurrencePersistenceError() from exc
 
+    async def _has_bound_activity(
+        self,
+        *,
+        self_person_ref: NativeRef,
+        occurrence_ref: UUID,
+    ) -> bool:
+        """Return whether a completed materialization already owns this instance.
+
+        Binding is deliberately the completion marker.  A later Timeline
+        checkpoint must not replay authoring for that Activity: a local replan
+        is factual planned-instance state, not a request to recreate the
+        Activity from its old Routine template.
+        """
+
+        try:
+            async with self._session_factory() as session, session.begin():
+                bound = await session.scalar(
+                    text(
+                        """
+                        SELECT EXISTS(
+                            SELECT 1
+                              FROM dante.list_self_routine_occurrence_activities(
+                                :actor,CAST(ARRAY[:occurrence] AS uuid[])
+                              )
+                        )
+                        """
+                    ),
+                    {"actor": self_person_ref, "occurrence": occurrence_ref},
+                )
+        except SQLAlchemyError as exc:
+            raise OccurrencePersistenceError() from exc
+        return bool(bound)
+
     async def _set_reality(
         self,
         *,
@@ -756,6 +789,15 @@ class RoutineOccurrenceMaterializationApplication:
                     raise OccurrenceInputError(
                         "Recurring Activity templates require calendar Occurrences."
                     )
+                if await self._has_bound_activity(
+                    self_person_ref=self_person_ref,
+                    occurrence_ref=occurrence.occurrence_ref,
+                ):
+                    # The Activity was fully materialized already.  Local
+                    # planning/profile changes are preserved as an exception;
+                    # repeating its original create id with the template would
+                    # turn a harmless Timeline refresh into an id conflict.
+                    continue
                 await self._materialize_activity(
                     self_person_ref=self_person_ref,
                     source_ref=source_ref,

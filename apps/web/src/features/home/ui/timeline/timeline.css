@@ -1858,6 +1858,41 @@
   border-radius: 12px;
 }
 
+.timeline-recurring-edit-scope-dialog__backdrop {
+  position: fixed;
+  z-index: 80;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  padding: 20px;
+  background: color-mix(in srgb, #05070a 52%, transparent);
+}
+
+.timeline-recurring-edit-scope-dialog {
+  display: grid;
+  width: min(100%, 440px);
+  gap: 14px;
+  padding: 22px;
+  border: 1px solid var(--dante-semantic-color-home-border-strong);
+  border-radius: 16px;
+  background: var(--dante-semantic-color-home-surface-overlay);
+  box-shadow: 0 24px 60px rgb(0 0 0 / 35%);
+}
+
+.timeline-recurring-edit-scope-dialog h2,
+.timeline-recurring-edit-scope-dialog p {
+  margin: 0;
+}
+
+.timeline-recurring-edit-scope-dialog__fact-note {
+  color: var(--dante-semantic-color-home-text-secondary, #b8c0c5);
+}
+
+.timeline-recurring-edit-scope-dialog__choices {
+  display: grid;
+  gap: 8px;
+}
+
 .timeline-activity-editor label:not(.temporal-create-quick-reminder *) {
   display: grid;
   gap: 5px;
@@ -1909,6 +1944,16 @@
   color: inherit;
   background: var(--dante-semantic-color-home-surface-control);
   cursor: pointer;
+}
+
+.timeline-recurring-edit-scope-dialog button {
+  padding: 9px 12px;
+  border: 1px solid var(--dante-semantic-color-home-border-subtle);
+  border-radius: 9px;
+  color: inherit;
+  background: var(--dante-semantic-color-home-surface-control);
+  cursor: pointer;
+  text-align: left;
 }
 
 .timeline-event-modal--edit .timeline-event-modal__header {

@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from dataclasses import replace
-from datetime import datetime, timedelta
+from datetime import datetime, time, timedelta
 from typing import Any
 from uuid import UUID
 from zoneinfo import ZoneInfo
@@ -21,7 +21,15 @@ from dante.modules.temporal.routine_occurrence_materialization import (
     RoutineOccurrenceMaterializationApplication,
 )
 from dante.modules.temporal.routine_occurrence_policy import RoutineOccurrencePolicyApplication
-from dante.platform.database.references import NativeRef
+from dante.modules.temporal.schedule import (
+    NamedZoneLocalIntervalPlacement,
+    TemporalScheduleApplication,
+)
+from dante.platform.database.references import (
+    MaterialStateRef,
+    NativeRef,
+    ScopedRecordRef,
+)
 from dante.platform.database.runtime import create_database_runtime
 
 pytestmark = pytest.mark.postgres
@@ -47,6 +55,18 @@ async def _planned(runtime: Any, actor: UUID, activity: UUID) -> Any:
             text(
                 "SELECT * FROM dante.get_self_activity_schedule_roles("
                 ":actor,CAST(ARRAY[:activity] AS uuid[])) WHERE role_code='planned'"
+            ),
+            {"actor": actor, "activity": activity},
+        )
+        return result.mappings().one()
+
+
+async def _envelope(runtime: Any, actor: UUID, activity: UUID) -> Any:
+    async with runtime.session_factory() as session, session.begin():
+        result = await session.execute(
+            text(
+                "SELECT * FROM dante.get_self_activity_schedule_roles("
+                ":actor,CAST(ARRAY[:activity] AS uuid[])) WHERE role_code='envelope'"
             ),
             {"actor": actor, "activity": activity},
         )
@@ -193,5 +213,91 @@ async def test_selected_activity_life_area_and_planned_name_do_not_propagate(
             )
             for item in area_assignments
         )
+    finally:
+        await runtime.dispose()
+
+
+@pytest.mark.asyncio
+async def test_checkpoint_does_not_recreate_a_replanned_materialized_activity(
+    migrated_database: Any,
+) -> None:
+    """Refreshing a later Timeline day preserves the local Activity replan.
+
+    The binding marks a completed generated Activity. Replaying its original
+    create operation after a user moved the local Schedule produces a different
+    intent and used to escape as a 500 from the Timeline checkpoint.
+    """
+
+    actor = _seed_self(migrated_database)
+    runtime = create_database_runtime(migrated_database.runtime_settings())
+    tomorrow = datetime.now(ZoneInfo(ZONE)).date() + timedelta(days=1)
+    try:
+        routine = await RecurringAuthoringApplication(runtime.session_factory).create_routine(
+            self_person_ref=actor,
+            operation_id="m3b:replan-source",
+            title="Lettura ricorrente",
+            life_area_intent=None,
+            recurrence=replace(
+                _daily(tomorrow),
+                clock_basis_code="named_zone",
+                zone_id=ZONE,
+                nonexistent_local_time_policy="skip_civil_candidate",
+                ambiguous_local_time_policy="earlier",
+            ),
+        )
+        await RoutineOccurrencePolicyApplication(runtime.session_factory).set(
+            self_person_ref=actor,
+            routine_ref=routine.source_ref,
+            duration_minutes=60,
+            reminder_lead_minutes=None,
+            activity_template={"version": 1},
+        )
+        materializer = RoutineOccurrenceMaterializationApplication(runtime.session_factory)
+        await materializer.checkpoint_window(
+            self_person_ref=actor,
+            operation_id="m3b:replan-first-window",
+            start_date=tomorrow,
+            end_date_exclusive=tomorrow + timedelta(days=1),
+            effective_zone_id=ZONE,
+        )
+        occurrence = (
+            await _read_checkpoint_refs(
+                runtime,
+                actor,
+                routine.source_ref,
+                owner="routine",
+                operation="m3b:replan-first-window",
+                start=tomorrow,
+                end=tomorrow + timedelta(days=1),
+            )
+        )[0]
+        activity = await _activity(runtime, actor, occurrence)
+        envelope = await _envelope(runtime, actor, activity)
+        assert envelope["placement_material_state_ref"] is not None
+
+        await TemporalScheduleApplication(runtime.session_factory).revise_schedule(
+            self_person_ref=NativeRef(actor),
+            operation_id="m3b:move-generated-activity",
+            schedule_ref=ScopedRecordRef(envelope["schedule_ref"]),
+            expected_material_state_ref=MaterialStateRef(envelope["placement_material_state_ref"]),
+            placement=NamedZoneLocalIntervalPlacement(
+                starts_local_at=datetime.combine(tomorrow, time(11)),
+                ends_local_at=datetime.combine(tomorrow, time(12)),
+                zone_id=ZONE,
+            ),
+        )
+
+        # Navigating back through the same range uses a new checkpoint id. It
+        # must not try to recreate the already bound Activity from 10:00.
+        await materializer.checkpoint_window(
+            self_person_ref=actor,
+            operation_id="m3b:replan-refresh-window",
+            start_date=tomorrow,
+            end_date_exclusive=tomorrow + timedelta(days=1),
+            effective_zone_id=ZONE,
+        )
+        assert (await _envelope(runtime, actor, activity))["schedule_ref"] == envelope[
+            "schedule_ref"
+        ]
     finally:
         await runtime.dispose()
