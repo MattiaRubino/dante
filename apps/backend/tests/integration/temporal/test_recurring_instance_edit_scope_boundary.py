@@ -65,8 +65,13 @@ async def _envelope(runtime: Any, actor: UUID, activity: UUID) -> Any:
     async with runtime.session_factory() as session, session.begin():
         result = await session.execute(
             text(
-                "SELECT * FROM dante.get_self_activity_schedule_roles("
-                ":actor,CAST(ARRAY[:activity] AS uuid[])) WHERE role_code='envelope'"
+                "SELECT role.schedule_ref, current.material_state_ref "
+                "AS placement_material_state_ref "
+                "FROM dante.get_self_activity_schedule_roles("
+                ":actor,CAST(ARRAY[:activity] AS uuid[])) AS role "
+                "JOIN dante.schedule_current_placement AS current "
+                "ON current.scoped_owner_ref=role.schedule_ref "
+                "WHERE role.role_code='envelope'"
             ),
             {"actor": actor, "activity": activity},
         )
