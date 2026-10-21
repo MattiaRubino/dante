@@ -2862,3 +2862,13 @@ foreground/surface/button colors because it is mounted outside `.home-m1`;
 the current-time marker is drawn at full width above the sticky date lane in
 both day and complete Timeline views. Focused Web unit/typecheck are local
 checks only; authenticated browser acceptance remains user-side.
+
+User-run fixture Chromium on published `8325a765` reported **1 passed, 1
+failed**: the scope portal rendering test passed; the marker test timed out
+before its assertion because the 1280px header week strip intercepted the
+view-selector click. The follow-up moves the week strip onto its own row at
+intermediate viewport widths and asserts the two controls no longer overlap
+before exercising the normal view switch. This is a responsive header repair,
+not evidence that the now-line or the real authenticated recurrence flow has
+passed. Rerun the focused browser pair on the new commit; no force-click or
+test skip substitutes for an interactive header.

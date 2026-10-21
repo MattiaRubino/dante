@@ -54,7 +54,18 @@ test('recurrence scope replaces the Inspector visually and remains interactive',
 test('current-time marker keeps a visible line across the whole day', async ({
   page,
 }) => {
+  await page.setViewportSize({ width: 1280, height: 800 });
   await page.goto('/home');
+  await expect(page.locator('.timeline-now-line').first()).toBeVisible();
+  const header = await page.evaluate(() => {
+    const view = document.querySelector('.dante-timeline-view-trigger')!;
+    const week = document.querySelector('.dante-timeline-week-nav')!;
+    return {
+      viewBottom: view.getBoundingClientRect().bottom,
+      weekTop: week.getBoundingClientRect().top,
+    };
+  });
+  expect(header.weekTop).toBeGreaterThanOrEqual(header.viewBottom);
   for (const view of ['Timeline', 'Giorno', 'Timeline']) {
     await page.getByRole('button', { name: 'Scegli vista Timeline' }).click();
     await page.getByRole('menuitemradio', { name: view }).click();
