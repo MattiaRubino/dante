@@ -6,6 +6,7 @@ test('recurrence scope replaces the Inspector visually and remains interactive',
   page,
 }) => {
   await page.goto('/home');
+  await expect(page.locator('.timeline-now-line').first()).toBeVisible();
   const visibility = await page.evaluate(() => {
     const inspector = document.createElement('div');
     inspector.className =
