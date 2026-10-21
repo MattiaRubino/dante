@@ -1,5 +1,6 @@
 """Clean future plans can change cadence without erasing local history."""
 
+from dataclasses import replace
 from datetime import UTC, date, datetime, time
 from uuid import UUID
 
@@ -114,3 +115,38 @@ def test_incomplete_or_duplicate_inventory_is_rejected() -> None:
             regenerated=(_coordinate(20), _coordinate(20)),
             authoritative_inventory=True,
         )
+
+
+def test_dst_overlap_resolution_changes_occurrence_identity() -> None:
+    earlier = CalendarCoordinate(
+        family_code="calendar_wall_clock",
+        generated_date=date(2026, 10, 25),
+        generated_wall_time=time(2, 30),
+        clock_basis_code="named_zone",
+        zone_id="Europe/Rome",
+        resolved_at=datetime(2026, 10, 25, 0, 30, tzinfo=UTC),
+    )
+    later = replace(earlier, resolved_at=datetime(2026, 10, 25, 1, 30, tzinfo=UTC))
+    scope = select_recurrence_edit_scope(
+        selected_occurrence_ref=FIRST,
+        scope="this_and_following",
+        candidates=(
+            RecurrenceEditCandidate(
+                occurrence_ref=FIRST,
+                source_native_ref=SOURCE,
+                expected_at=earlier.resolved_at,
+                origin_code="recurrence_generated",
+            ),
+        ),
+        captured_at=datetime(2026, 10, 24, tzinfo=UTC),
+        authoritative_inventory=True,
+    )
+    result = reconcile_materialized_series(
+        scope=scope,
+        materialized=(MaterializedSeriesInstance(FIRST, earlier),),
+        regenerated=(later,),
+        authoritative_inventory=True,
+    )
+    assert result.retained_occurrence_refs == ()
+    assert result.superseded_occurrence_refs == (FIRST,)
+    assert result.new_coordinates == (later,)
