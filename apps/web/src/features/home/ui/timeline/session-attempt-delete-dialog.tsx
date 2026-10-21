@@ -39,7 +39,9 @@ export function SessionAttemptDeleteDialog({
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
       if (event.key === 'Escape') {
+        // The underlying Inspector must never consume the same Escape.
         event.preventDefault();
+        event.stopImmediatePropagation();
         if (!busy) onCancel();
       }
       if (event.key !== 'Tab') return;
@@ -58,8 +60,8 @@ export function SessionAttemptDeleteDialog({
         cancel.focus();
       }
     };
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
+    window.addEventListener('keydown', handleKeyDown, true);
+    return () => window.removeEventListener('keydown', handleKeyDown, true);
   }, [busy, onCancel]);
 
   return createPortal(

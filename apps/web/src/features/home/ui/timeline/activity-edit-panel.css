@@ -632,7 +632,8 @@
 }
 
 /* The same destructive affordance is used for generic and named attempts. */
-.timeline-activity-editor__record button.timeline-activity-editor__delete-trigger {
+.timeline-activity-editor__record
+  button.timeline-activity-editor__delete-trigger {
   border-color: #c94b53;
   color: #ffd4d5;
   background: rgb(124 24 35 / 14%);
