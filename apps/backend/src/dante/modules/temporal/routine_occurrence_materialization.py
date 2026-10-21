@@ -375,13 +375,13 @@ class RoutineOccurrenceMaterializationApplication:
         except SQLAlchemyError as exc:
             raise OccurrencePersistenceError() from exc
 
-    async def _has_bound_activity(
+    async def _bound_activities(
         self,
         *,
         self_person_ref: NativeRef,
-        occurrence_ref: UUID,
-    ) -> bool:
-        """Return whether a completed materialization already owns this instance.
+        occurrence_refs: tuple[UUID, ...],
+    ) -> set[UUID]:
+        """Read completed materializations in one owner-scoped round trip.
 
         Binding is deliberately the completion marker.  A later Timeline
         checkpoint must not replay authoring for that Activity: a local replan
@@ -389,24 +389,24 @@ class RoutineOccurrenceMaterializationApplication:
         Activity from its old Routine template.
         """
 
+        if not occurrence_refs:
+            return set()
         try:
             async with self._session_factory() as session, session.begin():
-                bound = await session.scalar(
+                rows = await session.execute(
                     text(
                         """
-                        SELECT EXISTS(
-                            SELECT 1
-                              FROM dante.list_self_routine_occurrence_activities(
-                                :actor,CAST(ARRAY[:occurrence] AS uuid[])
-                              )
-                        )
+                        SELECT occurrence_ref
+                          FROM dante.list_self_routine_occurrence_activities(
+                            :actor,CAST(:occurrences AS uuid[])
+                          )
                         """
                     ),
-                    {"actor": self_person_ref, "occurrence": occurrence_ref},
+                    {"actor": self_person_ref, "occurrences": list(occurrence_refs)},
                 )
         except SQLAlchemyError as exc:
             raise OccurrencePersistenceError() from exc
-        return bool(bound)
+        return {UUID(str(value)) for value in rows.scalars()}
 
     async def _set_reality(
         self,
@@ -780,6 +780,19 @@ class RoutineOccurrenceMaterializationApplication:
         if policy is None:
             return
 
+        bound_activities = (
+            await self._bound_activities(
+                self_person_ref=self_person_ref,
+                occurrence_refs=tuple(
+                    item.occurrence_ref
+                    for item in checkpoint.occurrences
+                    if not item.skipped and item.coordinate is not None
+                ),
+            )
+            if policy.activity_template
+            else set()
+        )
+
         for occurrence in checkpoint.occurrences:
             if occurrence.skipped or occurrence.coordinate is None:
                 continue
@@ -789,10 +802,7 @@ class RoutineOccurrenceMaterializationApplication:
                     raise OccurrenceInputError(
                         "Recurring Activity templates require calendar Occurrences."
                     )
-                if await self._has_bound_activity(
-                    self_person_ref=self_person_ref,
-                    occurrence_ref=occurrence.occurrence_ref,
-                ):
+                if occurrence.occurrence_ref in bound_activities:
                     # The Activity was fully materialized already.  Local
                     # planning/profile changes are preserved as an exception;
                     # repeating its original create id with the template would
