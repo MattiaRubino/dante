@@ -16,7 +16,7 @@ from dante.platform.database.mappings import MAPPED_TABLES
 
 pytestmark = pytest.mark.postgres
 
-_CURRENT_REVISION = "20261019_162"
+_CURRENT_REVISION = "20261021_163"
 _B04_STAGE_REVISION = "20260919_36"
 _REPO_ROOT = Path(__file__).resolve().parents[5]
 _B04_TABLES = {

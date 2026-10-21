@@ -15,12 +15,13 @@ export type RecurringProfileEditPreview = Readonly<{
   fingerprint: string;
   editRevision: number;
   recurrenceStateRef: string | null;
-  selectedProtection: 'registration' | 'skipped' | 'local_change' | null;
+  selectedProtection:
+    'registration' | 'skipped' | 'local_change' | 'legacy_unknown' | null;
   targetOccurrenceRefs: readonly string[];
   protectedOccurrences: readonly Readonly<{
     occurrenceRef: string;
     expectedAt: string;
-    reason: 'registration' | 'skipped' | 'local_change';
+    reason: 'registration' | 'skipped' | 'local_change' | 'legacy_unknown';
   }>[];
 }>;
 
@@ -234,13 +235,21 @@ export function createRemoteRecurringProfileEdit(
             typeof item.occurrence_ref === 'string' &&
             typeof item.expected_at === 'string' &&
             typeof item.reason === 'string' &&
-            ['registration', 'skipped', 'local_change'].includes(item.reason)
+            [
+              'registration',
+              'skipped',
+              'local_change',
+              'legacy_unknown',
+            ].includes(item.reason)
           );
         }) ||
         (value.selected_protection !== null &&
-          !['registration', 'skipped', 'local_change'].includes(
-            value.selected_protection as string,
-          ))
+          ![
+            'registration',
+            'skipped',
+            'local_change',
+            'legacy_unknown',
+          ].includes(value.selected_protection as string))
       ) {
         throw new Error('Anteprima ricorrenza cambiata: ricarica la modifica.');
       }
@@ -258,7 +267,7 @@ export function createRemoteRecurringProfileEdit(
               occurrenceRef: String(item.occurrence_ref),
               expectedAt: String(item.expected_at),
               reason: item.reason as
-                'registration' | 'skipped' | 'local_change',
+                'registration' | 'skipped' | 'local_change' | 'legacy_unknown',
             };
           },
         ),

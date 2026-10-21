@@ -108,6 +108,18 @@
         "value_contract": "Trimmed nonempty at most 300 characters; only planned role."
       },
       {
+        "name": "name_exception_reason",
+        "postgres_type": "text",
+        "nullable": true,
+        "default": {
+          "kind": "none",
+          "expression": null
+        },
+        "meaning": "Recurring planned Session name provenance: local edit or an existing label whose edit history predates this marker.",
+        "semantic_type": null,
+        "value_contract": "Null, local_edit or legacy_unknown; only planned roles. Legacy recurring rows are conservatively marked on upgrade."
+      },
+      {
         "name": "retired_at",
         "postgres_type": "timestamp with time zone",
         "nullable": true,
@@ -203,6 +215,14 @@
         "enforced": true,
         "validated": true,
         "no_inherit": false
+      },
+      {
+        "name": "ck_activity_schedule_role_name_exception",
+        "expression_contract": "name_exception_reason IS NULL OR (role_code='planned' AND name_exception_reason IN ('local_edit','legacy_unknown'))",
+        "reason": "Only planned Session rows carry a recognized name exception reason.",
+        "enforced": true,
+        "validated": true,
+        "no_inherit": false
       }
     ],
     "indexes": [
@@ -255,8 +275,8 @@
   "state_history": {
     "material_state_behavior": null,
     "current_binding": "Active role follows Schedule identity; retired roles preserve planning history.",
-    "chronology": "Presentation order is a planning order, not time or execution truth.",
-    "immutability_policy": "Guarded insert-only purpose for the Activity authoring transaction."
+    "chronology": "Presentation order is a planning order, not time or execution truth. Individual name edits remain marked after later renames; preexisting recurring labels retain an unknown-provenance marker.",
+    "immutability_policy": "Guarded insert-only purpose for the Activity authoring transaction; the planned name and exception reason are revised only by the owner-scoped name capability or conservative migration."
   },
   "lifecycle": {
     "retention": "Retained with the Schedule and its planning history.",

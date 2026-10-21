@@ -76,6 +76,11 @@ class ActivityScheduleRoleRow(Base):
             "AND display_name<>'' AND char_length(display_name)<=300)",
             name=conv("ck_activity_schedule_role_name"),
         ),
+        CheckConstraint(
+            "name_exception_reason IS NULL OR "
+            "(role_code='planned' AND name_exception_reason IN ('local_edit','legacy_unknown'))",
+            name=conv("ck_activity_schedule_role_name_exception"),
+        ),
         ForeignKeyConstraint(
             ["schedule_ref"],
             ["dante.schedule.schedule_ref"],
@@ -93,6 +98,7 @@ class ActivityScheduleRoleRow(Base):
     role_code: Mapped[str] = mapped_column(Text, nullable=False)
     presentation_order: Mapped[int] = mapped_column(nullable=False)
     display_name: Mapped[str | None] = mapped_column(Text, nullable=True)
+    name_exception_reason: Mapped[str | None] = mapped_column(Text, nullable=True)
     retired_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
 
 

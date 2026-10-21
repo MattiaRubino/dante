@@ -262,7 +262,7 @@ class ScopedProfileEditStateResponse(BaseModel):
 class ScopedProfileEditProtectedOccurrence(BaseModel):
     model_config = ConfigDict(extra="forbid")
     occurrence_ref: UUID
-    reason: Literal["registration", "skipped", "local_change"]
+    reason: Literal["registration", "skipped", "local_change", "legacy_unknown"]
     expected_at: datetime
 
 
@@ -271,7 +271,7 @@ class ScopedProfileEditPreviewResponse(BaseModel):
     source_native_ref: UUID
     edit_revision: int
     recurrence_state_ref: UUID | None
-    selected_protection: Literal["registration", "skipped", "local_change"] | None
+    selected_protection: Literal["registration", "skipped", "local_change", "legacy_unknown"] | None
     target_occurrence_refs: list[UUID]
     protected_occurrences: list[ScopedProfileEditProtectedOccurrence]
     fingerprint: str

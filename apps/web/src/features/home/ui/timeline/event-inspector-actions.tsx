@@ -580,7 +580,9 @@ export function EventInspectorActions({
                             ? 'registrazione'
                             : item.reason === 'skipped'
                               ? 'saltata'
-                              : 'modifica individuale'}
+                              : item.reason === 'legacy_unknown'
+                                ? 'origine del nome da verificare'
+                                : 'modifica individuale'}
                         </li>
                       ))}
                   </ul>

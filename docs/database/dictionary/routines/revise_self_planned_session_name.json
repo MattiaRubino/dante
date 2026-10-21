@@ -79,7 +79,7 @@
   "state_history": {
     "material_state_behavior": "Presentation-only name change; never a new Session, Schedule or MaterialStateRef.",
     "current_binding": "Same planned Schedule identity; label change guarded by compare-and-swap.",
-    "chronology": "Accepted current presentation label, with recorded execution untouched.",
+    "chronology": "Accepted current presentation label, with recorded execution untouched. Local name edits retain a provenance marker on the planned role; legacy-unknown provenance remains protected.",
     "immutability_policy": "No historical Session, Schedule or Actual records are mutated by the label capability."
   },
   "lifecycle": {

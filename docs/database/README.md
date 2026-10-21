@@ -6,7 +6,7 @@
 - **Protected-main Alembic head:** `20260906_18`
 - **Protected-main topology:** `89|5|18|77|173|91|272|0|0|0`
 - **Timeline candidate branch:** `feature/timeline-temporal-operational`
-- **Timeline candidate Alembic head:** `20261019_162`; `_161` adds protected recurring metadata exceptions, preview and from-next scope; forward-only `_162` corrects the CHECK constraint name created by `_161` to match the Dictionary and mapping. Intended catalog: `238|5|243|104|486|421|596`; PostgreSQL migration and exact catalog validation are pending on `_162`. See `timeline-temporal-operational.md`.
+- **Timeline candidate Alembic head:** `20261021_163`; `_161` adds protected recurring metadata exceptions and preview, `_162` corrects the CHECK name, and `_163` marks local planned Session renames as protected exceptions. Intended catalog: `238|5|243|104|486|421|597`; PostgreSQL migration and exact catalog validation are pending on `_163`. See `timeline-temporal-operational.md`.
 - **Historical B10-C proven topology (2026-09-26):** `20260925_79` / `167|5|123|93|329|279|446`; latest `_142` candidate topology `238|5|228|103|486|421|596` (user-local catalog gate green)
 - **Timeline candidate DB overlay:** `timeline-temporal-operational.md`
 - **Persistence doctrine:** `../development/backend-cp6-02-postgresql-persistence-constitution.md`

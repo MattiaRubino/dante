@@ -8,7 +8,7 @@
     "name": "get_self_occurrence_edit_protection",
     "ownership_class": "dante_owned"
   },
-  "purpose": "Return a reason for protecting a self-owned Occurrence from future profile propagation: registration, skip or local change.",
+  "purpose": "Return a reason for protecting a self-owned Occurrence from future profile propagation: registration, skip, local change or legacy-unknown provenance. Planned Session names and post-create first Life Area assignments are included.",
   "classification": {
     "persistence_role": "occurrence_scoped_edit_capability",
     "canonicality": "capability_surface",
@@ -107,6 +107,7 @@
       "Actual history is never overwritten",
       "Correct effective zone/DST handling and bounded candidate scan",
       "Stable replay, stale CAS and immutable protected future exclusions",
+      "Individual planned Session name changes, pre-marker unknown provenance, and first post-create Life Area assignments remain protected",
       "Routine/Event source parity"
     ],
     "test_refs": [

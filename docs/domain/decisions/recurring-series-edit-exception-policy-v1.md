@@ -94,9 +94,16 @@ modals and keeps a visible line across the full day lane.
 and Event structure, cadence replacements with clean-instance reconciliation,
 Schedule and reminder revisions, interval, capture, planned Session, Objective,
 Life Area and agenda propagation. Preview classification also needs an
-immutable marker for a planned Session's local name override (the current
-mutation updates its name in place), plus common source-lock serialization
-for concurrent instance writes. Until these exist, do not expose those fields
+common source-lock serialization for all concurrent instance writes. A local
+planned Session rename now records a local-edit reason and is classified as a
+protected exception, even after a later rename restores its original label.
+Preexisting recurring planned names with no reliable edit history are marked
+`legacy_unknown` and protected conservatively. This closes one inventory gap
+but not the full revision path.
+The first manual Life Area assignment after Activity creation is protected,
+even when its expected revision is zero. An assignment made as part of the
+original Activity Create shares that operation identity and remains clean.
+Until the remaining capabilities exist, do not expose those fields
 as if the series scope could save them. AI authoring must use the same
 authoritative preview and acceptance contract, and must not compose separate
 local writes to imitate a series change.

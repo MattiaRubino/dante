@@ -218,6 +218,109 @@ async def test_selected_activity_life_area_and_planned_name_do_not_propagate(
             )
             for item in area_assignments
         )
+
+        # Assigning an area *after* materialization is a local exception even
+        # on the first assignment revision. The create-time assignment shares
+        # its operation id with Activity Create and remains clean.
+        await assignments.assign(
+            self_person_ref=actor,
+            subject_kind="activity",
+            subject_native_ref=NativeRef(future_activity),
+            life_area_ref=area.life_area_ref,
+            expected_assignment_revision=0,
+            operation_id="m3b:future-area",
+        )
+        async with runtime.session_factory() as session, session.begin():
+            area_preview = (
+                (
+                    await session.execute(
+                        text(
+                            "SELECT * FROM dante.get_self_occurrence_profile_edit_preview("
+                            ":actor,:selected,'this_and_following',:zone)"
+                        ),
+                        {"actor": actor, "selected": early[0], "zone": ZONE},
+                    )
+                )
+                .mappings()
+                .one()
+            )
+            assert any(
+                item["occurrence_ref"] == str(future[0]) and item["reason"] == "local_change"
+                for item in area_preview["protected_occurrences"]
+            )
+
+        # A second instance with *only* an individual planned Session rename
+        # must be protected by the authoritative following-scope preview.
+        untouched_plan = await _planned(runtime, actor, untouched)
+        async with runtime.session_factory() as session, session.begin():
+            await session.execute(
+                text(
+                    "SELECT * FROM dante.revise_self_planned_session_name("
+                    ":actor,:activity,:schedule,:before,:after)"
+                ),
+                {
+                    "actor": actor,
+                    "activity": untouched,
+                    "schedule": untouched_plan["schedule_ref"],
+                    "before": "Preparazione",
+                    "after": "Riscaldamento",
+                },
+            )
+            first_marker = await session.scalar(
+                text(
+                    "SELECT name_exception_reason FROM dante.activity_schedule_role "
+                    "WHERE schedule_ref=:schedule"
+                ),
+                {"schedule": untouched_plan["schedule_ref"]},
+            )
+            assert first_marker == "local_edit"
+            preview = (
+                (
+                    await session.execute(
+                        text(
+                            "SELECT * FROM dante.get_self_occurrence_profile_edit_preview("
+                            ":actor,:selected,'this_and_following',:zone)"
+                        ),
+                        {"actor": actor, "selected": early[0], "zone": ZONE},
+                    )
+                )
+                .mappings()
+                .one()
+            )
+            assert any(
+                item["occurrence_ref"] == str(early[1]) and item["reason"] == "local_change"
+                for item in preview["protected_occurrences"]
+            )
+            assert early[1] not in preview["target_occurrence_refs"]
+
+            await session.execute(
+                text(
+                    "SELECT * FROM dante.revise_self_planned_session_name("
+                    ":actor,:activity,:schedule,:before,:after)"
+                ),
+                {
+                    "actor": actor,
+                    "activity": untouched,
+                    "schedule": untouched_plan["schedule_ref"],
+                    "before": "Riscaldamento",
+                    "after": "Preparazione",
+                },
+            )
+            restored_marker = await session.scalar(
+                text(
+                    "SELECT name_exception_reason FROM dante.activity_schedule_role "
+                    "WHERE schedule_ref=:schedule"
+                ),
+                {"schedule": untouched_plan["schedule_ref"]},
+            )
+            assert restored_marker == first_marker
+            assert (
+                await session.scalar(
+                    text("SELECT dante.get_self_occurrence_edit_protection(:actor,:occurrence)"),
+                    {"actor": actor, "occurrence": early[1]},
+                )
+                == "local_change"
+            )
     finally:
         await runtime.dispose()
 
