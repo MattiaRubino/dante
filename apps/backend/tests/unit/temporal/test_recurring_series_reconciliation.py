@@ -14,10 +14,12 @@ from dante.modules.temporal.occurrence_edit_scope import (
 from dante.modules.temporal.recurring_series_reconciliation import (
     MaterializedSeriesInstance,
     SeriesReconciliationError,
+    SeriesReconciliationWindow,
     reconcile_materialized_series,
 )
 
 SOURCE, FIRST, LOCAL, CLEAN = (UUID(int=n) for n in (1, 11, 12, 13))
+WINDOW = SeriesReconciliationWindow(date(2026, 10, 19), date(2026, 10, 29))
 
 
 def _coordinate(day: int) -> CalendarCoordinate:
@@ -63,6 +65,7 @@ def test_revising_cadence_preserves_local_exception_and_replaces_clean_instance(
         scope=_scope(),
         materialized=_materialized(),
         regenerated=(_coordinate(20), _coordinate(27)),
+        window=WINDOW,
         authoritative_inventory=True,
     )
     assert result.retained_occurrence_refs == (FIRST,)
@@ -76,6 +79,7 @@ def test_recorded_selected_instance_is_not_replaced() -> None:
         scope=_scope(recorded=True),
         materialized=_materialized(),
         regenerated=(_coordinate(27),),
+        window=WINDOW,
         authoritative_inventory=True,
     )
     assert result.superseded_occurrence_refs == (CLEAN,)
@@ -89,6 +93,7 @@ def test_new_cadence_cannot_merge_into_unchanged_instance(recorded: bool, day: i
             scope=_scope(recorded=recorded),
             materialized=_materialized(),
             regenerated=(_coordinate(day),),
+            window=WINDOW,
             authoritative_inventory=True,
         )
 
@@ -99,6 +104,7 @@ def test_incomplete_or_duplicate_inventory_is_rejected() -> None:
             scope=_scope(),
             materialized=_materialized(),
             regenerated=(),
+            window=WINDOW,
             authoritative_inventory=False,
         )
     with pytest.raises(SeriesReconciliationError, match="disagree"):
@@ -106,6 +112,7 @@ def test_incomplete_or_duplicate_inventory_is_rejected() -> None:
             scope=_scope(),
             materialized=_materialized()[:2],
             regenerated=(),
+            window=WINDOW,
             authoritative_inventory=True,
         )
     with pytest.raises(SeriesReconciliationError, match="duplicate coordinate"):
@@ -113,6 +120,7 @@ def test_incomplete_or_duplicate_inventory_is_rejected() -> None:
             scope=_scope(),
             materialized=_materialized(),
             regenerated=(_coordinate(20), _coordinate(20)),
+            window=WINDOW,
             authoritative_inventory=True,
         )
 
@@ -145,8 +153,62 @@ def test_dst_overlap_resolution_changes_occurrence_identity() -> None:
         scope=scope,
         materialized=(MaterializedSeriesInstance(FIRST, earlier),),
         regenerated=(later,),
+        window=SeriesReconciliationWindow(date(2026, 10, 25), date(2026, 10, 26)),
         authoritative_inventory=True,
     )
     assert result.retained_occurrence_refs == ()
     assert result.superseded_occurrence_refs == (FIRST,)
     assert result.new_coordinates == (later,)
+
+@pytest.mark.parametrize(
+    ("start", "end"),
+    [(date(2026, 10, 20), date(2026, 10, 20)),
+     (date(2026, 10, 21), date(2026, 10, 20))],
+)
+def test_reconciliation_rejects_empty_or_backward_window(start: date, end: date) -> None:
+    with pytest.raises(SeriesReconciliationError, match="horizon"):
+        SeriesReconciliationWindow(start, end)
+
+
+def test_reconciliation_rejects_materialized_occurrence_outside_complete_horizon() -> None:
+    with pytest.raises(SeriesReconciliationError, match="Source inventory escapes"):
+        reconcile_materialized_series(
+            scope=_scope(),
+            materialized=_materialized(),
+            regenerated=(_coordinate(27),),
+            window=SeriesReconciliationWindow(date(2026, 10, 20), date(2026, 10, 22)),
+            authoritative_inventory=True,
+        )
+
+
+def test_reconciliation_rejects_new_candidate_outside_horizon() -> None:
+    with pytest.raises(SeriesReconciliationError, match="Regenerated cadence escapes"):
+        reconcile_materialized_series(
+            scope=_scope(),
+            materialized=_materialized(),
+            regenerated=(_coordinate(30),),
+            window=WINDOW,
+            authoritative_inventory=True,
+        )
+
+
+def test_reconciliation_fails_closed_when_materialized_inventory_exceeds_limit() -> None:
+    with pytest.raises(SeriesReconciliationError, match="bounded instance limit"):
+        reconcile_materialized_series(
+            scope=_scope(),
+            materialized=_materialized() * 3334,
+            regenerated=(),
+            window=WINDOW,
+            authoritative_inventory=True,
+        )
+
+
+def test_reconciliation_fails_closed_when_proposed_cadence_exceeds_limit() -> None:
+    with pytest.raises(SeriesReconciliationError, match="bounded instance limit"):
+        reconcile_materialized_series(
+            scope=_scope(),
+            materialized=_materialized(),
+            regenerated=(_coordinate(27),) * 10001,
+            window=WINDOW,
+            authoritative_inventory=True,
+        )

@@ -7,7 +7,7 @@ lock and persist every transition together with the revised source policy.
 from __future__ import annotations
 
 from dataclasses import dataclass
-from datetime import UTC
+from datetime import UTC, date
 from uuid import UUID
 
 from dante.modules.temporal.occurrence import CalendarCoordinate
@@ -16,6 +16,30 @@ from dante.modules.temporal.occurrence_edit_scope import RecurrenceEditScopePlan
 
 class SeriesReconciliationError(ValueError):
     """A proposed cadence or materialized inventory is ambiguous."""
+
+
+MAX_SERIES_INVENTORY = 10_000
+MAX_SERIES_SCAN_DAYS = 366_000
+
+
+@dataclass(frozen=True, slots=True)
+class SeriesReconciliationWindow:
+    """Complete materialized horizon, not a browser viewport.
+
+    Enumerate both the source and proposed coordinates for the exact window.
+    A subsequent write must recheck it under the authoritative source lock.
+    """
+
+    start_date: date
+    end_date_exclusive: date
+
+    def __post_init__(self) -> None:
+        days = (self.end_date_exclusive - self.start_date).days
+        if not 1 <= days <= MAX_SERIES_SCAN_DAYS:
+            raise SeriesReconciliationError("Invalid bounded reconciliation horizon.")
+
+    def contains(self, coordinate: CalendarCoordinate) -> bool:
+        return self.start_date <= coordinate.generated_date < self.end_date_exclusive
 
 
 @dataclass(frozen=True, slots=True)
@@ -52,6 +76,7 @@ def reconcile_materialized_series(
     scope: RecurrenceEditScopePlan,
     materialized: tuple[MaterializedSeriesInstance, ...],
     regenerated: tuple[CalendarCoordinate, ...],
+    window: SeriesReconciliationWindow,
     authoritative_inventory: bool,
 ) -> SeriesReconciliation:
     """Keep local/factual exceptions, retain matches, replace clean mismatches.
@@ -61,6 +86,12 @@ def reconcile_materialized_series(
     """
     if not scope.update_future_source_template or not authoritative_inventory:
         raise SeriesReconciliationError("A following edit requires a complete source inventory.")
+    if len(materialized) > MAX_SERIES_INVENTORY or len(regenerated) > MAX_SERIES_INVENTORY:
+        raise SeriesReconciliationError("Reconciliation exceeds the bounded instance limit.")
+    if any(not window.contains(item.coordinate) for item in materialized):
+        raise SeriesReconciliationError("Source inventory escapes its declared horizon.")
+    if any(not window.contains(item) for item in regenerated):
+        raise SeriesReconciliationError("Regenerated cadence escapes its declared horizon.")
     indexed: dict[UUID, CalendarCoordinate] = {}
     for item in materialized:
         if item.occurrence_ref in indexed:
