@@ -101,27 +101,42 @@ async def test_series_accept_replaces_one_clean_future_event_without_duplicate(
             "agenda_parts": ["Presentazione"],
             "life_area_ref": None,
         }
-        args = {
-            "self_person_ref": alice,
-            "selected_occurrence_ref": old_items[0].occurrence_ref,
-            "requested_scope": "this_and_following",
-            "expected_revision": 0,
-            "expected_state_ref": created.recurrence_material_state_ref,
-            "effective_zone_id": "Europe/Rome",
-            "proposed_recurrence": proposed,
-            "proposed_structure": structure,
-            "profile_patch": None,
-        }
-        preview = await series.preview(**args)
+        preview = await series.preview(
+            self_person_ref=alice,
+            selected_occurrence_ref=old_items[0].occurrence_ref,
+            requested_scope="this_and_following",
+            expected_revision=0,
+            expected_state_ref=created.recurrence_material_state_ref,
+            effective_zone_id="Europe/Rome",
+            proposed_recurrence=proposed,
+            proposed_structure=structure,
+            profile_patch=None,
+        )
         assert preview.scope.target_occurrence_refs == (old_items[0].occurrence_ref,)
         accepted = await series.accept(
-            **args,
+            self_person_ref=alice,
+            selected_occurrence_ref=old_items[0].occurrence_ref,
+            requested_scope="this_and_following",
+            expected_revision=0,
+            expected_state_ref=created.recurrence_material_state_ref,
+            effective_zone_id="Europe/Rome",
+            proposed_recurrence=proposed,
+            proposed_structure=structure,
+            profile_patch=None,
             expected_fingerprint=preview.fingerprint,
             operation_id="structure:accept:operation",
         )
         assert accepted.superseded_count == 1
         replay = await series.accept(
-            **args,
+            self_person_ref=alice,
+            selected_occurrence_ref=old_items[0].occurrence_ref,
+            requested_scope="this_and_following",
+            expected_revision=0,
+            expected_state_ref=created.recurrence_material_state_ref,
+            effective_zone_id="Europe/Rome",
+            proposed_recurrence=proposed,
+            proposed_structure=structure,
+            profile_patch=None,
             expected_fingerprint=preview.fingerprint,
             operation_id="structure:accept:operation",
         )

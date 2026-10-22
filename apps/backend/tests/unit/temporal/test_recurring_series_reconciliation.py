@@ -1,5 +1,6 @@
 """Clean future plans can change cadence without erasing local history."""
 
+from copy import deepcopy
 from dataclasses import replace
 from datetime import UTC, date, datetime, time
 from uuid import UUID
@@ -52,7 +53,7 @@ def test_series_edit_rejects_a_template_that_would_break_later_materialization()
         nonexistent_local_time_policy="skip_civil_candidate",
         ambiguous_local_time_policy="earlier",
     )
-    structure = {
+    structure: dict[str, object] = {
         "version": 1,
         "duration_minutes": 60,
         "reminder_lead_minutes": None,
@@ -74,22 +75,16 @@ def test_series_edit_rejects_a_template_that_would_break_later_materialization()
         },
     }
     _validate_structure("routine", recurrence, structure)
-    invalid = {
-        **structure,
-        "activity_template": {
-            **structure["activity_template"],
-            "planned_slices": [{"name": "", "time_enabled": False}],
-        },
-    }
+    invalid = deepcopy(structure)
+    invalid_template = invalid["activity_template"]
+    assert isinstance(invalid_template, dict)
+    invalid_template["planned_slices"] = [{"name": "", "time_enabled": False}]
     with pytest.raises(SeriesReconciliationError, match="Session name"):
         _validate_structure("routine", recurrence, invalid)
-    invalid = {
-        **structure,
-        "activity_template": {
-            **structure["activity_template"],
-            "root_window": {"start_offset_minutes": 0, "duration_minutes": 30},
-        },
-    }
+    invalid = deepcopy(structure)
+    invalid_template = invalid["activity_template"]
+    assert isinstance(invalid_template, dict)
+    invalid_template["root_window"] = {"start_offset_minutes": 0, "duration_minutes": 30}
     with pytest.raises(SeriesReconciliationError, match="duration disagrees"):
         _validate_structure("routine", recurrence, invalid)
 

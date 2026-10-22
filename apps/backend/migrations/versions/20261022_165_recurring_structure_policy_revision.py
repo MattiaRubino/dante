@@ -107,6 +107,7 @@ def upgrade() -> None:
             ["dante.material_state_address.material_state_ref"],
             name="fk_recurring_occurrence_supersession_state",
         ),
+        schema="dante",
     )
     op.create_index(
         "ix_recurring_occurrence_supersession_source",

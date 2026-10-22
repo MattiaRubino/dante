@@ -5,6 +5,7 @@ from __future__ import annotations
 from dataclasses import replace
 from datetime import date, time
 from typing import Any
+from uuid import UUID
 
 import psycopg
 import pytest
@@ -31,7 +32,10 @@ from dante.modules.temporal.recurring_authoring import (
     RoutineAuthoringPolicy,
 )
 from dante.modules.temporal.recurring_series_edit import RecurringSeriesEditApplication
-from dante.modules.temporal.recurring_structure_policy import RecurringStructurePolicyApplication
+from dante.modules.temporal.recurring_structure_policy import (
+    RecurringStructurePolicyApplication,
+    RecurringStructureRevision,
+)
 from dante.modules.temporal.routine import RoutineApplication
 from dante.modules.temporal.routine_occurrence_policy import (
     RoutineOccurrencePolicyApplication,
@@ -143,14 +147,14 @@ async def test_routine_structure_revision_is_versioned_and_rolls_back_with_recur
         )
         old_state = created.recurrence_material_state_ref
         next_rule = replace(original, effective_from=date(2027, 1, 4))
-        snapshot = {
+        snapshot: dict[str, object] = {
             "version": 1,
             "duration_minutes": 120,
             "reminder_lead_minutes": None,
             "activity_template": {"version": 1},
         }
 
-        async def revise(*, abort: bool):
+        async def revise(*, abort: bool) -> tuple[UUID, RecurringStructureRevision]:
             async with runtime.session_factory() as session, session.begin():
                 changed = await recurrences.replace_in_session(
                     session,

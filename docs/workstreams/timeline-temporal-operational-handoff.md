@@ -1,5 +1,27 @@
 # Timeline / Temporal-Operational — Workstream Handoff
 
+## 2026-10-22 — Full gate diagnosis and repair candidate
+
+The owner's full parallel gate on remote commit `4852e2dc8` completed all 27
+groups: 22 passed and five failed. The PostgreSQL and real-stack browser groups
+were blocked by the same `_165` migration defect: the supersession table omitted
+`schema="dante"`, so PostgreSQL attempted to create it in `pg_catalog`.
+The migration now declares the schema explicitly; the failed transaction did
+not apply `_165` in the reported gate. The Dictionary scope schema now admits
+the 73rd materialization stage, and Ruff and mypy findings in the new code/tests
+are corrected. No existing test assertion was relaxed.
+
+Focused local verification after these repairs: backend-wide Ruff/mypy, Dictionary
+and series unit tests (28 passed), and test integrity passed. The local full
+non-PostgreSQL suite had 674 passed and two unrelated intelligence bootstrap
+tests blocked by this container's SOCKS proxy without `socksio`; those two
+passed when proxy environment variables were unset (5 targeted tests passed).
+The owner's previous non-PostgreSQL gate had 675 passed and only the Dictionary
+contract failure. PostgreSQL migration/catalog,
+series integration, real-stack browser and the complete same-SHA gate remain
+**NOT_RUN** on this repair candidate; the owner must run them in WSL before
+claiming acceptance. The earlier full gate remains RED for its original SHA.
+
 ## 2026-10-22 — Structural series Edit worktree candidate (not accepted)
 
 Branch `feature/timeline-temporal-operational`, base `4e1c168c0`, dirty worktree.
