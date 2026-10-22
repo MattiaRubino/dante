@@ -366,30 +366,35 @@ class RecurringSeriesEditApplication:
             ):
                 raise RecurringSeriesEditConflictError("Selected calendar instance is unavailable.")
             source_ref = UUID(str(revision["source_native_ref"]))
-            routine_row = (
+            routine = (
                 (
                     await session.execute(
-                        text("SELECT * FROM dante.get_self_routine_recurrence(:actor,:source)"),
+                        text(
+                            "SELECT title,life_area_ref FROM dante.list_self_routines(:actor) "
+                            "WHERE routine_ref=:source"
+                        ),
                         {"actor": self_person_ref, "source": source_ref},
                     )
                 )
                 .mappings()
                 .one_or_none()
             )
-            event_row = None
-            if routine_row is None:
-                event_row = (
-                    (
-                        await session.execute(
-                            text("SELECT * FROM dante.get_self_event_recurrence(:actor,:source)"),
-                            {"actor": self_person_ref, "source": source_ref},
-                        )
+            owner: SeriesOwner = "routine" if routine is not None else "event"
+            recurrence_query = (
+                text("SELECT * FROM dante.get_self_routine_recurrence(:actor,:source)")
+                if owner == "routine"
+                else text("SELECT * FROM dante.get_self_event_recurrence(:actor,:source)")
+            )
+            row = (
+                (
+                    await session.execute(
+                        recurrence_query,
+                        {"actor": self_person_ref, "source": source_ref},
                     )
-                    .mappings()
-                    .one_or_none()
                 )
-            owner: SeriesOwner = "routine" if routine_row is not None else "event"
-            row = routine_row if routine_row is not None else event_row
+                .mappings()
+                .one_or_none()
+            )
             if row is None:
                 raise RecurringSeriesEditConflictError("Recurring source is unavailable.")
             recurrence_view = _view(row)
@@ -412,20 +417,6 @@ class RecurringSeriesEditApplication:
                     raise RecurringSeriesEditConflictError(
                         "Activity source has no complete template."
                     )
-                routine = (
-                    (
-                        await session.execute(
-                            text(
-                                "SELECT title,life_area_ref FROM dante.list_self_routines(:actor) WHERE routine_ref=:source"
-                            ),
-                            {"actor": self_person_ref, "source": source_ref},
-                        )
-                    )
-                    .mappings()
-                    .one_or_none()
-                )
-                if routine is None:
-                    raise RecurringSeriesEditConflictError("Activity source is unavailable.")
                 structure = structure or {
                     "version": 1,
                     "duration_minutes": initial.duration_minutes,
@@ -702,24 +693,14 @@ class RecurringSeriesEditApplication:
             text("SELECT pg_advisory_xact_lock(hashtextextended(:key,0))"),
             {"key": f"dante:recurrence-materialization:{source_ref}"},
         )
-        ownership = (
-            (
-                await session.execute(
-                    text(
-                        "SELECT EXISTS(SELECT 1 FROM dante.get_self_routine_recurrence("
-                        ":actor,:source)) AS routine, "
-                        "EXISTS(SELECT 1 FROM dante.get_self_event_recurrence("
-                        ":actor,:source)) AS event"
-                    ),
-                    {"actor": self_person_ref, "source": source_ref},
-                )
-            )
-            .mappings()
-            .one()
+        routine_owned = await session.scalar(
+            text(
+                "SELECT EXISTS(SELECT 1 FROM dante.list_self_routines(:actor) "
+                "WHERE routine_ref=:source)"
+            ),
+            {"actor": self_person_ref, "source": source_ref},
         )
-        if ownership["routine"] == ownership["event"]:
-            raise RecurringSeriesEditConflictError("Recurring source is no longer available.")
-        owner: SeriesOwner = "routine" if ownership["routine"] else "event"
+        owner: SeriesOwner = "routine" if routine_owned else "event"
         _validate_structure(owner, proposed_recurrence, proposed_structure)
         inventory = await self._inventories.read_in_session(
             session,

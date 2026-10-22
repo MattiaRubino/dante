@@ -57,15 +57,16 @@ def upgrade() -> None:
             name="fk_recurring_structure_policy_revision_state",
         ),
         sa.CheckConstraint(
-            "owner_kind IN ('routine','event')", name="ck_recur_struct_policy_revision_owner"
+            "owner_kind IN ('routine','event')",
+            name=sa.schema.conv("ck_recur_struct_policy_revision_owner"),
         ),
         sa.CheckConstraint(
             "operation_id=btrim(operation_id) AND operation_id<>'' AND char_length(operation_id)<=200",
-            name="ck_recur_struct_policy_revision_operation",
+            name=sa.schema.conv("ck_recur_struct_policy_revision_operation"),
         ),
         sa.CheckConstraint(
             "jsonb_typeof(structure_snapshot)='object' AND structure_snapshot<>'{}'::jsonb",
-            name="ck_recur_struct_policy_revision_snapshot",
+            name=sa.schema.conv("ck_recur_struct_policy_revision_snapshot"),
         ),
         schema="dante",
     )

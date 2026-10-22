@@ -3121,3 +3121,19 @@ before exercising the normal view switch. This is a responsive header repair,
 not evidence that the now-line or the real authenticated recurrence flow has
 passed. Rerun the focused browser pair on the new commit; no force-click or
 test skip substitutes for an interactive header.
+
+## 2026-10-22 — Scoped recurring-series PostgreSQL follow-up
+
+At published `60fd8d4`, the user-local focused PostgreSQL run reported 3 passed,
+3 failed: Alembic/catalog disagreed on three CHECK names, and an Event series
+source called the Routine-only recurrence reader, which raises rather than
+returning an empty row for the wrong owner. The authenticated real-stack browser
+case passed (1/1). This follow-up marks those three migration CHECK names as
+already conventioned (`conv`) and resolves the self-owned Routine/Event family
+before calling its recurrence reader; series preparation uses the same scoped
+owner test instead of invoking both family-specific readers. The existing
+PostgreSQL Event source→preview→accept/replay regression owns the runtime path;
+the migration drift and exact catalog tests own the schema names. Local Ruff,
+syntax, registry, and test-name checks passed; PostgreSQL and the full gate on
+the new candidate remain **NOT RUN** until the user's WSL rerun. No global PASS
+is claimed from the prior candidate's browser result.
