@@ -136,7 +136,11 @@ async def test_inventory_reuses_self_scope_and_returns_skipped_and_extra_occurre
                 selected_occurrence_ref=selected_ref,
             )
             assert in_session.captured_at == transaction_time
-            assert in_session.occurrences == snapshot.occurrences
+            assert {
+                row.occurrence_ref: row for row in in_session.occurrences
+            } == {
+                row.occurrence_ref: row for row in snapshot.occurrences
+            }
             assert in_session.source_native_ref == routine.routine_ref
             assert in_session.materialized_only is True
             assert in_session.apply_authorized is False

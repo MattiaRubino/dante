@@ -1,5 +1,11 @@
 # Timeline / Temporal-Operational — Workstream Handoff
 
+## 2026-10-22 — Shared-transaction recurring policy reads (candidate)
+
+`RoutineOccurrencePolicyApplication.get_in_session` and `EventOccurrencePolicyApplication.get_in_session` now read the owner-scoped canonical policy inside a caller-owned transaction. Their existing `get` operations delegate without changing their public behavior. Existing PostgreSQL recurring-authoring integration tests now compare standalone and shared-session reads for both sources. The prior Occurrence-inventory regression now compares identities irrespective of SQL row order. No schemas, policy writes, API models or generated clients changed.
+
+**Verification pending in WSL:** focused Ruff/typecheck and PostgreSQL tests. The structural source revision, protected-future reconciliation and UI series save are still not implemented.
+
 ## 2026-10-22 — Shared-transaction Occurrence inventory read (candidate)
 
 `OccurrenceEditInventoryApplication.read_in_session` now reads the complete, owner-scoped materialized Occurrence inventory using the caller's existing SQLAlchemy transaction. `read` delegates to this shared implementation, preserving its original HTTP semantics. The returned snapshot remains read-only (`apply_authorized=False`); this does not grant mutation authority and does not lock a source by itself. A new assertion in the existing PostgreSQL integration test verifies that its timestamp matches the caller's SERIALIZABLE transaction and that identity, scope and read-only flags match an independent read. No schema or API contract changed.

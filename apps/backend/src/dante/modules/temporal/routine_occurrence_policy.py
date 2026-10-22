@@ -160,18 +160,35 @@ class RoutineOccurrencePolicyApplication:
     ) -> RoutineOccurrencePolicyView | None:
         try:
             async with self._session_factory() as session, session.begin():
-                row = (
-                    (
-                        await session.execute(
-                            text(
-                                "SELECT * FROM dante.get_self_routine_occurrence_policy(:actor,:routine)"
-                            ),
-                            {"actor": self_person_ref, "routine": routine_ref},
-                        )
-                    )
-                    .mappings()
-                    .one_or_none()
+                return await self.get_in_session(
+                    session, self_person_ref=self_person_ref, routine_ref=routine_ref
                 )
+        except DBAPIError as exc:
+            raise _error(exc) from exc
+        except SQLAlchemyError as exc:
+            raise RoutineOccurrencePolicyPersistenceError(str(exc)) from exc
+
+    async def get_in_session(
+        self,
+        session: AsyncSession,
+        *,
+        self_person_ref: NativeRef,
+        routine_ref: UUID,
+    ) -> RoutineOccurrencePolicyView | None:
+        """Read the canonical Routine policy inside the caller's transaction."""
+        try:
+            row = (
+                (
+                    await session.execute(
+                        text(
+                            "SELECT * FROM dante.get_self_routine_occurrence_policy(:actor,:routine)"
+                        ),
+                        {"actor": self_person_ref, "routine": routine_ref},
+                    )
+                )
+                .mappings()
+                .one_or_none()
+            )
         except DBAPIError as exc:
             raise _error(exc) from exc
         except SQLAlchemyError as exc:

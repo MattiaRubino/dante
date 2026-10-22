@@ -193,18 +193,35 @@ class EventOccurrencePolicyApplication:
     ) -> EventOccurrencePolicyView | None:
         try:
             async with self._session_factory() as session, session.begin():
-                row = (
-                    (
-                        await session.execute(
-                            text(
-                                "SELECT * FROM dante.get_self_event_occurrence_policy_v2(:actor,:event)"
-                            ),
-                            {"actor": self_person_ref, "event": event_ref},
-                        )
-                    )
-                    .mappings()
-                    .one_or_none()
+                return await self.get_in_session(
+                    session, self_person_ref=self_person_ref, event_ref=event_ref
                 )
+        except DBAPIError as exc:
+            raise _error(exc) from exc
+        except SQLAlchemyError as exc:
+            raise EventOccurrencePolicyPersistenceError(str(exc)) from exc
+
+    async def get_in_session(
+        self,
+        session: AsyncSession,
+        *,
+        self_person_ref: NativeRef,
+        event_ref: UUID,
+    ) -> EventOccurrencePolicyView | None:
+        """Read the canonical Event policy inside the caller's transaction."""
+        try:
+            row = (
+                (
+                    await session.execute(
+                        text(
+                            "SELECT * FROM dante.get_self_event_occurrence_policy_v2(:actor,:event)"
+                        ),
+                        {"actor": self_person_ref, "event": event_ref},
+                    )
+                )
+                .mappings()
+                .one_or_none()
+            )
         except DBAPIError as exc:
             raise _error(exc) from exc
         except SQLAlchemyError as exc:

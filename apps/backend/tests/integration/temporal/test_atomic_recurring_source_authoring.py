@@ -111,6 +111,11 @@ async def test_recurring_routine_authoring_is_atomic_replayable_and_self_scoped(
         saved_policy = await policies.get(self_person_ref=alice, routine_ref=created.source_ref)
         assert saved_policy is not None
         assert saved_policy.activity_template == policy.activity_template
+        async with runtime.session_factory() as session, session.begin():
+            read_in_session = await policies.get_in_session(
+                session, self_person_ref=alice, routine_ref=created.source_ref
+            )
+            assert read_in_session == saved_policy
         assert [item.routine_ref for item in await routines.list(self_person_ref=alice)] == [
             created.source_ref
         ]
@@ -273,6 +278,11 @@ async def test_recurring_event_authoring_commits_source_and_recurrence_together(
         saved_policy = await policies.get(self_person_ref=alice, event_ref=created.source_ref)
         assert saved_policy is not None
         assert saved_policy.duration_minutes == policy.duration_minutes
+        async with runtime.session_factory() as session, session.begin():
+            read_in_session = await policies.get_in_session(
+                session, self_person_ref=alice, event_ref=created.source_ref
+            )
+            assert read_in_session == saved_policy
 
         replay = await authoring.create_event(
             self_person_ref=alice,
