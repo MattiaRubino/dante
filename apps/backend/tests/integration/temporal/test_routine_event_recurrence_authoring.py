@@ -87,6 +87,59 @@ async def test_recurrence_in_session_revision_rolls_back_with_wider_edit(
 
 
 @pytest.mark.asyncio
+async def test_event_agenda_in_session_rolls_back_with_series_edit(
+    migrated_database: Any,
+) -> None:
+    actor = _seed_self(migrated_database)
+    runtime = create_database_runtime(migrated_database.runtime_settings())
+    areas = LifeAreaApplication(runtime.session_factory)
+    events = TemporalEventApplication(runtime.session_factory)
+    try:
+        area = (
+            await areas.create(self_person_ref=actor, operation_id="agenda-area", name="Casa")
+        ).area
+        event = (
+            await events.create_event(
+                self_person_ref=actor,
+                operation_id="agenda-source",
+                title="Riunione",
+                life_area_ref=area.life_area_ref,
+                agenda_parts=("Introduzione",),
+            )
+        ).event
+
+        async def abort_wider_edit() -> None:
+            async with runtime.session_factory() as session, session.begin():
+                await events.replace_agenda_in_session(
+                    session,
+                    self_person_ref=actor,
+                    event_ref=event.event_ref,
+                    operation_id="agenda-series-revision",
+                    expected_revision=event.agenda_revision,
+                    agenda_parts=("Introduzione", "Domande"),
+                )
+                raise RuntimeError("later instance failed")
+
+        with pytest.raises(RuntimeError, match="later instance failed"):
+            await abort_wider_edit()
+        unchanged = await events.get_event(self_person_ref=actor, event_ref=event.event_ref)
+        assert unchanged is not None
+        assert unchanged.agenda_parts == ("Introduzione",)
+        assert unchanged.agenda_revision == event.agenda_revision
+        accepted = await events.replace_agenda(
+            self_person_ref=actor,
+            event_ref=event.event_ref,
+            operation_id="agenda-series-revision",
+            expected_revision=event.agenda_revision,
+            agenda_parts=("Introduzione", "Domande"),
+        )
+        assert not accepted.replayed
+        assert accepted.agenda_parts == ("Introduzione", "Domande")
+    finally:
+        await runtime.dispose()
+
+
+@pytest.mark.asyncio
 async def test_recurrence_authoring_preserves_four_families_history_dst_and_source_boundary(
     migrated_database: Any,
 ) -> None:

@@ -2,6 +2,12 @@
 
 ## 2026-10-22 — Recurrence replacement transaction composition
 
+The ordered Event Agenda replacement now has the same in-session transaction
+entry point. Its existing route delegates through it. A second PostgreSQL
+rollback regression verifies that a later failure cannot leave a partially
+revised Event Agenda and that the aborted operation id can be retried. Ruff,
+Mypy and collection pass locally; PostgreSQL execution remains pending.
+
 `RecurrenceApplication.replace_in_session` now lets the eventual structural
 series command revise a Routine/Event recurrence within the caller's
 transaction. The existing `replace` route delegates to it under its own

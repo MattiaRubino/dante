@@ -446,7 +446,31 @@ class TemporalEventApplication:
         expected_revision: int,
         agenda_parts: tuple[str, ...] | list[str],
     ) -> ReplaceEventAgendaResult:
-        """Atomically replace one Event's ordered Agenda behind aggregate CAS."""
+        """Replace one Agenda when no wider atomic series command owns the transaction."""
+        try:
+            async with self._session_factory() as session, session.begin():
+                return await self.replace_agenda_in_session(
+                    session,
+                    self_person_ref=self_person_ref,
+                    event_ref=event_ref,
+                    operation_id=operation_id,
+                    expected_revision=expected_revision,
+                    agenda_parts=agenda_parts,
+                )
+        except SQLAlchemyError as exc:
+            raise EventPersistenceError() from exc
+
+    async def replace_agenda_in_session(
+        self,
+        session: AsyncSession,
+        *,
+        self_person_ref: NativeRef,
+        event_ref: NativeRef,
+        operation_id: str,
+        expected_revision: int,
+        agenda_parts: tuple[str, ...] | list[str],
+    ) -> ReplaceEventAgendaResult:
+        """Run owner/CAS/replay under the caller's existing transaction."""
         normalized_operation_id = _normalize_operation_id(operation_id)
         normalized_agenda = _normalize_agenda_parts(agenda_parts)
         if expected_revision < 0:
@@ -470,27 +494,23 @@ class TemporalEventApplication:
             """
         )
         try:
-            async with (
-                self._session_factory() as database_session,
-                database_session.begin(),
-            ):
-                row = (
-                    (
-                        await database_session.execute(
-                            statement,
-                            {
-                                "self_person_ref": self_person_ref,
-                                "operation_id": normalized_operation_id,
-                                "intent_fingerprint": fingerprint,
-                                "event_ref": event_ref,
-                                "expected_revision": expected_revision,
-                                "agenda_parts": list(normalized_agenda),
-                            },
-                        )
+            row = (
+                (
+                    await session.execute(
+                        statement,
+                        {
+                            "self_person_ref": self_person_ref,
+                            "operation_id": normalized_operation_id,
+                            "intent_fingerprint": fingerprint,
+                            "event_ref": event_ref,
+                            "expected_revision": expected_revision,
+                            "agenda_parts": list(normalized_agenda),
+                        },
                     )
-                    .mappings()
-                    .one()
                 )
+                .mappings()
+                .one()
+            )
         except IntegrityError as exc:
             constraint = _constraint_name(exc)
             if constraint == "pk_event_agenda_mutation_operation":
