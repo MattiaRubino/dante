@@ -1,5 +1,13 @@
 # Timeline / Temporal-Operational — Workstream Handoff
 
+## 2026-10-22 — Calendar reconciliation cutover guard (unverified candidate)
+
+User WSL verification on `cf6f599d` is **green**: Ruff check, Ruff format check, 18/18 focused unit tests (0.48 s). This proves only the pure planner's earlier test corpus, not structural series writes.
+
+Follow-up `37f47dba` makes the low-level pure `reconcile_materialized_series` require an explicit effective timezone. After collision checks it compares each regenerated candidate's canonical absolute instant to the selected Occurrence cutover, enforcing `>=` for `this_and_following` and `>` for `from_next`, and refusing historical source anchors for `this_and_following`. This prevents direct callers from manufacturing future-series candidates before the accepted edit boundary. Two regression tests were added. These changes still do **not** authorize SQL writes or alter the frontend.
+
+**Verification pending on the new SHA:** rerun focused Ruff check/format + unit tests. Keep structural series Save disabled pending a versioned source policy, full inventory recheck under source lock, atomic clean-instance reconciliation, API/client and end-to-end acceptance.
+
 ## 2026-10-21 — B14 structural cadence reconciliation preparation (guarded pure candidate)
 
 Commits after `1df9bf6b` add a required `SeriesReconciliationWindow` to the **pure** series planner and a bounded calendar preview that invokes the existing canonical Occurrence calendar evaluator. The planner now explicitly fails closed for incomplete materialized inventories, results beyond the declared date horizon, and more than 10,000 materialized or proposed Occurrences; the preview rejects local-only scope and refuses a `this_and_following` structural edit of a past selected anchor. Canonical zone/DST generation is reused rather than approximated in the browser. New unit regressions cover safe clean/exception reconciliation, DST fold, cutover with recorded selected attempt, window limits and reject paths.
