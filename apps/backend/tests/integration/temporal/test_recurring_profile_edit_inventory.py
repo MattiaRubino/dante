@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from dataclasses import replace
 from datetime import date, time
 from types import SimpleNamespace
 from typing import Any, cast
@@ -19,6 +20,10 @@ from dante.modules.temporal.occurrence import OccurrenceApplication, OccurrenceS
 from dante.modules.temporal.occurrence_api import get_occurrence_edit_inventory
 from dante.modules.temporal.occurrence_edit_inventory import OccurrenceEditInventoryApplication
 from dante.modules.temporal.recurrence import CalendarRecurrence, RecurrenceApplication
+from dante.modules.temporal.recurring_series_reconciliation import SeriesReconciliationWindow
+from dante.modules.temporal.recurring_structure_preview import (
+    RecurringStructurePreviewApplication,
+)
 from dante.modules.temporal.routine import RoutineApplication
 from dante.modules.temporal.schedule import DateSpanPlacement, TemporalScheduleApplication
 from dante.platform.database.references import NativeRef
@@ -252,5 +257,93 @@ async def test_inventory_uses_guarded_function_without_runtime_table_grants(
             ).one()
             assert row.can_read is True
             assert row.can_scan_table is False
+    finally:
+        await runtime.dispose()
+
+
+@pytest.mark.asyncio
+async def test_structural_cadence_preview_preserves_skipped_future_occurrence(
+    migrated_database: Any,
+) -> None:
+    """A real SQL preview classifies accepted exceptions without any writes."""
+    alice = _seed_self(migrated_database)
+    runtime = create_database_runtime(migrated_database.runtime_settings())
+    areas = LifeAreaApplication(runtime.session_factory)
+    routines = RoutineApplication(runtime.session_factory)
+    recurrences = RecurrenceApplication(runtime.session_factory)
+    occurrences = OccurrenceApplication(runtime.session_factory)
+    preview = RecurringStructurePreviewApplication(runtime.session_factory)
+    try:
+        area = (
+            await areas.create(
+                self_person_ref=alice,
+                operation_id="series:preview:area",
+                name="Area di prova",
+            )
+        ).area
+        start = date(2099, 10, 5)
+        source = await routines.create(
+            self_person_ref=alice,
+            operation_id="series:preview:routine",
+            title="Serie di prova",
+            life_area_ref=area.life_area_ref,
+            starts_on=start,
+            wall_time=time(9),
+        )
+        proposed = replace(_daily(), effective_from=start)
+        await recurrences.replace(
+            owner="routine",
+            self_person_ref=alice,
+            owner_ref=source.routine_ref,
+            operation_id="series:preview:recurrence",
+            expected_material_state_ref=None,
+            recurrence=proposed,
+        )
+        materialized = await occurrences.checkpoint(
+            owner="routine",
+            self_person_ref=alice,
+            source_ref=source.routine_ref,
+            operation_id="series:preview:checkpoint",
+            start_date=start,
+            end_date_exclusive=date(2099, 10, 9),
+            effective_zone_id="Europe/Rome",
+        )
+        assert len(materialized.occurrences) == 4
+        exception = materialized.occurrences[2]
+        await occurrences.skip(
+            self_person_ref=alice,
+            occurrence_ref=exception.occurrence_ref,
+            operation_id="series:preview:skip",
+            reason="Eccezione da conservare",
+        )
+
+        result = await preview.preview(
+            self_person_ref=alice,
+            selected_occurrence_ref=materialized.occurrences[0].occurrence_ref,
+            scope_code="this_and_following",
+            proposed_recurrence=proposed,
+            window=SeriesReconciliationWindow(start, date(2099, 10, 9)),
+            effective_zone_id="Europe/Rome",
+        )
+        assert not result.apply_authorized
+        assert len(result.proposed_preview_fingerprint) == 64
+        assert len(result.source_preview_fingerprint) == 32
+        assert result.reconciliation.protected_occurrence_refs == (exception.occurrence_ref,)
+        assert set(result.reconciliation.retained_occurrence_refs) == {
+            row.occurrence_ref
+            for row in materialized.occurrences
+            if row.occurrence_ref != exception.occurrence_ref
+        }
+        assert result.reconciliation.superseded_occurrence_refs == ()
+        assert result.reconciliation.new_coordinates == ()
+
+        # Neither a preview nor its fingerprint may change the canonical source.
+        current = await recurrences.get(
+            owner="routine",
+            self_person_ref=alice,
+            owner_ref=source.routine_ref,
+        )
+        assert current is not None
+        assert current.recurrence == proposed
     finally:
         await runtime.dispose()
