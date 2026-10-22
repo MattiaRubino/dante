@@ -39,7 +39,7 @@ from dante.modules.temporal.recurring_series_reconciliation import (
 from dante.platform.database.references import NativeRef
 
 
-class StructuralSeriesPreviewConflict(ValueError):
+class StructuralSeriesPreviewError(ValueError):
     """The SQL protection preview and Python inventory do not agree."""
 
 
@@ -68,20 +68,20 @@ def structural_scope(
     zone = _zone(effective_zone_id)
     expected = {item.occurrence_ref for item in inventory.occurrences}
     if set(protections) != expected:
-        raise StructuralSeriesPreviewConflict("Protection inventory is incomplete.")
+        raise StructuralSeriesPreviewError("Protection inventory is incomplete.")
     candidates: list[RecurrenceEditCandidate] = []
     generated: list[MaterializedSeriesInstance] = []
     for item in inventory.occurrences:
         coordinate = item.coordinate
         if item.origin_code == "recurrence_generated":
             if not isinstance(coordinate, CalendarCoordinate):
-                raise StructuralSeriesPreviewConflict(
+                raise StructuralSeriesPreviewError(
                     "Structural calendar preview requires calendar-generated instances."
                 )
             generated.append(MaterializedSeriesInstance(item.occurrence_ref, coordinate))
         reason = protections[item.occurrence_ref]
         if reason not in {None, "registration", "skipped", "local_change", "legacy_unknown"}:
-            raise StructuralSeriesPreviewConflict("Unknown protected exception reason.")
+            raise StructuralSeriesPreviewError("Unknown protected exception reason.")
         candidates.append(
             RecurrenceEditCandidate(
                 occurrence_ref=item.occurrence_ref,
@@ -125,7 +125,7 @@ class RecurringStructurePreviewApplication:
         effective_zone_id: str,
     ) -> StructuralSeriesPreview:
         if scope_code not in {"this_and_following", "from_next"}:
-            raise StructuralSeriesPreviewConflict("Use a following scope for series edits.")
+            raise StructuralSeriesPreviewError("Use a following scope for series edits.")
         async with self._session_factory() as session, session.begin():
             await session.execute(text("SET TRANSACTION ISOLATION LEVEL REPEATABLE READ"))
             inventory = await self._inventories.read_in_session(
@@ -181,7 +181,7 @@ class RecurringStructurePreviewApplication:
                 or {UUID(str(row["occurrence_ref"])) for row in protected}
                 != set(scope.protected_future_occurrence_refs)
             ):
-                raise StructuralSeriesPreviewConflict(
+                raise StructuralSeriesPreviewError(
                     "Canonical preview changed during structural planning."
                 )
             plan = preview_calendar_series_reconciliation(

@@ -13,16 +13,16 @@ from dante.modules.temporal.occurrence_edit_scope import (
     select_recurrence_edit_scope,
 )
 from dante.modules.temporal.recurrence import CalendarRecurrence
-from dante.modules.temporal.recurring_structure_preview import (
-    StructuralSeriesPreviewConflict,
-    structural_scope,
-)
 from dante.modules.temporal.recurring_series_reconciliation import (
     MaterializedSeriesInstance,
     SeriesReconciliationError,
     SeriesReconciliationWindow,
     preview_calendar_series_reconciliation,
     reconcile_materialized_series,
+)
+from dante.modules.temporal.recurring_structure_preview import (
+    StructuralSeriesPreviewError,
+    structural_scope,
 )
 
 SOURCE, FIRST, LOCAL, CLEAN = (UUID(int=n) for n in (1, 11, 12, 13))
@@ -445,7 +445,7 @@ def test_structural_preview_classifies_canonical_local_exceptions() -> None:
 
 
 def test_structural_preview_refuses_incomplete_protection_snapshot() -> None:
-    with pytest.raises(StructuralSeriesPreviewConflict, match="incomplete"):
+    with pytest.raises(StructuralSeriesPreviewError, match="incomplete"):
         structural_scope(
             inventory=_structural_inventory(),
             protections={FIRST: None, CLEAN: None},

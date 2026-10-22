@@ -49,7 +49,7 @@ from dante.modules.temporal.recurring_series_reconciliation import (
 )
 from dante.modules.temporal.recurring_structure_preview import (
     RecurringStructurePreviewApplication,
-    StructuralSeriesPreviewConflict,
+    StructuralSeriesPreviewError,
 )
 from dante.modules.temporal.routine_occurrence_materialization import (
     RoutineOccurrenceMaterializationApplication,
@@ -934,7 +934,7 @@ async def preview_recurring_structural_cadence(
         planned = _spec(body.proposed_recurrence)
         # CalendarRecurrenceRequest always produces the calendar family.
         if not isinstance(planned, CalendarRecurrence):
-            raise StructuralSeriesPreviewConflict("Only calendar cadence is supported.")
+            raise StructuralSeriesPreviewError("Only calendar cadence is supported.")
         result = await RecurringStructurePreviewApplication(
             request.app.state.database_runtime.session_factory
         ).preview(
@@ -946,7 +946,7 @@ async def preview_recurring_structural_cadence(
             effective_zone_id=context.effective_zone_id,
         )
     except (
-        StructuralSeriesPreviewConflict,
+        StructuralSeriesPreviewError,
         SeriesReconciliationError,
         EditScopeInputError,
         RecurrenceInputError,
