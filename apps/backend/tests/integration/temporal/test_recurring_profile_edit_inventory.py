@@ -290,15 +290,13 @@ async def test_structural_cadence_preview_preserves_skipped_future_occurrence(
             starts_on=start,
             wall_time=time(9),
         )
-        proposed = replace(_daily(), effective_from=start)
-        await recurrences.replace(
+        initial_recurrence = await recurrences.get(
             owner="routine",
             self_person_ref=alice,
             owner_ref=source.routine_ref,
-            operation_id="series:preview:recurrence",
-            expected_material_state_ref=None,
-            recurrence=proposed,
         )
+        assert initial_recurrence is not None
+        proposed = replace(_daily(), effective_from=start)
         materialized = await occurrences.checkpoint(
             owner="routine",
             self_person_ref=alice,
@@ -344,6 +342,7 @@ async def test_structural_cadence_preview_preserves_skipped_future_occurrence(
             owner_ref=source.routine_ref,
         )
         assert current is not None
-        assert current.recurrence == proposed
+        assert current.material_state_ref == initial_recurrence.material_state_ref
+        assert current.recurrence == initial_recurrence.recurrence
     finally:
         await runtime.dispose()
