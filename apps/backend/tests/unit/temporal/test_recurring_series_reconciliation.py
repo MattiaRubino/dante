@@ -10,6 +10,7 @@ from dante.modules.temporal.occurrence import CalendarCoordinate, OccurrenceView
 from dante.modules.temporal.occurrence_edit_inventory import OccurrenceEditInventory
 from dante.modules.temporal.occurrence_edit_scope import (
     RecurrenceEditCandidate,
+    RecurrenceEditScopePlan,
     select_recurrence_edit_scope,
 )
 from dante.modules.temporal.recurrence import CalendarRecurrence
@@ -40,7 +41,7 @@ def _coordinate(day: int) -> CalendarCoordinate:
     )
 
 
-def _scope(*, recorded: bool = False):
+def _scope(*, recorded: bool = False) -> RecurrenceEditScopePlan:
     return select_recurrence_edit_scope(
         selected_occurrence_ref=FIRST,
         scope="from_next" if recorded else "this_and_following",

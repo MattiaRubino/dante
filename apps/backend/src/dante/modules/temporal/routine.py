@@ -185,7 +185,7 @@ class RoutineApplication:
         self_person_ref: NativeRef,
         operation_id: str,
         title: str,
-        life_area_ref: UUID,
+        life_area_ref: UUID | None,
         starts_on: date,
         tag_refs: tuple[UUID, ...] = (),
         wall_time: time | None = None,

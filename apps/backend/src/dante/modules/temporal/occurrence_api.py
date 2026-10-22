@@ -980,7 +980,8 @@ async def preview_recurring_structural_cadence(
             for value in result.reconciliation.new_coordinates
         ],
         protected_occurrences=[
-            ScopedProfileEditProtectedOccurrence(**value) for value in result.protected_occurrences
+            ScopedProfileEditProtectedOccurrence.model_validate(value)
+            for value in result.protected_occurrences
         ],
         apply_authorized=False,
     )
