@@ -123,6 +123,23 @@ async def test_inventory_reuses_self_scope_and_returns_skipped_and_extra_occurre
         assert snapshot.captured_at.tzinfo is not None
         assert snapshot.materialized_only is True
         assert snapshot.apply_authorized is False
+
+        # Future guarded series acceptance composes this same read under its
+        # source lock; it must never open a second transaction or mint write
+        # authority merely because an inventory was enumerated.
+        async with runtime.session_factory() as session, session.begin():
+            await session.execute(text("SET TRANSACTION ISOLATION LEVEL SERIALIZABLE"))
+            transaction_time = await session.scalar(text("SELECT transaction_timestamp()"))
+            in_session = await inventory.read_in_session(
+                session,
+                self_person_ref=alice,
+                selected_occurrence_ref=selected_ref,
+            )
+            assert in_session.captured_at == transaction_time
+            assert in_session.occurrences == snapshot.occurrences
+            assert in_session.source_native_ref == routine.routine_ref
+            assert in_session.materialized_only is True
+            assert in_session.apply_authorized is False
         assert {row.occurrence_ref for row in snapshot.occurrences} == (
             {row.occurrence_ref for row in routine_checkpoint.occurrences}
             | {extra.occurrence.occurrence_ref}

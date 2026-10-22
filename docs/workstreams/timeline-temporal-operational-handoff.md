@@ -1,5 +1,11 @@
 # Timeline / Temporal-Operational — Workstream Handoff
 
+## 2026-10-22 — Shared-transaction Occurrence inventory read (candidate)
+
+`OccurrenceEditInventoryApplication.read_in_session` now reads the complete, owner-scoped materialized Occurrence inventory using the caller's existing SQLAlchemy transaction. `read` delegates to this shared implementation, preserving its original HTTP semantics. The returned snapshot remains read-only (`apply_authorized=False`); this does not grant mutation authority and does not lock a source by itself. A new assertion in the existing PostgreSQL integration test verifies that its timestamp matches the caller's SERIALIZABLE transaction and that identity, scope and read-only flags match an independent read. No schema or API contract changed.
+
+**Verification pending:** Ruff, test collection, focused PostgreSQL and complete same-SHA gate must execute in the owner's WSL. A future atomic structural series command must acquire an authoritative source lock and revalidate the inventory, revisions and protected exceptions **inside that same transaction**, then apply versioned policy and future-instance reconciliation together; the series Save remains blocked until that vertical is complete.
+
 ## 2026-10-22 — Recurrence replacement transaction composition
 
 The ordered Event Agenda replacement now has the same in-session transaction
