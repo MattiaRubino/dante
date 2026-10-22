@@ -400,9 +400,7 @@ describe('Recurring Activity profile scope', () => {
     expect(confirmation.textContent).toContain('Sessione principale.');
     expect(deleteSessionAttempt).not.toHaveBeenCalled();
     fireEvent.click(
-      within(confirmation).getByRole('button', {
-        name: 'Sì, elimina',
-      }),
+      within(confirmation).getByRole('button', { name: 'Sì, elimina' }),
     );
     await waitFor(() =>
       expect(deleteSessionAttempt).toHaveBeenCalledWith(
@@ -460,7 +458,9 @@ describe('Recurring Activity profile scope', () => {
     );
     expect(dialog.textContent).toContain('Sessione principale.');
     expect(dialog.textContent).toContain('cronometro');
-    fireEvent.click(within(dialog).getByRole('button', { name: 'Sì, elimina' }));
+    fireEvent.click(
+      within(dialog).getByRole('button', { name: 'Sì, elimina' }),
+    );
     expect(confirm).toHaveBeenCalledTimes(1);
     rerender(
       <SessionAttemptDeleteDialog
