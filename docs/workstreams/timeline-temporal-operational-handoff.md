@@ -1,23 +1,25 @@
 # Timeline / Temporal-Operational — Workstream Handoff
 
-## 2026-10-22 — Read-only structural cadence preview candidate
+## 2026-10-22 — Internal structural cadence preview candidate
 
-The new `POST /api/v1/temporal/occurrences/{occurrence_ref}/series-cadence-preview`
-accepts a typed proposed calendar Recurrence, scope and bounded window. It
-reads the complete materialized inventory and SQL-classified exception reasons
-in one consistent transaction, checks them against the existing authoritative
-metadata-scope preview, and calls the canonical calendar reconciliation planner.
-The response exposes kept/superseded/new coordinates, protected Occurrences,
-current state and both the source preview fingerprint and a proposed intent
-fingerprint. `apply_authorized` is always `false`; this command never writes.
+The backend `RecurringStructurePreviewApplication.preview` accepts a
+proposed calendar Recurrence, scope and bounded window. It reads the complete
+self-scoped Occurrence inventory and SQL-classified exception reasons within
+one consistent read-only transaction, cross-checks the existing authoritative
+profile-scope preview and evaluates the canonical cadence reconciliation plan.
+Its internal result includes retained/superseded/new coordinates, protected
+Occurrences and proposal fingerprints, with `apply_authorized=False`.
+A PostgreSQL integration regression exercises an individually skipped future
+Occurrence alongside pure boundary and classification tests.
 
-This does **not** enable structural series Save: future unmaterialized generation,
-versioned Routine/Event structure revisions and atomic reconciliation of already
-materialized clean instance graphs remain pending. The read-only preview is not
-a substitute for acceptance rechecking the full inventory under source locks.
-Add dedicated PostgreSQL/API and browser tests and obtain a green same-SHA gate
-before enabling it in UI. No schema migration and no existing HTTP contract
-were changed in this commit.
+**The temporary public HTTP route was withdrawn in this revision**: exposing
+it before regenerating OpenAPI/client contracts and implementing structural
+acceptance caused contract-drift failures. The service remains private to
+the backend. No existing API or schema changes are released by this block.
+The actual structural series Save, versioned source structure and atomic
+instance-graph reconciliation remain pending; any eventual API must validate
+a fresh snapshot under the source lock and obtain same-SHA full gate and
+real-browser acceptance first.
 
 
 ## 2026-10-22 — Shared-transaction recurring policy reads (candidate)
