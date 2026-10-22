@@ -212,6 +212,7 @@ try {
   // Temporary branch-scoped diagnostic: transmit only deterministic public
   // generated contracts in bounded log chunks so the official generator output
   // can be committed without manually altering generated files.
+  // prettier-ignore
   for (const [index, relativePath] of [
     'packages/api-client/openapi/dante-v1.openapi.json',
     'packages/api-client/src/generated/model/scopedProfileEditPreviewResponse.zod.ts',
