@@ -22,6 +22,15 @@ series integration, real-stack browser and the complete same-SHA gate remain
 **NOT_RUN** on this repair candidate; the owner must run them in WSL before
 claiming acceptance. The earlier full gate remains RED for its original SHA.
 
+## 2026-10-22 — Second full-gate diagnosis
+
+The subsequent owner gate on `30243092f` had every non-PostgreSQL group green.
+PostgreSQL and real-stack browser setup both stopped while creating `_165` SQL
+functions: psycopg interpreted PL/pgSQL `%ROWTYPE` as a driver placeholder.
+All static function definitions are now escaped before `exec_driver_sql`, matching
+the repository's established migration pattern. This is the only reported cause;
+the long PostgreSQL error list is fixture fallout after migration setup failed.
+
 ## 2026-10-22 — Structural series Edit worktree candidate (not accepted)
 
 Branch `feature/timeline-temporal-operational`, base `4e1c168c0`, dirty worktree.

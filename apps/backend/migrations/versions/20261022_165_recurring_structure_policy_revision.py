@@ -116,11 +116,17 @@ def upgrade() -> None:
         schema="dante",
     )
     bind = op.get_bind()
-    bind.exec_driver_sql(_SET_POLICY)
-    bind.exec_driver_sql(_GET_POLICY)
-    bind.exec_driver_sql(_GET_RECEIPT)
-    bind.exec_driver_sql(_SUPERSEDE)
-    bind.exec_driver_sql(_CURRENT_INVENTORY)
+    for definition in (
+        _SET_POLICY,
+        _GET_POLICY,
+        _GET_RECEIPT,
+        _SUPERSEDE,
+        _CURRENT_INVENTORY,
+    ):
+        # psycopg parses percent signs even when a driver SQL statement has no
+        # bound parameters. PL/pgSQL uses `%ROWTYPE`, so quote percent signs
+        # before passing static function definitions to the driver.
+        bind.exec_driver_sql(definition.replace("%", "%%"))
     bind.exec_driver_sql(
         "REVOKE ALL ON dante.recurring_structure_policy_revision FROM PUBLIC,dante_runtime,dante_migrator"
     )
