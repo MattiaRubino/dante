@@ -43,6 +43,17 @@ from dante.modules.temporal.occurrence_edit_inventory import (
 from dante.modules.temporal.routine_occurrence_materialization import (
     RoutineOccurrenceMaterializationApplication,
 )
+from dante.modules.temporal.recurring_structure_preview import (
+    RecurringStructurePreviewApplication,
+    StructuralSeriesPreviewConflict,
+)
+from dante.modules.temporal.recurring_series_reconciliation import (
+    SeriesReconciliationError,
+    SeriesReconciliationWindow,
+)
+from dante.modules.temporal.occurrence_edit_scope import EditScopeInputError
+from dante.modules.temporal.recurrence import RecurrenceInputError
+from dante.modules.temporal.recurrence_api import CalendarRecurrenceRequest, _spec
 from dante.modules.temporal.schedule import (
     AbsoluteIntervalPlacement,
     CoarseLocalPeriodPlacement,
@@ -275,6 +286,29 @@ class ScopedProfileEditPreviewResponse(BaseModel):
     target_occurrence_refs: list[UUID]
     protected_occurrences: list[ScopedProfileEditProtectedOccurrence]
     fingerprint: str
+
+
+class StructuralSeriesPreviewRequest(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+    scope_code: Literal["this_and_following", "from_next"]
+    proposed_recurrence: CalendarRecurrenceRequest
+    start_date: date
+    end_date_exclusive: date
+
+
+class StructuralSeriesPreviewResponse(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+    source_native_ref: UUID
+    selected_occurrence_ref: UUID
+    recurrence_state_ref: UUID | None
+    profile_edit_revision: int
+    source_preview_fingerprint: str
+    proposed_preview_fingerprint: str
+    retained_occurrence_refs: list[UUID]
+    superseded_occurrence_refs: list[UUID]
+    new_coordinates: list[CalendarOccurrenceCoordinate]
+    protected_occurrences: list[ScopedProfileEditProtectedOccurrence]
+    apply_authorized: Literal[False] = False
 
 
 class MaterializedActivityOriginResponse(BaseModel):
@@ -879,6 +913,72 @@ async def get_occurrence_profile_edit_preview(
     except SQLAlchemyError as exc:
         raise _problem(OccurrencePersistenceError()) from exc
     return ScopedProfileEditPreviewResponse(**dict(row))
+
+
+@router.post(
+    "/occurrences/{occurrence_ref}/series-cadence-preview",
+    response_model=StructuralSeriesPreviewResponse,
+    operation_id="temporal_preview_recurring_structural_cadence",
+)
+async def preview_recurring_structural_cadence(
+    occurrence_ref: UUID,
+    body: StructuralSeriesPreviewRequest,
+    context: Context,
+    request: Request,
+    response: Response,
+) -> StructuralSeriesPreviewResponse:
+    """Prepare a structural-series candidate; never apply or authorize a write."""
+    response.headers["Cache-Control"] = "no-store"
+    try:
+        window = SeriesReconciliationWindow(body.start_date, body.end_date_exclusive)
+        planned = _spec(body.proposed_recurrence)
+        # CalendarRecurrenceRequest always produces the calendar family.
+        from dante.modules.temporal.recurrence import CalendarRecurrence
+
+        if not isinstance(planned, CalendarRecurrence):
+            raise StructuralSeriesPreviewConflict("Only calendar cadence is supported.")
+        result = await RecurringStructurePreviewApplication(
+            request.app.state.database_runtime.session_factory
+        ).preview(
+            self_person_ref=context.self_person_ref,
+            selected_occurrence_ref=occurrence_ref,
+            scope_code=body.scope_code,
+            proposed_recurrence=planned,
+            window=window,
+            effective_zone_id=context.effective_zone_id,
+        )
+    except (StructuralSeriesPreviewConflict, SeriesReconciliationError,
+            EditScopeInputError, RecurrenceInputError) as exc:
+        raise ProblemError(
+            status=422,
+            code="temporal.recurring_structural_preview.invalid",
+            category="validation",
+            title="Cannot preview the proposed recurring series",
+            detail=str(exc),
+        ) from exc
+    except OccurrenceSourceNotFoundError as exc:
+        raise _problem(exc) from exc
+    except OccurrenceEditInventoryLimitError as exc:
+        raise _problem(exc) from exc
+    except DBAPIError as exc:
+        raise _scoped_edit_problem(exc) from exc
+    except SQLAlchemyError as exc:
+        raise _problem(OccurrencePersistenceError()) from exc
+    return StructuralSeriesPreviewResponse(
+        source_native_ref=result.source_native_ref,
+        selected_occurrence_ref=result.selected_occurrence_ref,
+        recurrence_state_ref=result.recurrence_state_ref,
+        profile_edit_revision=result.profile_edit_revision,
+        source_preview_fingerprint=result.source_preview_fingerprint,
+        proposed_preview_fingerprint=result.proposed_preview_fingerprint,
+        retained_occurrence_refs=list(result.reconciliation.retained_occurrence_refs),
+        superseded_occurrence_refs=list(result.reconciliation.superseded_occurrence_refs),
+        new_coordinates=[CalendarOccurrenceCoordinate(**asdict(value))
+                         for value in result.reconciliation.new_coordinates],
+        protected_occurrences=[ScopedProfileEditProtectedOccurrence(**value)
+                               for value in result.protected_occurrences],
+        apply_authorized=False,
+    )
 
 
 @router.get(

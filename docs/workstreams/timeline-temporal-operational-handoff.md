@@ -1,5 +1,25 @@
 # Timeline / Temporal-Operational — Workstream Handoff
 
+## 2026-10-22 — Read-only structural cadence preview candidate
+
+The new `POST /api/v1/temporal/occurrences/{occurrence_ref}/series-cadence-preview`
+accepts a typed proposed calendar Recurrence, scope and bounded window. It
+reads the complete materialized inventory and SQL-classified exception reasons
+in one consistent transaction, checks them against the existing authoritative
+metadata-scope preview, and calls the canonical calendar reconciliation planner.
+The response exposes kept/superseded/new coordinates, protected Occurrences,
+current state and both the source preview fingerprint and a proposed intent
+fingerprint. `apply_authorized` is always `false`; this command never writes.
+
+This does **not** enable structural series Save: future unmaterialized generation,
+versioned Routine/Event structure revisions and atomic reconciliation of already
+materialized clean instance graphs remain pending. The read-only preview is not
+a substitute for acceptance rechecking the full inventory under source locks.
+Add dedicated PostgreSQL/API and browser tests and obtain a green same-SHA gate
+before enabling it in UI. No schema migration and no existing HTTP contract
+were changed in this commit.
+
+
 ## 2026-10-22 — Shared-transaction recurring policy reads (candidate)
 
 `RoutineOccurrencePolicyApplication.get_in_session` and `EventOccurrencePolicyApplication.get_in_session` now read the owner-scoped canonical policy inside a caller-owned transaction. Their existing `get` operations delegate without changing their public behavior. Existing PostgreSQL recurring-authoring integration tests now compare standalone and shared-session reads for both sources. The prior Occurrence-inventory regression now compares identities irrespective of SQL row order. No schemas, policy writes, API models or generated clients changed.

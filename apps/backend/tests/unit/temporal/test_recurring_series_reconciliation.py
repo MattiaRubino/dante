@@ -6,12 +6,17 @@ from uuid import UUID
 
 import pytest
 
-from dante.modules.temporal.occurrence import CalendarCoordinate
+from dante.modules.temporal.occurrence import CalendarCoordinate, OccurrenceView
+from dante.modules.temporal.occurrence_edit_inventory import OccurrenceEditInventory
 from dante.modules.temporal.occurrence_edit_scope import (
     RecurrenceEditCandidate,
     select_recurrence_edit_scope,
 )
 from dante.modules.temporal.recurrence import CalendarRecurrence
+from dante.modules.temporal.recurring_structure_preview import (
+    StructuralSeriesPreviewConflict,
+    structural_scope,
+)
 from dante.modules.temporal.recurring_series_reconciliation import (
     MaterializedSeriesInstance,
     SeriesReconciliationError,
@@ -403,3 +408,58 @@ def test_cadence_reconciliation_refuses_post_preview_cutover_backfill() -> None:
             effective_zone_id="Europe/Rome",
             authoritative_inventory=True,
         )
+
+
+def _structural_inventory() -> OccurrenceEditInventory:
+    return OccurrenceEditInventory(
+        selected_occurrence_ref=FIRST,
+        source_native_ref=SOURCE,
+        captured_at=datetime(2026, 10, 19, 8, tzinfo=UTC),
+        occurrences=tuple(
+            OccurrenceView(
+                occurrence_ref=ref,
+                source_native_ref=SOURCE,
+                governing_recurrence_state_ref=None,
+                origin_code="recurrence_generated",
+                coordinate=_coordinate(day),
+                skipped=False,
+                skip_reason=None,
+                skipped_at=None,
+            )
+            for ref, day in ((FIRST, 20), (LOCAL, 21), (CLEAN, 22))
+        ),
+    )
+
+
+def test_structural_preview_classifies_canonical_local_exceptions() -> None:
+    scope, generated = structural_scope(
+        inventory=_structural_inventory(),
+        protections={FIRST: None, LOCAL: "legacy_unknown", CLEAN: None},
+        scope_code="this_and_following",
+        effective_zone_id="Europe/Rome",
+    )
+    assert len(generated) == 3
+    assert scope.target_occurrence_refs == (FIRST, CLEAN)
+    assert scope.protected_future_occurrence_refs == (LOCAL,)
+    assert scope.protected_future_reasons == ((LOCAL, "local_change"),)
+
+
+def test_structural_preview_refuses_incomplete_protection_snapshot() -> None:
+    with pytest.raises(StructuralSeriesPreviewConflict, match="incomplete"):
+        structural_scope(
+            inventory=_structural_inventory(),
+            protections={FIRST: None, CLEAN: None},
+            scope_code="this_and_following",
+            effective_zone_id="Europe/Rome",
+        )
+
+
+def test_structural_preview_from_next_preserves_recorded_selected() -> None:
+    scope, _ = structural_scope(
+        inventory=_structural_inventory(),
+        protections={FIRST: "registration", LOCAL: "local_change", CLEAN: None},
+        scope_code="from_next",
+        effective_zone_id="Europe/Rome",
+    )
+    assert scope.target_occurrence_refs == (CLEAN,)
+    assert scope.protected_future_occurrence_refs == (LOCAL,)
