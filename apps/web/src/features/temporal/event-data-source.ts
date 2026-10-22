@@ -102,6 +102,10 @@ export interface TemporalEventAgendaDataSource {
     eventRef: string,
     signal?: AbortSignal,
   ): Promise<TemporalEventDetailRecord>;
+  loadOccurrenceEvent?(
+    occurrenceRef: string,
+    signal?: AbortSignal,
+  ): Promise<TemporalEventDetailRecord>;
   replaceAgenda(
     request: TemporalEventAgendaReplaceRequest,
     signal?: AbortSignal,

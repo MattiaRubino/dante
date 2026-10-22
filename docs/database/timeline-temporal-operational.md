@@ -1,5 +1,16 @@
 # Timeline / Temporal-Operational — Candidate Database Overlay
 
+**Local `_165` structural series policy candidate (2026-10-22, unverified):**
+two new append-only tables record a complete Activity/Event structure snapshot
+for an accepted replacement Recurrence state and the supersession of clean
+future Occurrence plans. Four owner-scoped SECURITY DEFINER capabilities write
+or read those records. The intended catalog is
+`240|5|247|104|492|428|600`. The older materialized Occurrence, Activity,
+Schedule and factual graphs remain in canonical history; the Timeline
+projection excludes a superseded clean plan. This does not yet implement the
+atomic full-series acceptance or its UI. PostgreSQL catalog, migration and
+rollback tests are pending.
+
 **User-local `_142` proof (2026-10-11):** Complete gate passed 19/20 PostgreSQL cases; the only failing exact-catalog test had an outdated completed-stage literal. At `f497cb0b` the user reran that specific test: **1 passed in 24.59s**. Cumulative technical proof verifies the unchanged `238|5|228|103|486|421|596` catalog and past-review function; this does not establish running-app acceptance.
 
 **Current candidate `_142` (2026-10-11):** forward `CREATE OR REPLACE` of `list_self_resolution_queue(uuid,text)` adds owner-scoped grouped past Activity review. A passed Activity interval without real Session qualifies for explicit Reality review only if `review_on_end` or `auto_confirm_outcome` was selected; a pending Objective qualifies independently. Neither time passage nor this read creates Session/Actual/ObjectiveResult. Existing function signature and catalog topology remain `238|5|228|103|486|421|596`; the user-local migration, functional tests and catalog gate passed cumulatively. Real-app acceptance remains open.

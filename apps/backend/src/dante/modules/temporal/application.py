@@ -556,6 +556,11 @@ class TemporalTimelineApplication:
                       schedule.subject_native_ref
                   ) AS occurrence
                  WHERE NOT occurrence.skipped
+                   AND NOT EXISTS (
+                       SELECT 1 FROM dante.recurring_occurrence_supersession superseded
+                        WHERE superseded.occurrence_ref=occurrence.occurrence_ref
+                          AND superseded.self_person_ref=:self_person_ref
+                   )
                  ORDER BY schedule.subject_native_ref,schedule.schedule_ref
             ), self_subject AS (
                 SELECT 'activity'::text AS owner_kind,
@@ -580,6 +585,13 @@ class TemporalTimelineApplication:
                    ) origin
              ) profile_edit ON true
                  WHERE intention.retired_at IS NULL
+                   AND NOT EXISTS (
+                       SELECT 1 FROM dante.routine_occurrence_activity_instance origin
+                       JOIN dante.recurring_occurrence_supersession superseded
+                         ON superseded.occurrence_ref=origin.occurrence_ref
+                      WHERE origin.activity_ref=intention.activity_ref
+                        AND superseded.self_person_ref=:self_person_ref
+                   )
                 UNION ALL
                 SELECT 'event'::text AS owner_kind,
                        expectation.event_ref AS subject_native_ref,
@@ -799,6 +811,11 @@ class TemporalTimelineApplication:
              ) AS patch
          ) profile_edit ON true
              WHERE NOT EXISTS (
+                       SELECT 1 FROM dante.recurring_occurrence_supersession superseded
+                        WHERE superseded.occurrence_ref=occurrence.occurrence_ref
+                          AND superseded.self_person_ref=:self_person_ref
+                   )
+               AND NOT EXISTS (
                        SELECT 1
                          FROM dante.list_self_routine_occurrence_activities(
                                   :self_person_ref,

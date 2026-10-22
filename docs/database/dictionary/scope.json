@@ -95,21 +95,22 @@
       "B14-EVENT-TIMELINE-PLACEMENT",
       "B14-HARD-DELETE-REALITY-POLICY-GRAPH",
       "B14-ACTIVITY-SESSION-SINGLE-DELETE",
-      "B14-RECURRING-PROFILE-EXCEPTIONS"
+      "B14-RECURRING-PROFILE-EXCEPTIONS",
+      "B14-M1-STRUCTURAL-SERIES-REVISION"
     ],
     "standalone_entries": {
-      "tables": 238,
+      "tables": 240,
       "views": 5,
-      "routines": 243,
-      "total": 486
+      "routines": 247,
+      "total": 492
     },
     "embedded_objects": {
       "triggers": 104,
-      "physical_indexes": 486
+      "physical_indexes": 492
     },
     "constraints": {
-      "foreign_keys": 421,
-      "check_constraints": 597
+      "foreign_keys": 428,
+      "check_constraints": 600
     }
   },
   "technical_foundation": {

@@ -26,6 +26,17 @@ const loadOccurrenceContext = vi.fn();
 const loadOccurrencePatch = vi.fn();
 const loadRecurringPreview = vi.fn();
 const saveRecurringEvent = vi.fn();
+const loadSeries = vi.fn();
+const reviewSeries = vi.fn();
+const acceptSeries = vi.fn();
+
+vi.mock('../../../temporal/remote-recurring-series-edit', () => ({
+  createRemoteRecurringSeriesEdit: () => ({
+    load: loadSeries,
+    preview: reviewSeries,
+    accept: acceptSeries,
+  }),
+}));
 
 vi.mock('../../../temporal/remote-recurring-profile-edit', () => ({
   createRemoteRecurringProfileEdit: () => ({
@@ -81,12 +92,13 @@ const eventRef = '0199a111-1111-7111-8111-111111111111';
 
 afterEach(() => {
   cleanup();
+  vi.unstubAllGlobals();
   vi.clearAllMocks();
   isRecurring.mockResolvedValue(false);
 });
 
 describe('Event Inspector actions', () => {
-  it('chooses from-next for a recorded recurring Event and saves only its metadata scope', async () => {
+  it('chooses from-next for a recorded recurring Event and confirms a reviewed structural revision', async () => {
     const occurrenceRef = '0199a555-5555-7555-8555-555555555555';
     const context = {
       occurrenceRef,
@@ -112,6 +124,53 @@ describe('Event Inspector actions', () => {
       colorCode: null,
       profileRevision: 0,
     });
+    const source = {
+      sourceRef: eventRef,
+      owner: 'event',
+      selectedDate: '2027-01-02',
+      editRevision: 2,
+      recurrenceStateRef: context.recurrenceStateRef,
+      title: 'Conferenza',
+      description: null,
+      location: null,
+      colorCode: null,
+      recurrence: {
+        family_code: 'calendar_wall_clock',
+        range_kind: 'open',
+        pattern_code: 'daily',
+        interval_count: 1,
+        wall_times: ['09:00:00'],
+      },
+      structure: {
+        version: 1,
+        placement_kind: 'timed',
+        duration_minutes: 90,
+        reminder_lead_minutes: null,
+        reality_mode: 'manual',
+        agenda_parts: ['Introduzione'],
+        objectives: [],
+        life_area_ref: null,
+      },
+    };
+    const structuralReview = {
+      fingerprint: 'a'.repeat(64),
+      targetRefs: [],
+      newExpectedCount: 1,
+      protected: [
+        {
+          occurrenceRef,
+          expectedAt: '2027-01-02T08:00:00Z',
+          reason: 'registration',
+        },
+      ],
+    };
+    loadSeries.mockResolvedValue(source);
+    reviewSeries.mockResolvedValue(structuralReview);
+    acceptSeries.mockResolvedValue(undefined);
+    vi.stubGlobal(
+      'fetch',
+      vi.fn().mockResolvedValue(new Response('[]', { status: 200 })),
+    );
     render(
       <EventInspectorActions
         eventRef={eventRef}
@@ -127,24 +186,29 @@ describe('Event Inspector actions', () => {
     fireEvent.click(
       await screen.findByRole('button', { name: 'Dalla prossima istanza' }),
     );
-    fireEvent.change(
-      await screen.findByRole('textbox', { name: 'Titolo Event' }),
-      {
-        target: { value: 'Nuova conferenza' },
-      },
-    );
-    fireEvent.click(
-      screen.getByRole('button', { name: 'Salva metadati Event' }),
-    );
+    fireEvent.change(await screen.findByRole('textbox', { name: 'Titolo' }), {
+      target: { value: 'Nuova conferenza' },
+    });
+    fireEvent.click(screen.getByRole('button', { name: 'Verifica modifiche' }));
     await waitFor(() =>
-      expect(saveRecurringEvent).toHaveBeenCalledWith(
-        context,
-        'from_next',
-        { title: 'Nuova conferenza' },
-        expect.any(String),
-        preview,
+      expect(reviewSeries).toHaveBeenCalledWith(
+        expect.objectContaining({
+          selectedRef: occurrenceRef,
+          scope: 'from_next',
+          profilePatch: { title: 'Nuova conferenza' },
+        }),
       ),
     );
+    fireEvent.click(
+      await screen.findByRole('button', { name: 'Conferma modifiche' }),
+    );
+    await waitFor(() =>
+      expect(acceptSeries).toHaveBeenCalledWith(
+        expect.objectContaining({ scope: 'from_next' }),
+        structuralReview,
+      ),
+    );
+    expect(saveRecurringEvent).not.toHaveBeenCalled();
     expect(reviseProfile).not.toHaveBeenCalled();
   });
   it('offers a copy to Bozze without exposing canonical unplacement', () => {

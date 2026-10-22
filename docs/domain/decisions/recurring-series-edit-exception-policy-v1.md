@@ -1,10 +1,19 @@
 # Recurring series edit: boundary and exception policy
 
-- **Status:** Accepted decision; metadata scope implemented, structural series edit pending
+- **Status:** Accepted decision; structural series edit candidate awaiting PostgreSQL and real-browser acceptance
 - **Date:** 2026-10-19
 - **Applies to:** recurring Activity (Routine source) and recurring Event
 
 ## Identity and edit scope
+
+The 2026-10-22 branch candidate adds a single structural preview/accept command
+for Calendar Recurrences. It carries the complete Routine/Event policy snapshot
+with the replacement Recurrence state, supersedes only future clean plans, and
+preserves protected registrations, local edits and their governed older state.
+The Inspector now opens a series editor for the two following scopes. The
+current candidate is **not accepted** until fresh PostgreSQL migration,
+transaction, ACL, complete-gate and real-browser evidence exists on one SHA.
+The historical implementation boundaries below describe earlier checkpoints.
 
 The selected occurrence is an instance, not the series source. Before opening
 Edit, the user chooses **Solo questa istanza** or **Questa e le successive**.
@@ -63,6 +72,17 @@ source changes. An open or paused registration is protected just like a
 completed one. A series edit never deletes a registration automatically.
 
 ## Current implementation boundary (2026-10-19)
+
+The local `_165` candidate adds a structure snapshot keyed by governing
+Recurrence state, with an immutable supersession record for a clean future
+Occurrence. It also contains an owner-scoped proposed-cadence preview and an
+atomic acceptance command that rechecks the complete materialized inventory,
+replaces Recurrence, retires clean plans and excludes protected coordinates.
+The materializer selects the snapshot of the Occurrence's state, while Timeline
+excludes superseded clean plans and retains their historical graphs. This is
+**not yet a completed user-facing series edit**: the full Activity/Event field
+projection, editor transport/UI, and PostgreSQL execution of `_165` remain
+pending. Existing UI guards stay in force.
 
 The owner-scoped profile edit accepts title, description, location and color.
 The Inspector asks for the scope in a centered modal before opening any editor,

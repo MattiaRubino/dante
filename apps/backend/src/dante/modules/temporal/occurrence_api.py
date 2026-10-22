@@ -20,6 +20,8 @@ from dante.modules.temporal.api import (
     TemporalScheduleApplicationDependency,
     _placement_from_request,
 )
+from dante.modules.temporal.event import _read_event_in_session
+from dante.modules.temporal.event_api import EventResponse
 from dante.modules.temporal.occurrence import (
     CalendarCoordinate,
     CyclicCoordinate,
@@ -35,10 +37,22 @@ from dante.modules.temporal.occurrence import (
     OccurrenceSourceNotFoundError,
     OccurrenceView,
     OccurrenceWindowCheckpoint,
+    _occurrence,
 )
 from dante.modules.temporal.occurrence_edit_inventory import (
     OccurrenceEditInventoryApplication,
     OccurrenceEditInventoryLimitError,
+)
+from dante.modules.temporal.recurrence import CalendarRecurrence
+from dante.modules.temporal.recurrence_api import CalendarRecurrenceRequest, _spec
+from dante.modules.temporal.recurring_series_edit import (
+    RecurringSeriesEditApplication,
+    RecurringSeriesEditConflictError,
+)
+from dante.modules.temporal.recurring_series_reconciliation import SeriesReconciliationError
+from dante.modules.temporal.recurring_structure_policy import (
+    RecurringStructurePolicyApplication,
+    RecurringStructurePolicyError,
 )
 from dante.modules.temporal.routine_occurrence_materialization import (
     RoutineOccurrenceMaterializationApplication,
@@ -250,6 +264,27 @@ class ScopedProfileEditResponse(BaseModel):
     replayed: bool
 
 
+class RecurringSeriesEditCommand(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+    operation_id: str = Field(min_length=1, max_length=200)
+    expected_revision: int = Field(ge=0)
+    expected_recurrence_state_ref: UUID
+    scope_code: Literal["this_and_following", "from_next"]
+    recurrence: CalendarRecurrenceRequest
+    structure_snapshot: dict[str, object] = Field(min_length=1)
+    profile_patch: dict[str, str | None] | None = None
+    expected_preview_fingerprint: str | None = Field(default=None, min_length=64, max_length=64)
+
+
+class RecurringSeriesEditResponse(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+    source_native_ref: UUID
+    recurrence_state_ref: UUID
+    superseded_count: int
+    protected_count: int
+    replayed: bool
+
+
 class ScopedProfileEditStateResponse(BaseModel):
     model_config = ConfigDict(extra="forbid")
     selected_occurrence_ref: UUID
@@ -264,6 +299,32 @@ class ScopedProfileEditProtectedOccurrence(BaseModel):
     occurrence_ref: UUID
     reason: Literal["registration", "skipped", "local_change", "legacy_unknown"]
     expected_at: datetime
+
+
+class RecurringSeriesEditPreviewResponse(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+    source_native_ref: UUID
+    owner_kind: Literal["routine", "event"]
+    selected_occurrence_ref: UUID
+    target_occurrence_refs: list[UUID]
+    protected_occurrences: list[ScopedProfileEditProtectedOccurrence]
+    new_expected_count: int
+    fingerprint: str
+
+
+class RecurringSeriesSourceResponse(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+    source_native_ref: UUID
+    owner_kind: Literal["routine", "event"]
+    edit_revision: int
+    recurrence_state_ref: UUID
+    recurrence: CalendarRecurrenceRequest
+    structure_snapshot: dict[str, object]
+    title: str
+    selected_date: date
+    description: str | None
+    location: str | None
+    color_code: str | None
 
 
 class ScopedProfileEditPreviewResponse(BaseModel):
@@ -996,6 +1057,284 @@ async def accept_occurrence_profile_edit(
     except SQLAlchemyError as exc:
         raise _problem(OccurrencePersistenceError()) from exc
     return ScopedProfileEditResponse(**dict(row))
+
+
+def _series_spec(value: CalendarRecurrenceRequest) -> CalendarRecurrence:
+    spec = _spec(value)
+    if not isinstance(spec, CalendarRecurrence):
+        raise _problem(OccurrenceInputError("Calendar series rule is required."))
+    return spec
+
+
+def _series_source_recurrence(value: CalendarRecurrence) -> CalendarRecurrenceRequest:
+    """Return the public named selectors, not the domain's tuple pairs."""
+    return CalendarRecurrenceRequest(
+        **{
+            **asdict(value),
+            "ordinal_weekdays": [
+                {"weekday_number": weekday, "ordinal": ordinal}
+                for weekday, ordinal in value.ordinal_weekdays
+            ],
+            "year_month_days": [
+                {"month_number": month, "month_day": day} for month, day in value.year_month_days
+            ],
+        }
+    )
+
+
+def _series_problem(exc: Exception) -> ProblemError:
+    if isinstance(exc, (SeriesReconciliationError, ValueError)):
+        return _problem(OccurrenceInputError(str(exc)))
+    if isinstance(exc, RecurringSeriesEditConflictError):
+        return ProblemError(
+            status=409,
+            code="temporal.recurring_series.stale",
+            category="conflict",
+            title="Recurring series changed",
+            detail=str(exc),
+        )
+    return _problem(OccurrencePersistenceError())
+
+
+@router.get(
+    "/occurrences/{occurrence_ref}/series-edit-source",
+    response_model=RecurringSeriesSourceResponse,
+    operation_id="temporal_get_recurring_series_edit_source",
+)
+async def get_recurring_series_edit_source(
+    occurrence_ref: UUID,
+    context: Context,
+    request: Request,
+    response: Response,
+) -> RecurringSeriesSourceResponse:
+    response.headers["Cache-Control"] = "no-store"
+    application = RecurringSeriesEditApplication(request.app.state.database_runtime.session_factory)
+    try:
+        source = await application.source(
+            self_person_ref=context.self_person_ref,
+            selected_occurrence_ref=occurrence_ref,
+        )
+    except (DBAPIError, SQLAlchemyError) as exc:
+        raise (
+            _scoped_edit_problem(exc) if isinstance(exc, DBAPIError) else _series_problem(exc)
+        ) from exc
+    except (SeriesReconciliationError, RecurringSeriesEditConflictError, ValueError) as exc:
+        raise _series_problem(exc) from exc
+    return RecurringSeriesSourceResponse(
+        source_native_ref=source.source_ref,
+        owner_kind=source.owner,
+        edit_revision=source.edit_revision,
+        recurrence_state_ref=source.recurrence_state_ref,
+        recurrence=_series_source_recurrence(source.recurrence),
+        structure_snapshot=source.structure_snapshot,
+        title=source.title,
+        selected_date=source.selected_date,
+        description=source.description,
+        location=source.location,
+        color_code=source.color_code,
+    )
+
+
+@router.get(
+    "/occurrences/{occurrence_ref}/event-detail",
+    response_model=EventResponse,
+    operation_id="temporal_get_recurring_event_occurrence_detail",
+)
+async def get_recurring_event_occurrence_detail(
+    occurrence_ref: UUID,
+    context: Context,
+    request: Request,
+    response: Response,
+) -> EventResponse:
+    """Project the Event source structure governed by this instance's state."""
+    response.headers["Cache-Control"] = "no-store"
+    try:
+        async with request.app.state.database_runtime.session_factory() as session, session.begin():
+            await session.execute(text("SET TRANSACTION ISOLATION LEVEL REPEATABLE READ"))
+            raw = (
+                (
+                    await session.execute(
+                        text("SELECT * FROM dante.get_self_occurrence(:actor,:occurrence)"),
+                        {"actor": context.self_person_ref, "occurrence": occurrence_ref},
+                    )
+                )
+                .mappings()
+                .one_or_none()
+            )
+            if raw is None or raw["skipped"]:
+                raise RecurringSeriesEditConflictError("Event instance is unavailable.")
+            occurrence = _occurrence(raw)
+            source_ref = occurrence.source_native_ref
+            event = await _read_event_in_session(
+                session, self_person_ref=context.self_person_ref, event_ref=NativeRef(source_ref)
+            )
+            if event is None:
+                raise RecurringSeriesEditConflictError("Event source is unavailable.")
+            state = occurrence.governing_recurrence_state_ref
+            snapshot = (
+                await RecurringStructurePolicyApplication(
+                    request.app.state.database_runtime.session_factory
+                ).get_snapshot_in_session(
+                    session,
+                    self_person_ref=context.self_person_ref,
+                    owner="event",
+                    source_ref=source_ref,
+                    recurrence_state_ref=state,
+                )
+                if state is not None
+                else None
+            )
+            patch = await session.scalar(
+                text("SELECT dante.get_self_occurrence_profile_patch(:actor,:occurrence)"),
+                {"actor": context.self_person_ref, "occurrence": occurrence_ref},
+            )
+            if not isinstance(patch, dict):
+                patch = {}
+            agenda = (
+                event.agenda_parts
+                if snapshot is None
+                else snapshot.get("agenda_parts", list(event.agenda_parts))
+            )
+            area = (
+                event.life_area_ref
+                if snapshot is None
+                else snapshot.get("life_area_ref", event.life_area_ref)
+            )
+            if area is not None:
+                try:
+                    area = UUID(str(area))
+                except (TypeError, ValueError) as exc:
+                    raise RecurringStructurePolicyError(
+                        "Event Life Area revision is invalid."
+                    ) from exc
+            if not isinstance(agenda, (tuple, list)) or any(
+                not isinstance(item, str) for item in agenda
+            ):
+                raise RecurringStructurePolicyError("Event Agenda revision is invalid.")
+            return EventResponse(
+                event_ref=event.event_ref,
+                title=patch.get("title", event.title),
+                agenda_revision=event.agenda_revision,
+                agenda_parts=list(agenda),
+                created_at=event.created_at,
+                life_area_ref=area,
+                life_area_assignment_revision=event.life_area_assignment_revision,
+                description=patch.get("description", event.description),
+                location=patch.get("location", event.location),
+                color_code=patch.get("color_code", event.color_code),
+                profile_revision=event.profile_revision,
+            )
+    except (DBAPIError, SQLAlchemyError) as exc:
+        raise (
+            _scoped_edit_problem(exc) if isinstance(exc, DBAPIError) else _series_problem(exc)
+        ) from exc
+    except (RecurringSeriesEditConflictError, RecurringStructurePolicyError, ValueError) as exc:
+        raise _series_problem(exc) from exc
+
+
+@router.post(
+    "/occurrences/{occurrence_ref}/series-edit-preview",
+    response_model=RecurringSeriesEditPreviewResponse,
+    operation_id="temporal_preview_recurring_series_edit",
+)
+async def preview_recurring_series_edit(
+    occurrence_ref: UUID,
+    body: RecurringSeriesEditCommand,
+    context: MutatingContext,
+    request: Request,
+    response: Response,
+) -> RecurringSeriesEditPreviewResponse:
+    response.headers["Cache-Control"] = "no-store"
+    application = RecurringSeriesEditApplication(request.app.state.database_runtime.session_factory)
+    try:
+        prepared = await application.preview(
+            self_person_ref=context.self_person_ref,
+            selected_occurrence_ref=occurrence_ref,
+            requested_scope=body.scope_code,
+            expected_revision=body.expected_revision,
+            expected_state_ref=body.expected_recurrence_state_ref,
+            effective_zone_id=context.effective_zone_id,
+            proposed_recurrence=_series_spec(body.recurrence),
+            proposed_structure=body.structure_snapshot,
+            profile_patch=body.profile_patch,
+        )
+    except (DBAPIError, SQLAlchemyError) as exc:
+        raise (
+            _scoped_edit_problem(exc) if isinstance(exc, DBAPIError) else _series_problem(exc)
+        ) from exc
+    except (
+        SeriesReconciliationError,
+        RecurringSeriesEditConflictError,
+        RecurringStructurePolicyError,
+        ValueError,
+    ) as exc:
+        raise _series_problem(exc) from exc
+    return RecurringSeriesEditPreviewResponse(
+        source_native_ref=prepared.source_ref,
+        owner_kind=prepared.owner,
+        selected_occurrence_ref=prepared.selected_ref,
+        target_occurrence_refs=list(prepared.scope.target_occurrence_refs),
+        protected_occurrences=[
+            ScopedProfileEditProtectedOccurrence(
+                occurrence_ref=ref,
+                reason=reason,
+                expected_at=expected_at,
+            )
+            for ref, reason, expected_at in prepared.protected_occurrences
+        ],
+        new_expected_count=len(prepared.reconciliation.new_coordinates),
+        fingerprint=prepared.fingerprint,
+    )
+
+
+@router.post(
+    "/occurrences/{occurrence_ref}/series-edit",
+    response_model=RecurringSeriesEditResponse,
+    operation_id="temporal_accept_recurring_series_edit",
+)
+async def accept_recurring_series_edit(
+    occurrence_ref: UUID,
+    body: RecurringSeriesEditCommand,
+    context: MutatingContext,
+    request: Request,
+    response: Response,
+) -> RecurringSeriesEditResponse:
+    response.headers["Cache-Control"] = "no-store"
+    if body.expected_preview_fingerprint is None:
+        raise _problem(OccurrenceInputError("Review the revised series before saving."))
+    application = RecurringSeriesEditApplication(request.app.state.database_runtime.session_factory)
+    try:
+        accepted = await application.accept(
+            self_person_ref=context.self_person_ref,
+            selected_occurrence_ref=occurrence_ref,
+            requested_scope=body.scope_code,
+            expected_revision=body.expected_revision,
+            expected_state_ref=body.expected_recurrence_state_ref,
+            effective_zone_id=context.effective_zone_id,
+            proposed_recurrence=_series_spec(body.recurrence),
+            proposed_structure=body.structure_snapshot,
+            profile_patch=body.profile_patch,
+            expected_fingerprint=body.expected_preview_fingerprint,
+            operation_id=body.operation_id,
+        )
+    except (DBAPIError, SQLAlchemyError) as exc:
+        raise (
+            _scoped_edit_problem(exc) if isinstance(exc, DBAPIError) else _series_problem(exc)
+        ) from exc
+    except (
+        SeriesReconciliationError,
+        RecurringSeriesEditConflictError,
+        RecurringStructurePolicyError,
+        ValueError,
+    ) as exc:
+        raise _series_problem(exc) from exc
+    return RecurringSeriesEditResponse(
+        source_native_ref=accepted.source_ref,
+        recurrence_state_ref=accepted.recurrence_state_ref,
+        superseded_count=accepted.superseded_count,
+        protected_count=accepted.protected_count,
+        replayed=accepted.replayed,
+    )
 
 
 @router.post(

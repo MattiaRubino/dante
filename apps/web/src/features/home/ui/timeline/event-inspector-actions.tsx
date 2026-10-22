@@ -36,6 +36,7 @@ import { buildEventDuplicateSeed } from '../../../temporal-create/application/ev
 import type { TimelineCanonicalSchedulePlacement } from './model/timeline-types';
 import { TimelineInspectorIcon } from './timeline-inspector-icon';
 import { RecurringEditScopeDialog } from './recurring-edit-scope-dialog';
+import { RecurringSeriesEditor } from './recurring-series-editor';
 
 export function EventInspectorActions({
   eventRef,
@@ -110,7 +111,10 @@ export function EventInspectorActions({
     setBusy(true);
     setError('');
     try {
-      const loaded = await profileSource.load(eventRef);
+      const loaded =
+        context && occurrenceRef && eventSource.loadOccurrenceEvent
+          ? await eventSource.loadOccurrenceEvent(occurrenceRef)
+          : await profileSource.load(eventRef);
       if (loaded.profileRevision === undefined) {
         throw new Error('Revisione del profilo Event non disponibile.');
       }
@@ -128,11 +132,6 @@ export function EventInspectorActions({
       setRecurringContext(context);
       setEditScope(selectedScope);
       setSeriesPreview(null);
-      if (context && selectedScope !== 'only_this') {
-        setSeriesPreview(
-          await recurringSource.loadPreview(context, selectedScope),
-        );
-      }
       setEditingProfile(true);
       setProfileNotice('');
     } catch (reason) {
@@ -542,7 +541,18 @@ export function EventInspectorActions({
         </button>
       ) : null}
 
-      {editingProfile && profileDraft && profile ? (
+      {editingProfile && recurringContext && editScope !== 'only_this' ? (
+        <RecurringSeriesEditor
+          occurrenceRef={recurringContext.occurrenceRef}
+          scope={editScope}
+          owner="event"
+          onSaved={() => {
+            setEditingProfile(false);
+            setProfileNotice('Serie aggiornata.');
+          }}
+          onCancel={() => setEditingProfile(false)}
+        />
+      ) : editingProfile && profileDraft && profile ? (
         <div
           className="timeline-activity-editor__fields"
           aria-label="Modifica profilo Event"

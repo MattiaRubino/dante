@@ -8,7 +8,7 @@
     "name": "list_self_recurrence_edit_occurrences",
     "ownership_class": "dante_owned"
   },
-  "purpose": "Bounded self-owned inventory of every accepted materialized Routine/Event Occurrence belonging to the selected Occurrence source, including skipped and scheduled instances; incomplete inventories are rejected.",
+  "purpose": "Bounded self-owned inventory of current materialized Routine/Event Occurrences of the selected source, including skipped and scheduled instances but excluding superseded clean plans; incomplete inventories are rejected.",
   "classification": {
     "persistence_role": "occurrence_capability",
     "canonicality": "capability_surface",
@@ -74,7 +74,7 @@
   },
   "state_history": {
     "material_state_behavior": null,
-    "current_binding": "Read-only: derives all canonical materialized source Occurrences through existing self-scoped get_self_occurrence; never implies as-yet-unmaterialized future candidates are present.",
+    "current_binding": "Read-only: derives current materialized source Occurrences through self-scoped get_self_occurrence and excludes immutable clean-plan supersessions; historical rows remain canonical and unmaterialized future candidates are absent.",
     "chronology": "The read retains immutable governing Recurrence coordinates and skip history regardless of Schedule placement. No browser-window filtering or mutation.",
     "immutability_policy": "Source ownership from selected self Occurrence; 10000 rows maximum, 10001 fails closed. Apply still requires source/instance CAS and exception handling."
   },

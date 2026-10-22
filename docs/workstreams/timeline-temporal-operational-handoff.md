@@ -1,5 +1,31 @@
 # Timeline / Temporal-Operational — Workstream Handoff
 
+## 2026-10-22 — Structural series Edit worktree candidate (not accepted)
+
+Branch `feature/timeline-temporal-operational`, base `4e1c168c0`, dirty worktree.
+The local `_165` revision and API now expose a source read, a bounded preview,
+and an atomic series acceptance of Recurrence, complete Activity/Event structure,
+clean-future supersession and protected exceptions. Activity and Event series
+choices open the structural editor; it edits cadence, time and duration,
+Activity intervals/capture/planned Sessions/children, Event agenda and all-day
+placement, objectives, Life Area, reminder and profile fields. An Event occurrence
+read projects its agenda and Life Area from the governing state. The source
+read preserves the Routine's initially assigned Life Area when building its
+first complete template. The editor serializes monthly ordinal/yearly selectors
+using the API's named fields and retains multiple selectors.
+
+Local evidence on this dirty candidate: Backend Ruff/mypy and 28 focused
+non-PostgreSQL tests PASS; Web TypeScript and 17 focused tests PASS; generated
+OpenAPI/client check PASS (554 files). A later focused ESLint pass found one
+test-only `require-await` error, which was corrected; rerun final checks after
+the final edit. PostgreSQL 18.6, migration/catalog/ACL, complete same-SHA gate
+and real-browser visual/interaction proof are **NOT_RUN** in this container
+without Docker/PostgreSQL or a browser. Do not claim acceptance or publish the
+candidate until the full WSL evidence and any resulting repairs are complete.
+
+The existing sections below are earlier checkpoints. Their "editor remains
+closed" statements are historical, not the current dirty worktree status.
+
 ## 2026-10-22 — Official generated API/client reconciliation (candidate)
 
 The `pnpm api:generate` source of truth was executed by the branch CI with
@@ -100,6 +126,24 @@ real-browser acceptance first.
 `OccurrenceEditInventoryApplication.read_in_session` now reads the complete, owner-scoped materialized Occurrence inventory using the caller's existing SQLAlchemy transaction. `read` delegates to this shared implementation, preserving its original HTTP semantics. The returned snapshot remains read-only (`apply_authorized=False`); this does not grant mutation authority and does not lock a source by itself. A new assertion in the existing PostgreSQL integration test verifies that its timestamp matches the caller's SERIALIZABLE transaction and that identity, scope and read-only flags match an independent read. No schema or API contract changed.
 
 **Verification pending:** Ruff, test collection, focused PostgreSQL and complete same-SHA gate must execute in the owner's WSL. A future atomic structural series command must acquire an authoritative source lock and revalidate the inventory, revisions and protected exceptions **inside that same transaction**, then apply versioned policy and future-instance reconciliation together; the series Save remains blocked until that vertical is complete.
+## 2026-10-22 — Structural source policy and clean-plan supersession candidate
+
+Local, unverified `_165` candidate introduces immutable Activity/Event structure
+snapshots tied to the new governing Recurrence MaterialState, plus a guarded
+supersession receipt for future materialized clean Occurrences. The materializer
+uses the appropriate policy per governing state. Timeline excludes superseded
+future plans without deleting the Occurrence, Schedule, Activity or factual
+history. An owner-scoped preview and atomic acceptance coordinator now recheck
+the complete inventory under the source lock, replace the rule, retire clean
+future plans, preserve protected coordinates, and record an operation receipt.
+The initial transport endpoints exist but have no editor client. PostgreSQL
+regressions for Event revision and Routine rollback have not yet executed.
+
+**Still blocking user-facing series Save:** authoritative proposed-cadence
+projection and editor fields for intervals, Session configuration, Objectives,
+Reminder, Life Area and Event agenda; loading the current structure into the
+editor; and PostgreSQL, API and browser proof on one final revision. Keep the
+metadata-only UI guard until those paths are complete.
 
 ## 2026-10-22 — Recurrence replacement transaction composition
 

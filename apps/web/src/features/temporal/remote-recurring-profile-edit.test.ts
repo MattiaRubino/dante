@@ -2,6 +2,7 @@ import { fetchRequestBody } from '../../test-support/fetch-request';
 import { describe, expect, it, vi } from 'vitest';
 
 import { createRemoteRecurringProfileEdit } from './remote-recurring-profile-edit';
+import { createRemoteRecurringSeriesEdit } from './remote-recurring-series-edit';
 
 const activityRef = '0199a111-1111-7111-8111-111111111111';
 const occurrenceRef = '0199a222-2222-7222-8222-222222222222';
@@ -13,6 +14,112 @@ const response = (value: unknown, status = 200): Response =>
     status,
     headers: { 'Content-Type': 'application/json' },
   });
+
+describe('Structural recurring series remote contract', () => {
+  it('reviews one complete source revision and accepts only its matching fingerprint', async () => {
+    const bodies: Record<string, unknown>[] = [];
+    const fetchFn = vi.fn(
+      (input: RequestInfo | URL, init?: RequestInit): Promise<Response> => {
+        const path =
+          typeof input === 'string'
+            ? input
+            : input instanceof URL
+              ? input.href
+              : input.url;
+        if (path.endsWith('/series-edit-source'))
+          return Promise.resolve(
+            response({
+              source_native_ref: sourceRef,
+              owner_kind: 'event',
+              selected_date: '2027-01-02',
+              edit_revision: 2,
+              recurrence_state_ref: recurrenceStateRef,
+              title: 'Conferenza',
+              description: null,
+              location: null,
+              color_code: null,
+              recurrence: {
+                family_code: 'calendar_wall_clock',
+                ordinal_weekdays: [{ weekday_number: 2, ordinal: -1 }],
+              },
+              structure_snapshot: {
+                version: 1,
+                agenda_parts: ['Introduzione'],
+              },
+            }),
+          );
+        if (path.endsWith('/auth/session'))
+          return Promise.resolve(
+            response({ authenticated: true, csrf_token: 'csrf' }),
+          );
+        if (path.endsWith('/series-edit-preview')) {
+          expect(new Headers(init?.headers).get('X-Dante-CSRF')).toBe('csrf');
+          bodies.push(
+            JSON.parse(fetchRequestBody(init?.body)) as Record<string, unknown>,
+          );
+          return Promise.resolve(
+            response({
+              source_native_ref: sourceRef,
+              owner_kind: 'event',
+              selected_occurrence_ref: occurrenceRef,
+              target_occurrence_refs: [occurrenceRef],
+              protected_occurrences: [
+                {
+                  occurrence_ref: '0199a555-5555-7555-8555-555555555555',
+                  expected_at: '2027-01-03T08:00:00Z',
+                  reason: 'registration',
+                },
+              ],
+              new_expected_count: 1,
+              fingerprint: 'a'.repeat(64),
+            }),
+          );
+        }
+        if (path.endsWith('/series-edit')) {
+          bodies.push(
+            JSON.parse(fetchRequestBody(init?.body)) as Record<string, unknown>,
+          );
+          return Promise.resolve(
+            response({
+              source_native_ref: sourceRef,
+              recurrence_state_ref: '0199a777-7777-7777-8777-777777777777',
+              superseded_count: 1,
+              protected_count: 1,
+            }),
+          );
+        }
+        throw new Error(`Unexpected request ${path}`);
+      },
+    );
+    const remote = createRemoteRecurringSeriesEdit(fetchFn);
+    const source = await remote.load(occurrenceRef);
+    const intent = {
+      selectedRef: occurrenceRef,
+      source,
+      scope: 'this_and_following' as const,
+      recurrence: source.recurrence,
+      structure: { ...source.structure, agenda_parts: ['Nuova introduzione'] },
+      profilePatch: { title: 'Nuova conferenza' },
+      operationId: 'series:one',
+    };
+    const preview = await remote.preview(intent);
+    expect(preview.protected).toHaveLength(1);
+    await remote.accept(intent, preview);
+    expect(bodies).toEqual([
+      expect.objectContaining({
+        operation_id: 'series:one',
+        expected_revision: 2,
+        recurrence: source.recurrence,
+        structure_snapshot: intent.structure,
+        profile_patch: intent.profilePatch,
+      }),
+      expect.objectContaining({
+        operation_id: 'series:one',
+        expected_preview_fingerprint: 'a'.repeat(64),
+      }),
+    ]);
+  });
+});
 
 describe('Recurring Activity metadata edit remote contract', () => {
   it('uses canonical origin/state and a single idempotent scoped POST', async () => {

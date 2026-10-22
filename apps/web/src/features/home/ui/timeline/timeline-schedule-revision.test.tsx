@@ -49,6 +49,14 @@ vi.mock('./activity-edit-panel', () => ({
   ),
 }));
 
+vi.mock('./recurring-series-editor', () => ({
+  RecurringActivitySeriesEditor: ({ scope }: { scope: string }) => (
+    <div data-testid="recurring-series-editor" data-scope={scope}>
+      Modifica serie
+    </div>
+  ),
+}));
+
 const remote = vi.hoisted(() => ({
   load: vi.fn(),
   applyReplan: vi.fn(),
@@ -610,7 +618,7 @@ describe('Activity Timeline coordinated replan', () => {
     fireEvent.click(
       within(dialog).getByRole('button', { name: 'Questa e le successive' }),
     );
-    const editor = await screen.findByTestId('activity-edit-panel');
+    const editor = await screen.findByTestId('recurring-series-editor');
     expect(editor.getAttribute('data-scope')).toBe('this_and_following');
     expect(remote.applyReplan).not.toHaveBeenCalled();
   });

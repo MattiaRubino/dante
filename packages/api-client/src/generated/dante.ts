@@ -171,6 +171,10 @@ import type {
   RecurrenceMutationResponse,
   RecurrenceStateResponse,
   RecurringAuthoringResponse,
+  RecurringSeriesEditCommand,
+  RecurringSeriesEditPreviewResponse,
+  RecurringSeriesEditResponse,
+  RecurringSeriesSourceResponse,
   RenameLifeAreaRequest,
   RenamePersonReferentRequest,
   RenameProductTagRequest,
@@ -11405,6 +11409,64 @@ export const temporalGetOccurrenceEditInventory = async (
   } as temporalGetOccurrenceEditInventoryResponse;
 };
 
+export type temporalGetRecurringEventOccurrenceDetailResponse200 = {
+  data: EventResponse;
+  status: 200;
+};
+
+export type temporalGetRecurringEventOccurrenceDetailResponse422 = {
+  data: HTTPValidationError;
+  status: 422;
+};
+
+export type temporalGetRecurringEventOccurrenceDetailResponseSuccess =
+  temporalGetRecurringEventOccurrenceDetailResponse200 & {
+    headers: Headers;
+  };
+export type temporalGetRecurringEventOccurrenceDetailResponseError =
+  temporalGetRecurringEventOccurrenceDetailResponse422 & {
+    headers: Headers;
+  };
+
+export type temporalGetRecurringEventOccurrenceDetailResponse =
+  | temporalGetRecurringEventOccurrenceDetailResponseSuccess
+  | temporalGetRecurringEventOccurrenceDetailResponseError;
+
+export const getTemporalGetRecurringEventOccurrenceDetailUrl = (
+  occurrenceRef: string,
+) => {
+  return `/api/v1/temporal/occurrences/${occurrenceRef}/event-detail`;
+};
+
+/**
+ * Project the Event source structure governed by this instance's state.
+ * @summary Get Recurring Event Occurrence Detail
+ */
+export const temporalGetRecurringEventOccurrenceDetail = async (
+  occurrenceRef: string,
+  options?: RequestInit,
+  fetchFn?: typeof globalThis.fetch,
+): Promise<temporalGetRecurringEventOccurrenceDetailResponse> => {
+  const res = await (fetchFn ?? fetch)(
+    getTemporalGetRecurringEventOccurrenceDetailUrl(occurrenceRef),
+    {
+      ...options,
+      method: 'GET',
+    },
+  );
+
+  const body = [204, 205, 304].includes(res.status) ? null : await res.text();
+
+  const data: temporalGetRecurringEventOccurrenceDetailResponse['data'] = body
+    ? JSON.parse(body)
+    : {};
+  return {
+    data,
+    status: res.status,
+    headers: res.headers,
+  } as temporalGetRecurringEventOccurrenceDetailResponse;
+};
+
 export type temporalAcceptOccurrenceProfileEditResponse200 = {
   data: ScopedProfileEditResponse;
   status: 200;
@@ -11675,6 +11737,205 @@ export const temporalEstablishOccurrenceSchedule = async (
     status: res.status,
     headers: res.headers,
   } as temporalEstablishOccurrenceScheduleResponse;
+};
+
+export type temporalAcceptRecurringSeriesEditResponse200 = {
+  data: RecurringSeriesEditResponse;
+  status: 200;
+};
+
+export type temporalAcceptRecurringSeriesEditResponse422 = {
+  data: HTTPValidationError;
+  status: 422;
+};
+
+export type temporalAcceptRecurringSeriesEditResponseSuccess =
+  temporalAcceptRecurringSeriesEditResponse200 & {
+    headers: Headers;
+  };
+export type temporalAcceptRecurringSeriesEditResponseError =
+  temporalAcceptRecurringSeriesEditResponse422 & {
+    headers: Headers;
+  };
+
+export type temporalAcceptRecurringSeriesEditResponse =
+  | temporalAcceptRecurringSeriesEditResponseSuccess
+  | temporalAcceptRecurringSeriesEditResponseError;
+
+export const getTemporalAcceptRecurringSeriesEditUrl = (
+  occurrenceRef: string,
+) => {
+  return `/api/v1/temporal/occurrences/${occurrenceRef}/series-edit`;
+};
+
+/**
+ * @summary Accept Recurring Series Edit
+ */
+export const temporalAcceptRecurringSeriesEdit = async (
+  occurrenceRef: string,
+  recurringSeriesEditCommand: RecurringSeriesEditCommand,
+  options?: RequestInit,
+  fetchFn?: typeof globalThis.fetch,
+): Promise<temporalAcceptRecurringSeriesEditResponse> => {
+  const getHeaders = (
+    h?: NonNullable<RequestInit['headers']>,
+  ): Record<string, string | readonly string[]> => {
+    if (!h) return {};
+    if (h instanceof Headers) return Object.fromEntries(h.entries());
+    if (Array.isArray(h)) return Object.fromEntries(h);
+    return h;
+  };
+  const res = await (fetchFn ?? fetch)(
+    getTemporalAcceptRecurringSeriesEditUrl(occurrenceRef),
+    {
+      ...options,
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        ...getHeaders(options?.headers),
+      },
+      body: JSON.stringify(recurringSeriesEditCommand),
+    },
+  );
+
+  const body = [204, 205, 304].includes(res.status) ? null : await res.text();
+
+  const data: temporalAcceptRecurringSeriesEditResponse['data'] = body
+    ? JSON.parse(body)
+    : {};
+  return {
+    data,
+    status: res.status,
+    headers: res.headers,
+  } as temporalAcceptRecurringSeriesEditResponse;
+};
+
+export type temporalPreviewRecurringSeriesEditResponse200 = {
+  data: RecurringSeriesEditPreviewResponse;
+  status: 200;
+};
+
+export type temporalPreviewRecurringSeriesEditResponse422 = {
+  data: HTTPValidationError;
+  status: 422;
+};
+
+export type temporalPreviewRecurringSeriesEditResponseSuccess =
+  temporalPreviewRecurringSeriesEditResponse200 & {
+    headers: Headers;
+  };
+export type temporalPreviewRecurringSeriesEditResponseError =
+  temporalPreviewRecurringSeriesEditResponse422 & {
+    headers: Headers;
+  };
+
+export type temporalPreviewRecurringSeriesEditResponse =
+  | temporalPreviewRecurringSeriesEditResponseSuccess
+  | temporalPreviewRecurringSeriesEditResponseError;
+
+export const getTemporalPreviewRecurringSeriesEditUrl = (
+  occurrenceRef: string,
+) => {
+  return `/api/v1/temporal/occurrences/${occurrenceRef}/series-edit-preview`;
+};
+
+/**
+ * @summary Preview Recurring Series Edit
+ */
+export const temporalPreviewRecurringSeriesEdit = async (
+  occurrenceRef: string,
+  recurringSeriesEditCommand: RecurringSeriesEditCommand,
+  options?: RequestInit,
+  fetchFn?: typeof globalThis.fetch,
+): Promise<temporalPreviewRecurringSeriesEditResponse> => {
+  const getHeaders = (
+    h?: NonNullable<RequestInit['headers']>,
+  ): Record<string, string | readonly string[]> => {
+    if (!h) return {};
+    if (h instanceof Headers) return Object.fromEntries(h.entries());
+    if (Array.isArray(h)) return Object.fromEntries(h);
+    return h;
+  };
+  const res = await (fetchFn ?? fetch)(
+    getTemporalPreviewRecurringSeriesEditUrl(occurrenceRef),
+    {
+      ...options,
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        ...getHeaders(options?.headers),
+      },
+      body: JSON.stringify(recurringSeriesEditCommand),
+    },
+  );
+
+  const body = [204, 205, 304].includes(res.status) ? null : await res.text();
+
+  const data: temporalPreviewRecurringSeriesEditResponse['data'] = body
+    ? JSON.parse(body)
+    : {};
+  return {
+    data,
+    status: res.status,
+    headers: res.headers,
+  } as temporalPreviewRecurringSeriesEditResponse;
+};
+
+export type temporalGetRecurringSeriesEditSourceResponse200 = {
+  data: RecurringSeriesSourceResponse;
+  status: 200;
+};
+
+export type temporalGetRecurringSeriesEditSourceResponse422 = {
+  data: HTTPValidationError;
+  status: 422;
+};
+
+export type temporalGetRecurringSeriesEditSourceResponseSuccess =
+  temporalGetRecurringSeriesEditSourceResponse200 & {
+    headers: Headers;
+  };
+export type temporalGetRecurringSeriesEditSourceResponseError =
+  temporalGetRecurringSeriesEditSourceResponse422 & {
+    headers: Headers;
+  };
+
+export type temporalGetRecurringSeriesEditSourceResponse =
+  | temporalGetRecurringSeriesEditSourceResponseSuccess
+  | temporalGetRecurringSeriesEditSourceResponseError;
+
+export const getTemporalGetRecurringSeriesEditSourceUrl = (
+  occurrenceRef: string,
+) => {
+  return `/api/v1/temporal/occurrences/${occurrenceRef}/series-edit-source`;
+};
+
+/**
+ * @summary Get Recurring Series Edit Source
+ */
+export const temporalGetRecurringSeriesEditSource = async (
+  occurrenceRef: string,
+  options?: RequestInit,
+  fetchFn?: typeof globalThis.fetch,
+): Promise<temporalGetRecurringSeriesEditSourceResponse> => {
+  const res = await (fetchFn ?? fetch)(
+    getTemporalGetRecurringSeriesEditSourceUrl(occurrenceRef),
+    {
+      ...options,
+      method: 'GET',
+    },
+  );
+
+  const body = [204, 205, 304].includes(res.status) ? null : await res.text();
+
+  const data: temporalGetRecurringSeriesEditSourceResponse['data'] = body
+    ? JSON.parse(body)
+    : {};
+  return {
+    data,
+    status: res.status,
+    headers: res.headers,
+  } as temporalGetRecurringSeriesEditSourceResponse;
 };
 
 export type temporalListOccurrenceSessionsResponse200 = {

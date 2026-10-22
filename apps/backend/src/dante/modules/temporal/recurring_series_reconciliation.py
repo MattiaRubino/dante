@@ -61,6 +61,7 @@ class SeriesReconciliation:
     superseded_occurrence_refs: tuple[UUID, ...]
     new_coordinates: tuple[CalendarCoordinate, ...]
     protected_occurrence_refs: tuple[UUID, ...]
+    protected_matching_coordinates: tuple[CalendarCoordinate, ...] = ()
 
 
 def _key(coordinate: CalendarCoordinate) -> tuple[str, ...]:
@@ -161,6 +162,11 @@ def reconcile_materialized_series(
             value for key, value in sorted(proposed.items()) if key not in existing_by_key
         ),
         protected_occurrence_refs=scope.protected_future_occurrence_refs,
+        protected_matching_coordinates=tuple(
+            indexed[ref]
+            for ref in scope.protected_future_occurrence_refs
+            if _key(indexed[ref]) in proposed
+        ),
     )
 
 

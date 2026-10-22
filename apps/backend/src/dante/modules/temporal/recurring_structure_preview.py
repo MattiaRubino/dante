@@ -54,6 +54,7 @@ class StructuralSeriesPreview:
     proposed_preview_fingerprint: str
     reconciliation: SeriesReconciliation
     protected_occurrences: tuple[dict[str, object], ...]
+    scope_plan: RecurrenceEditScopePlan
     apply_authorized: bool = False
 
 
@@ -249,4 +250,5 @@ class RecurringStructurePreviewApplication:
             proposed_preview_fingerprint=fingerprint,
             reconciliation=plan,
             protected_occurrences=protected,
+            scope_plan=scope,
         )

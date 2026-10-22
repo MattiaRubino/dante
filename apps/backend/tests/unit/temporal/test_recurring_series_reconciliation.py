@@ -7,6 +7,7 @@ from uuid import UUID
 import pytest
 
 from dante.modules.temporal.occurrence import CalendarCoordinate, OccurrenceView
+from dante.modules.temporal.occurrence_api import _series_source_recurrence, _series_spec
 from dante.modules.temporal.occurrence_edit_inventory import OccurrenceEditInventory
 from dante.modules.temporal.occurrence_edit_scope import (
     RecurrenceEditCandidate,
@@ -14,6 +15,7 @@ from dante.modules.temporal.occurrence_edit_scope import (
     select_recurrence_edit_scope,
 )
 from dante.modules.temporal.recurrence import CalendarRecurrence
+from dante.modules.temporal.recurring_series_edit import _validate_structure
 from dante.modules.temporal.recurring_series_reconciliation import (
     MaterializedSeriesInstance,
     SeriesReconciliationError,
@@ -28,6 +30,83 @@ from dante.modules.temporal.recurring_structure_preview import (
 
 SOURCE, FIRST, LOCAL, CLEAN = (UUID(int=n) for n in (1, 11, 12, 13))
 WINDOW = SeriesReconciliationWindow(date(2026, 10, 19), date(2026, 10, 29))
+
+
+def test_series_edit_rejects_a_template_that_would_break_later_materialization() -> None:
+    recurrence = CalendarRecurrence(
+        family_code="calendar_wall_clock",
+        range_kind="open",
+        expected_occurrence_count=None,
+        effective_from=date(2027, 1, 2),
+        effective_until=None,
+        pattern_code="daily",
+        interval_count=1,
+        clock_basis_code="named_zone",
+        zone_id="Europe/Rome",
+        wall_times=(time(10),),
+        pattern_anchor_date=None,
+        weekdays=(),
+        month_days=(),
+        ordinal_weekdays=(),
+        year_month_days=(),
+        nonexistent_local_time_policy="skip_civil_candidate",
+        ambiguous_local_time_policy="earlier",
+    )
+    structure = {
+        "version": 1,
+        "duration_minutes": 60,
+        "reminder_lead_minutes": None,
+        "activity_template": {
+            "version": 1,
+            "root_window": {"start_offset_minutes": 0, "duration_minutes": 60},
+            "description": None,
+            "location": None,
+            "item_color_code": None,
+            "session_capture_mode": "disabled",
+            "minimum_session_duration_microseconds": None,
+            "child_guard_mode": "none",
+            "reality_mode": "manual",
+            "placement_protected": False,
+            "objectives": [],
+            "activity_intervals": [],
+            "planned_slices": [{"name": "Preparazione", "time_enabled": False}],
+            "children": [],
+        },
+    }
+    _validate_structure("routine", recurrence, structure)
+    invalid = {
+        **structure,
+        "activity_template": {
+            **structure["activity_template"],
+            "planned_slices": [{"name": "", "time_enabled": False}],
+        },
+    }
+    with pytest.raises(SeriesReconciliationError, match="Session name"):
+        _validate_structure("routine", recurrence, invalid)
+    invalid = {
+        **structure,
+        "activity_template": {
+            **structure["activity_template"],
+            "root_window": {"start_offset_minutes": 0, "duration_minutes": 30},
+        },
+    }
+    with pytest.raises(SeriesReconciliationError, match="duration disagrees"):
+        _validate_structure("routine", recurrence, invalid)
+
+    for rule in (
+        replace(
+            recurrence,
+            pattern_code="monthly_ordinal_weekdays",
+            ordinal_weekdays=((2, -1), (5, 2)),
+        ),
+        replace(
+            recurrence,
+            pattern_code="yearly_month_days",
+            year_month_days=((2, 29), (10, 20)),
+        ),
+    ):
+        public = _series_source_recurrence(rule)
+        assert _series_spec(public) == rule
 
 
 def _coordinate(day: int) -> CalendarCoordinate:
@@ -108,6 +187,7 @@ def test_protected_coordinate_is_consumed_without_replacing_its_instance() -> No
     assert result.retained_occurrence_refs == (FIRST,)
     assert result.superseded_occurrence_refs == (CLEAN,)
     assert result.protected_occurrence_refs == (LOCAL,)
+    assert result.protected_matching_coordinates == (_coordinate(21),)
     assert result.new_coordinates == (_coordinate(27),)
 
 

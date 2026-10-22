@@ -342,6 +342,18 @@ export function createRemoteTemporalEventAgendaDataSource(
   const webFetch = createWebFetch(fetchFn, resolveDeviceTimeZone);
 
   return Object.freeze({
+    async loadOccurrenceEvent(
+      occurrenceRef: string,
+      signal?: AbortSignal,
+    ): Promise<TemporalEventDetailRecord> {
+      const normalizedRef = parseEventRef(occurrenceRef, 'occurrenceRef');
+      const response = await fetchResponse(
+        webFetch,
+        `/api/v1/temporal/occurrences/${normalizedRef}/event-detail`,
+        signal === undefined ? undefined : { signal },
+      );
+      return parseEvent(await requireOk(response, 'Event occurrence response'));
+    },
     async loadEvent(
       eventRef: string,
       signal?: AbortSignal,

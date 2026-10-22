@@ -1254,6 +1254,34 @@ class OccurrenceApplication:
         operation_id: str,
         coordinate: CalendarCoordinate | ElapsedCoordinate | CyclicCoordinate,
     ) -> OccurrenceExclusion:
+        try:
+            async with self._session_factory() as session, session.begin():
+                return await self.exclude_in_session(
+                    session,
+                    owner=owner,
+                    self_person_ref=self_person_ref,
+                    source_ref=source_ref,
+                    governing_recurrence_state_ref=governing_recurrence_state_ref,
+                    operation_id=operation_id,
+                    coordinate=coordinate,
+                )
+        except DBAPIError as exc:
+            raise _error(exc) from exc
+        except SQLAlchemyError as exc:
+            raise OccurrencePersistenceError() from exc
+
+    async def exclude_in_session(
+        self,
+        session: AsyncSession,
+        *,
+        owner: OccurrenceOwner,
+        self_person_ref: NativeRef,
+        source_ref: UUID,
+        governing_recurrence_state_ref: UUID,
+        operation_id: str,
+        coordinate: CalendarCoordinate | ElapsedCoordinate | CyclicCoordinate,
+    ) -> OccurrenceExclusion:
+        """Create a structural exclusion in the caller's series transaction."""
         key = _bounded_operation_id(operation_id)
         coordinate = _normalize_exclusion_coordinate(coordinate)
         fingerprint = _fingerprint(
@@ -1269,27 +1297,26 @@ class OccurrenceApplication:
             OccurrenceCandidate(governing_recurrence_state_ref, coordinate)
         )
         try:
-            async with self._session_factory() as session, session.begin():
-                row = (
-                    (
-                        await session.execute(
-                            text(
-                                f"SELECT * FROM dante.exclude_self_{owner}_occurrence_coordinate("
-                                ":actor,:operation,:fingerprint,:source,:state,:family,"
-                                ":generated_date,:generated_wall_time,:expected_at,:position_index)"
-                            ),
-                            {
-                                "actor": self_person_ref,
-                                "operation": key,
-                                "fingerprint": fingerprint,
-                                "source": source_ref,
-                                **values,
-                            },
-                        )
+            row = (
+                (
+                    await session.execute(
+                        text(
+                            f"SELECT * FROM dante.exclude_self_{owner}_occurrence_coordinate("
+                            ":actor,:operation,:fingerprint,:source,:state,:family,"
+                            ":generated_date,:generated_wall_time,:expected_at,:position_index)"
+                        ),
+                        {
+                            "actor": self_person_ref,
+                            "operation": key,
+                            "fingerprint": fingerprint,
+                            "source": source_ref,
+                            **values,
+                        },
                     )
-                    .mappings()
-                    .one()
                 )
+                .mappings()
+                .one()
+            )
             return OccurrenceExclusion(
                 exclusion_ref=UUID(str(row["exclusion_ref"])),
                 source_native_ref=source_ref,

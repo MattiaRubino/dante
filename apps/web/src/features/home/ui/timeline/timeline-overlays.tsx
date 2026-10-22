@@ -23,6 +23,7 @@ import type { ActivityProfile } from '../../../temporal/remote-activity-inspecto
 import { createRemoteActivityInspector } from '../../../temporal/remote-activity-inspector';
 import { createRemoteRecurringProfileEdit } from '../../../temporal/remote-recurring-profile-edit';
 import { ActivityEditPanel } from './activity-edit-panel';
+import { RecurringActivitySeriesEditor } from './recurring-series-editor';
 import { requestTemporalCreateDuplicate } from '../../../temporal-create/ui/temporal-create-duplicate-request';
 import { TemporalPanelCloseButton } from '../../../temporal-create/ui/temporal-panel-close-button';
 import { ActivityInspectorActions } from './activity-inspector-actions';
@@ -932,7 +933,18 @@ export function EventDetailDialog({
         {!currentEditingProfile && detail.contextLabel ? (
           <p className="timeline-event-modal__context">{detail.contextLabel}</p>
         ) : null}
-        {currentEditingProfile ? (
+        {currentEditingProfile && activityEditScope !== 'only_this' ? (
+          <RecurringActivitySeriesEditor
+            activityRef={currentEditingProfile.activityRef}
+            scope={activityEditScope}
+            closeRequestRef={editCloseRequestRef}
+            onSaved={() => {
+              onActivitySaved?.(currentEditingProfile);
+              setEditingProfile(null);
+            }}
+            onCancel={() => setEditingProfile(null)}
+          />
+        ) : currentEditingProfile ? (
           <ActivityEditPanel
             key={`${currentEditingProfile.activityRef}:${currentEditingProfile.revision}`}
             profile={currentEditingProfile}
@@ -1065,6 +1077,9 @@ export function EventDetailDialog({
             {detail.ownerKind === 'event' && detail.eventRef ? (
               <TimelineEventAgendaEditor
                 eventRef={detail.eventRef}
+                {...(detail.occurrenceRef
+                  ? { occurrenceRef: detail.occurrenceRef }
+                  : {})}
                 readOnly={detail.occurrenceRef !== undefined}
                 hideWhenEmpty
                 showDescription

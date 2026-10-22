@@ -46,6 +46,10 @@ from dante.modules.temporal.occurrence import (
     _window_source_operation_id,
 )
 from dante.modules.temporal.placement_lock import PlacementLockApplication
+from dante.modules.temporal.recurring_structure_policy import (
+    RecurringStructurePolicyApplication,
+    RecurringStructurePolicyError,
+)
 from dante.modules.temporal.routine_occurrence_policy import (
     RoutineOccurrencePolicyApplication,
     RoutineOccurrencePolicyPersistenceError,
@@ -75,6 +79,7 @@ class RoutineOccurrenceMaterializationApplication:
         self._occurrences = OccurrenceApplication(session_factory)
         self._policies = RoutineOccurrencePolicyApplication(session_factory)
         self._event_policies = EventOccurrencePolicyApplication(session_factory)
+        self._revised_policies = RecurringStructurePolicyApplication(session_factory)
         self._schedules = TemporalScheduleApplication(session_factory)
         self._reminders = ScheduleReminderApplication(session_factory)
         self._authoring = TemporalAuthoringApplication(session_factory)
@@ -220,15 +225,25 @@ class RoutineOccurrenceMaterializationApplication:
         source_ref: UUID,
         checkpoint: OccurrenceCheckpoint,
     ) -> None:
-        policy = await self._event_policies.get(
+        initial_policy = await self._event_policies.get(
             self_person_ref=self_person_ref,
             event_ref=source_ref,
         )
-        if policy is None:
-            return
+        revisions: dict[UUID, EventOccurrencePolicyView | None] = {}
 
         for occurrence in checkpoint.occurrences:
             if occurrence.skipped or occurrence.coordinate is None:
+                continue
+            state = occurrence.governing_recurrence_state_ref
+            if state is not None and state not in revisions:
+                revisions[state] = await self._revised_policies.event(
+                    self_person_ref=self_person_ref,
+                    event_ref=source_ref,
+                    recurrence_state_ref=state,
+                )
+            policy = revisions.get(state) if state is not None else None
+            policy = policy or initial_policy
+            if policy is None:
                 continue
             if not isinstance(occurrence.coordinate, CalendarCoordinate):
                 raise OccurrenceInputError(
@@ -606,6 +621,15 @@ class RoutineOccurrenceMaterializationApplication:
             self_person_ref=self_person_ref,
             routine_ref=source_ref,
         )
+        if "life_area_ref" in template:
+            area_value = template["life_area_ref"]
+            if area_value is not None:
+                try:
+                    life_area_ref = UUID(str(area_value))
+                except (TypeError, ValueError) as exc:
+                    raise OccurrenceInputError("Recurring Activity Life Area is invalid.") from exc
+            else:
+                life_area_ref = None
         correction = await self._profile_override(
             self_person_ref=self_person_ref,
             occurrence_ref=occurrence_ref,
@@ -773,28 +797,34 @@ class RoutineOccurrenceMaterializationApplication:
         source_ref: UUID,
         checkpoint: OccurrenceCheckpoint,
     ) -> None:
-        policy = await self._policies.get(
+        initial_policy = await self._policies.get(
             self_person_ref=self_person_ref,
             routine_ref=source_ref,
         )
-        if policy is None:
-            return
+        revisions: dict[UUID, RoutineOccurrencePolicyView | None] = {}
 
-        bound_activities = (
-            await self._bound_activities(
-                self_person_ref=self_person_ref,
-                occurrence_refs=tuple(
-                    item.occurrence_ref
-                    for item in checkpoint.occurrences
-                    if not item.skipped and item.coordinate is not None
-                ),
-            )
-            if policy.activity_template
-            else set()
+        bound_activities = await self._bound_activities(
+            self_person_ref=self_person_ref,
+            occurrence_refs=tuple(
+                item.occurrence_ref
+                for item in checkpoint.occurrences
+                if not item.skipped and item.coordinate is not None
+            ),
         )
 
         for occurrence in checkpoint.occurrences:
             if occurrence.skipped or occurrence.coordinate is None:
+                continue
+            state = occurrence.governing_recurrence_state_ref
+            if state is not None and state not in revisions:
+                revisions[state] = await self._revised_policies.routine(
+                    self_person_ref=self_person_ref,
+                    routine_ref=source_ref,
+                    recurrence_state_ref=state,
+                )
+            policy = revisions.get(state) if state is not None else None
+            policy = policy or initial_policy
+            if policy is None:
                 continue
             coordinate = occurrence.coordinate
             if policy.activity_template:
@@ -894,6 +924,7 @@ class RoutineOccurrenceMaterializationApplication:
         except (
             RoutineOccurrencePolicyPersistenceError,
             EventOccurrencePolicyPersistenceError,
+            RecurringStructurePolicyError,
             SchedulePersistenceError,
             ScheduleReminderPersistenceError,
         ) as exc:

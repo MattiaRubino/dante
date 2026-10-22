@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from dataclasses import replace
 from datetime import date, time
 from typing import Any
 
@@ -17,6 +18,7 @@ from dante.modules.temporal.event_occurrence_policy import (
     EventOccurrencePolicyInputError,
 )
 from dante.modules.temporal.life_area import LifeAreaApplication
+from dante.modules.temporal.occurrence import OccurrenceApplication
 from dante.modules.temporal.recurrence import (
     CalendarRecurrence,
     RecurrenceApplication,
@@ -28,6 +30,8 @@ from dante.modules.temporal.recurring_authoring import (
     RecurringAuthoringOperationReuseError,
     RoutineAuthoringPolicy,
 )
+from dante.modules.temporal.recurring_series_edit import RecurringSeriesEditApplication
+from dante.modules.temporal.recurring_structure_policy import RecurringStructurePolicyApplication
 from dante.modules.temporal.routine import RoutineApplication
 from dante.modules.temporal.routine_occurrence_policy import (
     RoutineOccurrencePolicyApplication,
@@ -38,6 +42,178 @@ from dante.platform.database.references import NativeRef
 from dante.platform.database.runtime import create_database_runtime
 
 pytestmark = pytest.mark.postgres
+
+
+@pytest.mark.asyncio
+async def test_series_editor_source_preserves_initial_routine_life_area(
+    migrated_database: Any,
+) -> None:
+    alice = _seed_self(migrated_database)
+    runtime = create_database_runtime(migrated_database.runtime_settings())
+    areas = LifeAreaApplication(runtime.session_factory)
+    authoring = RecurringAuthoringApplication(runtime.session_factory)
+    occurrences = OccurrenceApplication(runtime.session_factory)
+    series = RecurringSeriesEditApplication(runtime.session_factory)
+    try:
+        area = (
+            await areas.create(
+                self_person_ref=alice,
+                operation_id="structure:source:area",
+                name="Salute",
+            )
+        ).area
+        recurrence = replace(
+            _weekly(1),
+            clock_basis_code="named_zone",
+            zone_id="Europe/Rome",
+            nonexistent_local_time_policy="skip_civil_candidate",
+            ambiguous_local_time_policy="earlier",
+        )
+        created = await authoring.create_routine(
+            self_person_ref=alice,
+            operation_id="structure:source:routine",
+            title="Allenamento",
+            life_area_intent=AuthoringLifeAreaIntent(life_area_ref=area.life_area_ref),
+            recurrence=recurrence,
+            policy=RoutineAuthoringPolicy(
+                duration_minutes=60,
+                reminder_lead_minutes=None,
+                activity_template={
+                    "version": 1,
+                    "root_window": {"start_offset_minutes": 0, "duration_minutes": 60},
+                    "description": None,
+                    "location": None,
+                    "item_color_code": None,
+                    "session_capture_mode": "disabled",
+                    "minimum_session_duration_microseconds": None,
+                    "child_guard_mode": "none",
+                    "reality_mode": "manual",
+                    "placement_protected": False,
+                    "objectives": [],
+                    "activity_intervals": [],
+                    "planned_slices": [],
+                    "children": [],
+                },
+            ),
+        )
+        result = await occurrences.checkpoint(
+            owner="routine",
+            self_person_ref=alice,
+            source_ref=created.source_ref,
+            operation_id="structure:source:checkpoint",
+            start_date=date(2026, 10, 5),
+            end_date_exclusive=date(2026, 10, 6),
+            effective_zone_id="Europe/Rome",
+        )
+        assert len(result.occurrences) == 1
+        source = await series.source(
+            self_person_ref=alice,
+            selected_occurrence_ref=result.occurrences[0].occurrence_ref,
+        )
+        template = source.structure_snapshot["activity_template"]
+        assert isinstance(template, dict)
+        assert template["life_area_ref"] == str(area.life_area_ref)
+    finally:
+        await runtime.dispose()
+
+
+@pytest.mark.asyncio
+async def test_routine_structure_revision_is_versioned_and_rolls_back_with_recurrence(
+    migrated_database: Any,
+) -> None:
+    alice = _seed_self(migrated_database)
+    bob = _seed_self(migrated_database)
+    runtime = create_database_runtime(migrated_database.runtime_settings())
+    authoring = RecurringAuthoringApplication(runtime.session_factory)
+    recurrences = RecurrenceApplication(runtime.session_factory)
+    policies = RecurringStructurePolicyApplication(runtime.session_factory)
+    try:
+        original = _weekly(1)
+        created = await authoring.create_routine(
+            self_person_ref=alice,
+            operation_id="structure:routine:create",
+            title="Allenamento",
+            life_area_intent=None,
+            recurrence=original,
+            policy=RoutineAuthoringPolicy(
+                duration_minutes=60,
+                reminder_lead_minutes=None,
+                activity_template={"version": 1},
+            ),
+        )
+        old_state = created.recurrence_material_state_ref
+        next_rule = replace(original, effective_from=date(2027, 1, 4))
+        snapshot = {
+            "version": 1,
+            "duration_minutes": 120,
+            "reminder_lead_minutes": None,
+            "activity_template": {"version": 1},
+        }
+
+        async def revise(*, abort: bool):
+            async with runtime.session_factory() as session, session.begin():
+                changed = await recurrences.replace_in_session(
+                    session,
+                    owner="routine",
+                    self_person_ref=alice,
+                    owner_ref=created.source_ref,
+                    operation_id="structure:routine:recurrence",
+                    expected_material_state_ref=old_state,
+                    recurrence=next_rule,
+                )
+                saved = await policies.replace_in_session(
+                    session,
+                    self_person_ref=alice,
+                    owner="routine",
+                    source_ref=created.source_ref,
+                    previous_state_ref=old_state,
+                    recurrence_state_ref=changed.recurrence.material_state_ref,
+                    operation_id="structure:routine:policy",
+                    structure_snapshot=snapshot,
+                    request_hash="0" * 64,
+                    preview_fingerprint="1" * 64,
+                    superseded_count=0,
+                    protected_count=0,
+                )
+                if abort:
+                    raise RuntimeError("later instance failed")
+                return changed.recurrence.material_state_ref, saved
+
+        with pytest.raises(RuntimeError, match="later instance failed"):
+            await revise(abort=True)
+        old = await recurrences.get(
+            owner="routine", self_person_ref=alice, owner_ref=created.source_ref
+        )
+        assert old is not None
+        assert old.material_state_ref == old_state
+
+        new_state, receipt = await revise(abort=False)
+        assert not receipt.replayed
+        revised = await policies.routine(
+            self_person_ref=alice,
+            routine_ref=created.source_ref,
+            recurrence_state_ref=new_state,
+        )
+        assert revised is not None
+        assert revised.duration_minutes == 120
+        assert (
+            await policies.routine(
+                self_person_ref=bob,
+                routine_ref=created.source_ref,
+                recurrence_state_ref=new_state,
+            )
+            is None
+        )
+        assert (
+            await policies.routine(
+                self_person_ref=alice,
+                routine_ref=created.source_ref,
+                recurrence_state_ref=old_state,
+            )
+            is None
+        )
+    finally:
+        await runtime.dispose()
 
 
 def _weekly(*weekdays: int) -> CalendarRecurrence:

@@ -23,6 +23,7 @@ type AgendaState =
 
 type TimelineEventAgendaEditorProps = Readonly<{
   eventRef: string;
+  occurrenceRef?: string;
   dataSource?: TemporalEventAgendaDataSource;
   ids?: TemporalIdFactory;
   hideWhenEmpty?: boolean;
@@ -35,11 +36,17 @@ export function TimelineEventAgendaEditor(
 ) {
   // The editor is scoped to one Event: switching identity must discard
   // pending draft edits and stale async read state together.
-  return <TimelineEventAgendaEditorInstance key={props.eventRef} {...props} />;
+  return (
+    <TimelineEventAgendaEditorInstance
+      key={props.occurrenceRef ?? props.eventRef}
+      {...props}
+    />
+  );
 }
 
 function TimelineEventAgendaEditorInstance({
   eventRef,
+  occurrenceRef,
   dataSource,
   ids = systemTemporalIdFactory,
   hideWhenEmpty = false,
@@ -61,7 +68,10 @@ function TimelineEventAgendaEditorInstance({
   const load = useCallback(
     async (signal?: AbortSignal, clearNotice = true) => {
       try {
-        const record = await source.loadEvent(eventRef, signal);
+        const record =
+          occurrenceRef && source.loadOccurrenceEvent
+            ? await source.loadOccurrenceEvent(occurrenceRef, signal)
+            : await source.loadEvent(eventRef, signal);
         setState({ status: 'ready', record });
         if (clearNotice) {
           setNotice(null);
@@ -74,7 +84,7 @@ function TimelineEventAgendaEditorInstance({
         setNotice('error');
       }
     },
-    [eventRef, source],
+    [eventRef, occurrenceRef, source],
   );
 
   useEffect(() => {

@@ -12274,6 +12274,264 @@
         "title": "RecurringAuthoringResponse",
         "type": "object"
       },
+      "RecurringSeriesEditCommand": {
+        "additionalProperties": false,
+        "properties": {
+          "expected_preview_fingerprint": {
+            "anyOf": [
+              {
+                "maxLength": 64,
+                "minLength": 64,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Expected Preview Fingerprint"
+          },
+          "expected_recurrence_state_ref": {
+            "format": "uuid",
+            "title": "Expected Recurrence State Ref",
+            "type": "string"
+          },
+          "expected_revision": {
+            "minimum": 0.0,
+            "title": "Expected Revision",
+            "type": "integer"
+          },
+          "operation_id": {
+            "maxLength": 200,
+            "minLength": 1,
+            "title": "Operation Id",
+            "type": "string"
+          },
+          "profile_patch": {
+            "anyOf": [
+              {
+                "additionalProperties": {
+                  "anyOf": [
+                    {
+                      "type": "string"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                },
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Profile Patch"
+          },
+          "recurrence": {
+            "$ref": "#/components/schemas/CalendarRecurrenceRequest"
+          },
+          "scope_code": {
+            "enum": ["this_and_following", "from_next"],
+            "title": "Scope Code",
+            "type": "string"
+          },
+          "structure_snapshot": {
+            "additionalProperties": true,
+            "minProperties": 1,
+            "title": "Structure Snapshot",
+            "type": "object"
+          }
+        },
+        "required": [
+          "operation_id",
+          "expected_revision",
+          "expected_recurrence_state_ref",
+          "scope_code",
+          "recurrence",
+          "structure_snapshot"
+        ],
+        "title": "RecurringSeriesEditCommand",
+        "type": "object"
+      },
+      "RecurringSeriesEditPreviewResponse": {
+        "additionalProperties": false,
+        "properties": {
+          "fingerprint": {
+            "title": "Fingerprint",
+            "type": "string"
+          },
+          "new_expected_count": {
+            "title": "New Expected Count",
+            "type": "integer"
+          },
+          "owner_kind": {
+            "enum": ["routine", "event"],
+            "title": "Owner Kind",
+            "type": "string"
+          },
+          "protected_occurrences": {
+            "items": {
+              "$ref": "#/components/schemas/ScopedProfileEditProtectedOccurrence"
+            },
+            "title": "Protected Occurrences",
+            "type": "array"
+          },
+          "selected_occurrence_ref": {
+            "format": "uuid",
+            "title": "Selected Occurrence Ref",
+            "type": "string"
+          },
+          "source_native_ref": {
+            "format": "uuid",
+            "title": "Source Native Ref",
+            "type": "string"
+          },
+          "target_occurrence_refs": {
+            "items": {
+              "format": "uuid",
+              "type": "string"
+            },
+            "title": "Target Occurrence Refs",
+            "type": "array"
+          }
+        },
+        "required": [
+          "source_native_ref",
+          "owner_kind",
+          "selected_occurrence_ref",
+          "target_occurrence_refs",
+          "protected_occurrences",
+          "new_expected_count",
+          "fingerprint"
+        ],
+        "title": "RecurringSeriesEditPreviewResponse",
+        "type": "object"
+      },
+      "RecurringSeriesEditResponse": {
+        "additionalProperties": false,
+        "properties": {
+          "protected_count": {
+            "title": "Protected Count",
+            "type": "integer"
+          },
+          "recurrence_state_ref": {
+            "format": "uuid",
+            "title": "Recurrence State Ref",
+            "type": "string"
+          },
+          "replayed": {
+            "title": "Replayed",
+            "type": "boolean"
+          },
+          "source_native_ref": {
+            "format": "uuid",
+            "title": "Source Native Ref",
+            "type": "string"
+          },
+          "superseded_count": {
+            "title": "Superseded Count",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "source_native_ref",
+          "recurrence_state_ref",
+          "superseded_count",
+          "protected_count",
+          "replayed"
+        ],
+        "title": "RecurringSeriesEditResponse",
+        "type": "object"
+      },
+      "RecurringSeriesSourceResponse": {
+        "additionalProperties": false,
+        "properties": {
+          "color_code": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Color Code"
+          },
+          "description": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Description"
+          },
+          "edit_revision": {
+            "title": "Edit Revision",
+            "type": "integer"
+          },
+          "location": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Location"
+          },
+          "owner_kind": {
+            "enum": ["routine", "event"],
+            "title": "Owner Kind",
+            "type": "string"
+          },
+          "recurrence": {
+            "$ref": "#/components/schemas/CalendarRecurrenceRequest"
+          },
+          "recurrence_state_ref": {
+            "format": "uuid",
+            "title": "Recurrence State Ref",
+            "type": "string"
+          },
+          "selected_date": {
+            "format": "date",
+            "title": "Selected Date",
+            "type": "string"
+          },
+          "source_native_ref": {
+            "format": "uuid",
+            "title": "Source Native Ref",
+            "type": "string"
+          },
+          "structure_snapshot": {
+            "additionalProperties": true,
+            "title": "Structure Snapshot",
+            "type": "object"
+          },
+          "title": {
+            "title": "Title",
+            "type": "string"
+          }
+        },
+        "required": [
+          "source_native_ref",
+          "owner_kind",
+          "edit_revision",
+          "recurrence_state_ref",
+          "recurrence",
+          "structure_snapshot",
+          "title",
+          "selected_date",
+          "description",
+          "location",
+          "color_code"
+        ],
+        "title": "RecurringSeriesSourceResponse",
+        "type": "object"
+      },
       "RegistrationAuthenticatorResponse": {
         "additionalProperties": false,
         "description": "Bounded browser registration evidence consumed by python-fido2.",
@@ -33494,6 +33752,48 @@
         "tags": ["temporal"]
       }
     },
+    "/api/v1/temporal/occurrences/{occurrence_ref}/event-detail": {
+      "get": {
+        "description": "Project the Event source structure governed by this instance's state.",
+        "operationId": "temporal_get_recurring_event_occurrence_detail",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "occurrence_ref",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Occurrence Ref",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EventResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Get Recurring Event Occurrence Detail",
+        "tags": ["temporal"]
+      }
+    },
     "/api/v1/temporal/occurrences/{occurrence_ref}/profile-edit": {
       "post": {
         "description": "One atomic source-lock/CAS operation, never a client supplied target list.",
@@ -33687,6 +33987,149 @@
           }
         },
         "summary": "Establish Occurrence Schedule",
+        "tags": ["temporal"]
+      }
+    },
+    "/api/v1/temporal/occurrences/{occurrence_ref}/series-edit": {
+      "post": {
+        "operationId": "temporal_accept_recurring_series_edit",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "occurrence_ref",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Occurrence Ref",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RecurringSeriesEditCommand"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RecurringSeriesEditResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Accept Recurring Series Edit",
+        "tags": ["temporal"]
+      }
+    },
+    "/api/v1/temporal/occurrences/{occurrence_ref}/series-edit-preview": {
+      "post": {
+        "operationId": "temporal_preview_recurring_series_edit",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "occurrence_ref",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Occurrence Ref",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RecurringSeriesEditCommand"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RecurringSeriesEditPreviewResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Preview Recurring Series Edit",
+        "tags": ["temporal"]
+      }
+    },
+    "/api/v1/temporal/occurrences/{occurrence_ref}/series-edit-source": {
+      "get": {
+        "operationId": "temporal_get_recurring_series_edit_source",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "occurrence_ref",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Occurrence Ref",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RecurringSeriesSourceResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Get Recurring Series Edit Source",
         "tags": ["temporal"]
       }
     },
