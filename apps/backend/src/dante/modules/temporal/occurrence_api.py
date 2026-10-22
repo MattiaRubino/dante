@@ -40,20 +40,20 @@ from dante.modules.temporal.occurrence_edit_inventory import (
     OccurrenceEditInventoryApplication,
     OccurrenceEditInventoryLimitError,
 )
-from dante.modules.temporal.routine_occurrence_materialization import (
-    RoutineOccurrenceMaterializationApplication,
+from dante.modules.temporal.occurrence_edit_scope import EditScopeInputError
+from dante.modules.temporal.recurrence import CalendarRecurrence, RecurrenceInputError
+from dante.modules.temporal.recurrence_api import CalendarRecurrenceRequest, _spec
+from dante.modules.temporal.recurring_series_reconciliation import (
+    SeriesReconciliationError,
+    SeriesReconciliationWindow,
 )
 from dante.modules.temporal.recurring_structure_preview import (
     RecurringStructurePreviewApplication,
     StructuralSeriesPreviewConflict,
 )
-from dante.modules.temporal.recurring_series_reconciliation import (
-    SeriesReconciliationError,
-    SeriesReconciliationWindow,
+from dante.modules.temporal.routine_occurrence_materialization import (
+    RoutineOccurrenceMaterializationApplication,
 )
-from dante.modules.temporal.occurrence_edit_scope import EditScopeInputError
-from dante.modules.temporal.recurrence import RecurrenceInputError
-from dante.modules.temporal.recurrence_api import CalendarRecurrenceRequest, _spec
 from dante.modules.temporal.schedule import (
     AbsoluteIntervalPlacement,
     CoarseLocalPeriodPlacement,
@@ -933,8 +933,6 @@ async def preview_recurring_structural_cadence(
         window = SeriesReconciliationWindow(body.start_date, body.end_date_exclusive)
         planned = _spec(body.proposed_recurrence)
         # CalendarRecurrenceRequest always produces the calendar family.
-        from dante.modules.temporal.recurrence import CalendarRecurrence
-
         if not isinstance(planned, CalendarRecurrence):
             raise StructuralSeriesPreviewConflict("Only calendar cadence is supported.")
         result = await RecurringStructurePreviewApplication(
@@ -947,8 +945,12 @@ async def preview_recurring_structural_cadence(
             window=window,
             effective_zone_id=context.effective_zone_id,
         )
-    except (StructuralSeriesPreviewConflict, SeriesReconciliationError,
-            EditScopeInputError, RecurrenceInputError) as exc:
+    except (
+        StructuralSeriesPreviewConflict,
+        SeriesReconciliationError,
+        EditScopeInputError,
+        RecurrenceInputError,
+    ) as exc:
         raise ProblemError(
             status=422,
             code="temporal.recurring_structural_preview.invalid",
@@ -973,10 +975,13 @@ async def preview_recurring_structural_cadence(
         proposed_preview_fingerprint=result.proposed_preview_fingerprint,
         retained_occurrence_refs=list(result.reconciliation.retained_occurrence_refs),
         superseded_occurrence_refs=list(result.reconciliation.superseded_occurrence_refs),
-        new_coordinates=[CalendarOccurrenceCoordinate(**asdict(value))
-                         for value in result.reconciliation.new_coordinates],
-        protected_occurrences=[ScopedProfileEditProtectedOccurrence(**value)
-                               for value in result.protected_occurrences],
+        new_coordinates=[
+            CalendarOccurrenceCoordinate(**asdict(value))
+            for value in result.reconciliation.new_coordinates
+        ],
+        protected_occurrences=[
+            ScopedProfileEditProtectedOccurrence(**value) for value in result.protected_occurrences
+        ],
         apply_authorized=False,
     )
 

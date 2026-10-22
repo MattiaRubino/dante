@@ -9,7 +9,6 @@ from __future__ import annotations
 import hashlib
 import json
 from dataclasses import asdict, dataclass
-from datetime import date
 from uuid import UUID
 
 from sqlalchemy import text
@@ -17,7 +16,6 @@ from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 
 from dante.modules.temporal.occurrence import (
     CalendarCoordinate,
-    OccurrenceView,
     _candidate_instant,
     _zone,
 )
@@ -136,20 +134,21 @@ class RecurringStructurePreviewApplication:
                 selected_occurrence_ref=selected_occurrence_ref,
             )
             rows = (
-                await session.execute(
-                    text(
-                        "SELECT occurrence_ref, "
-                        "dante.get_self_occurrence_edit_protection(:actor,occurrence_ref) "
-                        "AS reason FROM dante.list_self_recurrence_edit_occurrences("
-                        ":actor,:selected)"
-                    ),
-                    {"actor": self_person_ref, "selected": selected_occurrence_ref},
+                (
+                    await session.execute(
+                        text(
+                            "SELECT occurrence_ref, "
+                            "dante.get_self_occurrence_edit_protection(:actor,occurrence_ref) "
+                            "AS reason FROM dante.list_self_recurrence_edit_occurrences("
+                            ":actor,:selected)"
+                        ),
+                        {"actor": self_person_ref, "selected": selected_occurrence_ref},
+                    )
                 )
-            ).mappings().all()
-            protections = {
-                UUID(str(row["occurrence_ref"])): row["reason"]
-                for row in rows
-            }
+                .mappings()
+                .all()
+            )
+            protections = {UUID(str(row["occurrence_ref"])): row["reason"] for row in rows}
             scope, generated = structural_scope(
                 inventory=inventory,
                 protections=protections,
@@ -157,27 +156,30 @@ class RecurringStructurePreviewApplication:
                 effective_zone_id=effective_zone_id,
             )
             source_preview = (
-                await session.execute(
-                    text(
-                        "SELECT * FROM dante.get_self_occurrence_profile_edit_preview("
-                        ":actor,:selected,:scope,:zone)"
-                    ),
-                    {
-                        "actor": self_person_ref,
-                        "selected": selected_occurrence_ref,
-                        "scope": scope_code,
-                        "zone": effective_zone_id,
-                    },
+                (
+                    await session.execute(
+                        text(
+                            "SELECT * FROM dante.get_self_occurrence_profile_edit_preview("
+                            ":actor,:selected,:scope,:zone)"
+                        ),
+                        {
+                            "actor": self_person_ref,
+                            "selected": selected_occurrence_ref,
+                            "scope": scope_code,
+                            "zone": effective_zone_id,
+                        },
+                    )
                 )
-            ).mappings().one()
+                .mappings()
+                .one()
+            )
             protected = tuple(source_preview["protected_occurrences"] or ())
             if (
                 source_preview["source_native_ref"] != inventory.source_native_ref
                 or set(source_preview["target_occurrence_refs"] or ())
                 != set(scope.target_occurrence_refs)
-                or {
-                    UUID(str(row["occurrence_ref"])) for row in protected
-                } != set(scope.protected_future_occurrence_refs)
+                or {UUID(str(row["occurrence_ref"])) for row in protected}
+                != set(scope.protected_future_occurrence_refs)
             ):
                 raise StructuralSeriesPreviewConflict(
                     "Canonical preview changed during structural planning."

@@ -423,7 +423,6 @@ describe('Recurring Activity profile scope', () => {
     );
   });
 
-
   it('uses one centered destructive dialog for named and main attempts, with safe cancellation and focus', () => {
     const confirm = vi.fn();
     const cancel = vi.fn();
