@@ -334,6 +334,47 @@ def test_calendar_preview_never_allows_local_only_scope_to_revise_source() -> No
         )
 
 
+def test_calendar_preview_refuses_generator_truncation_before_cutover() -> None:
+    selected = CalendarCoordinate(
+        family_code="calendar_wall_clock",
+        generated_date=date(2024, 1, 1),
+        generated_wall_time=time(10),
+        clock_basis_code="named_zone",
+        zone_id="Europe/Rome",
+        resolved_at=datetime(2024, 1, 1, 9, tzinfo=UTC),
+    )
+    scope = select_recurrence_edit_scope(
+        selected_occurrence_ref=FIRST,
+        scope="this_and_following",
+        candidates=(
+            RecurrenceEditCandidate(
+                occurrence_ref=FIRST,
+                source_native_ref=SOURCE,
+                expected_at=selected.resolved_at,
+                origin_code="recurrence_generated",
+            ),
+        ),
+        captured_at=datetime(2023, 12, 31, tzinfo=UTC),
+        authoritative_inventory=True,
+    )
+    recurrence = replace(
+        _weekly_tuesday(),
+        effective_from=date(2020, 1, 1),
+        pattern_code="daily",
+        weekdays=(),
+        wall_times=tuple(time(hour, minute) for hour in range(8) for minute in (0, 30)),
+    )
+    with pytest.raises(SeriesReconciliationError, match="bounded instance limit"):
+        preview_calendar_series_reconciliation(
+            scope=scope,
+            materialized=(MaterializedSeriesInstance(FIRST, selected),),
+            proposed_recurrence=recurrence,
+            window=SeriesReconciliationWindow(date(2020, 1, 1), date(2025, 1, 1)),
+            effective_zone_id="Europe/Rome",
+            authoritative_inventory=True,
+        )
+
+
 def test_cadence_reconciliation_refuses_new_expected_instance_before_selected_boundary() -> None:
     with pytest.raises(SeriesReconciliationError, match="edit boundary"):
         reconcile_materialized_series(

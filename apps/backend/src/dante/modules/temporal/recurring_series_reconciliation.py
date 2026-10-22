@@ -11,6 +11,7 @@ from datetime import UTC, date
 from uuid import UUID
 
 from dante.modules.temporal.occurrence import (
+    MAX_CHECKPOINT_OCCURRENCES,
     CalendarCoordinate,
     _calendar_candidates,
     _candidate_instant,
@@ -142,9 +143,7 @@ def reconcile_materialized_series(
     for coordinate in regenerated:
         expected_at = _candidate_instant(coordinate, zone).astimezone(UTC)
         outside_boundary = (
-            expected_at <= cutover
-            if scope.scope == "from_next"
-            else expected_at < cutover
+            expected_at <= cutover if scope.scope == "from_next" else expected_at < cutover
         )
         if outside_boundary:
             raise SeriesReconciliationError(
@@ -216,6 +215,11 @@ def preview_calendar_series_reconciliation(
         window.end_date_exclusive,
         zone,
     )
+    # The shared checkpoint evaluator returns one extra candidate and then
+    # stops. Check its result *before* the edit-boundary filter: otherwise a
+    # truncated prefix before the cutover could look like a complete preview.
+    if len(candidates) > MAX_CHECKPOINT_OCCURRENCES:
+        raise SeriesReconciliationError("Calendar preview exceeds the bounded instance limit.")
 
     def is_in_scope(coordinate: CalendarCoordinate) -> bool:
         expected_at = _candidate_instant(coordinate, zone).astimezone(UTC)

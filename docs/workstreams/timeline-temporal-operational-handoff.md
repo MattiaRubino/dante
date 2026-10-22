@@ -1,5 +1,16 @@
 # Timeline / Temporal-Operational — Workstream Handoff
 
+## 2026-10-22 — Calendar preview truncation guard
+
+The calendar series preview now rejects the canonical checkpoint generator's
+10,001st candidate **before** filtering out dates preceding the edit cutover.
+Otherwise a dense earlier prefix could be truncated while a seemingly complete
+future preview was returned. A regression creates this exact prefix. This is a
+pure preview safety repair; it does not enable structural series Save, create a
+schema revision, or change the user-facing editor. Focused verification on the
+local candidate: 21/21 planner unit tests passed; PostgreSQL and browser gates
+remain to be run for the eventual structural persistence vertical.
+
 ## 2026-10-22 — Calendar reconciliation cutover guard (unverified candidate)
 
 User WSL verification on `cf6f599d` is **green**: Ruff check, Ruff format check, 18/18 focused unit tests (0.48 s). This proves only the pure planner's earlier test corpus, not structural series writes.
