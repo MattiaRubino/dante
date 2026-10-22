@@ -83,6 +83,7 @@ def reconcile_materialized_series(
     materialized: tuple[MaterializedSeriesInstance, ...],
     regenerated: tuple[CalendarCoordinate, ...],
     window: SeriesReconciliationWindow,
+    effective_zone_id: str,
     authoritative_inventory: bool,
 ) -> SeriesReconciliation:
     """Keep local/factual exceptions, retain matches, replace clean mismatches.
@@ -128,6 +129,28 @@ def reconcile_materialized_series(
         if key in existing_by_key and existing_by_key[key] not in clean:
             raise SeriesReconciliationError("New cadence collides with an unchanged instance.")
         proposed[key] = coordinate
+
+    # Even a well-formed regenerated set may not introduce a clean Occurrence
+    # before the user's chosen series boundary. Check the canonical instant,
+    # not the civil-date label, across time zones and DST transitions.
+    zone = _zone(effective_zone_id)
+    anchor = _candidate_instant(indexed[scope.selected_occurrence_ref], zone).astimezone(UTC)
+    captured_at = scope.captured_at.astimezone(UTC)
+    if scope.scope == "this_and_following" and anchor < captured_at:
+        raise SeriesReconciliationError("The selected series anchor is already past.")
+    cutover = max(anchor, captured_at)
+    for coordinate in regenerated:
+        expected_at = _candidate_instant(coordinate, zone).astimezone(UTC)
+        outside_boundary = (
+            expected_at <= cutover
+            if scope.scope == "from_next"
+            else expected_at < cutover
+        )
+        if outside_boundary:
+            raise SeriesReconciliationError(
+                "Regenerated cadence crosses the accepted series edit boundary."
+            )
+
     return SeriesReconciliation(
         retained_occurrence_refs=tuple(
             ref for ref in scope.target_occurrence_refs if _key(indexed[ref]) in proposed
@@ -209,5 +232,6 @@ def preview_calendar_series_reconciliation(
         materialized=materialized,
         regenerated=regenerated,
         window=window,
+        effective_zone_id=effective_zone_id,
         authoritative_inventory=authoritative_inventory,
     )

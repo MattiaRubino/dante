@@ -68,6 +68,7 @@ def test_revising_cadence_preserves_local_exception_and_replaces_clean_instance(
         materialized=_materialized(),
         regenerated=(_coordinate(20), _coordinate(27)),
         window=WINDOW,
+        effective_zone_id="Europe/Rome",
         authoritative_inventory=True,
     )
     assert result.retained_occurrence_refs == (FIRST,)
@@ -82,6 +83,7 @@ def test_recorded_selected_instance_is_not_replaced() -> None:
         materialized=_materialized(),
         regenerated=(_coordinate(27),),
         window=WINDOW,
+        effective_zone_id="Europe/Rome",
         authoritative_inventory=True,
     )
     assert result.superseded_occurrence_refs == (CLEAN,)
@@ -96,6 +98,7 @@ def test_new_cadence_cannot_merge_into_unchanged_instance(recorded: bool, day: i
             materialized=_materialized(),
             regenerated=(_coordinate(day),),
             window=WINDOW,
+            effective_zone_id="Europe/Rome",
             authoritative_inventory=True,
         )
 
@@ -107,6 +110,7 @@ def test_incomplete_or_duplicate_inventory_is_rejected() -> None:
             materialized=_materialized(),
             regenerated=(),
             window=WINDOW,
+            effective_zone_id="Europe/Rome",
             authoritative_inventory=False,
         )
     with pytest.raises(SeriesReconciliationError, match="disagree"):
@@ -115,6 +119,7 @@ def test_incomplete_or_duplicate_inventory_is_rejected() -> None:
             materialized=_materialized()[:2],
             regenerated=(),
             window=WINDOW,
+            effective_zone_id="Europe/Rome",
             authoritative_inventory=True,
         )
     with pytest.raises(SeriesReconciliationError, match="duplicate coordinate"):
@@ -123,6 +128,7 @@ def test_incomplete_or_duplicate_inventory_is_rejected() -> None:
             materialized=_materialized(),
             regenerated=(_coordinate(20), _coordinate(20)),
             window=WINDOW,
+            effective_zone_id="Europe/Rome",
             authoritative_inventory=True,
         )
 
@@ -156,6 +162,7 @@ def test_dst_overlap_resolution_changes_occurrence_identity() -> None:
         materialized=(MaterializedSeriesInstance(FIRST, earlier),),
         regenerated=(later,),
         window=SeriesReconciliationWindow(date(2026, 10, 25), date(2026, 10, 26)),
+        effective_zone_id="Europe/Rome",
         authoritative_inventory=True,
     )
     assert result.retained_occurrence_refs == ()
@@ -182,6 +189,7 @@ def test_reconciliation_rejects_materialized_occurrence_outside_complete_horizon
             materialized=_materialized(),
             regenerated=(_coordinate(27),),
             window=SeriesReconciliationWindow(date(2026, 10, 20), date(2026, 10, 22)),
+            effective_zone_id="Europe/Rome",
             authoritative_inventory=True,
         )
 
@@ -193,6 +201,7 @@ def test_reconciliation_rejects_new_candidate_outside_horizon() -> None:
             materialized=_materialized(),
             regenerated=(_coordinate(30),),
             window=WINDOW,
+            effective_zone_id="Europe/Rome",
             authoritative_inventory=True,
         )
 
@@ -204,6 +213,7 @@ def test_reconciliation_fails_closed_when_materialized_inventory_exceeds_limit()
             materialized=_materialized() * 3334,
             regenerated=(),
             window=WINDOW,
+            effective_zone_id="Europe/Rome",
             authoritative_inventory=True,
         )
 
@@ -215,6 +225,7 @@ def test_reconciliation_fails_closed_when_proposed_cadence_exceeds_limit() -> No
             materialized=_materialized(),
             regenerated=(_coordinate(27),) * 10001,
             window=WINDOW,
+            effective_zone_id="Europe/Rome",
             authoritative_inventory=True,
         )
 
@@ -317,6 +328,34 @@ def test_calendar_preview_never_allows_local_only_scope_to_revise_source() -> No
             scope=local,
             materialized=_materialized(),
             proposed_recurrence=_weekly_tuesday(),
+            window=WINDOW,
+            effective_zone_id="Europe/Rome",
+            authoritative_inventory=True,
+        )
+
+
+def test_cadence_reconciliation_refuses_new_expected_instance_before_selected_boundary() -> None:
+    with pytest.raises(SeriesReconciliationError, match="edit boundary"):
+        reconcile_materialized_series(
+            scope=_scope(),
+            materialized=_materialized(),
+            regenerated=(_coordinate(19),),
+            window=WINDOW,
+            effective_zone_id="Europe/Rome",
+            authoritative_inventory=True,
+        )
+
+
+def test_cadence_reconciliation_refuses_post_preview_cutover_backfill() -> None:
+    scope = replace(
+        _scope(recorded=True),
+        captured_at=datetime(2026, 10, 23, 8, tzinfo=UTC),
+    )
+    with pytest.raises(SeriesReconciliationError, match="edit boundary"):
+        reconcile_materialized_series(
+            scope=scope,
+            materialized=_materialized(),
+            regenerated=(_coordinate(19),),
             window=WINDOW,
             effective_zone_id="Europe/Rome",
             authoritative_inventory=True,
