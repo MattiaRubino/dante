@@ -401,6 +401,10 @@
 
 /* Prototype v7 group geometry: ruler | reset | groups | handle. */
 .dante-timeline-group-row {
+  /* Keep the filter controls above tall draggable cards whose visible
+   * geometry can extend into the header when the ruler is elastic. */
+  position: relative;
+  z-index: 60;
   display: grid;
   grid-template-columns:
     var(--dante-timeline-ruler-width) 44px minmax(0, 1fr)

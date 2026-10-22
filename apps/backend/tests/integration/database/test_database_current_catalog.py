@@ -258,7 +258,7 @@ def test_current_database_cross_representation_is_exact(migrated_database: Any) 
     }
     assert current["constraints"] == {
         "foreign_keys": 421,
-        "check_constraints": 596,
+        "check_constraints": 597,
     }
     assert len(MAPPED_TABLES) == len(Base.registry.mappers) == len(Base.metadata.tables) == 238
     assert all(len(mapper.relationships) == 0 for mapper in Base.registry.mappers)

@@ -268,12 +268,12 @@ async def test_selected_activity_life_area_and_planned_name_do_not_propagate(
             )
             first_marker = await session.scalar(
                 text(
-                    "SELECT name_exception_reason FROM dante.activity_schedule_role "
-                    "WHERE schedule_ref=:schedule"
+                    "SELECT dante.get_self_occurrence_edit_protection("
+                    ":actor,:occurrence)"
                 ),
-                {"schedule": untouched_plan["schedule_ref"]},
+                {"actor": actor, "occurrence": early[1]},
             )
-            assert first_marker == "local_edit"
+            assert first_marker == "local_change"
             preview = (
                 (
                     await session.execute(
@@ -308,10 +308,10 @@ async def test_selected_activity_life_area_and_planned_name_do_not_propagate(
             )
             restored_marker = await session.scalar(
                 text(
-                    "SELECT name_exception_reason FROM dante.activity_schedule_role "
-                    "WHERE schedule_ref=:schedule"
+                    "SELECT dante.get_self_occurrence_edit_protection("
+                    ":actor,:occurrence)"
                 ),
-                {"schedule": untouched_plan["schedule_ref"]},
+                {"actor": actor, "occurrence": early[1]},
             )
             assert restored_marker == first_marker
             assert (

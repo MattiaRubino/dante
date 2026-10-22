@@ -1,5 +1,32 @@
 # Timeline / Temporal-Operational — Workstream Handoff
 
+## 2026-10-22 — CI evidence fixes (catalog, owner ACL, group hit-testing)
+
+The same-SHA CI run on `10ee539b` showed two PostgreSQL failures:
+a stale **596** CHECK count in the cross-representation test although the
+actual PostgreSQL catalog and Dictionary scope both report **597**, and an
+integration assertion issuing a direct runtime SELECT against the
+`activity_schedule_role` table despite the expected least-privilege ACL.
+The test now expects the verified 597 and checks the already-authorized
+`get_self_occurrence_edit_protection` capability after a local rename and
+its explicit reversal, rather than granting raw table access. There is no
+migration and no security grant change.
+
+The same CI run's browser test reported that a Timeline card drag zone
+intercepted pointer clicks on the group filters. The group-row is therefore
+stacked above timeline cards to retain clickability, without removing the
+card's drag surface or changing filter semantics. Existing browser tests
+cover clicks on `urgenze` and the focus chip.
+
+CI also reports OpenAPI/client generated-source drift in existing
+`ScopedProfileEditPreviewResponse` and
+`ScopedProfileEditProtectedOccurrence`. Those generated files were **not**
+hand-edited. They require the governed OpenAPI / client generator, under a
+single clean SHA, before this candidate can pass the complete gate.
+**No structural-series Save has been enabled**, and all changes below
+remain candidate until executed and attested against the current SHA.
+
+
 ## 2026-10-22 — Internal structural cadence preview candidate
 
 The backend `RecurringStructurePreviewApplication.preview` accepts a
