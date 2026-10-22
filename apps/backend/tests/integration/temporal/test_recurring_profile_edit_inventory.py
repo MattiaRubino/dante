@@ -339,6 +339,7 @@ async def test_structural_cadence_preview_preserves_skipped_future_occurrence(
         # SERIALIZABLE transaction rather than making a second read request.
         async with runtime.session_factory() as session, session.begin():
             await session.execute(text("SET TRANSACTION ISOLATION LEVEL SERIALIZABLE"))
+            transaction_time = await session.scalar(text("SELECT transaction_timestamp()"))
             shared = await preview.preview_in_session(
                 session,
                 self_person_ref=alice,
@@ -348,7 +349,14 @@ async def test_structural_cadence_preview_preserves_skipped_future_occurrence(
                 window=SeriesReconciliationWindow(start, date(2099, 10, 9)),
                 effective_zone_id="Europe/Rome",
             )
-            assert shared == result
+            assert shared.scope_plan.captured_at == transaction_time
+            assert shared == replace(
+                result,
+                scope_plan=replace(
+                    result.scope_plan,
+                    captured_at=shared.scope_plan.captured_at,
+                ),
+            )
             assert not shared.apply_authorized
 
         # Neither a preview nor its fingerprint may change the canonical source.

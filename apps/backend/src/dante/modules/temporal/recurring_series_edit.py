@@ -410,6 +410,8 @@ class RecurringSeriesEditApplication:
                 recurrence_state_ref=recurrence_view.material_state_ref,
             )
             if owner == "routine":
+                if routine is None:
+                    raise RecurringSeriesEditConflictError("Activity source is unavailable.")
                 initial = await self._initial_routine.get_in_session(
                     session, self_person_ref=self_person_ref, routine_ref=source_ref
                 )
