@@ -267,10 +267,7 @@ async def test_selected_activity_life_area_and_planned_name_do_not_propagate(
                 },
             )
             first_marker = await session.scalar(
-                text(
-                    "SELECT dante.get_self_occurrence_edit_protection("
-                    ":actor,:occurrence)"
-                ),
+                text("SELECT dante.get_self_occurrence_edit_protection(:actor,:occurrence)"),
                 {"actor": actor, "occurrence": early[1]},
             )
             assert first_marker == "local_change"
@@ -307,10 +304,7 @@ async def test_selected_activity_life_area_and_planned_name_do_not_propagate(
                 },
             )
             restored_marker = await session.scalar(
-                text(
-                    "SELECT dante.get_self_occurrence_edit_protection("
-                    ":actor,:occurrence)"
-                ),
+                text("SELECT dante.get_self_occurrence_edit_protection(:actor,:occurrence)"),
                 {"actor": actor, "occurrence": early[1]},
             )
             assert restored_marker == first_marker
