@@ -335,6 +335,22 @@ async def test_structural_cadence_preview_preserves_skipped_future_occurrence(
         assert result.reconciliation.superseded_occurrence_refs == ()
         assert result.reconciliation.new_coordinates == ()
 
+        # The future acceptor must compute this SAME snapshot in its own
+        # SERIALIZABLE transaction rather than making a second read request.
+        async with runtime.session_factory() as session, session.begin():
+            await session.execute(text("SET TRANSACTION ISOLATION LEVEL SERIALIZABLE"))
+            shared = await preview.preview_in_session(
+                session,
+                self_person_ref=alice,
+                selected_occurrence_ref=materialized.occurrences[0].occurrence_ref,
+                scope_code="this_and_following",
+                proposed_recurrence=proposed,
+                window=SeriesReconciliationWindow(start, date(2099, 10, 9)),
+                effective_zone_id="Europe/Rome",
+            )
+            assert shared == result
+            assert not shared.apply_authorized
+
         # Neither a preview nor its fingerprint may change the canonical source.
         current = await recurrences.get(
             owner="routine",

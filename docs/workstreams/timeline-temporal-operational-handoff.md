@@ -1,5 +1,24 @@
 # Timeline / Temporal-Operational — Workstream Handoff
 
+## 2026-10-22 — Reusable consistent structural preview for future acceptance
+
+The internal `RecurringStructurePreviewApplication.preview_in_session` now
+recomputes the canonical full-inventory/exception/cadence preview in a
+caller-owned SQLAlchemy transaction. It explicitly refuses no-transaction
+and READ COMMITTED callers, requiring a REPEATABLE READ or SERIALIZABLE
+snapshot. The independent `preview` method delegates to the same path.
+A real PostgreSQL integration assertion compares the stand-alone result
+to a caller-owned SERIALIZABLE read, including protected identities and
+proposal fingerprint. Both remain `apply_authorized=False`.
+
+This is **not** a persisted series mutation or a source-CAS guarantee:
+a future acceptance transaction must additionally acquire the authoritative
+source lock, compare expected fingerprints and revision, and atomically
+replace the source policy and clean instance graphs before committing.
+No API, schema, grant or user-facing recurring Edit behavior changes.
+Verification on this SHA remains pending.
+
+
 ## 2026-10-22 — CI evidence fixes (catalog, owner ACL, group hit-testing)
 
 The same-SHA CI run on `10ee539b` showed two PostgreSQL failures:

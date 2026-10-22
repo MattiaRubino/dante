@@ -128,93 +128,127 @@ class RecurringStructurePreviewApplication:
             raise StructuralSeriesPreviewError("Use a following scope for series edits.")
         async with self._session_factory() as session, session.begin():
             await session.execute(text("SET TRANSACTION ISOLATION LEVEL REPEATABLE READ"))
-            inventory = await self._inventories.read_in_session(
+            return await self.preview_in_session(
                 session,
                 self_person_ref=self_person_ref,
                 selected_occurrence_ref=selected_occurrence_ref,
-            )
-            rows = (
-                (
-                    await session.execute(
-                        text(
-                            "SELECT occurrence_ref, "
-                            "dante.get_self_occurrence_edit_protection(:actor,occurrence_ref) "
-                            "AS reason FROM dante.list_self_recurrence_edit_occurrences("
-                            ":actor,:selected)"
-                        ),
-                        {"actor": self_person_ref, "selected": selected_occurrence_ref},
-                    )
-                )
-                .mappings()
-                .all()
-            )
-            protections = {UUID(str(row["occurrence_ref"])): row["reason"] for row in rows}
-            scope, generated = structural_scope(
-                inventory=inventory,
-                protections=protections,
                 scope_code=scope_code,
-                effective_zone_id=effective_zone_id,
-            )
-            source_preview = (
-                (
-                    await session.execute(
-                        text(
-                            "SELECT * FROM dante.get_self_occurrence_profile_edit_preview("
-                            ":actor,:selected,:scope,:zone)"
-                        ),
-                        {
-                            "actor": self_person_ref,
-                            "selected": selected_occurrence_ref,
-                            "scope": scope_code,
-                            "zone": effective_zone_id,
-                        },
-                    )
-                )
-                .mappings()
-                .one()
-            )
-            protected = tuple(source_preview["protected_occurrences"] or ())
-            if (
-                source_preview["source_native_ref"] != inventory.source_native_ref
-                or set(source_preview["target_occurrence_refs"] or ())
-                != set(scope.target_occurrence_refs)
-                or {UUID(str(row["occurrence_ref"])) for row in protected}
-                != set(scope.protected_future_occurrence_refs)
-            ):
-                raise StructuralSeriesPreviewError(
-                    "Canonical preview changed during structural planning."
-                )
-            plan = preview_calendar_series_reconciliation(
-                scope=scope,
-                materialized=generated,
                 proposed_recurrence=proposed_recurrence,
                 window=window,
                 effective_zone_id=effective_zone_id,
-                authoritative_inventory=True,
             )
-            intent = {
-                "source_fingerprint": source_preview["fingerprint"],
-                "scope": scope_code,
-                "recurrence": asdict(proposed_recurrence),
-                "window": asdict(window),
-                "retained": plan.retained_occurrence_refs,
-                "superseded": plan.superseded_occurrence_refs,
-                "new": tuple(asdict(x) for x in plan.new_coordinates),
-                "protected": plan.protected_occurrence_refs,
-            }
-            fingerprint = hashlib.sha256(
-                json.dumps(intent, sort_keys=True, default=str, separators=(",", ":")).encode(
-                    "utf-8"
+
+    async def preview_in_session(
+        self,
+        session: AsyncSession,
+        *,
+        self_person_ref: NativeRef,
+        selected_occurrence_ref: UUID,
+        scope_code: EditScope,
+        proposed_recurrence: CalendarRecurrence,
+        window: SeriesReconciliationWindow,
+        effective_zone_id: str,
+    ) -> StructuralSeriesPreview:
+        """Re-evaluate inside the caller's existing consistent transaction.
+
+        A future write must separately acquire source admission locks and
+        compare the fresh proposal fingerprint before any mutation. This
+        method never grants write authority, even in SERIALIZABLE.
+        """
+        if not session.in_transaction():
+            raise StructuralSeriesPreviewError("Shared preview requires a transaction.")
+        if scope_code not in {"this_and_following", "from_next"}:
+            raise StructuralSeriesPreviewError("Use a following scope for series edits.")
+        isolation = await session.scalar(text("SHOW transaction_isolation"))
+        if isolation not in {"repeatable read", "serializable"}:
+            raise StructuralSeriesPreviewError("Shared preview requires a consistent snapshot.")
+        inventory = await self._inventories.read_in_session(
+            session,
+            self_person_ref=self_person_ref,
+            selected_occurrence_ref=selected_occurrence_ref,
+        )
+        rows = (
+            (
+                await session.execute(
+                    text(
+                        "SELECT occurrence_ref, "
+                        "dante.get_self_occurrence_edit_protection(:actor,occurrence_ref) "
+                        "AS reason FROM dante.list_self_recurrence_edit_occurrences("
+                        ":actor,:selected)"
+                    ),
+                    {"actor": self_person_ref, "selected": selected_occurrence_ref},
                 )
-            ).hexdigest()
-            return StructuralSeriesPreview(
-                source_native_ref=inventory.source_native_ref,
-                recurrence_state_ref=source_preview["recurrence_state_ref"],
-                profile_edit_revision=int(source_preview["edit_revision"]),
-                selected_occurrence_ref=selected_occurrence_ref,
-                scope_code=scope_code,
-                source_preview_fingerprint=source_preview["fingerprint"],
-                proposed_preview_fingerprint=fingerprint,
-                reconciliation=plan,
-                protected_occurrences=protected,
             )
+            .mappings()
+            .all()
+        )
+        protections = {UUID(str(row["occurrence_ref"])): row["reason"] for row in rows}
+        scope, generated = structural_scope(
+            inventory=inventory,
+            protections=protections,
+            scope_code=scope_code,
+            effective_zone_id=effective_zone_id,
+        )
+        source_preview = (
+            (
+                await session.execute(
+                    text(
+                        "SELECT * FROM dante.get_self_occurrence_profile_edit_preview("
+                        ":actor,:selected,:scope,:zone)"
+                    ),
+                    {
+                        "actor": self_person_ref,
+                        "selected": selected_occurrence_ref,
+                        "scope": scope_code,
+                        "zone": effective_zone_id,
+                    },
+                )
+            )
+            .mappings()
+            .one()
+        )
+        protected = tuple(source_preview["protected_occurrences"] or ())
+        if (
+            source_preview["source_native_ref"] != inventory.source_native_ref
+            or set(source_preview["target_occurrence_refs"] or ())
+            != set(scope.target_occurrence_refs)
+            or {UUID(str(row["occurrence_ref"])) for row in protected}
+            != set(scope.protected_future_occurrence_refs)
+        ):
+            raise StructuralSeriesPreviewError(
+                "Canonical preview changed during structural planning."
+            )
+        plan = preview_calendar_series_reconciliation(
+            scope=scope,
+            materialized=generated,
+            proposed_recurrence=proposed_recurrence,
+            window=window,
+            effective_zone_id=effective_zone_id,
+            authoritative_inventory=True,
+        )
+        intent = {
+            "source_fingerprint": source_preview["fingerprint"],
+            "scope": scope_code,
+            "recurrence": asdict(proposed_recurrence),
+            "window": asdict(window),
+            "retained": plan.retained_occurrence_refs,
+            "superseded": plan.superseded_occurrence_refs,
+            "new": tuple(asdict(x) for x in plan.new_coordinates),
+            "protected": plan.protected_occurrence_refs,
+        }
+        fingerprint = hashlib.sha256(
+            json.dumps(intent, sort_keys=True, default=str, separators=(",", ":")).encode(
+                "utf-8"
+            )
+        ).hexdigest()
+        return StructuralSeriesPreview(
+            source_native_ref=inventory.source_native_ref,
+            recurrence_state_ref=source_preview["recurrence_state_ref"],
+            profile_edit_revision=int(source_preview["edit_revision"]),
+            selected_occurrence_ref=selected_occurrence_ref,
+            scope_code=scope_code,
+            source_preview_fingerprint=source_preview["fingerprint"],
+            proposed_preview_fingerprint=fingerprint,
+            reconciliation=plan,
+            protected_occurrences=protected,
+        )
