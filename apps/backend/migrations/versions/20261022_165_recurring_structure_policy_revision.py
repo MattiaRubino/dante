@@ -57,15 +57,15 @@ def upgrade() -> None:
             name="fk_recurring_structure_policy_revision_state",
         ),
         sa.CheckConstraint(
-            "owner_kind IN ('routine','event')", name="ck_recurring_structure_policy_revision_owner"
+            "owner_kind IN ('routine','event')", name="ck_recur_struct_policy_revision_owner"
         ),
         sa.CheckConstraint(
             "operation_id=btrim(operation_id) AND operation_id<>'' AND char_length(operation_id)<=200",
-            name="ck_recurring_structure_policy_revision_operation",
+            name="ck_recur_struct_policy_revision_operation",
         ),
         sa.CheckConstraint(
             "jsonb_typeof(structure_snapshot)='object' AND structure_snapshot<>'{}'::jsonb",
-            name="ck_recurring_structure_policy_revision_snapshot",
+            name="ck_recur_struct_policy_revision_snapshot",
         ),
         schema="dante",
     )
@@ -122,6 +122,7 @@ def upgrade() -> None:
         _GET_RECEIPT,
         _SUPERSEDE,
         _CURRENT_INVENTORY,
+        _IS_SUPERSEDED,
     ):
         # psycopg parses percent signs even when a driver SQL statement has no
         # bound parameters. PL/pgSQL uses `%ROWTYPE`, so quote percent signs
@@ -138,6 +139,7 @@ def upgrade() -> None:
         "get_self_recurring_structure_policy_revision(uuid,text,uuid,uuid)",
         "get_self_recurring_structure_policy_operation(uuid,text)",
         "supersede_self_clean_recurring_occurrence(uuid,uuid,uuid,uuid,text,text)",
+        "is_self_recurring_occurrence_superseded(uuid,uuid)",
     ):
         bind.exec_driver_sql(
             f"REVOKE ALL ON FUNCTION dante.{signature} FROM PUBLIC,dante_runtime,dante_migrator"
@@ -498,5 +500,21 @@ BEGIN
           WHERE retired.occurrence_ref=generation.occurrence_ref)
      ORDER BY item.occurrence_ref;
 END;
+$$;
+"""
+
+
+_IS_SUPERSEDED = r"""
+CREATE FUNCTION dante.is_self_recurring_occurrence_superseded(
+    actor uuid, requested_occurrence uuid
+) RETURNS boolean
+LANGUAGE sql SECURITY DEFINER STABLE PARALLEL SAFE
+SET search_path=pg_catalog,dante,pg_temp AS $$
+    SELECT EXISTS(
+        SELECT 1
+          FROM dante.recurring_occurrence_supersession retired
+         WHERE retired.self_person_ref=$1
+           AND retired.occurrence_ref=$2
+    )
 $$;
 """

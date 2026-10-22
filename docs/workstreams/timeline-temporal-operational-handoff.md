@@ -31,6 +31,17 @@ All static function definitions are now escaped before `exec_driver_sql`, matchi
 the repository's established migration pattern. This is the only reported cause;
 the long PostgreSQL error list is fixture fallout after migration setup failed.
 
+## 2026-10-22 — Targeted PostgreSQL repair candidate
+
+The next targeted PostgreSQL run reached `_165` and exposed two separate
+cross-layer defects. The three revision-table CHECK names exceeded PostgreSQL's
+identifier limit, so the server shortened them while SQLAlchemy and the
+Dictionary retained the long names. They now have explicit bounded names.
+Timeline projection also attempted direct reads of protected occurrence-binding
+and supersession tables. The read now uses a narrow owner-scoped SECURITY
+DEFINER predicate; raw runtime table access remains denied. The associated
+routine, Dictionary counts and catalog expectation are updated together.
+
 ## 2026-10-22 — Structural series Edit worktree candidate (not accepted)
 
 Branch `feature/timeline-temporal-operational`, base `4e1c168c0`, dirty worktree.

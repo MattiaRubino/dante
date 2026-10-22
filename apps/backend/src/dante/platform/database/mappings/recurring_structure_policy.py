@@ -44,15 +44,15 @@ class RecurringStructurePolicyRevisionRow(Base):
         ),
         CheckConstraint(
             "owner_kind IN ('routine','event')",
-            name=conv("ck_recurring_structure_policy_revision_owner"),
+            name=conv("ck_recur_struct_policy_revision_owner"),
         ),
         CheckConstraint(
             "operation_id=btrim(operation_id) AND operation_id<>'' AND char_length(operation_id)<=200",
-            name=conv("ck_recurring_structure_policy_revision_operation"),
+            name=conv("ck_recur_struct_policy_revision_operation"),
         ),
         CheckConstraint(
             "jsonb_typeof(structure_snapshot)='object' AND structure_snapshot<>'{}'::jsonb",
-            name=conv("ck_recurring_structure_policy_revision_snapshot"),
+            name=conv("ck_recur_struct_policy_revision_snapshot"),
         ),
         Index("ix_recurring_structure_policy_revision_source", "source_native_ref", "accepted_at"),
     )

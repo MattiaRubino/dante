@@ -289,25 +289,25 @@
     ],
     "check_constraints": [
       {
-        "name": "ck_recurring_structure_policy_revision_owner",
+        "name": "ck_recur_struct_policy_revision_owner",
         "expression_contract": "owner_kind IN ('routine','event')",
-        "reason": "Enforce ck_recurring_structure_policy_revision_owner.",
+        "reason": "Enforce ck_recur_struct_policy_revision_owner.",
         "enforced": true,
         "validated": true,
         "no_inherit": false
       },
       {
-        "name": "ck_recurring_structure_policy_revision_operation",
+        "name": "ck_recur_struct_policy_revision_operation",
         "expression_contract": "operation_id=btrim(operation_id) AND operation_id<>'' AND char_length(operation_id)<=200",
-        "reason": "Enforce ck_recurring_structure_policy_revision_operation.",
+        "reason": "Enforce ck_recur_struct_policy_revision_operation.",
         "enforced": true,
         "validated": true,
         "no_inherit": false
       },
       {
-        "name": "ck_recurring_structure_policy_revision_snapshot",
+        "name": "ck_recur_struct_policy_revision_snapshot",
         "expression_contract": "jsonb_typeof(structure_snapshot)='object' AND structure_snapshot<>'{}'::jsonb",
-        "reason": "Enforce ck_recurring_structure_policy_revision_snapshot.",
+        "reason": "Enforce ck_recur_struct_policy_revision_snapshot.",
         "enforced": true,
         "validated": true,
         "no_inherit": false

@@ -3,9 +3,9 @@
 **Local `_165` structural series policy candidate (2026-10-22, unverified):**
 two new append-only tables record a complete Activity/Event structure snapshot
 for an accepted replacement Recurrence state and the supersession of clean
-future Occurrence plans. Four owner-scoped SECURITY DEFINER capabilities write
-or read those records. The intended catalog is
-`240|5|247|104|492|428|600`. The older materialized Occurrence, Activity,
+future Occurrence plans. Five owner-scoped SECURITY DEFINER capabilities write,
+read or project those records. The intended catalog is
+`240|5|248|104|492|428|600`. The older materialized Occurrence, Activity,
 Schedule and factual graphs remain in canonical history; the Timeline
 projection excludes a superseded clean plan. This does not yet implement the
 atomic full-series acceptance or its UI. PostgreSQL catalog, migration and

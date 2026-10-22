@@ -6,7 +6,7 @@
 - **Protected-main Alembic head:** `20260906_18`
 - **Protected-main topology:** `89|5|18|77|173|91|272|0|0|0`
 - **Timeline candidate branch:** `feature/timeline-temporal-operational`
-- **Timeline candidate Alembic head:** `20261022_165`; `_165` introduces versioned recurring structure snapshots and clean future planning supersession. Intended catalog: `240|5|247|104|492|428|600`; PostgreSQL migration and exact catalog validation remain pending. This schema does not expose a complete structural series edit. See `timeline-temporal-operational.md`.
+- **Timeline candidate Alembic head:** `20261022_165`; `_165` introduces versioned recurring structure snapshots and clean future planning supersession. Intended catalog: `240|5|248|104|492|428|600`; PostgreSQL migration and exact catalog validation remain pending. This schema does not expose a complete structural series edit. See `timeline-temporal-operational.md`.
 - **Historical B10-C proven topology (2026-09-26):** `20260925_79` / `167|5|123|93|329|279|446`; latest `_142` candidate topology `238|5|228|103|486|421|596` (user-local catalog gate green)
 - **Timeline candidate DB overlay:** `timeline-temporal-operational.md`
 - **Persistence doctrine:** `../development/backend-cp6-02-postgresql-persistence-constitution.md`

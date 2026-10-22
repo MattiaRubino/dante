@@ -556,10 +556,8 @@ class TemporalTimelineApplication:
                       schedule.subject_native_ref
                   ) AS occurrence
                  WHERE NOT occurrence.skipped
-                   AND NOT EXISTS (
-                       SELECT 1 FROM dante.recurring_occurrence_supersession superseded
-                        WHERE superseded.occurrence_ref=occurrence.occurrence_ref
-                          AND superseded.self_person_ref=:self_person_ref
+                   AND NOT dante.is_self_recurring_occurrence_superseded(
+                       :self_person_ref,occurrence.occurrence_ref
                    )
                  ORDER BY schedule.subject_native_ref,schedule.schedule_ref
             ), self_subject AS (
@@ -585,12 +583,11 @@ class TemporalTimelineApplication:
                    ) origin
              ) profile_edit ON true
                  WHERE intention.retired_at IS NULL
-                   AND NOT EXISTS (
-                       SELECT 1 FROM dante.routine_occurrence_activity_instance origin
-                       JOIN dante.recurring_occurrence_supersession superseded
-                         ON superseded.occurrence_ref=origin.occurrence_ref
-                      WHERE origin.activity_ref=intention.activity_ref
-                        AND superseded.self_person_ref=:self_person_ref
+                   AND NOT dante.is_self_recurring_occurrence_superseded(
+                       :self_person_ref,
+                       dante.get_self_materialized_activity_occurrence(
+                           :self_person_ref,intention.activity_ref
+                       )
                    )
                 UNION ALL
                 SELECT 'event'::text AS owner_kind,
@@ -810,10 +807,8 @@ class TemporalTimelineApplication:
                  :self_person_ref,occurrence.occurrence_ref
              ) AS patch
          ) profile_edit ON true
-             WHERE NOT EXISTS (
-                       SELECT 1 FROM dante.recurring_occurrence_supersession superseded
-                        WHERE superseded.occurrence_ref=occurrence.occurrence_ref
-                          AND superseded.self_person_ref=:self_person_ref
+             WHERE NOT dante.is_self_recurring_occurrence_superseded(
+                       :self_person_ref,occurrence.occurrence_ref
                    )
                AND NOT EXISTS (
                        SELECT 1
