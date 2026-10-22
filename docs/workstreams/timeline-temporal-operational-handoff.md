@@ -1,5 +1,26 @@
 # Timeline / Temporal-Operational — Workstream Handoff
 
+## 2026-10-22 — Official generated API/client reconciliation (candidate)
+
+The `pnpm api:generate` source of truth was executed by the branch CI with
+locked Python dependencies, Orval and Prettier. Its first run and second
+generation were byte-stable. Three drifted outputs were captured **verbatim**
+from that deterministic generator (not hand-edited) and are committed:
+`packages/api-client/openapi/dante-v1.openapi.json`, the
+`scopedProfileEditPreviewResponse.zod.ts` model, and
+`scopedProfileEditProtectedOccurrence.zod.ts`. The canonical
+`tooling/check-generated.mjs` is restored unchanged from before the
+temporary diagnostic; no diagnostic logging or workflow modification remains.
+
+The same source commit also applies the exact Ruff formatter change reported
+for `recurring_structure_preview.py`. The earlier source changes include
+a corrected Dictionary count, owner-scoped test reads, and Timeline group
+stacking. These changes require a complete, fresh same-SHA CI run; the earlier
+green partial checks and failed older-sha jobs do not certify this commit.
+The structural-series editor remains closed until an authoritative versioned
+source-policy write and atomic clean-instance reconciliation are implemented.
+
+
 ## 2026-10-22 — Reusable consistent structural preview for future acceptance
 
 The internal `RecurringStructurePreviewApplication.preview_in_session` now

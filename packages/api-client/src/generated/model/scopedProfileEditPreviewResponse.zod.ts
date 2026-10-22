@@ -17,6 +17,7 @@ export const ScopedProfileEditPreviewResponse = /*#__PURE__*/ zod.object({
         'registration',
         'skipped',
         'local_change',
+        'legacy_unknown',
       ]),
     }),
   ),
@@ -25,7 +26,12 @@ export const ScopedProfileEditPreviewResponse = /*#__PURE__*/ zod.object({
     /*#__PURE__*/ zod.null(),
   ]),
   selected_protection: /*#__PURE__*/ zod.union([
-    /*#__PURE__*/ zod.enum(['registration', 'skipped', 'local_change']),
+    /*#__PURE__*/ zod.enum([
+      'registration',
+      'skipped',
+      'local_change',
+      'legacy_unknown',
+    ]),
     /*#__PURE__*/ zod.null(),
   ]),
   source_native_ref: /*#__PURE__*/ zod.uuid(),

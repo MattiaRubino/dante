@@ -237,9 +237,7 @@ class RecurringStructurePreviewApplication:
             "protected": plan.protected_occurrence_refs,
         }
         fingerprint = hashlib.sha256(
-            json.dumps(intent, sort_keys=True, default=str, separators=(",", ":")).encode(
-                "utf-8"
-            )
+            json.dumps(intent, sort_keys=True, default=str, separators=(",", ":")).encode("utf-8")
         ).hexdigest()
         return StructuralSeriesPreview(
             source_native_ref=inventory.source_native_ref,

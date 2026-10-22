@@ -15467,7 +15467,12 @@
           "selected_protection": {
             "anyOf": [
               {
-                "enum": ["registration", "skipped", "local_change"],
+                "enum": [
+                  "registration",
+                  "skipped",
+                  "local_change",
+                  "legacy_unknown"
+                ],
                 "type": "string"
               },
               {
@@ -15516,7 +15521,12 @@
             "type": "string"
           },
           "reason": {
-            "enum": ["registration", "skipped", "local_change"],
+            "enum": [
+              "registration",
+              "skipped",
+              "local_change",
+              "legacy_unknown"
+            ],
             "title": "Reason",
             "type": "string"
           }

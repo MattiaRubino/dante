@@ -9,7 +9,12 @@ import * as zod from 'zod/mini';
 export const ScopedProfileEditProtectedOccurrence = /*#__PURE__*/ zod.object({
   expected_at: /*#__PURE__*/ zod.iso.datetime({ offset: true }),
   occurrence_ref: /*#__PURE__*/ zod.uuid(),
-  reason: /*#__PURE__*/ zod.enum(['registration', 'skipped', 'local_change']),
+  reason: /*#__PURE__*/ zod.enum([
+    'registration',
+    'skipped',
+    'local_change',
+    'legacy_unknown',
+  ]),
 });
 
 export type ScopedProfileEditProtectedOccurrence = zod.input<

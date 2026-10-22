@@ -209,25 +209,6 @@ try {
   await snapshotGeneratedFiles();
   await regenerate();
 
-  // Temporary branch-scoped diagnostic: transmit only deterministic public
-  // generated contracts in bounded log chunks so the official generator output
-  // can be committed without manually altering generated files.
-  // prettier-ignore
-  for (const [index, relativePath] of [
-    'packages/api-client/openapi/dante-v1.openapi.json',
-    'packages/api-client/src/generated/model/scopedProfileEditPreviewResponse.zod.ts',
-    'packages/api-client/src/generated/model/scopedProfileEditProtectedOccurrence.zod.ts',
-  ].entries()) {
-    const encoded = (await readFile(join(repoRoot, relativePath))).toString('base64');
-    const chunkSize = 4096;
-    const totalChunks = Math.ceil(encoded.length / chunkSize);
-    for (let chunk = 0; chunk < totalChunks; chunk += 1) {
-      process.stdout.write(
-        `DANTE_GENERATED_EXTRACT:${index}:${chunk}:${totalChunks}:${encoded.slice(chunk * chunkSize, (chunk + 1) * chunkSize)}\n`,
-      );
-    }
-  }
-
   const firstApiGeneration = await snapshotPaths(await allApiGeneratedPaths());
   regenerateApiClient();
   nondeterministicApi = await findDifferences(
