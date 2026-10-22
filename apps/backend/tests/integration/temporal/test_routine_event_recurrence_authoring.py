@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from dataclasses import replace
 from datetime import UTC, date, datetime, time
 from decimal import Decimal
 from typing import Any
@@ -26,6 +27,63 @@ from dante.modules.temporal.routine import RoutineApplication
 from dante.platform.database.runtime import create_database_runtime
 
 pytestmark = pytest.mark.postgres
+
+
+@pytest.mark.asyncio
+async def test_recurrence_in_session_revision_rolls_back_with_wider_edit(
+    migrated_database: Any,
+) -> None:
+    actor = _seed_self(migrated_database)
+    runtime = create_database_runtime(migrated_database.runtime_settings())
+    routines = RoutineApplication(runtime.session_factory)
+    recurrences = RecurrenceApplication(runtime.session_factory)
+    try:
+        routine = await routines.create(
+            self_person_ref=actor,
+            operation_id="transactional-series-source",
+            title="Allenamento",
+            life_area_ref=None,
+            starts_on=date(2026, 10, 1),
+            wall_time=time(7, 30),
+        )
+        original = await recurrences.get(
+            owner="routine", self_person_ref=actor, owner_ref=routine.routine_ref
+        )
+        assert original is not None
+        assert isinstance(original.recurrence, CalendarRecurrence)
+        revised = replace(original.recurrence, wall_times=(time(8),))
+
+        async def abort_wider_edit() -> None:
+            async with runtime.session_factory() as session, session.begin():
+                await recurrences.replace_in_session(
+                    session,
+                    owner="routine",
+                    self_person_ref=actor,
+                    owner_ref=routine.routine_ref,
+                    operation_id="transactional-series-revision",
+                    expected_material_state_ref=original.material_state_ref,
+                    recurrence=revised,
+                )
+                raise RuntimeError("later instance failed")
+
+        with pytest.raises(RuntimeError, match="later instance failed"):
+            await abort_wider_edit()
+        unchanged = await recurrences.get(
+            owner="routine", self_person_ref=actor, owner_ref=routine.routine_ref
+        )
+        assert unchanged == original
+        accepted = await recurrences.replace(
+            owner="routine",
+            self_person_ref=actor,
+            owner_ref=routine.routine_ref,
+            operation_id="transactional-series-revision",
+            expected_material_state_ref=original.material_state_ref,
+            recurrence=revised,
+        )
+        assert not accepted.replayed
+        assert accepted.recurrence.recurrence == revised
+    finally:
+        await runtime.dispose()
 
 
 @pytest.mark.asyncio

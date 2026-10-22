@@ -509,6 +509,40 @@ class RecurrenceApplication:
         expected_material_state_ref: UUID | None,
         recurrence: RecurrenceSpec,
     ) -> RecurrenceMutation:
+        """Replace one source when no wider atomic series command owns the transaction."""
+        try:
+            async with self._session_factory() as session, session.begin():
+                return await self.replace_in_session(
+                    session,
+                    owner=owner,
+                    self_person_ref=self_person_ref,
+                    owner_ref=owner_ref,
+                    operation_id=operation_id,
+                    expected_material_state_ref=expected_material_state_ref,
+                    recurrence=recurrence,
+                )
+        except DBAPIError as exc:
+            raise _error(exc) from exc
+        except SQLAlchemyError as exc:
+            raise RecurrencePersistenceError() from exc
+
+    async def replace_in_session(
+        self,
+        session: AsyncSession,
+        *,
+        owner: RecurrenceOwner,
+        self_person_ref: NativeRef,
+        owner_ref: UUID,
+        operation_id: str,
+        expected_material_state_ref: UUID | None,
+        recurrence: RecurrenceSpec,
+    ) -> RecurrenceMutation:
+        """Run owner/CAS/replay and readback in the caller's transaction.
+
+        A future series reconciliation must hold its source lock and commit
+        this revision together with every affected clean instance. The caller
+        is responsible for opening and committing the transaction.
+        """
         key = _bounded_operation_id(operation_id)
         _validate(recurrence)
         if owner == "routine" and expected_material_state_ref is None:
@@ -552,35 +586,34 @@ class RecurrenceApplication:
           :cyclic_cycle_length,:cyclic_position_unit_code,:cyclic_pattern_anchor_date,:cyclic_generates_expected)"""
         )
         try:
-            async with self._session_factory() as session, session.begin():
-                receipt = (await session.execute(statement, parameters)).mappings().one()
-                row = (
-                    (
-                        await session.execute(
-                            text(
-                                (
-                                    "SELECT * FROM dante.get_self_routine_recurrence(:actor,:owner)"
-                                    if owner == "routine"
-                                    else "SELECT * FROM dante.get_self_event_recurrence(:actor,:owner)"
-                                )
-                            ),
-                            {"actor": self_person_ref, "owner": owner_ref},
-                        )
+            receipt = (await session.execute(statement, parameters)).mappings().one()
+            row = (
+                (
+                    await session.execute(
+                        text(
+                            (
+                                "SELECT * FROM dante.get_self_routine_recurrence(:actor,:owner)"
+                                if owner == "routine"
+                                else "SELECT * FROM dante.get_self_event_recurrence(:actor,:owner)"
+                            )
+                        ),
+                        {"actor": self_person_ref, "owner": owner_ref},
                     )
-                    .mappings()
-                    .one_or_none()
                 )
-                if row is None or UUID(str(row["material_state_ref"])) != UUID(
-                    str(receipt["material_state_ref"])
-                ):
-                    raise RecurrencePersistenceError(
-                        "Accepted Recurrence state was not readable as current truth."
-                    )
-                return RecurrenceMutation(
-                    recurrence=_view(row),
-                    accepted_at=receipt["accepted_at"],
-                    replayed=bool(receipt["replayed"]),
+                .mappings()
+                .one_or_none()
+            )
+            if row is None or UUID(str(row["material_state_ref"])) != UUID(
+                str(receipt["material_state_ref"])
+            ):
+                raise RecurrencePersistenceError(
+                    "Accepted Recurrence state was not readable as current truth."
                 )
+            return RecurrenceMutation(
+                recurrence=_view(row),
+                accepted_at=receipt["accepted_at"],
+                replayed=bool(receipt["replayed"]),
+            )
         except DBAPIError as exc:
             raise _error(exc) from exc
         except SQLAlchemyError as exc:

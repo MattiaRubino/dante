@@ -1,5 +1,18 @@
 # Timeline / Temporal-Operational — Workstream Handoff
 
+## 2026-10-22 — Recurrence replacement transaction composition
+
+`RecurrenceApplication.replace_in_session` now lets the eventual structural
+series command revise a Routine/Event recurrence within the caller's
+transaction. The existing `replace` route delegates to it under its own
+transaction, preserving owner/CAS/replay and readback behavior. A PostgreSQL
+regression rolls back a successful recurrence replacement after a simulated
+later-instance failure, verifies the old source survives, and then accepts
+the same operation id normally. Ruff, Mypy and test collection pass locally;
+this new PostgreSQL case has **not** executed in the user WSL harness. The
+full series operation, versioned structure policy, clean-instance reconciliation
+and UI Save remain pending; this refactor does not expose partial edits.
+
 ## 2026-10-22 — Calendar preview truncation guard
 
 The planner also consumes an unchanged recurrence coordinate already owned by
