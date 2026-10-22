@@ -90,17 +90,19 @@ def test_recorded_selected_instance_is_not_replaced() -> None:
     assert result.protected_occurrence_refs == (LOCAL,)
 
 
-@pytest.mark.parametrize(("recorded", "day"), [(False, 21), (True, 20)])
-def test_new_cadence_cannot_merge_into_unchanged_instance(recorded: bool, day: int) -> None:
-    with pytest.raises(SeriesReconciliationError, match="unchanged instance"):
-        reconcile_materialized_series(
-            scope=_scope(recorded=recorded),
-            materialized=_materialized(),
-            regenerated=(_coordinate(day),),
-            window=WINDOW,
-            effective_zone_id="Europe/Rome",
-            authoritative_inventory=True,
-        )
+def test_protected_coordinate_is_consumed_without_replacing_its_instance() -> None:
+    result = reconcile_materialized_series(
+        scope=_scope(),
+        materialized=_materialized(),
+        regenerated=(_coordinate(20), _coordinate(21), _coordinate(27)),
+        window=WINDOW,
+        effective_zone_id="Europe/Rome",
+        authoritative_inventory=True,
+    )
+    assert result.retained_occurrence_refs == (FIRST,)
+    assert result.superseded_occurrence_refs == (CLEAN,)
+    assert result.protected_occurrence_refs == (LOCAL,)
+    assert result.new_coordinates == (_coordinate(27),)
 
 
 def test_incomplete_or_duplicate_inventory_is_rejected() -> None:

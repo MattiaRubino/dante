@@ -2,6 +2,12 @@
 
 ## 2026-10-22 — Calendar preview truncation guard
 
+The planner also consumes an unchanged recurrence coordinate already owned by
+a protected future exception without revising that instance or generating a
+second Occurrence. A cadence that drops the coordinate still retains the
+protected exception. Focused planner checks cover this case alongside the
+bounded generation guard; neither change persists a structural series edit.
+
 The calendar series preview now rejects the canonical checkpoint generator's
 10,001st candidate **before** filtering out dates preceding the edit cutover.
 Otherwise a dense earlier prefix could be truncated while a seemingly complete

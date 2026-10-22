@@ -127,7 +127,7 @@ def reconcile_materialized_series(
         key = _key(coordinate)
         if key in proposed:
             raise SeriesReconciliationError("New cadence generated a duplicate coordinate.")
-        if key in existing_by_key and existing_by_key[key] not in clean:
+        if key in existing_by_key and existing_by_key[key] not in clean | protected:
             raise SeriesReconciliationError("New cadence collides with an unchanged instance.")
         proposed[key] = coordinate
 
