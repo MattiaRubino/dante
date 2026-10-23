@@ -127,6 +127,7 @@ class ScheduleReminderApplication:
         expected_material_state_ref: MaterialStateRef | None,
         enabled: bool,
         lead_minutes: int,
+        session: AsyncSession | None = None,
     ) -> ScheduleReminderView:
         key = operation_id.strip()
         if not key or len(key) > 200 or not 0 <= lead_minutes <= 10080:
@@ -148,33 +149,40 @@ class ScheduleReminderApplication:
                 separators=(",", ":"),
             ).encode("utf-8")
         ).hexdigest()
-        try:
-            async with self._session_factory() as session, session.begin():
-                row = (
-                    (
-                        await session.execute(
-                            text(
-                                """SELECT * FROM dante.configure_self_schedule_reminder(
+
+        async def write(active_session: AsyncSession) -> RowMapping | None:
+            return (
+                (
+                    await active_session.execute(
+                        text(
+                            """SELECT * FROM dante.configure_self_schedule_reminder(
                                  :actor,:operation_id,:fingerprint,:schedule_ref,
                                  :expected_state,:reminder_ref,:material_state_ref,
                                  :enabled,:lead_minutes)"""
-                            ),
-                            {
-                                "actor": self_person_ref,
-                                "operation_id": key,
-                                "fingerprint": fingerprint,
-                                "schedule_ref": schedule_ref,
-                                "expected_state": expected_material_state_ref,
-                                "reminder_ref": new_scoped_record_ref(),
-                                "material_state_ref": new_material_state_ref(),
-                                "enabled": enabled,
-                                "lead_minutes": lead_minutes,
-                            },
-                        )
+                        ),
+                        {
+                            "actor": self_person_ref,
+                            "operation_id": key,
+                            "fingerprint": fingerprint,
+                            "schedule_ref": schedule_ref,
+                            "expected_state": expected_material_state_ref,
+                            "reminder_ref": new_scoped_record_ref(),
+                            "material_state_ref": new_material_state_ref(),
+                            "enabled": enabled,
+                            "lead_minutes": lead_minutes,
+                        },
                     )
-                    .mappings()
-                    .one_or_none()
                 )
+                .mappings()
+                .one_or_none()
+            )
+
+        try:
+            if session is None:
+                async with self._session_factory() as owned_session, owned_session.begin():
+                    row = await write(owned_session)
+            else:
+                row = await write(session)
         except DBAPIError as exc:
             raise _error(exc) from exc
         except SQLAlchemyError as exc:

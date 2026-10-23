@@ -10,6 +10,8 @@ from __future__ import annotations
 
 import hashlib
 import json
+from collections.abc import AsyncIterator
+from contextlib import asynccontextmanager
 from datetime import UTC, date, datetime, timedelta
 from typing import Literal, cast
 from uuid import UUID, uuid7
@@ -33,6 +35,9 @@ from dante.modules.temporal.event_occurrence_policy import (
 from dante.modules.temporal.movement_policy import (
     MovementPolicyApplication,
     MovementPolicyRule,
+)
+from dante.modules.temporal.movement_policy import (
+    _mutate_in_session as mutate_movement_in_session,
 )
 from dante.modules.temporal.occurrence import (
     CalendarCoordinate,
@@ -85,6 +90,14 @@ class RoutineOccurrenceMaterializationApplication:
         self._authoring = TemporalAuthoringApplication(session_factory)
         self._movement = MovementPolicyApplication(session_factory)
         self._locks = PlacementLockApplication(session_factory)
+
+    @asynccontextmanager
+    async def _write_session(self, existing: AsyncSession | None) -> AsyncIterator[AsyncSession]:
+        if existing is not None:
+            yield existing
+        else:
+            async with self._session_factory() as session, session.begin():
+                yield session
 
     async def _sources(
         self, self_person_ref: NativeRef
@@ -373,9 +386,10 @@ class RoutineOccurrenceMaterializationApplication:
         self_person_ref: NativeRef,
         occurrence_ref: UUID,
         activity_ref: NativeRef,
+        session: AsyncSession | None = None,
     ) -> None:
         try:
-            async with self._session_factory() as session, session.begin():
+            async with self._write_session(session) as session:
                 await session.execute(
                     text(
                         "SELECT * FROM dante.bind_self_routine_occurrence_activity("
@@ -431,6 +445,7 @@ class RoutineOccurrenceMaterializationApplication:
         subject_ref: UUID,
         mode: object,
         operation_suffix: str,
+        session: AsyncSession | None = None,
     ) -> None:
         if mode == "manual":
             return
@@ -448,7 +463,7 @@ class RoutineOccurrenceMaterializationApplication:
             json.dumps(intent, sort_keys=True, separators=(",", ":")).encode("utf-8")
         ).hexdigest()
         try:
-            async with self._session_factory() as session, session.begin():
+            async with self._write_session(session) as session:
                 await session.execute(
                     text(
                         """SELECT * FROM dante.set_self_reality_review_policy(
@@ -475,6 +490,7 @@ class RoutineOccurrenceMaterializationApplication:
         subject_kind: Literal["activity", "event", "occurrence"],
         subject_ref: UUID,
         objectives: object,
+        session: AsyncSession | None = None,
     ) -> None:
         if objectives is None:
             return
@@ -545,7 +561,7 @@ class RoutineOccurrenceMaterializationApplication:
                 """
                 params["kind"] = subject_kind
             try:
-                async with self._session_factory() as session, session.begin():
+                async with self._write_session(session) as session:
                     await session.execute(text(statement), params)
             except SQLAlchemyError as exc:
                 raise OccurrencePersistenceError() from exc
@@ -556,6 +572,7 @@ class RoutineOccurrenceMaterializationApplication:
         self_person_ref: NativeRef,
         occurrence_ref: UUID,
         result: AuthoringResult,
+        session: AsyncSession | None = None,
     ) -> None:
         schedules = [
             *([result.schedule] if result.schedule is not None else []),
@@ -571,21 +588,38 @@ class RoutineOccurrenceMaterializationApplication:
             ],
         ]
         for index, schedule in enumerate(schedules):
-            await self._movement.create_policy(
-                self_person_ref=self_person_ref,
-                operation_id=f"b14:movement-lock:{index}:{occurrence_ref}",
-                schedule_ref=schedule.schedule_ref,
-                rule=MovementPolicyRule(
-                    automatic_movement="blocked",
-                    acceptance_path="direct",
-                ),
-            )
-            await self._locks.set(
-                self_person_ref=self_person_ref,
-                schedule_ref=schedule.schedule_ref,
-                locked=True,
-                expected_revision=None,
-            )
+            operation_id = f"b14:movement-lock:{index}:{occurrence_ref}"
+            rule = MovementPolicyRule(automatic_movement="blocked", acceptance_path="direct")
+            if session is None:
+                await self._movement.create_policy(
+                    self_person_ref=self_person_ref,
+                    operation_id=operation_id,
+                    schedule_ref=schedule.schedule_ref,
+                    rule=rule,
+                )
+                await self._locks.set(
+                    self_person_ref=self_person_ref,
+                    schedule_ref=schedule.schedule_ref,
+                    locked=True,
+                    expected_revision=None,
+                )
+            else:
+                await mutate_movement_in_session(
+                    session,
+                    self_person_ref=self_person_ref,
+                    operation_id=operation_id,
+                    mutation_kind="create",
+                    schedule_ref=schedule.schedule_ref,
+                    expected_material_state_ref=None,
+                    rule=rule,
+                )
+                await session.execute(
+                    text(
+                        "SELECT * FROM dante.set_self_schedule_placement_lock("
+                        ":actor,:schedule,true,NULL)"
+                    ),
+                    {"actor": self_person_ref, "schedule": schedule.schedule_ref},
+                )
 
     async def _profile_override(
         self,
@@ -716,7 +750,61 @@ class RoutineOccurrenceMaterializationApplication:
         ):
             raise OccurrenceInputError("Recurring Activity Session minimum is invalid.")
 
-        result = await self._authoring.create_activity(
+        async def complete(session: AsyncSession, result: AuthoringResult) -> None:
+            await self._set_reality(
+                self_person_ref=self_person_ref,
+                subject_kind="activity",
+                subject_ref=result.item.subject_native_ref,
+                mode=template.get("reality_mode", "manual"),
+                operation_suffix=f"routine-root:{occurrence_ref}",
+                session=session,
+            )
+            await self._create_objectives(
+                self_person_ref=self_person_ref,
+                subject_kind="activity",
+                subject_ref=result.item.subject_native_ref,
+                objectives=template.get("objectives", []),
+                session=session,
+            )
+            for index, child in enumerate(result.children):
+                await self._set_reality(
+                    self_person_ref=self_person_ref,
+                    subject_kind="activity",
+                    subject_ref=child.item.subject_native_ref,
+                    mode=child_reality[index] if index < len(child_reality) else "manual",
+                    operation_suffix=f"routine-child:{occurrence_ref}:{index}",
+                    session=session,
+                )
+            if bool(template.get("placement_protected", False)):
+                await self._protect_schedules(
+                    self_person_ref=self_person_ref,
+                    occurrence_ref=occurrence_ref,
+                    result=result,
+                    session=session,
+                )
+            if policy.reminder_lead_minutes is not None:
+                if result.schedule is None:
+                    raise OccurrenceInputError(
+                        "Recurring Activity Reminder requires an accepted root Schedule."
+                    )
+                await self._reminders.configure(
+                    self_person_ref=self_person_ref,
+                    schedule_ref=result.schedule.schedule_ref,
+                    operation_id=f"b14:reminder:{occurrence_ref}",
+                    expected_material_state_ref=None,
+                    enabled=True,
+                    lead_minutes=policy.reminder_lead_minutes,
+                    session=session,
+                )
+            # Binding marks a fully applied occurrence in this same transaction.
+            await self._bind_activity(
+                self_person_ref=self_person_ref,
+                occurrence_ref=occurrence_ref,
+                activity_ref=result.item.subject_native_ref,
+                session=session,
+            )
+
+        await self._authoring.create_activity(
             self_person_ref=self_person_ref,
             operation_id=f"b14:occurrence-activity:{occurrence_ref}",
             title=title,
@@ -740,54 +828,7 @@ class RoutineOccurrenceMaterializationApplication:
             activity_intervals=intervals,
             planned_slice_names=planned_names,
             children=tuple(children),
-        )
-        await self._set_reality(
-            self_person_ref=self_person_ref,
-            subject_kind="activity",
-            subject_ref=result.item.subject_native_ref,
-            mode=template.get("reality_mode", "manual"),
-            operation_suffix=f"routine-root:{occurrence_ref}",
-        )
-        await self._create_objectives(
-            self_person_ref=self_person_ref,
-            subject_kind="activity",
-            subject_ref=result.item.subject_native_ref,
-            objectives=template.get("objectives", []),
-        )
-        for index, child in enumerate(result.children):
-            await self._set_reality(
-                self_person_ref=self_person_ref,
-                subject_kind="activity",
-                subject_ref=child.item.subject_native_ref,
-                mode=child_reality[index] if index < len(child_reality) else "manual",
-                operation_suffix=f"routine-child:{occurrence_ref}:{index}",
-            )
-        if bool(template.get("placement_protected", False)):
-            await self._protect_schedules(
-                self_person_ref=self_person_ref,
-                occurrence_ref=occurrence_ref,
-                result=result,
-            )
-        if policy.reminder_lead_minutes is not None:
-            if result.schedule is None:
-                raise OccurrenceInputError(
-                    "Recurring Activity Reminder requires an accepted root Schedule."
-                )
-            await self._reminders.configure(
-                self_person_ref=self_person_ref,
-                schedule_ref=result.schedule.schedule_ref,
-                operation_id=f"b14:reminder:{occurrence_ref}",
-                expected_material_state_ref=None,
-                enabled=True,
-                lead_minutes=policy.reminder_lead_minutes,
-            )
-        # Binding is the completion marker for one occurrence instance. Keep it
-        # last so a partial policy application is retried deterministically
-        # instead of being mistaken for a fully materialized Activity.
-        await self._bind_activity(
-            self_person_ref=self_person_ref,
-            occurrence_ref=occurrence_ref,
-            activity_ref=result.item.subject_native_ref,
+            on_created=complete,
         )
 
     async def _apply_routine_policy(

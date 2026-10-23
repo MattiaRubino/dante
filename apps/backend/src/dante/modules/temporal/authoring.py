@@ -10,6 +10,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+from collections.abc import Awaitable, Callable
 from dataclasses import dataclass
 from datetime import datetime
 from typing import Literal, cast
@@ -611,6 +612,7 @@ class TemporalAuthoringApplication:
         activity_intervals: tuple[SchedulePlacement, ...] = (),
         planned_slice_names: tuple[str, ...] = (),
         children: tuple[ActivityChildIntent, ...] = (),
+        on_created: Callable[[AsyncSession, AuthoringResult], Awaitable[None]] | None = None,
     ) -> AuthoringResult:
         normalized_operation = _operation(operation_id)
         normalized_title = _title(title)
@@ -1175,7 +1177,7 @@ class TemporalAuthoringApplication:
                             session_capture_mode=child.session_capture_mode or "disabled",
                         )
                     )
-                return AuthoringResult(
+                result = AuthoringResult(
                     item=item,
                     replayed=replayed,
                     schedule=schedule,
@@ -1193,6 +1195,9 @@ class TemporalAuthoringApplication:
                     activity_intervals=tuple(interval_results),
                     children=tuple(child_results),
                 )
+                if on_created is not None:
+                    await on_created(session, result)
+                return result
         except (
             TemporalAuthoringInputError,
             TemporalAuthoringLifeAreaUnavailableError,
@@ -1273,6 +1278,7 @@ class TemporalAuthoringApplication:
         activity_intervals: tuple[SchedulePlacement, ...] = (),
         planned_slice_names: tuple[str, ...] = (),
         children: tuple[ActivityChildIntent, ...] = (),
+        on_created: Callable[[AsyncSession, AuthoringResult], Awaitable[None]] | None = None,
     ) -> AuthoringResult:
         return await self._execute(
             subject_kind="activity",
@@ -1292,6 +1298,7 @@ class TemporalAuthoringApplication:
             activity_intervals=activity_intervals,
             planned_slice_names=planned_slice_names,
             children=children,
+            on_created=on_created,
         )
 
     async def create_event(
