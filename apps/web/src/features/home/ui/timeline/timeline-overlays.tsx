@@ -668,6 +668,9 @@ export function EventDetailDialog({
   const [editingProfile, setEditingProfile] = useState<ActivityProfile | null>(
     null,
   );
+  const [eventEditorMode, setEventEditorMode] = useState<
+    'profile' | 'series' | 'area' | null
+  >(null);
   const [activityEditScope, setActivityEditScope] = useState<
     'only_this' | 'this_and_following' | 'from_next'
   >('only_this');
@@ -772,7 +775,7 @@ export function EventDetailDialog({
   }, [detail]);
 
   useLayoutEffect(() => {
-    if (!detail || currentEditingProfile || !opener) return;
+    if (!detail || currentEditingProfile || eventEditorMode || !opener) return;
     const updatePosition = () => {
       const anchor =
         opener.closest<HTMLElement>('[data-timeline-event]') ?? opener;
@@ -813,7 +816,7 @@ export function EventDetailDialog({
       window.removeEventListener('resize', updatePosition);
       observer?.disconnect();
     };
-  }, [detail, opener, currentEditingProfile]);
+  }, [detail, opener, currentEditingProfile, eventEditorMode]);
 
   useEffect(() => {
     if (!detail) {
@@ -867,7 +870,7 @@ export function EventDetailDialog({
 
   return createPortal(
     <div
-      className={`timeline-modal-backdrop is-open${currentEditingProfile ? '' : ' timeline-modal-backdrop--inspector'}`}
+      className={`timeline-modal-backdrop is-open${currentEditingProfile || eventEditorMode ? '' : ' timeline-modal-backdrop--inspector'}`}
       role="presentation"
       onPointerDown={(event: ReactPointerEvent<HTMLDivElement>) => {
         if (event.currentTarget === event.target) {
@@ -877,9 +880,9 @@ export function EventDetailDialog({
     >
       <div
         ref={dialogRef}
-        className={`timeline-event-modal${currentEditingProfile ? ' timeline-event-modal--edit' : ' timeline-event-modal--inspector'}`}
+        className={`timeline-event-modal${currentEditingProfile || eventEditorMode === 'series' ? ' timeline-event-modal--edit' : eventEditorMode ? ' timeline-event-modal--event-edit' : ' timeline-event-modal--inspector'}`}
         style={
-          currentEditingProfile
+          currentEditingProfile || eventEditorMode
             ? undefined
             : {
                 ...inspectorPosition,
@@ -1033,6 +1036,7 @@ export function EventDetailDialog({
                 {detail.eventPlacement ? (
                   <EventInspectorActions
                     toolbarTarget={toolbarTarget}
+                    onEditorStateChange={setEventEditorMode}
                     eventRef={detail.eventRef}
                     occurrenceRef={detail.occurrenceRef ?? null}
                     placement={detail.eventPlacement}

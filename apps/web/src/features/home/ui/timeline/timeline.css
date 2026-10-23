@@ -1834,6 +1834,72 @@
     0 0 0 1px rgba(255, 255, 255, 0.025);
 }
 
+.timeline-event-modal--event-edit {
+  position: relative;
+  width: min(680px, calc(100vw - 32px));
+  max-height: calc(100dvh - 32px);
+  padding: 0 24px 24px;
+  overflow: auto;
+}
+
+.timeline-event-modal--event-edit .timeline-event-modal__header {
+  position: sticky;
+  z-index: 2;
+  top: 0;
+  margin: 0 -24px;
+  padding: 14px 24px;
+  background: var(--dante-semantic-color-home-surface-primary, #0d1522);
+}
+
+.timeline-event-modal--event-edit .timeline-event-modal__owner-actions,
+.timeline-event-modal--event-edit .timeline-event-modal__schedule-row,
+.timeline-event-modal--event-edit .timeline-event-modal__life-area,
+.timeline-event-modal--event-edit .timeline-event-modal__description {
+  display: none;
+}
+
+.timeline-event-profile-editor {
+  display: grid;
+  gap: 14px;
+  padding: 16px 0 8px;
+}
+
+.timeline-event-profile-editor h3 {
+  margin: 0;
+  font-size: 18px;
+}
+
+.timeline-event-profile-editor label {
+  display: grid;
+  gap: 6px;
+  min-width: 0;
+  color: var(--dante-semantic-color-home-text-secondary, #b9c6d5);
+}
+
+.timeline-event-profile-editor :is(input, textarea, select) {
+  width: 100%;
+  min-width: 0;
+  padding: 10px 12px;
+  border: 1px solid var(--dante-semantic-color-home-border-subtle);
+  border-radius: 9px;
+  color: var(--dante-semantic-color-home-text-primary, #f2f4f2);
+  background: var(--dante-semantic-color-home-surface-control, #202b30);
+  font: inherit;
+}
+
+.timeline-event-profile-editor textarea {
+  min-height: 110px;
+  resize: vertical;
+}
+
+.timeline-event-profile-editor__actions {
+  display: flex;
+  justify-content: flex-end;
+  flex-wrap: wrap;
+  gap: 10px;
+  padding-top: 8px;
+}
+
 .timeline-activity-inspector__toolbar {
   display: flex;
   justify-content: flex-end;

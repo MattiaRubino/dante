@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState, type RefObject } from 'react';
 import { Temporal } from '@dante/time';
+import { createWebFetch } from '../../../../platform/api/web-fetch';
 
 import {
   createRemoteRecurringSeriesEdit,
@@ -98,6 +99,7 @@ export function RecurringSeriesEditor({
   closeRequestRef?: RefObject<(() => void) | null>;
 }>) {
   const [remote] = useState(createRemoteRecurringSeriesEdit);
+  const [request] = useState(() => createWebFetch(globalThis.fetch));
   const [source, setSource] = useState<RecurringSeriesSource | null>(null);
   const [structure, setStructure] = useState<Entry>({});
   const [recurrence, setRecurrence] = useState<Entry>({});
@@ -120,12 +122,10 @@ export function RecurringSeriesEditor({
     let active = true;
     void Promise.all([
       remote.load(occurrenceRef),
-      fetch('/api/v1/temporal/life-areas', { credentials: 'include' }).then(
-        async (response) => {
-          if (!response.ok) throw new Error('Life Area non disponibili.');
-          return response.json() as Promise<unknown>;
-        },
-      ),
+      request('/api/v1/temporal/life-areas').then(async (response) => {
+        if (!response.ok) throw new Error('Life Area non disponibili.');
+        return response.json() as Promise<unknown>;
+      }),
     ])
       .then(([loaded, catalog]) => {
         if (!active) return;
@@ -162,7 +162,7 @@ export function RecurringSeriesEditor({
     return () => {
       active = false;
     };
-  }, [occurrenceRef, owner, remote, scope]);
+  }, [occurrenceRef, owner, remote, request, scope]);
 
   useEffect(() => {
     if (!closeRequestRef) return;

@@ -18,10 +18,11 @@ import type {
 import { TemporalTimelineRuntimeBoundary } from '../../../temporal/timeline-runtime-boundary';
 import { TimelineSurface } from './timeline-surface';
 
+const getPlacementLock = vi.hoisted(() => vi.fn());
+
 vi.mock('../../../temporal/remote-placement-lock-data-source', () => ({
   createRemotePlacementLockDataSource: () => ({
-    get: (scheduleRef: string) =>
-      Promise.resolve({ scheduleRef, locked: false, revision: 0 }),
+    get: getPlacementLock,
   }),
 }));
 
@@ -42,6 +43,7 @@ beforeAll(async () => {
 afterEach(() => {
   cleanup();
   document.body.innerHTML = '';
+  getPlacementLock.mockReset();
 });
 
 type Deferred<T> = Readonly<{
@@ -106,6 +108,37 @@ function renderEventTimeline(
 }
 
 describe('B03-C Event placement lifecycle from Timeline', () => {
+  it('does not request the Activity placement lock for an Event schedule', async () => {
+    const loadWindow = vi
+      .fn<TemporalTimelineDataSource['loadWindow']>()
+      .mockResolvedValue(
+        eventWindow('2026-09-09T10:00', '2026-09-09T11:00', CURRENT_STATE_REF),
+      );
+    const scheduleDataSource: TemporalScheduleDataSource = {
+      reviseSchedule: vi.fn(),
+      unscheduleSchedule: vi.fn(),
+      undoScheduleUnschedule: vi.fn(),
+    };
+    const { container } = renderEventTimeline(
+      { loadWindow },
+      scheduleDataSource,
+      'event-lock-boundary',
+    );
+    const card = await waitFor(() => {
+      const found = container.querySelector<HTMLElement>(
+        `[data-timeline-event="${SCHEDULE_REF}"]`,
+      );
+      expect(found).toBeTruthy();
+      return found!;
+    });
+    fireEvent.doubleClick(card);
+    expect(await screen.findByRole('dialog')).toBeTruthy();
+    expect(getPlacementLock).not.toHaveBeenCalled();
+    expect(
+      screen.queryByText('Impossibile leggere il blocco spostamenti.'),
+    ).toBeNull();
+  });
+
   it('routes Event drag/keyboard reschedule through the shared Schedule CAS boundary', async () => {
     const revisedWindow = deferred<TemporalTimelineWindow>();
     const loadWindow = vi

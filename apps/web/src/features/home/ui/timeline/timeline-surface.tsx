@@ -1954,7 +1954,9 @@ export function TimelineSurface({
         })()}
         placementLockScheduleRef={(() => {
           const basis = detailState?.event.canonicalBasis;
-          return basis?.scheduleRef ?? null;
+          return basis?.kind === 'scheduled-activity'
+            ? basis.scheduleRef
+            : null;
         })()}
         openActivityEdit={detailState?.openActivityEdit === true}
         initialActivityEditScope={detailState?.activityEditScope}

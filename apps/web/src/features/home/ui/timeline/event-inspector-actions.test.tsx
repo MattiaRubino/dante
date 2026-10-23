@@ -10,6 +10,7 @@ import {
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import { EventInspectorActions } from './event-inspector-actions';
+import { EventDetailDialog } from './timeline-overlays';
 
 const loadEvent = vi.fn();
 const listExpectedParticipation = vi.fn();
@@ -167,10 +168,21 @@ describe('Event Inspector actions', () => {
     loadSeries.mockResolvedValue(source);
     reviewSeries.mockResolvedValue(structuralReview);
     acceptSeries.mockResolvedValue(undefined);
-    vi.stubGlobal(
-      'fetch',
-      vi.fn().mockResolvedValue(new Response('[]', { status: 200 })),
+    const fetchAreas = vi.fn(
+      (_input: RequestInfo | URL, init?: RequestInit) => {
+        const headers = new Headers(init?.headers);
+        return Promise.resolve(
+          headers.get('X-Dante-Client') === 'web' &&
+            headers.has('X-Dante-Time-Zone')
+            ? Response.json([])
+            : Response.json(
+                { detail: 'Missing client context' },
+                { status: 400 },
+              ),
+        );
+      },
     );
+    vi.stubGlobal('fetch', fetchAreas);
     render(
       <EventInspectorActions
         eventRef={eventRef}
@@ -189,6 +201,16 @@ describe('Event Inspector actions', () => {
     fireEvent.change(await screen.findByRole('textbox', { name: 'Titolo' }), {
       target: { value: 'Nuova conferenza' },
     });
+    const areaRequest = fetchAreas.mock.calls.find(
+      ([url]) => url === '/api/v1/temporal/life-areas',
+    );
+    expect(areaRequest?.[1]?.credentials).toBe('same-origin');
+    expect(new Headers(areaRequest?.[1]?.headers).get('X-Dante-Client')).toBe(
+      'web',
+    );
+    expect(
+      new Headers(areaRequest?.[1]?.headers).has('X-Dante-Time-Zone'),
+    ).toBe(true);
     fireEvent.click(screen.getByRole('button', { name: 'Verifica modifiche' }));
     await waitFor(() =>
       expect(reviewSeries).toHaveBeenCalledWith(
@@ -409,6 +431,43 @@ describe('Event Inspector actions', () => {
     );
     expect(await screen.findByText('Metadati Event aggiornati.')).toBeTruthy();
     expect(onDuplicate).not.toHaveBeenCalled();
+  });
+
+  it('opens the Event profile editor as a centered, bounded modal', async () => {
+    loadProfile.mockResolvedValue({
+      eventRef,
+      title: 'Conferenza',
+      description: null,
+      location: null,
+      colorCode: null,
+      profileRevision: 1,
+    });
+    render(
+      <EventDetailDialog
+        detail={{
+          title: 'Conferenza',
+          startMinute: 540,
+          endMinute: 630,
+          groupLabel: 'Lavoro',
+          ownerKind: 'event',
+          eventRef,
+          eventPlacement: placement,
+        }}
+        opener={null}
+        onClose={vi.fn()}
+      />,
+    );
+    fireEvent.click(screen.getByRole('button', { name: 'Modifica' }));
+    expect(
+      await screen.findByRole('textbox', { name: 'Titolo Event' }),
+    ).toBeTruthy();
+    await waitFor(() =>
+      expect(screen.getByRole('dialog').className).toContain(
+        'timeline-event-modal--event-edit',
+      ),
+    );
+    expect(screen.getByRole('dialog').style.left).toBe('');
+    expect(screen.getByRole('dialog').textContent).toContain('Modifica evento');
   });
 
   it('keeps the Event edit draft open on a canonical stale CAS conflict', async () => {

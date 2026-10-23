@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { createPortal } from 'react-dom';
 
 import type { TemporalEventDetailRecord } from '../../../temporal/event-data-source';
@@ -45,6 +45,7 @@ export function EventInspectorActions({
   onDeleted,
   onDuplicate,
   onCancelScope,
+  onEditorStateChange,
   toolbarTarget = null,
 }: Readonly<{
   eventRef: string;
@@ -53,6 +54,7 @@ export function EventInspectorActions({
   onDeleted?: () => void;
   onDuplicate: (seed: ActivityDuplicateSeed) => void;
   onCancelScope?: () => void;
+  onEditorStateChange?: (mode: 'profile' | 'series' | 'area' | null) => void;
   toolbarTarget?: HTMLElement | null;
 }>) {
   const [eventSource] = useState(createRemoteTemporalEventAgendaDataSource);
@@ -102,6 +104,24 @@ export function EventInspectorActions({
   const [error, setError] = useState('');
   const [profileNotice, setProfileNotice] = useState('');
   const [areaNotice, setAreaNotice] = useState('');
+
+  useEffect(() => {
+    onEditorStateChange?.(
+      editingProfile
+        ? recurringContext && editScope !== 'only_this'
+          ? 'series'
+          : 'profile'
+        : editingArea
+          ? 'area'
+          : null,
+    );
+  }, [
+    editScope,
+    editingArea,
+    editingProfile,
+    onEditorStateChange,
+    recurringContext,
+  ]);
 
   const openProfileEditor = async (
     selectedScope: RecurringProfileEditScope = 'only_this',
@@ -554,9 +574,10 @@ export function EventInspectorActions({
         />
       ) : editingProfile && profileDraft && profile ? (
         <div
-          className="timeline-activity-editor__fields"
+          className="timeline-event-profile-editor"
           aria-label="Modifica profilo Event"
         >
+          <h3>Modifica evento</h3>
           {recurringContext ? (
             <div role="status">
               <p>
@@ -646,16 +667,18 @@ export function EventInspectorActions({
               }}
             />
           </label>
-          <button
-            type="button"
-            disabled={busy || !profileDraft.title.trim()}
-            onClick={() => void saveProfile()}
-          >
-            Salva metadati Event
-          </button>
-          <button type="button" disabled={busy} onClick={cancelProfile}>
-            Annulla
-          </button>
+          <div className="timeline-event-profile-editor__actions">
+            <button type="button" disabled={busy} onClick={cancelProfile}>
+              Annulla
+            </button>
+            <button
+              type="button"
+              disabled={busy || !profileDraft.title.trim()}
+              onClick={() => void saveProfile()}
+            >
+              Salva metadati Event
+            </button>
+          </div>
         </div>
       ) : null}
       {editingArea && areaChoice ? (
