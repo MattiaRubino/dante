@@ -1,35 +1,132 @@
 /* Post-create editing shares the Advanced Create visual grammar. These rules
    scope that grammar to the editor while its persistence remains owner-specific. */
 .timeline-recurring-series-editor .timeline-activity-editor__body {
-  display: grid;
-  gap: 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
   min-width: 0;
-  padding: 18px 4px 24px 0;
+  padding: 18px 4px 72px 0;
 }
 
-.timeline-recurring-series-editor section,
-.timeline-recurring-series-editor fieldset {
+.timeline-recurring-series-editor__scope {
+  margin: 0;
+  color: var(--dante-semantic-color-home-text-secondary, #b7c0cf);
+  font-size: 12px;
+}
+
+.timeline-recurring-series-editor .timeline-activity-editor__kind > span {
+  justify-content: center;
+}
+
+.timeline-recurring-series-editor .timeline-activity-editor__title-row {
+  grid-template-columns: minmax(0, 1fr) auto;
+}
+
+.timeline-recurring-series-editor .timeline-activity-editor__title-tools {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.timeline-recurring-series-editor
+  .timeline-activity-editor__title-tools
+  > button {
+  min-height: 40px;
+  white-space: nowrap;
+}
+
+.timeline-recurring-series-editor .timeline-activity-editor__sessions {
+  padding: 4px 0;
+  border: 0;
+}
+
+.timeline-recurring-series-editor .timeline-activity-editor__intervals {
+  display: grid;
+  gap: 10px;
+  padding: 0;
+  border: 0;
+}
+
+.timeline-recurring-series-editor__timing {
+  display: grid;
+  gap: 10px;
+  max-width: 820px;
+}
+
+.timeline-recurring-series-editor__timing > h3 {
+  margin: 0;
+  font-size: 13px;
+}
+
+.timeline-recurring-series-editor__recurrence,
+.timeline-recurring-series-editor [aria-label='Sottoattività'],
+.timeline-recurring-series-editor [aria-label='Scaletta'] {
   display: grid;
   gap: 10px;
   min-width: 0;
-  padding: 14px;
+  padding: 14px 16px;
+  border: 1px solid var(--dante-semantic-color-home-border-subtle, #526071);
+  border-radius: 12px;
+}
+
+.timeline-recurring-series-editor__recurrence > h3 {
+  margin: 0;
+  font-size: 13px;
+}
+
+.timeline-recurring-series-editor__recurrence > label {
+  display: grid;
+  gap: 5px;
+}
+
+.timeline-recurring-series-editor__advanced {
+  padding: 8px 0;
+  color: var(--dante-semantic-color-home-text-secondary, #b7c0cf);
+}
+
+.timeline-recurring-series-editor__advanced > summary {
+  cursor: pointer;
+}
+
+.timeline-recurring-series-editor__advanced > label {
+  margin-top: 10px;
+}
+
+.timeline-recurring-series-editor__objective {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  min-width: 0;
+  padding: 8px;
   border: 1px solid var(--dante-semantic-color-home-border-subtle, #526071);
   border-radius: 10px;
 }
 
-.timeline-recurring-series-editor section h3 {
-  margin: 0 0 2px;
+.timeline-recurring-series-editor__objective > input:first-of-type {
+  flex: 1 1 180px;
+  width: auto;
 }
 
-.timeline-recurring-series-editor label {
+.timeline-recurring-series-editor__objective > select {
+  flex: 0 1 155px;
+  width: auto;
+}
+
+.timeline-recurring-series-editor__objective > button {
+  margin-left: auto;
+}
+
+.timeline-recurring-series-editor [aria-label='Life Area'],
+.timeline-recurring-series-editor [aria-label='Dettagli'] {
   display: grid;
-  gap: 5px;
-  min-width: 0;
+  gap: 12px;
+  padding: 0;
+  border: 0;
 }
 
-.timeline-recurring-series-editor :is(input, select, textarea) {
-  min-width: 0;
-  max-width: 100%;
+.timeline-recurring-series-editor [aria-label='Dettagli'] textarea {
+  min-height: 110px;
 }
 
 .timeline-recurring-series-editor__row {
@@ -769,4 +866,19 @@
 .timeline-session-attempt-delete__actions button:disabled {
   cursor: wait;
   opacity: 0.55;
+}
+
+.timeline-event-modal--edit
+  .timeline-recurring-series-editor
+  .timeline-activity-editor__area-color {
+  display: grid;
+  grid-template-columns: 54px minmax(0, 1fr);
+  align-items: center;
+  gap: 8px;
+}
+
+.timeline-event-modal--edit
+  .timeline-recurring-series-editor
+  .timeline-activity-editor__area-color:has(> :only-child) {
+  grid-template-columns: minmax(0, 1fr);
 }

@@ -10,6 +10,7 @@ import {
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import { EventInspectorActions } from './event-inspector-actions';
+import { RecurringSeriesEditor } from './recurring-series-editor';
 import { EventDetailDialog } from './timeline-overlays';
 
 const loadEvent = vi.fn();
@@ -630,5 +631,94 @@ describe('Event Inspector actions', () => {
     );
     expect(confirmHardDeletion).not.toHaveBeenCalledWith(series);
     expect(onDeleted).toHaveBeenCalledOnce();
+  });
+
+  it('edits following Activity instances with the shared date, Session and Objective controls', async () => {
+    const occurrenceRef = '0199a555-5555-7555-8555-555555555555';
+    loadSeries.mockResolvedValue({
+      sourceRef: eventRef,
+      owner: 'routine',
+      selectedDate: '2026-10-23',
+      editRevision: 2,
+      recurrenceStateRef: '0199a666-6666-7666-8666-666666666666',
+      title: 'Allenamento',
+      description: null,
+      location: null,
+      colorCode: null,
+      recurrence: {
+        pattern_code: 'daily',
+        interval_count: 1,
+        range_kind: 'open',
+        wall_times: ['17:15:00'],
+        zone_id: 'Europe/Rome',
+      },
+      structure: {
+        duration_minutes: 120,
+        reminder_lead_minutes: null,
+        activity_template: {
+          root_window: { start_offset_minutes: 0, duration_minutes: 120 },
+          activity_intervals: [
+            { start_offset_minutes: 0, duration_minutes: 30 },
+            { start_offset_minutes: 60, duration_minutes: 60 },
+          ],
+          planned_slices: [{ name: 'Stretching', time_enabled: false }],
+          session_capture_mode: 'live',
+          reality_mode: 'manual',
+          objectives: [
+            {
+              label: 'Completato',
+              result_kind: 'boolean',
+              presentation_order: 0,
+            },
+          ],
+        },
+      },
+    });
+    reviewSeries.mockResolvedValue({
+      fingerprint: 'a'.repeat(64),
+      targetRefs: [],
+      newExpectedCount: 0,
+      protected: [],
+    });
+    vi.stubGlobal('fetch', vi.fn().mockResolvedValue(Response.json([])));
+    render(
+      <RecurringSeriesEditor
+        occurrenceRef={occurrenceRef}
+        scope="this_and_following"
+        owner="routine"
+        onSaved={vi.fn()}
+        onCancel={vi.fn()}
+      />,
+    );
+    expect(await screen.findByRole('textbox', { name: 'Titolo' })).toBeTruthy();
+    expect(
+      screen.getByRole('textbox', { name: 'Nome Sessione 1' }).closest('input')
+        ?.value,
+    ).toBe('Stretching');
+    expect(
+      screen.getAllByRole('button', { name: /^Data inizio:/ }),
+    ).toHaveLength(2);
+    expect(
+      screen.getByRole('textbox', { name: 'Obiettivo 1' }).closest('input')
+        ?.value,
+    ).toBe('Completato');
+    fireEvent.click(
+      screen.getByRole('button', { name: /Aggiungi intervallo/ }),
+    );
+    fireEvent.click(screen.getByRole('button', { name: 'Verifica modifiche' }));
+    await waitFor(() => expect(reviewSeries).toHaveBeenCalled());
+    const intent: unknown = reviewSeries.mock.lastCall?.[0];
+    expect(intent).toMatchObject({
+      structure: {
+        activity_template: {
+          activity_intervals: [
+            { start_offset_minutes: 0, duration_minutes: 30 },
+            { start_offset_minutes: 60, duration_minutes: 60 },
+            { start_offset_minutes: 135, duration_minutes: 30 },
+          ],
+          root_window: { start_offset_minutes: 0, duration_minutes: 165 },
+        },
+      },
+    });
   });
 });
