@@ -179,3 +179,98 @@ test('Activity Edit applies readable font sizes rather than inherited tiny label
     objective: '14px',
   });
 });
+
+test('Activity Edit keeps Create clock controls contained and the series recurrence stacked', async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 1280, height: 900 });
+  await page.goto('/home');
+  await page.getByRole('button', { name: 'Aggiungi alla timeline' }).click();
+  const create = page.locator('[data-temporal-create="composer"]');
+  await create.getByRole('button', { name: /Opzioni avanzate/ }).click();
+  await create.getByRole('button', { name: /Aggiungi intervallo/ }).click();
+  const interval = create
+    .locator('.temporal-create-activity-interval__fields')
+    .first();
+  await expect(interval).toBeVisible();
+  const markup = await interval.evaluate((element) => element.outerHTML);
+
+  await page.addStyleTag({
+    path: 'src/features/home/ui/timeline/timeline.css',
+  });
+  await page.addStyleTag({
+    path: 'src/features/home/ui/timeline/activity-edit-panel.css',
+  });
+  const geometry = await page.evaluate((intervalMarkup) => {
+    const modal = document.createElement('div');
+    modal.className = 'timeline-event-modal timeline-event-modal--edit';
+    modal.style.width = '1040px';
+    modal.innerHTML = `<div class="timeline-activity-editor timeline-recurring-series-editor"><div class="timeline-activity-editor__body">
+      <div class="temporal-create-activity-intervals timeline-activity-editor__intervals">${intervalMarkup}</div>
+      <section class="temporal-create-repeat timeline-recurring-series-editor__recurrence timeline-activity-editor__repeat">
+        <div class="temporal-create-repeat__row">Ripeti ogni giorno</div>
+        <div class="temporal-create-repeat__end-row"><span class="temporal-create-repeat__row-label">Termina</span><div class="temporal-create-repeat__end-choices"><div class="temporal-create-repeat__end-option">Mai</div><div class="temporal-create-repeat__end-option">Data</div></div></div>
+      </section></div></div>`;
+    document.body.append(modal);
+    const fields = modal.querySelector<HTMLElement>(
+      '.temporal-create-activity-interval__fields',
+    )!;
+    const children = Array.from(fields.children).filter(
+      (element) => getComputedStyle(element).display !== 'none',
+    );
+    const bounds = children.map((element) => element.getBoundingClientRect());
+    const fieldBounds = fields.getBoundingClientRect();
+    const timeInputs = Array.from(
+      fields.querySelectorAll<HTMLInputElement>(
+        '.temporal-create-time-segment input',
+      ),
+    );
+    const arrows = Array.from(
+      fields.querySelectorAll<HTMLButtonElement>(
+        '.temporal-create-time-segment button',
+      ),
+    );
+    const recurrence = modal.querySelector<HTMLElement>(
+      '.timeline-recurring-series-editor__recurrence',
+    )!;
+    const repeatRow = recurrence.querySelector<HTMLElement>(
+      '.temporal-create-repeat__row',
+    )!;
+    const endRow = recurrence.querySelector<HTMLElement>(
+      '.temporal-create-repeat__end-row',
+    )!;
+    const result = {
+      fieldsContained: bounds.every(
+        (box) =>
+          box.left >= fieldBounds.left - 1 &&
+          box.right <= fieldBounds.right + 1,
+      ),
+      clockInputsCompact:
+        timeInputs.length === 4 &&
+        timeInputs.every(
+          (input) =>
+            input.getBoundingClientRect().width <= 42 &&
+            getComputedStyle(input).paddingLeft === '0px',
+        ),
+      clockArrowsCompact:
+        arrows.length === 8 &&
+        arrows.every(
+          (arrow) =>
+            arrow.getBoundingClientRect().height <= 10 &&
+            getComputedStyle(arrow).paddingLeft === '0px',
+        ),
+      recurrenceStacked:
+        getComputedStyle(recurrence).display === 'grid' &&
+        endRow.getBoundingClientRect().top >=
+          repeatRow.getBoundingClientRect().bottom,
+    };
+    modal.remove();
+    return result;
+  }, markup);
+  expect(geometry).toEqual({
+    fieldsContained: true,
+    clockInputsCompact: true,
+    clockArrowsCompact: true,
+    recurrenceStacked: true,
+  });
+});

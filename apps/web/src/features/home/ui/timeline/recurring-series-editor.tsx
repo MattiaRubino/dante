@@ -30,6 +30,19 @@ const asText = (value: unknown): string =>
 const asNumber = (value: unknown): number =>
   typeof value === 'number' && Number.isFinite(value) ? value : 0;
 
+const protectionLabel = (reason: string): string => {
+  switch (reason) {
+    case 'local_change':
+      return 'Modificata singolarmente: resta invariata';
+    case 'registration':
+      return 'Con registrazioni: resta invariata';
+    case 'skipped':
+      return 'Saltata: resta invariata';
+    default:
+      return 'Eccezione conservata: resta invariata';
+  }
+};
+
 function ordinalSelection(value: unknown): {
   weekday_number: number;
   ordinal: number;
@@ -93,6 +106,7 @@ function SeriesIntervalFields({
   index,
   onChange,
   onRemove,
+  kind = 'interval',
 }: Readonly<{
   selectedDate: string;
   wallTime: string;
@@ -100,6 +114,7 @@ function SeriesIntervalFields({
   index: number;
   onChange: (row: Entry) => void;
   onRemove?: (() => void) | undefined;
+  kind?: 'interval' | 'session';
 }>) {
   const anchor = Temporal.PlainDateTime.from(
     `${selectedDate}T${wallTime.slice(0, 5) || '09:00'}`,
@@ -124,7 +139,7 @@ function SeriesIntervalFields({
   return (
     <div className="temporal-create-activity-interval">
       <span className="temporal-create-activity-interval__label">
-        Intervallo {index + 1}
+        {kind === 'interval' ? 'Intervallo' : 'Orario Sessione'} {index + 1}
       </span>
       <div className="temporal-create-activity-interval__fields timeline-activity-editor__interval-fields">
         <TemporalCreateDatePicker
@@ -141,7 +156,7 @@ function SeriesIntervalFields({
         <TimeControl
           label="Inizio"
           value={start.toPlainTime().toString({ smallestUnit: 'minute' })}
-          dataPath={`series.interval.${index}.start`}
+          dataPath={`series.${kind}.${index}.start`}
           onChange={(value) =>
             changeStart(start.toPlainDate().toString(), value)
           }
@@ -155,7 +170,7 @@ function SeriesIntervalFields({
         <TimeControl
           label="Fine"
           value={end.toPlainTime().toString({ smallestUnit: 'minute' })}
-          dataPath={`series.interval.${index}.end`}
+          dataPath={`series.${kind}.${index}.end`}
           onChange={(value) => changeEnd(end.toPlainDate().toString(), value)}
         />
         <TemporalCreateDatePicker
@@ -219,6 +234,8 @@ export function RecurringSeriesEditor({
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
   const operation = useRef(crypto.randomUUID());
+  const reviewDialogRef = useRef<HTMLDivElement>(null);
+  const previewButtonRef = useRef<HTMLButtonElement>(null);
 
   useEffect(() => {
     let active = true;
@@ -276,11 +293,44 @@ export function RecurringSeriesEditor({
 
   useEffect(() => {
     if (!closeRequestRef) return;
-    closeRequestRef.current = onCancel;
+    closeRequestRef.current = review ? () => setReview(null) : onCancel;
     return () => {
       closeRequestRef.current = null;
     };
-  }, [closeRequestRef, onCancel]);
+  }, [closeRequestRef, onCancel, review]);
+
+  useEffect(() => {
+    if (!review) return;
+    const dialog = reviewDialogRef.current;
+    const previewButton = previewButtonRef.current;
+    dialog?.querySelector<HTMLButtonElement>('button')?.focus();
+    const dismiss = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        event.stopImmediatePropagation();
+        event.preventDefault();
+        setReview(null);
+      } else if (event.key === 'Tab' && dialog) {
+        const buttons = Array.from(
+          dialog.querySelectorAll<HTMLButtonElement>('button:not(:disabled)'),
+        );
+        const first = buttons[0];
+        const last = buttons.at(-1);
+        if (!first || !last) return;
+        if (event.shiftKey && document.activeElement === first) {
+          event.preventDefault();
+          last.focus();
+        } else if (!event.shiftKey && document.activeElement === last) {
+          event.preventDefault();
+          first.focus();
+        }
+      }
+    };
+    document.addEventListener('keydown', dismiss, true);
+    return () => {
+      document.removeEventListener('keydown', dismiss, true);
+      previewButton?.focus();
+    };
+  }, [review]);
 
   const changeStructure = (value: Entry) => {
     setStructure(value);
@@ -350,7 +400,6 @@ export function RecurringSeriesEditor({
     });
   };
   const sessions = asRows(template.planned_slices);
-  const children = asRows(template.children);
   const agenda = Array.isArray(structure.agenda_parts)
     ? structure.agenda_parts.map(asText)
     : [];
@@ -499,16 +548,6 @@ export function RecurringSeriesEditor({
         ) : null}
         {source ? (
           <>
-            <div className="timeline-activity-editor__kind" aria-label="Tipo">
-              <span className={owner === 'routine' ? 'is-selected' : ''}>
-                Attività
-              </span>
-              <span className={owner === 'event' ? 'is-selected' : ''}>
-                Evento
-              </span>
-              <span>Timer</span>
-              <span>Sveglia</span>
-            </div>
             <div className="temporal-create-title-row has-tools timeline-activity-editor__title-row">
               <label className="timeline-activity-editor__title">
                 <span className="timeline-activity-editor__visually-hidden">
@@ -523,7 +562,7 @@ export function RecurringSeriesEditor({
                 />
               </label>
               {owner === 'routine' ? (
-                <div className="timeline-activity-editor__title-tools">
+                <div className="temporal-create-title-row__tools timeline-activity-editor__title-tools">
                   <button
                     type="button"
                     className="temporal-create-placement-lock"
@@ -535,6 +574,22 @@ export function RecurringSeriesEditor({
                       })
                     }
                   >
+                    <svg
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="1.8"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      aria-hidden="true"
+                    >
+                      <rect x="5" y="10" width="14" height="11" rx="2" />
+                      {template.placement_protected === true ? (
+                        <path d="M8 10V7a4 4 0 0 1 8 0v3" />
+                      ) : (
+                        <path d="M8 10V7a4 4 0 0 1 7.5-1.9" />
+                      )}
+                    </svg>
                     {template.placement_protected === true
                       ? 'Sblocca'
                       : 'Blocca'}{' '}
@@ -557,40 +612,229 @@ export function RecurringSeriesEditor({
                 </div>
               ) : null}
             </div>
+            {owner === 'routine' ? (
+              <section
+                className="temporal-create-activity-tree timeline-activity-editor__sessions"
+                aria-label="Sessioni pianificate"
+              >
+                <div
+                  className="temporal-create-activity-tree__spine"
+                  aria-hidden="true"
+                />
+                <div className="temporal-create-activity-tree__group-label">
+                  Sessioni attività
+                </div>
+                {sessions.map((row, index) => (
+                  <div
+                    key={index}
+                    className="temporal-create-tree-item is-session is-root"
+                  >
+                    <div className="temporal-create-tree-row">
+                      <span
+                        className="temporal-create-tree-row__icon"
+                        aria-hidden="true"
+                      >
+                        ▶
+                      </span>
+                      <span
+                        className="temporal-create-tree-row__divider"
+                        aria-hidden="true"
+                      />
+                      <input
+                        className="temporal-create-tree-row__title"
+                        aria-label={`Nome Sessione ${index + 1}`}
+                        placeholder="Nome Sessione"
+                        maxLength={300}
+                        value={asText(row.name)}
+                        onChange={(e) =>
+                          editRows(
+                            'planned_slices',
+                            sessions.map((part, i) =>
+                              i === index
+                                ? { ...part, name: e.target.value }
+                                : part,
+                            ),
+                          )
+                        }
+                      />
+                      <div className="temporal-create-tree-row__actions">
+                        <button
+                          type="button"
+                          className="is-remove"
+                          aria-label={`Rimuovi Sessione ${index + 1}`}
+                          onClick={() =>
+                            editRows(
+                              'planned_slices',
+                              sessions.filter((_, i) => i !== index),
+                            )
+                          }
+                        >
+                          ×
+                        </button>
+                      </div>
+                    </div>
+                    <label className="timeline-recurring-series-editor__session-time-toggle">
+                      Con orario
+                      <input
+                        type="checkbox"
+                        checked={row.time_enabled !== false}
+                        onChange={(e) =>
+                          editRows(
+                            'planned_slices',
+                            sessions.map((part, i) =>
+                              i === index
+                                ? e.target.checked
+                                  ? {
+                                      name: asText(part.name),
+                                      start_offset_minutes: 0,
+                                      duration_minutes: 30,
+                                    }
+                                  : {
+                                      name: asText(part.name),
+                                      time_enabled: false,
+                                    }
+                                : part,
+                            ),
+                          )
+                        }
+                      />
+                    </label>
+                    {row.time_enabled !== false ? (
+                      <SeriesIntervalFields
+                        kind="session"
+                        selectedDate={source.selectedDate}
+                        wallTime={time}
+                        row={row}
+                        index={index}
+                        onChange={(next) =>
+                          editRows(
+                            'planned_slices',
+                            sessions.map((part, i) =>
+                              i === index ? next : part,
+                            ),
+                          )
+                        }
+                      />
+                    ) : null}
+                  </div>
+                ))}
+                <div className="temporal-create-activity-tree__root-actions">
+                  <button
+                    type="button"
+                    className="temporal-create-tree-add"
+                    onClick={() =>
+                      editRows('planned_slices', [
+                        ...sessions,
+                        { name: '', time_enabled: false },
+                      ])
+                    }
+                  >
+                    + Sessione
+                  </button>
+                </div>
+                <details className="timeline-recurring-series-editor__advanced">
+                  <summary>Opzioni Sessione e struttura</summary>
+                  <label>
+                    Sessione dell’attività{' '}
+                    <select
+                      value={asText(template.session_capture_mode)}
+                      onChange={(e) =>
+                        updateTemplate({
+                          session_capture_mode: e.target.value,
+                        })
+                      }
+                    >
+                      <option value="disabled">Disattivata</option>
+                      <option value="live">Attiva</option>
+                      <option value="record">Registrazione</option>
+                      <option value="record_and_live">Entrambe</option>
+                    </select>
+                  </label>
+                  <label>
+                    Durata minima della Sessione (minuti)
+                    <input
+                      type="number"
+                      min={1}
+                      value={
+                        template.minimum_session_duration_microseconds == null
+                          ? ''
+                          : asNumber(
+                              template.minimum_session_duration_microseconds,
+                            ) / 60_000_000
+                      }
+                      onChange={(e) =>
+                        updateTemplate({
+                          minimum_session_duration_microseconds:
+                            e.target.value === ''
+                              ? null
+                              : Number(e.target.value) * 60_000_000,
+                        })
+                      }
+                    />
+                  </label>
+                  <label>
+                    Regola per le sottoattività
+                    <select
+                      value={asText(template.child_guard_mode)}
+                      onChange={(e) =>
+                        updateTemplate({ child_guard_mode: e.target.value })
+                      }
+                    >
+                      <option value="none">Libere</option>
+                      <option value="confirm">Conferma</option>
+                      <option value="block">Bloccate</option>
+                    </select>
+                  </label>
+                </details>
+              </section>
+            ) : null}
             <section
               className="timeline-recurring-series-editor__timing"
               aria-label="Orario della serie"
             >
-              <h3>Orario</h3>
+              <div
+                className="timeline-activity-editor__placement"
+                role="group"
+                aria-label="Tipo di orario"
+              >
+                {owner === 'event' ? (
+                  (['timed', 'all_day'] as const).map((kind) => (
+                    <button
+                      key={kind}
+                      type="button"
+                      className={
+                        structure.placement_kind === kind ? 'is-selected' : ''
+                      }
+                      aria-pressed={structure.placement_kind === kind}
+                      onClick={() => {
+                        if (structure.placement_kind === kind) return;
+                        const allDay = kind === 'all_day';
+                        changeStructure({
+                          ...structure,
+                          placement_kind: kind,
+                          duration_minutes: allDay ? null : 60,
+                          duration_days: allDay ? 1 : null,
+                          reminder_lead_minutes: allDay
+                            ? null
+                            : structure.reminder_lead_minutes,
+                        });
+                        changeRecurrence({
+                          ...recurrence,
+                          wall_times: allDay ? [] : ['09:00:00'],
+                        });
+                      }}
+                    >
+                      {kind === 'timed' ? 'Orario' : 'Tutto il giorno'}
+                    </button>
+                  ))
+                ) : (
+                  <span className="is-selected">Orario</span>
+                )}
+              </div>
               <div className="timeline-activity-editor__timezone">
-                <span aria-hidden="true">◉</span>
+                <span aria-hidden="true">◎</span>
                 Fuso orario · {asText(recurrence.zone_id) || 'della serie'}
               </div>
-              {owner === 'event' ? (
-                <label>
-                  Tutto il giorno
-                  <input
-                    type="checkbox"
-                    checked={structure.placement_kind === 'all_day'}
-                    onChange={(e) => {
-                      const allDay = e.target.checked;
-                      changeStructure({
-                        ...structure,
-                        placement_kind: allDay ? 'all_day' : 'timed',
-                        duration_minutes: allDay ? null : 60,
-                        duration_days: allDay ? 1 : null,
-                        reminder_lead_minutes: allDay
-                          ? null
-                          : structure.reminder_lead_minutes,
-                      });
-                      changeRecurrence({
-                        ...recurrence,
-                        wall_times: allDay ? [] : ['09:00:00'],
-                      });
-                    }}
-                  />
-                </label>
-              ) : null}
               {owner === 'event' && structure.placement_kind === 'timed' ? (
                 <TimeControl
                   label="Inizio"
@@ -624,232 +868,9 @@ export function RecurringSeriesEditor({
                   />
                 </label>
               ) : null}
-              {structure.placement_kind !== 'all_day' ? (
-                <TemporalReminderControl
-                  value={
-                    typeof structure.reminder_lead_minutes === 'number'
-                      ? structure.reminder_lead_minutes
-                      : null
-                  }
-                  onChange={(value) =>
-                    changeStructure({
-                      ...structure,
-                      reminder_lead_minutes: value,
-                    })
-                  }
-                />
-              ) : null}
             </section>
             {owner === 'routine' ? (
               <>
-                <section
-                  className="temporal-create-activity-tree timeline-activity-editor__sessions"
-                  aria-label="Sessioni pianificate"
-                >
-                  <div
-                    className="temporal-create-activity-tree__spine"
-                    aria-hidden="true"
-                  />
-                  <div className="temporal-create-activity-tree__group-label">
-                    Sessioni attività
-                  </div>
-                  {sessions.map((row, index) => (
-                    <div
-                      key={index}
-                      className="temporal-create-tree-item is-session is-root"
-                    >
-                      <div className="temporal-create-tree-row">
-                        <span
-                          className="temporal-create-tree-row__icon"
-                          aria-hidden="true"
-                        >
-                          ▶
-                        </span>
-                        <span
-                          className="temporal-create-tree-row__divider"
-                          aria-hidden="true"
-                        />
-                        <input
-                          className="temporal-create-tree-row__title"
-                          aria-label={`Nome Sessione ${index + 1}`}
-                          placeholder="Nome Sessione"
-                          maxLength={300}
-                          value={asText(row.name)}
-                          onChange={(e) =>
-                            editRows(
-                              'planned_slices',
-                              sessions.map((part, i) =>
-                                i === index
-                                  ? { ...part, name: e.target.value }
-                                  : part,
-                              ),
-                            )
-                          }
-                        />
-                        <div className="temporal-create-tree-row__actions">
-                          <button
-                            type="button"
-                            className="is-remove"
-                            aria-label={`Rimuovi Sessione ${index + 1}`}
-                            onClick={() =>
-                              editRows(
-                                'planned_slices',
-                                sessions.filter((_, i) => i !== index),
-                              )
-                            }
-                          >
-                            ×
-                          </button>
-                        </div>
-                      </div>
-                      {row.time_enabled !== false ? (
-                        <label>
-                          Con orario
-                          <input
-                            type="checkbox"
-                            checked={row.time_enabled !== false}
-                            onChange={(e) =>
-                              editRows(
-                                'planned_slices',
-                                sessions.map((part, i) =>
-                                  i === index
-                                    ? e.target.checked
-                                      ? {
-                                          name: asText(part.name),
-                                          start_offset_minutes: 0,
-                                          duration_minutes: 30,
-                                        }
-                                      : {
-                                          name: asText(part.name),
-                                          time_enabled: false,
-                                        }
-                                    : part,
-                                ),
-                              )
-                            }
-                          />
-                        </label>
-                      ) : null}
-                      {row.time_enabled !== false ? (
-                        <>
-                          <label>
-                            Inizio in minuti{' '}
-                            <input
-                              type="number"
-                              value={asNumber(row.start_offset_minutes)}
-                              onChange={(e) =>
-                                editRows(
-                                  'planned_slices',
-                                  sessions.map((part, i) =>
-                                    i === index
-                                      ? {
-                                          ...part,
-                                          start_offset_minutes: Number(
-                                            e.target.value,
-                                          ),
-                                        }
-                                      : part,
-                                  ),
-                                )
-                              }
-                            />
-                          </label>
-                          <label>
-                            Durata{' '}
-                            <input
-                              type="number"
-                              min={1}
-                              value={asNumber(row.duration_minutes)}
-                              onChange={(e) =>
-                                editRows(
-                                  'planned_slices',
-                                  sessions.map((part, i) =>
-                                    i === index
-                                      ? {
-                                          ...part,
-                                          duration_minutes: Number(
-                                            e.target.value,
-                                          ),
-                                        }
-                                      : part,
-                                  ),
-                                )
-                              }
-                            />
-                          </label>
-                        </>
-                      ) : null}
-                    </div>
-                  ))}
-                  <div className="temporal-create-activity-tree__root-actions">
-                    <button
-                      type="button"
-                      className="temporal-create-tree-add"
-                      onClick={() =>
-                        editRows('planned_slices', [
-                          ...sessions,
-                          { name: '', time_enabled: false },
-                        ])
-                      }
-                    >
-                      + Sessione
-                    </button>
-                  </div>
-                  <details className="timeline-recurring-series-editor__advanced">
-                    <summary>Opzioni Sessione e struttura</summary>
-                    <label>
-                      Sessione dell’attività{' '}
-                      <select
-                        value={asText(template.session_capture_mode)}
-                        onChange={(e) =>
-                          updateTemplate({
-                            session_capture_mode: e.target.value,
-                          })
-                        }
-                      >
-                        <option value="disabled">Disattivata</option>
-                        <option value="live">Attiva</option>
-                        <option value="record">Registrazione</option>
-                        <option value="record_and_live">Entrambe</option>
-                      </select>
-                    </label>
-                    <label>
-                      Durata minima della Sessione (minuti)
-                      <input
-                        type="number"
-                        min={1}
-                        value={
-                          template.minimum_session_duration_microseconds == null
-                            ? ''
-                            : asNumber(
-                                template.minimum_session_duration_microseconds,
-                              ) / 60_000_000
-                        }
-                        onChange={(e) =>
-                          updateTemplate({
-                            minimum_session_duration_microseconds:
-                              e.target.value === ''
-                                ? null
-                                : Number(e.target.value) * 60_000_000,
-                          })
-                        }
-                      />
-                    </label>
-                    <label>
-                      Regola per le sottoattività
-                      <select
-                        value={asText(template.child_guard_mode)}
-                        onChange={(e) =>
-                          updateTemplate({ child_guard_mode: e.target.value })
-                        }
-                      >
-                        <option value="none">Libere</option>
-                        <option value="confirm">Conferma</option>
-                        <option value="block">Bloccate</option>
-                      </select>
-                    </label>
-                  </details>
-                </section>
                 <section
                   className="temporal-create-activity-intervals timeline-activity-editor__intervals"
                   aria-label="Intervalli"
@@ -908,260 +929,6 @@ export function RecurringSeriesEditor({
                     }}
                   >
                     + Aggiungi intervallo
-                  </button>
-                </section>
-                <section aria-label="Sottoattività">
-                  <h3>Sottoattività</h3>
-                  {children.map((child, index) => {
-                    const setChild = (patch: Entry) =>
-                      editRows(
-                        'children',
-                        children.map((part, i) =>
-                          i === index ? { ...part, ...patch } : part,
-                        ),
-                      );
-                    const placement =
-                      child.placement == null ? null : asEntry(child.placement);
-                    const childSessions = asRows(child.planned_slices);
-                    return (
-                      <fieldset key={index}>
-                        <legend>Sottoattività {index + 1}</legend>
-                        <label>
-                          Titolo{' '}
-                          <input
-                            value={asText(child.title)}
-                            maxLength={300}
-                            onChange={(e) =>
-                              setChild({ title: e.target.value })
-                            }
-                          />
-                        </label>
-                        <label>
-                          Necessità{' '}
-                          <select
-                            value={asText(child.requirement_code)}
-                            onChange={(e) =>
-                              setChild({ requirement_code: e.target.value })
-                            }
-                          >
-                            <option value="required">Necessaria</option>
-                            <option value="optional">Facoltativa</option>
-                          </select>
-                        </label>
-                        <label>
-                          Sessione{' '}
-                          <select
-                            value={asText(child.session_capture_mode)}
-                            onChange={(e) =>
-                              setChild({ session_capture_mode: e.target.value })
-                            }
-                          >
-                            <option value="disabled">Disattivata</option>
-                            <option value="record">Registrazione</option>
-                            <option value="live">Attiva</option>
-                            <option value="record_and_live">Entrambe</option>
-                          </select>
-                        </label>
-                        <label>
-                          Verifica{' '}
-                          <select
-                            value={asText(child.reality_mode)}
-                            onChange={(e) =>
-                              setChild({ reality_mode: e.target.value })
-                            }
-                          >
-                            <option value="manual">Manuale</option>
-                            <option value="review_on_end">Alla fine</option>
-                            <option value="auto_confirm_outcome">
-                              Automatica
-                            </option>
-                          </select>
-                        </label>
-                        <label>
-                          Con orario{' '}
-                          <input
-                            type="checkbox"
-                            checked={placement !== null}
-                            onChange={(e) =>
-                              setChild({
-                                placement: e.target.checked
-                                  ? {
-                                      start_offset_minutes: 0,
-                                      duration_minutes: 30,
-                                    }
-                                  : null,
-                              })
-                            }
-                          />
-                        </label>
-                        {placement ? (
-                          <div className="timeline-recurring-series-editor__row">
-                            <label>
-                              Inizio in minuti{' '}
-                              <input
-                                type="number"
-                                value={asNumber(placement.start_offset_minutes)}
-                                onChange={(e) =>
-                                  setChild({
-                                    placement: {
-                                      ...placement,
-                                      start_offset_minutes: Number(
-                                        e.target.value,
-                                      ),
-                                    },
-                                  })
-                                }
-                              />
-                            </label>
-                            <label>
-                              Durata{' '}
-                              <input
-                                type="number"
-                                min={1}
-                                value={asNumber(placement.duration_minutes)}
-                                onChange={(e) =>
-                                  setChild({
-                                    placement: {
-                                      ...placement,
-                                      duration_minutes: Number(e.target.value),
-                                    },
-                                  })
-                                }
-                              />
-                            </label>
-                          </div>
-                        ) : null}
-                        <strong>Sessioni della sottoattività</strong>
-                        {childSessions.map((session, sessionIndex) => (
-                          <div
-                            key={sessionIndex}
-                            className="timeline-recurring-series-editor__row"
-                          >
-                            <label>
-                              Nome{' '}
-                              <input
-                                maxLength={300}
-                                value={asText(session.name)}
-                                onChange={(e) =>
-                                  setChild({
-                                    planned_slices: childSessions.map(
-                                      (part, i) =>
-                                        i === sessionIndex
-                                          ? { ...part, name: e.target.value }
-                                          : part,
-                                    ),
-                                  })
-                                }
-                              />
-                            </label>
-                            <label>
-                              Inizio in minuti{' '}
-                              <input
-                                type="number"
-                                value={asNumber(session.start_offset_minutes)}
-                                onChange={(e) =>
-                                  setChild({
-                                    planned_slices: childSessions.map(
-                                      (part, i) =>
-                                        i === sessionIndex
-                                          ? {
-                                              ...part,
-                                              start_offset_minutes: Number(
-                                                e.target.value,
-                                              ),
-                                            }
-                                          : part,
-                                    ),
-                                  })
-                                }
-                              />
-                            </label>
-                            <label>
-                              Durata{' '}
-                              <input
-                                type="number"
-                                min={1}
-                                value={asNumber(session.duration_minutes)}
-                                onChange={(e) =>
-                                  setChild({
-                                    planned_slices: childSessions.map(
-                                      (part, i) =>
-                                        i === sessionIndex
-                                          ? {
-                                              ...part,
-                                              duration_minutes: Number(
-                                                e.target.value,
-                                              ),
-                                            }
-                                          : part,
-                                    ),
-                                  })
-                                }
-                              />
-                            </label>
-                            <button
-                              type="button"
-                              onClick={() =>
-                                setChild({
-                                  planned_slices: childSessions.filter(
-                                    (_, i) => i !== sessionIndex,
-                                  ),
-                                })
-                              }
-                            >
-                              Rimuovi Sessione
-                            </button>
-                          </div>
-                        ))}
-                        <button
-                          type="button"
-                          onClick={() =>
-                            setChild({
-                              planned_slices: [
-                                ...childSessions,
-                                {
-                                  name: '',
-                                  start_offset_minutes: 0,
-                                  duration_minutes: 30,
-                                },
-                              ],
-                            })
-                          }
-                        >
-                          Aggiungi Sessione
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() =>
-                            editRows(
-                              'children',
-                              children.filter((_, i) => i !== index),
-                            )
-                          }
-                        >
-                          Rimuovi sottoattività
-                        </button>
-                      </fieldset>
-                    );
-                  })}
-                  <button
-                    type="button"
-                    className="temporal-create-tree-add"
-                    onClick={() =>
-                      editRows('children', [
-                        ...children,
-                        {
-                          title: '',
-                          requirement_code: 'required',
-                          session_capture_mode: 'disabled',
-                          reality_mode: 'manual',
-                          placement: null,
-                          planned_slices: [],
-                        },
-                      ])
-                    }
-                  >
-                    Aggiungi sottoattività
                   </button>
                 </section>
               </>
@@ -1676,6 +1443,46 @@ export function RecurringSeriesEditor({
               </div>
             </section>
             <section
+              className="timeline-activity-editor__area-color"
+              aria-label="Life Area"
+            >
+              {!activeArea ? (
+                <TemporalColorControl
+                  value={color}
+                  label="Colore attività o evento"
+                  onChange={(value) => updateMetadata(setColor, value)}
+                />
+              ) : null}
+              <TemporalLifeAreaSelect
+                query={areaQuery}
+                label="Area assegnata"
+                options={areas.map((area) => ({
+                  id: area.ref,
+                  label: area.name,
+                  colorCode: area.colorCode,
+                }))}
+                selectedId={activeArea || null}
+                onQueryChange={(value) => {
+                  setAreaQuery(value);
+                  setReview(null);
+                }}
+                onChoose={(area) => {
+                  setAreaQuery(area.label);
+                  updateMetadata(setColor, '');
+                  if (owner === 'routine')
+                    updateTemplate({ life_area_ref: area.id });
+                  else
+                    changeStructure({ ...structure, life_area_ref: area.id });
+                }}
+                onClear={() => {
+                  setAreaQuery('');
+                  if (owner === 'routine')
+                    updateTemplate({ life_area_ref: null });
+                  else changeStructure({ ...structure, life_area_ref: null });
+                }}
+              />
+            </section>
+            <section
               className="temporal-create-reality-objectives timeline-activity-editor__outcome"
               aria-label="Svolgimento e obiettivi"
             >
@@ -1886,47 +1693,30 @@ export function RecurringSeriesEditor({
                 </div>
               </div>
             </section>
-            <section
-              className="timeline-activity-editor__area-color"
-              aria-label="Life Area"
-            >
-              {!activeArea ? (
-                <TemporalColorControl
-                  value={color}
-                  label="Colore attività o evento"
-                  onChange={(value) => updateMetadata(setColor, value)}
+
+            <section aria-label="Dettagli">
+              <label>
+                Località
+                <input
+                  value={location}
+                  onChange={(e) => updateMetadata(setLocation, e.target.value)}
+                />
+              </label>
+              {structure.placement_kind !== 'all_day' ? (
+                <TemporalReminderControl
+                  value={
+                    typeof structure.reminder_lead_minutes === 'number'
+                      ? structure.reminder_lead_minutes
+                      : null
+                  }
+                  onChange={(value) =>
+                    changeStructure({
+                      ...structure,
+                      reminder_lead_minutes: value,
+                    })
+                  }
                 />
               ) : null}
-              <TemporalLifeAreaSelect
-                query={areaQuery}
-                label="Area assegnata"
-                options={areas.map((area) => ({
-                  id: area.ref,
-                  label: area.name,
-                  colorCode: area.colorCode,
-                }))}
-                selectedId={activeArea || null}
-                onQueryChange={(value) => {
-                  setAreaQuery(value);
-                  setReview(null);
-                }}
-                onChoose={(area) => {
-                  setAreaQuery(area.label);
-                  updateMetadata(setColor, '');
-                  if (owner === 'routine')
-                    updateTemplate({ life_area_ref: area.id });
-                  else
-                    changeStructure({ ...structure, life_area_ref: area.id });
-                }}
-                onClear={() => {
-                  setAreaQuery('');
-                  if (owner === 'routine')
-                    updateTemplate({ life_area_ref: null });
-                  else changeStructure({ ...structure, life_area_ref: null });
-                }}
-              />
-            </section>
-            <section aria-label="Dettagli">
               <label>
                 Descrizione
                 <textarea
@@ -1936,54 +1726,88 @@ export function RecurringSeriesEditor({
                   }
                 />
               </label>
-              <label>
-                Località
-                <input
-                  value={location}
-                  onChange={(e) => updateMetadata(setLocation, e.target.value)}
-                />
-              </label>
             </section>
           </>
         ) : null}
       </div>
-      {review ? (
-        <div className="timeline-activity-editor__fields" role="status">
-          <strong>Controlla prima di salvare</strong>
-          <p>
-            {review.targetRefs.length} istanze pianificate da sostituire,{' '}
-            {review.newExpectedCount} nuove nel periodo verificato,{' '}
-            {review.protected.length} eccezioni conservate.
-          </p>
-          {review.protected.length ? (
-            <ul>
-              {review.protected.slice(0, 10).map((item) => (
-                <li key={item.occurrenceRef}>
-                  {new Date(item.expectedAt).toLocaleString('it-IT')} ·{' '}
-                  {item.reason}
-                </li>
-              ))}
-            </ul>
-          ) : null}
-        </div>
-      ) : null}
       <div className="timeline-activity-editor__actions dante-temporal-panel-actions">
         <button type="button" disabled={busy} onClick={onCancel}>
           Annulla
         </button>
         <button
           type="button"
+          ref={previewButtonRef}
           className="is-primary"
           disabled={busy || !source}
-          onClick={() => void (review ? accept() : prepare())}
+          onClick={() => void prepare()}
         >
-          {busy
-            ? 'Attendi…'
-            : review
-              ? 'Conferma modifiche'
-              : 'Verifica modifiche'}
+          {busy ? 'Attendi…' : 'Verifica modifiche'}
         </button>
       </div>
+      {review ? (
+        <div className="timeline-recurring-series-review__backdrop">
+          <div
+            ref={reviewDialogRef}
+            className="timeline-recurring-series-review__dialog"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="timeline-recurring-series-review-title"
+          >
+            <h2 id="timeline-recurring-series-review-title">
+              Controlla prima di salvare
+            </h2>
+            <p>
+              {review.targetRefs.length}{' '}
+              {review.targetRefs.length === 1
+                ? 'istanza pianificata sarà sostituita'
+                : 'istanze pianificate saranno sostituite'}
+              ; {review.newExpectedCount} nuove nel periodo verificato.
+            </p>
+            <p>
+              {review.protected.length}{' '}
+              {review.protected.length === 1
+                ? 'istanza con modifiche o registrazioni sarà conservata'
+                : 'istanze con modifiche o registrazioni saranno conservate'}{' '}
+              senza cambiamenti.
+            </p>
+            {review.protected.length > 0 ? (
+              <div className="timeline-recurring-series-review__exceptions">
+                <h3>Istanze che restano invariate</h3>
+                <ul>
+                  {review.protected.slice(0, 10).map((item) => (
+                    <li key={item.occurrenceRef}>
+                      {new Date(item.expectedAt).toLocaleString('it-IT')} ·{' '}
+                      {protectionLabel(item.reason)}
+                    </li>
+                  ))}
+                </ul>
+                {review.protected.length > 10 ? (
+                  <p>
+                    Altre {review.protected.length - 10} istanze conservate.
+                  </p>
+                ) : null}
+              </div>
+            ) : null}
+            <div className="timeline-recurring-series-review__actions dante-temporal-panel-actions">
+              <button
+                type="button"
+                disabled={busy}
+                onClick={() => setReview(null)}
+              >
+                Torna alla modifica
+              </button>
+              <button
+                type="button"
+                className="is-primary"
+                disabled={busy}
+                onClick={() => void accept()}
+              >
+                {busy ? 'Attendi…' : 'Conferma modifiche'}
+              </button>
+            </div>
+          </div>
+        </div>
+      ) : null}
     </div>
   );
 }

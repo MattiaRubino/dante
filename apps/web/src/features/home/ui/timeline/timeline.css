@@ -1966,7 +1966,14 @@ body:has(> .timeline-recurring-edit-scope-dialog__backdrop)
   gap: 8px;
 }
 
-.timeline-activity-editor label:not(.temporal-create-quick-reminder *) {
+.timeline-activity-editor
+  label:not(
+    .temporal-create-quick-reminder *,
+    .temporal-create-reality-objectives *,
+    .temporal-create-repeat *,
+    .temporal-create-activity-tree *,
+    .temporal-create-title-row *
+  ) {
   display: grid;
   gap: 5px;
   font-size: 12px;
@@ -1980,6 +1987,11 @@ body:has(> .timeline-recurring-edit-scope-dialog__backdrop)
 .timeline-activity-editor
   input:not([type='checkbox']):not([type='color']):not(
     .temporal-create-u2-when *,
+    .temporal-create-activity-interval__fields *,
+    .temporal-create-time-control *,
+    .temporal-create-date-picker *,
+    .temporal-create-repeat *,
+    .temporal-create-reality-objectives *,
     .temporal-create-tree-time-editor *,
     .temporal-create-life-area-field *,
     .temporal-create-quick-reminder *,
@@ -1987,7 +1999,12 @@ body:has(> .timeline-recurring-edit-scope-dialog__backdrop)
     .temporal-create-u2-location
   ),
 .timeline-activity-editor textarea:not(.temporal-create-advanced-description),
-.timeline-activity-editor select:not(.temporal-create-life-area-field *) {
+.timeline-activity-editor
+  select:not(
+    .temporal-create-life-area-field *,
+    .temporal-create-repeat *,
+    .temporal-create-reality-objectives *
+  ) {
   width: 100%;
   padding: 8px;
   border: 1px solid var(--dante-semantic-color-home-border-strong);
@@ -2000,6 +2017,8 @@ body:has(> .timeline-recurring-edit-scope-dialog__backdrop)
 .timeline-activity-editor
   button:not(
     .temporal-create-u2-when *,
+    .temporal-create-activity-interval__fields *,
+    .temporal-create-time-control *,
     .temporal-create-tree-time-editor *,
     .temporal-create-tree-row__actions *,
     .temporal-create-life-area-field *,
@@ -2197,6 +2216,11 @@ body:has(> .timeline-recurring-edit-scope-dialog__backdrop)
 .timeline-activity-editor__body
   input:not([type='checkbox']):not([type='color']):not(
     .temporal-create-u2-when *,
+    .temporal-create-activity-interval__fields *,
+    .temporal-create-time-control *,
+    .temporal-create-date-picker *,
+    .temporal-create-repeat *,
+    .temporal-create-reality-objectives *,
     .temporal-create-tree-time-editor *,
     .temporal-create-life-area-field *,
     .temporal-create-quick-reminder *,

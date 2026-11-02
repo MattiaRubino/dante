@@ -6,6 +6,7 @@ import {
   render,
   screen,
   waitFor,
+  within,
 } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
@@ -676,9 +677,15 @@ describe('Event Inspector actions', () => {
     });
     reviewSeries.mockResolvedValue({
       fingerprint: 'a'.repeat(64),
-      targetRefs: [],
+      targetRefs: ['0199a555-5555-7555-8555-555555555555'],
       newExpectedCount: 0,
-      protected: [],
+      protected: [
+        {
+          occurrenceRef: '0199a666-6666-7666-8666-666666666666',
+          expectedAt: '2027-01-03T16:15:00Z',
+          reason: 'local_change',
+        },
+      ],
     });
     vi.stubGlobal('fetch', vi.fn().mockResolvedValue(Response.json([])));
     render(
@@ -695,6 +702,38 @@ describe('Event Inspector actions', () => {
       screen.getByRole('textbox', { name: 'Nome Sessione 1' }).closest('input')
         ?.value,
     ).toBe('Stretching');
+    const sessionRow = screen
+      .getByRole('textbox', { name: 'Nome Sessione 1' })
+      .closest('.temporal-create-tree-item');
+    expect(sessionRow).not.toBeNull();
+    expect(
+      screen
+        .getByRole('region', { name: 'Sessioni pianificate' })
+        .compareDocumentPosition(
+          screen.getByRole('region', { name: 'Orario della serie' }),
+        ) & Node.DOCUMENT_POSITION_FOLLOWING,
+    ).toBeTruthy();
+    expect(
+      screen
+        .getByRole('region', { name: 'Life Area' })
+        .compareDocumentPosition(
+          screen.getByRole('region', { name: 'Svolgimento e obiettivi' }),
+        ) & Node.DOCUMENT_POSITION_FOLLOWING,
+    ).toBeTruthy();
+    const sessionClock = within(sessionRow as HTMLElement).getByRole(
+      'checkbox',
+      { name: 'Con orario' },
+    );
+    fireEvent.click(sessionClock);
+    expect(
+      within(sessionRow as HTMLElement).getByRole('group', { name: 'Inizio' }),
+    ).toBeTruthy();
+    fireEvent.click(sessionClock);
+    expect(
+      within(sessionRow as HTMLElement).queryByRole('group', {
+        name: 'Inizio',
+      }),
+    ).toBeNull();
     expect(
       screen.getAllByRole('button', { name: /^Data inizio:/ }),
     ).toHaveLength(2);
@@ -720,5 +759,23 @@ describe('Event Inspector actions', () => {
         },
       },
     });
+    const confirmation = await screen.findByRole('dialog', {
+      name: 'Controlla prima di salvare',
+    });
+    expect(confirmation.textContent).toContain(
+      '1 istanza pianificata sarà sostituita',
+    );
+    expect(confirmation.textContent).toContain(
+      'Modificata singolarmente: resta invariata',
+    );
+    expect(confirmation.textContent).not.toContain('local_change');
+    expect(screen.queryByRole('group', { name: 'Tipo' })).toBeNull();
+    fireEvent.click(
+      within(confirmation).getByRole('button', { name: 'Torna alla modifica' }),
+    );
+    expect(acceptSeries).not.toHaveBeenCalled();
+    expect(
+      screen.queryByRole('dialog', { name: 'Controlla prima di salvare' }),
+    ).toBeNull();
   });
 });

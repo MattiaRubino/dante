@@ -834,8 +834,11 @@ export function EventDetailDialog({
         event.preventDefault();
         requestCloseCurrent();
       } else if (event.key === 'Tab') {
+        const activeReview = dialogRef.current?.querySelector(
+          '.timeline-recurring-series-review__dialog',
+        );
         const focusable = Array.from(
-          dialogRef.current?.querySelectorAll<HTMLElement>(
+          (activeReview ?? dialogRef.current)?.querySelectorAll<HTMLElement>(
             'button:not([disabled]), input:not([disabled]), textarea:not([disabled]), select:not([disabled]), [tabindex]:not([tabindex="-1"])',
           ) ?? [],
         ).filter((element) => !element.closest('[inert]'));
