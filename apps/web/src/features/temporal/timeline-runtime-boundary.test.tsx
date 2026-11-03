@@ -115,9 +115,9 @@ function RefreshProbe() {
 }
 
 describe('TemporalTimelineRuntimeBoundary', () => {
-  it('shows existing accepted cards while recurrence checkpoint runs, then reconciles the final window', async () => {
+  it('checkpoints the visible day first, then reconciles the complete window', async () => {
     const order: string[] = [];
-    const checkpoint = deferred<{
+    const priority = deferred<{
       startDate: string;
       endDateExclusive: string;
       effectiveZoneId: string;
@@ -125,11 +125,21 @@ describe('TemporalTimelineRuntimeBoundary', () => {
       occurrenceCount: number;
       replayedSourceCount: number;
     }>();
+    const full =
+      deferred<
+        Awaited<
+          ReturnType<
+            NonNullable<TemporalTimelineDataSource['checkpointWindow']>
+          >
+        >
+      >();
     const checkpointWindow = vi.fn<
       NonNullable<TemporalTimelineDataSource['checkpointWindow']>
-    >(() => {
+    >((request) => {
       order.push('checkpoint');
-      return checkpoint.promise.then((result) => {
+      return (
+        request.startDate === '2026-09-03' ? priority.promise : full.promise
+      ).then((result) => {
         order.push('checkpoint-complete');
         return result;
       });
@@ -158,8 +168,8 @@ describe('TemporalTimelineRuntimeBoundary', () => {
     expect(checkpointWindow).toHaveBeenCalledWith(
       {
         operationId: 'b06-d:operation:1',
-        startDate: '2026-08-28',
-        endDateExclusive: '2026-10-10',
+        startDate: '2026-09-03',
+        endDateExclusive: '2026-09-06',
       },
       expect.any(AbortSignal),
     );
@@ -174,7 +184,29 @@ describe('TemporalTimelineRuntimeBoundary', () => {
     ).toBeTruthy();
 
     await act(async () => {
-      checkpoint.resolve({
+      priority.resolve({
+        startDate: '2026-09-03',
+        endDateExclusive: '2026-09-06',
+        effectiveZoneId: 'Europe/Rome',
+        sourceCount: 2,
+        occurrenceCount: 7,
+        replayedSourceCount: 0,
+      });
+      await priority.promise;
+    });
+
+    await waitFor(() => expect(loadWindow).toHaveBeenCalledTimes(2));
+    await waitFor(() => expect(checkpointWindow).toHaveBeenCalledTimes(2));
+    expect(checkpointWindow).toHaveBeenLastCalledWith(
+      {
+        operationId: 'b06-d:operation:2',
+        startDate: '2026-08-28',
+        endDateExclusive: '2026-10-10',
+      },
+      expect.any(AbortSignal),
+    );
+    await act(async () => {
+      full.resolve({
         startDate: '2026-08-28',
         endDateExclusive: '2026-10-10',
         effectiveZoneId: 'Europe/Rome',
@@ -182,13 +214,15 @@ describe('TemporalTimelineRuntimeBoundary', () => {
         occurrenceCount: 7,
         replayedSourceCount: 0,
       });
-      await checkpoint.promise;
+      await full.promise;
     });
-
-    await waitFor(() => expect(loadWindow).toHaveBeenCalledTimes(2));
+    await waitFor(() => expect(loadWindow).toHaveBeenCalledTimes(3));
     expect(order).toEqual([
-      'checkpoint',
       'read',
+      'checkpoint',
+      'checkpoint-complete',
+      'read',
+      'checkpoint',
       'checkpoint-complete',
       'read',
     ]);
@@ -199,6 +233,7 @@ describe('TemporalTimelineRuntimeBoundary', () => {
     const loadWindow = vi
       .fn<TemporalTimelineDataSource['loadWindow']>()
       .mockImplementationOnce(() => first.promise)
+      .mockResolvedValueOnce(emptyWindow())
       .mockResolvedValueOnce(emptyWindow());
     const source: TemporalTimelineDataSource = {
       checkpointWindow: vi.fn().mockResolvedValue({}),
@@ -213,7 +248,7 @@ describe('TemporalTimelineRuntimeBoundary', () => {
         <RefreshProbe />
       </TemporalTimelineRuntimeBoundary>,
     );
-    await waitFor(() => expect(loadWindow).toHaveBeenCalledTimes(2));
+    await waitFor(() => expect(loadWindow).toHaveBeenCalledTimes(3));
     await waitFor(() =>
       expect(screen.getByTestId('read-state').textContent).toBe('ready'),
     );
@@ -256,6 +291,51 @@ describe('TemporalTimelineRuntimeBoundary', () => {
     await act(async () => {
       checkpoint.reject(new Error('offline'));
       await checkpoint.promise.catch(() => undefined);
+    });
+    expect(screen.getByTestId('read-state').textContent).toBe('error');
+    expect(screen.getByRole('alert').textContent).toContain(
+      'Timeline non disponibile',
+    );
+  });
+
+  it('fails closed if the complete checkpoint fails after the visible day is ready', async () => {
+    const full =
+      deferred<
+        Awaited<
+          ReturnType<
+            NonNullable<TemporalTimelineDataSource['checkpointWindow']>
+          >
+        >
+      >();
+    const checkpointWindow = vi
+      .fn<NonNullable<TemporalTimelineDataSource['checkpointWindow']>>()
+      .mockResolvedValueOnce({
+        startDate: '2026-09-03',
+        endDateExclusive: '2026-09-06',
+        effectiveZoneId: 'Europe/Rome',
+        sourceCount: 1,
+        occurrenceCount: 3,
+        replayedSourceCount: 0,
+      })
+      .mockImplementationOnce(() => full.promise);
+    render(
+      <TemporalTimelineRuntimeBoundary
+        viewedDateIso="2026-09-04"
+        dataSource={{
+          checkpointWindow,
+          loadWindow: () => Promise.resolve(emptyWindow()),
+        }}
+        mode="production"
+      >
+        <RefreshProbe />
+      </TemporalTimelineRuntimeBoundary>,
+    );
+    await waitFor(() => expect(checkpointWindow).toHaveBeenCalledTimes(2));
+    expect(screen.getByTestId('read-state').textContent).toBe('ready');
+
+    await act(async () => {
+      full.reject(new Error('full checkpoint failed'));
+      await full.promise.catch(() => undefined);
     });
     expect(screen.getByTestId('read-state').textContent).toBe('error');
     expect(screen.getByRole('alert').textContent).toContain(

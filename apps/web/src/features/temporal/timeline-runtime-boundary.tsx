@@ -63,8 +63,10 @@ export type TemporalTimelineRuntimeContextValue = Readonly<{
 
 type TemporalTimelineReadAttempt = Readonly<{
   request: TemporalTimelineWindowRequest;
+  priorityRequest: TemporalTimelineWindowRequest;
   source: TemporalTimelineDataSource;
-  checkpointOperationId: string | null;
+  priorityOperationId: string | null;
+  fullOperationId: string | null;
   retryRevision: number;
 }>;
 
@@ -182,19 +184,32 @@ export function TemporalTimelineRuntimeBoundary({
     () => (testMode ? null : temporalTimelineInitialWindow(viewedDateIso)),
     [testMode, viewedDateIso],
   );
+  const priorityRequest = useMemo(() => {
+    if (request === null) return null;
+    const anchor = resolveAnchorDate(viewedDateIso);
+    // The visible day and its neighbors cover overnight placements. The full
+    // bounded window still checkpoints after this first canonical read.
+    return {
+      startDate: anchor.subtract({ days: 1 }).toString(),
+      endDateExclusive: anchor.add({ days: 2 }).toString(),
+    };
+  }, [request, viewedDateIso]);
   const [retryRevision, setRetryRevision] = useState(0);
   const attempt = useMemo<TemporalTimelineReadAttempt | null>(
     () =>
-      testMode || request === null
+      testMode || request === null || priorityRequest === null
         ? null
         : Object.freeze({
             request,
+            priorityRequest,
             source,
-            checkpointOperationId:
+            priorityOperationId:
+              source.checkpointWindow === undefined ? null : ids.operationId(),
+            fullOperationId:
               source.checkpointWindow === undefined ? null : ids.operationId(),
             retryRevision,
           }),
-    [ids, request, retryRevision, source, testMode],
+    [ids, priorityRequest, request, retryRevision, source, testMode],
   );
   const [settledState, setSettledState] =
     useState<TemporalTimelineSettledState | null>(null);
@@ -207,24 +222,9 @@ export function TemporalTimelineRuntimeBoundary({
     const controller = new AbortController();
     let active = true;
 
-    const checkpoint =
-      attempt.source.checkpointWindow === undefined ||
-      attempt.checkpointOperationId === null
-        ? Promise.resolve()
-        : attempt.source
-            .checkpointWindow(
-              {
-                ...attempt.request,
-                operationId: attempt.checkpointOperationId,
-              },
-              controller.signal,
-            )
-            .then(() => undefined);
-
-    // A checkpoint may materialize a large recurring window. Read the already
-    // accepted Schedule truth immediately, then reconcile once materialization
-    // completes. The first read is never synthetic and cannot overwrite the
-    // post-checkpoint result if its response arrives late.
+    // Read accepted Schedule truth immediately. Then checkpoint the visible
+    // three days before completing the full window, with a canonical read
+    // after each stage. No browser-generated occurrence enters Timeline.
     let checkpointSettled = false;
     if (attempt.source.checkpointWindow !== undefined) {
       void attempt.source.loadWindow(attempt.request, controller.signal).then(
@@ -240,28 +240,45 @@ export function TemporalTimelineRuntimeBoundary({
       );
     }
 
-    void checkpoint
-      .then(() => {
+    void (async () => {
+      if (
+        attempt.source.checkpointWindow !== undefined &&
+        attempt.priorityOperationId !== null &&
+        attempt.fullOperationId !== null
+      ) {
+        await attempt.source.checkpointWindow(
+          {
+            ...attempt.priorityRequest,
+            operationId: attempt.priorityOperationId,
+          },
+          controller.signal,
+        );
         checkpointSettled = true;
-        return attempt.source.loadWindow(attempt.request, controller.signal);
-      })
-      .then((window) => {
-        if (!active) {
-          return;
-        }
-        setSettledState({
-          attempt,
-          status: 'ready',
-          window,
-        });
-      })
-      .catch(() => {
-        checkpointSettled = true;
-        if (!active || controller.signal.aborted) {
-          return;
-        }
-        setSettledState({ attempt, status: 'error' });
-      });
+        const priorityWindow = await attempt.source.loadWindow(
+          attempt.request,
+          controller.signal,
+        );
+        if (!active) return;
+        setSettledState({ attempt, status: 'ready', window: priorityWindow });
+
+        await attempt.source.checkpointWindow(
+          { ...attempt.request, operationId: attempt.fullOperationId },
+          controller.signal,
+        );
+      }
+      checkpointSettled = true;
+      const window = await attempt.source.loadWindow(
+        attempt.request,
+        controller.signal,
+      );
+      if (active) setSettledState({ attempt, status: 'ready', window });
+    })().catch(() => {
+      checkpointSettled = true;
+      if (!active || controller.signal.aborted) {
+        return;
+      }
+      setSettledState({ attempt, status: 'error' });
+    });
 
     return () => {
       active = false;

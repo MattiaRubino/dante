@@ -1,5 +1,23 @@
 # Timeline / Temporal-Operational — Workstream Handoff
 
+## 2026-11-03 — Recurring first appearance, measured candidate
+
+The owner's authenticated Chromium run on `e4b6c9c4` passed and measured
+1,850 ms from Create click to first recurring Activity card. A second run
+measured 1,895 ms, including a 1,057 ms 43-day checkpoint. These are two
+isolated first-creation samples, not an accepted performance target or a
+statistical latency distribution.
+
+The current candidate checkpoints the selected day and its two neighbors
+first, reads the canonical full Timeline window, then completes the original
+43-day checkpoint and reconciles again. The preliminary accepted read remains;
+no synthetic Occurrence is rendered, and a failed full checkpoint still fails
+closed. The two stages use separate operation IDs. The browser golden case
+waits for both checkpoint responses, prints their durations and preserves the
+create-to-first-card measure. Focused Web boundary tests (12) and TypeScript
+typecheck passed in this container; the actual browser speedup, distant-year
+readback and the complete same-SHA gate remain unverified on this candidate.
+
 ## 2026-10-22 — Full gate diagnosis and repair candidate
 
 The owner's full parallel gate on remote commit `4852e2dc8` completed all 27

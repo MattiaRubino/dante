@@ -537,17 +537,25 @@ test.describe('Temporal Create Life Area golden gate', () => {
       const createToVisibleMs = Math.round(
         performance.now() - firstPaintStartedAt,
       );
+      await expect
+        .poll(() => checkpointDurationsMs.length, {
+          timeout: E2E_RESPONSE_TIMEOUT_MS,
+        })
+        .toBeGreaterThanOrEqual(2);
       await testInfo.attach('recurring-activity-first-paint.json', {
         body: JSON.stringify({
           source_ref: routineRef,
           create_to_visible_ms: createToVisibleMs,
           checkpoint_durations_ms: checkpointDurationsMs,
           window_note:
-            'First created recurring Activity with Life Area; full browser-to-card time',
+            'First created recurring Activity; visible three-day checkpoint, then complete 43-day window',
         }),
         contentType: 'application/json',
       });
       console.log(`RECURRING_CREATE_TO_VISIBLE_MS=${createToVisibleMs}`);
+      console.log(
+        `RECURRING_CHECKPOINT_DURATIONS_MS=${JSON.stringify(checkpointDurationsMs)}`,
+      );
 
       const areas = await readJson<LifeAreaRow[]>(
         page,
