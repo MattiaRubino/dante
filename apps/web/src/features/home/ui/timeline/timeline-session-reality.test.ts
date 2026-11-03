@@ -13,6 +13,7 @@ import type { TimelineRenderedDay } from './timeline-day-stream';
 import {
   buildTimelineDayProjectionDays,
   buildTimelineRenderedWeek,
+  buildTimelineSessionSourceDays,
 } from './timeline-viewport-runtime';
 
 const groups: readonly TimelineGroup[] = [
@@ -586,6 +587,78 @@ describe('one-card Activity actual Session projection', () => {
     ]);
     expect(actual?.layouts[0]?.sessionReality?.state).toBe('ended');
     expect(futureDay?.layouts).toHaveLength(0);
+  });
+
+  it('removes the planned card when a running Session starts outside the rendered window', () => {
+    const planned = activity('future-instance', 15, 45);
+    const future = {
+      ...day(planned),
+      dateKey: '2026-11-06',
+      date: Temporal.PlainDate.from('2026-11-06'),
+    };
+    const [visible] = applyTimelineSessionReality(
+      [future],
+      [
+        {
+          ...ended,
+          started_at: '2026-11-03T21:18:00Z',
+          ended_at: null,
+          pause_ranges: [],
+        },
+      ],
+      'Europe/Rome',
+      '2026-11-03T21:19:00Z',
+      Date.parse('2026-11-03T21:19:00Z'),
+      groups,
+      zoom,
+      expanded,
+    );
+    expect(visible?.layouts).toHaveLength(0);
+  });
+
+  it('paints the actual card at now when its planned source is outside the rendered window', () => {
+    const planned = activity('future-instance', 15, 45);
+    const inputs = {
+      eventsByDate: { '2026-11-03': [], '2026-11-06': [planned] },
+      groups,
+      zoom,
+      expandedEventIds: expanded,
+    };
+    const actual = buildTimelineDayProjectionDays(
+      Temporal.PlainDate.from('2026-11-03'),
+      inputs,
+      [],
+      'Europe/Rome',
+    )[0]!;
+    const visual = {
+      ...ended,
+      started_at: '2026-11-03T21:18:00Z',
+      ended_at: null,
+      pause_ranges: [],
+    };
+    const sourceDays = buildTimelineSessionSourceDays(
+      [actual],
+      inputs,
+      [visual],
+      'Europe/Rome',
+    );
+    expect(sourceDays.map((source) => source.dateKey)).toEqual(['2026-11-06']);
+    const [visible] = applyTimelineSessionReality(
+      [actual],
+      [visual],
+      'Europe/Rome',
+      '2026-11-03T21:19:00Z',
+      Date.parse('2026-11-03T21:19:00Z'),
+      groups,
+      zoom,
+      expanded,
+      new Map(),
+      sourceDays,
+    );
+    expect(visible?.layouts).toHaveLength(1);
+    expect(visible?.layouts[0]?.event).toBe(planned);
+    expect(visible?.layouts[0]?.plannedDateKey).toBe('2026-11-06');
+    expect(visible?.layouts[0]?.sessionReality?.state).toBe('running');
   });
 
   it('aligns every week column after a short cross-day Stop', () => {

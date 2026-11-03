@@ -215,6 +215,9 @@ export function SessionSubjectControls({
         window.dispatchEvent(
           new CustomEvent('dante:session-changed', { detail: subjectRef }),
         );
+        window.dispatchEvent(
+          new CustomEvent('dante:session-started', { detail: subjectRef }),
+        );
       })
       .then(() => setMessage(`Sessione avviata · ${label}`))
       .catch((error: unknown) =>

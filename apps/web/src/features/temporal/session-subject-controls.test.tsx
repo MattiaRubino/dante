@@ -195,6 +195,7 @@ describe('SessionSubjectControls B08-D whole workflow', () => {
     expect(source.start).not.toHaveBeenCalled();
   });
   it('rehydrates an unplaced Activity through pause, resume and final Stop', async () => {
+    const dispatched = vi.spyOn(window, 'dispatchEvent');
     const started = session();
     const paused = session({
       timingMaterialStateRef: 'timing-paused',
@@ -257,6 +258,11 @@ describe('SessionSubjectControls B08-D whole workflow', () => {
       'operation-id',
     );
     expect(
+      dispatched.mock.calls.filter(
+        ([event]) => event.type === 'dante:session-started',
+      ),
+    ).toHaveLength(1);
+    expect(
       document.querySelector('[data-session-duration-evaluation="pending"]')
         ?.textContent,
     ).toContain('in corso');
@@ -297,6 +303,11 @@ describe('SessionSubjectControls B08-D whole workflow', () => {
       'timing-paused',
       'operation-id',
     );
+    expect(
+      dispatched.mock.calls.filter(
+        ([event]) => event.type === 'dante:session-started',
+      ),
+    ).toHaveLength(1);
 
     fireEvent.click(screen.getByRole('button', { name: 'Termina' }));
     await waitFor(() =>

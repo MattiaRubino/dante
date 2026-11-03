@@ -243,6 +243,7 @@ describe('Timeline Session panel integration', () => {
   });
 
   it('executes start → pause → resume → stop with CSRF and accepted CAS; reads once per panel, not per row', async () => {
+    const dispatched = vi.spyOn(window, 'dispatchEvent');
     let execution: null | {
       session_ref: string;
       timing_material_state_ref: string;
@@ -279,6 +280,13 @@ describe('Timeline Session panel integration', () => {
     fireEvent.click(
       await screen.findByRole('button', { name: 'Avvia · Ripasso' }),
     );
+    await waitFor(() =>
+      expect(
+        dispatched.mock.calls.filter(
+          ([event]) => event.type === 'dante:session-started',
+        ),
+      ).toHaveLength(1),
+    );
     fireEvent.click(
       await screen.findByRole('button', { name: 'Pausa · Ripasso' }),
     );
@@ -292,6 +300,11 @@ describe('Timeline Session panel integration', () => {
         screen.queryByRole('button', { name: 'Avvia · Ripasso' }),
       ).toBeNull(),
     );
+    expect(
+      dispatched.mock.calls.filter(
+        ([event]) => event.type === 'dante:session-started',
+      ),
+    ).toHaveLength(1);
     expect(commands.map((c) => c.path)).toEqual([
       `/api/v1/temporal/activities/${activity}/planned-sessions/${planned}/sessions`,
       `/api/v1/temporal/sessions/${session}/pause`,
@@ -309,6 +322,7 @@ describe('Timeline Session panel integration', () => {
   });
 
   it('prevents duplicate clicks and preserves the operation ID after an uncertain failure', async () => {
+    const dispatched = vi.spyOn(window, 'dispatchEvent');
     let release: (value: Response) => void = () => undefined;
     const ids: string[] = [];
     const fetcher = vi.fn(
@@ -342,6 +356,11 @@ describe('Timeline Session panel integration', () => {
       ),
     );
     expect(await screen.findByRole('alert')).toBeTruthy();
+    expect(
+      dispatched.mock.calls.filter(
+        ([event]) => event.type === 'dante:session-started',
+      ),
+    ).toHaveLength(0);
     await waitFor(() => expect(play.hasAttribute('disabled')).toBe(false));
     fireEvent.click(play);
     await waitFor(() => expect(ids).toHaveLength(2));

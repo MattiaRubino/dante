@@ -179,6 +179,7 @@ export function applyTimelineSessionReality(
     string,
     readonly TemporalSessionView[]
   > = new Map(),
+  sourceDays: readonly TimelineRenderedDay[] = [],
 ): readonly TimelineRenderedDay[] {
   if (visuals.length === 0 && sessionsByActivity.size === 0) return days;
   const now = Number.isFinite(Date.parse(evaluatedAt)) ? clockAt : Date.now();
@@ -202,7 +203,7 @@ export function applyTimelineSessionReality(
         })),
     ),
   ];
-  const allEvents = days.flatMap((day) =>
+  const allEvents = [...days, ...sourceDays].flatMap((day) =>
     day.events.map((event) => ({ event, plannedDay: day })),
   );
   const plannedAt = (entry: (typeof allEvents)[number]) =>
@@ -271,7 +272,7 @@ export function applyTimelineSessionReality(
 
   const placements = allEvents
     .filter(({ event }) => !retiredIds.has(event.id))
-    .map(({ event, plannedDay }) => {
+    .flatMap(({ event, plannedDay }) => {
       const visual = mainByEvent.get(event.id);
       const realDate = visual
         ? Temporal.Instant.from(visual.started_at)
@@ -280,11 +281,14 @@ export function applyTimelineSessionReality(
             .toString()
         : plannedDay.dateKey;
       const displayDay = days.find((day) => day.dateKey === realDate);
-      const target = displayDay ?? plannedDay;
+      // The source can be outside the rendered window. Never fall back to its
+      // planned position when factual execution belongs to another day.
+      if (!displayDay) return [];
+      const target = displayDay;
       const overlay = visual
         ? project([visual], target.dateKey, zone, now)
         : null;
-      return { event, plannedDay, target, reality: overlay?.reality };
+      return [{ event, plannedDay, target, reality: overlay?.reality }];
     });
 
   const prepared = days.map((day) => {

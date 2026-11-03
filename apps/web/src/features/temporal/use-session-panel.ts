@@ -287,6 +287,11 @@ export function useSessionPanel(
         window.dispatchEvent(
           new CustomEvent('dante:session-changed', { detail: activityRef }),
         );
+        if (action === 'play' && !execution && result) {
+          window.dispatchEvent(
+            new CustomEvent('dante:session-started', { detail: activityRef }),
+          );
+        }
       } catch (cause) {
         if (mounted.current)
           setCommandErrors((value) => ({

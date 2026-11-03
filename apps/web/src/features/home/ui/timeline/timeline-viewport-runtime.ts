@@ -223,10 +223,7 @@ export function buildTimelineDayProjectionDays(
       continue;
     }
     for (const [plannedKey, events] of Object.entries(inputs.eventsByDate)) {
-      if (
-        plannedKey !== selectedKey &&
-        actualKey !== selectedKey
-      ) continue;
+      if (plannedKey !== selectedKey && actualKey !== selectedKey) continue;
       if (
         events.some(
           (event) =>
@@ -241,11 +238,56 @@ export function buildTimelineDayProjectionDays(
   }
   let offsetTop = 0;
   return [...dateKeys].sort().map((key) => {
-    const day = buildTimelineRenderedDays(parseTimelineDate(key), 0, 0, inputs)[0]!;
+    const day = buildTimelineRenderedDays(
+      parseTimelineDate(key),
+      0,
+      0,
+      inputs,
+    )[0]!;
     const rendered = { ...day, offsetTop };
     offsetTop += day.height;
     return rendered;
   });
+}
+
+/** Find planned sources for Sessions that started inside the rendered days. */
+export function buildTimelineSessionSourceDays(
+  days: readonly TimelineRenderedDay[],
+  inputs: TimelineRenderedDayInputs,
+  visuals: readonly Pick<
+    SessionVisual,
+    'activity_ref' | 'planned_schedule_ref' | 'started_at'
+  >[],
+  zone: string,
+): readonly TimelineRenderedDay[] {
+  const visibleKeys = new Set(days.map((day) => day.dateKey));
+  const activityRefs = new Set<string>();
+  for (const visual of visuals) {
+    if (visual.planned_schedule_ref !== null) continue;
+    try {
+      const actualKey = Temporal.Instant.from(visual.started_at)
+        .toZonedDateTimeISO(zone)
+        .toPlainDate()
+        .toString();
+      if (visibleKeys.has(actualKey)) activityRefs.add(visual.activity_ref);
+    } catch {
+      // A malformed visual cannot provide a date for a source lookup.
+    }
+  }
+  return Object.entries(inputs.eventsByDate)
+    .filter(
+      ([key, events]) =>
+        !visibleKeys.has(key) &&
+        events.some(
+          (event) =>
+            event.canonicalBasis?.kind === 'scheduled-activity' &&
+            activityRefs.has(event.canonicalBasis.activityRef),
+        ),
+    )
+    .map(
+      ([key]) =>
+        buildTimelineRenderedDays(parseTimelineDate(key), 0, 0, inputs)[0]!,
+    );
 }
 
 /** The week shares one elastic minute scale so 10:30 aligns in all columns. */

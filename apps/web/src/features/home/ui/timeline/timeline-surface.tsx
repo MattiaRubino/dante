@@ -101,6 +101,7 @@ import {
   buildTimelineDayProjectionDays,
   buildTimelineRenderedDays,
   buildTimelineRenderedWeek,
+  buildTimelineSessionSourceDays,
   captureTimelineViewportAnchor,
   clampTimelineRuntime,
   findTimelineDayAtOffset,
@@ -590,53 +591,67 @@ export function TimelineSurface({
       viewDate,
     ],
   );
-  const renderedDays = useMemo(
-    () => {
-      const projected = applyTimelineSessionReality(
-        applyTimelineAllDayGeometry(
-          baseRenderedDays,
-          projectedDateLaneItems,
-          presentationFilters,
-          timelineView === 'week',
-        ),
-        sessionPanel.snapshot?.visuals ?? [],
-        clockZone,
-        sessionPanel.snapshot?.evaluated_at ??
-          new Date(realityClock).toISOString(),
-        sessionPanel.snapshot
-          ? Date.parse(sessionPanel.snapshot.evaluated_at) +
-              Math.max(
-                0,
-                realityClock -
-                  (sessionPanel.snapshot.clientReceivedAt ?? realityClock),
-              )
-          : realityClock,
-        visibleGroups,
-        state.zoom,
-        state.expandedEventIds,
-        dateLaneSessions,
-      );
-      return timelineView === 'day'
-        ? projected
-            .filter((day) => day.dateKey === timelineDateKey(viewDate))
-            .map((day) => ({ ...day, offsetTop: 0 }))
-        : projected;
-    },
-    [
+  const renderedDays = useMemo(() => {
+    const sourceDays = buildTimelineSessionSourceDays(
       baseRenderedDays,
-      projectedDateLaneItems,
-      presentationFilters,
-      timelineView,
-      viewDate,
-      sessionPanel.snapshot,
-      dateLaneSessions,
+      renderedDayInputs,
+      [
+        ...(sessionPanel.snapshot?.visuals ?? []),
+        ...[...dateLaneSessions].flatMap(([activityRef, sessions]) =>
+          sessions.map((session) => ({
+            activity_ref: activityRef,
+            planned_schedule_ref: session.plannedScheduleRef ?? null,
+            started_at: session.startedAt,
+          })),
+        ),
+      ],
       clockZone,
-      realityClock,
+    );
+    const projected = applyTimelineSessionReality(
+      applyTimelineAllDayGeometry(
+        baseRenderedDays,
+        projectedDateLaneItems,
+        presentationFilters,
+        timelineView === 'week',
+      ),
+      sessionPanel.snapshot?.visuals ?? [],
+      clockZone,
+      sessionPanel.snapshot?.evaluated_at ??
+        new Date(realityClock).toISOString(),
+      sessionPanel.snapshot
+        ? Date.parse(sessionPanel.snapshot.evaluated_at) +
+            Math.max(
+              0,
+              realityClock -
+                (sessionPanel.snapshot.clientReceivedAt ?? realityClock),
+            )
+        : realityClock,
       visibleGroups,
       state.zoom,
       state.expandedEventIds,
-    ],
-  );
+      dateLaneSessions,
+      sourceDays,
+    );
+    return timelineView === 'day'
+      ? projected
+          .filter((day) => day.dateKey === timelineDateKey(viewDate))
+          .map((day) => ({ ...day, offsetTop: 0 }))
+      : projected;
+  }, [
+    baseRenderedDays,
+    renderedDayInputs,
+    projectedDateLaneItems,
+    presentationFilters,
+    timelineView,
+    viewDate,
+    sessionPanel.snapshot,
+    dateLaneSessions,
+    clockZone,
+    realityClock,
+    visibleGroups,
+    state.zoom,
+    state.expandedEventIds,
+  ]);
 
   const visibleRenderedDays = dragSnapshot?.days ?? renderedDays;
   const visibleNowMinute = dragSnapshot?.nowMinute ?? timelineNowMinute;
@@ -1172,6 +1187,13 @@ export function TimelineSurface({
       behavior: 'smooth',
     });
   }, [goToDate, timelineNowMinute, timelineToday]);
+
+  useEffect(() => {
+    const onFirstPlay = () => goNow();
+    window.addEventListener('dante:session-started', onFirstPlay);
+    return () =>
+      window.removeEventListener('dante:session-started', onFirstPlay);
+  }, [goNow]);
 
   const synchronizeViewportContext = useCallback(
     (scrollTop: number) => {

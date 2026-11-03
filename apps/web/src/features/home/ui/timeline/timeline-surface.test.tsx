@@ -205,6 +205,25 @@ describe('TimelineSurface production parity', () => {
     expect(onViewedDateChange).toHaveBeenCalledWith(undefined);
   });
 
+  it('returns to the current clock position when a first Session Play is accepted', () => {
+    const onViewedDateChange = vi.fn();
+    const { container } = renderTimeline({
+      viewedDateIso: TIMELINE_PROTOTYPE_TODAY.add({ days: 3 }).toString(),
+      onViewedDateChange,
+    });
+    onViewedDateChange.mockClear();
+    fireEvent(
+      window,
+      new CustomEvent('dante:session-started', { detail: 'activity-one' }),
+    );
+    expect(onViewedDateChange).toHaveBeenCalledWith(undefined);
+    expect(
+      container.querySelector(
+        `[data-timeline-date="${TIMELINE_PROTOTYPE_TODAY.toString()}"]`,
+      ),
+    ).toBeTruthy();
+  });
+
   it('does not scroll back to an unchanged route date after the user scrolls', async () => {
     const onViewedDateChange = vi.fn();
     const { container } = renderTimeline({
