@@ -8,6 +8,10 @@
   padding: 18px 4px 72px 0;
 }
 
+.timeline-recurring-series-editor .timeline-activity-editor__body > * {
+  flex-shrink: 0;
+}
+
 .timeline-event-modal--edit .timeline-activity-editor__placement {
   display: flex;
   gap: 7px;
@@ -68,6 +72,24 @@
   font-size: 13px;
 }
 
+.timeline-recurring-series-editor__repeat-panel {
+  min-width: 0;
+}
+
+.timeline-recurring-series-editor__repeat-panel > summary {
+  cursor: pointer;
+  list-style: none;
+}
+
+.timeline-recurring-series-editor__repeat-panel
+  > summary::-webkit-details-marker {
+  display: none;
+}
+
+.timeline-recurring-series-editor__repeat-panel[open] > summary {
+  margin-bottom: 10px;
+}
+
 .timeline-recurring-series-editor__recurrence,
 .timeline-recurring-series-editor [aria-label='Sottoattività'],
 .timeline-recurring-series-editor [aria-label='Scaletta'] {
@@ -79,8 +101,7 @@
   border-radius: 12px;
 }
 
-.timeline-event-modal--edit
-  .timeline-recurring-series-editor__recurrence.timeline-activity-editor__repeat {
+.timeline-event-modal--edit .timeline-recurring-series-editor__recurrence {
   display: grid;
   grid-template-columns: minmax(0, 1fr);
   align-items: stretch;
@@ -141,41 +162,11 @@
   margin-top: 10px;
 }
 
-.timeline-recurring-series-editor__objective {
-  display: flex;
-  align-items: center;
-  flex-wrap: wrap;
-  gap: 8px;
-  min-width: 0;
-  padding: 8px;
-  border: 1px solid var(--dante-semantic-color-home-border-subtle, #526071);
-  border-radius: 10px;
-}
-
-.timeline-recurring-series-editor__objective > input:first-of-type {
-  flex: 1 1 180px;
-  width: auto;
-}
-
-.timeline-recurring-series-editor__objective > select {
-  flex: 0 1 155px;
-  width: auto;
-}
-
-.timeline-recurring-series-editor__objective > button {
-  margin-left: auto;
-}
-
-.timeline-recurring-series-editor [aria-label='Life Area'],
-.timeline-recurring-series-editor [aria-label='Dettagli'] {
+.timeline-recurring-series-editor [aria-label='Life Area'] {
   display: grid;
   gap: 12px;
   padding: 0;
   border: 0;
-}
-
-.timeline-recurring-series-editor [aria-label='Dettagli'] textarea {
-  min-height: 110px;
 }
 
 .timeline-recurring-series-editor__row {

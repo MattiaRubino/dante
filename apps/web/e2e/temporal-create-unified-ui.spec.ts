@@ -205,12 +205,22 @@ test('Activity Edit keeps Create clock controls contained and the series recurre
     const modal = document.createElement('div');
     modal.className = 'timeline-event-modal timeline-event-modal--edit';
     modal.style.width = '1040px';
+    modal.style.height = '550px';
     modal.innerHTML = `<div class="timeline-activity-editor timeline-recurring-series-editor"><div class="timeline-activity-editor__body">
-      <div class="temporal-create-activity-intervals timeline-activity-editor__intervals">${intervalMarkup}</div>
-      <section class="temporal-create-repeat timeline-recurring-series-editor__recurrence timeline-activity-editor__repeat">
-        <div class="temporal-create-repeat__row">Ripeti ogni giorno</div>
-        <div class="temporal-create-repeat__end-row"><span class="temporal-create-repeat__row-label">Termina</span><div class="temporal-create-repeat__end-choices"><div class="temporal-create-repeat__end-option">Mai</div><div class="temporal-create-repeat__end-option">Data</div></div></div>
-      </section></div></div>`;
+      <div class="temporal-create-activity-intervals timeline-activity-editor__intervals">${intervalMarkup.repeat(6)}</div>
+      <details class="timeline-recurring-series-editor__repeat-panel" open><summary class="timeline-activity-editor__repeat">Ripeti · Serie attiva</summary>
+        <section class="temporal-create-repeat timeline-recurring-series-editor__recurrence">
+          <div class="temporal-create-repeat__row">Ripeti ogni giorno</div>
+          <div class="temporal-create-repeat__end-row"><span class="temporal-create-repeat__row-label">Termina</span><div class="temporal-create-repeat__end-choices">
+            <div class="temporal-create-repeat__end-option"><button class="temporal-create-repeat__end-choice">Mai</button></div>
+            <div class="temporal-create-repeat__end-option"><button class="temporal-create-repeat__end-choice">Data</button><input type="date" /></div>
+            <div class="temporal-create-repeat__end-option"><button class="temporal-create-repeat__end-choice">Dopo</button><input type="number" value="1" /></div>
+          </div></div>
+        </section>
+      </details>
+      <section class="timeline-activity-editor__area-color" aria-label="Life Area"><input placeholder="Life Area (opzionale)" /></section>
+      <section class="temporal-create-reality-objectives timeline-activity-editor__outcome" aria-label="Svolgimento e obiettivi"><div class="timeline-activity-editor__objectives">Obiettivo</div></section>
+      </div></div>`;
     document.body.append(modal);
     const fields = modal.querySelector<HTMLElement>(
       '.temporal-create-activity-interval__fields',
@@ -239,6 +249,10 @@ test('Activity Edit keeps Create clock controls contained and the series recurre
     const endRow = recurrence.querySelector<HTMLElement>(
       '.temporal-create-repeat__end-row',
     )!;
+    const endChoices = recurrence.querySelector<HTMLElement>(
+      '.temporal-create-repeat__end-choices',
+    )!;
+    const area = modal.querySelector<HTMLElement>('[aria-label="Life Area"]')!;
     const result = {
       fieldsContained: bounds.every(
         (box) =>
@@ -263,6 +277,16 @@ test('Activity Edit keeps Create clock controls contained and the series recurre
         getComputedStyle(recurrence).display === 'grid' &&
         endRow.getBoundingClientRect().top >=
           repeatRow.getBoundingClientRect().bottom,
+      recurrenceContained:
+        endChoices.getBoundingClientRect().bottom <=
+          recurrence.getBoundingClientRect().bottom + 1 &&
+        recurrence.getBoundingClientRect().bottom <=
+          area.getBoundingClientRect().top,
+      scrollableBody:
+        modal.querySelector<HTMLElement>('.timeline-activity-editor__body')!
+          .scrollHeight >
+        modal.querySelector<HTMLElement>('.timeline-activity-editor__body')!
+          .clientHeight,
     };
     modal.remove();
     return result;
@@ -272,5 +296,7 @@ test('Activity Edit keeps Create clock controls contained and the series recurre
     clockInputsCompact: true,
     clockArrowsCompact: true,
     recurrenceStacked: true,
+    recurrenceContained: true,
+    scrollableBody: true,
   });
 });
