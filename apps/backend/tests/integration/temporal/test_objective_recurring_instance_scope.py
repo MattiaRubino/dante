@@ -18,6 +18,11 @@ from tests.integration.temporal.test_recurring_event_create import _daily_named_
 from tests.integration.temporal.test_recurring_profile_scoped_edit import _daily
 from tests.integration.temporal.test_schedule_place import _context
 
+from dante.modules.temporal.application import (
+    TemporalTimelineApplication,
+    TimelineNamedZoneLocalActivityItem,
+)
+from dante.modules.temporal.contracts import TimelineWindowQuery
 from dante.modules.temporal.event_occurrence_policy import EventOccurrencePolicyApplication
 from dante.modules.temporal.occurrence import (
     OccurrenceApplication,
@@ -638,7 +643,31 @@ async def test_series_objective_removal_preserves_local_exception_and_later_year
             start=selected_day,
             end=protected_day + timedelta(days=2),
         )
-        assert protected in current_refs
+        # B06 returns the newly governed instances; the locally edited
+        # exception keeps its old Occurrence and Activity outside that batch.
+        assert len(current_refs) == 2
+        assert protected not in current_refs
+        async with runtime.session_factory() as session, session.begin():
+            protected_activity = await session.scalar(
+                text(
+                    "SELECT activity_ref FROM dante.list_self_routine_occurrence_activities("
+                    ":actor,:occurrences) WHERE occurrence_ref=:occurrence"
+                ),
+                {"actor": actor, "occurrences": [protected], "occurrence": protected},
+            )
+        assert protected_activity is not None
+        visible = await TemporalTimelineApplication(runtime.session_factory).read_window(
+            query=TimelineWindowQuery(
+                start_date=selected_day,
+                end_date_exclusive=protected_day + timedelta(days=2),
+            ),
+            context=_context(actor),
+        )
+        assert any(
+            isinstance(item, TimelineNamedZoneLocalActivityItem)
+            and item.activity_ref == protected_activity
+            for item in visible.items
+        )
         await materializer.checkpoint_window(
             self_person_ref=actor,
             operation_id="objective:source-retirement:five-years",
@@ -655,7 +684,7 @@ async def test_series_objective_removal_preserves_local_exception_and_later_year
             start=future_day,
             end=future_day + timedelta(days=1),
         )
-        for current in (current_refs[0], current_refs[2], future_ref):
+        for current in (*current_refs, future_ref):
             async with runtime.session_factory() as session, session.begin():
                 activity = await session.scalar(
                     text(
