@@ -552,6 +552,42 @@ describe('one-card Activity actual Session projection', () => {
     expect(visible[0]?.layouts).toHaveLength(0);
   });
 
+  it('does not paint a second recurring instance card on its planned day after Stop two days early', () => {
+    const first = {
+      ...day(),
+      dateKey: '2026-11-03',
+      date: Temporal.PlainDate.from('2026-11-03'),
+    };
+    const planned = activity('recurring-instance', 15, 45);
+    const future = {
+      ...day(planned),
+      dateKey: '2026-11-05',
+      date: Temporal.PlainDate.from('2026-11-05'),
+      offsetTop: first.height,
+    };
+    const visual = {
+      ...ended,
+      started_at: '2026-11-03T19:39:00Z',
+      ended_at: '2026-11-03T19:47:00Z',
+      pause_ranges: [],
+    };
+    const [actual, futureDay] = applyTimelineSessionReality(
+      [first, future],
+      [visual],
+      'Europe/Rome',
+      '2026-11-03T19:48:00Z',
+      Date.parse('2026-11-03T19:48:00Z'),
+      groups,
+      zoom,
+      expanded,
+    );
+    expect(actual?.layouts.map((layout) => layout.event.id)).toEqual([
+      planned.id,
+    ]);
+    expect(actual?.layouts[0]?.sessionReality?.state).toBe('ended');
+    expect(futureDay?.layouts).toHaveLength(0);
+  });
+
   it('aligns every week column after a short cross-day Stop', () => {
     const plan = activity('week-plan', 600, 630);
     const week = buildTimelineRenderedWeek(

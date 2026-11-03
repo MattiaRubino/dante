@@ -37,6 +37,9 @@ import type {
 
 const INITIAL_WINDOW_PAST_DAYS = 7;
 const INITIAL_WINDOW_FUTURE_DAYS = 35;
+const PRIORITY_WINDOW_FUTURE_DAYS = 3;
+const RETAIN_WINDOW_PAST_DAYS = 3;
+const RETAIN_WINDOW_FUTURE_DAYS = 4;
 
 export type TemporalTimelineRuntimeState =
   | Readonly<{ status: 'loading' }>
@@ -162,6 +165,29 @@ export function temporalTimelineInitialWindow(
   };
 }
 
+/** Scrolling within an already loaded window must not restart materialization. */
+export function temporalTimelineWindowForView(
+  viewedDateIso: string | undefined,
+  previous: TemporalTimelineWindowRequest | null,
+): TemporalTimelineWindowRequest {
+  if (previous) {
+    const viewed = resolveAnchorDate(viewedDateIso);
+    const first = Temporal.PlainDate.from(previous.startDate).add({
+      days: RETAIN_WINDOW_PAST_DAYS,
+    });
+    const last = Temporal.PlainDate.from(previous.endDateExclusive).subtract({
+      days: RETAIN_WINDOW_FUTURE_DAYS,
+    });
+    if (
+      Temporal.PlainDate.compare(viewed, first) >= 0 &&
+      Temporal.PlainDate.compare(viewed, last) < 0
+    ) {
+      return previous;
+    }
+  }
+  return temporalTimelineInitialWindow(viewedDateIso);
+}
+
 export function TemporalTimelineRuntimeBoundary({
   children,
   viewedDateIso,
@@ -180,20 +206,35 @@ export function TemporalTimelineRuntimeBoundary({
     () => scheduleDataSource ?? createRemoteTemporalScheduleDataSource(),
     [scheduleDataSource],
   );
-  const request = useMemo(
-    () => (testMode ? null : temporalTimelineInitialWindow(viewedDateIso)),
-    [testMode, viewedDateIso],
-  );
+  const [windowSelection, setWindowSelection] = useState(() => ({
+    viewedDateIso,
+    testMode,
+    request: testMode ? null : temporalTimelineInitialWindow(viewedDateIso),
+  }));
+  let request = windowSelection.request;
+  if (
+    windowSelection.viewedDateIso !== viewedDateIso ||
+    windowSelection.testMode !== testMode
+  ) {
+    request = testMode
+      ? null
+      : temporalTimelineWindowForView(viewedDateIso, request);
+    setWindowSelection({ viewedDateIso, testMode, request });
+  }
   const priorityRequest = useMemo(() => {
     if (request === null) return null;
-    const anchor = resolveAnchorDate(viewedDateIso);
-    // The visible day and its neighbors cover overnight placements. The full
-    // bounded window still checkpoints after this first canonical read.
+    const anchor = Temporal.PlainDate.from(request.startDate).add({
+      days: INITIAL_WINDOW_PAST_DAYS,
+    });
+    // The initial Timeline renders through day +3. Materialize that visible
+    // range first so an early Session has its future planned source in view.
     return {
       startDate: anchor.subtract({ days: 1 }).toString(),
-      endDateExclusive: anchor.add({ days: 2 }).toString(),
+      endDateExclusive: anchor
+        .add({ days: PRIORITY_WINDOW_FUTURE_DAYS + 1 })
+        .toString(),
     };
-  }, [request, viewedDateIso]);
+  }, [request]);
   const [retryRevision, setRetryRevision] = useState(0);
   const attempt = useMemo<TemporalTimelineReadAttempt | null>(
     () =>
@@ -223,7 +264,7 @@ export function TemporalTimelineRuntimeBoundary({
     let active = true;
 
     // Read accepted Schedule truth immediately. Then checkpoint the visible
-    // three days before completing the full window, with a canonical read
+    // Timeline days before completing the full window, with a canonical read
     // after each stage. No browser-generated occurrence enters Timeline.
     let checkpointSettled = false;
     if (attempt.source.checkpointWindow !== undefined) {

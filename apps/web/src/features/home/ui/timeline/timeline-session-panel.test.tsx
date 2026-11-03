@@ -8,9 +8,13 @@ import {
   screen,
   waitFor,
 } from '@testing-library/react';
+import { Temporal } from '@dante/time';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { useSessionPanel } from '../../../temporal/use-session-panel';
+import {
+  sessionPanelReadPath,
+  useSessionPanel,
+} from '../../../temporal/use-session-panel';
 import { invalidateTemporalTimelineRead } from '../../../temporal/timeline-invalidation';
 import { useSessionPanelPresentation } from './timeline-session-panel';
 
@@ -89,6 +93,28 @@ afterEach(() => {
 });
 
 describe('Timeline Session panel integration', () => {
+  it('keeps the factual day in scope while viewing an occurrence planned two days later', () => {
+    const path = sessionPanelReadPath(
+      '2026-11-05',
+      'Europe/Rome',
+      false,
+      Temporal.PlainDate.from('2026-11-03'),
+    );
+    const query = new URL(path, 'https://dante.test').searchParams;
+    expect(query.get('visible_start_at')).toBe('2026-11-01T23:00:00Z');
+    expect(query.get('visible_end_at')).toBe('2026-11-06T23:00:00Z');
+
+    const distant = sessionPanelReadPath(
+      '2031-11-05',
+      'Europe/Rome',
+      false,
+      Temporal.PlainDate.from('2026-11-03'),
+    );
+    const distantQuery = new URL(distant, 'https://dante.test').searchParams;
+    expect(distantQuery.get('visible_start_at')).toBe('2031-10-28T23:00:00Z');
+    expect(distantQuery.get('visible_end_at')).toBe('2031-11-12T23:00:00Z');
+  });
+
   it('shows a Session immediately after an accepted placement invalidation', async () => {
     let current = feed([]);
     const fetcher = vi.fn(async () => Response.json(current));

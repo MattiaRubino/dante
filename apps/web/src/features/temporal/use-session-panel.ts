@@ -1,5 +1,5 @@
 import { SessionPanelResponse, type SessionPanelRow } from '@dante/api-client';
-import { Temporal } from '@dante/time';
+import { Temporal, type PlainDate } from '@dante/time';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 import { createWebFetch } from '../../platform/api/web-fetch';
@@ -38,45 +38,64 @@ const boundedFetch: typeof fetch = (input, init) =>
 export const sessionPanelRowKey = (activityRef: string, row: SessionPanelRow) =>
   `${activityRef}:${row.planned_schedule_ref ?? 'activity'}:${row.execution?.session_ref ?? 'ready'}`;
 
+export function sessionPanelReadPath(
+  viewedDateIso?: string | null,
+  effectiveZoneId?: string | null,
+  weekView = false,
+  today?: PlainDate,
+): string {
+  if (!viewedDateIso || !effectiveZoneId)
+    return '/api/v1/temporal/session-panel';
+  try {
+    const day = Temporal.PlainDate.from(viewedDateIso);
+    const firstDay = weekView ? day.subtract({ days: day.dayOfWeek - 1 }) : day;
+    const endDay = firstDay.add({ days: weekView ? 7 : 1 });
+    const currentDay = today ?? Temporal.Now.plainDateISO(effectiveZoneId);
+    let start =
+      Temporal.PlainDate.compare(currentDay, firstDay) < 0
+        ? currentDay
+        : firstDay;
+    let end =
+      Temporal.PlainDate.compare(currentDay, endDay) >= 0
+        ? currentDay.add({ days: 1 })
+        : endDay;
+    start = start.subtract({ days: 1 });
+    end = end.add({ days: 1 });
+    // The endpoint permits at most 31 days. Distant history/future keeps a
+    // bounded read around the viewed date instead of widening indefinitely.
+    if (end.since(start).total('days') > 29) {
+      start = firstDay.subtract({ days: 7 });
+      end = endDay.add({ days: 7 });
+    }
+    const from = start
+      .toZonedDateTime({ timeZone: effectiveZoneId, plainTime: '00:00' })
+      .toInstant()
+      .toString();
+    const until = end
+      .toZonedDateTime({ timeZone: effectiveZoneId, plainTime: '00:00' })
+      .toInstant()
+      .toString();
+    const params = new URLSearchParams({
+      visible_start_at: from,
+      visible_end_at: until,
+    });
+    return `/api/v1/temporal/session-panel?${params}`;
+  } catch {
+    return '/api/v1/temporal/session-panel';
+  }
+}
+
 export function useSessionPanel(
   enabled = true,
   viewedDateIso?: string | null,
   effectiveZoneId?: string | null,
   weekView = false,
 ) {
-  const readPath = useMemo(() => {
-    if (!viewedDateIso || !effectiveZoneId)
-      return '/api/v1/temporal/session-panel';
-    try {
-      const day = Temporal.PlainDate.from(viewedDateIso);
-      const firstDay = weekView
-        ? day.subtract({ days: day.dayOfWeek - 1 })
-        : day;
-      const from = firstDay
-        .subtract({ days: 1 })
-        .toZonedDateTime({
-          timeZone: effectiveZoneId,
-          plainTime: '00:00',
-        })
-        .toInstant()
-        .toString();
-      const until = firstDay
-        .add({ days: weekView ? 8 : 2 })
-        .toZonedDateTime({
-          timeZone: effectiveZoneId,
-          plainTime: '00:00',
-        })
-        .toInstant()
-        .toString();
-      const params = new URLSearchParams({
-        visible_start_at: from,
-        visible_end_at: until,
-      });
-      return `/api/v1/temporal/session-panel?${params}`;
-    } catch {
-      return '/api/v1/temporal/session-panel';
-    }
-  }, [viewedDateIso, effectiveZoneId, weekView]);
+  const readPath = sessionPanelReadPath(
+    viewedDateIso,
+    effectiveZoneId,
+    weekView,
+  );
   const [snapshot, setSnapshot] = useState<SessionPanelSnapshot | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [pending, setPending] = useState<ReadonlySet<string>>(new Set());

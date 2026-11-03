@@ -115,6 +115,52 @@ function RefreshProbe() {
 }
 
 describe('TemporalTimelineRuntimeBoundary', () => {
+  it('keeps the same authoritative window while scrolling two days forward', async () => {
+    const checkpointWindow = vi.fn<
+      NonNullable<TemporalTimelineDataSource['checkpointWindow']>
+    >((request) =>
+      Promise.resolve({
+        ...request,
+        effectiveZoneId: 'Europe/Rome',
+        sourceCount: 1,
+        occurrenceCount: 1,
+        replayedSourceCount: 0,
+      }),
+    );
+    const loadWindow = vi.fn<TemporalTimelineDataSource['loadWindow']>(
+      (request) =>
+        Promise.resolve({
+          kind: 'empty',
+          ...request,
+          effectiveZoneId: 'Europe/Rome',
+        }),
+    );
+    const source = { checkpointWindow, loadWindow };
+    const ids = createDeterministicTemporalIdFactory('window-scroll');
+    const renderForDate = (date: string) => (
+      <TemporalTimelineRuntimeBoundary
+        viewedDateIso={date}
+        dataSource={source}
+        ids={ids}
+        mode="production"
+      >
+        <RefreshProbe />
+      </TemporalTimelineRuntimeBoundary>
+    );
+    const { rerender } = render(renderForDate('2026-11-03'));
+    await waitFor(() => expect(loadWindow).toHaveBeenCalledTimes(3));
+    expect(checkpointWindow).toHaveBeenCalledTimes(2);
+
+    rerender(renderForDate('2026-11-05'));
+    expect(screen.getByTestId('read-state').textContent).toBe('ready');
+    expect(checkpointWindow).toHaveBeenCalledTimes(2);
+    expect(loadWindow).toHaveBeenCalledTimes(3);
+
+    rerender(renderForDate('2026-12-10'));
+    await waitFor(() => expect(loadWindow).toHaveBeenCalledTimes(6));
+    expect(checkpointWindow).toHaveBeenCalledTimes(4);
+  });
+
   it('checkpoints the visible day first, then reconciles the complete window', async () => {
     const order: string[] = [];
     const priority = deferred<{
@@ -169,7 +215,7 @@ describe('TemporalTimelineRuntimeBoundary', () => {
       {
         operationId: 'b06-d:operation:1',
         startDate: '2026-09-03',
-        endDateExclusive: '2026-09-06',
+        endDateExclusive: '2026-09-08',
       },
       expect.any(AbortSignal),
     );
@@ -186,7 +232,7 @@ describe('TemporalTimelineRuntimeBoundary', () => {
     await act(async () => {
       priority.resolve({
         startDate: '2026-09-03',
-        endDateExclusive: '2026-09-06',
+        endDateExclusive: '2026-09-08',
         effectiveZoneId: 'Europe/Rome',
         sourceCount: 2,
         occurrenceCount: 7,
@@ -311,7 +357,7 @@ describe('TemporalTimelineRuntimeBoundary', () => {
       .fn<NonNullable<TemporalTimelineDataSource['checkpointWindow']>>()
       .mockResolvedValueOnce({
         startDate: '2026-09-03',
-        endDateExclusive: '2026-09-06',
+        endDateExclusive: '2026-09-08',
         effectiveZoneId: 'Europe/Rome',
         sourceCount: 1,
         occurrenceCount: 3,
@@ -438,7 +484,7 @@ describe('TemporalTimelineRuntimeBoundary', () => {
       expect(screen.getByTestId('read-state').textContent).toBe('ready'),
     );
 
-    view.rerender(renderBoundary('2026-10-04'));
+    view.rerender(renderBoundary('2026-10-10'));
     expect(screen.getByTestId('read-state').textContent).toBe('loading');
     expect(screen.getByRole('status').textContent).toContain(
       'Caricamento timeline',
