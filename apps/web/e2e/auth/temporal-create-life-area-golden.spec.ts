@@ -512,6 +512,20 @@ test.describe('Temporal Create Life Area golden gate', () => {
           response.request().method() === 'POST',
         { timeout: E2E_RESPONSE_TIMEOUT_MS },
       );
+      const checkpointStartedAt = new WeakMap<object, number>();
+      const checkpointDurationsMs: number[] = [];
+      page.on('request', (request) => {
+        if (request.url().endsWith('/api/v1/temporal/occurrences/checkpoint')) {
+          checkpointStartedAt.set(request, performance.now());
+        }
+      });
+      page.on('requestfinished', (request) => {
+        const started = checkpointStartedAt.get(request);
+        if (started !== undefined) {
+          checkpointDurationsMs.push(Math.round(performance.now() - started));
+        }
+      });
+      const firstPaintStartedAt = performance.now();
       await dialog
         .getByRole('button', { name: 'Aggiungi', exact: true })
         .click();
@@ -519,6 +533,21 @@ test.describe('Temporal Create Life Area golden gate', () => {
       expect(routineResponse.ok()).toBe(true);
       const routine = (await routineResponse.json()) as Record<string, unknown>;
       const routineRef = uuidField(routine, 'source_ref');
+      await expectTimedCardColor(page, routineTitle, areaName, BLUE);
+      const createToVisibleMs = Math.round(
+        performance.now() - firstPaintStartedAt,
+      );
+      await testInfo.attach('recurring-activity-first-paint.json', {
+        body: JSON.stringify({
+          source_ref: routineRef,
+          create_to_visible_ms: createToVisibleMs,
+          checkpoint_durations_ms: checkpointDurationsMs,
+          window_note:
+            'First created recurring Activity with Life Area; full browser-to-card time',
+        }),
+        contentType: 'application/json',
+      });
+      console.log(`RECURRING_CREATE_TO_VISIBLE_MS=${createToVisibleMs}`);
 
       const areas = await readJson<LifeAreaRow[]>(
         page,
@@ -542,7 +571,6 @@ test.describe('Temporal Create Life Area golden gate', () => {
       );
 
       await expectGroupColor(page, area.life_area_ref, areaName, BLUE);
-      await expectTimedCardColor(page, routineTitle, areaName, BLUE);
 
       dialog = await openCreate(page, 'event');
       await dialog

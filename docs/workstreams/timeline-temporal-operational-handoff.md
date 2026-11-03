@@ -3168,3 +3168,8 @@ initial Timeline window currently covers 7 previous and 35 following days;
 checkpoint materialization is serial per source and instance. Measure the
 create-to-visible interval and checkpoint request in the real stack before
 claiming an instant first appearance or changing the horizon.
+The existing authenticated recurring Create golden case now attaches
+`recurring-activity-first-paint.json` and prints
+`RECURRING_CREATE_TO_VISIBLE_MS` immediately after the first card is visible.
+Use that measured duration to choose a bounded-window optimization; the
+instrumentation adds no production timing or synthetic Timeline item.
