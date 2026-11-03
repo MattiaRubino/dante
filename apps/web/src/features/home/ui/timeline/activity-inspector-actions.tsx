@@ -8,7 +8,10 @@ import {
 } from '../../../temporal/remote-activity-inspector';
 import { createRemoteActivityEditSettings } from '../../../temporal/remote-activity-edit-settings';
 import { createRemoteRecurringProfileEdit } from '../../../temporal/remote-recurring-profile-edit';
-import type { RecurringProfileEditScope } from '../../../temporal/remote-recurring-profile-edit';
+import type {
+  RecurringProfileEditPreview,
+  RecurringProfileEditScope,
+} from '../../../temporal/remote-recurring-profile-edit';
 import {
   createRemoteTemporalHardDeletion,
   type TemporalHardDeletionPreview,
@@ -50,7 +53,7 @@ export function ActivityInspectorActions({
   const [profile, setProfile] = useState<ActivityProfile | null>(null);
   const [editChoice, setEditChoice] = useState<{
     profile: ActivityProfile;
-    selectedHasFacts: boolean;
+    selectedProtection: RecurringProfileEditPreview['selectedProtection'];
   } | null>(null);
   const [confirming, setConfirming] = useState(false);
   const [deleteImpact, setDeleteImpact] =
@@ -119,7 +122,7 @@ export function ActivityInspectorActions({
             );
             setEditChoice({
               profile: loaded,
-              selectedHasFacts: preview.selectedProtection === 'registration',
+              selectedProtection: preview.selectedProtection,
             });
           })
         }
@@ -215,7 +218,7 @@ export function ActivityInspectorActions({
       {editChoice ? (
         <RecurringEditScopeDialog
           subjectLabel="attività"
-          selectedHasFacts={editChoice.selectedHasFacts}
+          selectedProtection={editChoice.selectedProtection}
           busy={pending}
           onOnlyThis={() => {
             onEdit(editChoice.profile, 'only_this');
@@ -224,7 +227,9 @@ export function ActivityInspectorActions({
           onFollowing={() => {
             onEdit(
               editChoice.profile,
-              editChoice.selectedHasFacts ? 'from_next' : 'this_and_following',
+              editChoice.selectedProtection
+                ? 'from_next'
+                : 'this_and_following',
             );
             setEditChoice(null);
           }}

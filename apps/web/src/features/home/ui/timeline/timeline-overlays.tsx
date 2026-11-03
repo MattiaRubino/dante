@@ -22,6 +22,7 @@ import { PlacementLockControls } from '../../../temporal/placement-lock-controls
 import type { ActivityProfile } from '../../../temporal/remote-activity-inspector';
 import { createRemoteActivityInspector } from '../../../temporal/remote-activity-inspector';
 import { createRemoteRecurringProfileEdit } from '../../../temporal/remote-recurring-profile-edit';
+import type { RecurringProfileEditPreview } from '../../../temporal/remote-recurring-profile-edit';
 import { ActivityEditPanel } from './activity-edit-panel';
 import { RecurringActivitySeriesEditor } from './recurring-series-editor';
 import { requestTemporalCreateDuplicate } from '../../../temporal-create/ui/temporal-create-duplicate-request';
@@ -676,7 +677,7 @@ export function EventDetailDialog({
   >('only_this');
   const [activityEditChoice, setActivityEditChoice] = useState<{
     profile: ActivityProfile;
-    selectedHasFacts: boolean;
+    selectedProtection: RecurringProfileEditPreview['selectedProtection'];
   } | null>(null);
   const [inspectorPosition, setInspectorPosition] = useState({
     left: 12,
@@ -718,7 +719,7 @@ export function EventDetailDialog({
         if (active) {
           setActivityEditChoice({
             profile,
-            selectedHasFacts: preview.selectedProtection === 'registration',
+            selectedProtection: preview.selectedProtection,
           });
         }
       })
@@ -1106,7 +1107,7 @@ export function EventDetailDialog({
         {activityEditChoice ? (
           <RecurringEditScopeDialog
             subjectLabel="attività"
-            selectedHasFacts={activityEditChoice.selectedHasFacts}
+            selectedProtection={activityEditChoice.selectedProtection}
             onOnlyThis={() => {
               setActivityEditScope('only_this');
               setEditingProfile(activityEditChoice.profile);
@@ -1114,7 +1115,7 @@ export function EventDetailDialog({
             }}
             onFollowing={() => {
               setActivityEditScope(
-                activityEditChoice.selectedHasFacts
+                activityEditChoice.selectedProtection
                   ? 'from_next'
                   : 'this_and_following',
               );

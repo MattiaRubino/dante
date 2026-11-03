@@ -383,15 +383,19 @@
 
 .temporal-create-tree-add {
   display: inline-flex;
-  min-height: 32px;
+  min-height: 36px;
   align-items: center;
   gap: 6px;
-  padding: 0 10px;
-  border: 1px dashed color-mix(in srgb, currentColor 23%, transparent);
+  padding: 0 12px;
+  border: 1px solid var(--dante-semantic-color-home-border-subtle, #526071);
   border-radius: 8px;
   color: var(--dante-semantic-color-home-text-secondary, #b7c0cf);
-  background: transparent;
-  font-size: 11px;
+  background: color-mix(
+    in srgb,
+    var(--dante-semantic-color-home-surface-control, #151f2e) 68%,
+    transparent
+  );
+  font-size: 13px;
   font-weight: 650;
   cursor: pointer;
 }

@@ -1838,7 +1838,7 @@ export function TimelineSurface({
       pendingActivityReplan.kind === 'drag' ? (
         <RecurringEditScopeDialog
           subjectLabel="attività"
-          selectedHasFacts={false}
+          selectedProtection={null}
           dragNotice="Solo questa applica lo spostamento. Per questa e le successive si apre Modifica: gli orari della serie non sono ancora modificabili e il trascinamento non verrà salvato."
           onOnlyThis={confirmActivityTimelineReplan}
           onFollowing={() => {

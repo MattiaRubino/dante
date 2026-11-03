@@ -1,9 +1,10 @@
 import { useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
+import type { RecurringProfileEditPreview } from '../../../temporal/remote-recurring-profile-edit';
 
 type RecurringEditScopeDialogProps = Readonly<{
   subjectLabel: 'attività' | 'Evento';
-  selectedHasFacts: boolean;
+  selectedProtection: RecurringProfileEditPreview['selectedProtection'];
   busy?: boolean;
   dragNotice?: string;
   onOnlyThis: () => void;
@@ -19,7 +20,7 @@ type RecurringEditScopeDialogProps = Readonly<{
  */
 export function RecurringEditScopeDialog({
   subjectLabel,
-  selectedHasFacts,
+  selectedProtection,
   busy = false,
   dragNotice,
   onOnlyThis,
@@ -40,7 +41,7 @@ export function RecurringEditScopeDialog({
     return () => window.removeEventListener('keydown', onKeyDown);
   }, [onCancel]);
 
-  const followingLabel = selectedHasFacts
+  const followingLabel = selectedProtection
     ? 'Dalla prossima istanza'
     : 'Questa e le successive';
 
@@ -63,9 +64,17 @@ export function RecurringEditScopeDialog({
           {subjectLabel === 'attività' ? 'Questa attività' : 'Questo Evento'} fa
           parte di una ricorrenza. Scegli quali istanze modificare.
         </p>
-        {selectedHasFacts ? (
+        {selectedProtection === 'registration' ? (
           <p className="timeline-recurring-edit-scope-dialog__fact-note">
             La registrazione di questa istanza rimane invariata.
+          </p>
+        ) : null}
+        {selectedProtection === 'local_change' ||
+        selectedProtection === 'legacy_unknown' ? (
+          <p className="timeline-recurring-edit-scope-dialog__fact-note">
+            Questa istanza ha modifiche proprie e resta invariata. L’editor
+            della serie parte dalla regola generale: le modifiche locali non
+            vengono copiate sulle successive.
           </p>
         ) : null}
         {dragNotice ? (

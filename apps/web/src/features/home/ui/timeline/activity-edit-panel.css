@@ -7,6 +7,12 @@
   min-width: 0;
 }
 
+.timeline-recurring-series-editor__source-note {
+  margin: 0;
+  color: var(--dante-semantic-color-home-text-secondary, #b7c0cf);
+  font-size: 12px;
+}
+
 .timeline-event-modal--edit .timeline-activity-editor__body > * {
   flex-shrink: 0;
 }

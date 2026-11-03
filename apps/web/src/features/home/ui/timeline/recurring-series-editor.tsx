@@ -601,6 +601,12 @@ export function RecurringSeriesEditor({
         ) : null}
         {source ? (
           <>
+            {scope === 'from_next' ? (
+              <p className="timeline-recurring-series-editor__source-note">
+                Regola della serie dalla prossima istanza. Quella selezionata
+                resta invariata; le sue modifiche locali non sono copiate qui.
+              </p>
+            ) : null}
             <div className="temporal-create-title-row has-tools timeline-activity-editor__title-row">
               <label className="timeline-activity-editor__title">
                 <span className="timeline-activity-editor__visually-hidden">

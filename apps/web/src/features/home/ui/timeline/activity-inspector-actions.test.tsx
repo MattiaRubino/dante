@@ -929,6 +929,48 @@ describe('Activity Inspector', () => {
     );
     expect(onEdit).toHaveBeenCalledWith(profile, 'from_next');
   });
+  it('keeps a locally edited occurrence protected when editing the following series', async () => {
+    get.mockResolvedValue(profile);
+    const context = {
+      occurrenceRef: '0199a222-2222-7222-8222-222222222222',
+      sourceRef: '0199a444-4444-7444-8444-444444444444',
+      editRevision: 3,
+      recurrenceStateRef: null,
+    };
+    loadRecurringContext.mockResolvedValueOnce(context);
+    loadRecurringPreview.mockResolvedValueOnce({
+      fingerprint: 'a'.repeat(32),
+      selectedProtection: 'local_change',
+      targetOccurrenceRefs: [],
+      protectedOccurrences: [
+        {
+          occurrenceRef: context.occurrenceRef,
+          expectedAt: '2026-11-04T21:15:00Z',
+          reason: 'local_change',
+        },
+      ],
+    });
+    const onEdit = vi.fn();
+    render(
+      <ActivityInspectorActions
+        activityRef={ref}
+        onEdit={onEdit}
+        onDeleted={() => undefined}
+        onDuplicate={() => undefined}
+      />,
+    );
+    fireEvent.click(screen.getByRole('button', { name: 'Modifica' }));
+    expect(
+      await screen.findByText(/modifiche locali non vengono copiate/),
+    ).toBeTruthy();
+    expect(
+      screen.queryByRole('button', { name: 'Questa e le successive' }),
+    ).toBeNull();
+    fireEvent.click(
+      screen.getByRole('button', { name: 'Dalla prossima istanza' }),
+    );
+    expect(onEdit).toHaveBeenCalledWith(profile, 'from_next');
+  });
   it('opens the separate editor with the persisted profile', async () => {
     get.mockResolvedValue(profile);
     const onEdit = vi.fn();

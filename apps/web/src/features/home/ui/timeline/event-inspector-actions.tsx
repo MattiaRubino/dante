@@ -91,7 +91,7 @@ export function EventInspectorActions({
   const [editingProfile, setEditingProfile] = useState(false);
   const [editChoice, setEditChoice] = useState<{
     context: RecurringProfileContext;
-    selectedHasFacts: boolean;
+    selectedProtection: RecurringProfileEditPreview['selectedProtection'];
   } | null>(null);
   const [editScope, setEditScope] =
     useState<RecurringProfileEditScope>('only_this');
@@ -190,7 +190,7 @@ export function EventInspectorActions({
       const preview = await recurringSource.loadPreview(context, 'only_this');
       setEditChoice({
         context,
-        selectedHasFacts: preview.selectedProtection === 'registration',
+        selectedProtection: preview.selectedProtection,
       });
     } catch (reason) {
       setError(
@@ -528,7 +528,7 @@ export function EventInspectorActions({
       {editChoice ? (
         <RecurringEditScopeDialog
           subjectLabel="Evento"
-          selectedHasFacts={editChoice.selectedHasFacts}
+          selectedProtection={editChoice.selectedProtection}
           busy={busy}
           onOnlyThis={() => {
             const choice = editChoice;
@@ -539,7 +539,7 @@ export function EventInspectorActions({
             const choice = editChoice;
             setEditChoice(null);
             void openProfileEditor(
-              choice.selectedHasFacts ? 'from_next' : 'this_and_following',
+              choice.selectedProtection ? 'from_next' : 'this_and_following',
               choice.context,
             );
           }}
