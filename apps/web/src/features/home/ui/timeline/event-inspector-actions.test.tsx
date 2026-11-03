@@ -706,6 +706,38 @@ describe('Event Inspector actions', () => {
       .getByRole('textbox', { name: 'Nome Sessione 1' })
       .closest('.temporal-create-tree-item');
     expect(sessionRow).not.toBeNull();
+    const editor = screen
+      .getByRole('textbox', { name: 'Titolo' })
+      .closest('.timeline-activity-editor') as HTMLElement;
+    const form = editor.querySelector('.timeline-activity-editor__body')!;
+    const formSections = [
+      '.timeline-activity-editor__title-row',
+      '.timeline-activity-editor__sessions',
+      '[aria-label="Orario della serie"]',
+      '.timeline-activity-editor__intervals',
+      '.timeline-recurring-series-editor__repeat-panel',
+      '[aria-label="Life Area"]',
+      '[aria-label="Svolgimento e obiettivi"]',
+      '.timeline-activity-editor__location',
+      '.timeline-activity-editor__description',
+      ':scope > .timeline-recurring-series-editor__advanced',
+    ].map((selector) => form.querySelector(selector));
+    expect(formSections.every(Boolean)).toBe(true);
+    for (let index = 1; index < formSections.length; index += 1) {
+      expect(
+        formSections[index - 1]?.compareDocumentPosition(formSections[index]!),
+      ).toBe(Node.DOCUMENT_POSITION_FOLLOWING);
+    }
+    expect(
+      form.querySelector('.timeline-recurring-series-editor__scope'),
+    ).toBeNull();
+    expect(
+      screen
+        .getByRole('region', { name: 'Sessioni pianificate' })
+        .querySelector('.temporal-create-activity-tree__root-sessions')
+        ?.contains(sessionRow),
+    ).toBe(true);
+    expect(form.querySelector('.temporal-create-objective')).not.toBeNull();
     expect(
       screen
         .getByRole('region', { name: 'Sessioni pianificate' })
@@ -720,25 +752,29 @@ describe('Event Inspector actions', () => {
           screen.getByRole('region', { name: 'Svolgimento e obiettivi' }),
         ) & Node.DOCUMENT_POSITION_FOLLOWING,
     ).toBeTruthy();
-    const sessionClock = within(sessionRow as HTMLElement).getByRole(
-      'checkbox',
-      { name: 'Con orario' },
-    );
+    expect(
+      within(sessionRow as HTMLElement).queryByRole('checkbox'),
+    ).toBeNull();
+    fireEvent.click(screen.getByText('Opzioni avanzate della serie'));
+    const sessionClock = screen.getByRole('checkbox', {
+      name: 'Con orario Sessione 1',
+    });
+    const sessionOptions = sessionClock.closest(
+      '.timeline-recurring-series-editor__session-options',
+    ) as HTMLElement;
     fireEvent.click(sessionClock);
     expect(
-      within(sessionRow as HTMLElement).getByRole('group', { name: 'Inizio' }),
+      within(sessionOptions).getByRole('group', { name: 'Inizio' }),
     ).toBeTruthy();
     fireEvent.click(sessionClock);
     expect(
-      within(sessionRow as HTMLElement).queryByRole('group', {
-        name: 'Inizio',
-      }),
+      within(sessionOptions).queryByRole('group', { name: 'Inizio' }),
     ).toBeNull();
     expect(
       screen.getAllByRole('button', { name: /^Data inizio:/ }),
     ).toHaveLength(2);
     expect(
-      screen.getByRole('textbox', { name: 'Obiettivo 1' }).closest('input')
+      screen.getByRole('textbox', { name: 'Nome obiettivo' }).closest('input')
         ?.value,
     ).toBe('Completato');
     fireEvent.click(

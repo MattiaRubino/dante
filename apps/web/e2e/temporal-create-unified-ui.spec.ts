@@ -253,6 +253,9 @@ test('Activity Edit keeps Create clock controls contained and the series recurre
       '.temporal-create-repeat__end-choices',
     )!;
     const area = modal.querySelector<HTMLElement>('[aria-label="Life Area"]')!;
+    const body = modal.querySelector<HTMLElement>(
+      '.timeline-activity-editor__body',
+    )!;
     const result = {
       fieldsContained: bounds.every(
         (box) =>
@@ -282,11 +285,15 @@ test('Activity Edit keeps Create clock controls contained and the series recurre
           recurrence.getBoundingClientRect().bottom + 1 &&
         recurrence.getBoundingClientRect().bottom <=
           area.getBoundingClientRect().top,
-      scrollableBody:
-        modal.querySelector<HTMLElement>('.timeline-activity-editor__body')!
-          .scrollHeight >
-        modal.querySelector<HTMLElement>('.timeline-activity-editor__body')!
-          .clientHeight,
+      scrollableBody: body.scrollHeight > body.clientHeight,
+      scrollbarAtModalEdge:
+        Math.abs(
+          body.getBoundingClientRect().right -
+            modal.getBoundingClientRect().right,
+        ) <= 2 &&
+        body.getBoundingClientRect().right -
+          area.getBoundingClientRect().right >=
+          24,
     };
     modal.remove();
     return result;
@@ -298,5 +305,6 @@ test('Activity Edit keeps Create clock controls contained and the series recurre
     recurrenceStacked: true,
     recurrenceContained: true,
     scrollableBody: true,
+    scrollbarAtModalEdge: true,
   });
 });

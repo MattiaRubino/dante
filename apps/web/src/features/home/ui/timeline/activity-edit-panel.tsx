@@ -1637,7 +1637,8 @@ export function ActivityEditPanel({
         ) : null}
         {settings &&
         (settings.schedules.some((row) => row.role === 'planned') ||
-          newPlanned.length > 0) ? (
+          newPlanned.length > 0 ||
+          canReplan) ? (
           <section
             className="temporal-create-activity-tree timeline-activity-editor__sessions"
             aria-label="Sessioni pianificate"
@@ -1646,171 +1647,176 @@ export function ActivityEditPanel({
               className="temporal-create-activity-tree__spine"
               aria-hidden="true"
             />
-            <div className="temporal-create-activity-tree__root-sessions">
-              <div className="temporal-create-activity-tree__group-label">
-                Sessioni attività
-              </div>
-              {settings.schedules
-                .filter(
-                  (row) =>
-                    row.role === 'planned' &&
-                    !deletedPlanned.includes(row.scheduleRef),
-                )
-                .map((row) => {
-                  return (
-                    <div
-                      className="temporal-create-tree-item is-session is-root"
-                      key={row.scheduleRef}
-                      data-edit-planned-session={row.scheduleRef}
-                    >
-                      <div className="temporal-create-tree-row">
-                        <span
-                          className="temporal-create-tree-row__icon"
-                          aria-hidden="true"
-                        >
-                          ▶
-                        </span>
-                        <span
-                          className="temporal-create-tree-row__divider"
-                          aria-hidden="true"
-                        />
-                        <input
-                          className="temporal-create-tree-row__title"
-                          maxLength={300}
-                          aria-label="Nome Sessione"
-                          placeholder="Nome Sessione"
-                          disabled={pending || planPending}
-                          value={plannedNames[row.scheduleRef] ?? ''}
-                          onChange={(event) => {
-                            const value = event.currentTarget.value;
-                            setPlannedNames((current) => ({
-                              ...current,
-                              [row.scheduleRef]: value,
-                            }));
-                            setNameError('');
-                          }}
-                        />
-                        <div className="temporal-create-tree-row__actions">
-                          {!sessionAttempts?.some(
+            {settings.schedules.some(
+              (row) =>
+                row.role === 'planned' &&
+                !deletedPlanned.includes(row.scheduleRef),
+            ) || newPlanned.length > 0 ? (
+              <div className="temporal-create-activity-tree__root-sessions">
+                <div className="temporal-create-activity-tree__group-label">
+                  Sessioni attività
+                </div>
+                {settings.schedules
+                  .filter(
+                    (row) =>
+                      row.role === 'planned' &&
+                      !deletedPlanned.includes(row.scheduleRef),
+                  )
+                  .map((row) => {
+                    return (
+                      <div
+                        className="temporal-create-tree-item is-session is-root"
+                        key={row.scheduleRef}
+                        data-edit-planned-session={row.scheduleRef}
+                      >
+                        <div className="temporal-create-tree-row">
+                          <span
+                            className="temporal-create-tree-row__icon"
+                            aria-hidden="true"
+                          >
+                            ▶
+                          </span>
+                          <span
+                            className="temporal-create-tree-row__divider"
+                            aria-hidden="true"
+                          />
+                          <input
+                            className="temporal-create-tree-row__title"
+                            maxLength={300}
+                            aria-label="Nome Sessione"
+                            placeholder="Nome Sessione"
+                            disabled={pending || planPending}
+                            value={plannedNames[row.scheduleRef] ?? ''}
+                            onChange={(event) => {
+                              const value = event.currentTarget.value;
+                              setPlannedNames((current) => ({
+                                ...current,
+                                [row.scheduleRef]: value,
+                              }));
+                              setNameError('');
+                            }}
+                          />
+                          <div className="temporal-create-tree-row__actions">
+                            {!sessionAttempts?.some(
+                              (attempt) =>
+                                attempt.plannedScheduleRef === row.scheduleRef,
+                            ) ? (
+                              <button
+                                type="button"
+                                className="is-remove"
+                                aria-label="Rimuovi Sessione"
+                                disabled={
+                                  !canReplan ||
+                                  sessionAttempts === null ||
+                                  pending ||
+                                  planPending
+                                }
+                                onClick={() => {
+                                  setDeletedPlanned((current) => [
+                                    ...current,
+                                    row.scheduleRef,
+                                  ]);
+                                  setPlanOperation(null);
+                                  setPlanError('');
+                                }}
+                              >
+                                ×
+                              </button>
+                            ) : null}
+                          </div>
+                        </div>
+                        {sessionAttempts
+                          ?.filter(
                             (attempt) =>
                               attempt.plannedScheduleRef === row.scheduleRef,
-                          ) ? (
-                            <button
-                              type="button"
-                              className="is-remove"
-                              aria-label="Rimuovi Sessione"
-                              disabled={
-                                !canReplan ||
-                                sessionAttempts === null ||
-                                pending ||
-                                planPending
-                              }
-                              onClick={() => {
-                                setDeletedPlanned((current) => [
-                                  ...current,
-                                  row.scheduleRef,
-                                ]);
-                                setPlanOperation(null);
-                                setPlanError('');
-                              }}
-                            >
-                              ×
-                            </button>
-                          ) : null}
-                        </div>
+                          )
+                          .map(attemptRecord)}
                       </div>
-                      {sessionAttempts
-                        ?.filter(
-                          (attempt) =>
-                            attempt.plannedScheduleRef === row.scheduleRef,
-                        )
-                        .map(attemptRecord)}
-                    </div>
-                  );
-                })}
-              {newPlanned.map((item) => (
-                <div
-                  className="temporal-create-tree-item is-session is-root"
-                  key={item.clientRef}
-                  data-edit-new-session={item.clientRef}
-                >
-                  <div className="temporal-create-tree-row">
-                    <span
-                      className="temporal-create-tree-row__icon"
-                      aria-hidden="true"
-                    >
-                      ▶
-                    </span>
-                    <span
-                      className="temporal-create-tree-row__divider"
-                      aria-hidden="true"
-                    />
-                    <input
-                      className="temporal-create-tree-row__title"
-                      maxLength={300}
-                      aria-label="Nome Sessione"
-                      placeholder="Nome Sessione"
-                      disabled={planPending}
-                      value={item.name}
-                      onChange={(event) =>
-                        changeNewPlanned(
-                          item.clientRef,
-                          'name',
-                          event.target.value,
-                        )
-                      }
-                    />
-                    <div className="temporal-create-tree-row__actions">
-                      <button
-                        type="button"
-                        className="is-remove"
-                        aria-label="Rimuovi Sessione"
-                        disabled={planPending}
-                        onClick={() => {
-                          setNewPlanned((current) =>
-                            current.filter(
-                              (row) => row.clientRef !== item.clientRef,
-                            ),
-                          );
-                          setPlanOperation(null);
-                        }}
+                    );
+                  })}
+                {newPlanned.map((item) => (
+                  <div
+                    className="temporal-create-tree-item is-session is-root"
+                    key={item.clientRef}
+                    data-edit-new-session={item.clientRef}
+                  >
+                    <div className="temporal-create-tree-row">
+                      <span
+                        className="temporal-create-tree-row__icon"
+                        aria-hidden="true"
                       >
-                        ×
-                      </button>
+                        ▶
+                      </span>
+                      <span
+                        className="temporal-create-tree-row__divider"
+                        aria-hidden="true"
+                      />
+                      <input
+                        className="temporal-create-tree-row__title"
+                        maxLength={300}
+                        aria-label="Nome Sessione"
+                        placeholder="Nome Sessione"
+                        disabled={planPending}
+                        value={item.name}
+                        onChange={(event) =>
+                          changeNewPlanned(
+                            item.clientRef,
+                            'name',
+                            event.target.value,
+                          )
+                        }
+                      />
+                      <div className="temporal-create-tree-row__actions">
+                        <button
+                          type="button"
+                          className="is-remove"
+                          aria-label="Rimuovi Sessione"
+                          disabled={planPending}
+                          onClick={() => {
+                            setNewPlanned((current) =>
+                              current.filter(
+                                (row) => row.clientRef !== item.clientRef,
+                              ),
+                            );
+                            setPlanOperation(null);
+                          }}
+                        >
+                          ×
+                        </button>
+                      </div>
                     </div>
                   </div>
-                </div>
-              ))}
-            </div>
+                ))}
+              </div>
+            ) : null}
+            {canReplan ? (
+              <div className="temporal-create-activity-tree__root-actions">
+                <button
+                  type="button"
+                  className="temporal-create-tree-add"
+                  disabled={
+                    planPending ||
+                    settings.schedules.filter(
+                      (row) =>
+                        row.role === 'planned' &&
+                        !deletedPlanned.includes(row.scheduleRef),
+                    ).length +
+                      newPlanned.length >=
+                      100
+                  }
+                  onClick={() => {
+                    setNewPlanned((current) => [
+                      ...current,
+                      { clientRef: crypto.randomUUID(), name: '' },
+                    ]);
+                    setPlanOperation(null);
+                  }}
+                >
+                  <span aria-hidden="true">＋</span>Sessione
+                </button>
+              </div>
+            ) : null}
           </section>
-        ) : null}
-        {canReplan ? (
-          <button
-            type="button"
-            className="temporal-create-structure-add timeline-activity-editor__add-session"
-            disabled={
-              planPending ||
-              settings.schedules.filter(
-                (row) =>
-                  row.role === 'planned' &&
-                  !deletedPlanned.includes(row.scheduleRef),
-              ).length +
-                newPlanned.length >=
-                100
-            }
-            onClick={() => {
-              setNewPlanned((current) => [
-                ...current,
-                {
-                  clientRef: crypto.randomUUID(),
-                  name: '',
-                },
-              ]);
-              setPlanOperation(null);
-            }}
-          >
-            ＋ Sessione
-          </button>
         ) : null}
         {sessionAttempts?.some((attempt) => !attempt.plannedScheduleRef) ? (
           <section
@@ -2304,11 +2310,18 @@ export function ActivityEditPanel({
               aria-label="Svolgimento e obiettivi"
             >
               <div className="temporal-create-reality-objectives__heading timeline-activity-editor__section-heading">
-                <h3>Svolgimento e obiettivi</h3>
+                <div>
+                  <h3>Svolgimento e obiettivi</h3>
+                  <p>
+                    Decidi se verificare lo svolgimento e quali risultati vuoi
+                    misurare.
+                  </p>
+                </div>
               </div>
               <div className="temporal-create-reality-objectives__block is-reality">
                 <div className="temporal-create-reality-objectives__block-copy">
                   <strong>Svolgimento dell’attività</strong>
+                  <span>Come vuoi gestire la conferma dello svolgimento?</span>
                 </div>
                 <div
                   className="temporal-create-reality-mode"
@@ -2351,6 +2364,10 @@ export function ActivityEditPanel({
               >
                 <div className="temporal-create-reality-objectives__block-copy">
                   <strong>Obiettivi</strong>
+                  <span>
+                    Aggiungi solo ciò che vuoi verificare o misurare
+                    separatamente.
+                  </span>
                 </div>
                 <div className="timeline-activity-editor__objectives">
                   {objectiveRows
@@ -2545,66 +2562,60 @@ export function ActivityEditPanel({
             }}
           />
         </section>
-      </div>
-      {recurringContext ? (
-        <fieldset className="timeline-activity-editor__fields">
-          <legend>Ambito della modifica</legend>
-          <p>
-            {editScope === 'only_this'
-              ? 'Solo questa istanza'
-              : editScope === 'from_next'
+        {recurringContext && editScope !== 'only_this' ? (
+          <fieldset className="timeline-activity-editor__fields">
+            <legend>Ambito della modifica</legend>
+            <p>
+              {editScope === 'from_next'
                 ? 'Dalla prossima istanza'
                 : 'Questa e le successive'}
-          </p>
-          {editScope !== 'only_this' ? (
-            <>
-              {seriesPreviewError ? (
-                <p role="alert">{seriesPreviewError}</p>
-              ) : null}
-              {!seriesPreview && !seriesPreviewError ? (
-                <p role="status">Verifica delle istanze…</p>
-              ) : null}
-              {seriesPreview ? (
-                <div role="status">
-                  <p>
-                    {seriesPreview.targetOccurrenceRefs.length} istanze già
-                    create interessate; le future saranno governate dalla nuova
-                    modifica ai dati generali.
-                  </p>
-                  {seriesPreview.protectedOccurrences.length > 0 ? (
-                    <>
-                      <p>
-                        {seriesPreview.protectedOccurrences.length} eccezioni
-                        future conservate:
-                      </p>
-                      <ul>
-                        {seriesPreview.protectedOccurrences
-                          .slice(0, 10)
-                          .map((item) => (
-                            <li key={item.occurrenceRef}>
-                              {new Intl.DateTimeFormat('it-IT', {
-                                dateStyle: 'medium',
-                                timeStyle: 'short',
-                              }).format(new Date(item.expectedAt))}{' '}
-                              ·{' '}
-                              {item.reason === 'registration'
-                                ? 'registrazione'
-                                : item.reason === 'skipped'
-                                  ? 'saltata'
-                                  : item.reason === 'legacy_unknown'
-                                    ? 'origine del nome da verificare'
-                                    : 'modifica individuale'}
-                            </li>
-                          ))}
-                      </ul>
-                    </>
-                  ) : null}
-                </div>
-              ) : null}
-            </>
-          ) : null}
-        </fieldset>
-      ) : null}
+            </p>
+            {seriesPreviewError ? (
+              <p role="alert">{seriesPreviewError}</p>
+            ) : null}
+            {!seriesPreview && !seriesPreviewError ? (
+              <p role="status">Verifica delle istanze…</p>
+            ) : null}
+            {seriesPreview ? (
+              <div role="status">
+                <p>
+                  {seriesPreview.targetOccurrenceRefs.length} istanze già create
+                  interessate; le future saranno governate dalla nuova modifica
+                  ai dati generali.
+                </p>
+                {seriesPreview.protectedOccurrences.length > 0 ? (
+                  <>
+                    <p>
+                      {seriesPreview.protectedOccurrences.length} eccezioni
+                      future conservate:
+                    </p>
+                    <ul>
+                      {seriesPreview.protectedOccurrences
+                        .slice(0, 10)
+                        .map((item) => (
+                          <li key={item.occurrenceRef}>
+                            {new Intl.DateTimeFormat('it-IT', {
+                              dateStyle: 'medium',
+                              timeStyle: 'short',
+                            }).format(new Date(item.expectedAt))}{' '}
+                            ·{' '}
+                            {item.reason === 'registration'
+                              ? 'registrazione'
+                              : item.reason === 'skipped'
+                                ? 'saltata'
+                                : item.reason === 'legacy_unknown'
+                                  ? 'origine del nome da verificare'
+                                  : 'modifica individuale'}
+                          </li>
+                        ))}
+                    </ul>
+                  </>
+                ) : null}
+              </div>
+            ) : null}
+          </fieldset>
+        ) : null}
+      </div>
       <div
         className="timeline-activity-editor__actions dante-temporal-panel-actions"
         inert={confirmingDiscard || undefined}

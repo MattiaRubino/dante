@@ -1210,7 +1210,7 @@ describe('Activity Inspector', () => {
         onCancel={() => undefined}
       />,
     );
-    fireEvent.click(await screen.findByRole('button', { name: /＋ Sessione/ }));
+    fireEvent.click(await screen.findByRole('button', { name: 'Sessione' }));
     const input = await screen.findByRole('textbox', {
       name: 'Nome Sessione',
     });
@@ -1380,7 +1380,7 @@ describe('Activity Inspector', () => {
         .closest('[data-edit-planned-session]')!
         .querySelector('button[aria-label="Rimuovi Sessione"]')!,
     );
-    fireEvent.click(screen.getByRole('button', { name: '＋ Sessione' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Sessione' }));
     const newSession = document.querySelector('[data-edit-new-session]')!;
     fireEvent.change(
       newSession.querySelector('[aria-label="Nome Sessione"]')!,
@@ -2481,7 +2481,7 @@ describe('Activity Inspector', () => {
     expect(
       screen.queryByRole('button', { name: 'Verifica spostamento' }),
     ).toBeNull();
-    expect(screen.queryByRole('button', { name: '＋ Sessione' })).toBeNull();
+    expect(screen.queryByRole('button', { name: 'Sessione' })).toBeNull();
     expect(applyReplan).not.toHaveBeenCalled();
   });
 
@@ -2588,7 +2588,9 @@ describe('Activity Inspector', () => {
         target: { value: 'Ripasso' },
       },
     );
-    expect(await screen.findByText('Solo questa istanza')).toBeTruthy();
+    expect(
+      screen.queryByRole('group', { name: 'Ambito della modifica' }),
+    ).toBeNull();
     expect(screen.queryByText('Questa e le successive')).toBeNull();
     expect(
       screen.getByRole('button', { name: 'Salva modifiche' }),
@@ -2623,7 +2625,9 @@ describe('Activity Inspector', () => {
     fireEvent.click(
       await screen.findByRole('button', { name: 'Rimuovi Life Area' }),
     );
-    expect(await screen.findByText('Solo questa istanza')).toBeTruthy();
+    expect(
+      screen.queryByRole('group', { name: 'Ambito della modifica' }),
+    ).toBeNull();
     expect(screen.queryByText('Questa e le successive')).toBeNull();
     expect(assignLifeArea).not.toHaveBeenCalled();
     expect(saveRecurringProfile).not.toHaveBeenCalled();

@@ -595,11 +595,6 @@ export function RecurringSeriesEditor({
   return (
     <div className="timeline-activity-editor timeline-recurring-series-editor">
       <div className="timeline-activity-editor__body">
-        <h3 className="timeline-recurring-series-editor__scope">
-          {scope === 'from_next'
-            ? 'Dalla prossima istanza'
-            : 'Questa e le successive'}
-        </h3>
         {error ? <p role="alert">{error}</p> : null}
         {!source && !error ? (
           <p role="status">Caricamento della serie…</p>
@@ -679,77 +674,64 @@ export function RecurringSeriesEditor({
                   className="temporal-create-activity-tree__spine"
                   aria-hidden="true"
                 />
-                <div className="temporal-create-activity-tree__group-label">
-                  Sessioni attività
-                </div>
-                {sessions.map((row, index) => (
-                  <div
-                    key={index}
-                    className="temporal-create-tree-item is-session is-root"
-                  >
-                    <div className="temporal-create-tree-row">
-                      <span
-                        className="temporal-create-tree-row__icon"
-                        aria-hidden="true"
-                      >
-                        ▶
-                      </span>
-                      <span
-                        className="temporal-create-tree-row__divider"
-                        aria-hidden="true"
-                      />
-                      <input
-                        className="temporal-create-tree-row__title"
-                        aria-label={`Nome Sessione ${index + 1}`}
-                        placeholder="Nome Sessione"
-                        maxLength={300}
-                        value={asText(row.name)}
-                        onChange={(e) =>
-                          editRows(
-                            'planned_slices',
-                            sessions.map((part, i) =>
-                              i === index
-                                ? { ...part, name: e.target.value }
-                                : part,
-                            ),
-                          )
-                        }
-                      />
-                      <div className="temporal-create-tree-row__actions">
-                        <button
-                          type="button"
-                          className="is-remove"
-                          aria-label={`Rimuovi Sessione ${index + 1}`}
-                          onClick={() =>
-                            editRows(
-                              'planned_slices',
-                              sessions.filter((_, i) => i !== index),
-                            )
-                          }
-                        >
-                          ×
-                        </button>
-                      </div>
+                {sessions.length > 0 ? (
+                  <div className="temporal-create-activity-tree__root-sessions">
+                    <div className="temporal-create-activity-tree__group-label">
+                      Sessioni attività
                     </div>
-                    {row.time_enabled !== false ? (
-                      <SeriesIntervalFields
-                        kind="session"
-                        selectedDate={source.selectedDate}
-                        wallTime={time}
-                        row={row}
-                        index={index}
-                        onChange={(next) =>
-                          editRows(
-                            'planned_slices',
-                            sessions.map((part, i) =>
-                              i === index ? next : part,
-                            ),
-                          )
-                        }
-                      />
-                    ) : null}
+                    {sessions.map((row, index) => (
+                      <div
+                        key={index}
+                        className="temporal-create-tree-item is-session is-root"
+                      >
+                        <div className="temporal-create-tree-row">
+                          <span
+                            className="temporal-create-tree-row__icon"
+                            aria-hidden="true"
+                          >
+                            ▶
+                          </span>
+                          <span
+                            className="temporal-create-tree-row__divider"
+                            aria-hidden="true"
+                          />
+                          <input
+                            className="temporal-create-tree-row__title"
+                            aria-label={`Nome Sessione ${index + 1}`}
+                            placeholder="Nome Sessione"
+                            maxLength={300}
+                            value={asText(row.name)}
+                            onChange={(e) =>
+                              editRows(
+                                'planned_slices',
+                                sessions.map((part, i) =>
+                                  i === index
+                                    ? { ...part, name: e.target.value }
+                                    : part,
+                                ),
+                              )
+                            }
+                          />
+                          <div className="temporal-create-tree-row__actions">
+                            <button
+                              type="button"
+                              className="is-remove"
+                              aria-label={`Rimuovi Sessione ${index + 1}`}
+                              onClick={() =>
+                                editRows(
+                                  'planned_slices',
+                                  sessions.filter((_, i) => i !== index),
+                                )
+                              }
+                            >
+                              ×
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
                   </div>
-                ))}
+                ) : null}
                 <div className="temporal-create-activity-tree__root-actions">
                   <button
                     type="button"
@@ -761,92 +743,9 @@ export function RecurringSeriesEditor({
                       ])
                     }
                   >
-                    + Sessione
+                    <span aria-hidden="true">＋</span>Sessione
                   </button>
                 </div>
-                <details className="timeline-recurring-series-editor__advanced">
-                  <summary>Opzioni Sessione e struttura</summary>
-                  {sessions.map((row, index) => (
-                    <label key={index}>
-                      {asText(row.name) || `Sessione ${index + 1}`} · Con orario
-                      <input
-                        type="checkbox"
-                        aria-label={`Con orario Sessione ${index + 1}`}
-                        checked={row.time_enabled !== false}
-                        onChange={(e) =>
-                          editRows(
-                            'planned_slices',
-                            sessions.map((part, i) =>
-                              i === index
-                                ? e.target.checked
-                                  ? {
-                                      name: asText(part.name),
-                                      start_offset_minutes: 0,
-                                      duration_minutes: 30,
-                                    }
-                                  : {
-                                      name: asText(part.name),
-                                      time_enabled: false,
-                                    }
-                                : part,
-                            ),
-                          )
-                        }
-                      />
-                    </label>
-                  ))}
-                  <label>
-                    Sessione dell’attività{' '}
-                    <select
-                      value={asText(template.session_capture_mode)}
-                      onChange={(e) =>
-                        updateTemplate({
-                          session_capture_mode: e.target.value,
-                        })
-                      }
-                    >
-                      <option value="disabled">Disattivata</option>
-                      <option value="live">Attiva</option>
-                      <option value="record">Registrazione</option>
-                      <option value="record_and_live">Entrambe</option>
-                    </select>
-                  </label>
-                  <label>
-                    Durata minima della Sessione (minuti)
-                    <input
-                      type="number"
-                      min={1}
-                      value={
-                        template.minimum_session_duration_microseconds == null
-                          ? ''
-                          : asNumber(
-                              template.minimum_session_duration_microseconds,
-                            ) / 60_000_000
-                      }
-                      onChange={(e) =>
-                        updateTemplate({
-                          minimum_session_duration_microseconds:
-                            e.target.value === ''
-                              ? null
-                              : Number(e.target.value) * 60_000_000,
-                        })
-                      }
-                    />
-                  </label>
-                  <label>
-                    Regola per le sottoattività
-                    <select
-                      value={asText(template.child_guard_mode)}
-                      onChange={(e) =>
-                        updateTemplate({ child_guard_mode: e.target.value })
-                      }
-                    >
-                      <option value="none">Libere</option>
-                      <option value="confirm">Conferma</option>
-                      <option value="block">Bloccate</option>
-                    </select>
-                  </label>
-                </details>
               </section>
             ) : null}
             <section
@@ -889,7 +788,19 @@ export function RecurringSeriesEditor({
                     </button>
                   ))
                 ) : (
-                  <span className="is-selected">Orario</span>
+                  <>
+                    <button
+                      type="button"
+                      className="is-selected"
+                      aria-pressed="true"
+                      disabled
+                    >
+                      Orario
+                    </button>
+                    <button type="button" aria-pressed="false" disabled>
+                      Tutto il giorno
+                    </button>
+                  </>
                 )}
               </div>
               <div className="timeline-activity-editor__timezone">
@@ -1558,15 +1469,18 @@ export function RecurringSeriesEditor({
               aria-label="Svolgimento e obiettivi"
             >
               <div className="temporal-create-reality-objectives__heading timeline-activity-editor__section-heading">
-                <h3>Svolgimento e obiettivi</h3>
-                <p>
-                  Decidi se verificare lo svolgimento e quali risultati vuoi
-                  misurare.
-                </p>
+                <div>
+                  <h3>Svolgimento e obiettivi</h3>
+                  <p>
+                    Decidi se verificare lo svolgimento e quali risultati vuoi
+                    misurare.
+                  </p>
+                </div>
               </div>
               <div className="temporal-create-reality-objectives__block is-reality">
                 <div className="temporal-create-reality-objectives__block-copy">
                   <strong>Svolgimento dell’attività</strong>
+                  <span>Come vuoi gestire la conferma dello svolgimento?</span>
                 </div>
                 <div
                   className="temporal-create-reality-mode"
@@ -1614,6 +1528,10 @@ export function RecurringSeriesEditor({
               <div className="temporal-create-reality-objectives__block is-objectives timeline-activity-editor__readback">
                 <div className="temporal-create-reality-objectives__block-copy">
                   <strong>Obiettivi</strong>
+                  <span>
+                    Aggiungi solo ciò che vuoi verificare o misurare
+                    separatamente.
+                  </span>
                 </div>
                 <div className="timeline-activity-editor__objectives">
                   {objectives.map((row, index) => (
@@ -1714,6 +1632,113 @@ export function RecurringSeriesEditor({
                 }
               />
             </section>
+            {owner === 'routine' ? (
+              <details className="timeline-recurring-series-editor__advanced">
+                <summary>Opzioni avanzate della serie</summary>
+                {sessions.map((row, index) => (
+                  <div
+                    key={index}
+                    className="timeline-recurring-series-editor__session-options"
+                  >
+                    <label>
+                      {asText(row.name) || `Sessione ${index + 1}`} · Con orario
+                      <input
+                        type="checkbox"
+                        aria-label={`Con orario Sessione ${index + 1}`}
+                        checked={row.time_enabled !== false}
+                        onChange={(e) =>
+                          editRows(
+                            'planned_slices',
+                            sessions.map((part, i) =>
+                              i === index
+                                ? e.target.checked
+                                  ? {
+                                      name: asText(part.name),
+                                      start_offset_minutes: 0,
+                                      duration_minutes: 30,
+                                    }
+                                  : {
+                                      name: asText(part.name),
+                                      time_enabled: false,
+                                    }
+                                : part,
+                            ),
+                          )
+                        }
+                      />
+                    </label>
+                    {row.time_enabled !== false ? (
+                      <SeriesIntervalFields
+                        kind="session"
+                        selectedDate={source.selectedDate}
+                        wallTime={time}
+                        row={row}
+                        index={index}
+                        onChange={(next) =>
+                          editRows(
+                            'planned_slices',
+                            sessions.map((part, i) =>
+                              i === index ? next : part,
+                            ),
+                          )
+                        }
+                      />
+                    ) : null}
+                  </div>
+                ))}
+                <label>
+                  Sessione dell’attività{' '}
+                  <select
+                    value={asText(template.session_capture_mode)}
+                    onChange={(e) =>
+                      updateTemplate({
+                        session_capture_mode: e.target.value,
+                      })
+                    }
+                  >
+                    <option value="disabled">Disattivata</option>
+                    <option value="live">Attiva</option>
+                    <option value="record">Registrazione</option>
+                    <option value="record_and_live">Entrambe</option>
+                  </select>
+                </label>
+                <label>
+                  Durata minima della Sessione (minuti)
+                  <input
+                    type="number"
+                    min={1}
+                    value={
+                      template.minimum_session_duration_microseconds == null
+                        ? ''
+                        : asNumber(
+                            template.minimum_session_duration_microseconds,
+                          ) / 60_000_000
+                    }
+                    onChange={(e) =>
+                      updateTemplate({
+                        minimum_session_duration_microseconds:
+                          e.target.value === ''
+                            ? null
+                            : Number(e.target.value) * 60_000_000,
+                      })
+                    }
+                  />
+                </label>
+                <label>
+                  Regola per le sottoattività
+                  <select
+                    value={asText(template.child_guard_mode)}
+                    onChange={(e) =>
+                      updateTemplate({ child_guard_mode: e.target.value })
+                    }
+                  >
+                    <option value="none">Libere</option>
+                    <option value="confirm">Conferma</option>
+                    <option value="block">Bloccate</option>
+                  </select>
+                </label>
+              </details>
+            ) : null}
           </>
         ) : null}
       </div>
