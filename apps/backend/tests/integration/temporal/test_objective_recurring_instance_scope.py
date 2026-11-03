@@ -535,9 +535,21 @@ async def test_series_objective_removal_preserves_local_exception_and_later_year
             reminder_lead_minutes=None,
             activity_template={
                 "version": 1,
+                "root_window": {"start_offset_minutes": 0, "duration_minutes": 60},
+                "description": None,
+                "location": None,
+                "item_color_code": None,
+                "session_capture_mode": "disabled",
+                "minimum_session_duration_microseconds": None,
+                "child_guard_mode": "none",
+                "reality_mode": "manual",
+                "placement_protected": False,
                 "objectives": [
                     {"label": "Dieci km", "result_kind": "boolean", "presentation_order": 0}
                 ],
+                "activity_intervals": [],
+                "planned_slices": [],
+                "children": [],
             },
         )
         await materializer.checkpoint_window(
