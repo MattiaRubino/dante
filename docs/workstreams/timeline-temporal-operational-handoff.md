@@ -14,9 +14,14 @@ first, reads the canonical full Timeline window, then completes the original
 no synthetic Occurrence is rendered, and a failed full checkpoint still fails
 closed. The two stages use separate operation IDs. The browser golden case
 waits for both checkpoint responses, prints their durations and preserves the
-create-to-first-card measure. Focused Web boundary tests (12) and TypeScript
-typecheck passed in this container; the actual browser speedup, distant-year
-readback and the complete same-SHA gate remain unverified on this candidate.
+create-to-first-card measure. Focused Web boundary tests (12), TypeScript
+typecheck and ESLint passed in this container. The owner's real-stack Chromium
+run on `5ed32534` passed: first card in 717 ms, priority checkpoint in 186 ms,
+and full checkpoint in 1,136 ms. The first-card time is about 62% lower than
+the 1,895 ms pre-change sample; this is one run per revision, not a latency
+distribution. The full 43-day reconciliation completed in the same browser
+case. Distant-year browser readback, visual Edit acceptance and the complete
+same-SHA gate remain unverified.
 
 ## 2026-10-22 — Full gate diagnosis and repair candidate
 
