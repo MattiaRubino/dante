@@ -762,8 +762,9 @@ describe('Event Inspector actions', () => {
     const confirmation = await screen.findByRole('dialog', {
       name: 'Controlla prima di salvare',
     });
-    expect(confirmation.textContent).toContain(
-      '1 istanza pianificata sarà sostituita',
+    expect(confirmation.textContent).toContain('Da questa istanza');
+    expect(confirmation.textContent).not.toContain(
+      'istanza pianificata sarà sostituita',
     );
     expect(confirmation.textContent).toContain(
       'Modificata singolarmente: resta invariata',

@@ -17,8 +17,19 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from dante.context.contracts import DanteContext
 from dante.context.dependencies import require_dante_context, require_mutating_dante_context
-from dante.modules.temporal.activity_edit_snapshot_api import _SNAPSHOT, ActivityEditSnapshot
+from dante.modules.temporal.activity_edit_snapshot_api import (
+    _SNAPSHOT,
+    ActivityCoreEditCommand,
+    ActivityCoreEditResponse,
+    ActivityEditSnapshot,
+    revise_activity_core_in_session,
+)
 from dante.modules.temporal.decomposition_api import ActivityScheduleResponse
+from dante.modules.temporal.reality_objective_api import (
+    ActivityObjectiveBatchCommand,
+    ObjectiveResponse,
+    apply_activity_objective_edits_in_session,
+)
 from dante.modules.temporal.schedule import (
     DateSpanPlacement,
     FloatingLocalIntervalPlacement,
@@ -168,6 +179,28 @@ class ActivityReplanCommand(BaseModel):
         if len(set(refs)) != len(refs):
             raise ValueError("New Activity interval and planned Session identities must be unique.")
         return self
+
+
+class ActivityAtomicEditCommand(BaseModel):
+    """Compose the Activity's owner capabilities in one serializable Save."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    replan: ActivityReplanCommand | None = None
+    objectives: ActivityObjectiveBatchCommand | None = None
+    core: ActivityCoreEditCommand | None = None
+
+    @model_validator(mode="after")
+    def nonempty(self) -> ActivityAtomicEditCommand:
+        if self.replan is None and self.objectives is None and self.core is None:
+            raise ValueError("At least one Activity edit is required.")
+        return self
+
+
+class ActivityAtomicEditResponse(BaseModel):
+    snapshot: ActivityEditSnapshot
+    objectives: list[ObjectiveResponse]
+    core: ActivityCoreEditResponse | None = None
 
 
 class ReplanChange(BaseModel):
@@ -902,5 +935,83 @@ async def apply_activity_replan(
             category="service",
             title="Planning unavailable",
             detail="The replan could not be saved.",
+            retryable=True,
+        ) from exc
+
+
+@router.put(
+    "/{activity_ref}/atomic-edit",
+    response_model=ActivityAtomicEditResponse,
+    operation_id="temporal_apply_activity_atomic_edit",
+)
+async def apply_activity_atomic_edit(
+    activity_ref: UUID,
+    body: ActivityAtomicEditCommand,
+    context: WriteContext,
+    request: Request,
+    response: Response,
+) -> ActivityAtomicEditResponse:
+    """Commit replan, Objectives and core policy in one Save transaction."""
+    response.headers["Cache-Control"] = "no-store"
+    actor = context.self_person_ref
+    try:
+        async with request.app.state.database_runtime.session_factory() as session, session.begin():
+            await session.execute(text("SET TRANSACTION ISOLATION LEVEL SERIALIZABLE"))
+            if body.replan is not None:
+                await apply_activity_replan_in_session(
+                    session, actor=actor, activity_ref=activity_ref, body=body.replan
+                )
+            objectives = (
+                await apply_activity_objective_edits_in_session(
+                    session,
+                    actor=actor,
+                    subject_ref=activity_ref,
+                    payload=body.objectives,
+                    effective_zone_id=context.effective_zone_id,
+                )
+                if body.objectives is not None
+                else []
+            )
+            core = (
+                await revise_activity_core_in_session(
+                    session, actor=actor, activity_ref=activity_ref, body=body.core
+                )
+                if body.core is not None
+                else None
+            )
+            return ActivityAtomicEditResponse(
+                snapshot=await _read(session, actor, activity_ref),
+                objectives=objectives,
+                core=core,
+            )
+    except DBAPIError as exc:
+        constraint = getattr(getattr(exc.orig, "diag", None), "constraint_name", None)
+        if constraint == "temporal_objective_retirement_recorded":
+            raise ProblemError(
+                status=409,
+                code="temporal.activity_edit.objective_recorded",
+                category="conflict",
+                title="Obiettivo con risultati",
+                detail="L'obiettivo ha risultati registrati: non può essere eliminato.",
+            ) from exc
+        if constraint == "temporal_objective_unavailable":
+            raise _conflict("Un obiettivo è cambiato. Riapri Modifica e riprova.") from exc
+        if getattr(exc.orig, "sqlstate", None) in {"40001", "23505"} or constraint:
+            raise _conflict("L'attività è cambiata. Riapri Modifica e riprova.") from exc
+        raise ProblemError(
+            status=503,
+            code="temporal.activity_edit.unavailable",
+            category="service",
+            title="Salvataggio non disponibile",
+            detail="Non è stato possibile salvare l'attività.",
+            retryable=True,
+        ) from exc
+    except SQLAlchemyError as exc:
+        raise ProblemError(
+            status=503,
+            code="temporal.activity_edit.unavailable",
+            category="service",
+            title="Salvataggio non disponibile",
+            detail="Non è stato possibile salvare l'attività.",
             retryable=True,
         ) from exc

@@ -14,6 +14,101 @@ const response = (body: unknown, status = 200) =>
   });
 
 describe('Activity editor settings remote contract', () => {
+  it('sends Session and Objective edits in one request and leaves them unsaved on conflict', async () => {
+    const requests: Record<string, unknown>[] = [];
+    const fetchFn = vi.fn((input: RequestInfo | URL, init?: RequestInit) => {
+      const path = fetchRequestUrl(input);
+      if (path.endsWith('/auth/session')) {
+        return Promise.resolve(
+          response({ authenticated: true, csrf_token: 'token' }),
+        );
+      }
+      expect(path).toBe(`/api/v1/temporal/activities/${ref}/atomic-edit`);
+      expect(init?.method).toBe('PUT');
+      requests.push(JSON.parse(String(init?.body)) as Record<string, unknown>);
+      return Promise.resolve(response({ detail: 'Obiettivo cambiato.' }, 409));
+    }) as unknown as typeof fetch;
+    const settings = {
+      capture: { mode: 'disabled' as const, stateRef: null },
+      reality: { mode: 'manual' as const, stateRef: null },
+      schedules: [
+        {
+          scheduleRef: ref,
+          role: 'envelope' as const,
+          name: null,
+          order: 0,
+          placementStateRef: ref,
+          temporalForm: 'named_zone_local',
+          start: '2026-11-03T09:00:00',
+          end: '2026-11-03T10:00:00',
+          zoneId: 'Europe/Rome',
+        },
+      ],
+      objectives: [],
+      lifeAreaRef: null,
+      placementProtected: false,
+      placementLockRevision: null,
+      placementLockScheduleRef: null,
+      reminderLeadMinutes: null,
+      reminderScheduleRef: null,
+      reminderStateRef: null,
+      childGuardMode: 'none' as const,
+    };
+    const source = createRemoteActivityEditSettings(fetchFn);
+    await expect(
+      source.applyAtomicReplanAndObjectives(
+        {
+          activityRef: ref,
+          title: 'Studio',
+          description: null,
+          location: null,
+          colorCode: null,
+          revision: 0,
+        },
+        settings,
+        {
+          times: {
+            [ref]: { start: '2026-11-03T09:00:00', end: '2026-11-03T10:00:00' },
+          },
+          removedIntervals: [],
+          newIntervals: [],
+          removedPlanned: [],
+          newPlanned: [
+            {
+              clientRef: '0199a222-2222-7222-8222-222222222222',
+              name: 'Ripasso',
+            },
+          ],
+        },
+        {
+          add: [],
+          revise: [],
+          retire: [
+            { objectiveRef: ref, operationId: 'remove', expectedRevision: 0 },
+          ],
+        },
+        'single-save',
+      ),
+    ).rejects.toThrow('Obiettivo cambiato.');
+    expect(requests).toHaveLength(1);
+    expect(requests[0]).toMatchObject({
+      replan: {
+        operation_id: 'single-save',
+        new_planned_sessions: [
+          {
+            client_ref: '0199a222-2222-7222-8222-222222222222',
+            name: 'Ripasso',
+          },
+        ],
+      },
+      objectives: {
+        retire: [
+          { objective_ref: ref, operation_id: 'remove', expected_revision: 0 },
+        ],
+      },
+    });
+  });
+
   it('exits a stalled core save with an Italian retry message', async () => {
     vi.useFakeTimers();
     try {

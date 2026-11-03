@@ -3137,3 +3137,34 @@ the migration drift and exact catalog tests own the schema names. Local Ruff,
 syntax, registry, and test-name checks passed; PostgreSQL and the full gate on
 the new candidate remain **NOT RUN** until the user's WSL rerun. No global PASS
 is claimed from the prior candidate's browser result.
+
+## 2026-11-03 — Recurrence editor and Objective correction candidate
+
+The ordinary Activity editor now sends a combined Session replan, Objective
+batch and core edit through one serializable transaction when the Session plan
+and Objectives change together. A failed Objective command rolls the planned
+Session addition back. The generated Objective retirement capability has a new
+forward migration (`_166`) permitting local retirement only for a bound,
+unobserved Activity instance; recorded results remain protected. The existing
+source series edit removes an Objective from its versioned template, supersedes
+clean future instances and preserves already edited exceptions. Integration
+regressions cover local removal, replay, future years, a source edit with a
+protected exception, and rollback after an Objective failure. The OpenAPI and
+Orval client were regenerated from the changed route.
+
+The recurring editor reuses Create date, time, Life Area, Reminder, Objective
+and recurrence control styles and puts the final exception review in a modal.
+For an open series the review describes the unbounded scope and lists only
+protected exceptions, with no invented finite total. Closing a successful
+series edit clears the Inspector. Browser fixture assertions check clock layout,
+text sizing and recurrence containment; the browser binary was unavailable in
+this workspace, so visual acceptance is pending.
+
+Local evidence on this candidate: Web typecheck, 1,156 existing Web tests plus
+13 focused tests, Python Ruff and Mypy, Python syntax, 8 non-PostgreSQL replan
+tests, registry and test names passed. Real PostgreSQL, authenticated browser,
+full gate and first-creation latency measurement remain **NOT RUN** here. The
+initial Timeline window currently covers 7 previous and 35 following days;
+checkpoint materialization is serial per source and instance. Measure the
+create-to-visible interval and checkpoint request in the real stack before
+claiming an instant first appearance or changing the horizon.

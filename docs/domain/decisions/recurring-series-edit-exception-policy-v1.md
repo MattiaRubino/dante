@@ -23,6 +23,13 @@ its current plan and facts. An individual edit still uses the existing
 Activity/Event safety locks. A series edit revises source policy from the
 chosen boundary; it does not rewrite past instances.
 
+Removing an unobserved Objective in **Solo questa istanza** retires only that
+instance's Objective and marks it as a protected local exception. Removing an
+Objective in **Questa e le successive** changes the source template from the
+selected boundary, so later clean instances and instances generated in the
+future inherit its absence. Already edited instances remain unchanged. Recorded
+Observation/Evaluation history is never retired implicitly.
+
 The completed series editor must expose the full set of applicable authoring fields, including
 time, all-day precision, intervals, capture and planned Session definitions,
 objectives, reminder, Life Area, description and Event agenda. A metadata-only
@@ -57,12 +64,15 @@ Thursday instance before confirmation.
 ## Preview and feedback
 
 Before applying **Questa e le successive**, show the boundary, new recurrence
-summary, how many clean future instances will be revised/reconciled, and the
-protected future instances with a reason (local change, registration, skip).
+summary, and the protected future instances with a reason (local change,
+registration, skip). The server keeps bounded clean-instance counts in the
+preview/receipt for consistency checks; the confirmation UI must not present
+that count as the length of an open-ended series.
 The visual treatment should match the factual-registration notice in Activity
 Edit: an explicit compact row for each protected instance, not a silent
 warning buried in generic text. For a large series the preview remains
-bounded and must show the total plus a limited inspectable sample. A stale
+bounded and must show the total number of protected instances plus a limited
+inspectable sample. A stale
 change, ambiguous identity match, or incomplete authoritative inventory
 blocks acceptance with a reason and retry; no partial save. A successful
 confirmation reports the actual affected and preserved counts.

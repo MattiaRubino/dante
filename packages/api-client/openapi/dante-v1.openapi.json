@@ -886,6 +886,71 @@
         "title": "AcceptedNamedZonePlacementResponse",
         "type": "object"
       },
+      "ActivityAtomicEditCommand": {
+        "additionalProperties": false,
+        "description": "Compose the Activity's owner capabilities in one serializable Save.",
+        "properties": {
+          "core": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ActivityCoreEditCommand"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "objectives": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ActivityObjectiveBatchCommand"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "replan": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ActivityReplanCommand"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "title": "ActivityAtomicEditCommand",
+        "type": "object"
+      },
+      "ActivityAtomicEditResponse": {
+        "properties": {
+          "core": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ActivityCoreEditResponse"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "objectives": {
+            "items": {
+              "$ref": "#/components/schemas/ObjectiveResponse"
+            },
+            "title": "Objectives",
+            "type": "array"
+          },
+          "snapshot": {
+            "$ref": "#/components/schemas/ActivityEditSnapshot"
+          }
+        },
+        "required": ["snapshot", "objectives"],
+        "title": "ActivityAtomicEditResponse",
+        "type": "object"
+      },
       "ActivityChildResponse": {
         "additionalProperties": false,
         "properties": {
@@ -28356,6 +28421,58 @@
           }
         },
         "summary": "Record Activity Actual",
+        "tags": ["temporal"]
+      }
+    },
+    "/api/v1/temporal/activities/{activity_ref}/atomic-edit": {
+      "put": {
+        "description": "Commit replan, Objectives and core policy in one Save transaction.",
+        "operationId": "temporal_apply_activity_atomic_edit",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "activity_ref",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Activity Ref",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ActivityAtomicEditCommand"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ActivityAtomicEditResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Apply Activity Atomic Edit",
         "tags": ["temporal"]
       }
     },

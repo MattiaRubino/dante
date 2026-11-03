@@ -14,6 +14,7 @@ from fastapi import APIRouter, Depends, Request, Response
 from pydantic import BaseModel, ConfigDict, Field, model_validator
 from sqlalchemy import text
 from sqlalchemy.exc import DBAPIError, SQLAlchemyError
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from dante.context.contracts import DanteContext
 from dante.context.dependencies import require_dante_context, require_mutating_dante_context
@@ -653,6 +654,152 @@ async def list_activity_objectives(
     return await _list_objectives("activity", subject_ref, context, request)
 
 
+async def apply_activity_objective_edits_in_session(
+    session: AsyncSession,
+    *,
+    actor: UUID,
+    subject_ref: UUID,
+    payload: ActivityObjectiveBatchCommand,
+    effective_zone_id: str,
+) -> list[ObjectiveResponse]:
+    """Apply all Objective changes in the caller's serializable transaction."""
+    existing = set(
+        (
+            await session.scalars(
+                text("""
+        SELECT objective_ref FROM dante.list_self_temporal_objectives(
+            :actor,'activity',:activity)
+    """),
+                {"actor": actor, "activity": subject_ref},
+            )
+        ).all()
+    )
+    for revision in payload.revise:
+        if revision.objective_ref not in existing:
+            raise ProblemError(
+                status=409,
+                code="temporal.objective_edit.stale",
+                category="conflict",
+                title="Obiettivo cambiato",
+                detail="Un obiettivo è stato modificato. Riapri Modifica e riprova.",
+            )
+        change = revision.change
+        intent = {
+            "version": 1,
+            "objective_ref": str(revision.objective_ref),
+            **change.model_dump(mode="json"),
+        }
+        if change.scope_code == "this_and_following":
+            if change.expected_source_revision is None:
+                raise ProblemError(
+                    status=422,
+                    code="temporal.objective_edit.series_required",
+                    category="validation",
+                    title="Origine ricorrente mancante",
+                    detail="Ricarica la provenienza dell'obiettivo ricorrente.",
+                )
+            statement = (
+                "SELECT * FROM dante.accept_self_objective_series_edit("
+                ":actor,:objective,:operation,:fingerprint,:expected,"
+                ":source_expected,:recurrence_expected,:zone,:label,:kind,"
+                ":comparator,:target,:minimum,:maximum,:unit,:ordering,:evaluation)"
+            )
+        else:
+            statement = (
+                "SELECT * FROM dante.revise_self_temporal_objective_definition("
+                ":actor,:operation,:fingerprint,:objective,:expected,"
+                ":label,:kind,:comparator,:target,:minimum,:maximum,"
+                ":unit,:ordering,:evaluation)"
+            )
+        await session.execute(
+            text(statement),
+            {
+                "actor": actor,
+                "objective": revision.objective_ref,
+                "operation": change.operation_id,
+                "fingerprint": _fingerprint(intent),
+                "expected": change.expected_revision,
+                "source_expected": change.expected_source_revision,
+                "recurrence_expected": change.expected_recurrence_state_ref,
+                "zone": effective_zone_id,
+                "label": change.label,
+                "kind": change.result_kind,
+                "comparator": change.comparator_code,
+                "target": change.target_value,
+                "minimum": change.target_min,
+                "maximum": change.target_max,
+                "unit": change.unit_code,
+                "ordering": change.presentation_order,
+                "evaluation": uuid7(),
+            },
+        )
+    for retirement in payload.retire:
+        await session.execute(
+            text("""
+            SELECT * FROM dante.retire_self_temporal_objective(
+                :actor,:objective,:operation,:fingerprint,:expected)
+        """),
+            {
+                "actor": actor,
+                "objective": retirement.objective_ref,
+                "operation": retirement.operation_id,
+                "fingerprint": _fingerprint(
+                    {
+                        "version": 1,
+                        "objective_ref": str(retirement.objective_ref),
+                        "operation_id": retirement.operation_id,
+                        "expected_revision": retirement.expected_revision,
+                    }
+                ),
+                "expected": retirement.expected_revision,
+            },
+        )
+    for addition in payload.add:
+        await session.execute(
+            text("""
+            SELECT * FROM dante.create_self_temporal_objective(
+                :actor,:operation,:fingerprint,:objective,'activity',:activity,
+                :label,:kind,:comparator,:target,:minimum,:maximum,:unit,:ordering)
+        """),
+            {
+                "actor": actor,
+                "operation": addition.operation_id,
+                "fingerprint": _fingerprint(
+                    {
+                        "version": 1,
+                        "subject_kind": "activity",
+                        "subject_native_ref": str(subject_ref),
+                        **addition.model_dump(mode="json"),
+                    }
+                ),
+                "objective": uuid7(),
+                "activity": subject_ref,
+                "label": addition.label,
+                "kind": addition.result_kind,
+                "comparator": addition.comparator_code,
+                "target": addition.target_value,
+                "minimum": addition.target_min,
+                "maximum": addition.target_max,
+                "unit": addition.unit_code,
+                "ordering": addition.presentation_order,
+            },
+        )
+    rows = (
+        (
+            await session.execute(
+                text("""
+        SELECT * FROM dante.list_self_temporal_objectives(
+            :actor,'activity',:activity)
+    """),
+                {"actor": actor, "activity": subject_ref},
+            )
+        )
+        .mappings()
+        .all()
+    )
+    return [ObjectiveResponse(**dict(row)) for row in rows]
+
+
 @router.put(
     "/activities/{subject_ref}/objective-edits",
     response_model=list[ObjectiveResponse],
@@ -674,139 +821,12 @@ async def apply_activity_objective_edits(
     try:
         async with request.app.state.database_runtime.session_factory() as session, session.begin():
             await session.execute(text("SET TRANSACTION ISOLATION LEVEL SERIALIZABLE"))
-            existing = set(
-                (
-                    await session.scalars(
-                        text("""
-                SELECT objective_ref FROM dante.list_self_temporal_objectives(
-                    :actor,'activity',:activity)
-            """),
-                        {"actor": actor, "activity": subject_ref},
-                    )
-                ).all()
-            )
-            for revision in payload.revise:
-                if revision.objective_ref not in existing:
-                    raise ProblemError(
-                        status=409,
-                        code="temporal.objective_edit.stale",
-                        category="conflict",
-                        title="Obiettivo cambiato",
-                        detail="Un obiettivo è stato modificato. Riapri Modifica e riprova.",
-                    )
-                change = revision.change
-                intent = {
-                    "version": 1,
-                    "objective_ref": str(revision.objective_ref),
-                    **change.model_dump(mode="json"),
-                }
-                if change.scope_code == "this_and_following":
-                    if change.expected_source_revision is None:
-                        raise ProblemError(
-                            status=422,
-                            code="temporal.objective_edit.series_required",
-                            category="validation",
-                            title="Origine ricorrente mancante",
-                            detail="Ricarica la provenienza dell'obiettivo ricorrente.",
-                        )
-                    statement = (
-                        "SELECT * FROM dante.accept_self_objective_series_edit("
-                        ":actor,:objective,:operation,:fingerprint,:expected,"
-                        ":source_expected,:recurrence_expected,:zone,:label,:kind,"
-                        ":comparator,:target,:minimum,:maximum,:unit,:ordering,:evaluation)"
-                    )
-                else:
-                    statement = (
-                        "SELECT * FROM dante.revise_self_temporal_objective_definition("
-                        ":actor,:operation,:fingerprint,:objective,:expected,"
-                        ":label,:kind,:comparator,:target,:minimum,:maximum,"
-                        ":unit,:ordering,:evaluation)"
-                    )
-                await session.execute(
-                    text(statement),
-                    {
-                        "actor": actor,
-                        "objective": revision.objective_ref,
-                        "operation": change.operation_id,
-                        "fingerprint": _fingerprint(intent),
-                        "expected": change.expected_revision,
-                        "source_expected": change.expected_source_revision,
-                        "recurrence_expected": change.expected_recurrence_state_ref,
-                        "zone": context.effective_zone_id,
-                        "label": change.label,
-                        "kind": change.result_kind,
-                        "comparator": change.comparator_code,
-                        "target": change.target_value,
-                        "minimum": change.target_min,
-                        "maximum": change.target_max,
-                        "unit": change.unit_code,
-                        "ordering": change.presentation_order,
-                        "evaluation": uuid7(),
-                    },
-                )
-            for retirement in payload.retire:
-                await session.execute(
-                    text("""
-                    SELECT * FROM dante.retire_self_temporal_objective(
-                        :actor,:objective,:operation,:fingerprint,:expected)
-                """),
-                    {
-                        "actor": actor,
-                        "objective": retirement.objective_ref,
-                        "operation": retirement.operation_id,
-                        "fingerprint": _fingerprint(
-                            {
-                                "version": 1,
-                                "objective_ref": str(retirement.objective_ref),
-                                "operation_id": retirement.operation_id,
-                                "expected_revision": retirement.expected_revision,
-                            }
-                        ),
-                        "expected": retirement.expected_revision,
-                    },
-                )
-            for addition in payload.add:
-                await session.execute(
-                    text("""
-                    SELECT * FROM dante.create_self_temporal_objective(
-                        :actor,:operation,:fingerprint,:objective,'activity',:activity,
-                        :label,:kind,:comparator,:target,:minimum,:maximum,:unit,:ordering)
-                """),
-                    {
-                        "actor": actor,
-                        "operation": addition.operation_id,
-                        "fingerprint": _fingerprint(
-                            {
-                                "version": 1,
-                                "subject_kind": "activity",
-                                "subject_native_ref": str(subject_ref),
-                                **addition.model_dump(mode="json"),
-                            }
-                        ),
-                        "objective": uuid7(),
-                        "activity": subject_ref,
-                        "label": addition.label,
-                        "kind": addition.result_kind,
-                        "comparator": addition.comparator_code,
-                        "target": addition.target_value,
-                        "minimum": addition.target_min,
-                        "maximum": addition.target_max,
-                        "unit": addition.unit_code,
-                        "ordering": addition.presentation_order,
-                    },
-                )
-            rows = (
-                (
-                    await session.execute(
-                        text("""
-                SELECT * FROM dante.list_self_temporal_objectives(
-                    :actor,'activity',:activity)
-            """),
-                        {"actor": actor, "activity": subject_ref},
-                    )
-                )
-                .mappings()
-                .all()
+            objectives = await apply_activity_objective_edits_in_session(
+                session,
+                actor=actor,
+                subject_ref=subject_ref,
+                payload=payload,
+                effective_zone_id=context.effective_zone_id,
             )
     except DBAPIError as exc:
         constraint = getattr(getattr(exc.orig, "diag", None), "constraint_name", None)
@@ -838,7 +858,7 @@ async def apply_activity_objective_edits(
             retryable=True,
         ) from exc
     response.headers["Cache-Control"] = "no-store"
-    return [ObjectiveResponse(**dict(row)) for row in rows]
+    return objectives
 
 
 @router.post(

@@ -946,7 +946,7 @@ export function EventDetailDialog({
             closeRequestRef={editCloseRequestRef}
             onSaved={() => {
               onActivitySaved?.(currentEditingProfile);
-              setEditingProfile(null);
+              onClose();
             }}
             onCancel={() => setEditingProfile(null)}
           />

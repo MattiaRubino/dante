@@ -78,6 +78,12 @@ export type ActivityObjectiveBatchRetirement = Readonly<{
   expectedRevision: number;
 }>;
 
+export type ActivityObjectiveBatch = Readonly<{
+  add: readonly ActivityObjectiveBatchCreate[];
+  revise: readonly ActivityObjectiveBatchRevision[];
+  retire: readonly ActivityObjectiveBatchRetirement[];
+}>;
+
 export type ObjectiveSeriesEditState = Readonly<{
   sourceNativeRef: string;
   occurrenceRef: string;
@@ -206,6 +212,47 @@ export function parseObjectiveView(value: unknown): ObjectiveView {
   });
 }
 
+export function serializeActivityObjectiveEdits(edit: ActivityObjectiveBatch) {
+  return {
+    add: edit.add.map((item) => ({
+      operation_id: item.operationId,
+      label: item.label,
+      result_kind: item.resultKind,
+      comparator_code: item.comparatorCode,
+      target_value: item.targetValue,
+      target_min: item.targetMin,
+      target_max: item.targetMax,
+      unit_code: item.unitCode,
+      presentation_order: item.presentationOrder,
+    })),
+    revise: edit.revise.map((item) => ({
+      objective_ref: item.objectiveRef,
+      change: {
+        operation_id: item.change.operationId,
+        expected_revision: item.change.expectedRevision,
+        scope_code: item.change.scopeCode ?? 'only_this',
+        expected_source_revision:
+          item.change.seriesState?.sourceRevision ?? null,
+        expected_recurrence_state_ref:
+          item.change.seriesState?.recurrenceStateRef ?? null,
+        label: item.change.label,
+        result_kind: item.change.resultKind,
+        comparator_code: item.change.comparatorCode,
+        target_value: item.change.targetValue,
+        target_min: item.change.targetMin,
+        target_max: item.change.targetMax,
+        unit_code: item.change.unitCode,
+        presentation_order: item.change.presentationOrder,
+      },
+    })),
+    retire: edit.retire.map((item) => ({
+      objective_ref: item.objectiveRef,
+      operation_id: item.operationId,
+      expected_revision: item.expectedRevision,
+    })),
+  };
+}
+
 export function createRemoteRealityObjectiveDataSource(
   fetchFn: typeof globalThis.fetch = globalThis.fetch,
 ) {
@@ -332,44 +379,7 @@ export function createRemoteRealityObjectiveDataSource(
                   'Content-Type': 'application/json',
                   'X-Dante-CSRF': await csrf(),
                 },
-                body: JSON.stringify({
-                  add: edit.add.map((item) => ({
-                    operation_id: item.operationId,
-                    label: item.label,
-                    result_kind: item.resultKind,
-                    comparator_code: item.comparatorCode,
-                    target_value: item.targetValue,
-                    target_min: item.targetMin,
-                    target_max: item.targetMax,
-                    unit_code: item.unitCode,
-                    presentation_order: item.presentationOrder,
-                  })),
-                  revise: edit.revise.map((item) => ({
-                    objective_ref: item.objectiveRef,
-                    change: {
-                      operation_id: item.change.operationId,
-                      expected_revision: item.change.expectedRevision,
-                      scope_code: item.change.scopeCode ?? 'only_this',
-                      expected_source_revision:
-                        item.change.seriesState?.sourceRevision ?? null,
-                      expected_recurrence_state_ref:
-                        item.change.seriesState?.recurrenceStateRef ?? null,
-                      label: item.change.label,
-                      result_kind: item.change.resultKind,
-                      comparator_code: item.change.comparatorCode,
-                      target_value: item.change.targetValue,
-                      target_min: item.change.targetMin,
-                      target_max: item.change.targetMax,
-                      unit_code: item.change.unitCode,
-                      presentation_order: item.change.presentationOrder,
-                    },
-                  })),
-                  retire: edit.retire.map((item) => ({
-                    objective_ref: item.objectiveRef,
-                    operation_id: item.operationId,
-                    expected_revision: item.expectedRevision,
-                  })),
-                }),
+                body: JSON.stringify(serializeActivityObjectiveEdits(edit)),
               },
             );
             const payload: unknown = await response.json();

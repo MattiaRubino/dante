@@ -2230,6 +2230,9 @@ body:has(> .timeline-recurring-edit-scope-dialog__backdrop)
 .timeline-activity-editor__body
   :is(select, textarea):not(
     .temporal-create-life-area-field *,
+    .temporal-create-repeat *,
+    .temporal-create-reality-objectives *,
+    .temporal-create-quick-reminder *,
     .temporal-create-advanced-description
   ) {
   box-sizing: border-box;

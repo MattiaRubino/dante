@@ -23,6 +23,7 @@ import {
 } from '../../../temporal/remote-activity-edit-settings';
 import {
   createRemoteRealityObjectiveDataSource,
+  type ActivityObjectiveBatch,
   type ObjectiveAssessment,
   type ObjectiveView,
   type RealityMode,
@@ -941,8 +942,7 @@ export function ActivityEditPanel({
       .finally(() => setObjectivePending(false));
   };
 
-  const saveObjectiveRows = async (currentSettings: ActivityEditSettings) => {
-    if (!objectiveDirty) return currentSettings;
+  const prepareObjectiveRows = async (): Promise<ActivityObjectiveBatch> => {
     const retained = objectiveRows.filter(
       (row) => !removedObjectives.includes(row.id),
     );
@@ -992,31 +992,36 @@ export function ActivityEditPanel({
     );
     const revisions = definitions.slice(0, updated.length);
     const retireRevisions = definitions.slice(updated.length);
+    return {
+      add: retained
+        .filter((row) => !row.objectiveRef)
+        .map((row) => ({
+          ...objectiveData(row),
+          operationId: row.operationId,
+        })),
+      revise: updated.map((row, index) => ({
+        objectiveRef: row.objectiveRef!,
+        change: {
+          ...objectiveData(row),
+          operationId: row.operationId,
+          expectedRevision: revisions[index]!.definitionRevision,
+          scopeCode: row.scope,
+          seriesState: row.seriesState,
+        },
+      })),
+      retire: retired.map((row, index) => ({
+        objectiveRef: row.objectiveRef!,
+        operationId: row.operationId,
+        expectedRevision: retireRevisions[index]!.definitionRevision,
+      })),
+    };
+  };
+
+  const saveObjectiveRows = async (currentSettings: ActivityEditSettings) => {
+    if (!objectiveDirty) return currentSettings;
     const saved = await objectiveSource.applyActivityEdits(
       profile.activityRef,
-      {
-        add: retained
-          .filter((row) => !row.objectiveRef)
-          .map((row) => ({
-            ...objectiveData(row),
-            operationId: row.operationId,
-          })),
-        revise: updated.map((row, index) => ({
-          objectiveRef: row.objectiveRef!,
-          change: {
-            ...objectiveData(row),
-            operationId: row.operationId,
-            expectedRevision: revisions[index]!.definitionRevision,
-            scopeCode: row.scope,
-            seriesState: row.seriesState,
-          },
-        })),
-        retire: retired.map((row, index) => ({
-          objectiveRef: row.objectiveRef!,
-          operationId: row.operationId,
-          expectedRevision: retireRevisions[index]!.definitionRevision,
-        })),
-      },
+      await prepareObjectiveRows(),
     );
     const next = { ...currentSettings, objectives: saved };
     setSettings(next);
@@ -1169,6 +1174,57 @@ export function ActivityEditPanel({
         let errorHandled = false;
         void (async () => {
           let currentSettings = settings;
+          if (planDirty && objectiveDirty) {
+            // Both mutations must commit together. The owner command rechecks
+            // their revisions and rolls the whole transaction back on error.
+            if (areaDirty || lockDirty || nameDirty) {
+              throw new Error(
+                'Per salvare insieme Sessioni, obiettivi, Life Area e blocco ' +
+                  'spostamenti serve il comando coordinato. Riapri Modifica e ' +
+                  'salva separatamente gli altri campi.',
+              );
+            }
+            const changed = {
+              title: draft.title.trim(),
+              description: draft.description.trim() || null,
+              location: draft.location.trim() || null,
+              colorCode: draft.colorCode || null,
+            };
+            const metadataChanged = Object.entries(changed).some(
+              ([key, value]) => value !== profile[key as keyof typeof changed],
+            );
+            const captureChanged = captureMode !== settings.capture.mode;
+            const realityChanged = realityMode !== settings.reality.mode;
+            const reminderChanged =
+              reminderLeadMinutes !== settings.reminderLeadMinutes;
+            const atomicOperation = planOperation ?? crypto.randomUUID();
+            setPlanOperation(atomicOperation);
+            const saved = await settingsSource.applyAtomicReplanAndObjectives(
+              profile,
+              settings,
+              replanDraft,
+              await prepareObjectiveRows(),
+              atomicOperation,
+              metadataChanged ||
+                captureChanged ||
+                realityChanged ||
+                reminderChanged
+                ? {
+                    ...(metadataChanged ? { profile: changed } : {}),
+                    ...(captureChanged ? { capture: captureMode } : {}),
+                    ...(realityChanged ? { reality: realityMode } : {}),
+                    ...(reminderChanged ? { reminderLeadMinutes } : {}),
+                  }
+                : undefined,
+            );
+            setSettings(saved.settings);
+            setObjectiveRows(
+              saved.settings.objectives.map(existingObjectiveDraft),
+            );
+            setRemovedObjectives([]);
+            onSaved(saved.profile);
+            return;
+          }
           if (lockDirty && placementProtected === false) {
             currentSettings = await settingsSource
               .setPlacementProtected(currentSettings, false)

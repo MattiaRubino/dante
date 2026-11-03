@@ -5,6 +5,8 @@
  * OpenAPI spec version: 0.1.0
  */
 import type {
+  ActivityAtomicEditCommand,
+  ActivityAtomicEditResponse,
   ActivityChildrenResponse,
   ActivityCoreEditCommand,
   ActivityCoreEditResponse,
@@ -4266,6 +4268,76 @@ export const temporalRecordActivityActual = async (
     status: res.status,
     headers: res.headers,
   } as temporalRecordActivityActualResponse;
+};
+
+export type temporalApplyActivityAtomicEditResponse200 = {
+  data: ActivityAtomicEditResponse;
+  status: 200;
+};
+
+export type temporalApplyActivityAtomicEditResponse422 = {
+  data: HTTPValidationError;
+  status: 422;
+};
+
+export type temporalApplyActivityAtomicEditResponseSuccess =
+  temporalApplyActivityAtomicEditResponse200 & {
+    headers: Headers;
+  };
+export type temporalApplyActivityAtomicEditResponseError =
+  temporalApplyActivityAtomicEditResponse422 & {
+    headers: Headers;
+  };
+
+export type temporalApplyActivityAtomicEditResponse =
+  | temporalApplyActivityAtomicEditResponseSuccess
+  | temporalApplyActivityAtomicEditResponseError;
+
+export const getTemporalApplyActivityAtomicEditUrl = (activityRef: string) => {
+  return `/api/v1/temporal/activities/${activityRef}/atomic-edit`;
+};
+
+/**
+ * Commit replan, Objectives and core policy in one Save transaction.
+ * @summary Apply Activity Atomic Edit
+ */
+export const temporalApplyActivityAtomicEdit = async (
+  activityRef: string,
+  activityAtomicEditCommand: ActivityAtomicEditCommand,
+  options?: RequestInit,
+  fetchFn?: typeof globalThis.fetch,
+): Promise<temporalApplyActivityAtomicEditResponse> => {
+  const getHeaders = (
+    h?: NonNullable<RequestInit['headers']>,
+  ): Record<string, string | readonly string[]> => {
+    if (!h) return {};
+    if (h instanceof Headers) return Object.fromEntries(h.entries());
+    if (Array.isArray(h)) return Object.fromEntries(h);
+    return h;
+  };
+  const res = await (fetchFn ?? fetch)(
+    getTemporalApplyActivityAtomicEditUrl(activityRef),
+    {
+      ...options,
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+        ...getHeaders(options?.headers),
+      },
+      body: JSON.stringify(activityAtomicEditCommand),
+    },
+  );
+
+  const body = [204, 205, 304].includes(res.status) ? null : await res.text();
+
+  const data: temporalApplyActivityAtomicEditResponse['data'] = body
+    ? JSON.parse(body)
+    : {};
+  return {
+    data,
+    status: res.status,
+    headers: res.headers,
+  } as temporalApplyActivityAtomicEditResponse;
 };
 
 export type temporalGetActivityDecompositionPolicyResponse200 = {

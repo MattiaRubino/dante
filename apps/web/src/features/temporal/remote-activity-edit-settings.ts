@@ -11,6 +11,8 @@ import { invalidateActivitySessionCardCapability } from './activity-session-capa
 import {
   createRemoteRealityObjectiveDataSource,
   parseObjectiveView,
+  serializeActivityObjectiveEdits,
+  type ActivityObjectiveBatch,
   type ObjectiveComparator,
   type ObjectiveKind,
   type ObjectiveView,
@@ -371,7 +373,117 @@ export function createRemoteActivityEditSettings(
     };
   }
 
+  type CoreChanges = Readonly<{
+    profile?: Pick<
+      ActivityProfile,
+      'title' | 'description' | 'location' | 'colorCode'
+    >;
+    capture?: SessionCaptureMode;
+    reality?: RealityMode;
+    reminderLeadMinutes?: number | null;
+  }>;
+
+  function coreBody(
+    profile: ActivityProfile,
+    settings: ActivityEditSettings,
+    changes: CoreChanges,
+    operationId: string,
+  ) {
+    return {
+      operation_id: operationId,
+      ...(changes.profile
+        ? {
+            profile: {
+              expected_revision: profile.revision,
+              title: changes.profile.title,
+              description: changes.profile.description,
+              location: changes.profile.location,
+              color_code: changes.profile.colorCode,
+            },
+          }
+        : {}),
+      ...(changes.capture
+        ? {
+            capture: {
+              mode_code: changes.capture,
+              expected_state_ref: settings.capture.stateRef,
+            },
+          }
+        : {}),
+      ...(changes.reality
+        ? {
+            reality: {
+              mode_code: changes.reality,
+              expected_state_ref: settings.reality.stateRef,
+            },
+          }
+        : {}),
+      ...('reminderLeadMinutes' in changes && settings.reminderScheduleRef
+        ? {
+            reminder: {
+              schedule_ref: settings.reminderScheduleRef,
+              expected_state_ref: settings.reminderStateRef,
+              enabled: changes.reminderLeadMinutes !== null,
+              lead_minutes: changes.reminderLeadMinutes ?? 0,
+            },
+          }
+        : {}),
+    };
+  }
   return Object.freeze({
+    async applyAtomicReplanAndObjectives(
+      profile: ActivityProfile,
+      settings: ActivityEditSettings,
+      draft: ActivityReplanDraft,
+      objectives: ActivityObjectiveBatch,
+      operationId: string,
+      changes?: CoreChanges,
+    ): Promise<{ profile: ActivityProfile; settings: ActivityEditSettings }> {
+      const ref = profile.activityRef;
+      const response = await request(endpoint(ref, 'atomic-edit'), {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-Dante-CSRF': await csrf(),
+        },
+        body: JSON.stringify({
+          replan: replanBody(settings, draft, operationId),
+          objectives: serializeActivityObjectiveEdits(objectives),
+          ...(changes
+            ? { core: coreBody(profile, settings, changes, operationId) }
+            : {}),
+        }),
+      });
+      const raw: unknown = await response.json();
+      if (!response.ok) {
+        const problem = object(raw);
+        throw new Error(
+          typeof problem.detail === 'string'
+            ? problem.detail
+            : 'Impossibile salvare le modifiche.',
+        );
+      }
+      const saved = object(raw);
+      const next = parseSnapshot(ref, saved.snapshot);
+      if (!Array.isArray(saved.objectives)) {
+        throw new Error('Risposta Obiettivi non valida.');
+      }
+      invalidateTemporalTimelineRead();
+      invalidateTemporalPlanningRead();
+      if (changes?.capture) invalidateActivitySessionCardCapability(ref);
+      const core = saved.core === null ? null : object(saved.core);
+      const savedProfile = core ? parseProfile(core.profile) : profile;
+      if (savedProfile.activityRef !== ref) {
+        throw new Error('Identità dell’attività non valida.');
+      }
+      return {
+        profile: savedProfile,
+        settings: {
+          ...next,
+          objectives: saved.objectives.map(parseObjectiveView),
+        },
+      };
+    },
     async refreshObjectives(
       ref: string,
       settings: ActivityEditSettings,
@@ -927,47 +1039,9 @@ export function createRemoteActivityEditSettings(
               'Content-Type': 'application/json',
               'X-Dante-CSRF': await csrf(controller.signal),
             },
-            body: JSON.stringify({
-              operation_id: operationId,
-              ...(changes.profile
-                ? {
-                    profile: {
-                      expected_revision: profile.revision,
-                      title: changes.profile.title,
-                      description: changes.profile.description,
-                      location: changes.profile.location,
-                      color_code: changes.profile.colorCode,
-                    },
-                  }
-                : {}),
-              ...(changes.capture
-                ? {
-                    capture: {
-                      mode_code: changes.capture,
-                      expected_state_ref: settings.capture.stateRef,
-                    },
-                  }
-                : {}),
-              ...(changes.reality
-                ? {
-                    reality: {
-                      mode_code: changes.reality,
-                      expected_state_ref: settings.reality.stateRef,
-                    },
-                  }
-                : {}),
-              ...('reminderLeadMinutes' in changes &&
-              settings.reminderScheduleRef
-                ? {
-                    reminder: {
-                      schedule_ref: settings.reminderScheduleRef,
-                      expected_state_ref: settings.reminderStateRef,
-                      enabled: changes.reminderLeadMinutes !== null,
-                      lead_minutes: changes.reminderLeadMinutes ?? 0,
-                    },
-                  }
-                : {}),
-            }),
+            body: JSON.stringify(
+              coreBody(profile, settings, changes, operationId),
+            ),
           },
         );
         if (!response.ok)

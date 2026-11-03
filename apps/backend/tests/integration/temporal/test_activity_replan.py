@@ -22,6 +22,7 @@ from dante.modules.temporal.activity_edit_snapshot_api import (
 )
 from dante.modules.temporal.activity_inspector_api import get_self_activity_session_impact
 from dante.modules.temporal.activity_replan_api import (
+    ActivityAtomicEditCommand,
     ActivityReplanCommand,
     DeletePlannedRow,
     NewIntervalRow,
@@ -29,12 +30,18 @@ from dante.modules.temporal.activity_replan_api import (
     ReplanDateSpanRow,
     ReplanRow,
     RetainedPlannedRow,
+    apply_activity_atomic_edit,
     apply_activity_replan,
     apply_activity_replan_in_session,
     preview_activity_replan,
 )
 from dante.modules.temporal.authoring import TemporalAuthoringApplication
 from dante.modules.temporal.decomposition_api import ActivityScheduleResponse
+from dante.modules.temporal.reality_objective_api import (
+    ActivityObjectiveBatchCommand,
+    ObjectiveBatchRetirement,
+    ObjectiveCreateCommand,
+)
 from dante.modules.temporal.schedule import (
     NamedZoneLocalIntervalPlacement,
     ScheduleActivityIntervalConflictError,
@@ -75,7 +82,10 @@ def _retain(row: ActivityScheduleResponse) -> RetainedPlannedRow:
 
 
 def _context(actor: object) -> DanteContext:
-    return cast(DanteContext, SimpleNamespace(self_person_ref=actor))
+    return cast(
+        DanteContext,
+        SimpleNamespace(self_person_ref=actor, effective_zone_id="Europe/Rome"),
+    )
 
 
 def _request(runtime: Any) -> Request:
@@ -90,6 +100,81 @@ async def _snapshot(runtime: Any, actor: object, activity: object) -> ActivityEd
         return ActivityEditSnapshot.model_validate(
             await session.scalar(_SNAPSHOT, {"actor": actor, "activity": activity})
         )
+
+
+@pytest.mark.asyncio
+async def test_atomic_edit_rolls_back_new_session_when_objective_retirement_fails(
+    migrated_database: Any,
+) -> None:
+    actor = _seed_self(migrated_database)
+    runtime = create_database_runtime(migrated_database.runtime_settings())
+    try:
+        created = await TemporalAuthoringApplication(runtime.session_factory).create_activity(
+            self_person_ref=actor,
+            operation_id="atomic-edit:activity",
+            title="Studio",
+            placement=_window(9, 12),
+        )
+        activity = created.item.subject_native_ref
+        before = await _snapshot(runtime, actor, activity)
+        attempted_session = uuid7()
+        command = ActivityAtomicEditCommand(
+            replan=ActivityReplanCommand(
+                operation_id="atomic-edit:add-session",
+                envelope=_move(
+                    next(row for row in before.schedules if row.role_code == "envelope"), 9, 12
+                ),
+                new_planned_sessions=[NewPlannedRow(client_ref=attempted_session, name="Ripasso")],
+            ),
+            objectives=ActivityObjectiveBatchCommand(
+                retire=[
+                    ObjectiveBatchRetirement(
+                        objective_ref=uuid7(),
+                        operation_id="atomic-edit:invalid-retirement",
+                        expected_revision=0,
+                    )
+                ]
+            ),
+        )
+        with pytest.raises(ProblemError) as rejected:
+            await apply_activity_atomic_edit(
+                activity, command, _context(actor), _request(runtime), Response()
+            )
+        assert rejected.value.status == 409
+        after = await _snapshot(runtime, actor, activity)
+        assert after.schedules == before.schedules
+
+        accepted = await apply_activity_atomic_edit(
+            activity,
+            ActivityAtomicEditCommand(
+                replan=ActivityReplanCommand(
+                    operation_id="atomic-edit:add-session:accepted",
+                    envelope=_move(
+                        next(row for row in before.schedules if row.role_code == "envelope"),
+                        9,
+                        12,
+                    ),
+                    new_planned_sessions=[NewPlannedRow(client_ref=uuid7(), name="Ripasso")],
+                ),
+                objectives=ActivityObjectiveBatchCommand(
+                    add=[
+                        ObjectiveCreateCommand(
+                            operation_id="atomic-edit:add-objective",
+                            label="Completato",
+                            result_kind="boolean",
+                            presentation_order=0,
+                        )
+                    ]
+                ),
+            ),
+            _context(actor),
+            _request(runtime),
+            Response(),
+        )
+        assert any(row.role_code == "planned" for row in accepted.snapshot.schedules)
+        assert [row.label for row in accepted.objectives] == ["Completato"]
+    finally:
+        await runtime.dispose()
 
 
 @pytest.mark.asyncio

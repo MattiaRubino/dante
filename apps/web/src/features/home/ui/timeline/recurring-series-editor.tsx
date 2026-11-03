@@ -1757,18 +1757,12 @@ export function RecurringSeriesEditor({
               Controlla prima di salvare
             </h2>
             <p>
-              {review.targetRefs.length}{' '}
-              {review.targetRefs.length === 1
-                ? 'istanza pianificata sarà sostituita'
-                : 'istanze pianificate saranno sostituite'}
-              ; {review.newExpectedCount} nuove nel periodo verificato.
-            </p>
-            <p>
-              {review.protected.length}{' '}
-              {review.protected.length === 1
-                ? 'istanza con modifiche o registrazioni sarà conservata'
-                : 'istanze con modifiche o registrazioni saranno conservate'}{' '}
-              senza cambiamenti.
+              {scope === 'from_next'
+                ? 'Dalla prossima istanza'
+                : 'Da questa istanza'}
+              {recurrence.range_kind === 'open'
+                ? ' · Ripetizione senza fine.'
+                : '.'}
             </p>
             {review.protected.length > 0 ? (
               <div className="timeline-recurring-series-review__exceptions">
@@ -1787,7 +1781,9 @@ export function RecurringSeriesEditor({
                   </p>
                 ) : null}
               </div>
-            ) : null}
+            ) : (
+              <p>Nessuna istanza già modificata resterà esclusa.</p>
+            )}
             <div className="timeline-recurring-series-review__actions dante-temporal-panel-actions">
               <button
                 type="button"

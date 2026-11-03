@@ -29,6 +29,7 @@ from dante.modules.temporal.reality_objective_api import (
     revise_objective_definition,
 )
 from dante.modules.temporal.recurring_authoring import RecurringAuthoringApplication
+from dante.modules.temporal.recurring_series_edit import RecurringSeriesEditApplication
 from dante.modules.temporal.routine_occurrence_materialization import (
     RoutineOccurrenceMaterializationApplication,
 )
@@ -361,6 +362,306 @@ async def test_generated_routine_objective_scope_selected_past_and_later_future(
             )
         assert (await _definition(runtime, alice, objectives[4])).label == ("Correzione personale")
         assert (await _definition(runtime, alice, objectives[1])).label == ("Corsa dieci km")
+    finally:
+        await runtime.dispose()
+
+
+@pytest.mark.asyncio
+async def test_retiring_generated_objective_changes_only_selected_instance_and_not_later_years(
+    migrated_database: Any,
+) -> None:
+    actor = _seed_self(migrated_database)
+    runtime = create_database_runtime(migrated_database.runtime_settings())
+    first = datetime.now(ZoneInfo(ZONE)).date() + timedelta(days=3)
+    later = first + timedelta(days=5 * 365)
+    materializer = RoutineOccurrenceMaterializationApplication(runtime.session_factory)
+    try:
+        created = await RecurringAuthoringApplication(runtime.session_factory).create_routine(
+            self_person_ref=actor,
+            operation_id="objective:local-retirement:source",
+            title="Corsa",
+            life_area_intent=None,
+            recurrence=replace(
+                _daily(first),
+                clock_basis_code="named_zone",
+                zone_id=ZONE,
+                nonexistent_local_time_policy="skip_civil_candidate",
+                ambiguous_local_time_policy="earlier",
+            ),
+        )
+        await RoutineOccurrencePolicyApplication(runtime.session_factory).set(
+            self_person_ref=actor,
+            routine_ref=created.source_ref,
+            duration_minutes=60,
+            reminder_lead_minutes=None,
+            activity_template={
+                "version": 1,
+                "objectives": [
+                    {"label": "Corsa dieci km", "result_kind": "boolean", "presentation_order": 0}
+                ],
+            },
+        )
+        for name, day in (
+            ("selected", first),
+            ("next", first + timedelta(days=1)),
+            ("five-years", later),
+        ):
+            await materializer.checkpoint_window(
+                self_person_ref=actor,
+                operation_id=f"objective:local-retirement:{name}",
+                start_date=day,
+                end_date_exclusive=day + timedelta(days=1),
+                effective_zone_id=ZONE,
+            )
+        (selected,) = await _read_checkpoint_refs(
+            runtime,
+            actor,
+            created.source_ref,
+            owner="routine",
+            operation="objective:local-retirement:selected",
+            start=first,
+            end=first + timedelta(days=1),
+        )
+        objective = await _objective_for_occurrence(runtime, actor, selected)
+        async with runtime.session_factory() as session, session.begin():
+            result = (
+                (
+                    await session.execute(
+                        text(
+                            "SELECT * FROM dante.retire_self_temporal_objective("
+                            ":actor,:objective,:operation,:fingerprint,0)"
+                        ),
+                        {
+                            "actor": actor,
+                            "objective": objective,
+                            "operation": "objective:local-retirement:remove",
+                            "fingerprint": "a" * 64,
+                        },
+                    )
+                )
+                .mappings()
+                .one()
+            )
+            assert result.replayed is False
+        async with runtime.session_factory() as session, session.begin():
+            replay = (
+                (
+                    await session.execute(
+                        text(
+                            "SELECT * FROM dante.retire_self_temporal_objective("
+                            ":actor,:objective,:operation,:fingerprint,0)"
+                        ),
+                        {
+                            "actor": actor,
+                            "objective": objective,
+                            "operation": "objective:local-retirement:remove",
+                            "fingerprint": "a" * 64,
+                        },
+                    )
+                )
+                .mappings()
+                .one()
+            )
+            assert replay.replayed is True
+            assert (
+                await session.scalar(
+                    text("SELECT dante.get_self_occurrence_edit_protection(:actor,:occurrence)"),
+                    {"actor": actor, "occurrence": selected},
+                )
+                == "local_change"
+            )
+            activity = await session.scalar(
+                text(
+                    "SELECT activity_ref FROM dante.list_self_routine_occurrence_activities("
+                    ":actor,:occurrences) WHERE occurrence_ref=:occurrence"
+                ),
+                {"actor": actor, "occurrences": [selected], "occurrence": selected},
+            )
+            remaining = (
+                await session.scalars(
+                    text(
+                        "SELECT objective_ref FROM dante.list_self_temporal_objectives("
+                        ":actor,'activity',:activity)"
+                    ),
+                    {"actor": actor, "activity": activity},
+                )
+            ).all()
+            assert remaining == []
+        for name, day in (("next", first + timedelta(days=1)), ("five-years", later)):
+            (occurrence,) = await _read_checkpoint_refs(
+                runtime,
+                actor,
+                created.source_ref,
+                owner="routine",
+                operation=f"objective:local-retirement:{name}",
+                start=day,
+                end=day + timedelta(days=1),
+            )
+            assert await _objective_for_occurrence(runtime, actor, occurrence) != objective
+    finally:
+        await runtime.dispose()
+
+
+@pytest.mark.asyncio
+async def test_series_objective_removal_preserves_local_exception_and_later_years(
+    migrated_database: Any,
+) -> None:
+    actor = _seed_self(migrated_database)
+    runtime = create_database_runtime(migrated_database.runtime_settings())
+    first = datetime.now(ZoneInfo(ZONE)).date() + timedelta(days=4)
+    selected_day = first + timedelta(days=1)
+    protected_day = first + timedelta(days=2)
+    future_day = first + timedelta(days=5 * 365)
+    materializer = RoutineOccurrenceMaterializationApplication(runtime.session_factory)
+    series = RecurringSeriesEditApplication(runtime.session_factory)
+    try:
+        created = await RecurringAuthoringApplication(runtime.session_factory).create_routine(
+            self_person_ref=actor,
+            operation_id="objective:source-retirement:create",
+            title="Corsa",
+            life_area_intent=None,
+            recurrence=replace(
+                _daily(first),
+                clock_basis_code="named_zone",
+                zone_id=ZONE,
+                nonexistent_local_time_policy="skip_civil_candidate",
+                ambiguous_local_time_policy="earlier",
+            ),
+        )
+        await RoutineOccurrencePolicyApplication(runtime.session_factory).set(
+            self_person_ref=actor,
+            routine_ref=created.source_ref,
+            duration_minutes=60,
+            reminder_lead_minutes=None,
+            activity_template={
+                "version": 1,
+                "objectives": [
+                    {"label": "Dieci km", "result_kind": "boolean", "presentation_order": 0}
+                ],
+            },
+        )
+        await materializer.checkpoint_window(
+            self_person_ref=actor,
+            operation_id="objective:source-retirement:before",
+            start_date=first,
+            end_date_exclusive=first + timedelta(days=4),
+            effective_zone_id=ZONE,
+        )
+        occurrences = await _read_checkpoint_refs(
+            runtime,
+            actor,
+            created.source_ref,
+            owner="routine",
+            operation="objective:source-retirement:before",
+            start=first,
+            end=first + timedelta(days=4),
+        )
+        selected, protected = occurrences[1:3]
+        protected_objective = await _objective_for_occurrence(runtime, actor, protected)
+        async with runtime.session_factory() as session, session.begin():
+            await session.execute(
+                text(
+                    "SELECT * FROM dante.revise_self_temporal_objective_definition("
+                    ":actor,:operation,:fingerprint,:objective,0,'Venti km','boolean',"
+                    "NULL,NULL,NULL,NULL,NULL,0,:evaluation)"
+                ),
+                {
+                    "actor": actor,
+                    "operation": "objective:source-retirement:local-edit",
+                    "fingerprint": "a" * 64,
+                    "objective": protected_objective,
+                    "evaluation": uuid7(),
+                },
+            )
+        loaded = await series.source(
+            self_person_ref=actor,
+            selected_occurrence_ref=selected,
+        )
+        template = dict(loaded.structure_snapshot["activity_template"])
+        structure = {
+            **loaded.structure_snapshot,
+            "activity_template": {**template, "objectives": []},
+        }
+        recurrence = replace(loaded.recurrence, effective_from=selected_day)
+        preview = await series.preview(
+            self_person_ref=actor,
+            selected_occurrence_ref=selected,
+            requested_scope="this_and_following",
+            expected_revision=loaded.edit_revision,
+            expected_state_ref=loaded.recurrence_state_ref,
+            effective_zone_id=ZONE,
+            proposed_recurrence=recurrence,
+            proposed_structure=structure,
+            profile_patch=None,
+        )
+        assert protected in preview.scope.protected_future_occurrence_refs
+        await series.accept(
+            self_person_ref=actor,
+            selected_occurrence_ref=selected,
+            requested_scope="this_and_following",
+            expected_revision=loaded.edit_revision,
+            expected_state_ref=loaded.recurrence_state_ref,
+            effective_zone_id=ZONE,
+            proposed_recurrence=recurrence,
+            proposed_structure=structure,
+            profile_patch=None,
+            expected_fingerprint=preview.fingerprint,
+            operation_id="objective:source-retirement:accept",
+        )
+        await materializer.checkpoint_window(
+            self_person_ref=actor,
+            operation_id="objective:source-retirement:after",
+            start_date=selected_day,
+            end_date_exclusive=protected_day + timedelta(days=2),
+            effective_zone_id=ZONE,
+        )
+        assert await _objective_for_occurrence(runtime, actor, occurrences[0])
+        assert await _objective_for_occurrence(runtime, actor, protected) == protected_objective
+        current_refs = await _read_checkpoint_refs(
+            runtime,
+            actor,
+            created.source_ref,
+            owner="routine",
+            operation="objective:source-retirement:after",
+            start=selected_day,
+            end=protected_day + timedelta(days=2),
+        )
+        assert protected in current_refs
+        await materializer.checkpoint_window(
+            self_person_ref=actor,
+            operation_id="objective:source-retirement:five-years",
+            start_date=future_day,
+            end_date_exclusive=future_day + timedelta(days=1),
+            effective_zone_id=ZONE,
+        )
+        (future_ref,) = await _read_checkpoint_refs(
+            runtime,
+            actor,
+            created.source_ref,
+            owner="routine",
+            operation="objective:source-retirement:five-years",
+            start=future_day,
+            end=future_day + timedelta(days=1),
+        )
+        for current in (current_refs[0], current_refs[2], future_ref):
+            async with runtime.session_factory() as session, session.begin():
+                activity = await session.scalar(
+                    text(
+                        "SELECT activity_ref FROM dante.list_self_routine_occurrence_activities("
+                        ":actor,:occurrences) WHERE occurrence_ref=:occurrence"
+                    ),
+                    {"actor": actor, "occurrences": [current], "occurrence": current},
+                )
+                assert activity is not None
+                assert not (
+                    await session.scalars(
+                        text(
+                            "SELECT objective_ref FROM dante.list_self_temporal_objectives("
+                            ":actor,'activity',:activity)"
+                        ),
+                        {"actor": actor, "activity": activity},
+                    )
+                ).all()
     finally:
         await runtime.dispose()
 
