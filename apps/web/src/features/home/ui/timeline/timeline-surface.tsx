@@ -98,6 +98,7 @@ import {
 } from './timeline-overlays';
 import {
   applyTimelineExpansion,
+  buildTimelineDayProjectionDays,
   buildTimelineRenderedDays,
   buildTimelineRenderedWeek,
   captureTimelineViewportAnchor,
@@ -567,19 +568,31 @@ export function TimelineSurface({
     () =>
       timelineView === 'week'
         ? buildTimelineRenderedWeek(viewDate, renderedDayInputs)
-        : buildTimelineRenderedDays(
-            timelineView === 'day' ? viewDate : anchor,
-            timelineView === 'day' ? 0 : TIMELINE_POLICY.window.pastBufferDays,
-            timelineView === 'day'
-              ? 0
-              : TIMELINE_POLICY.window.futureBufferDays,
-            renderedDayInputs,
-          ),
-    [anchor, renderedDayInputs, timelineView, viewDate],
+        : timelineView === 'day'
+          ? buildTimelineDayProjectionDays(
+              viewDate,
+              renderedDayInputs,
+              sessionPanel.snapshot?.visuals ?? [],
+              clockZone,
+            )
+          : buildTimelineRenderedDays(
+              anchor,
+              TIMELINE_POLICY.window.pastBufferDays,
+              TIMELINE_POLICY.window.futureBufferDays,
+              renderedDayInputs,
+            ),
+    [
+      anchor,
+      clockZone,
+      renderedDayInputs,
+      sessionPanel.snapshot?.visuals,
+      timelineView,
+      viewDate,
+    ],
   );
   const renderedDays = useMemo(
-    () =>
-      applyTimelineSessionReality(
+    () => {
+      const projected = applyTimelineSessionReality(
         applyTimelineAllDayGeometry(
           baseRenderedDays,
           projectedDateLaneItems,
@@ -602,12 +615,19 @@ export function TimelineSurface({
         state.zoom,
         state.expandedEventIds,
         dateLaneSessions,
-      ),
+      );
+      return timelineView === 'day'
+        ? projected
+            .filter((day) => day.dateKey === timelineDateKey(viewDate))
+            .map((day) => ({ ...day, offsetTop: 0 }))
+        : projected;
+    },
     [
       baseRenderedDays,
       projectedDateLaneItems,
       presentationFilters,
       timelineView,
+      viewDate,
       sessionPanel.snapshot,
       dateLaneSessions,
       clockZone,

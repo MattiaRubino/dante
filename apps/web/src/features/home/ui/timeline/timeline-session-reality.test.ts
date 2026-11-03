@@ -10,7 +10,10 @@ import type {
 } from './model/timeline-types';
 import { applyTimelineSessionReality } from './timeline-session-reality';
 import type { TimelineRenderedDay } from './timeline-day-stream';
-import { buildTimelineRenderedWeek } from './timeline-viewport-runtime';
+import {
+  buildTimelineDayProjectionDays,
+  buildTimelineRenderedWeek,
+} from './timeline-viewport-runtime';
 
 const groups: readonly TimelineGroup[] = [
   { id: 'area', label: 'Salute', tone: 'health' },
@@ -467,6 +470,86 @@ describe('one-card Activity actual Session projection', () => {
     expect(actualDay?.layouts[0]?.event).toBe(plan);
     expect(plannedDay?.layouts).toHaveLength(0);
     expect(plan.startMinute).toBe(600);
+  });
+
+  it('keeps a running Activity visible in day view when its plan starts after midnight', () => {
+    const selected = Temporal.PlainDate.from('2026-11-03');
+    const plan = activity('tomorrow-plan', 15, 45);
+    const unrelated = activity('unrelated', 60, 90);
+    const visual = {
+      ...ended,
+      started_at: '2026-11-03T19:39:00Z',
+      ended_at: null,
+      pause_ranges: [],
+    };
+    const sourceDays = buildTimelineDayProjectionDays(
+      selected,
+      {
+        eventsByDate: {
+          '2026-11-03': [],
+          '2026-11-04': [plan, unrelated],
+        },
+        groups,
+        zoom,
+        expandedEventIds: expanded,
+      },
+      [visual],
+      'Europe/Rome',
+    );
+    const visible = applyTimelineSessionReality(
+      sourceDays,
+      [visual],
+      'Europe/Rome',
+      '2026-11-03T19:43:00Z',
+      Date.parse('2026-11-03T19:43:00Z'),
+      groups,
+      zoom,
+      expanded,
+    ).filter((day) => day.dateKey === selected.toString());
+
+    expect(visible).toHaveLength(1);
+    expect(visible[0]?.layouts).toHaveLength(1);
+    expect(visible[0]?.layouts[0]?.event).toBe(plan);
+    expect(visible[0]?.layouts[0]?.plannedDateKey).toBe('2026-11-04');
+    expect(visible[0]?.layouts[0]?.sessionReality?.state).toBe('running');
+    expect(visible[0]?.layouts[0]?.top).toBeCloseTo(
+      visible[0]?.mapper.map(20 * 60 + 39) ?? 0,
+      3,
+    );
+  });
+
+  it('does not leave the planned card in day view after execution moved to yesterday', () => {
+    const selected = Temporal.PlainDate.from('2026-10-11');
+    const plan = activity('tomorrow-plan', 15, 45);
+    const visual = {
+      ...ended,
+      started_at: '2026-10-10T20:39:00Z',
+      ended_at: null,
+      pause_ranges: [],
+    };
+    const sourceDays = buildTimelineDayProjectionDays(
+      selected,
+      {
+        eventsByDate: { '2026-10-11': [plan] },
+        groups,
+        zoom,
+        expandedEventIds: expanded,
+      },
+      [visual],
+      'UTC',
+    );
+    const visible = applyTimelineSessionReality(
+      sourceDays,
+      [visual],
+      'UTC',
+      '2026-10-10T20:43:00Z',
+      Date.parse('2026-10-10T20:43:00Z'),
+      groups,
+      zoom,
+      expanded,
+    ).filter((day) => day.dateKey === selected.toString());
+    expect(visible).toHaveLength(1);
+    expect(visible[0]?.layouts).toHaveLength(0);
   });
 
   it('aligns every week column after a short cross-day Stop', () => {

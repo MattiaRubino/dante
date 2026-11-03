@@ -1,4 +1,7 @@
 import type { PlainDate } from '@dante/time';
+import { Temporal } from '@dante/time';
+
+import type { SessionVisual } from '../../../temporal/use-session-panel';
 
 import { createTimelineTimeMapper } from './model/timeline-density';
 import { createTimelinePrototypeEventsForDate } from './model/timeline-fixtures';
@@ -197,6 +200,52 @@ export function buildTimelineRenderedDays(
   }
 
   return days;
+}
+
+/** Keep the planned source available while a main Session is painted on another day. */
+export function buildTimelineDayProjectionDays(
+  selected: PlainDate,
+  inputs: TimelineRenderedDayInputs,
+  visuals: readonly SessionVisual[],
+  zone: string,
+): readonly TimelineRenderedDay[] {
+  const selectedKey = timelineDateKey(selected);
+  const dateKeys = new Set([selectedKey]);
+  for (const visual of visuals) {
+    if (visual.planned_schedule_ref !== null) continue;
+    let actualKey: string;
+    try {
+      actualKey = Temporal.Instant.from(visual.started_at)
+        .toZonedDateTimeISO(zone)
+        .toPlainDate()
+        .toString();
+    } catch {
+      continue;
+    }
+    for (const [plannedKey, events] of Object.entries(inputs.eventsByDate)) {
+      if (
+        plannedKey !== selectedKey &&
+        actualKey !== selectedKey
+      ) continue;
+      if (
+        events.some(
+          (event) =>
+            event.canonicalBasis?.kind === 'scheduled-activity' &&
+            event.canonicalBasis.activityRef === visual.activity_ref,
+        )
+      ) {
+        dateKeys.add(plannedKey);
+        dateKeys.add(actualKey);
+      }
+    }
+  }
+  let offsetTop = 0;
+  return [...dateKeys].sort().map((key) => {
+    const day = buildTimelineRenderedDays(parseTimelineDate(key), 0, 0, inputs)[0]!;
+    const rendered = { ...day, offsetTop };
+    offsetTop += day.height;
+    return rendered;
+  });
 }
 
 /** The week shares one elastic minute scale so 10:30 aligns in all columns. */
