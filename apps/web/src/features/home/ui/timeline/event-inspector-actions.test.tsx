@@ -15,6 +15,7 @@ import { RecurringSeriesEditor } from './recurring-series-editor';
 import { EventDetailDialog } from './timeline-overlays';
 
 const loadEvent = vi.fn();
+const loadOccurrenceEvent = vi.fn();
 const listExpectedParticipation = vi.fn();
 const listPersonReferents = vi.fn();
 const loadArea = vi.fn();
@@ -74,7 +75,10 @@ vi.mock('../../../temporal/remote-event-life-area-settings', () => ({
   }),
 }));
 vi.mock('../../../temporal/remote-event-agenda-data-source', () => ({
-  createRemoteTemporalEventAgendaDataSource: () => ({ loadEvent }),
+  createRemoteTemporalEventAgendaDataSource: () => ({
+    loadEvent,
+    loadOccurrenceEvent,
+  }),
 }));
 vi.mock('../../../temporal/remote-responsibility-data-source', () => ({
   createRemoteTemporalResponsibilityDataSource: () => ({
@@ -101,6 +105,65 @@ afterEach(() => {
 });
 
 describe('Event Inspector actions', () => {
+  it('edits only the selected recurring Event profile without revising the source', async () => {
+    const occurrenceRef = '0199a555-5555-7555-8555-555555555555';
+    const context = {
+      occurrenceRef,
+      sourceRef: eventRef,
+      editRevision: 2,
+      recurrenceStateRef: '0199a666-6666-7666-8666-666666666666',
+    };
+    isRecurring.mockResolvedValue(true);
+    loadOccurrenceContext.mockResolvedValue(context);
+    loadRecurringPreview.mockResolvedValue({
+      selectedProtection: null,
+      fingerprint: 'a'.repeat(32),
+      targetOccurrenceRefs: [occurrenceRef],
+      protectedOccurrences: [],
+    });
+    loadOccurrenceEvent.mockResolvedValue({
+      eventRef,
+      title: 'Conferenza',
+      description: null,
+      location: null,
+      colorCode: null,
+      profileRevision: 0,
+    });
+    loadOccurrencePatch.mockResolvedValue({ title: 'Conferenza locale' });
+    saveRecurringEvent.mockResolvedValue(undefined);
+    render(
+      <EventInspectorActions
+        eventRef={eventRef}
+        occurrenceRef={occurrenceRef}
+        placement={placement}
+        onDuplicate={vi.fn()}
+      />,
+    );
+    fireEvent.click(screen.getByRole('button', { name: 'Modifica' }));
+    fireEvent.click(
+      await screen.findByRole('button', { name: 'Solo questa istanza' }),
+    );
+    const title = await screen.findByRole('textbox', { name: 'Titolo Event' });
+    expect(title).toHaveProperty('value', 'Conferenza locale');
+    expect(screen.getByText('Ambito: solo questa istanza.')).toBeTruthy();
+    fireEvent.change(title, {
+      target: { value: 'Conferenza locale aggiornata' },
+    });
+    fireEvent.click(
+      screen.getByRole('button', { name: 'Salva metadati Event' }),
+    );
+    await waitFor(() =>
+      expect(saveRecurringEvent).toHaveBeenCalledWith(
+        context,
+        'only_this',
+        { title: 'Conferenza locale aggiornata' },
+        expect.any(String),
+      ),
+    );
+    expect(reviseProfile).not.toHaveBeenCalled();
+    expect(acceptSeries).not.toHaveBeenCalled();
+  });
+
   it('chooses from-next for a recorded recurring Event and confirms a reviewed structural revision', async () => {
     const occurrenceRef = '0199a555-5555-7555-8555-555555555555';
     const context = {

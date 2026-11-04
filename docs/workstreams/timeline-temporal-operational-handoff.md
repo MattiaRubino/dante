@@ -3299,3 +3299,11 @@ ordinary and selected-occurrence Event forms to the shared renderer, and
 retain the existing structural preview/accept for following-scope edits.
 Agenda and Life Area on an individual recurring instance must not be sent to
 source-level endpoints. Preserve Event identity, exceptions and recorded facts.
+
+The follow-up removes an unreachable Event profile `seriesPreview` state:
+the old profile form never populated it, while the structural following-scope
+editor has its own real preview and confirmation. The selected-only profile
+regression checks that the local Occurrence capability receives only the
+changed title and does not call the Event source profile or series acceptance.
+This does not make the selected-only editor capable of editing Agenda, Life
+Area or Schedule yet.

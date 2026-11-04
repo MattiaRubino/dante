@@ -99,8 +99,6 @@ export function EventInspectorActions({
     useState<RecurringProfileEditScope>('only_this');
   const [recurringContext, setRecurringContext] =
     useState<RecurringProfileContext | null>(null);
-  const [seriesPreview, setSeriesPreview] =
-    useState<RecurringProfileEditPreview | null>(null);
   const [editingArea, setEditingArea] = useState(false);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
@@ -153,7 +151,6 @@ export function EventInspectorActions({
       });
       setRecurringContext(context);
       setEditScope(selectedScope);
-      setSeriesPreview(null);
       setEditingProfile(true);
       setProfileNotice('');
     } catch (reason) {
@@ -264,7 +261,6 @@ export function EventInspectorActions({
           editScope,
           changed,
           systemTemporalIdFactory.operationId(),
-          seriesPreview ?? undefined,
         );
       } else {
         await profileSource.revise(
@@ -611,45 +607,7 @@ export function EventInspectorActions({
           <div className="timeline-event-profile-editor__body">
             {recurringContext ? (
               <div role="status">
-                <p>
-                  Ambito:{' '}
-                  {editScope === 'only_this'
-                    ? 'solo questa istanza'
-                    : editScope === 'from_next'
-                      ? 'dalla prossima istanza'
-                      : 'questa e le successive'}
-                  .
-                </p>
-                {seriesPreview ? (
-                  <>
-                    <p>
-                      {seriesPreview.targetOccurrenceRefs.length} istanze già
-                      create interessate;{' '}
-                      {seriesPreview.protectedOccurrences.length} eccezioni
-                      conservate.
-                    </p>
-                    <ul>
-                      {seriesPreview.protectedOccurrences
-                        .slice(0, 10)
-                        .map((item) => (
-                          <li key={item.occurrenceRef}>
-                            {new Intl.DateTimeFormat('it-IT', {
-                              dateStyle: 'medium',
-                              timeStyle: 'short',
-                            }).format(new Date(item.expectedAt))}{' '}
-                            ·{' '}
-                            {item.reason === 'registration'
-                              ? 'registrazione'
-                              : item.reason === 'skipped'
-                                ? 'saltata'
-                                : item.reason === 'legacy_unknown'
-                                  ? 'origine del nome da verificare'
-                                  : 'modifica individuale'}
-                          </li>
-                        ))}
-                    </ul>
-                  </>
-                ) : null}
+                <p>Ambito: solo questa istanza.</p>
               </div>
             ) : null}
             <label>
