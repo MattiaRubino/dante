@@ -497,6 +497,17 @@ export function EventInspectorActions({
           'Duplica'
         )}
       </button>
+      {toolbarTarget ? (
+        <button
+          type="button"
+          disabled={busy || editingProfile || editingArea}
+          aria-label="Modifica Life Area"
+          title="Modifica Life Area"
+          onClick={() => void openAreaEditor()}
+        >
+          Life Area
+        </button>
+      ) : null}
       <button
         type="button"
         disabled={busy}
@@ -549,7 +560,7 @@ export function EventInspectorActions({
           }}
         />
       ) : null}
-      {!toolbarTarget || editingProfile || editingArea ? (
+      {!toolbarTarget ? (
         <button
           type="button"
           disabled={busy}
@@ -577,96 +588,99 @@ export function EventInspectorActions({
           className="timeline-event-profile-editor"
           aria-label="Modifica profilo Event"
         >
-          <h3>Modifica evento</h3>
-          {recurringContext ? (
-            <div role="status">
-              <p>
-                Ambito:{' '}
-                {editScope === 'only_this'
-                  ? 'solo questa istanza'
-                  : editScope === 'from_next'
-                    ? 'dalla prossima istanza'
-                    : 'questa e le successive'}
-                .
-              </p>
-              {seriesPreview ? (
-                <>
-                  <p>
-                    {seriesPreview.targetOccurrenceRefs.length} istanze già
-                    create interessate;{' '}
-                    {seriesPreview.protectedOccurrences.length} eccezioni
-                    conservate.
-                  </p>
-                  <ul>
-                    {seriesPreview.protectedOccurrences
-                      .slice(0, 10)
-                      .map((item) => (
-                        <li key={item.occurrenceRef}>
-                          {new Intl.DateTimeFormat('it-IT', {
-                            dateStyle: 'medium',
-                            timeStyle: 'short',
-                          }).format(new Date(item.expectedAt))}{' '}
-                          ·{' '}
-                          {item.reason === 'registration'
-                            ? 'registrazione'
-                            : item.reason === 'skipped'
-                              ? 'saltata'
-                              : item.reason === 'legacy_unknown'
-                                ? 'origine del nome da verificare'
-                                : 'modifica individuale'}
-                        </li>
-                      ))}
-                  </ul>
-                </>
-              ) : null}
-            </div>
-          ) : null}
-          <label>
-            Titolo Event
-            <input
-              disabled={busy}
-              maxLength={300}
-              value={profileDraft.title}
-              onChange={(event) => {
-                const title = event.currentTarget.value;
-                setProfileDraft((draft) => draft && { ...draft, title });
-              }}
-            />
-          </label>
-          <label>
-            Descrizione Event
-            <textarea
-              disabled={busy}
-              value={profileDraft.description ?? ''}
-              onChange={(event) => {
-                const description = event.currentTarget.value || null;
-                setProfileDraft((draft) => draft && { ...draft, description });
-              }}
-            />
-          </label>
-          <label>
-            Località Event
-            <input
-              disabled={busy}
-              value={profileDraft.location ?? ''}
-              onChange={(event) => {
-                const location = event.currentTarget.value || null;
-                setProfileDraft((draft) => draft && { ...draft, location });
-              }}
-            />
-          </label>
-          <label>
-            Colore Event (#RRGGBB)
-            <input
-              disabled={busy}
-              maxLength={7}
-              value={profileDraft.colorCode ?? ''}
-              onChange={(event) => {
-                const colorCode = event.currentTarget.value || null;
-                setProfileDraft((draft) => draft && { ...draft, colorCode });
-              }}
-            />
-          </label>
+          <div className="timeline-event-profile-editor__body">
+            {recurringContext ? (
+              <div role="status">
+                <p>
+                  Ambito:{' '}
+                  {editScope === 'only_this'
+                    ? 'solo questa istanza'
+                    : editScope === 'from_next'
+                      ? 'dalla prossima istanza'
+                      : 'questa e le successive'}
+                  .
+                </p>
+                {seriesPreview ? (
+                  <>
+                    <p>
+                      {seriesPreview.targetOccurrenceRefs.length} istanze già
+                      create interessate;{' '}
+                      {seriesPreview.protectedOccurrences.length} eccezioni
+                      conservate.
+                    </p>
+                    <ul>
+                      {seriesPreview.protectedOccurrences
+                        .slice(0, 10)
+                        .map((item) => (
+                          <li key={item.occurrenceRef}>
+                            {new Intl.DateTimeFormat('it-IT', {
+                              dateStyle: 'medium',
+                              timeStyle: 'short',
+                            }).format(new Date(item.expectedAt))}{' '}
+                            ·{' '}
+                            {item.reason === 'registration'
+                              ? 'registrazione'
+                              : item.reason === 'skipped'
+                                ? 'saltata'
+                                : item.reason === 'legacy_unknown'
+                                  ? 'origine del nome da verificare'
+                                  : 'modifica individuale'}
+                          </li>
+                        ))}
+                    </ul>
+                  </>
+                ) : null}
+              </div>
+            ) : null}
+            <label>
+              Titolo Event
+              <input
+                disabled={busy}
+                maxLength={300}
+                value={profileDraft.title}
+                onChange={(event) => {
+                  const title = event.currentTarget.value;
+                  setProfileDraft((draft) => draft && { ...draft, title });
+                }}
+              />
+            </label>
+            <label>
+              Descrizione Event
+              <textarea
+                disabled={busy}
+                value={profileDraft.description ?? ''}
+                onChange={(event) => {
+                  const description = event.currentTarget.value || null;
+                  setProfileDraft(
+                    (draft) => draft && { ...draft, description },
+                  );
+                }}
+              />
+            </label>
+            <label>
+              Località Event
+              <input
+                disabled={busy}
+                value={profileDraft.location ?? ''}
+                onChange={(event) => {
+                  const location = event.currentTarget.value || null;
+                  setProfileDraft((draft) => draft && { ...draft, location });
+                }}
+              />
+            </label>
+            <label>
+              Colore Event (#RRGGBB)
+              <input
+                disabled={busy}
+                maxLength={7}
+                value={profileDraft.colorCode ?? ''}
+                onChange={(event) => {
+                  const colorCode = event.currentTarget.value || null;
+                  setProfileDraft((draft) => draft && { ...draft, colorCode });
+                }}
+              />
+            </label>
+          </div>
           <div className="timeline-event-profile-editor__actions">
             <button type="button" disabled={busy} onClick={cancelProfile}>
               Annulla
@@ -682,32 +696,48 @@ export function EventInspectorActions({
         </div>
       ) : null}
       {editingArea && areaChoice ? (
-        <div className="timeline-activity-editor__fields">
-          <label>
-            Life Area Event
-            <select
+        <div
+          className="timeline-event-profile-editor"
+          aria-label="Modifica Life Area Event"
+        >
+          <div className="timeline-event-profile-editor__body">
+            <label>
+              Life Area Event
+              <select
+                disabled={busy}
+                value={areaSelection}
+                onChange={(event) => {
+                  setAreaSelection(event.target.value);
+                  setAreaNotice('');
+                }}
+              >
+                <option value="">Nessuna Life Area</option>
+                {areaChoice.options.map((row) => (
+                  <option key={row.ref} value={row.ref}>
+                    {row.name}
+                  </option>
+                ))}
+              </select>
+            </label>
+          </div>
+          <div className="timeline-event-profile-editor__actions">
+            <button
+              type="button"
               disabled={busy}
-              value={areaSelection}
-              onChange={(event) => {
-                setAreaSelection(event.target.value);
-                setAreaNotice('');
-              }}
+              onClick={() => setEditingArea(false)}
             >
-              <option value="">Nessuna Life Area</option>
-              {areaChoice.options.map((row) => (
-                <option key={row.ref} value={row.ref}>
-                  {row.name}
-                </option>
-              ))}
-            </select>
-          </label>
-          <button
-            type="button"
-            disabled={busy || (areaSelection || null) === areaChoice.currentRef}
-            onClick={() => void saveArea()}
-          >
-            Salva Life Area Event
-          </button>
+              Annulla
+            </button>
+            <button
+              type="button"
+              disabled={
+                busy || (areaSelection || null) === areaChoice.currentRef
+              }
+              onClick={() => void saveArea()}
+            >
+              Salva Life Area Event
+            </button>
+          </div>
         </div>
       ) : null}
       {profileNotice ? <p role="status">{profileNotice}</p> : null}

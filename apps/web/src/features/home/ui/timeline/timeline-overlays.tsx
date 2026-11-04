@@ -884,7 +884,7 @@ export function EventDetailDialog({
     >
       <div
         ref={dialogRef}
-        className={`timeline-event-modal${currentEditingProfile || eventEditorMode === 'series' ? ' timeline-event-modal--edit' : eventEditorMode ? ' timeline-event-modal--event-edit' : ' timeline-event-modal--inspector'}`}
+        className={`timeline-event-modal${currentEditingProfile || eventEditorMode ? ' timeline-event-modal--edit' : ' timeline-event-modal--inspector'}${eventEditorMode && eventEditorMode !== 'series' ? ' timeline-event-modal--event-edit' : ''}`}
         style={
           currentEditingProfile || eventEditorMode
             ? undefined
@@ -934,7 +934,11 @@ export function EventDetailDialog({
             className="timeline-event-modal__title"
             title={detail.title}
           >
-            {currentEditingProfile ? 'Modifica attività' : detail.title}
+            {currentEditingProfile
+              ? 'Modifica attività'
+              : eventEditorMode
+                ? 'Modifica evento'
+                : detail.title}
           </h3>
         </div>
         {!currentEditingProfile && detail.contextLabel ? (

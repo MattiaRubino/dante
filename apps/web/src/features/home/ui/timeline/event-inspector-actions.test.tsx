@@ -459,6 +459,9 @@ describe('Event Inspector actions', () => {
         onClose={vi.fn()}
       />,
     );
+    expect(
+      await screen.findByRole('button', { name: 'Modifica Life Area' }),
+    ).toBeTruthy();
     fireEvent.click(screen.getByRole('button', { name: 'Modifica' }));
     expect(
       await screen.findByRole('textbox', { name: 'Titolo Event' }),
@@ -468,6 +471,14 @@ describe('Event Inspector actions', () => {
         'timeline-event-modal--event-edit',
       ),
     );
+    expect(screen.getByRole('dialog').className).toContain(
+      'timeline-event-modal--edit',
+    );
+    expect(
+      screen
+        .getByRole('textbox', { name: 'Titolo Event' })
+        .closest('.timeline-event-profile-editor__body'),
+    ).toBeTruthy();
     expect(screen.getByRole('dialog').style.left).toBe('');
     expect(screen.getByRole('dialog').textContent).toContain('Modifica evento');
   });

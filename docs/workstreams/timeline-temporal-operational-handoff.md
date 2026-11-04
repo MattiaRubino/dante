@@ -3224,3 +3224,48 @@ The existing authenticated recurring Create golden case now attaches
 `RECURRING_CREATE_TO_VISIBLE_MS` immediately after the first card is visible.
 Use that measured duration to choose a bounded-window optimization; the
 instrumentation adds no production timing or synthetic Timeline item.
+
+## 2026-11-04 — Event edit parity: first shell candidate and handoff
+
+After the Create calendar alignment fix at `3bb9f84d`, the user ran the
+real-stack Event closure: 4/4 passed in Chromium and Firefox. This proves that
+calendar regression only; Event Inspector/Edit parity is still open.
+
+Acceptance target: Event Create, ordinary Edit, recurring **Solo questa** and
+**Questa e le successive** must share the Activity Create/Edit visual grammar
+and scope behavior for applicable fields. Events do not have Session controls.
+Agenda, participants, reminders, Life Area, outcome and intrinsic Schedule
+remain Event-specific. Protected exceptions and recorded facts follow
+`docs/domain/decisions/recurring-series-edit-exception-policy-v1.md`.
+
+Current split: `EventInspectorActions` owns a small profile form and a separate
+Life Area form; `TimelineEventAgendaEditor` owns agenda; Timeline/Schedule owns
+time changes; `RecurringSeriesEditor` owns following-scope structural edits.
+The selected recurring instance still opens the small profile form. These
+paths cannot be presented as one atomic all-fields Event Save.
+
+This Web-only candidate makes the profile/area edit modal share Activity edit
+geometry, a bounded scroll body and a fixed footer, and exposes Life Area
+directly from the Event Inspector toolbar. The existing profile CAS, Life Area
+assignment and series APIs are unchanged. The Event component test covers the
+shared shell and toolbar affordance. **This is a partial UI foundation, not
+Event Edit parity.**
+
+Next verticals for a continuing chat/agent:
+
+1. Implement an authoritative Event edit snapshot and atomic one-off command
+   for all applicable Create fields, with owner/revision/idempotency, rollback
+   and canonical readback. Existing profile, area, agenda and Schedule writes
+   are separate. Prove mixed edits and failure rollback in PostgreSQL/API.
+2. Implement a selected-occurrence command preserving local exception identity
+   and facts. Reuse following-scope structural preview/accept; protected
+   selected instances begin at `from_next` per the accepted decision.
+3. Build one Event editor renderer for ordinary, selected and following edits.
+   Remove split forms only after the atomic persistence boundary exists.
+4. Align Inspector read layout without Session UI. Cover responsive scrolling,
+   both scopes and canonical reload in component, browser and full-stack tests.
+
+The user runs tests in WSL, with artifacts under `temp/`; no CI. On this
+candidate, formatter and diff check ran, while Web tests, visual acceptance
+and the complete gate are **NOT_RUN**. The agent host's pnpm/Node versions do
+not satisfy the pinned engine guard; local `node_modules/.bin/prettier` worked.
