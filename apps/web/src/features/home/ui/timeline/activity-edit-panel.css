@@ -612,6 +612,30 @@
   font-size: 11px;
 }
 
+.timeline-event-modal--edit
+  .timeline-activity-editor
+  :is(
+    .timeline-activity-editor__area-choice,
+    .timeline-activity-editor__objectives,
+    .temporal-create-placement-lock
+  )[data-edit-invalid='true'] {
+  border: 1px solid var(--dante-timeline-tone-urgent, #ff5b64);
+  border-radius: 9px;
+}
+
+.timeline-event-modal--edit
+  .timeline-activity-editor
+  :is(
+    .timeline-activity-editor__area-choice,
+    .timeline-activity-editor__objectives
+  )
+  > .temporal-create-field-error {
+  display: block;
+  margin: 4px 6px;
+  color: var(--dante-timeline-tone-urgent, #ff5b64);
+  font-size: 11px;
+}
+
 .timeline-event-modal--edit .timeline-activity-editor__planning-help {
   margin: 10px 0 0;
   color: var(--dante-semantic-color-home-text-muted, #8f9bad);

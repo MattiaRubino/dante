@@ -1,5 +1,25 @@
 # Timeline / Temporal-Operational — Workstream Handoff
 
+## 2026-11-04 — Unified Activity edit candidate (in progress)
+
+The ordinary Activity editor and the recurring `only_this` path now compose
+profile, placement, planned Session changes, Life Area, Objectives, execution
+policy, reminder and placement lock in one serializable API transaction. A
+selected recurring instance writes its profile patch under the occurrence's
+expected revision. The all-day recurring Create boundary rejects incompatible
+timed structure and requires a named zone. Create and Edit expose local red
+validation borders with compact messages. Dead sequential Web save paths were
+removed. These are source changes, not an accepted full-stack gate.
+
+On the branch-aligned worktree based on `e2743d5fc`, 94 focused Web tests,
+TypeScript, targeted ESLint, Ruff check/format, test registry integrity and
+Python compile checks passed. PostgreSQL integration, generated OpenAPI/client
+drift, full browser acceptance and the complete same-SHA gate are **NOT_RUN**
+here: the available `uv` is 0.13.5 while the repository pins 0.12.5, and this
+container lacks the matching Python/PostgreSQL runtime. The Event edit UI and
+the single-Activity-to-series conversion remain open work; this checkpoint
+must not be called complete or accepted.
+
 ## 2026-11-03 — Recurring first appearance, measured candidate
 
 The owner's authenticated Chromium run on `e4b6c9c4` passed and measured

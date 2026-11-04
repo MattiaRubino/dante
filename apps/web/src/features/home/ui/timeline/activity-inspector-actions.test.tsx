@@ -52,25 +52,106 @@ const deleteHard = vi.fn();
 const loadSettings = vi.fn();
 const listActivitySessions = vi.fn().mockResolvedValue([]);
 const loadChildCount = vi.fn().mockResolvedValue(0);
-const saveCore = vi.fn();
+const saveCore = vi.fn<(...args: unknown[]) => Promise<unknown>>();
 const previewReplan = vi.fn();
 const applyReplan = vi
   .fn()
   .mockImplementation((_ref: unknown, settings: unknown) =>
     Promise.resolve(settings),
   );
-const loadLifeAreaChoice = vi.fn();
-const createLifeArea = vi.fn();
-const setLifeAreaAppearance = vi.fn();
-const assignLifeArea = vi.fn();
-const revisePlannedName = vi.fn();
-const setPlacementProtected = vi.fn();
+const loadLifeAreaChoice = vi.fn<(...args: unknown[]) => Promise<unknown>>();
+const createLifeArea = vi.fn<(...args: unknown[]) => Promise<unknown>>();
+const setLifeAreaAppearance = vi.fn<(...args: unknown[]) => Promise<unknown>>();
+const assignLifeArea = vi.fn<(...args: unknown[]) => Promise<unknown>>();
+const revisePlannedName = vi.fn<(...args: unknown[]) => Promise<unknown>>();
+const setPlacementProtected = vi.fn<(...args: unknown[]) => Promise<unknown>>();
+// Keep the component fixtures focused on form state while the remote-contract
+// suite verifies that the real implementation sends exactly one HTTP request.
+const applyAtomicEdit = vi.fn(
+  async (
+    activity: unknown,
+    initial: unknown,
+    payload: unknown,
+    operationId: unknown,
+  ) => {
+    const edit = requiredRecord(payload);
+    let settings = initial;
+    let savedProfile = activity;
+    const lock = edit.placementLock;
+    if (lock && requiredRecord(lock).locked === false) {
+      settings = (await setPlacementProtected(settings, false)) ?? settings;
+    }
+    if (edit.draft) {
+      settings =
+        (await applyReplan(ref, settings, edit.draft, operationId)) ?? settings;
+    }
+    for (const name of requiredItems(edit.plannedNames ?? [])) {
+      const row = requiredRecord(name);
+      await revisePlannedName(ref, row.scheduleRef, row.expectedName, row.name);
+    }
+    if (edit.lifeArea) {
+      const area = requiredRecord(edit.lifeArea);
+      let choice: unknown = await (loadLifeAreaChoice.mock.results.at(-1)?.value as Promise<unknown> | undefined);
+      let target = area.lifeAreaRef;
+      if (area.newArea) {
+        const created = await createLifeArea(
+          requiredRecord(area.newArea).name,
+          operationId,
+        );
+        target = created ? requiredRecord(created).ref ?? target : target;
+        let accepted = created;
+        if (created && requiredRecord(area.newArea).colorCode) {
+          accepted =
+            (await setLifeAreaAppearance(
+              created,
+              requiredRecord(area.newArea).colorCode,
+              operationId,
+            )) ?? created;
+        }
+        if (accepted)
+          choice = {
+            ...requiredRecord(choice),
+            options: [...requiredItems(requiredRecord(choice).options), accepted],
+          };
+      } else if (area.colorCode) {
+        const existing = requiredItems(requiredRecord(choice).options).find(
+          (item) => requiredRecord(item).ref === target,
+        );
+        if (existing)
+          await setLifeAreaAppearance(existing, area.colorCode, operationId);
+      }
+      if (area.assign) {
+        await assignLifeArea(ref, choice, target, operationId);
+      }
+    }
+    if (lock && requiredRecord(lock).locked === true) {
+      settings = (await setPlacementProtected(settings, true)) ?? settings;
+    }
+    if (edit.objectives) {
+      const objectives = await applyActivityEdits(ref, edit.objectives);
+      if (objectives) settings = { ...requiredRecord(settings), objectives };
+    }
+    if (edit.changes) {
+      const saved = await saveCore(
+        activity,
+        settings,
+        edit.changes,
+        operationId,
+      );
+      if (saved) {
+        settings = requiredRecord(saved).settings;
+        savedProfile = requiredRecord(saved).profile;
+      }
+    }
+    return { profile: savedProfile, settings };
+  },
+);
 const addObjective = vi.fn();
 const refreshObjectives = vi.fn();
 const getDefinition = vi.fn();
 const getSeriesState = vi.fn().mockResolvedValue(null);
 const reviseDefinition = vi.fn();
-const applyActivityEdits = vi.fn();
+const applyActivityEdits = vi.fn<(...args: unknown[]) => Promise<unknown>>();
 const correctResult = vi.fn();
 const previewHardDeletion = vi.fn();
 const confirmHardDeletion = vi.fn();
@@ -126,6 +207,7 @@ vi.mock('../../../temporal/remote-activity-edit-settings', () => ({
     load: loadSettings,
     loadChildCount,
     saveCore,
+    applyAtomicEdit,
     previewReplan,
     applyReplan,
     loadLifeAreaChoice,
@@ -225,6 +307,62 @@ describe('Activity Inspector actions', () => {
 });
 
 describe('Recurring Activity profile scope', () => {
+  it('saves instance profile and Life Area together through one owner command', async () => {
+    const context = {
+      occurrenceRef: '0199a222-2222-7222-8222-222222222222',
+      sourceRef: '0199a444-4444-7444-8444-444444444444',
+      editRevision: 3,
+      recurrenceStateRef: null,
+    };
+    loadRecurringContext.mockResolvedValueOnce(context);
+    loadSettings.mockResolvedValueOnce({
+      ...currentSettings,
+      lifeAreaRef: 'area-1',
+    });
+    loadLifeAreaChoice.mockResolvedValueOnce({
+      currentRef: 'area-1',
+      currentRevision: 2,
+      options: [{ ref: 'area-1', name: 'Lavoro' }],
+    });
+    const onSaved = vi.fn();
+    render(
+      <ActivityEditPanel
+        profile={profile}
+        closeRequestRef={createRef()}
+        onSaved={onSaved}
+        onCancel={() => undefined}
+      />,
+    );
+    fireEvent.change(screen.getByRole('textbox', { name: 'Titolo' }), {
+      target: { value: 'Dopo' },
+    });
+    fireEvent.click(
+      await screen.findByRole('button', { name: 'Rimuovi Life Area' }),
+    );
+    await submitEditor();
+    await waitFor(() => expect(applyAtomicEdit).toHaveBeenCalledTimes(1));
+    expect(applyAtomicEdit).toHaveBeenCalledWith(
+      profile,
+      containing({ lifeAreaRef: 'area-1' }),
+      containing({
+        occurrenceProfile: {
+          occurrenceRef: context.occurrenceRef,
+          expectedRevision: context.editRevision,
+          expectedRecurrenceStateRef: null,
+          patch: { title: 'Dopo' },
+        },
+        lifeArea: containing({
+          lifeAreaRef: null,
+          expectedAssignmentRevision: 2,
+          assign: true,
+        }),
+      }),
+      expect.any(String),
+    );
+    expect(saveRecurringProfile).not.toHaveBeenCalled();
+    expect(onSaved).toHaveBeenCalledOnce();
+  });
+
   it('renders the persisted Life Area colors in edit choices', async () => {
     loadLifeAreaChoice.mockResolvedValueOnce({
       currentRef: null,
@@ -2824,6 +2962,19 @@ describe('Activity Inspector', () => {
         ],
       }),
       'area-new',
+      expect.any(String),
+    );
+    expect(applyAtomicEdit).toHaveBeenCalledTimes(1);
+    expect(applyAtomicEdit).toHaveBeenCalledWith(
+      profile,
+      currentSettings,
+      containing({
+        lifeArea: containing({
+          expectedAssignmentRevision: 0,
+          assign: true,
+          newArea: { name: 'Studio', colorCode: '#EA5C12' },
+        }),
+      }),
       expect.any(String),
     );
     expect(onSaved).toHaveBeenCalledWith(profile);

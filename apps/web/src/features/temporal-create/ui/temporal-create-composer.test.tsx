@@ -11,6 +11,7 @@ import {
 import { afterEach, beforeAll, describe, expect, it, vi } from 'vitest';
 
 import { i18n } from '../../../bootstrap/i18n';
+import { temporalValidationIssue } from '../../temporal/model';
 import {
   createTemporalCreateFields,
   createTemporalCreateSession,
@@ -81,6 +82,122 @@ function renderComposer(options?: { dirty?: boolean }) {
 }
 
 describe('TemporalCreateComposer', () => {
+  it('marks the visible date and recurrence controls at the failing field', () => {
+    const fields = createTemporalCreateFields({
+      date: '2026-10-06',
+      timeZoneId: 'Europe/Rome',
+      contextId: 'personale',
+    });
+    const session = setTemporalCreateSurface(
+      createTemporalCreateSession(fields),
+      'full',
+    );
+    render(
+      <TemporalCreateComposer
+        session={session}
+        contexts={context}
+        issues={[
+          temporalValidationIssue('temporal.create.date.invalid', ['date']),
+        ]}
+        lifecycle="failed"
+        failureTarget="eventRecurrence"
+        failureMessage="Controlla la ripetizione."
+        postCreateRetry={false}
+        u2Draft={createTemporalCreateU2AuthoringDraft(fields)}
+        onPatch={vi.fn()}
+        onSurfaceChange={vi.fn()}
+        onRequestClose={vi.fn()}
+        onContinueEditing={vi.fn()}
+        onDiscard={vi.fn()}
+        onMoveToUnplaced={vi.fn()}
+        onSubmit={vi.fn()}
+      />,
+    );
+    const date = document.querySelector('[data-create-path="date"]');
+    expect(date?.classList.contains('temporal-create-u2-date-field')).toBe(
+      true,
+    );
+    expect(date?.getAttribute('aria-invalid')).toBe('true');
+    expect(
+      date?.querySelector('.temporal-create-date-picker__trigger'),
+    ).toBeTruthy();
+    expect(
+      document
+        .querySelector('[data-create-path="eventRecurrence"]')
+        ?.getAttribute('aria-invalid'),
+    ).toBe('true');
+  });
+
+  it('marks the affected planned Session and renders only one advanced description', () => {
+    const fields = createTemporalCreateFields({
+      date: '2026-10-06',
+      timeZoneId: 'Europe/Rome',
+      contextId: 'personale',
+    });
+    const session = setTemporalCreateSurface(
+      createTemporalCreateSession(fields),
+      'full',
+    );
+    const draft = createTemporalCreateU2AuthoringDraft(fields);
+    render(
+      <TemporalCreateComposer
+        session={session}
+        contexts={context}
+        issues={[]}
+        lifecycle="failed"
+        failureTarget="plannedSession:affected"
+        failureMessage="Controlla questa Sessione."
+        postCreateRetry={false}
+        u2Draft={{
+          ...draft,
+          activityStructure: {
+            ...draft.activityStructure,
+            plannedSlices: [
+              {
+                id: 'affected',
+                title: 'Prima',
+                date: fields.date,
+                startTime: '09:00',
+                endTime: '09:30',
+              },
+              {
+                id: 'other',
+                title: 'Seconda',
+                date: fields.date,
+                startTime: '09:30',
+                endTime: '10:00',
+              },
+            ],
+          },
+        }}
+        onPatch={vi.fn()}
+        onSurfaceChange={vi.fn()}
+        onRequestClose={vi.fn()}
+        onContinueEditing={vi.fn()}
+        onDiscard={vi.fn()}
+        onMoveToUnplaced={vi.fn()}
+        onSubmit={vi.fn()}
+      />,
+    );
+
+    const affected = document.querySelector(
+      '[data-create-path="plannedSession:affected"]',
+    );
+    const other = document.querySelector(
+      '[data-create-path="plannedSession:other"]',
+    );
+    expect(
+      affected?.querySelector('[data-create-invalid="true"]'),
+    ).toBeTruthy();
+    expect(other?.querySelector('[data-create-invalid="true"]')).toBeNull();
+    expect(within(affected as HTMLElement).getByRole('alert').textContent).toBe(
+      'Controlla questa Sessione.',
+    );
+    expect(
+      screen.getAllByRole('textbox', { name: /Descrizione/ }),
+    ).toHaveLength(1);
+  });
+
   it('uses the shared rounded footer action for Aggiungi', () => {
     renderComposer();
     const add = screen.getByRole('button', { name: 'Aggiungi' });

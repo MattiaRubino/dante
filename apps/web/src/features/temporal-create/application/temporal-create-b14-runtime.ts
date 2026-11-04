@@ -81,7 +81,10 @@ export function buildTemporalCreateActivityRecurrence(
   if (fields.eventRecurrence.patternKind !== 'calendar-wall-clock') {
     throw new Error('temporal.create.activity_recurrence.calendar_only');
   }
-  if (fields.timeSemantics !== 'timed' || fields.timeMode !== 'zoned') {
+  if (
+    fields.timeSemantics !== 'all-day' &&
+    (fields.timeSemantics !== 'timed' || fields.timeMode !== 'zoned')
+  ) {
     throw new Error('temporal.create.activity_recurrence.timed_zoned_required');
   }
 
@@ -147,7 +150,9 @@ export function buildTemporalCreateActivityRecurrence(
     clock_basis_code: 'named_zone' as const,
     zone_id: fields.timeZoneId,
     pattern_anchor_date: recurrence.calendarInterval > 1 ? fields.date : null,
-    wall_times: Object.freeze([fields.startTime]),
+    wall_times: Object.freeze(
+      fields.timeSemantics === 'all-day' ? [] : [fields.startTime],
+    ),
     weekdays,
     month_days: monthDays,
     ordinal_weekdays: ordinalWeekdays,

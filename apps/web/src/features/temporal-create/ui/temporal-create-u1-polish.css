@@ -698,6 +698,17 @@
   line-height: 1.4;
 }
 
+.temporal-create-composer
+  .temporal-create-u2-date-field[data-create-invalid='true'] {
+  outline: none !important;
+}
+
+.temporal-create-composer
+  .temporal-create-u2-date-field[data-create-invalid='true']
+  .temporal-create-date-picker__trigger {
+  border: 1px solid var(--dante-timeline-tone-urgent, #ff5b64) !important;
+}
+
 .temporal-create-backdrop.is-advanced
   .temporal-create-composer__body
   > .temporal-create-operation-error {

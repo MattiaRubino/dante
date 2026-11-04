@@ -6,6 +6,7 @@ from datetime import UTC, date, datetime, time
 from uuid import UUID
 
 import pytest
+from pydantic import ValidationError
 
 from dante.modules.temporal.occurrence import CalendarCoordinate, OccurrenceView
 from dante.modules.temporal.occurrence_api import _series_source_recurrence, _series_spec
@@ -16,6 +17,7 @@ from dante.modules.temporal.occurrence_edit_scope import (
     select_recurrence_edit_scope,
 )
 from dante.modules.temporal.recurrence import CalendarRecurrence
+from dante.modules.temporal.recurring_authoring_api import CreateRecurringRoutineRequest
 from dante.modules.temporal.recurring_series_edit import _validate_structure
 from dante.modules.temporal.recurring_series_reconciliation import (
     MaterializedSeriesInstance,
@@ -31,6 +33,53 @@ from dante.modules.temporal.recurring_structure_preview import (
 
 SOURCE, FIRST, LOCAL, CLEAN = (UUID(int=n) for n in (1, 11, 12, 13))
 WINDOW = SeriesReconciliationWindow(date(2026, 10, 19), date(2026, 10, 29))
+
+
+def test_recurring_all_day_create_rejects_timed_structure_before_persistence() -> None:
+    template: dict[str, object] = {
+        "version": 1,
+        "placement_kind": "all_day",
+        "duration_days": 2,
+        "root_window": None,
+        "session_capture_mode": "disabled",
+        "child_guard_mode": "none",
+        "reality_mode": "manual",
+        "placement_protected": False,
+        "objectives": [],
+        "activity_intervals": [],
+        "planned_slices": [{"name": "Riflessione", "time_enabled": False}],
+        "children": [],
+    }
+    request = {
+        "operation_id": "all-day:validation",
+        "title": "Ritiro",
+        "duration_minutes": 2880,
+        "activity_template": template,
+        "recurrence": {
+            "range_kind": "open",
+            "effective_from": date(2026, 10, 25),
+            "pattern_code": "daily",
+            "interval_count": 1,
+            "clock_basis_code": "named_zone",
+            "zone_id": "Europe/Rome",
+            "wall_times": [],
+        },
+    }
+    assert CreateRecurringRoutineRequest.model_validate(request).duration_minutes == 2880
+
+    for change in (
+        {"activity_intervals": [{"start_offset_minutes": 0, "duration_minutes": 60}]},
+        {"planned_slices": [{"name": "Riflessione", "time_enabled": True}]},
+        {
+            "children": [
+                {"title": "Figlio", "planned_slices": [{"name": "P", "time_enabled": True}]}
+            ]
+        },
+    ):
+        with pytest.raises(ValidationError):
+            CreateRecurringRoutineRequest.model_validate(
+                {**request, "activity_template": {**template, **change}}
+            )
 
 
 def test_series_edit_rejects_a_template_that_would_break_later_materialization() -> None:

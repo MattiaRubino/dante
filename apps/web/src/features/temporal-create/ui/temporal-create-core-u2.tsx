@@ -38,6 +38,7 @@ type Props = Readonly<{
   contexts: readonly TemporalCreateContextOption[];
   showCompactTimezone?: boolean;
   showRecurrence?: boolean;
+  showDescription?: boolean;
   repeatDetails?: ReactNode;
   realityObjectives?: ReactNode;
   onPatch: (patch: Partial<TemporalCreateFields>) => void;
@@ -484,6 +485,7 @@ export function TemporalCreateCoreFieldsU2({
   contexts,
   showCompactTimezone = true,
   showRecurrence = true,
+  showDescription = true,
   repeatDetails,
   realityObjectives,
   onPatch,
@@ -942,6 +944,7 @@ export function TemporalCreateCoreFieldsU2({
           <div
             ref={timeZoneRootRef}
             className="temporal-create-timezone-control"
+            data-create-path="timeZoneId"
           >
             <button
               className={`temporal-create-timezone-trigger${timeZoneOpen ? ' is-open' : ''}`}
@@ -1006,23 +1009,29 @@ export function TemporalCreateCoreFieldsU2({
                 </div>
               </div>
             ) : null}
+            {renderError('timeZoneId')}
           </div>
 
           <input
             className="temporal-create-u2-date-bridge"
-            data-create-path="date"
             aria-hidden="true"
             tabIndex={-1}
             value={fields.date}
             onChange={(event) => patchStartDate(event.currentTarget.value)}
           />
 
-          <TemporalCreateDatePicker
-            label={italian ? 'Data inizio' : 'Start date'}
-            value={fields.date}
-            locale={locale}
-            onChange={patchStartDate}
-          />
+          <div
+            className="temporal-create-u2-date-field"
+            data-create-path="date"
+          >
+            <TemporalCreateDatePicker
+              label={italian ? 'Data inizio' : 'Start date'}
+              value={fields.date}
+              locale={locale}
+              onChange={patchStartDate}
+            />
+            {renderError('date')}
+          </div>
 
           <TimeControl
             label={italian ? 'Inizio' : 'Start'}
@@ -1188,25 +1197,40 @@ export function TemporalCreateCoreFieldsU2({
 
       {fields.timeSemantics === 'all-day' ? (
         <div className="temporal-create-u2-all-day">
-          <TemporalCreateDatePicker
-            label="Data inizio"
-            value={fields.date}
-            locale={locale}
-            onChange={patchAllDayStartDate}
-          />
-          <TemporalCreateDatePicker
-            label="Data fine"
-            value={visibleAllDayEndDate}
-            min={fields.date}
-            locale={locale}
-            onChange={patchAllDayEndDate}
-          />
+          <div
+            className="temporal-create-u2-date-field"
+            data-create-path="date"
+          >
+            <TemporalCreateDatePicker
+              label="Data inizio"
+              value={fields.date}
+              locale={locale}
+              onChange={patchAllDayStartDate}
+            />
+            {renderError('date')}
+          </div>
+          <div
+            className="temporal-create-u2-date-field"
+            data-create-path="event.allDayEndDate"
+          >
+            <TemporalCreateDatePicker
+              label="Data fine"
+              value={visibleAllDayEndDate}
+              min={fields.date}
+              locale={locale}
+              onChange={patchAllDayEndDate}
+            />
+            {renderError('event.allDayEndDate')}
+          </div>
         </div>
       ) : null}
 
       {showRecurrence && fields.timeSemantics !== 'unscheduled' ? (
         <>
-          <div className="temporal-create-u2-repeat">
+          <div
+            className="temporal-create-u2-repeat"
+            data-create-path="eventRecurrence"
+          >
             <select
               aria-label={copy.event.repeat}
               value={quickRecurrence(fields)}
@@ -1223,6 +1247,7 @@ export function TemporalCreateCoreFieldsU2({
               <option value="yearly">{copy.event.repeatYearly}</option>
               <option value="custom">{copy.event.repeatCustom}</option>
             </select>
+            {renderError('eventRecurrence')}
           </div>
           {repeatDetails}
         </>
@@ -1252,17 +1277,22 @@ export function TemporalCreateCoreFieldsU2({
       />
 
       {fields.timeSemantics !== 'unscheduled' ? (
-        <TemporalCreateQuickReminder fields={fields} onPatch={onPatch} />
+        <div data-create-path="confirmation.reminderLeadMinutes">
+          <TemporalCreateQuickReminder fields={fields} onPatch={onPatch} />
+          {renderError('confirmation.reminderLeadMinutes')}
+        </div>
       ) : null}
 
-      <textarea
-        className="temporal-create-u2-description"
-        value={fields.notes}
-        aria-label="Descrizione"
-        placeholder="Descrizione"
-        rows={3}
-        onChange={(event) => onPatch({ notes: event.currentTarget.value })}
-      />
+      {showDescription ? (
+        <textarea
+          className="temporal-create-u2-description"
+          value={fields.notes}
+          aria-label="Descrizione"
+          placeholder="Descrizione"
+          rows={3}
+          onChange={(event) => onPatch({ notes: event.currentTarget.value })}
+        />
+      ) : null}
     </>
   );
 }

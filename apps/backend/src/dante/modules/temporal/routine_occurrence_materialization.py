@@ -669,27 +669,43 @@ class RoutineOccurrenceMaterializationApplication:
             occurrence_ref=occurrence_ref,
         )
         title = cast(str, correction.get("title", title))
-        root_window = template.get(
-            "root_window",
-            {
-                "start_offset_minutes": 0,
-                "duration_minutes": policy.duration_minutes,
-            },
-        )
-        root_placement = self._template_window(
-            occurrence_ref,
-            coordinate,
-            root_window,
-        )
+        all_day = template.get("placement_kind") == "all_day"
+        if all_day:
+            days = template.get("duration_days")
+            if (
+                type(days) is not int
+                or not 1 <= days <= 365
+                or policy.duration_minutes != days * 1440
+                or coordinate.generated_wall_time is not None
+                or coordinate.clock_basis_code != "named_zone"
+            ):
+                raise OccurrenceInputError("Recurring all-day Activity policy is invalid.")
+            root_placement = DateSpanPlacement(
+                start_date=coordinate.generated_date,
+                end_date_exclusive=coordinate.generated_date + timedelta(days=days),
+            )
+        else:
+            root_window = template.get(
+                "root_window",
+                {"start_offset_minutes": 0, "duration_minutes": policy.duration_minutes},
+            )
+            root_placement = self._template_window(occurrence_ref, coordinate, root_window)
         interval_rows = template.get("activity_intervals", [])
         if not isinstance(interval_rows, list):
             raise OccurrenceInputError("Recurring Activity intervals are invalid.")
+        if all_day and interval_rows:
+            raise OccurrenceInputError("Recurring all-day Activity cannot contain timed intervals.")
         intervals = tuple(
             self._template_window(occurrence_ref, coordinate, value) for value in interval_rows
         )
         planned_rows = template.get("planned_slices", [])
         if not isinstance(planned_rows, list):
             raise OccurrenceInputError("Recurring Activity planned Sessions are invalid.")
+        if all_day and any(
+            not isinstance(row, dict) or row.get("time_enabled") is not False
+            for row in planned_rows
+        ):
+            raise OccurrenceInputError("Recurring all-day Sessions must be untimed.")
         # A named, untimed planned Session remains an unplaced Schedule in each
         # occurrence. It must not be replaced with an invented clock interval.
         planned_slices = tuple(

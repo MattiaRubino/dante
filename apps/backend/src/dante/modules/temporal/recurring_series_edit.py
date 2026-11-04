@@ -190,23 +190,37 @@ def _validate_structure(
 
     if owner == "routine":
         template = structure.get("activity_template")
+        all_day = isinstance(template, dict) and template.get("placement_kind") == "all_day"
         if (
             recurrence.clock_basis_code != "named_zone"
-            or len(recurrence.wall_times) != 1
+            or len(recurrence.wall_times) != (0 if all_day else 1)
             or not isinstance(template, dict)
             or template.get("version") != 1
             or type(duration_minutes) is not int
             or not 1 <= duration_minutes <= 525_600
         ):
             raise SeriesReconciliationError(
-                "Recurring Activity requires one named-zone time and a complete timed template."
+                "Recurring Activity requires a named-zone calendar and a complete template."
             )
         objectives(template.get("objectives"))
-        root_start, root_end = window(template.get("root_window"))
-        if root_end - root_start != duration_minutes:
-            raise SeriesReconciliationError("Recurring Activity duration disagrees with its plan.")
-        if reminder is not None and root_start != 0:
-            raise SeriesReconciliationError("Recurring Reminder needs the root plan.")
+        if all_day:
+            days = template.get("duration_days")
+            if (
+                type(days) is not int
+                or not 1 <= days <= 365
+                or duration_minutes != days * 1440
+                or template.get("root_window") is not None
+                or reminder is not None
+            ):
+                raise SeriesReconciliationError("Recurring all-day Activity duration is invalid.")
+        else:
+            root_start, root_end = window(template.get("root_window"))
+            if root_end - root_start != duration_minutes:
+                raise SeriesReconciliationError(
+                    "Recurring Activity duration disagrees with its plan."
+                )
+            if reminder is not None and root_start != 0:
+                raise SeriesReconciliationError("Recurring Reminder needs the root plan.")
         if (
             template.get("session_capture_mode")
             not in {"disabled", "record", "live", "record_and_live"}
@@ -227,11 +241,17 @@ def _validate_structure(
         for key in ("activity_intervals", "planned_slices", "children"):
             if not isinstance(template.get(key), list) or len(template[key]) > 100:
                 raise SeriesReconciliationError(f"Recurring Activity {key} is invalid.")
+        if all_day and template["activity_intervals"]:
+            raise SeriesReconciliationError("An all-day Activity cannot have timed intervals.")
         intervals = sorted(window(value) for value in template["activity_intervals"])
-        if intervals and (
-            intervals[0][0] != root_start
-            or intervals[-1][1] != root_end
-            or any(left[1] > right[0] for left, right in pairwise(intervals))
+        if (
+            not all_day
+            and intervals
+            and (
+                intervals[0][0] != root_start
+                or intervals[-1][1] != root_end
+                or any(left[1] > right[0] for left, right in pairwise(intervals))
+            )
         ):
             raise SeriesReconciliationError("Recurring Activity intervals disagree with the root.")
         for item in template["planned_slices"]:
@@ -241,6 +261,8 @@ def _validate_structure(
                 if set(item) != {"name", "time_enabled"}:
                     raise SeriesReconciliationError("Untimed recurring Session is invalid.")
             else:
+                if all_day:
+                    raise SeriesReconciliationError("An all-day Session cannot have a clock.")
                 window({key: item.get(key) for key in ("start_offset_minutes", "duration_minutes")})
         for child in template["children"]:
             if not isinstance(child, dict) or not text_value(child.get("title")):
@@ -254,6 +276,10 @@ def _validate_structure(
             ):
                 raise SeriesReconciliationError("Recurring child policy is invalid.")
             if child.get("placement") is not None:
+                if all_day:
+                    raise SeriesReconciliationError(
+                        "An all-day child cannot have a timed placement."
+                    )
                 window(child["placement"])
             planned = child.get("planned_slices")
             if not isinstance(planned, list) or len(planned) > 100:
@@ -261,6 +287,8 @@ def _validate_structure(
             for planned_item in planned:
                 if not isinstance(planned_item, dict) or not text_value(planned_item.get("name")):
                     raise SeriesReconciliationError("Recurring child Session name is invalid.")
+                if all_day:
+                    raise SeriesReconciliationError("An all-day child cannot have a timed Session.")
                 window(
                     {
                         key: planned_item.get(key)

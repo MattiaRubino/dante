@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from dataclasses import replace
 from datetime import date
 from types import SimpleNamespace
 from typing import Any, cast
@@ -22,7 +23,10 @@ from dante.modules.temporal.activity_inspector_api import (
     get_self_activity_session_impact,
 )
 from dante.modules.temporal.occurrence import OccurrencePersistenceError
-from dante.modules.temporal.recurring_authoring import RecurringAuthoringApplication
+from dante.modules.temporal.recurring_authoring import (
+    RecurringAuthoringApplication,
+    RoutineAuthoringPolicy,
+)
 from dante.modules.temporal.routine_occurrence_materialization import (
     RoutineOccurrenceMaterializationApplication,
 )
@@ -31,6 +35,93 @@ from dante.platform.database.runtime import create_database_runtime
 from dante.platform.http.problem import ProblemError
 
 pytestmark = pytest.mark.postgres
+
+
+@pytest.mark.asyncio
+async def test_recurring_all_day_activity_materializes_date_spans_across_years(
+    migrated_database: Any,
+) -> None:
+    actor = _seed_self(migrated_database)
+    runtime = create_database_runtime(migrated_database.runtime_settings())
+    try:
+        template = {
+            "version": 1,
+            "placement_kind": "all_day",
+            "duration_days": 2,
+            "root_window": None,
+            "description": None,
+            "location": None,
+            "item_color_code": None,
+            "session_capture_mode": "disabled",
+            "minimum_session_duration_microseconds": None,
+            "child_guard_mode": "none",
+            "reality_mode": "manual",
+            "placement_protected": False,
+            "objectives": [],
+            "activity_intervals": [],
+            "planned_slices": [{"name": "Riflessione", "time_enabled": False}],
+            "children": [],
+        }
+        routine = await RecurringAuthoringApplication(runtime.session_factory).create_routine(
+            self_person_ref=actor,
+            operation_id="recurring:all-day:create",
+            title="Ritiro",
+            life_area_intent=None,
+            recurrence=replace(_daily_named_zone(), wall_times=()),
+            policy=RoutineAuthoringPolicy(
+                duration_minutes=2880,
+                reminder_lead_minutes=None,
+                activity_template=template,
+            ),
+        )
+        materializer = RoutineOccurrenceMaterializationApplication(runtime.session_factory)
+        for start, end in (
+            (date(2026, 10, 25), date(2026, 10, 26)),
+            (date(2031, 10, 25), date(2031, 10, 26)),
+        ):
+            operation = f"recurring:all-day:{start.isoformat()}"
+            await materializer.checkpoint_window(
+                self_person_ref=actor,
+                operation_id=operation,
+                start_date=start,
+                end_date_exclusive=end,
+                effective_zone_id="Europe/Rome",
+            )
+            occurrences = await _read_checkpoint_refs(
+                runtime,
+                actor,
+                routine.source_ref,
+                owner="routine",
+                operation=operation,
+                start=start,
+                end=end,
+            )
+            assert len(occurrences) == 1
+            async with runtime.session_factory() as session, session.begin():
+                activity = (
+                    await session.execute(
+                        text(
+                            "SELECT activity_ref FROM dante.list_self_routine_occurrence_activities("
+                            ":actor, CAST(ARRAY[:occurrence] AS uuid[]))"
+                        ),
+                        {"actor": actor, "occurrence": occurrences[0]},
+                    )
+                ).scalar_one()
+                snapshot = ActivityEditSnapshot.model_validate(
+                    await session.scalar(
+                        _SNAPSHOT,
+                        {"actor": actor, "activity": activity},
+                    )
+                )
+            envelope = next(row for row in snapshot.schedules if row.role_code == "envelope")
+            assert envelope.temporal_form == "date_span"
+            assert envelope.start_date == start
+            assert envelope.end_date_exclusive == date.fromordinal(start.toordinal() + 2)
+            planned = [row for row in snapshot.schedules if row.role_code == "planned"]
+            assert len(planned) == 1
+            assert planned[0].placement_material_state_ref is None
+    finally:
+        await runtime.dispose()
 
 
 @pytest.mark.asyncio

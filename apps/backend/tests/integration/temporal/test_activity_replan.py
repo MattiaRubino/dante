@@ -24,6 +24,9 @@ from dante.modules.temporal.activity_inspector_api import get_self_activity_sess
 from dante.modules.temporal.activity_replan_api import (
     ActivityAtomicEditCommand,
     ActivityReplanCommand,
+    AtomicLifeArea,
+    AtomicNewLifeArea,
+    AtomicPlacementLock,
     DeletePlannedRow,
     NewIntervalRow,
     NewPlannedRow,
@@ -119,6 +122,11 @@ async def test_atomic_edit_rolls_back_new_session_when_objective_retirement_fail
         before = await _snapshot(runtime, actor, activity)
         attempted_session = uuid7()
         command = ActivityAtomicEditCommand(
+            life_area=AtomicLifeArea(
+                operation_id="atomic-edit:area:rollback",
+                expected_assignment_revision=0,
+                new_area=AtomicNewLifeArea(name="Area da annullare", color_code="#EA5C12"),
+            ),
             replan=ActivityReplanCommand(
                 operation_id="atomic-edit:add-session",
                 envelope=_move(
@@ -143,10 +151,37 @@ async def test_atomic_edit_rolls_back_new_session_when_objective_retirement_fail
         assert rejected.value.status == 409
         after = await _snapshot(runtime, actor, activity)
         assert after.schedules == before.schedules
+        assert after.life_area_ref == before.life_area_ref
+        async with runtime.session_factory() as session, session.begin():
+            names = (
+                (
+                    await session.execute(
+                        text("SELECT name FROM dante.list_self_life_areas(:actor)"),
+                        {"actor": actor},
+                    )
+                )
+                .scalars()
+                .all()
+            )
+        assert "Area da annullare" not in names
 
         accepted = await apply_activity_atomic_edit(
             activity,
             ActivityAtomicEditCommand(
+                life_area=AtomicLifeArea(
+                    operation_id="atomic-edit:area:accepted",
+                    expected_assignment_revision=0,
+                    new_area=AtomicNewLifeArea(name="Studio", color_code="#EA5C12"),
+                ),
+                placement_lock=AtomicPlacementLock(
+                    schedule_ref=next(
+                        row.schedule_ref for row in before.schedules if row.role_code == "envelope"
+                    ),
+                    expected_revision=(
+                        before.placement_lock.revision if before.placement_lock else None
+                    ),
+                    locked=True,
+                ),
                 replan=ActivityReplanCommand(
                     operation_id="atomic-edit:add-session:accepted",
                     envelope=_move(
@@ -173,6 +208,9 @@ async def test_atomic_edit_rolls_back_new_session_when_objective_retirement_fail
         )
         assert any(row.role_code == "planned" for row in accepted.snapshot.schedules)
         assert [row.label for row in accepted.objectives] == ["Completato"]
+        assert accepted.snapshot.life_area_ref is not None
+        assert accepted.snapshot.placement_lock is not None
+        assert accepted.snapshot.placement_lock.locked
     finally:
         await runtime.dispose()
 

@@ -25,6 +25,8 @@ from dante.modules.temporal.activity_edit_snapshot_api import (
     revise_activity_core_in_session,
 )
 from dante.modules.temporal.decomposition_api import ActivityScheduleResponse
+from dante.modules.temporal.life_area import _fingerprint as life_area_fingerprint
+from dante.modules.temporal.life_area_assignment import _fingerprint as assignment_fingerprint
 from dante.modules.temporal.reality_objective_api import (
     ActivityObjectiveBatchCommand,
     ObjectiveResponse,
@@ -181,19 +183,125 @@ class ActivityReplanCommand(BaseModel):
         return self
 
 
+class AtomicPlacementLock(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+    schedule_ref: UUID
+    expected_revision: int | None = Field(default=None, ge=0)
+    locked: bool
+
+
+class AtomicPlannedName(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+    schedule_ref: UUID
+    expected_name: str | None = Field(default=None, max_length=300)
+    name: str | None = Field(default=None, min_length=1, max_length=300)
+
+    @model_validator(mode="after")
+    def trimmed(self) -> AtomicPlannedName:
+        if self.name is not None and self.name != self.name.strip():
+            raise ValueError("A planned Session name must be trimmed.")
+        return self
+
+
+class AtomicNewLifeArea(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+    name: str = Field(min_length=1, max_length=100)
+    color_code: str | None = Field(default=None, pattern=r"^#[0-9a-fA-F]{6}$")
+
+
+class AtomicLifeArea(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+    operation_id: str = Field(min_length=1, max_length=150)
+    expected_assignment_revision: int = Field(ge=0)
+    life_area_ref: UUID | None = None
+    assign: bool = True
+    new_area: AtomicNewLifeArea | None = None
+    expected_area_revision: int | None = Field(default=None, ge=1)
+    color_code: str | None = Field(default=None, pattern=r"^#[0-9a-fA-F]{6}$")
+    icon_code: str | None = None
+
+    @model_validator(mode="after")
+    def valid_choice(self) -> AtomicLifeArea:
+        if self.new_area is not None and self.life_area_ref is not None:
+            raise ValueError("Choose an existing Life Area or create a new one.")
+        if self.color_code is not None and (
+            self.life_area_ref is None or self.expected_area_revision is None
+        ):
+            raise ValueError("An existing Life Area color requires its revision.")
+        if self.new_area is not None and not self.assign:
+            raise ValueError("A new Life Area must be assigned to this Activity.")
+        return self
+
+
+class AtomicOccurrenceProfile(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+    occurrence_ref: UUID
+    expected_revision: int = Field(ge=0)
+    expected_recurrence_state_ref: UUID | None
+    profile_patch: dict[str, str | None] = Field(min_length=1, max_length=4)
+
+    @model_validator(mode="after")
+    def valid_patch(self) -> AtomicOccurrenceProfile:
+        patch = self.profile_patch
+        if not set(patch).issubset({"title", "description", "location", "color_code"}):
+            raise ValueError("Only occurrence profile metadata can be edited here.")
+        title = patch.get("title")
+        if "title" in patch and (
+            title is None or not title or title != title.strip() or len(title) > 300
+        ):
+            raise ValueError("Invalid occurrence title.")
+        if any(
+            value is not None and (not value or value != value.strip())
+            for key, value in patch.items()
+            if key in {"description", "location"}
+        ):
+            raise ValueError("Invalid occurrence metadata.")
+        color = patch.get("color_code")
+        if (
+            "color_code" in patch
+            and color is not None
+            and (
+                len(color) != 7
+                or not color.startswith("#")
+                or any(ch not in "0123456789ABCDEF" for ch in color[1:])
+            )
+        ):
+            raise ValueError("Invalid occurrence color.")
+        return self
+
+
 class ActivityAtomicEditCommand(BaseModel):
     """Compose the Activity's owner capabilities in one serializable Save."""
 
     model_config = ConfigDict(extra="forbid")
 
+    operation_id: str | None = Field(default=None, min_length=1, max_length=200)
     replan: ActivityReplanCommand | None = None
     objectives: ActivityObjectiveBatchCommand | None = None
     core: ActivityCoreEditCommand | None = None
+    placement_lock: AtomicPlacementLock | None = None
+    planned_names: list[AtomicPlannedName] = Field(default_factory=list, max_length=100)
+    life_area: AtomicLifeArea | None = None
+    occurrence_profile: AtomicOccurrenceProfile | None = None
 
     @model_validator(mode="after")
     def nonempty(self) -> ActivityAtomicEditCommand:
-        if self.replan is None and self.objectives is None and self.core is None:
+        if not any(
+            (
+                self.replan,
+                self.objectives,
+                self.core,
+                self.placement_lock,
+                self.planned_names,
+                self.life_area,
+                self.occurrence_profile,
+            )
+        ):
             raise ValueError("At least one Activity edit is required.")
+        if self.occurrence_profile is not None and self.core is not None and self.core.profile:
+            raise ValueError("Choose the instance profile instead of the Activity source profile.")
+        if self.occurrence_profile is not None and self.operation_id is None:
+            raise ValueError("An instance profile edit requires an operation id.")
         return self
 
 
@@ -601,6 +709,143 @@ async def _read(session: AsyncSession, actor: UUID, activity: UUID) -> ActivityE
     return ActivityEditSnapshot.model_validate(payload)
 
 
+async def _set_atomic_lock(
+    session: AsyncSession, actor: UUID, change: AtomicPlacementLock, locked: bool
+) -> int:
+    row = (
+        (
+            await session.execute(
+                text(
+                    "SELECT * FROM dante.set_self_schedule_placement_lock("
+                    ":actor,:schedule,:locked,:expected_revision)"
+                ),
+                {
+                    "actor": actor,
+                    "schedule": change.schedule_ref,
+                    "locked": locked,
+                    "expected_revision": change.expected_revision,
+                },
+            )
+        )
+        .mappings()
+        .one()
+    )
+    return int(row["revision"])
+
+
+async def _apply_atomic_area(
+    session: AsyncSession, actor: UUID, activity: UUID, change: AtomicLifeArea
+) -> None:
+    target = change.life_area_ref
+    if change.new_area is not None:
+        name = change.new_area.name.strip()
+        if not name:
+            raise _conflict("Inserisci un nome Life Area valido.")
+        fingerprint = life_area_fingerprint({"version": 1, "name": name})
+        target = (
+            await session.execute(
+                text(
+                    "SELECT life_area_ref FROM dante.create_self_life_area("
+                    ":actor,:operation,:fingerprint,:area_ref,:name)"
+                ),
+                {
+                    "actor": actor,
+                    "operation": f"{change.operation_id}:create",
+                    "fingerprint": fingerprint,
+                    "area_ref": uuid7(),
+                    "name": name,
+                },
+            )
+        ).scalar_one()
+    color = change.new_area.color_code if change.new_area is not None else change.color_code
+    if color is not None:
+        if target is None:
+            raise _conflict("Seleziona una Life Area prima di cambiarne il colore.")
+        revision = 1 if change.new_area is not None else change.expected_area_revision
+        fingerprint = life_area_fingerprint(
+            {
+                "version": 1,
+                "kind": "appearance",
+                "area": str(target),
+                "expected_revision": revision,
+                "payload": {"icon_code": change.icon_code, "color_code": color.upper()},
+            }
+        )
+        await session.execute(
+            text(
+                "SELECT * FROM dante.mutate_self_life_area("
+                ":actor,:operation,:fingerprint,:area,:revision,'appearance',"
+                "NULL,NULL,:icon,:color)"
+            ),
+            {
+                "actor": actor,
+                "operation": f"{change.operation_id}:appearance",
+                "fingerprint": fingerprint,
+                "area": target,
+                "revision": revision,
+                "icon": change.icon_code,
+                "color": color.upper(),
+            },
+        )
+    if change.assign:
+        await session.execute(
+            text(
+                "SELECT * FROM dante.assign_self_activity_life_area("
+                ":actor,:operation,:fingerprint,:activity,:area,:revision)"
+            ),
+            {
+                "actor": actor,
+                "operation": f"{change.operation_id}:assignment",
+                "fingerprint": assignment_fingerprint(
+                    kind="activity",
+                    subject_ref=NativeRef(activity),
+                    life_area_ref=target,
+                    expected=change.expected_assignment_revision,
+                ),
+                "activity": NativeRef(activity),
+                "area": target,
+                "revision": change.expected_assignment_revision,
+            },
+        )
+
+
+async def _apply_atomic_occurrence_profile(
+    session: AsyncSession,
+    actor: UUID,
+    activity: UUID,
+    change: AtomicOccurrenceProfile,
+    zone_id: str,
+    operation_id: str,
+) -> None:
+    bound = (
+        await session.execute(
+            text(
+                "SELECT activity_ref FROM dante.list_self_routine_occurrence_activities("
+                ":actor,CAST(ARRAY[:occurrence] AS uuid[]))"
+            ),
+            {"actor": actor, "occurrence": change.occurrence_ref},
+        )
+    ).scalar_one_or_none()
+    if bound != activity:
+        raise _conflict("L'istanza ricorrente non appartiene all'attività selezionata.")
+    await session.execute(
+        text(
+            "SELECT * FROM dante.accept_self_occurrence_profile_edit("
+            ":actor,:selected,:operation,:expected,:recurrence,'only_this',"
+            ":zone,CAST(:patch AS jsonb))"
+        ),
+        {
+            "actor": actor,
+            "selected": change.occurrence_ref,
+            "operation": operation_id,
+            "expected": change.expected_revision,
+            "recurrence": change.expected_recurrence_state_ref,
+            "zone": zone_id,
+            "patch": json.dumps(change.profile_patch, sort_keys=True),
+        },
+    )
+
+
 @router.post(
     "/{activity_ref}/replan-preview",
     response_model=ActivityReplanPreview,
@@ -951,16 +1196,34 @@ async def apply_activity_atomic_edit(
     request: Request,
     response: Response,
 ) -> ActivityAtomicEditResponse:
-    """Commit replan, Objectives and core policy in one Save transaction."""
+    """Commit every ordinary Activity edit in one serializable Save transaction."""
     response.headers["Cache-Control"] = "no-store"
     actor = context.self_person_ref
     try:
         async with request.app.state.database_runtime.session_factory() as session, session.begin():
             await session.execute(text("SET TRANSACTION ISOLATION LEVEL SERIALIZABLE"))
+            if body.placement_lock is not None and not body.placement_lock.locked:
+                await _set_atomic_lock(session, actor, body.placement_lock, False)
             if body.replan is not None:
                 await apply_activity_replan_in_session(
                     session, actor=actor, activity_ref=activity_ref, body=body.replan
                 )
+            for change in body.planned_names:
+                await session.execute(
+                    text(
+                        "SELECT * FROM dante.revise_self_planned_session_name("
+                        ":actor,:activity,:schedule,:expected,:name)"
+                    ),
+                    {
+                        "actor": actor,
+                        "activity": NativeRef(activity_ref),
+                        "schedule": change.schedule_ref,
+                        "expected": change.expected_name,
+                        "name": change.name,
+                    },
+                )
+            if body.life_area is not None:
+                await _apply_atomic_area(session, actor, activity_ref, body.life_area)
             objectives = (
                 await apply_activity_objective_edits_in_session(
                     session,
@@ -979,6 +1242,17 @@ async def apply_activity_atomic_edit(
                 if body.core is not None
                 else None
             )
+            if body.placement_lock is not None and body.placement_lock.locked:
+                await _set_atomic_lock(session, actor, body.placement_lock, True)
+            if body.occurrence_profile is not None:
+                await _apply_atomic_occurrence_profile(
+                    session,
+                    actor,
+                    activity_ref,
+                    body.occurrence_profile,
+                    context.effective_zone_id,
+                    body.operation_id or "",
+                )
             return ActivityAtomicEditResponse(
                 snapshot=await _read(session, actor, activity_ref),
                 objectives=objectives,

@@ -15,6 +15,7 @@ import {
   validateTemporalCreateU6Structure,
   validateTemporalCreateU6StructureIssue,
 } from './temporal-create-u2-submit';
+import { buildTemporalCreateActivityRecurrence } from './temporal-create-b14-runtime';
 
 describe('minute-exact U2 submit mappings', () => {
   it.each(['activity', 'event'] as const)(
@@ -94,6 +95,51 @@ describe('minute-exact U2 submit mappings', () => {
 });
 
 describe('U2 Quick Create submit mapping', () => {
+  it('authors recurring all-day Activities as date spans with untimed Sessions', () => {
+    const fields = createTemporalCreateFields({
+      kind: 'activity',
+      title: 'Ritiro',
+      date: '2026-10-24',
+      timeSemantics: 'all-day',
+      timeZoneId: 'Europe/Rome',
+      eventRecurrence: {
+        ...createTemporalCreateFields().eventRecurrence,
+        patternKind: 'calendar-wall-clock',
+        owner: 'routine',
+        calendarFrequency: 'daily',
+      },
+    });
+    const base = createTemporalCreateU2AuthoringDraft(fields);
+    const draft = patchTemporalCreateU2AuthoringDraft(base, {
+      endDate: '2026-10-25',
+      activityStructure: {
+        ...base.activityStructure,
+        plannedSlices: [
+          {
+            id: 'session',
+            title: 'Riflessione',
+            timeEnabled: false,
+            date: fields.date,
+            startTime: '',
+            endTime: '',
+          },
+        ],
+      },
+    });
+    const result = buildTemporalCreateRecurringActivityTemplate(fields, draft);
+    expect(result.durationMinutes).toBe(2880);
+    expect(result.template).toMatchObject({
+      placement_kind: 'all_day',
+      duration_days: 2,
+      root_window: null,
+      planned_slices: [{ name: 'Riflessione', time_enabled: false }],
+    });
+    const recurrence = buildTemporalCreateActivityRecurrence(fields);
+    if (recurrence.family_code !== 'calendar_wall_clock') {
+      throw new Error('Expected calendar recurrence.');
+    }
+    expect(recurrence.wall_times).toEqual([]);
+  });
   it('keeps an untimed named Session in every recurring Activity template', () => {
     const fields = createTemporalCreateFields({
       kind: 'activity',

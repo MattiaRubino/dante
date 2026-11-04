@@ -797,13 +797,67 @@ export function RecurringSeriesEditor({
                   <>
                     <button
                       type="button"
-                      className="is-selected"
-                      aria-pressed="true"
-                      disabled
+                      className={
+                        template.placement_kind === 'all_day'
+                          ? ''
+                          : 'is-selected'
+                      }
+                      aria-pressed={template.placement_kind !== 'all_day'}
+                      onClick={() => {
+                        if (template.placement_kind !== 'all_day') return;
+                        changeStructure({
+                          ...structure,
+                          duration_minutes: 60,
+                          activity_template: {
+                            ...template,
+                            placement_kind: undefined,
+                            duration_days: undefined,
+                            root_window: {
+                              start_offset_minutes: 0,
+                              duration_minutes: 60,
+                            },
+                          },
+                        });
+                        changeRecurrence({
+                          ...recurrence,
+                          wall_times: ['09:00:00'],
+                        });
+                      }}
                     >
                       Orario
                     </button>
-                    <button type="button" aria-pressed="false" disabled>
+                    <button
+                      type="button"
+                      className={
+                        template.placement_kind === 'all_day'
+                          ? 'is-selected'
+                          : ''
+                      }
+                      aria-pressed={template.placement_kind === 'all_day'}
+                      disabled={
+                        intervals.length > 0 ||
+                        asRows(template.children).some(
+                          (child) =>
+                            child.placement !== null ||
+                            asRows(child.planned_slices).length > 0,
+                        )
+                      }
+                      onClick={() => {
+                        if (template.placement_kind === 'all_day') return;
+                        changeStructure({
+                          ...structure,
+                          duration_minutes: 1440,
+                          reminder_lead_minutes: null,
+                          activity_template: {
+                            ...template,
+                            placement_kind: 'all_day',
+                            duration_days: 1,
+                            root_window: null,
+                          },
+                        });
+                        changeRecurrence({ ...recurrence, wall_times: [] });
+                      }}
+                    >
                       Tutto il giorno
                     </button>
                   </>
@@ -847,7 +901,25 @@ export function RecurringSeriesEditor({
                 </label>
               ) : null}
             </section>
-            {owner === 'routine' ? (
+            {owner === 'routine' && template.placement_kind === 'all_day' ? (
+              <label>
+                Giorni
+                <input
+                  type="number"
+                  min={1}
+                  max={365}
+                  value={asNumber(template.duration_days) || 1}
+                  onChange={(event) => {
+                    const days = Number(event.target.value);
+                    changeStructure({
+                      ...structure,
+                      duration_minutes: days * 1440,
+                      activity_template: { ...template, duration_days: days },
+                    });
+                  }}
+                />
+              </label>
+            ) : owner === 'routine' ? (
               <>
                 <section
                   className="temporal-create-activity-intervals timeline-activity-editor__intervals"
@@ -965,7 +1037,8 @@ export function RecurringSeriesEditor({
                 <div className="temporal-create-section__heading temporal-create-repeat__heading">
                   <h3>Ripetizione</h3>
                 </div>
-                {owner === 'routine' ? (
+                {owner === 'routine' &&
+                template.placement_kind !== 'all_day' ? (
                   <details className="timeline-recurring-series-editor__advanced">
                     <summary>Ora di riferimento della ricorrenza</summary>
                     <TimeControl

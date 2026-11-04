@@ -39,6 +39,18 @@ change. A preview is informative, not a write entitlement: acceptance must
 re-read the complete source and affected instances under an authoritative
 lock and reject a stale preview.
 
+An all-day recurring Activity uses a `DateSpanPlacement` for each generated
+Activity envelope. Its policy template carries `placement_kind=all_day` and
+`duration_days`; the Routine policy's minute duration is the matching nominal
+day count (`duration_days * 1440`) for existing schema compatibility, not an
+elapsed clock duration. The Recurrence has no wall time, so a daylight-saving
+transition does not shorten or lengthen its date span. Named planned Sessions
+remain untimed. The current authoring boundary accepts at most 365 days per
+instance because the existing Routine policy caps nominal duration at 525600
+minutes. Timed intervals, timed child placements, child planned Sessions, and
+reminders cannot be carried through this all-day template; a conversion with
+these fields must be refused rather than dropping them.
+
 ## Future instances
 
 | State at acceptance | Outcome of a series change |

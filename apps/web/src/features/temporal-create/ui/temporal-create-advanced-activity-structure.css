@@ -91,6 +91,16 @@
     );
 }
 
+.temporal-create-composer
+  .temporal-create-tree-row[data-create-invalid='true'] {
+  border-color: var(--dante-timeline-tone-urgent, #ff5b64);
+}
+
+.temporal-create-tree-error {
+  margin: 4px 0 0 28px;
+  font-size: 11px;
+}
+
 .temporal-create-tree-row__icon {
   display: grid;
   width: 28px;

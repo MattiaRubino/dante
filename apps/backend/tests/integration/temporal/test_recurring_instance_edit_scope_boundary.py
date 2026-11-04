@@ -4,18 +4,37 @@ from __future__ import annotations
 
 from dataclasses import replace
 from datetime import datetime, time, timedelta
-from typing import Any
-from uuid import UUID
+from types import SimpleNamespace
+from typing import Any, cast
+from uuid import UUID, uuid7
 from zoneinfo import ZoneInfo
 
 import pytest
+from fastapi import Request, Response
 from sqlalchemy import text
 from tests.integration.temporal.test_objective_recurring_instance_scope import _read_checkpoint_refs
 from tests.integration.temporal.test_primary_life_area_assignment import _seed_self
 from tests.integration.temporal.test_recurring_profile_scoped_edit import _daily
 
+from dante.context.contracts import DanteContext
+from dante.modules.temporal.activity_edit_snapshot_api import _SNAPSHOT, ActivityEditSnapshot
+from dante.modules.temporal.activity_replan_api import (
+    ActivityAtomicEditCommand,
+    ActivityReplanCommand,
+    AtomicLifeArea,
+    AtomicNewLifeArea,
+    AtomicOccurrenceProfile,
+    NewPlannedRow,
+    ReplanRow,
+    apply_activity_atomic_edit,
+)
 from dante.modules.temporal.life_area import LifeAreaApplication
 from dante.modules.temporal.life_area_assignment import LifeAreaAssignmentApplication
+from dante.modules.temporal.occurrence_api import get_occurrence_profile_edit_state
+from dante.modules.temporal.reality_objective_api import (
+    ActivityObjectiveBatchCommand,
+    ObjectiveCreateCommand,
+)
 from dante.modules.temporal.recurring_authoring import RecurringAuthoringApplication
 from dante.modules.temporal.routine_occurrence_materialization import (
     RoutineOccurrenceMaterializationApplication,
@@ -31,9 +50,162 @@ from dante.platform.database.references import (
     ScopedRecordRef,
 )
 from dante.platform.database.runtime import create_database_runtime
+from dante.platform.http.problem import ProblemError
 
 pytestmark = pytest.mark.postgres
 ZONE = "Europe/Rome"
+
+
+@pytest.mark.asyncio
+async def test_atomic_instance_edit_rolls_back_every_field_on_stale_occurrence(
+    migrated_database: Any,
+) -> None:
+    actor = _seed_self(migrated_database)
+    runtime = create_database_runtime(migrated_database.runtime_settings())
+    tomorrow = datetime.now(ZoneInfo(ZONE)).date() + timedelta(days=1)
+    context = cast(
+        DanteContext,
+        SimpleNamespace(self_person_ref=actor, effective_zone_id=ZONE),
+    )
+    request = cast(
+        Request,
+        SimpleNamespace(app=SimpleNamespace(state=SimpleNamespace(database_runtime=runtime))),
+    )
+    try:
+        routine = await RecurringAuthoringApplication(runtime.session_factory).create_routine(
+            self_person_ref=actor,
+            operation_id="atomic-instance:source",
+            title="Lettura",
+            life_area_intent=None,
+            recurrence=replace(
+                _daily(tomorrow),
+                clock_basis_code="named_zone",
+                zone_id=ZONE,
+                nonexistent_local_time_policy="skip_civil_candidate",
+                ambiguous_local_time_policy="earlier",
+            ),
+        )
+        await RoutineOccurrencePolicyApplication(runtime.session_factory).set(
+            self_person_ref=actor,
+            routine_ref=routine.source_ref,
+            duration_minutes=60,
+            reminder_lead_minutes=None,
+            activity_template={"version": 1},
+        )
+        await RoutineOccurrenceMaterializationApplication(
+            runtime.session_factory
+        ).checkpoint_window(
+            self_person_ref=actor,
+            operation_id="atomic-instance:window",
+            start_date=tomorrow,
+            end_date_exclusive=tomorrow + timedelta(days=2),
+            effective_zone_id=ZONE,
+        )
+        selected, later = await _read_checkpoint_refs(
+            runtime,
+            actor,
+            routine.source_ref,
+            owner="routine",
+            operation="atomic-instance:window",
+            start=tomorrow,
+            end=tomorrow + timedelta(days=2),
+        )
+        activity = await _activity(runtime, actor, selected)
+        later_activity = await _activity(runtime, actor, later)
+        async with runtime.session_factory() as session, session.begin():
+            initial = ActivityEditSnapshot.model_validate(
+                await session.scalar(_SNAPSHOT, {"actor": actor, "activity": activity})
+            )
+        envelope = next(row for row in initial.schedules if row.role_code == "envelope")
+        assert envelope.placement_material_state_ref is not None
+        assert envelope.starts_local_at is not None
+        assert envelope.ends_local_at is not None
+        state = await get_occurrence_profile_edit_state(selected, context, request, Response())
+
+        def command(operation: str, expected_revision: int) -> ActivityAtomicEditCommand:
+            return ActivityAtomicEditCommand(
+                operation_id=operation,
+                occurrence_profile=AtomicOccurrenceProfile(
+                    occurrence_ref=selected,
+                    expected_revision=expected_revision,
+                    expected_recurrence_state_ref=state.recurrence_state_ref,
+                    profile_patch={"title": "Lettura locale"},
+                ),
+                life_area=AtomicLifeArea(
+                    operation_id=operation,
+                    expected_assignment_revision=0,
+                    new_area=AtomicNewLifeArea(name="Area locale"),
+                ),
+                replan=ActivityReplanCommand(
+                    operation_id=operation,
+                    envelope=ReplanRow(
+                        schedule_ref=envelope.schedule_ref,
+                        expected_material_state_ref=envelope.placement_material_state_ref,
+                        starts_local_at=envelope.starts_local_at,
+                        ends_local_at=envelope.ends_local_at,
+                    ),
+                    new_planned_sessions=[NewPlannedRow(client_ref=uuid7(), name="Ripasso")],
+                ),
+                objectives=ActivityObjectiveBatchCommand(
+                    add=[
+                        ObjectiveCreateCommand(
+                            operation_id=f"{operation}:objective",
+                            label="Finito",
+                            result_kind="boolean",
+                            presentation_order=0,
+                        )
+                    ]
+                ),
+            )
+
+        with pytest.raises(ProblemError) as stale:
+            await apply_activity_atomic_edit(
+                activity,
+                command("atomic-instance:stale", state.edit_revision + 1),
+                context,
+                request,
+                Response(),
+            )
+        assert stale.value.status == 409
+        async with runtime.session_factory() as session, session.begin():
+            after = ActivityEditSnapshot.model_validate(
+                await session.scalar(_SNAPSHOT, {"actor": actor, "activity": activity})
+            )
+            names = (
+                (
+                    await session.execute(
+                        text("SELECT name FROM dante.list_self_life_areas(:actor)"),
+                        {"actor": actor},
+                    )
+                )
+                .scalars()
+                .all()
+            )
+        assert after.schedules == initial.schedules
+        assert after.objectives == initial.objectives
+        assert after.life_area_ref == initial.life_area_ref
+        assert "Area locale" not in names
+
+        accepted = await apply_activity_atomic_edit(
+            activity,
+            command("atomic-instance:accepted", state.edit_revision),
+            context,
+            request,
+            Response(),
+        )
+        assert accepted.snapshot.life_area_ref is not None
+        assert any(row.role_code == "planned" for row in accepted.snapshot.schedules)
+        assert [objective.label for objective in accepted.objectives] == ["Finito"]
+        updated = await get_occurrence_profile_edit_state(selected, context, request, Response())
+        assert updated.current_profile_patch["title"] == "Lettura locale"
+        async with runtime.session_factory() as session, session.begin():
+            future = ActivityEditSnapshot.model_validate(
+                await session.scalar(_SNAPSHOT, {"actor": actor, "activity": later_activity})
+            )
+        assert future.life_area_ref is None
+        assert not any(row.role_code == "planned" for row in future.schedules)
+    finally:
+        await runtime.dispose()
 
 
 async def _activity(runtime: Any, actor: UUID, occurrence: UUID) -> UUID:

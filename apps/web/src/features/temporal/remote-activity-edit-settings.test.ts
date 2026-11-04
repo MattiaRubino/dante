@@ -14,6 +14,149 @@ const response = (body: unknown, status = 200) =>
   });
 
 describe('Activity editor settings remote contract', () => {
+  it('sends selected occurrence metadata and the other instance fields in one request', async () => {
+    const requests: Record<string, unknown>[] = [];
+    const fetchFn = vi.fn((input: RequestInfo | URL, init?: RequestInit) => {
+      if (fetchRequestUrl(input).endsWith('/auth/session')) {
+        return Promise.resolve(
+          response({ authenticated: true, csrf_token: 'token' }),
+        );
+      }
+      expect(fetchRequestUrl(input)).toBe(
+        `/api/v1/temporal/activities/${ref}/atomic-edit`,
+      );
+      requests.push(JSON.parse(fetchRequestBody(init?.body)) as Record<string, unknown>);
+      return Promise.resolve(response({ detail: 'Istanza cambiata.' }, 409));
+    }) as unknown as typeof fetch;
+    const source = createRemoteActivityEditSettings(fetchFn);
+    await expect(
+      source.applyAtomicEdit(
+        {
+          activityRef: ref,
+          title: 'Studio',
+          description: null,
+          location: null,
+          colorCode: null,
+          revision: 1,
+        },
+        {
+          capture: { mode: 'disabled', stateRef: null },
+          reality: { mode: 'manual', stateRef: null },
+          schedules: [],
+          objectives: [],
+          lifeAreaRef: null,
+          placementProtected: false,
+          placementLockRevision: null,
+          placementLockScheduleRef: null,
+          reminderLeadMinutes: null,
+          reminderScheduleRef: null,
+          reminderStateRef: null,
+          childGuardMode: 'none',
+        },
+        {
+          occurrenceProfile: {
+            occurrenceRef: ref,
+            expectedRevision: 3,
+            expectedRecurrenceStateRef: null,
+            patch: { title: 'Studio nuovo', description: 'Nota' },
+          },
+          lifeArea: {
+            expectedAssignmentRevision: 0,
+            lifeAreaRef: ref,
+            assign: true,
+          },
+        },
+        'instance-save',
+      ),
+    ).rejects.toThrow('Istanza cambiata.');
+    expect(requests).toHaveLength(1);
+    expect(requests[0]).toMatchObject({
+      operation_id: 'instance-save',
+      occurrence_profile: {
+        occurrence_ref: ref,
+        expected_revision: 3,
+        expected_recurrence_state_ref: null,
+        profile_patch: { title: 'Studio nuovo', description: 'Nota' },
+      },
+      life_area: { life_area_ref: ref, expected_assignment_revision: 0 },
+    });
+  });
+
+  it('sends Life Area, lock, Session names and Objectives through one Save', async () => {
+    const requests: unknown[] = [];
+    const fetchFn = vi.fn((input: RequestInfo | URL, init?: RequestInit) => {
+      if (fetchRequestUrl(input).endsWith('/auth/session')) {
+        return Promise.resolve(
+          response({ authenticated: true, csrf_token: 'token' }),
+        );
+      }
+      expect(fetchRequestUrl(input)).toBe(
+        `/api/v1/temporal/activities/${ref}/atomic-edit`,
+      );
+      requests.push(JSON.parse(fetchRequestBody(init?.body)));
+      return Promise.resolve(
+        response({ detail: 'Conflitto: nessun campo salvato.' }, 409),
+      );
+    }) as unknown as typeof fetch;
+    const source = createRemoteActivityEditSettings(fetchFn);
+    await expect(
+      source.applyAtomicEdit(
+        {
+          activityRef: ref,
+          title: 'Studio',
+          description: null,
+          location: null,
+          colorCode: null,
+          revision: 1,
+        },
+        {
+          capture: { mode: 'disabled', stateRef: null },
+          reality: { mode: 'manual', stateRef: null },
+          schedules: [],
+          objectives: [],
+          lifeAreaRef: null,
+          placementProtected: false,
+          placementLockRevision: 2,
+          placementLockScheduleRef: ref,
+          reminderLeadMinutes: null,
+          reminderScheduleRef: null,
+          reminderStateRef: null,
+          childGuardMode: 'none',
+        },
+        {
+          objectives: { add: [], revise: [], retire: [] },
+          placementLock: {
+            scheduleRef: ref,
+            expectedRevision: 2,
+            locked: true,
+          },
+          plannedNames: [
+            { scheduleRef: ref, expectedName: 'Prima', name: 'Dopo' },
+          ],
+          lifeArea: {
+            expectedAssignmentRevision: 0,
+            lifeAreaRef: null,
+            assign: true,
+            newArea: { name: 'Salute', colorCode: '#EA5C12' },
+          },
+        },
+        'single-save',
+      ),
+    ).rejects.toThrow('Conflitto: nessun campo salvato.');
+    expect(requests).toHaveLength(1);
+    expect(requests[0]).toMatchObject({
+      objectives: { add: [], revise: [], retire: [] },
+      placement_lock: { schedule_ref: ref, expected_revision: 2, locked: true },
+      planned_names: [
+        { schedule_ref: ref, expected_name: 'Prima', name: 'Dopo' },
+      ],
+      life_area: {
+        operation_id: 'single-save',
+        expected_assignment_revision: 0,
+        new_area: { name: 'Salute', color_code: '#EA5C12' },
+      },
+    });
+  });
   it('sends Session and Objective edits in one request and leaves them unsaved on conflict', async () => {
     const requests: Record<string, unknown>[] = [];
     const fetchFn = vi.fn((input: RequestInfo | URL, init?: RequestInit) => {
@@ -25,7 +168,7 @@ describe('Activity editor settings remote contract', () => {
       }
       expect(path).toBe(`/api/v1/temporal/activities/${ref}/atomic-edit`);
       expect(init?.method).toBe('PUT');
-      requests.push(JSON.parse(String(init?.body)) as Record<string, unknown>);
+      requests.push(JSON.parse(fetchRequestBody(init?.body)) as Record<string, unknown>);
       return Promise.resolve(response({ detail: 'Obiettivo cambiato.' }, 409));
     }) as unknown as typeof fetch;
     const settings = {
@@ -56,7 +199,7 @@ describe('Activity editor settings remote contract', () => {
     };
     const source = createRemoteActivityEditSettings(fetchFn);
     await expect(
-      source.applyAtomicReplanAndObjectives(
+      source.applyAtomicEdit(
         {
           activityRef: ref,
           title: 'Studio',
@@ -67,25 +210,27 @@ describe('Activity editor settings remote contract', () => {
         },
         settings,
         {
-          times: {
-            [ref]: { start: '2026-11-03T09:00:00', end: '2026-11-03T10:00:00' },
-          },
-          removedIntervals: [],
-          newIntervals: [],
-          removedPlanned: [],
-          newPlanned: [
-            {
-              clientRef: '0199a222-2222-7222-8222-222222222222',
-              name: 'Ripasso',
+          draft: {
+            times: {
+              [ref]: { start: '2026-11-03T09:00:00', end: '2026-11-03T10:00:00' },
             },
-          ],
-        },
-        {
-          add: [],
-          revise: [],
-          retire: [
-            { objectiveRef: ref, operationId: 'remove', expectedRevision: 0 },
-          ],
+            removedIntervals: [],
+            newIntervals: [],
+            removedPlanned: [],
+            newPlanned: [
+              {
+                clientRef: '0199a222-2222-7222-8222-222222222222',
+                name: 'Ripasso',
+              },
+            ],
+          },
+          objectives: {
+            add: [],
+            revise: [],
+            retire: [
+              { objectiveRef: ref, operationId: 'remove', expectedRevision: 0 },
+            ],
+          },
         },
         'single-save',
       ),

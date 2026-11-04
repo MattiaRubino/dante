@@ -705,6 +705,66 @@ export function buildTemporalCreateRecurringActivityTemplate(
   fields: TemporalCreateFields,
   draft: TemporalCreateU2AuthoringDraft,
 ): Readonly<{ durationMinutes: number; template: RecurringActivityTemplate }> {
+  if (fields.kind === 'activity' && fields.timeSemantics === 'all-day') {
+    const start = Temporal.PlainDate.from(fields.date);
+    const days = start.until(Temporal.PlainDate.from(draft.endDate)).days + 1;
+    if (
+      days < 1 ||
+      days > 365 ||
+      draft.activityStructure.activityIntervals.length > 0 ||
+      draft.activityStructure.children.some(
+        (child) => child.scheduleEnabled || child.plannedSlices.length > 0,
+      )
+    ) {
+      throw new Error(
+        'La ricorrenza Tutto il giorno richiede da 1 a 365 giorni e nessun intervallo o figlio con orario.',
+      );
+    }
+    const structure = draft.activityStructure;
+    return Object.freeze({
+      durationMinutes: days * 1440,
+      template: Object.freeze({
+        version: 1 as const,
+        placement_kind: 'all_day' as const,
+        duration_days: days,
+        root_window: null,
+        description: optionalText(fields.notes) ?? null,
+        location: optionalText(fields.event.location) ?? null,
+        item_color_code:
+          draft.lifeArea.kind === 'none' ? draft.itemColorCode : null,
+        session_capture_mode: structure.captureMode,
+        minimum_session_duration_microseconds:
+          fields.execution.sessionMode === 'splittable'
+            ? fields.execution.minSessionMinutes * 60 * 1_000_000
+            : null,
+        child_guard_mode: structure.childGuardMode,
+        reality_mode: draft.realityMode,
+        placement_protected: structure.placementProtected,
+        objectives: buildTemporalCreateObjectiveTemplates(draft),
+        activity_intervals: Object.freeze([]),
+        planned_slices: Object.freeze(
+          structure.plannedSlices.map((slice) =>
+            Object.freeze({
+              name: slice.title.trim(),
+              time_enabled: false as const,
+            }),
+          ),
+        ),
+        children: Object.freeze(
+          structure.children.map((child) =>
+            Object.freeze({
+              title: child.title.trim(),
+              requirement_code: child.requirementCode,
+              session_capture_mode: child.captureMode,
+              reality_mode: child.realityMode ?? 'manual',
+              placement: null,
+              planned_slices: Object.freeze([]),
+            }),
+          ),
+        ),
+      }),
+    });
+  }
   const bands = activityBands(fields, draft);
   if (
     fields.kind !== 'activity' ||

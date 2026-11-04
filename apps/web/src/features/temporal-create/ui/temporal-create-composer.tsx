@@ -673,6 +673,7 @@ export function TemporalCreateComposer({
                 contexts={contexts}
                 showCompactTimezone={!advanced}
                 showRecurrence={advanced}
+                showDescription={!advanced}
                 repeatDetails={
                   advanced &&
                   fields.eventRecurrence.patternKind ===

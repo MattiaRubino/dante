@@ -183,12 +183,6 @@
   order: -20;
 }
 
-.temporal-create-backdrop.is-advanced
-  .temporal-create-composer__body
-  > .temporal-create-u2-description {
-  display: none;
-}
-
 .temporal-create-backdrop.is-advanced .temporal-create-title-input {
   min-height: 58px;
   font-size: 19px;

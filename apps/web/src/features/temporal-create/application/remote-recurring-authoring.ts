@@ -116,7 +116,9 @@ export type RecurringActivityChildTemplate = Readonly<{
 
 export type RecurringActivityTemplate = Readonly<{
   version: 1;
-  root_window: RecurringActivityWindowTemplate;
+  placement_kind?: 'all_day';
+  duration_days?: number;
+  root_window: RecurringActivityWindowTemplate | null;
   description: string | null;
   location: string | null;
   item_color_code: string | null;

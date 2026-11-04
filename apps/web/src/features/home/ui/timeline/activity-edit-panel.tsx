@@ -431,8 +431,6 @@ export function ActivityEditPanel({
   const [plannedNames, setPlannedNames] = useState<Record<string, string>>({});
   const [nameError, setNameError] = useState('');
   const [areaError, setAreaError] = useState('');
-  const areaOperation = useRef<string | null>(null);
-  const areaCreateOperation = useRef<string | null>(null);
   const [planDraft, setPlanDraft] = useState<
     Record<string, ActivityReplanTime>
   >({});
@@ -459,7 +457,6 @@ export function ActivityEditPanel({
   const [areaColorOverride, setAreaColorOverride] = useState<string | null>(
     null,
   );
-  const areaColorOperation = useRef<string | null>(null);
   const [planOperation, setPlanOperation] = useState<string | null>(null);
   const [planPending, setPlanPending] = useState(false);
   const [planError, setPlanError] = useState('');
@@ -1017,19 +1014,6 @@ export function ActivityEditPanel({
     };
   };
 
-  const saveObjectiveRows = async (currentSettings: ActivityEditSettings) => {
-    if (!objectiveDirty) return currentSettings;
-    const saved = await objectiveSource.applyActivityEdits(
-      profile.activityRef,
-      await prepareObjectiveRows(),
-    );
-    const next = { ...currentSettings, objectives: saved };
-    setSettings(next);
-    setObjectiveRows(saved.map(existingObjectiveDraft));
-    setRemovedObjectives([]);
-    return next;
-  };
-
   const changePlan = (
     ref: string,
     field: keyof ActivityReplanTime,
@@ -1171,19 +1155,8 @@ export function ActivityEditPanel({
         setPending(true);
         setPlanPending(true);
         setError('');
-        let errorHandled = false;
         void (async () => {
-          let currentSettings = settings;
-          if (planDirty && objectiveDirty) {
-            // Both mutations must commit together. The owner command rechecks
-            // their revisions and rolls the whole transaction back on error.
-            if (areaDirty || lockDirty || nameDirty) {
-              throw new Error(
-                'Per salvare insieme Sessioni, obiettivi, Life Area e blocco ' +
-                  'spostamenti serve il comando coordinato. Riapri Modifica e ' +
-                  'salva separatamente gli altri campi.',
-              );
-            }
+          if (!recurringContext || editScope === 'only_this') {
             const changed = {
               title: draft.title.trim(),
               description: draft.description.trim() || null,
@@ -1197,248 +1170,131 @@ export function ActivityEditPanel({
             const realityChanged = realityMode !== settings.reality.mode;
             const reminderChanged =
               reminderLeadMinutes !== settings.reminderLeadMinutes;
+            const coreChanged =
+              (!recurringContext && metadataChanged) ||
+              captureChanged ||
+              realityChanged ||
+              reminderChanged;
+            const renamed = settings.schedules
+              .filter(
+                (row) =>
+                  row.role === 'planned' &&
+                  !deletedPlanned.includes(row.scheduleRef) &&
+                  (plannedNames[row.scheduleRef] ?? row.name ?? '') !==
+                    (row.name ?? ''),
+              )
+              .map((row) => ({
+                scheduleRef: row.scheduleRef,
+                expectedName: row.name,
+                name: plannedNames[row.scheduleRef]?.trim() || null,
+              }));
+            const targetArea = selectedArea || null;
+            const selectedOption = areaChoice?.options.find(
+              (option) => option.ref === targetArea,
+            );
+            const color =
+              areaColorOverride ??
+              (creatingArea ? draft.colorCode || '#EA5C12' : null);
+            const colorChanged =
+              !!selectedOption &&
+              !!color &&
+              color.toUpperCase() !== selectedOption.colorCode?.toUpperCase();
+            const assignmentChanged =
+              creatingArea || targetArea !== areaChoice?.currentRef;
             const atomicOperation = planOperation ?? crypto.randomUUID();
             setPlanOperation(atomicOperation);
-            const saved = await settingsSource.applyAtomicReplanAndObjectives(
+            const occurrencePatch =
+              recurringContext && metadataChanged
+                ? Object.fromEntries(
+                    Object.entries(changed).filter(
+                      ([key, value]) =>
+                        value !== profile[key as keyof typeof changed],
+                    ),
+                  )
+                : null;
+            const saved = await settingsSource.applyAtomicEdit(
               profile,
               settings,
-              replanDraft,
-              await prepareObjectiveRows(),
+              {
+                ...(planDirty ? { draft: replanDraft } : {}),
+                ...(objectiveDirty
+                  ? { objectives: await prepareObjectiveRows() }
+                  : {}),
+                ...(coreChanged
+                  ? {
+                      changes: {
+                        ...(metadataChanged && !recurringContext
+                          ? { profile: changed }
+                          : {}),
+                        ...(captureChanged ? { capture: captureMode } : {}),
+                        ...(realityChanged ? { reality: realityMode } : {}),
+                        ...(reminderChanged ? { reminderLeadMinutes } : {}),
+                      },
+                    }
+                  : {}),
+                ...(recurringContext && occurrencePatch
+                  ? {
+                      occurrenceProfile: {
+                        occurrenceRef: recurringContext.occurrenceRef,
+                        expectedRevision: recurringContext.editRevision,
+                        expectedRecurrenceStateRef:
+                          recurringContext.recurrenceStateRef,
+                        patch: occurrencePatch,
+                      },
+                    }
+                  : {}),
+                ...(lockDirty && settings.placementLockScheduleRef
+                  ? {
+                      placementLock: {
+                        scheduleRef: settings.placementLockScheduleRef,
+                        expectedRevision: settings.placementLockRevision,
+                        locked: placementProtected === true,
+                      },
+                    }
+                  : {}),
+                ...(renamed.length ? { plannedNames: renamed } : {}),
+                ...(areaDirty && areaChoice
+                  ? {
+                      lifeArea: {
+                        expectedAssignmentRevision: areaChoice.currentRevision,
+                        lifeAreaRef: targetArea,
+                        assign: assignmentChanged,
+                        ...(creatingArea
+                          ? {
+                              newArea: {
+                                name: newAreaName,
+                                colorCode: color?.toUpperCase() ?? null,
+                              },
+                            }
+                          : {}),
+                        ...(colorChanged && selectedOption && color
+                          ? {
+                              expectedAreaRevision: selectedOption.revision,
+                              colorCode: color.toUpperCase(),
+                              iconCode: selectedOption.iconCode,
+                            }
+                          : {}),
+                      },
+                    }
+                  : {}),
+              },
               atomicOperation,
-              metadataChanged ||
-                captureChanged ||
-                realityChanged ||
-                reminderChanged
-                ? {
-                    ...(metadataChanged ? { profile: changed } : {}),
-                    ...(captureChanged ? { capture: captureMode } : {}),
-                    ...(realityChanged ? { reality: realityMode } : {}),
-                    ...(reminderChanged ? { reminderLeadMinutes } : {}),
-                  }
-                : undefined,
             );
             setSettings(saved.settings);
             setObjectiveRows(
               saved.settings.objectives.map(existingObjectiveDraft),
             );
             setRemovedObjectives([]);
+            setPlanOperation(null);
             onSaved(saved.profile);
             return;
           }
-          if (lockDirty && placementProtected === false) {
-            currentSettings = await settingsSource
-              .setPlacementProtected(currentSettings, false)
-              .catch((reason: unknown) => {
-                errorHandled = true;
-                setLockError(
-                  reason instanceof Error
-                    ? reason.message
-                    : 'Impossibile sbloccare.',
-                );
-                throw reason;
-              });
-            setSettings(currentSettings);
-          }
-          if (planDirty) {
-            setPlanError('');
-            const operationId = planOperation ?? crypto.randomUUID();
-            setPlanOperation(operationId);
-            currentSettings = await settingsSource
-              .applyReplan(
-                profile.activityRef,
-                currentSettings,
-                replanDraft,
-                operationId,
-              )
-              .catch((reason: unknown) => {
-                errorHandled = true;
-                setPlanError(
-                  reason instanceof Error
-                    ? reason.message
-                    : 'Orario non salvato.',
-                );
-                throw reason;
-              });
-            setSettings(currentSettings);
-            setPlanDraft(
-              Object.fromEntries(
-                currentSettings.schedules.map((row) => [
-                  row.scheduleRef,
-                  { start: row.start ?? '', end: row.end ?? '' },
-                ]),
-              ),
-            );
-            const root = currentSettings.schedules.find(
-              (row) => row.role === 'envelope',
-            );
-            setAllDay(root?.temporalForm === 'date_span');
-            setDateSpanDraft({
-              start: root?.start?.slice(0, 10) ?? '',
-              end: shiftedDate(
-                root?.end?.slice(0, 10) ?? '',
-                root?.temporalForm === 'date_span' ? -1 : 0,
-              ),
-            });
-            setNewPlanned([]);
-            setDeletedPlanned([]);
-            setNewIntervals([]);
-            setRemovedIntervals([]);
-            setPlanOperation(null);
-          }
-          for (const row of currentSettings.schedules.filter(
-            (item) =>
-              item.role === 'planned' &&
-              (plannedNames[item.scheduleRef] ?? item.name ?? '') !==
-                (item.name ?? ''),
-          )) {
-            const next = plannedNames[row.scheduleRef]?.trim() || null;
-            const saved = await settingsSource
-              .revisePlannedName(
-                profile.activityRef,
-                row.scheduleRef,
-                row.name,
-                next,
-              )
-              .catch((reason: unknown) => {
-                errorHandled = true;
-                setNameError(
-                  reason instanceof Error
-                    ? reason.message
-                    : 'Nome non salvato.',
-                );
-                throw reason;
-              });
-            currentSettings = {
-              ...currentSettings,
-              schedules: currentSettings.schedules.map((item) =>
-                item.scheduleRef === row.scheduleRef
-                  ? { ...item, name: saved }
-                  : item,
-              ),
-            };
-            setSettings(currentSettings);
-            setPlannedNames((current) => ({
-              ...current,
-              [row.scheduleRef]: saved ?? '',
-            }));
-          }
-          if (areaDirty && areaChoice) {
-            if (areaChoice.currentRef !== currentSettings.lifeAreaRef) {
-              errorHandled = true;
-              setAreaError('Life Area cambiata. Riapri Modifica.');
-              throw new Error('Life Area cambiata. Riapri Modifica.');
-            }
-            let choice = areaChoice;
-            let targetArea = selectedArea || null;
-            if (creatingArea) {
-              const created = await settingsSource
-                .createLifeArea(
-                  newAreaName,
-                  (areaCreateOperation.current ??= crypto.randomUUID()),
-                )
-                .catch((reason: unknown) => {
-                  errorHandled = true;
-                  setAreaError(
-                    reason instanceof Error
-                      ? reason.message
-                      : 'Life Area non creata.',
-                  );
-                  throw reason;
-                });
-              targetArea = created.ref;
-              choice = { ...choice, options: [...choice.options, created] };
-              setAreaChoice(choice);
-              setSelectedArea(created.ref);
-              setAreaQuery(created.name);
-              areaCreateOperation.current = null;
-            }
-            const area = choice.options.find(
-              (option) => option.ref === targetArea,
-            );
-            const color =
-              areaColorOverride ??
-              (creatingArea ? draft.colorCode || '#EA5C12' : null);
-            if (
-              area &&
-              color &&
-              color.toUpperCase() !== area.colorCode?.toUpperCase()
-            ) {
-              const savedArea = await settingsSource
-                .setLifeAreaAppearance(
-                  area,
-                  color,
-                  (areaColorOperation.current ??= crypto.randomUUID()),
-                )
-                .catch((reason: unknown) => {
-                  errorHandled = true;
-                  setAreaError(
-                    reason instanceof Error
-                      ? reason.message
-                      : 'Impossibile salvare il colore Life Area.',
-                  );
-                  throw reason;
-                });
-              choice = {
-                ...choice,
-                options: choice.options.map((option) =>
-                  option.ref === savedArea.ref ? savedArea : option,
-                ),
-              };
-              setAreaChoice(choice);
-              areaColorOperation.current = null;
-              setAreaColorOverride(null);
-            }
-            if (choice.currentRef !== targetArea) {
-              const saved = await settingsSource
-                .assignLifeArea(
-                  profile.activityRef,
-                  choice,
-                  targetArea,
-                  (areaOperation.current ??= crypto.randomUUID()),
-                )
-                .catch((reason: unknown) => {
-                  errorHandled = true;
-                  setAreaError(
-                    reason instanceof Error
-                      ? reason.message
-                      : 'Life Area non salvata.',
-                  );
-                  throw reason;
-                });
-              areaOperation.current = null;
-              setAreaChoice(saved);
-              currentSettings = {
-                ...currentSettings,
-                lifeAreaRef: saved.currentRef,
-              };
-              setSettings(currentSettings);
-            }
-          }
-          if (lockDirty && placementProtected === true) {
-            currentSettings = await settingsSource
-              .setPlacementProtected(currentSettings, true)
-              .catch((reason: unknown) => {
-                errorHandled = true;
-                setLockError(
-                  reason instanceof Error
-                    ? reason.message
-                    : 'Blocco non salvato.',
-                );
-                throw reason;
-              });
-            setSettings(currentSettings);
-          }
-          if (objectiveDirty) {
-            currentSettings = await saveObjectiveRows(currentSettings).catch(
-              (reason: unknown) => {
-                errorHandled = true;
-                setObjectiveError(
-                  reason instanceof Error
-                    ? reason.message
-                    : 'Impossibile salvare gli obiettivi.',
-                );
-                throw reason;
-              },
+          // Following-series edits are handled by the series editor. This
+          // fallback only revises the recurrence profile when that editor
+          // delegates an unchanged structural proposal here.
+          if (!recurringContext || !metadataDirty) {
+            throw new Error(
+              'Modifica i dati generali della serie prima di salvare.',
             );
           }
           const changed = {
@@ -1447,75 +1303,28 @@ export function ActivityEditPanel({
             location: draft.location.trim() || null,
             colorCode: draft.colorCode || null,
           };
-          const metadataChanged = Object.entries(changed).some(
-            ([key, value]) => value !== profile[key as keyof typeof changed],
+          const changedKeys = Object.fromEntries(
+            Object.entries(changed).filter(
+              ([key, value]) => value !== profile[key as keyof typeof changed],
+            ),
           );
-          const captureChanged = captureMode !== currentSettings.capture.mode;
-          const realityChanged = realityMode !== currentSettings.reality.mode;
-          const reminderChanged =
-            reminderLeadMinutes !== currentSettings.reminderLeadMinutes;
-          if (
-            !metadataChanged &&
-            !captureChanged &&
-            !realityChanged &&
-            !reminderChanged
-          ) {
-            onSaved(profile);
-            return;
-          }
-          if (recurringContext && metadataChanged) {
-            // The recurring metadata edit is one atomic owner/CAS command.
-            // Do not split it into two independent partial saves.
-            if (captureChanged || realityChanged || reminderChanged) {
-              throw new Error(
-                'Per mantenere il salvataggio atomico, modifica i dati generali ' +
-                  'separatamente da Sessioni, Reality e Promemoria.',
-              );
-            }
-            const changedKeys = Object.fromEntries(
-              Object.entries(changed).filter(
-                ([key, value]) =>
-                  value !== profile[key as keyof typeof changed],
-              ),
-            );
-            const nextProfile = await recurringSource.saveActivityProfile(
-              profile.activityRef,
-              recurringContext,
-              editScope,
-              changedKeys,
-              (operation.current ??= crypto.randomUUID()),
-              seriesPreview ?? undefined,
-            );
-            operation.current = undefined;
-            onSaved(nextProfile);
-            return;
-          }
-          if (recurringContext && editScope !== 'only_this') {
-            throw new Error(
-              'Questa e le prossime richiede una modifica ai dati generali.',
-            );
-          }
-          const saved = await settingsSource.saveCore(
-            profile,
-            currentSettings,
-            {
-              ...(metadataChanged ? { profile: changed } : {}),
-              ...(captureChanged ? { capture: captureMode } : {}),
-              ...(realityChanged ? { reality: realityMode } : {}),
-              ...(reminderChanged ? { reminderLeadMinutes } : {}),
-            },
+          const nextProfile = await recurringSource.saveActivityProfile(
+            profile.activityRef,
+            recurringContext,
+            editScope,
+            changedKeys,
             (operation.current ??= crypto.randomUUID()),
+            seriesPreview ?? undefined,
           );
           operation.current = undefined;
-          setSettings(saved.settings);
-          onSaved(saved.profile);
+          onSaved(nextProfile);
         })()
           .catch((reason: unknown) => {
             const message =
               reason instanceof Error
                 ? reason.message
                 : 'Operazione non riuscita.';
-            if (!errorHandled) setError(message);
+            setError(message);
           })
           .finally(() => {
             setPending(false);
@@ -1570,6 +1379,7 @@ export function ActivityEditPanel({
                 <button
                   type="button"
                   className="temporal-create-placement-lock"
+                  data-edit-invalid={!!lockError}
                   aria-label={
                     placementProtected
                       ? 'Sblocca spostamenti'
@@ -2230,15 +2040,21 @@ export function ActivityEditPanel({
                   onChange={(colorCode) => {
                     if (selectedArea || creatingArea) {
                       setAreaColorOverride(colorCode);
-                      areaColorOperation.current = null;
                     } else {
                       operation.current = undefined;
                       setDraft((current) => ({ ...current, colorCode }));
                     }
                   }}
                 />
-                <div className="timeline-activity-editor__area-choice">
-                  {areaError ? <p role="alert">{areaError}</p> : null}
+                <div
+                  className="timeline-activity-editor__area-choice"
+                  data-edit-invalid={!!areaError}
+                >
+                  {areaError ? (
+                    <small className="temporal-create-field-error" role="alert">
+                      {areaError}
+                    </small>
+                  ) : null}
                   {!areaChoice && !areaError ? (
                     <p role="status">Caricamento Life Area…</p>
                   ) : null}
@@ -2263,7 +2079,6 @@ export function ActivityEditPanel({
                         onQueryChange={(query) => {
                           setAreaQuery(query);
                           setAreaColorOverride(null);
-                          areaColorOperation.current = null;
                           setSelectedArea(
                             areaChoice.options.find(
                               (area) =>
@@ -2271,16 +2086,12 @@ export function ActivityEditPanel({
                                 query.trim().toLocaleLowerCase(),
                             )?.ref ?? '',
                           );
-                          areaOperation.current = null;
-                          areaCreateOperation.current = null;
                           setAreaError('');
                         }}
                         onChoose={(area) => {
                           setSelectedArea(area.id);
                           setAreaQuery(area.label);
                           setAreaColorOverride(null);
-                          areaColorOperation.current = null;
-                          areaOperation.current = null;
                           setAreaError('');
                         }}
                         onClear={() => {
@@ -2288,8 +2099,6 @@ export function ActivityEditPanel({
                           setAreaQuery('');
                           setAreaError('');
                           setAreaColorOverride(null);
-                          areaColorOperation.current = null;
-                          areaCreateOperation.current = null;
                         }}
                       />
                       {creatingArea ? (
@@ -2369,7 +2178,10 @@ export function ActivityEditPanel({
                     separatamente.
                   </span>
                 </div>
-                <div className="timeline-activity-editor__objectives">
+                <div
+                  className="timeline-activity-editor__objectives"
+                  data-edit-invalid={!!objectiveError}
+                >
                   {objectiveRows
                     .filter((row) => !removedObjectives.includes(row.id))
                     .map((row, index, visible) => (
@@ -2430,7 +2242,11 @@ export function ActivityEditPanel({
                       ＋ Aggiungi obiettivo
                     </button>
                   </div>
-                  {objectiveError ? <p role="alert">{objectiveError}</p> : null}
+                  {objectiveError ? (
+                    <small className="temporal-create-field-error" role="alert">
+                      {objectiveError}
+                    </small>
+                  ) : null}
                   {settings.objectives
                     .filter((row) => row.observationRef)
                     .map((row) => (

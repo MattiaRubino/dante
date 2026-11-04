@@ -1,5 +1,6 @@
 import { createWebFetch } from '../../platform/api/web-fetch';
 import {
+  createRemoteActivityInspector,
   parseProfile,
   type ActivityProfile,
 } from './remote-activity-inspector';
@@ -383,6 +384,42 @@ export function createRemoteActivityEditSettings(
     reminderLeadMinutes?: number | null;
   }>;
 
+  type AtomicExtras = Readonly<{
+    draft?: ActivityReplanDraft;
+    objectives?: ActivityObjectiveBatch;
+    changes?: CoreChanges;
+    placementLock?: Readonly<{
+      scheduleRef: string;
+      expectedRevision: number | null;
+      locked: boolean;
+    }>;
+    plannedNames?: readonly Readonly<{
+      scheduleRef: string;
+      expectedName: string | null;
+      name: string | null;
+    }>[];
+    lifeArea?: Readonly<{
+      expectedAssignmentRevision: number;
+      lifeAreaRef: string | null;
+      assign: boolean;
+      newArea?: Readonly<{ name: string; colorCode: string | null }>;
+      expectedAreaRevision?: number;
+      colorCode?: string;
+      iconCode?: string | null;
+    }>;
+    occurrenceProfile?: Readonly<{
+      occurrenceRef: string;
+      expectedRevision: number;
+      expectedRecurrenceStateRef: string | null;
+      patch: Partial<
+        Pick<
+          ActivityProfile,
+          'title' | 'description' | 'location' | 'colorCode'
+        >
+      >;
+    }>;
+  }>;
+
   function coreBody(
     profile: ActivityProfile,
     settings: ActivityEditSettings,
@@ -431,13 +468,11 @@ export function createRemoteActivityEditSettings(
     };
   }
   return Object.freeze({
-    async applyAtomicReplanAndObjectives(
+    async applyAtomicEdit(
       profile: ActivityProfile,
       settings: ActivityEditSettings,
-      draft: ActivityReplanDraft,
-      objectives: ActivityObjectiveBatch,
+      edit: AtomicExtras,
       operationId: string,
-      changes?: CoreChanges,
     ): Promise<{ profile: ActivityProfile; settings: ActivityEditSettings }> {
       const ref = profile.activityRef;
       const response = await request(endpoint(ref, 'atomic-edit'), {
@@ -447,10 +482,86 @@ export function createRemoteActivityEditSettings(
           'X-Dante-CSRF': await csrf(),
         },
         body: JSON.stringify({
-          replan: replanBody(settings, draft, operationId),
-          objectives: serializeActivityObjectiveEdits(objectives),
-          ...(changes
-            ? { core: coreBody(profile, settings, changes, operationId) }
+          ...(edit.occurrenceProfile ? { operation_id: operationId } : {}),
+          ...(edit.draft
+            ? { replan: replanBody(settings, edit.draft, operationId) }
+            : {}),
+          ...(edit.objectives
+            ? { objectives: serializeActivityObjectiveEdits(edit.objectives) }
+            : {}),
+          ...(edit.changes
+            ? { core: coreBody(profile, settings, edit.changes, operationId) }
+            : {}),
+          ...(edit.placementLock
+            ? {
+                placement_lock: {
+                  schedule_ref: edit.placementLock.scheduleRef,
+                  expected_revision: edit.placementLock.expectedRevision,
+                  locked: edit.placementLock.locked,
+                },
+              }
+            : {}),
+          ...(edit.plannedNames?.length
+            ? {
+                planned_names: edit.plannedNames.map((row) => ({
+                  schedule_ref: row.scheduleRef,
+                  expected_name: row.expectedName,
+                  name: row.name,
+                })),
+              }
+            : {}),
+          ...(edit.lifeArea
+            ? {
+                life_area: {
+                  operation_id: operationId,
+                  expected_assignment_revision:
+                    edit.lifeArea.expectedAssignmentRevision,
+                  life_area_ref: edit.lifeArea.lifeAreaRef,
+                  assign: edit.lifeArea.assign,
+                  ...(edit.lifeArea.newArea
+                    ? {
+                        new_area: {
+                          name: edit.lifeArea.newArea.name,
+                          color_code: edit.lifeArea.newArea.colorCode,
+                        },
+                      }
+                    : {}),
+                  ...(edit.lifeArea.colorCode
+                    ? {
+                        expected_area_revision:
+                          edit.lifeArea.expectedAreaRevision,
+                        color_code: edit.lifeArea.colorCode,
+                        icon_code: edit.lifeArea.iconCode ?? null,
+                      }
+                    : {}),
+                },
+              }
+            : {}),
+          ...(edit.occurrenceProfile
+            ? {
+                occurrence_profile: {
+                  occurrence_ref: edit.occurrenceProfile.occurrenceRef,
+                  expected_revision: edit.occurrenceProfile.expectedRevision,
+                  expected_recurrence_state_ref:
+                    edit.occurrenceProfile.expectedRecurrenceStateRef,
+                  profile_patch: {
+                    ...('title' in edit.occurrenceProfile.patch
+                      ? { title: edit.occurrenceProfile.patch.title }
+                      : {}),
+                    ...('description' in edit.occurrenceProfile.patch
+                      ? {
+                          description: edit.occurrenceProfile.patch.description,
+                        }
+                      : {}),
+                    ...('location' in edit.occurrenceProfile.patch
+                      ? { location: edit.occurrenceProfile.patch.location }
+                      : {}),
+                    ...('colorCode' in edit.occurrenceProfile.patch
+                      ? { color_code: edit.occurrenceProfile.patch.colorCode }
+                      : {}),
+                  },
+                },
+              }
             : {}),
         }),
       });
@@ -465,24 +576,28 @@ export function createRemoteActivityEditSettings(
       }
       const saved = object(raw);
       const next = parseSnapshot(ref, saved.snapshot);
-      if (!Array.isArray(saved.objectives)) {
-        throw new Error('Risposta Obiettivi non valida.');
-      }
-      invalidateTemporalTimelineRead();
-      invalidateTemporalPlanningRead();
-      if (changes?.capture) invalidateActivitySessionCardCapability(ref);
       const core = saved.core === null ? null : object(saved.core);
-      const savedProfile = core ? parseProfile(core.profile) : profile;
+      const savedProfile = edit.occurrenceProfile
+        ? await createRemoteActivityInspector(fetchFn).get(ref)
+        : core
+          ? parseProfile(core.profile)
+          : profile;
       if (savedProfile.activityRef !== ref) {
         throw new Error('Identità dell’attività non valida.');
       }
-      return {
-        profile: savedProfile,
-        settings: {
-          ...next,
-          objectives: saved.objectives.map(parseObjectiveView),
-        },
-      };
+      invalidateTemporalTimelineRead();
+      invalidateTemporalPlanningRead();
+      if (edit.changes?.capture) {
+        invalidateActivitySessionCardCapability(ref);
+        if (typeof window !== 'undefined') {
+          window.dispatchEvent(
+            new CustomEvent('dante:activity-session-capability-changed', {
+              detail: ref,
+            }),
+          );
+        }
+      }
+      return { profile: savedProfile, settings: next };
     },
     async refreshObjectives(
       ref: string,
@@ -1072,11 +1187,13 @@ export function createRemoteActivityEditSettings(
         invalidateTemporalPlanningRead();
         if (changes.capture) {
           invalidateActivitySessionCardCapability(profile.activityRef);
-          window.dispatchEvent(
-            new CustomEvent('dante:activity-session-capability-changed', {
-              detail: profile.activityRef,
-            }),
-          );
+          if (typeof window !== 'undefined') {
+            window.dispatchEvent(
+              new CustomEvent('dante:activity-session-capability-changed', {
+                detail: profile.activityRef,
+              }),
+            );
+          }
         }
         return { profile: savedProfile, settings: savedSettings };
       };

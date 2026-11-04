@@ -8,7 +8,7 @@ from typing import Annotated, Any, Literal
 from uuid import UUID
 
 from fastapi import APIRouter, Depends, Request, Response
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel, ConfigDict, Field, model_validator
 
 from dante.context.contracts import DanteContext
 from dante.context.dependencies import require_mutating_dante_context
@@ -41,7 +41,11 @@ from dante.modules.temporal.recurrence import (
     RecurrencePersistenceError,
     RecurrenceStateConflictError,
 )
-from dante.modules.temporal.recurrence_api import RecurrenceRequest, _spec
+from dante.modules.temporal.recurrence_api import (
+    CalendarRecurrenceRequest,
+    RecurrenceRequest,
+    _spec,
+)
 from dante.modules.temporal.recurring_authoring import (
     EventAuthoringPolicy,
     RecurringAuthoringApplication,
@@ -49,6 +53,8 @@ from dante.modules.temporal.recurring_authoring import (
     RecurringAuthoringPersistenceError,
     RoutineAuthoringPolicy,
 )
+from dante.modules.temporal.recurring_series_edit import _validate_structure
+from dante.modules.temporal.recurring_series_reconciliation import SeriesReconciliationError
 from dante.modules.temporal.routine import (
     RoutineInputError,
     RoutineNotFoundError,
@@ -78,6 +84,39 @@ class CreateRecurringRoutineRequest(BaseModel):
     duration_minutes: int = Field(ge=1, le=525_600)
     reminder_lead_minutes: int | None = Field(default=None, ge=0, le=10_080)
     activity_template: dict[str, Any] | None = None
+
+    @model_validator(mode="after")
+    def valid_all_day(self) -> CreateRecurringRoutineRequest:
+        template = self.activity_template or {}
+        if template.get("placement_kind") == "all_day":
+            days = template.get("duration_days")
+            if (
+                type(days) is not int
+                or not 1 <= days <= 365
+                or self.duration_minutes != days * 1440
+                or self.reminder_lead_minutes is not None
+                or not isinstance(self.recurrence, CalendarRecurrenceRequest)
+                or self.recurrence.clock_basis_code != "named_zone"
+                or self.recurrence.zone_id is None
+                or self.recurrence.wall_times
+            ):
+                raise ValueError(
+                    "Recurring all-day Activity requires calendar dates without an hour."
+                )
+            try:
+                _validate_structure(
+                    "routine",
+                    _spec(self.recurrence),
+                    {
+                        "version": 1,
+                        "duration_minutes": self.duration_minutes,
+                        "reminder_lead_minutes": self.reminder_lead_minutes,
+                        "activity_template": template,
+                    },
+                )
+            except SeriesReconciliationError as exc:
+                raise ValueError(str(exc)) from exc
+        return self
 
 
 class CreateRecurringEventRequest(BaseModel):

@@ -150,6 +150,8 @@ export function TemporalCreateAdvancedActivityHeaderActions() {
  */
 export function TemporalCreateAdvancedActivityStructure({
   fields,
+  validationTarget = null,
+  validationMessage = '',
 }: TemporalCreateAdvancedActivityStructureProps) {
   const { i18n } = useTranslation('common');
   const italian = i18n.language.toLowerCase().startsWith('it');
@@ -202,14 +204,19 @@ export function TemporalCreateAdvancedActivityStructure({
             {italian ? 'Sessioni attività' : 'Activity sessions'}
           </div>
           {structure.plannedSlices.map((slice) => {
+            const invalid = validationTarget === `plannedSession:${slice.id}`;
             return (
               <div
                 className="temporal-create-tree-item is-session is-root"
                 key={slice.id}
                 data-create-planned-session
+                data-create-path={`plannedSession:${slice.id}`}
                 data-create-owner="root"
               >
-                <div className="temporal-create-tree-row">
+                <div
+                  className="temporal-create-tree-row"
+                  data-create-invalid={invalid ? 'true' : undefined}
+                >
                   <span
                     className="temporal-create-tree-row__icon"
                     aria-hidden="true"
@@ -223,6 +230,10 @@ export function TemporalCreateAdvancedActivityStructure({
                   <input
                     className="temporal-create-tree-row__title"
                     type="text"
+                    aria-invalid={invalid || undefined}
+                    aria-describedby={
+                      invalid ? `planned-session-error-${slice.id}` : undefined
+                    }
                     value={slice.title}
                     maxLength={300}
                     placeholder={italian ? 'Nome Sessione' : 'Session name'}
@@ -246,6 +257,15 @@ export function TemporalCreateAdvancedActivityStructure({
                     </button>
                   </div>
                 </div>
+                {invalid && validationMessage ? (
+                  <span
+                    id={`planned-session-error-${slice.id}`}
+                    className="temporal-create-field-error temporal-create-tree-error"
+                    role="alert"
+                  >
+                    {validationMessage}
+                  </span>
+                ) : null}
               </div>
             );
           })}
