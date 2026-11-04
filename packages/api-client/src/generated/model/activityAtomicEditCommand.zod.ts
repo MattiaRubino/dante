@@ -17,6 +17,18 @@ export const activityAtomicEditCommandCoreOneProfileOneTitleMax = 300;
 export const activityAtomicEditCommandCoreOneReminderOneLeadMinutesMin = 0;
 export const activityAtomicEditCommandCoreOneReminderOneLeadMinutesMax = 10080;
 
+export const activityAtomicEditCommandLifeAreaOneAssignDefault = true;
+export const activityAtomicEditCommandLifeAreaOneColorCodeOneRegExp =
+  new RegExp('^#[0-9a-fA-F]{6}$');
+
+export const activityAtomicEditCommandLifeAreaOneExpectedAssignmentRevisionMin = 0;
+
+export const activityAtomicEditCommandLifeAreaOneNewAreaOneColorCodeOneRegExp =
+  new RegExp('^#[0-9a-fA-F]{6}$');
+export const activityAtomicEditCommandLifeAreaOneNewAreaOneNameMax = 100;
+
+export const activityAtomicEditCommandLifeAreaOneOperationIdMax = 150;
+
 export const activityAtomicEditCommandObjectivesOneAddItemLabelMax = 300;
 
 export const activityAtomicEditCommandObjectivesOneAddItemOperationIdMax = 200;
@@ -61,6 +73,18 @@ export const activityAtomicEditCommandObjectivesOneReviseItemChangeTargetValueTw
 export const activityAtomicEditCommandObjectivesOneReviseItemChangeUnitCodeOneMax = 40;
 
 export const activityAtomicEditCommandObjectivesOneReviseMax = 100;
+
+export const activityAtomicEditCommandOccurrenceProfileOneExpectedRevisionMin = 0;
+
+export const activityAtomicEditCommandOperationIdOneMax = 200;
+
+export const activityAtomicEditCommandPlacementLockOneExpectedRevisionOneMin = 0;
+
+export const activityAtomicEditCommandPlannedNamesItemExpectedNameOneMax = 300;
+
+export const activityAtomicEditCommandPlannedNamesItemNameOneMax = 300;
+
+export const activityAtomicEditCommandPlannedNamesMax = 100;
 
 export const activityAtomicEditCommandReplanOneDeletePlannedSessionsMax = 100;
 
@@ -197,6 +221,89 @@ export const ActivityAtomicEditCommand = /*#__PURE__*/ zod
               /*#__PURE__*/ zod.null(),
             ]),
           ),
+        }),
+        /*#__PURE__*/ zod.null(),
+      ]),
+    ),
+    life_area: /*#__PURE__*/ zod.optional(
+      /*#__PURE__*/ zod.union([
+        /*#__PURE__*/ zod.object({
+          assign: /*#__PURE__*/ zod._default(
+            /*#__PURE__*/ zod.boolean(),
+            activityAtomicEditCommandLifeAreaOneAssignDefault,
+          ),
+          color_code: /*#__PURE__*/ zod.optional(
+            /*#__PURE__*/ zod.union([
+              /*#__PURE__*/ zod
+                .string()
+                .check(
+                  /*#__PURE__*/ zod.regex(
+                    activityAtomicEditCommandLifeAreaOneColorCodeOneRegExp,
+                  ),
+                ),
+              /*#__PURE__*/ zod.null(),
+            ]),
+          ),
+          expected_area_revision: /*#__PURE__*/ zod.optional(
+            /*#__PURE__*/ zod.union([
+              /*#__PURE__*/ zod.int().check(/*#__PURE__*/ zod.gte(1)),
+              /*#__PURE__*/ zod.null(),
+            ]),
+          ),
+          expected_assignment_revision: /*#__PURE__*/ zod
+            .int()
+            .check(
+              /*#__PURE__*/ zod.gte(
+                activityAtomicEditCommandLifeAreaOneExpectedAssignmentRevisionMin,
+              ),
+            ),
+          icon_code: /*#__PURE__*/ zod.optional(
+            /*#__PURE__*/ zod.union([
+              /*#__PURE__*/ zod.string(),
+              /*#__PURE__*/ zod.null(),
+            ]),
+          ),
+          life_area_ref: /*#__PURE__*/ zod.optional(
+            /*#__PURE__*/ zod.union([
+              /*#__PURE__*/ zod.uuid(),
+              /*#__PURE__*/ zod.null(),
+            ]),
+          ),
+          new_area: /*#__PURE__*/ zod.optional(
+            /*#__PURE__*/ zod.union([
+              /*#__PURE__*/ zod.object({
+                color_code: /*#__PURE__*/ zod.optional(
+                  /*#__PURE__*/ zod.union([
+                    /*#__PURE__*/ zod
+                      .string()
+                      .check(
+                        /*#__PURE__*/ zod.regex(
+                          activityAtomicEditCommandLifeAreaOneNewAreaOneColorCodeOneRegExp,
+                        ),
+                      ),
+                    /*#__PURE__*/ zod.null(),
+                  ]),
+                ),
+                name: /*#__PURE__*/ zod
+                  .string()
+                  .check(/*#__PURE__*/ zod.minLength(1))
+                  .check(
+                    /*#__PURE__*/ zod.maxLength(
+                      activityAtomicEditCommandLifeAreaOneNewAreaOneNameMax,
+                    ),
+                  ),
+              }),
+              /*#__PURE__*/ zod.null(),
+            ]),
+          ),
+          operation_id: /*#__PURE__*/ zod
+            .string()
+            .check(/*#__PURE__*/ zod.minLength(1))
+            .check(
+              /*#__PURE__*/ zod.maxLength(
+                activityAtomicEditCommandLifeAreaOneOperationIdMax,
+              ),
+            ),
         }),
         /*#__PURE__*/ zod.null(),
       ]),
@@ -487,6 +594,102 @@ export const ActivityAtomicEditCommand = /*#__PURE__*/ zod
           ),
         /*#__PURE__*/ zod.null(),
       ]),
+    ),
+    occurrence_profile: /*#__PURE__*/ zod.optional(
+      /*#__PURE__*/ zod.union([
+        /*#__PURE__*/ zod.object({
+          expected_recurrence_state_ref: /*#__PURE__*/ zod.union([
+            /*#__PURE__*/ zod.uuid(),
+            /*#__PURE__*/ zod.null(),
+          ]),
+          expected_revision: /*#__PURE__*/ zod
+            .int()
+            .check(
+              /*#__PURE__*/ zod.gte(
+                activityAtomicEditCommandOccurrenceProfileOneExpectedRevisionMin,
+              ),
+            ),
+          occurrence_ref: /*#__PURE__*/ zod.uuid(),
+          profile_patch: /*#__PURE__*/ zod.record(
+            /*#__PURE__*/ zod.string(),
+            /*#__PURE__*/ zod.union([
+              /*#__PURE__*/ zod.string(),
+              /*#__PURE__*/ zod.null(),
+            ]),
+          ),
+        }),
+        /*#__PURE__*/ zod.null(),
+      ]),
+    ),
+    operation_id: /*#__PURE__*/ zod.optional(
+      /*#__PURE__*/ zod.union([
+        /*#__PURE__*/ zod
+          .string()
+          .check(/*#__PURE__*/ zod.minLength(1))
+          .check(
+            /*#__PURE__*/ zod.maxLength(
+              activityAtomicEditCommandOperationIdOneMax,
+            ),
+          ),
+        /*#__PURE__*/ zod.null(),
+      ]),
+    ),
+    placement_lock: /*#__PURE__*/ zod.optional(
+      /*#__PURE__*/ zod.union([
+        /*#__PURE__*/ zod.object({
+          expected_revision: /*#__PURE__*/ zod.optional(
+            /*#__PURE__*/ zod.union([
+              /*#__PURE__*/ zod
+                .int()
+                .check(
+                  /*#__PURE__*/ zod.gte(
+                    activityAtomicEditCommandPlacementLockOneExpectedRevisionOneMin,
+                  ),
+                ),
+              /*#__PURE__*/ zod.null(),
+            ]),
+          ),
+          locked: /*#__PURE__*/ zod.boolean(),
+          schedule_ref: /*#__PURE__*/ zod.uuid(),
+        }),
+        /*#__PURE__*/ zod.null(),
+      ]),
+    ),
+    planned_names: /*#__PURE__*/ zod.optional(
+      /*#__PURE__*/ zod
+        .array(
+          /*#__PURE__*/ zod.object({
+            expected_name: /*#__PURE__*/ zod.optional(
+              /*#__PURE__*/ zod.union([
+                /*#__PURE__*/ zod
+                  .string()
+                  .check(
+                    /*#__PURE__*/ zod.maxLength(
+                      activityAtomicEditCommandPlannedNamesItemExpectedNameOneMax,
+                    ),
+                  ),
+                /*#__PURE__*/ zod.null(),
+              ]),
+            ),
+            name: /*#__PURE__*/ zod.optional(
+              /*#__PURE__*/ zod.union([
+                /*#__PURE__*/ zod
+                  .string()
+                  .check(/*#__PURE__*/ zod.minLength(1))
+                  .check(
+                    /*#__PURE__*/ zod.maxLength(
+                      activityAtomicEditCommandPlannedNamesItemNameOneMax,
+                    ),
+                  ),
+                /*#__PURE__*/ zod.null(),
+              ]),
+            ),
+            schedule_ref: /*#__PURE__*/ zod.uuid(),
+          }),
+        )
+        .check(
+          /*#__PURE__*/ zod.maxLength(activityAtomicEditCommandPlannedNamesMax),
+        ),
     ),
     replan: /*#__PURE__*/ zod.optional(
       /*#__PURE__*/ zod.union([

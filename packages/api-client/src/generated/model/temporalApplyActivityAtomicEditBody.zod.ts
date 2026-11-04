@@ -17,6 +17,18 @@ export const temporalApplyActivityAtomicEditBodyCoreOneProfileOneTitleMax = 300;
 export const temporalApplyActivityAtomicEditBodyCoreOneReminderOneLeadMinutesMin = 0;
 export const temporalApplyActivityAtomicEditBodyCoreOneReminderOneLeadMinutesMax = 10080;
 
+export const temporalApplyActivityAtomicEditBodyLifeAreaOneAssignDefault = true;
+export const temporalApplyActivityAtomicEditBodyLifeAreaOneColorCodeOneRegExp =
+  new RegExp('^#[0-9a-fA-F]{6}$');
+
+export const temporalApplyActivityAtomicEditBodyLifeAreaOneExpectedAssignmentRevisionMin = 0;
+
+export const temporalApplyActivityAtomicEditBodyLifeAreaOneNewAreaOneColorCodeOneRegExp =
+  new RegExp('^#[0-9a-fA-F]{6}$');
+export const temporalApplyActivityAtomicEditBodyLifeAreaOneNewAreaOneNameMax = 100;
+
+export const temporalApplyActivityAtomicEditBodyLifeAreaOneOperationIdMax = 150;
+
 export const temporalApplyActivityAtomicEditBodyObjectivesOneAddItemLabelMax = 300;
 
 export const temporalApplyActivityAtomicEditBodyObjectivesOneAddItemOperationIdMax = 200;
@@ -61,6 +73,18 @@ export const temporalApplyActivityAtomicEditBodyObjectivesOneReviseItemChangeTar
 export const temporalApplyActivityAtomicEditBodyObjectivesOneReviseItemChangeUnitCodeOneMax = 40;
 
 export const temporalApplyActivityAtomicEditBodyObjectivesOneReviseMax = 100;
+
+export const temporalApplyActivityAtomicEditBodyOccurrenceProfileOneExpectedRevisionMin = 0;
+
+export const temporalApplyActivityAtomicEditBodyOperationIdOneMax = 200;
+
+export const temporalApplyActivityAtomicEditBodyPlacementLockOneExpectedRevisionOneMin = 0;
+
+export const temporalApplyActivityAtomicEditBodyPlannedNamesItemExpectedNameOneMax = 300;
+
+export const temporalApplyActivityAtomicEditBodyPlannedNamesItemNameOneMax = 300;
+
+export const temporalApplyActivityAtomicEditBodyPlannedNamesMax = 100;
 
 export const temporalApplyActivityAtomicEditBodyReplanOneDeletePlannedSessionsMax = 100;
 
@@ -197,6 +221,89 @@ export const TemporalApplyActivityAtomicEditBody = /*#__PURE__*/ zod
               /*#__PURE__*/ zod.null(),
             ]),
           ),
+        }),
+        /*#__PURE__*/ zod.null(),
+      ]),
+    ),
+    life_area: /*#__PURE__*/ zod.optional(
+      /*#__PURE__*/ zod.union([
+        /*#__PURE__*/ zod.object({
+          assign: /*#__PURE__*/ zod._default(
+            /*#__PURE__*/ zod.boolean(),
+            temporalApplyActivityAtomicEditBodyLifeAreaOneAssignDefault,
+          ),
+          color_code: /*#__PURE__*/ zod.optional(
+            /*#__PURE__*/ zod.union([
+              /*#__PURE__*/ zod
+                .string()
+                .check(
+                  /*#__PURE__*/ zod.regex(
+                    temporalApplyActivityAtomicEditBodyLifeAreaOneColorCodeOneRegExp,
+                  ),
+                ),
+              /*#__PURE__*/ zod.null(),
+            ]),
+          ),
+          expected_area_revision: /*#__PURE__*/ zod.optional(
+            /*#__PURE__*/ zod.union([
+              /*#__PURE__*/ zod.int().check(/*#__PURE__*/ zod.gte(1)),
+              /*#__PURE__*/ zod.null(),
+            ]),
+          ),
+          expected_assignment_revision: /*#__PURE__*/ zod
+            .int()
+            .check(
+              /*#__PURE__*/ zod.gte(
+                temporalApplyActivityAtomicEditBodyLifeAreaOneExpectedAssignmentRevisionMin,
+              ),
+            ),
+          icon_code: /*#__PURE__*/ zod.optional(
+            /*#__PURE__*/ zod.union([
+              /*#__PURE__*/ zod.string(),
+              /*#__PURE__*/ zod.null(),
+            ]),
+          ),
+          life_area_ref: /*#__PURE__*/ zod.optional(
+            /*#__PURE__*/ zod.union([
+              /*#__PURE__*/ zod.uuid(),
+              /*#__PURE__*/ zod.null(),
+            ]),
+          ),
+          new_area: /*#__PURE__*/ zod.optional(
+            /*#__PURE__*/ zod.union([
+              /*#__PURE__*/ zod.object({
+                color_code: /*#__PURE__*/ zod.optional(
+                  /*#__PURE__*/ zod.union([
+                    /*#__PURE__*/ zod
+                      .string()
+                      .check(
+                        /*#__PURE__*/ zod.regex(
+                          temporalApplyActivityAtomicEditBodyLifeAreaOneNewAreaOneColorCodeOneRegExp,
+                        ),
+                      ),
+                    /*#__PURE__*/ zod.null(),
+                  ]),
+                ),
+                name: /*#__PURE__*/ zod
+                  .string()
+                  .check(/*#__PURE__*/ zod.minLength(1))
+                  .check(
+                    /*#__PURE__*/ zod.maxLength(
+                      temporalApplyActivityAtomicEditBodyLifeAreaOneNewAreaOneNameMax,
+                    ),
+                  ),
+              }),
+              /*#__PURE__*/ zod.null(),
+            ]),
+          ),
+          operation_id: /*#__PURE__*/ zod
+            .string()
+            .check(/*#__PURE__*/ zod.minLength(1))
+            .check(
+              /*#__PURE__*/ zod.maxLength(
+                temporalApplyActivityAtomicEditBodyLifeAreaOneOperationIdMax,
+              ),
+            ),
         }),
         /*#__PURE__*/ zod.null(),
       ]),
@@ -487,6 +594,104 @@ export const TemporalApplyActivityAtomicEditBody = /*#__PURE__*/ zod
           ),
         /*#__PURE__*/ zod.null(),
       ]),
+    ),
+    occurrence_profile: /*#__PURE__*/ zod.optional(
+      /*#__PURE__*/ zod.union([
+        /*#__PURE__*/ zod.object({
+          expected_recurrence_state_ref: /*#__PURE__*/ zod.union([
+            /*#__PURE__*/ zod.uuid(),
+            /*#__PURE__*/ zod.null(),
+          ]),
+          expected_revision: /*#__PURE__*/ zod
+            .int()
+            .check(
+              /*#__PURE__*/ zod.gte(
+                temporalApplyActivityAtomicEditBodyOccurrenceProfileOneExpectedRevisionMin,
+              ),
+            ),
+          occurrence_ref: /*#__PURE__*/ zod.uuid(),
+          profile_patch: /*#__PURE__*/ zod.record(
+            /*#__PURE__*/ zod.string(),
+            /*#__PURE__*/ zod.union([
+              /*#__PURE__*/ zod.string(),
+              /*#__PURE__*/ zod.null(),
+            ]),
+          ),
+        }),
+        /*#__PURE__*/ zod.null(),
+      ]),
+    ),
+    operation_id: /*#__PURE__*/ zod.optional(
+      /*#__PURE__*/ zod.union([
+        /*#__PURE__*/ zod
+          .string()
+          .check(/*#__PURE__*/ zod.minLength(1))
+          .check(
+            /*#__PURE__*/ zod.maxLength(
+              temporalApplyActivityAtomicEditBodyOperationIdOneMax,
+            ),
+          ),
+        /*#__PURE__*/ zod.null(),
+      ]),
+    ),
+    placement_lock: /*#__PURE__*/ zod.optional(
+      /*#__PURE__*/ zod.union([
+        /*#__PURE__*/ zod.object({
+          expected_revision: /*#__PURE__*/ zod.optional(
+            /*#__PURE__*/ zod.union([
+              /*#__PURE__*/ zod
+                .int()
+                .check(
+                  /*#__PURE__*/ zod.gte(
+                    temporalApplyActivityAtomicEditBodyPlacementLockOneExpectedRevisionOneMin,
+                  ),
+                ),
+              /*#__PURE__*/ zod.null(),
+            ]),
+          ),
+          locked: /*#__PURE__*/ zod.boolean(),
+          schedule_ref: /*#__PURE__*/ zod.uuid(),
+        }),
+        /*#__PURE__*/ zod.null(),
+      ]),
+    ),
+    planned_names: /*#__PURE__*/ zod.optional(
+      /*#__PURE__*/ zod
+        .array(
+          /*#__PURE__*/ zod.object({
+            expected_name: /*#__PURE__*/ zod.optional(
+              /*#__PURE__*/ zod.union([
+                /*#__PURE__*/ zod
+                  .string()
+                  .check(
+                    /*#__PURE__*/ zod.maxLength(
+                      temporalApplyActivityAtomicEditBodyPlannedNamesItemExpectedNameOneMax,
+                    ),
+                  ),
+                /*#__PURE__*/ zod.null(),
+              ]),
+            ),
+            name: /*#__PURE__*/ zod.optional(
+              /*#__PURE__*/ zod.union([
+                /*#__PURE__*/ zod
+                  .string()
+                  .check(/*#__PURE__*/ zod.minLength(1))
+                  .check(
+                    /*#__PURE__*/ zod.maxLength(
+                      temporalApplyActivityAtomicEditBodyPlannedNamesItemNameOneMax,
+                    ),
+                  ),
+                /*#__PURE__*/ zod.null(),
+              ]),
+            ),
+            schedule_ref: /*#__PURE__*/ zod.uuid(),
+          }),
+        )
+        .check(
+          /*#__PURE__*/ zod.maxLength(
+            temporalApplyActivityAtomicEditBodyPlannedNamesMax,
+          ),
+        ),
     ),
     replan: /*#__PURE__*/ zod.optional(
       /*#__PURE__*/ zod.union([

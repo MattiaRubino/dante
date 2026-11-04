@@ -4298,7 +4298,7 @@ export const getTemporalApplyActivityAtomicEditUrl = (activityRef: string) => {
 };
 
 /**
- * Commit replan, Objectives and core policy in one Save transaction.
+ * Commit every ordinary Activity edit in one serializable Save transaction.
  * @summary Apply Activity Atomic Edit
  */
 export const temporalApplyActivityAtomicEdit = async (

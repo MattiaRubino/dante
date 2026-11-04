@@ -900,6 +900,16 @@
               }
             ]
           },
+          "life_area": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/AtomicLifeArea"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
           "objectives": {
             "anyOf": [
               {
@@ -909,6 +919,47 @@
                 "type": "null"
               }
             ]
+          },
+          "occurrence_profile": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/AtomicOccurrenceProfile"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "operation_id": {
+            "anyOf": [
+              {
+                "maxLength": 200,
+                "minLength": 1,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Operation Id"
+          },
+          "placement_lock": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/AtomicPlacementLock"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "planned_names": {
+            "items": {
+              "$ref": "#/components/schemas/AtomicPlannedName"
+            },
+            "maxItems": 100,
+            "title": "Planned Names",
+            "type": "array"
           },
           "replan": {
             "anyOf": [
@@ -2894,6 +2945,231 @@
           "expected_assignment_revision"
         ],
         "title": "AssignRoutineLifeAreaRequest",
+        "type": "object"
+      },
+      "AtomicLifeArea": {
+        "additionalProperties": false,
+        "properties": {
+          "assign": {
+            "default": true,
+            "title": "Assign",
+            "type": "boolean"
+          },
+          "color_code": {
+            "anyOf": [
+              {
+                "pattern": "^#[0-9a-fA-F]{6}$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Color Code"
+          },
+          "expected_area_revision": {
+            "anyOf": [
+              {
+                "minimum": 1.0,
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Expected Area Revision"
+          },
+          "expected_assignment_revision": {
+            "minimum": 0.0,
+            "title": "Expected Assignment Revision",
+            "type": "integer"
+          },
+          "icon_code": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Icon Code"
+          },
+          "life_area_ref": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Life Area Ref"
+          },
+          "new_area": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/AtomicNewLifeArea"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "operation_id": {
+            "maxLength": 150,
+            "minLength": 1,
+            "title": "Operation Id",
+            "type": "string"
+          }
+        },
+        "required": ["operation_id", "expected_assignment_revision"],
+        "title": "AtomicLifeArea",
+        "type": "object"
+      },
+      "AtomicNewLifeArea": {
+        "additionalProperties": false,
+        "properties": {
+          "color_code": {
+            "anyOf": [
+              {
+                "pattern": "^#[0-9a-fA-F]{6}$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Color Code"
+          },
+          "name": {
+            "maxLength": 100,
+            "minLength": 1,
+            "title": "Name",
+            "type": "string"
+          }
+        },
+        "required": ["name"],
+        "title": "AtomicNewLifeArea",
+        "type": "object"
+      },
+      "AtomicOccurrenceProfile": {
+        "additionalProperties": false,
+        "properties": {
+          "expected_recurrence_state_ref": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Expected Recurrence State Ref"
+          },
+          "expected_revision": {
+            "minimum": 0.0,
+            "title": "Expected Revision",
+            "type": "integer"
+          },
+          "occurrence_ref": {
+            "format": "uuid",
+            "title": "Occurrence Ref",
+            "type": "string"
+          },
+          "profile_patch": {
+            "additionalProperties": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "maxProperties": 4,
+            "minProperties": 1,
+            "title": "Profile Patch",
+            "type": "object"
+          }
+        },
+        "required": [
+          "occurrence_ref",
+          "expected_revision",
+          "expected_recurrence_state_ref",
+          "profile_patch"
+        ],
+        "title": "AtomicOccurrenceProfile",
+        "type": "object"
+      },
+      "AtomicPlacementLock": {
+        "additionalProperties": false,
+        "properties": {
+          "expected_revision": {
+            "anyOf": [
+              {
+                "minimum": 0.0,
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Expected Revision"
+          },
+          "locked": {
+            "title": "Locked",
+            "type": "boolean"
+          },
+          "schedule_ref": {
+            "format": "uuid",
+            "title": "Schedule Ref",
+            "type": "string"
+          }
+        },
+        "required": ["schedule_ref", "locked"],
+        "title": "AtomicPlacementLock",
+        "type": "object"
+      },
+      "AtomicPlannedName": {
+        "additionalProperties": false,
+        "properties": {
+          "expected_name": {
+            "anyOf": [
+              {
+                "maxLength": 300,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Expected Name"
+          },
+          "name": {
+            "anyOf": [
+              {
+                "maxLength": 300,
+                "minLength": 1,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Name"
+          },
+          "schedule_ref": {
+            "format": "uuid",
+            "title": "Schedule Ref",
+            "type": "string"
+          }
+        },
+        "required": ["schedule_ref"],
+        "title": "AtomicPlannedName",
         "type": "object"
       },
       "AuthenticatedSessionResponse": {
@@ -28426,7 +28702,7 @@
     },
     "/api/v1/temporal/activities/{activity_ref}/atomic-edit": {
       "put": {
-        "description": "Commit replan, Objectives and core policy in one Save transaction.",
+        "description": "Commit every ordinary Activity edit in one serializable Save transaction.",
         "operationId": "temporal_apply_activity_atomic_edit",
         "parameters": [
           {
