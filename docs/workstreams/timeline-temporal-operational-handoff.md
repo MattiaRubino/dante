@@ -3307,3 +3307,39 @@ regression checks that the local Occurrence capability receives only the
 changed title and does not call the Event source profile or series acceptance.
 This does not make the selected-only editor capable of editing Agenda, Life
 Area or Schedule yet.
+
+### User-local focused proof at `72be02cd` (2026-11-04)
+
+After pulling `feature/timeline-temporal-operational`, the user ran the
+colocated Event Inspector Vitest file: **15/15 PASS**, including the selected
+Occurrence profile, modal dismissal, focus and existing following-scope cases.
+They also ran the fixture-browser case `Event Edit keeps its form` with
+`playwright.config.ts`: **1/1 PASS**. Vite logged `ECONNREFUSED` for unrelated
+Home API proxy requests because the fixture run had no backend on port 8000;
+those requests did not fail this geometry test. This is frontend/component and
+fixture-browser evidence on `72be02cd`, not an authenticated Event edit save,
+PostgreSQL, Firefox, visual user acceptance, or full-gate PASS. Any later code
+change requires fresh proof for its affected boundary.
+
+### Aggregate Event Save: verified implementation constraints
+
+Code review after the focused gate found a hard persistence boundary: the
+current `dante.retire_self_temporal_objective` at `_166` explicitly selects
+`subject_kind='activity'`. The Activity Objective batch therefore cannot be
+reused for an Event by changing its endpoint path. Event Objective deletion
+requires a new forward migration with owner, local/series identity and
+recorded-result protection, followed by PostgreSQL proof. Event Objective
+creation and read already exist, but they do not supply that edit capability.
+
+The other one-off Event writes are also independent: Event profile revision,
+Agenda replacement, Life Area assignment and Schedule placement each have
+their own CAS/operation receipt. The Agenda and Schedule application methods
+already expose in-session variants; the profile and Life Area SQL capabilities
+can be called under the same transaction. A single UI Save must additionally
+bind the *whole submitted intent* to one replay identity, lock the owned
+Event, reject a recurring source in the one-off path, validate every expected
+revision, roll back all fields on failure and return canonical readback.
+Sequential frontend HTTP requests do not meet this contract. Selected
+recurring Event edits need a separate occurrence-aware command rather than
+source-level Agenda or Life Area writes. Do not expose an all-fields editor
+before these refusal and rollback paths exist.
