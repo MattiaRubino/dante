@@ -180,6 +180,58 @@ test('Activity Edit applies readable font sizes rather than inherited tiny label
   });
 });
 
+test('Event Edit keeps its form scrollable and its Save action visible in the Activity modal shell', async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 1280, height: 720 });
+  await page.goto('/home');
+  await page.addStyleTag({
+    path: 'src/features/home/ui/timeline/timeline.css',
+  });
+  const geometry = await page.evaluate(() => {
+    const modal = document.createElement('div');
+    modal.className =
+      'timeline-event-modal timeline-event-modal--edit timeline-event-modal--event-edit';
+    modal.style.height = '600px';
+    modal.innerHTML = `<div class="timeline-event-modal__header">Chiudi</div>
+      <div class="timeline-event-modal__title-row">Modifica evento</div>
+      <div class="timeline-activity-inspector__actions">
+        <div class="timeline-event-profile-editor">
+          <div class="timeline-event-profile-editor__body">
+            <label>Titolo <input /></label>
+            <div style="height: 1100px">Campi evento</div>
+          </div>
+          <div class="timeline-event-profile-editor__actions"><button>Salva modifiche</button></div>
+        </div>
+      </div>
+      <div class="timeline-event-modal__schedule-row">Dettagli Inspector</div>`;
+    document.body.append(modal);
+    const body = modal.querySelector<HTMLElement>(
+      '.timeline-event-profile-editor__body',
+    )!;
+    const footer = modal.querySelector<HTMLElement>(
+      '.timeline-event-profile-editor__actions',
+    )!;
+    const result = {
+      bodyScrollable: body.scrollHeight > body.clientHeight,
+      footerInside:
+        footer.getBoundingClientRect().bottom <=
+        modal.getBoundingClientRect().bottom,
+      inspectorHidden:
+        getComputedStyle(
+          modal.querySelector('.timeline-event-modal__schedule-row')!,
+        ).display === 'none',
+      modalWidth: modal.getBoundingClientRect().width,
+    };
+    modal.remove();
+    return result;
+  });
+  expect(geometry.bodyScrollable).toBe(true);
+  expect(geometry.footerInside).toBe(true);
+  expect(geometry.inspectorHidden).toBe(true);
+  expect(geometry.modalWidth).toBeGreaterThan(680);
+});
+
 test('Activity Edit keeps Create clock controls contained and the series recurrence stacked', async ({
   page,
 }) => {
