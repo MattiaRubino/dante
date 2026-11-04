@@ -8,6 +8,7 @@ type TemporalCreateDatePickerProps = Readonly<{
   value: string;
   locale: string;
   min?: string;
+  align?: 'start' | 'end';
   onChange: (value: string) => void;
 }>;
 
@@ -70,6 +71,7 @@ export function TemporalCreateDatePicker({
   value,
   locale,
   min,
+  align = 'start',
   onChange,
 }: TemporalCreateDatePickerProps) {
   const selected = plainDate(value);
@@ -99,7 +101,10 @@ export function TemporalCreateDatePicker({
   }, [month]);
 
   return (
-    <div ref={rootRef} className="temporal-create-date-picker">
+    <div
+      ref={rootRef}
+      className={`temporal-create-date-picker temporal-create-date-picker--${align}`}
+    >
       <button
         className="temporal-create-date-picker__trigger"
         type="button"

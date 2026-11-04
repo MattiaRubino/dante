@@ -184,6 +184,7 @@ function SeriesIntervalFields({
         />
         <TemporalCreateDatePicker
           label="Data fine"
+          align="end"
           locale="it"
           value={end.toPlainDate().toString()}
           onChange={(day) =>

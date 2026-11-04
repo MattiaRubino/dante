@@ -1090,6 +1090,7 @@ export function TemporalCreateCoreFieldsU2({
 
           <TemporalCreateDatePicker
             label={italian ? 'Data fine' : 'End date'}
+            align="end"
             value={visibleEndDate}
             min={fields.date}
             locale={locale}
@@ -1151,6 +1152,7 @@ export function TemporalCreateCoreFieldsU2({
                       />
                       <TemporalCreateDatePicker
                         label={italian ? 'Data fine' : 'End date'}
+                        align="end"
                         value={interval.endDate}
                         locale={locale}
                         onChange={(endDate) =>
@@ -1215,6 +1217,7 @@ export function TemporalCreateCoreFieldsU2({
           >
             <TemporalCreateDatePicker
               label="Data fine"
+              align="end"
               value={visibleAllDayEndDate}
               min={fields.date}
               locale={locale}

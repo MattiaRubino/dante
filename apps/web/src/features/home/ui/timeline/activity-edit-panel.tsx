@@ -220,6 +220,7 @@ function ActivityIntervalFields({
       />
       <TemporalCreateDatePicker
         label="Data fine"
+        align="end"
         locale="it"
         value={value.end.slice(0, 10)}
         onChange={(date) =>
@@ -1758,6 +1759,7 @@ export function ActivityEditPanel({
                   <span aria-hidden="true">→</span>
                   <TemporalCreateDatePicker
                     label="Data fine"
+                    align="end"
                     locale="it"
                     value={dateSpanDraft.end}
                     onChange={(end) => {
