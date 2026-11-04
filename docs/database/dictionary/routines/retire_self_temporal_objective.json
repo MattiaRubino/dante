@@ -8,7 +8,7 @@
     "name": "retire_self_temporal_objective",
     "ownership_class": "dante_owned"
   },
-  "purpose": "Retire an unobserved Activity Objective under owner scope and expected-definition revision, including a bound recurring instance as a local exception, retaining historical references.",
+  "purpose": "Retire an unobserved Activity or one-off Event Objective under owner scope and expected-definition revision, including a bound recurring Activity instance as a local exception, retaining historical references.",
   "classification": {
     "persistence_role": "objective_retirement_capability",
     "canonicality": "capability_surface",
@@ -20,6 +20,7 @@
     ],
     "domain_concepts": [
       "Activity",
+      "Event",
       "Observation",
       "Evaluation"
     ],
@@ -79,7 +80,7 @@
     "material_state_behavior": "The original Objective and its history remain in the same table.",
     "current_binding": "retired_at excludes the item from current Objective reads.",
     "chronology": "Recorded results veto retirement; repeated exact operation replays without a second deletion.",
-    "immutability_policy": "No deletion of recorded historical facts; a bound generated Objective may be retired only as a local instance exception. Series changes revise the source policy through the atomic series editor."
+    "immutability_policy": "No deletion of recorded historical facts; a bound generated Activity Objective may be retired only as a local instance exception. Recurring Event sources are rejected. Series changes revise source policy through the atomic series editor."
   },
   "lifecycle": {
     "retention": "Retain original Objective row and its operation receipt.",
@@ -101,14 +102,16 @@
   },
   "proof": {
     "obligations": [
-      "Same-self Activity binding",
+      "Same-self Activity or one-off Event binding",
       "Definition revision CAS and replay",
       "No recorded Observation/Evaluation retirement",
       "Unbound generated source veto and source admission lock for local exceptions",
+      "Recurring Event source veto",
       "Never direct runtime table UPDATE"
     ],
     "test_refs": [
-      "apps/backend/tests/integration/temporal/test_b14_m5_objective_editor.py",
+      "apps/backend/tests/integration/temporal/test_objective_atomic_edit.py",
+      "apps/backend/tests/integration/temporal/test_event_profile_edit.py",
       "apps/backend/tests/integration/database/test_database_current_catalog.py"
     ],
     "staged_evidence": []

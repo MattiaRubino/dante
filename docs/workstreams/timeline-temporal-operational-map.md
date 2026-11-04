@@ -769,3 +769,12 @@ always included or that any protected future causes a whole-series refusal.
 Candidate `_161` covers metadata scope and preview only; structural source,
 cadence and materialized-plan reconciliation remain open. See the latest
 workstream handoff for the implementation and verification boundary.
+
+## 2026-11-04 Event edit continuation
+
+Candidate `_167` admits retirement of an unobserved one-off Event Objective
+with owner, revision, replay and historical-result guards. The Event
+integration regression is in `test_event_profile_edit.py`; PostgreSQL proof
+is pending user execution. This is one persistence prerequisite for Event
+edit parity. One-off aggregate Save and separately scoped recurring Event
+edits remain open; see the current handoff for precise boundaries.

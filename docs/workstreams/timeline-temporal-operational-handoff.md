@@ -3343,3 +3343,19 @@ Sequential frontend HTTP requests do not meet this contract. Selected
 recurring Event edits need a separate occurrence-aware command rather than
 source-level Agenda or Life Area writes. Do not expose an all-fields editor
 before these refusal and rollback paths exist.
+
+### 2026-11-04 continuation: one-off Event Objective retirement candidate
+
+`20261104_167` is a forward-only replacement of the existing Objective
+retirement capability. It accepts an owned, unobserved one-off Event Objective,
+preserves expected-definition CAS, exact replay, recorded-result veto and
+historical tombstone, and rejects a recurring Event source. The Activity
+generated-instance binding and source lock from `_166` are retained. The
+PostgreSQL regression in `test_event_profile_edit.py` covers one-off owner
+isolation, stale revision, replay/reuse and current readback. The routine
+Dictionary and candidate DB reference point to `_167`; no new catalog object
+count is expected. **PostgreSQL, migration and exact-catalog checks NOT_RUN**;
+the user requested to execute tests personally. No Event UI/API all-fields
+Save is exposed by this change. Continue with one authoritative one-off Event
+aggregate command and a separately scoped recurring Occurrence command before
+wiring the shared editor to persistence.

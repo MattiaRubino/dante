@@ -561,3 +561,14 @@ New *forward-only* PostgreSQL `20261009_134` adds `dante.temporal_draft_vault` o
 **Historical protection and gaps, explicitly OPEN:** the old planning tray holds *real* canonical unplaced/postponed Activity/Event identities. These remain distinct legacy canonical records, not silently moved or deleted as drafts; the vault exposes an explicit **Gestisci elementi già creati** handoff to the unchanged B01 placement/replan controls under a separately titled **Elementi già creati** panel (its old trigger is hidden). Inspector “Sposta in Bozze” for Activity uses existing canonical retirement guard, preserving history; moving real Event is **not yet supported** because Event has no matching safe retirement capability, so the Event Inspector visibly says “Copia in Bozze” and keeps the original. Do not treat this as Move or mark the full legacy transition accepted. Full Event move needs explicit follow-up owner-retirement capability without corrupting accepted facts. User visual and end-to-end acceptance remains **NOT VERIFIED**, including real app, keyboard interactions, and previous M5 regression checks. No new Timer/Alarm operational functionality. Avoid claiming B14/B15 or Bozze closed.
 
 **User workflow:** Assistant writes and updates `feature/timeline-temporal-operational`; user performs explicitly displayed `git pull --ff-only origin feature/timeline-temporal-operational` in WSL. User runs a SINGLE COMPLETE local gate; do not request CI. User is not asked to push source changes except genuinely local generated OpenAPI artifacts that cannot be read by the connector.
+## 2026-11-04 candidate: one-off Event Objective retirement
+
+`20261104_167` replaces the owner-scoped retirement function from `_166`
+without changing its signature or catalog counts. It admits one-off Event
+Objectives with the existing expected-definition revision, exact-operation
+replay, historical-result veto and owner guard. Recurring Event sources are
+explicitly refused; their selected Occurrence and following-scope edits need
+their own atomic policy. Activity local exceptions retain the `_166` source
+lock and binding check. The Event PostgreSQL regression lives beside the Event
+profile integration test. Migration, runtime ACL, catalog and regression
+verification are **NOT_RUN** on this candidate; the user runs tests locally.
