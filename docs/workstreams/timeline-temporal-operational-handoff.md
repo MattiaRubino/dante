@@ -3359,3 +3359,17 @@ the user requested to execute tests personally. No Event UI/API all-fields
 Save is exposed by this change. Continue with one authoritative one-off Event
 aggregate command and a separately scoped recurring Occurrence command before
 wiring the shared editor to persistence.
+
+### 2026-11-04 user PostgreSQL recheck and candidate repair
+
+On `e6f1070e`, the user ran the three requested PostgreSQL tests:
+**1 passed, 2 failed**. The recurring Activity Objective test passed. The
+one-off Event test reached its final readback and failed because the test
+opened an `autobegin=False` session without `session.begin()`. Fresh-head
+migration failed because `test_migrations.py` still expected `_166`; other
+catalog test files also retained that stale constant. This follow-up adds the
+explicit read transaction and updates all current-head test constants to
+`20261104_167`. Neither failure establishes a product-policy defect in the
+retirement SQL. PostgreSQL and exact-catalog checks on this repair are
+**NOT_RUN**, pending the user's local recheck; do not relabel the prior gate
+green.

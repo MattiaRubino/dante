@@ -95,7 +95,7 @@ async def test_one_off_event_objective_retirement_is_owner_scoped_replayable_and
                     {**command, "operation": "event:reused", "fingerprint": "c" * 64},
                 )
 
-        async with runtime.session_factory() as session:
+        async with runtime.session_factory() as session, session.begin():
             current = (
                 await session.execute(
                     text("SELECT * FROM dante.list_self_temporal_objectives(:actor,'event',:event)"),
