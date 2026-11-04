@@ -670,6 +670,7 @@ class RoutineOccurrenceMaterializationApplication:
         )
         title = cast(str, correction.get("title", title))
         all_day = template.get("placement_kind") == "all_day"
+        root_placement: DateSpanPlacement | NamedZoneLocalIntervalPlacement
         if all_day:
             days = template.get("duration_days")
             if (

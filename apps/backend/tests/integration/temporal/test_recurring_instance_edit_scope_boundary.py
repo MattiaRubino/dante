@@ -120,6 +120,9 @@ async def test_atomic_instance_edit_rolls_back_every_field_on_stale_occurrence(
         assert envelope.placement_material_state_ref is not None
         assert envelope.starts_local_at is not None
         assert envelope.ends_local_at is not None
+        envelope_state_ref = envelope.placement_material_state_ref
+        envelope_start = envelope.starts_local_at
+        envelope_end = envelope.ends_local_at
         state = await get_occurrence_profile_edit_state(selected, context, request, Response())
 
         def command(operation: str, expected_revision: int) -> ActivityAtomicEditCommand:
@@ -140,9 +143,9 @@ async def test_atomic_instance_edit_rolls_back_every_field_on_stale_occurrence(
                     operation_id=operation,
                     envelope=ReplanRow(
                         schedule_ref=envelope.schedule_ref,
-                        expected_material_state_ref=envelope.placement_material_state_ref,
-                        starts_local_at=envelope.starts_local_at,
-                        ends_local_at=envelope.ends_local_at,
+                        expected_material_state_ref=envelope_state_ref,
+                        starts_local_at=envelope_start,
+                        ends_local_at=envelope_end,
                     ),
                     new_planned_sessions=[NewPlannedRow(client_ref=uuid7(), name="Ripasso")],
                 ),

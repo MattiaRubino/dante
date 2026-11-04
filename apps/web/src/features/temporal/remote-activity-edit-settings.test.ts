@@ -25,7 +25,9 @@ describe('Activity editor settings remote contract', () => {
       expect(fetchRequestUrl(input)).toBe(
         `/api/v1/temporal/activities/${ref}/atomic-edit`,
       );
-      requests.push(JSON.parse(fetchRequestBody(init?.body)) as Record<string, unknown>);
+      requests.push(
+        JSON.parse(fetchRequestBody(init?.body)) as Record<string, unknown>,
+      );
       return Promise.resolve(response({ detail: 'Istanza cambiata.' }, 409));
     }) as unknown as typeof fetch;
     const source = createRemoteActivityEditSettings(fetchFn);
@@ -168,7 +170,9 @@ describe('Activity editor settings remote contract', () => {
       }
       expect(path).toBe(`/api/v1/temporal/activities/${ref}/atomic-edit`);
       expect(init?.method).toBe('PUT');
-      requests.push(JSON.parse(fetchRequestBody(init?.body)) as Record<string, unknown>);
+      requests.push(
+        JSON.parse(fetchRequestBody(init?.body)) as Record<string, unknown>,
+      );
       return Promise.resolve(response({ detail: 'Obiettivo cambiato.' }, 409));
     }) as unknown as typeof fetch;
     const settings = {
@@ -212,7 +216,10 @@ describe('Activity editor settings remote contract', () => {
         {
           draft: {
             times: {
-              [ref]: { start: '2026-11-03T09:00:00', end: '2026-11-03T10:00:00' },
+              [ref]: {
+                start: '2026-11-03T09:00:00',
+                end: '2026-11-03T10:00:00',
+              },
             },
             removedIntervals: [],
             newIntervals: [],

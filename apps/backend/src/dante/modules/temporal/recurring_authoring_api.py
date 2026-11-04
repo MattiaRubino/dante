@@ -88,6 +88,7 @@ class CreateRecurringRoutineRequest(BaseModel):
     @model_validator(mode="after")
     def valid_all_day(self) -> CreateRecurringRoutineRequest:
         template = self.activity_template or {}
+        recurrence = self.recurrence
         if template.get("placement_kind") == "all_day":
             days = template.get("duration_days")
             if (
@@ -95,10 +96,10 @@ class CreateRecurringRoutineRequest(BaseModel):
                 or not 1 <= days <= 365
                 or self.duration_minutes != days * 1440
                 or self.reminder_lead_minutes is not None
-                or not isinstance(self.recurrence, CalendarRecurrenceRequest)
-                or self.recurrence.clock_basis_code != "named_zone"
-                or self.recurrence.zone_id is None
-                or self.recurrence.wall_times
+                or not isinstance(recurrence, CalendarRecurrenceRequest)
+                or recurrence.clock_basis_code != "named_zone"
+                or recurrence.zone_id is None
+                or recurrence.wall_times
             ):
                 raise ValueError(
                     "Recurring all-day Activity requires calendar dates without an hour."
@@ -106,7 +107,7 @@ class CreateRecurringRoutineRequest(BaseModel):
             try:
                 _validate_structure(
                     "routine",
-                    _spec(self.recurrence),
+                    _spec(recurrence),
                     {
                         "version": 1,
                         "duration_minutes": self.duration_minutes,

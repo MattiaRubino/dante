@@ -20,6 +20,14 @@ container lacks the matching Python/PostgreSQL runtime. The Event edit UI and
 the single-Activity-to-series conversion remain open work; this checkpoint
 must not be called complete or accepted.
 
+The first remote run on `e721a2d90` passed Web E2E and Mobile Bundle.
+Backend Quality reported six mypy findings, now corrected in the next
+candidate; Frontend Quality stopped at two Prettier findings, also corrected.
+The PostgreSQL job was **BLOCKED_ENV** before collecting tests: its freshly
+built PostgreSQL image could not install the pinned PostGIS extension version
+3.6.4 during `initdb`. This result neither proves nor disproves the new
+transaction and recurrence behavior. CI has not yet rerun on the corrections.
+
 ## 2026-11-03 — Recurring first appearance, measured candidate
 
 The owner's authenticated Chromium run on `e4b6c9c4` passed and measured

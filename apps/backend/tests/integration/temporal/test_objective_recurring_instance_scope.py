@@ -594,7 +594,9 @@ async def test_series_objective_removal_preserves_local_exception_and_later_year
             self_person_ref=actor,
             selected_occurrence_ref=selected,
         )
-        template = dict(loaded.structure_snapshot["activity_template"])
+        template_snapshot = loaded.structure_snapshot["activity_template"]
+        assert isinstance(template_snapshot, dict)
+        template = dict(template_snapshot)
         structure = {
             **loaded.structure_snapshot,
             "activity_template": {**template, "objectives": []},

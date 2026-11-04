@@ -91,14 +91,15 @@ const applyAtomicEdit = vi.fn(
     }
     if (edit.lifeArea) {
       const area = requiredRecord(edit.lifeArea);
-      let choice: unknown = await (loadLifeAreaChoice.mock.results.at(-1)?.value as Promise<unknown> | undefined);
+      let choice: unknown = await (loadLifeAreaChoice.mock.results.at(-1)
+        ?.value as Promise<unknown> | undefined);
       let target = area.lifeAreaRef;
       if (area.newArea) {
         const created = await createLifeArea(
           requiredRecord(area.newArea).name,
           operationId,
         );
-        target = created ? requiredRecord(created).ref ?? target : target;
+        target = created ? (requiredRecord(created).ref ?? target) : target;
         let accepted = created;
         if (created && requiredRecord(area.newArea).colorCode) {
           accepted =
@@ -111,7 +112,10 @@ const applyAtomicEdit = vi.fn(
         if (accepted)
           choice = {
             ...requiredRecord(choice),
-            options: [...requiredItems(requiredRecord(choice).options), accepted],
+            options: [
+              ...requiredItems(requiredRecord(choice).options),
+              accepted,
+            ],
           };
       } else if (area.colorCode) {
         const existing = requiredItems(requiredRecord(choice).options).find(
