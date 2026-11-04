@@ -69,6 +69,23 @@ function clamp(value: number, min: number, max: number): number {
   return Math.max(min, Math.min(max, value));
 }
 
+function isVisibleModalControl(
+  element: HTMLElement,
+  modal: HTMLElement,
+): boolean {
+  for (
+    let node: HTMLElement | null = element;
+    node;
+    node = node.parentElement
+  ) {
+    if (node.hidden || node.hasAttribute('inert')) return false;
+    const style = window.getComputedStyle(node);
+    if (style.display === 'none' || style.visibility === 'hidden') return false;
+    if (node === modal) break;
+  }
+  return true;
+}
+
 function positionNearAnchor(
   anchor: HTMLElement,
   width: number,
@@ -666,6 +683,7 @@ export function EventDetailDialog({
   const dialogRef = useRef<HTMLDivElement | null>(null);
   const closeButtonRef = useRef<HTMLButtonElement | null>(null);
   const editCloseRequestRef = useRef<(() => void) | null>(null);
+  const eventEditCloseRequestRef = useRef<(() => void) | null>(null);
   const [editingProfile, setEditingProfile] = useState<ActivityProfile | null>(
     null,
   );
@@ -750,8 +768,9 @@ export function EventDetailDialog({
 
   const requestCloseCurrent = useCallback(() => {
     if (currentEditingProfile) editCloseRequestRef.current?.();
+    else if (eventEditorMode) eventEditCloseRequestRef.current?.();
     else onClose();
-  }, [currentEditingProfile, onClose]);
+  }, [currentEditingProfile, eventEditorMode, onClose]);
 
   useEffect(() => {
     if (!detail) return;
@@ -842,7 +861,11 @@ export function EventDetailDialog({
           (activeReview ?? dialogRef.current)?.querySelectorAll<HTMLElement>(
             'button:not([disabled]), input:not([disabled]), textarea:not([disabled]), select:not([disabled]), [tabindex]:not([tabindex="-1"])',
           ) ?? [],
-        ).filter((element) => !element.closest('[inert]'));
+        ).filter((element) =>
+          dialogRef.current
+            ? isVisibleModalControl(element, dialogRef.current)
+            : false,
+        );
         if (focusable.length === 0) {
           return;
         }
@@ -1044,6 +1067,7 @@ export function EventDetailDialog({
                 {detail.eventPlacement ? (
                   <EventInspectorActions
                     toolbarTarget={toolbarTarget}
+                    closeRequestRef={eventEditCloseRequestRef}
                     onEditorStateChange={setEventEditorMode}
                     eventRef={detail.eventRef}
                     occurrenceRef={detail.occurrenceRef ?? null}

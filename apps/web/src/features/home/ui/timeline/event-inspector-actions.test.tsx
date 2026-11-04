@@ -483,6 +483,90 @@ describe('Event Inspector actions', () => {
     expect(screen.getByRole('dialog').textContent).toContain('Modifica evento');
   });
 
+  it('keeps a changed Event draft when closing is declined and returns to the Inspector after confirmation', async () => {
+    loadProfile.mockResolvedValue({
+      eventRef,
+      title: 'Conferenza',
+      description: null,
+      location: null,
+      colorCode: null,
+      profileRevision: 1,
+    });
+    const confirm = vi
+      .fn()
+      .mockReturnValueOnce(false)
+      .mockReturnValueOnce(true);
+    vi.stubGlobal('confirm', confirm);
+    const onClose = vi.fn();
+    render(
+      <EventDetailDialog
+        detail={{
+          title: 'Conferenza',
+          startMinute: 540,
+          endMinute: 630,
+          groupLabel: 'Lavoro',
+          ownerKind: 'event',
+          eventRef,
+          eventPlacement: placement,
+        }}
+        opener={null}
+        onClose={onClose}
+      />,
+    );
+    fireEvent.click(screen.getByRole('button', { name: 'Modifica' }));
+    const title = await screen.findByRole('textbox', { name: 'Titolo Event' });
+    fireEvent.change(title, { target: { value: 'Conferenza nuova' } });
+    fireEvent.click(screen.getByRole('button', { name: 'Chiudi Inspector' }));
+    expect(confirm).toHaveBeenCalledOnce();
+    expect(title).toHaveProperty('value', 'Conferenza nuova');
+    expect(onClose).not.toHaveBeenCalled();
+    fireEvent.keyDown(document, { key: 'Escape' });
+    await waitFor(() =>
+      expect(
+        screen.queryByRole('textbox', { name: 'Titolo Event' }),
+      ).toBeNull(),
+    );
+    expect(confirm).toHaveBeenCalledTimes(2);
+    expect(onClose).not.toHaveBeenCalled();
+  });
+
+  it('skips controls hidden by the Event editor when cycling keyboard focus', async () => {
+    loadProfile.mockResolvedValue({
+      eventRef,
+      title: 'Conferenza',
+      description: null,
+      location: null,
+      colorCode: null,
+      profileRevision: 1,
+    });
+    render(
+      <EventDetailDialog
+        detail={{
+          title: 'Conferenza',
+          startMinute: 540,
+          endMinute: 630,
+          groupLabel: 'Lavoro',
+          ownerKind: 'event',
+          eventRef,
+          eventPlacement: placement,
+        }}
+        opener={null}
+        onClose={vi.fn()}
+      />,
+    );
+    fireEvent.click(screen.getByRole('button', { name: 'Modifica' }));
+    const title = await screen.findByRole('textbox', { name: 'Titolo Event' });
+    const toolbar = document.querySelector<HTMLElement>(
+      '.timeline-event-modal__owner-actions',
+    );
+    expect(toolbar).toBeTruthy();
+    toolbar!.style.display = 'none';
+    const close = screen.getByRole('button', { name: 'Chiudi Inspector' });
+    close.focus();
+    fireEvent.keyDown(document, { key: 'Tab' });
+    expect(document.activeElement).toBe(title);
+  });
+
   it('keeps the Event edit draft open on a canonical stale CAS conflict', async () => {
     const current = {
       eventRef,

@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { type RefObject, useEffect, useState } from 'react';
 import { createPortal } from 'react-dom';
 
 import type { TemporalEventDetailRecord } from '../../../temporal/event-data-source';
@@ -46,6 +46,7 @@ export function EventInspectorActions({
   onDuplicate,
   onCancelScope,
   onEditorStateChange,
+  closeRequestRef,
   toolbarTarget = null,
 }: Readonly<{
   eventRef: string;
@@ -55,6 +56,7 @@ export function EventInspectorActions({
   onDuplicate: (seed: ActivityDuplicateSeed) => void;
   onCancelScope?: () => void;
   onEditorStateChange?: (mode: 'profile' | 'series' | 'area' | null) => void;
+  closeRequestRef?: RefObject<(() => void) | null>;
   toolbarTarget?: HTMLElement | null;
 }>) {
   const [eventSource] = useState(createRemoteTemporalEventAgendaDataSource);
@@ -219,6 +221,23 @@ export function EventInspectorActions({
     setProfileDraft(null);
     setEditingProfile(false);
   };
+
+  useEffect(() => {
+    if (
+      !closeRequestRef ||
+      (editingProfile && recurringContext && editScope !== 'only_this')
+    ) {
+      return;
+    }
+    closeRequestRef.current = editingProfile
+      ? cancelProfile
+      : editingArea
+        ? () => setEditingArea(false)
+        : null;
+    return () => {
+      closeRequestRef.current = null;
+    };
+  });
 
   const saveProfile = async () => {
     if (!profile || !profileDraft || busy) return;
@@ -577,6 +596,7 @@ export function EventInspectorActions({
           occurrenceRef={recurringContext.occurrenceRef}
           scope={editScope}
           owner="event"
+          closeRequestRef={closeRequestRef}
           onSaved={() => {
             setEditingProfile(false);
             setProfileNotice('Serie aggiornata.');

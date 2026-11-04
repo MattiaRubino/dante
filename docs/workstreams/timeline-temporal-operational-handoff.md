@@ -3269,3 +3269,33 @@ The user runs tests in WSL, with artifacts under `temp/`; no CI. On this
 candidate, formatter and diff check ran, while Web tests, visual acceptance
 and the complete gate are **NOT_RUN**. The agent host's pnpm/Node versions do
 not satisfy the pinned engine guard; local `node_modules/.bin/prettier` worked.
+
+### 2026-11-04 continuation: Event modal exit and keyboard focus
+
+Published `b0b7068f` contains the shared Activity-size edit shell, bounded
+form scroll, fixed footer and direct Life Area action described above.
+Published `48e3dae9` adds a deterministic browser fixture for Event edit
+scrolling and visible footer. Neither commit adds an atomic Event Save or
+proves the real authenticated flow; the user's Event 4/4 browser result was on
+the earlier `3bb9f84d` candidate.
+
+The next narrow Web candidate routes X, Escape and backdrop dismissal through
+the Event editor's close handler. A changed profile draft requires explicit
+discard confirmation and a confirmed exit returns to the Inspector. The
+following-scope series editor retains its own review-aware close handler.
+The modal Tab loop now excludes controls hidden by the edit layout. Colocated
+component regressions cover declined/confirmed discard and a hidden toolbar.
+Formatter and `git diff --check` were run; Web tests and browser acceptance
+are **NOT_RUN** here at this candidate SHA. User runs the tests in WSL; do not
+use GitHub CI. Keep test artifacts under the repository's ignored `temp/`.
+
+Next implementation work remains the authoritative Event aggregate edit
+boundary, not more independent form saves. The existing profile, agenda,
+Life Area and Schedule mutations have separate receipts/revisions. A UI that
+chains them on one Save can partially persist, so the aggregate command must
+bind the entire submitted intent to one replay key, recheck owner and field
+revisions in one transaction, and return a canonical snapshot. Then wire
+ordinary and selected-occurrence Event forms to the shared renderer, and
+retain the existing structural preview/accept for following-scope edits.
+Agenda and Life Area on an individual recurring instance must not be sent to
+source-level endpoints. Preserve Event identity, exceptions and recorded facts.
