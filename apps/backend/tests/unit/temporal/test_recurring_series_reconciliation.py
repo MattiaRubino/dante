@@ -56,6 +56,7 @@ def test_recurring_all_day_create_rejects_timed_structure_before_persistence() -
         "duration_minutes": 2880,
         "activity_template": template,
         "recurrence": {
+            "family_code": "calendar_wall_clock",
             "range_kind": "open",
             "effective_from": date(2026, 10, 25),
             "pattern_code": "daily",

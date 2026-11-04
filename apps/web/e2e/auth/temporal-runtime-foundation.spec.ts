@@ -311,9 +311,11 @@ test.describe('Timeline B00 real full-stack spine', () => {
         '.temporal-timeline-runtime-status--error',
       );
       try {
-        // Navigate inside the mounted, signed-in SPA so Timeline must
-        // checkpoint a different window without repeating sign-in.
-        await page.locator('.dante-timeline-week-step').last().click();
+        // The loaded window retains nearby weeks to avoid refetching while
+        // scrolling. Navigate beyond that window to force a governed read.
+        for (let week = 0; week < 5; week += 1) {
+          await page.locator('.dante-timeline-week-step').last().click();
+        }
         await expect(errorStatus).toContainText('Timeline non disponibile', {
           timeout: 15_000,
         });

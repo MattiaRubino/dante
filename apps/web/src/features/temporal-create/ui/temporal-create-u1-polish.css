@@ -6,6 +6,21 @@
   overflow: hidden;
 }
 
+/* Let the quick form's calendar escape its scroll viewport while it is open.
+   Otherwise the Timeline receives clicks on dates clipped by that viewport. */
+.temporal-create-composer:not(.is-full):has(
+    .temporal-create-date-picker__popover
+  ) {
+  overflow: visible;
+}
+
+.temporal-create-composer:not(.is-full):has(
+    .temporal-create-date-picker__popover
+  )
+  .temporal-create-composer__body.temporal-create-composer__body {
+  overflow: visible;
+}
+
 .temporal-create-composer .temporal-create-composer__header.is-minimal {
   flex: 0 0 auto;
 }

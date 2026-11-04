@@ -35,6 +35,7 @@ from dante.modules.temporal.event_occurrence_policy import (
     EventOccurrencePolicyPersistenceError,
 )
 from dante.modules.temporal.recurrence import (
+    CalendarRecurrence,
     RecurrenceInputError,
     RecurrenceNotFoundError,
     RecurrenceOperationReuseError,
@@ -105,9 +106,12 @@ class CreateRecurringRoutineRequest(BaseModel):
                     "Recurring all-day Activity requires calendar dates without an hour."
                 )
             try:
+                calendar_spec = _spec(recurrence)
+                if not isinstance(calendar_spec, CalendarRecurrence):
+                    raise ValueError("Recurring all-day Activity requires a calendar recurrence.")
                 _validate_structure(
                     "routine",
-                    _spec(recurrence),
+                    calendar_spec,
                     {
                         "version": 1,
                         "duration_minutes": self.duration_minutes,

@@ -712,6 +712,20 @@ async def _read(session: AsyncSession, actor: UUID, activity: UUID) -> ActivityE
 async def _set_atomic_lock(
     session: AsyncSession, actor: UUID, change: AtomicPlacementLock, locked: bool
 ) -> int:
+    expected_revision = change.expected_revision
+    if expected_revision == 0:
+        # The edit snapshot exposes an absent lock as revision 0. The SQL
+        # setter represents that same basis with NULL and refuses 0. Check
+        # the basis first so an intervening lock still reports a conflict.
+        current_revision = await session.scalar(
+            text(
+                "SELECT revision FROM dante.get_self_schedule_placement_lock(:actor,:schedule)"
+            ),
+            {"actor": actor, "schedule": change.schedule_ref},
+        )
+        if current_revision != 0:
+            raise _conflict("Il blocco degli spostamenti è cambiato. Riapri Modifica e riprova.")
+        expected_revision = None
     row = (
         (
             await session.execute(
@@ -723,7 +737,7 @@ async def _set_atomic_lock(
                     "actor": actor,
                     "schedule": change.schedule_ref,
                     "locked": locked,
-                    "expected_revision": change.expected_revision,
+                    "expected_revision": expected_revision,
                 },
             )
         )

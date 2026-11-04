@@ -191,7 +191,7 @@ def test_current_repository_head_refuses_downgrade_by_design(
 
     # The current forward-only head refuses rollback; older guards are
     # exercised separately at their own historical revisions.
-    with pytest.raises(RuntimeError, match="20261022_165 is forward-only"):
+    with pytest.raises(RuntimeError, match=f"{_CURRENT_HEAD} is forward-only"):
         command.downgrade(alembic_config, "-1")
 
     assert _current_revisions(provisioned_database) == {_CURRENT_HEAD}

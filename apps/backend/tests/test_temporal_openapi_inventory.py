@@ -9,7 +9,7 @@ from dante.bootstrap.openapi_export import openapi_document
 _PUBLISHED_OPENAPI = (
     Path(__file__).resolve().parents[3] / "packages/api-client/openapi/dante-v1.openapi.json"
 )
-_CURRENT_ACCEPTED_TEMPORAL_OPERATION_COUNT = 194
+_CURRENT_ACCEPTED_TEMPORAL_OPERATION_COUNT = 195
 
 _HTTP_METHODS = frozenset({"get", "post", "put", "patch", "delete", "options", "head", "trace"})
 
@@ -62,6 +62,10 @@ _PRE_B04_TEMPORAL_OPERATIONS = {
 # history so new operations cannot inherit the legacy implicit-ID exception.
 _EXPECTED_TEMPORAL_OPERATIONS = {
     **_PRE_B04_TEMPORAL_OPERATIONS,
+    (
+        "/api/v1/temporal/activities/{activity_ref}/atomic-edit",
+        "put",
+    ): "temporal_apply_activity_atomic_edit",
     ("/api/v1/temporal/events/postponed", "get"): "temporal_list_postponed_events",
     (
         "/api/v1/temporal/events/{event_ref}/schedules/{schedule_ref}/replan",
