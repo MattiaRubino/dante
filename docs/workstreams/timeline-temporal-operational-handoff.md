@@ -3411,3 +3411,12 @@ saves profile metadata alone, and the UI does not claim Agenda, Schedule,
 Life Area or Objective edits. User visual review and fixture-browser proof are
 pending. Complete Event Create/Edit parity still requires the aggregate and
 occurrence-aware commands before those controls are activated in this form.
+
+### 2026-11-05 focused formatter feedback
+
+The user pulled `4b71b9bb` and ran the requested checks. Ruff lint passed,
+but Ruff format stopped on two expressions in the new Event Objective
+PostgreSQL test; the chained PostgreSQL tests therefore did not execute.
+The separate Event Inspector Vitest run passed **15/15**. The test expressions
+now follow the formatter's reported layout. This is a test formatting repair,
+not evidence for the unrun PostgreSQL batch or an all-fields Event editor.

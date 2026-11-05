@@ -111,11 +111,17 @@ async def test_one_off_event_objective_batch_rolls_back_revision_when_retirement
 
         async with runtime.session_factory() as session, session.begin():
             before = (
-                await session.execute(
-                    text("SELECT * FROM dante.list_self_temporal_objectives(:actor,'event',:event)"),
-                    {"actor": owner, "event": event},
+                (
+                    await session.execute(
+                        text(
+                            "SELECT * FROM dante.list_self_temporal_objectives(:actor,'event',:event)"
+                        ),
+                        {"actor": owner, "event": event},
+                    )
                 )
-            ).mappings().all()
+                .mappings()
+                .all()
+            )
         assert {row["label"] for row in before} == {"Original 0", "Original 1"}
 
         command["retire"][0]["expected_revision"] = 0
@@ -204,7 +210,9 @@ async def test_one_off_event_objective_retirement_is_owner_scoped_replayable_and
         async with runtime.session_factory() as session, session.begin():
             current = (
                 await session.execute(
-                    text("SELECT * FROM dante.list_self_temporal_objectives(:actor,'event',:event)"),
+                    text(
+                        "SELECT * FROM dante.list_self_temporal_objectives(:actor,'event',:event)"
+                    ),
                     {"actor": owner, "event": event},
                 )
             ).all()
