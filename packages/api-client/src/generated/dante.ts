@@ -80,6 +80,7 @@ import type {
   EventAtomicEditCommand,
   EventAtomicEditResponse,
   EventDeletionOccurrenceChoice,
+  EventOccurrenceLocalEditCommand,
   EventResponse,
   ExecutionAssessmentResponse,
   ExecutionPolicyCommand,
@@ -115,6 +116,7 @@ import type {
   OccurrenceCheckpointRequest,
   OccurrenceCheckpointResponse,
   OccurrenceEditInventoryResponse,
+  OccurrenceExpectedParticipationResponse,
   OccurrenceMutationResponse,
   OccurrenceResponse,
   OccurrenceScheduleResponse,
@@ -11612,6 +11614,139 @@ export const temporalGetRecurringEventOccurrenceDetail = async (
     status: res.status,
     headers: res.headers,
   } as temporalGetRecurringEventOccurrenceDetailResponse;
+};
+
+export type temporalAcceptEventOccurrenceLocalEditResponse200 = {
+  data: ScopedProfileEditResponse;
+  status: 200;
+};
+
+export type temporalAcceptEventOccurrenceLocalEditResponse422 = {
+  data: HTTPValidationError;
+  status: 422;
+};
+
+export type temporalAcceptEventOccurrenceLocalEditResponseSuccess =
+  temporalAcceptEventOccurrenceLocalEditResponse200 & {
+    headers: Headers;
+  };
+export type temporalAcceptEventOccurrenceLocalEditResponseError =
+  temporalAcceptEventOccurrenceLocalEditResponse422 & {
+    headers: Headers;
+  };
+
+export type temporalAcceptEventOccurrenceLocalEditResponse =
+  | temporalAcceptEventOccurrenceLocalEditResponseSuccess
+  | temporalAcceptEventOccurrenceLocalEditResponseError;
+
+export const getTemporalAcceptEventOccurrenceLocalEditUrl = (
+  occurrenceRef: string,
+) => {
+  return `/api/v1/temporal/occurrences/${occurrenceRef}/event-local-edit`;
+};
+
+/**
+ * One owner-checked revision of selected Event metadata and local policy.
+ * @summary Accept Event Occurrence Local Edit
+ */
+export const temporalAcceptEventOccurrenceLocalEdit = async (
+  occurrenceRef: string,
+  eventOccurrenceLocalEditCommand: EventOccurrenceLocalEditCommand,
+  options?: RequestInit,
+  fetchFn?: typeof globalThis.fetch,
+): Promise<temporalAcceptEventOccurrenceLocalEditResponse> => {
+  const getHeaders = (
+    h?: NonNullable<RequestInit['headers']>,
+  ): Record<string, string | readonly string[]> => {
+    if (!h) return {};
+    if (h instanceof Headers) return Object.fromEntries(h.entries());
+    if (Array.isArray(h)) return Object.fromEntries(h);
+    return h;
+  };
+  const res = await (fetchFn ?? fetch)(
+    getTemporalAcceptEventOccurrenceLocalEditUrl(occurrenceRef),
+    {
+      ...options,
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        ...getHeaders(options?.headers),
+      },
+      body: JSON.stringify(eventOccurrenceLocalEditCommand),
+    },
+  );
+
+  const body = [204, 205, 304].includes(res.status) ? null : await res.text();
+
+  const data: temporalAcceptEventOccurrenceLocalEditResponse['data'] = body
+    ? JSON.parse(body)
+    : {};
+  return {
+    data,
+    status: res.status,
+    headers: res.headers,
+  } as temporalAcceptEventOccurrenceLocalEditResponse;
+};
+
+export type temporalGetRecurringEventOccurrenceExpectedParticipationResponse200 =
+  {
+    data: OccurrenceExpectedParticipationResponse[];
+    status: 200;
+  };
+
+export type temporalGetRecurringEventOccurrenceExpectedParticipationResponse422 =
+  {
+    data: HTTPValidationError;
+    status: 422;
+  };
+
+export type temporalGetRecurringEventOccurrenceExpectedParticipationResponseSuccess =
+  temporalGetRecurringEventOccurrenceExpectedParticipationResponse200 & {
+    headers: Headers;
+  };
+export type temporalGetRecurringEventOccurrenceExpectedParticipationResponseError =
+  temporalGetRecurringEventOccurrenceExpectedParticipationResponse422 & {
+    headers: Headers;
+  };
+
+export type temporalGetRecurringEventOccurrenceExpectedParticipationResponse =
+  | temporalGetRecurringEventOccurrenceExpectedParticipationResponseSuccess
+  | temporalGetRecurringEventOccurrenceExpectedParticipationResponseError;
+
+export const getTemporalGetRecurringEventOccurrenceExpectedParticipationUrl = (
+  occurrenceRef: string,
+) => {
+  return `/api/v1/temporal/occurrences/${occurrenceRef}/expected-participation`;
+};
+
+/**
+ * Read the Event policy governing this Occurrence, including protected history.
+ * @summary Get Recurring Event Occurrence Expected Participation
+ */
+export const temporalGetRecurringEventOccurrenceExpectedParticipation = async (
+  occurrenceRef: string,
+  options?: RequestInit,
+  fetchFn?: typeof globalThis.fetch,
+): Promise<temporalGetRecurringEventOccurrenceExpectedParticipationResponse> => {
+  const res = await (fetchFn ?? fetch)(
+    getTemporalGetRecurringEventOccurrenceExpectedParticipationUrl(
+      occurrenceRef,
+    ),
+    {
+      ...options,
+      method: 'GET',
+    },
+  );
+
+  const body = [204, 205, 304].includes(res.status) ? null : await res.text();
+
+  const data: temporalGetRecurringEventOccurrenceExpectedParticipationResponse['data'] =
+    body ? JSON.parse(body) : {};
+  return {
+    data,
+    status: res.status,
+    headers: res.headers,
+  } as temporalGetRecurringEventOccurrenceExpectedParticipationResponse;
 };
 
 export type temporalAcceptOccurrenceProfileEditResponse200 = {
