@@ -29,6 +29,7 @@ import { requestTemporalCreateDuplicate } from '../../../temporal-create/ui/temp
 import { TemporalPanelCloseButton } from '../../../temporal-create/ui/temporal-panel-close-button';
 import { ActivityInspectorActions } from './activity-inspector-actions';
 import { EventInspectorActions } from './event-inspector-actions';
+import { TimelineEventParticipation } from './timeline-event-participation';
 import { TimelineInspectorReality } from './timeline-inspector-reality';
 import { TimelineInspectorOccurrenceSession } from './timeline-inspector-occurrence-session';
 import { LEGACY_UNASSIGNED_GROUP } from './timeline-organization';
@@ -1115,6 +1116,9 @@ export function EventDetailDialog({
                 <h4>Descrizione</h4>
                 <p>{activityDescription.value}</p>
               </section>
+            ) : null}
+            {detail.ownerKind === 'event' && detail.eventRef ? (
+              <TimelineEventParticipation eventRef={detail.eventRef} />
             ) : null}
             {detail.ownerKind === 'event' && detail.eventRef ? (
               <TimelineEventAgendaEditor

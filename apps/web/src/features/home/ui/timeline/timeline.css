@@ -1717,6 +1717,28 @@
   white-space: pre-wrap;
 }
 
+.timeline-event-modal--inspector .timeline-event-modal__participation {
+  margin-top: 18px;
+}
+
+.timeline-event-modal--inspector .timeline-event-modal__participation h4 {
+  margin: 0 0 8px;
+  color: var(--dante-semantic-color-home-text-muted, #aebbc7);
+  font-size: 11px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.timeline-event-modal--inspector .timeline-event-modal__participant {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 7px 0;
+  border-top: 1px solid
+    var(--dante-semantic-color-home-border-subtle, rgba(255, 255, 255, 0.09));
+  font-size: 13px;
+}
+
 .timeline-event-modal--inspector .timeline-event-modal__group {
   margin-bottom: 16px;
   color: var(--dante-semantic-color-home-text-muted, #8f9bad);

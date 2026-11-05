@@ -1,5 +1,15 @@
 # Timeline / Temporal-Operational — Workstream Handoff
 
+## 2026-11-05 — Event Inspector participant readback candidate
+
+Event Inspector now reads current expected participation and local Person
+labels, shows requirement alongside each participant, and refreshes after
+timeline invalidation following an edit. It presents only current expected
+rows and has no Session controls. A focused component case was added but is
+**NOT_RUN**. The selected recurring Event edit remains backed by a profile
+patch only; do not add other editable fields there until an occurrence-aware
+aggregate command preserves their data and protected facts.
+
 ## 2026-11-05 — One-off Event expected participation edit candidate
 
 The one-off Event modal now reuses Create's participant controls. It loads
