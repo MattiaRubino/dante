@@ -94,7 +94,8 @@ async def test_one_off_event_objective_batch_rolls_back_revision_when_retirement
                 }
             ],
         }
-        with pytest.raises(DBAPIError):
+
+        async def reject_stale_batch() -> None:
             async with runtime.session_factory() as session, session.begin():
                 await session.execute(text("SET TRANSACTION ISOLATION LEVEL SERIALIZABLE"))
                 await apply_event_objective_edits_in_session(
@@ -104,6 +105,10 @@ async def test_one_off_event_objective_batch_rolls_back_revision_when_retirement
                     payload=ActivityObjectiveBatchCommand.model_validate(command),
                     effective_zone_id="Europe/Rome",
                 )
+
+        with pytest.raises(DBAPIError):
+            await reject_stale_batch()
+
         async with runtime.session_factory() as session, session.begin():
             before = (
                 await session.execute(

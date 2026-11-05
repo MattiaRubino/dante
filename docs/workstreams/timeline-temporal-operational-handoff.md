@@ -3390,3 +3390,12 @@ lock. A PostgreSQL test verifies rollback of a prior revision when a later
 retirement is stale, then successful Event batch readback. This candidate
 does not expose a new HTTP route or UI Save, and requires user-local
 PostgreSQL proof. The existing Activity batch behavior must also be rerun.
+
+### 2026-11-05 lint repair before the Event batch gate
+
+The user pulled `7f39b57e` and ran the focused command. Ruff stopped at
+`PT012` in the new rollback test, so formatting and PostgreSQL tests did
+**not run**. The test now places transaction setup and batch invocation in
+an async helper, leaving a single awaited statement inside
+`pytest.raises(DBAPIError)`. This changes test structure only; the Event
+Objective batch candidate remains unverified.
