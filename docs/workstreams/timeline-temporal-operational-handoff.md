@@ -1,5 +1,20 @@
 # Timeline / Temporal-Operational — Workstream Handoff
 
+## 2026-11-05 — One-off Event reminder edit candidate
+
+The ordinary Event editor now reads the canonical Schedule reminder and shows
+the same reminder selector as Create for a precise named-zone or absolute
+Schedule. Changed reminder configuration joins profile, Schedule, Agenda,
+Life Area, Reality and Objectives in one atomic Save, with the reminder's
+material-state CAS. The backend verifies Event ownership of the Schedule and
+uses the same transaction for the reminder; when switching to a date span or
+floating time, it disables an existing reminder before changing placement.
+The form lets the owner clear that reminder while changing the Schedule.
+Focused backend/client/UI tests were added but are **NOT_RUN**; the owner runs
+the checks. OpenAPI and Orval were regenerated using temporary scratch
+version overrides, with manifests restored. Expected participants and the
+full recurrence aggregate remain open; this does not claim full Event parity.
+
 ## 2026-11-05 — One-off Event Schedule edit candidate
 
 The next candidate extends the one-off Event atomic command with a Schedule

@@ -21,6 +21,7 @@ from dante.context.contracts import DanteContext
 from dante.modules.temporal.event import TemporalEventApplication
 from dante.modules.temporal.schedule import (
     FloatingLocalIntervalPlacement,
+    NamedZoneLocalIntervalPlacement,
     TemporalScheduleApplication,
 )
 from dante.modules.temporal.event_api import (
@@ -112,6 +113,71 @@ async def test_one_off_event_schedule_and_profile_commit_together_with_material_
                 Response(),
             )
         assert stale.value.status == 409
+    finally:
+        await runtime.dispose()
+
+
+@pytest.mark.asyncio
+async def test_one_off_event_reminder_and_profile_commit_in_one_transaction(
+    migrated_database: Any,
+) -> None:
+    owner = _seed_self(migrated_database)
+    event = _legacy_event(migrated_database, owner, "Reminder")
+    runtime = create_database_runtime(migrated_database.runtime_settings())
+    context = cast(
+        DanteContext,
+        SimpleNamespace(self_person_ref=owner, effective_zone_id="Europe/Rome"),
+    )
+    request = Request(
+        {"type": "http", "app": SimpleNamespace(state=SimpleNamespace(database_runtime=runtime))}
+    )
+    try:
+        schedule = await TemporalScheduleApplication(runtime.session_factory).establish_schedule(
+            self_person_ref=owner,
+            operation_id="event:reminder:schedule",
+            subject_native_ref=event,
+            placement=NamedZoneLocalIntervalPlacement(
+                starts_local_at=datetime(2026, 11, 5, 18),
+                ends_local_at=datetime(2026, 11, 5, 19),
+                zone_id="Europe/Rome",
+            ),
+        )
+        saved = await apply_one_off_event_atomic_edit(
+            event,
+            EventAtomicEditCommand.model_validate(
+                {
+                    "operation_id": "event:atomic:reminder",
+                    "profile": {
+                        "operation_id": "event:atomic:reminder:profile",
+                        "expected_revision": 0,
+                        "title": "Reminder changed",
+                    },
+                    "reminder": {
+                        "schedule_ref": schedule.schedule_ref,
+                        "expected_state_ref": None,
+                        "enabled": True,
+                        "lead_minutes": 15,
+                    },
+                }
+            ),
+            context,
+            request,
+            Response(),
+        )
+        assert saved.event.title == "Reminder changed"
+        async with runtime.session_factory() as session, session.begin():
+            reminder = (
+                (
+                    await session.execute(
+                        text("SELECT * FROM dante.get_self_schedule_reminder(:actor,:schedule)"),
+                        {"actor": owner, "schedule": schedule.schedule_ref},
+                    )
+                )
+                .mappings()
+                .one()
+            )
+        assert reminder["lead_minutes"] == 15
+        assert reminder["enabled"] is True
     finally:
         await runtime.dispose()
 

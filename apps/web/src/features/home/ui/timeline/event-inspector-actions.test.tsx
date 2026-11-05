@@ -27,6 +27,7 @@ const getRealityPolicy = vi
   .fn()
   .mockResolvedValue({ mode: 'manual', stateRef: null });
 const getDefinition = vi.fn();
+const getReminder = vi.fn().mockResolvedValue(null);
 const isRecurring = vi.fn().mockResolvedValue(false);
 const previewHardDeletion = vi.fn();
 const confirmHardDeletion = vi.fn();
@@ -73,6 +74,9 @@ vi.mock('../../../temporal/remote-event-profile-data-source', () => ({
     revise: reviseProfile,
     reviseAtomic,
   }),
+}));
+vi.mock('../../../temporal/remote-schedule-reminder-data-source', () => ({
+  createRemoteScheduleReminderDataSource: () => ({ get: getReminder }),
 }));
 vi.mock(
   '../../../temporal/remote-reality-objective-data-source',
@@ -125,6 +129,7 @@ afterEach(() => {
   vi.clearAllMocks();
   isRecurring.mockResolvedValue(false);
   getRealityPolicy.mockResolvedValue({ mode: 'manual', stateRef: null });
+  getReminder.mockResolvedValue(null);
 });
 
 describe('Event Inspector actions', () => {
@@ -697,6 +702,48 @@ describe('Event Inspector actions', () => {
         scheduleRef: '0199a333-3333-7333-8333-333333333333',
         expectedMaterialStateRef: '0199a444-4444-7444-8444-444444444444',
         placement: { kind: 'named_zone_local_interval' },
+      },
+    });
+  });
+
+  it('includes the Event reminder in the atomic Save instead of writing separately', async () => {
+    const current = {
+      eventRef,
+      title: 'Conferenza',
+      description: null,
+      location: null,
+      colorCode: null,
+      profileRevision: 1,
+      agendaRevision: 0,
+      agendaParts: [],
+    };
+    loadProfile.mockResolvedValue(current);
+    loadArea.mockResolvedValue({
+      options: [],
+      currentRef: null,
+      currentRevision: 0,
+    });
+    reviseAtomic.mockResolvedValue(current);
+    render(
+      <EventInspectorActions
+        eventRef={eventRef}
+        placement={placement}
+        scheduleRef="0199a333-3333-7333-8333-333333333333"
+        placementMaterialStateRef="0199a444-4444-7444-8444-444444444444"
+        onDuplicate={vi.fn()}
+      />,
+    );
+    fireEvent.click(screen.getByRole('button', { name: /^Modifica$/ }));
+    const select = await screen.findByRole('combobox', { name: 'Ricorda' });
+    fireEvent.change(select, { target: { value: '15' } });
+    fireEvent.click(screen.getByRole('button', { name: 'Salva modifiche' }));
+    await waitFor(() => expect(reviseAtomic).toHaveBeenCalledOnce());
+    expect(reviseAtomic.mock.calls[0]?.[2]).toEqual({
+      reminder: {
+        scheduleRef: '0199a333-3333-7333-8333-333333333333',
+        expectedStateRef: null,
+        enabled: true,
+        leadMinutes: 15,
       },
     });
   });

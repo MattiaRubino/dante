@@ -90,6 +90,12 @@ describe('owner-scoped Event profile CAS source', () => {
             ends_local_at: '2026-11-05T19:30:00',
           },
         },
+        reminder: {
+          scheduleRef: SCHEDULE,
+          expectedStateRef: null,
+          enabled: true,
+          leadMinutes: 15,
+        },
       },
       'event:atomic:1',
     );
@@ -126,6 +132,12 @@ describe('owner-scoped Event profile CAS source', () => {
             starts_local_at: '2026-11-05T19:00:00',
             ends_local_at: '2026-11-05T19:30:00',
           },
+        },
+        reminder: {
+          schedule_ref: SCHEDULE,
+          expected_state_ref: null,
+          enabled: true,
+          lead_minutes: 15,
         },
       },
     ]);

@@ -38,7 +38,10 @@
             "type": "string"
           },
           "strength": {
-            "enum": ["hard", "soft"],
+            "enum": [
+              "hard",
+              "soft"
+            ],
             "title": "Strength",
             "type": "string"
           },
@@ -49,7 +52,12 @@
             "type": "string"
           }
         },
-        "required": ["strength", "starts_at", "ends_at", "material_state_ref"],
+        "required": [
+          "strength",
+          "starts_at",
+          "ends_at",
+          "material_state_ref"
+        ],
         "title": "AbsoluteCompletionWithinWindowCurrentRuleResponse",
         "type": "object"
       },
@@ -85,7 +93,10 @@
             "type": "string"
           },
           "strength": {
-            "enum": ["hard", "soft"],
+            "enum": [
+              "hard",
+              "soft"
+            ],
             "title": "Strength",
             "type": "string"
           },
@@ -96,7 +107,11 @@
             "type": "string"
           }
         },
-        "required": ["strength", "starts_at", "ends_at"],
+        "required": [
+          "strength",
+          "starts_at",
+          "ends_at"
+        ],
         "title": "AbsoluteCompletionWithinWindowRuleRequest",
         "type": "object"
       },
@@ -132,7 +147,10 @@
             "type": "string"
           },
           "strength": {
-            "enum": ["hard", "soft"],
+            "enum": [
+              "hard",
+              "soft"
+            ],
             "title": "Strength",
             "type": "string"
           },
@@ -143,7 +161,11 @@
             "type": "string"
           }
         },
-        "required": ["strength", "boundary_at", "material_state_ref"],
+        "required": [
+          "strength",
+          "boundary_at",
+          "material_state_ref"
+        ],
         "title": "AbsoluteEarliestStartCurrentRuleResponse",
         "type": "object"
       },
@@ -174,7 +196,10 @@
             "type": "string"
           },
           "strength": {
-            "enum": ["hard", "soft"],
+            "enum": [
+              "hard",
+              "soft"
+            ],
             "title": "Strength",
             "type": "string"
           },
@@ -185,7 +210,10 @@
             "type": "string"
           }
         },
-        "required": ["strength", "boundary_at"],
+        "required": [
+          "strength",
+          "boundary_at"
+        ],
         "title": "AbsoluteEarliestStartRuleRequest",
         "type": "object"
       },
@@ -226,7 +254,10 @@
             "type": "string"
           },
           "strength": {
-            "enum": ["hard", "soft"],
+            "enum": [
+              "hard",
+              "soft"
+            ],
             "title": "Strength",
             "type": "string"
           },
@@ -237,7 +268,12 @@
             "type": "string"
           }
         },
-        "required": ["strength", "starts_at", "ends_at", "material_state_ref"],
+        "required": [
+          "strength",
+          "starts_at",
+          "ends_at",
+          "material_state_ref"
+        ],
         "title": "AbsoluteFullPlacementContainedWindowCurrentRuleResponse",
         "type": "object"
       },
@@ -273,7 +309,10 @@
             "type": "string"
           },
           "strength": {
-            "enum": ["hard", "soft"],
+            "enum": [
+              "hard",
+              "soft"
+            ],
             "title": "Strength",
             "type": "string"
           },
@@ -284,7 +323,11 @@
             "type": "string"
           }
         },
-        "required": ["strength", "starts_at", "ends_at"],
+        "required": [
+          "strength",
+          "starts_at",
+          "ends_at"
+        ],
         "title": "AbsoluteFullPlacementContainedWindowRuleRequest",
         "type": "object"
       },
@@ -308,7 +351,10 @@
             "type": "string"
           }
         },
-        "required": ["starts_at", "ends_at"],
+        "required": [
+          "starts_at",
+          "ends_at"
+        ],
         "title": "AbsoluteIntervalPlacementRequest",
         "type": "object"
       },
@@ -344,7 +390,10 @@
             "type": "string"
           },
           "strength": {
-            "enum": ["hard", "soft"],
+            "enum": [
+              "hard",
+              "soft"
+            ],
             "title": "Strength",
             "type": "string"
           },
@@ -355,7 +404,11 @@
             "type": "string"
           }
         },
-        "required": ["strength", "boundary_at", "material_state_ref"],
+        "required": [
+          "strength",
+          "boundary_at",
+          "material_state_ref"
+        ],
         "title": "AbsoluteLatestCompletionCurrentRuleResponse",
         "type": "object"
       },
@@ -386,7 +439,10 @@
             "type": "string"
           },
           "strength": {
-            "enum": ["hard", "soft"],
+            "enum": [
+              "hard",
+              "soft"
+            ],
             "title": "Strength",
             "type": "string"
           },
@@ -397,7 +453,10 @@
             "type": "string"
           }
         },
-        "required": ["strength", "boundary_at"],
+        "required": [
+          "strength",
+          "boundary_at"
+        ],
         "title": "AbsoluteLatestCompletionRuleRequest",
         "type": "object"
       },
@@ -433,7 +492,10 @@
             "type": "string"
           },
           "strength": {
-            "enum": ["hard", "soft"],
+            "enum": [
+              "hard",
+              "soft"
+            ],
             "title": "Strength",
             "type": "string"
           },
@@ -444,7 +506,11 @@
             "type": "string"
           }
         },
-        "required": ["strength", "boundary_at", "material_state_ref"],
+        "required": [
+          "strength",
+          "boundary_at",
+          "material_state_ref"
+        ],
         "title": "AbsoluteLatestStartCurrentRuleResponse",
         "type": "object"
       },
@@ -475,7 +541,10 @@
             "type": "string"
           },
           "strength": {
-            "enum": ["hard", "soft"],
+            "enum": [
+              "hard",
+              "soft"
+            ],
             "title": "Strength",
             "type": "string"
           },
@@ -486,7 +555,10 @@
             "type": "string"
           }
         },
-        "required": ["strength", "boundary_at"],
+        "required": [
+          "strength",
+          "boundary_at"
+        ],
         "title": "AbsoluteLatestStartRuleRequest",
         "type": "object"
       },
@@ -527,7 +599,10 @@
             "type": "string"
           },
           "strength": {
-            "enum": ["hard", "soft"],
+            "enum": [
+              "hard",
+              "soft"
+            ],
             "title": "Strength",
             "type": "string"
           },
@@ -538,7 +613,12 @@
             "type": "string"
           }
         },
-        "required": ["strength", "starts_at", "ends_at", "material_state_ref"],
+        "required": [
+          "strength",
+          "starts_at",
+          "ends_at",
+          "material_state_ref"
+        ],
         "title": "AbsolutePlacementOverlapsWindowCurrentRuleResponse",
         "type": "object"
       },
@@ -574,7 +654,10 @@
             "type": "string"
           },
           "strength": {
-            "enum": ["hard", "soft"],
+            "enum": [
+              "hard",
+              "soft"
+            ],
             "title": "Strength",
             "type": "string"
           },
@@ -585,7 +668,11 @@
             "type": "string"
           }
         },
-        "required": ["strength", "starts_at", "ends_at"],
+        "required": [
+          "strength",
+          "starts_at",
+          "ends_at"
+        ],
         "title": "AbsolutePlacementOverlapsWindowRuleRequest",
         "type": "object"
       },
@@ -626,7 +713,10 @@
             "type": "string"
           },
           "strength": {
-            "enum": ["hard", "soft"],
+            "enum": [
+              "hard",
+              "soft"
+            ],
             "title": "Strength",
             "type": "string"
           },
@@ -637,7 +727,12 @@
             "type": "string"
           }
         },
-        "required": ["strength", "starts_at", "ends_at", "material_state_ref"],
+        "required": [
+          "strength",
+          "starts_at",
+          "ends_at",
+          "material_state_ref"
+        ],
         "title": "AbsoluteStartWithinWindowCurrentRuleResponse",
         "type": "object"
       },
@@ -673,7 +768,10 @@
             "type": "string"
           },
           "strength": {
-            "enum": ["hard", "soft"],
+            "enum": [
+              "hard",
+              "soft"
+            ],
             "title": "Strength",
             "type": "string"
           },
@@ -684,7 +782,11 @@
             "type": "string"
           }
         },
-        "required": ["strength", "starts_at", "ends_at"],
+        "required": [
+          "strength",
+          "starts_at",
+          "ends_at"
+        ],
         "title": "AbsoluteStartWithinWindowRuleRequest",
         "type": "object"
       },
@@ -708,7 +810,10 @@
             "type": "string"
           }
         },
-        "required": ["starts_at", "ends_at"],
+        "required": [
+          "starts_at",
+          "ends_at"
+        ],
         "title": "AcceptedAbsolutePlacementResponse",
         "type": "object"
       },
@@ -779,12 +884,19 @@
             "type": "string"
           },
           "period": {
-            "enum": ["morning", "afternoon", "evening"],
+            "enum": [
+              "morning",
+              "afternoon",
+              "evening"
+            ],
             "title": "Period",
             "type": "string"
           }
         },
-        "required": ["local_date", "period"],
+        "required": [
+          "local_date",
+          "period"
+        ],
         "title": "AcceptedCoarseLocalPlacementResponse",
         "type": "object"
       },
@@ -808,7 +920,10 @@
             "type": "string"
           }
         },
-        "required": ["start_date", "end_date_exclusive"],
+        "required": [
+          "start_date",
+          "end_date_exclusive"
+        ],
         "title": "AcceptedDateSpanPlacementResponse",
         "type": "object"
       },
@@ -832,7 +947,10 @@
             "type": "string"
           }
         },
-        "required": ["starts_local_at", "ends_local_at"],
+        "required": [
+          "starts_local_at",
+          "ends_local_at"
+        ],
         "title": "AcceptedFloatingLocalPlacementResponse",
         "type": "object"
       },
@@ -840,7 +958,11 @@
         "additionalProperties": false,
         "properties": {
           "disambiguation": {
-            "enum": ["reject", "earlier", "later"],
+            "enum": [
+              "reject",
+              "earlier",
+              "later"
+            ],
             "title": "Disambiguation",
             "type": "string"
           },
@@ -998,7 +1120,10 @@
             "$ref": "#/components/schemas/ActivityEditSnapshot"
           }
         },
-        "required": ["snapshot", "objectives"],
+        "required": [
+          "snapshot",
+          "objectives"
+        ],
         "title": "ActivityAtomicEditResponse",
         "type": "object"
       },
@@ -1029,7 +1154,10 @@
             "type": "integer"
           },
           "requirement_code": {
-            "enum": ["required", "optional"],
+            "enum": [
+              "required",
+              "optional"
+            ],
             "title": "Requirement Code",
             "type": "string"
           },
@@ -1041,7 +1169,12 @@
             "type": "array"
           },
           "session_capture_mode": {
-            "enum": ["disabled", "record", "live", "record_and_live"],
+            "enum": [
+              "disabled",
+              "record",
+              "live",
+              "record_and_live"
+            ],
             "title": "Session Capture Mode",
             "type": "string"
           },
@@ -1069,7 +1202,11 @@
         "additionalProperties": false,
         "properties": {
           "child_guard_mode": {
-            "enum": ["none", "confirm", "block"],
+            "enum": [
+              "none",
+              "confirm",
+              "block"
+            ],
             "title": "Child Guard Mode",
             "type": "string"
           },
@@ -1093,7 +1230,12 @@
             "type": "array"
           },
           "session_capture_mode": {
-            "enum": ["disabled", "record", "live", "record_and_live"],
+            "enum": [
+              "disabled",
+              "record",
+              "live",
+              "record_and_live"
+            ],
             "title": "Session Capture Mode",
             "type": "string"
           }
@@ -1158,7 +1300,9 @@
             ]
           }
         },
-        "required": ["operation_id"],
+        "required": [
+          "operation_id"
+        ],
         "title": "ActivityCoreEditCommand",
         "type": "object"
       },
@@ -1184,7 +1328,12 @@
             ]
           }
         },
-        "required": ["profile", "capture", "reality", "reminder"],
+        "required": [
+          "profile",
+          "capture",
+          "reality",
+          "reminder"
+        ],
         "title": "ActivityCoreEditResponse",
         "type": "object"
       },
@@ -1277,7 +1426,9 @@
             "type": "string"
           }
         },
-        "required": ["expected_session_fingerprint"],
+        "required": [
+          "expected_session_fingerprint"
+        ],
         "title": "ActivityHardDeleteCommand",
         "type": "object"
       },
@@ -1293,7 +1444,10 @@
             "type": "integer"
           }
         },
-        "required": ["activity_ref", "deleted_rows"],
+        "required": [
+          "activity_ref",
+          "deleted_rows"
+        ],
         "title": "ActivityHardDeleteResponse",
         "type": "object"
       },
@@ -1384,7 +1538,11 @@
             "type": "string"
           }
         },
-        "required": ["operation_id", "expected_revision", "title"],
+        "required": [
+          "operation_id",
+          "expected_revision",
+          "title"
+        ],
         "title": "ActivityProfileChange",
         "type": "object"
       },
@@ -1559,7 +1717,9 @@
             "title": "Target Zone Id"
           }
         },
-        "required": ["operation_id"],
+        "required": [
+          "operation_id"
+        ],
         "title": "ActivityReplanCommand",
         "type": "object"
       },
@@ -1578,7 +1738,10 @@
             "type": "array"
           }
         },
-        "required": ["activity_ref", "changes"],
+        "required": [
+          "activity_ref",
+          "changes"
+        ],
         "title": "ActivityReplanPreview",
         "type": "object"
       },
@@ -1630,7 +1793,11 @@
             "type": "string"
           }
         },
-        "required": ["activity_ref", "title", "created_at"],
+        "required": [
+          "activity_ref",
+          "title",
+          "created_at"
+        ],
         "title": "ActivityResponse",
         "type": "object"
       },
@@ -1644,7 +1811,9 @@
             "type": "string"
           }
         },
-        "required": ["operation_id"],
+        "required": [
+          "operation_id"
+        ],
         "title": "ActivityRetirementCommand",
         "type": "object"
       },
@@ -1660,7 +1829,10 @@
             "type": "boolean"
           }
         },
-        "required": ["activity_ref", "replayed"],
+        "required": [
+          "activity_ref",
+          "replayed"
+        ],
         "title": "ActivityRetirementResponse",
         "type": "object"
       },
@@ -1788,7 +1960,11 @@
           "role_code": {
             "anyOf": [
               {
-                "enum": ["envelope", "planned", "interval"],
+                "enum": [
+                  "envelope",
+                  "planned",
+                  "interval"
+                ],
                 "type": "string"
               },
               {
@@ -1899,7 +2075,9 @@
             "type": "string"
           }
         },
-        "required": ["expected_session_fingerprint"],
+        "required": [
+          "expected_session_fingerprint"
+        ],
         "title": "ActivitySessionAttemptDeleteCommand",
         "type": "object"
       },
@@ -1960,7 +2138,11 @@
             "type": "string"
           }
         },
-        "required": ["activity_ref", "fingerprint", "attempts"],
+        "required": [
+          "activity_ref",
+          "fingerprint",
+          "attempts"
+        ],
         "title": "ActivitySessionImpactResponse",
         "type": "object"
       },
@@ -2012,7 +2194,10 @@
             ]
           }
         },
-        "required": ["operation_id", "realization_occurred"],
+        "required": [
+          "operation_id",
+          "realization_occurred"
+        ],
         "title": "ActualRealizationCommand",
         "type": "object"
       },
@@ -2027,7 +2212,11 @@
             "type": "string"
           },
           "subject_kind": {
-            "enum": ["activity", "event", "occurrence"],
+            "enum": [
+              "activity",
+              "event",
+              "occurrence"
+            ],
             "title": "Subject Kind",
             "type": "string"
           },
@@ -2037,7 +2226,11 @@
             "type": "string"
           }
         },
-        "required": ["operation_id", "subject_kind", "subject_native_ref"],
+        "required": [
+          "operation_id",
+          "subject_kind",
+          "subject_native_ref"
+        ],
         "title": "ActualRealizationConditionRequest",
         "type": "object"
       },
@@ -2064,7 +2257,11 @@
             "type": "boolean"
           },
           "subject_kind": {
-            "enum": ["activity", "event", "occurrence"],
+            "enum": [
+              "activity",
+              "event",
+              "occurrence"
+            ],
             "title": "Subject Kind",
             "type": "string"
           },
@@ -2230,7 +2427,10 @@
             "type": "string"
           }
         },
-        "required": ["session_ref", "session_timing_material_state_ref"],
+        "required": [
+          "session_ref",
+          "session_timing_material_state_ref"
+        ],
         "title": "ActualSessionBasisInput",
         "type": "object"
       },
@@ -2248,7 +2448,10 @@
             "type": "string"
           }
         },
-        "required": ["session_ref", "session_timing_material_state_ref"],
+        "required": [
+          "session_ref",
+          "session_timing_material_state_ref"
+        ],
         "title": "ActualSessionBasisResponse",
         "type": "object"
       },
@@ -2268,7 +2471,11 @@
             "title": "Ended At"
           },
           "extent_code": {
-            "enum": ["instant", "start_only", "interval"],
+            "enum": [
+              "instant",
+              "start_only",
+              "interval"
+            ],
             "title": "Extent Code",
             "type": "string"
           },
@@ -2278,7 +2485,10 @@
             "type": "string"
           }
         },
-        "required": ["extent_code", "started_at"],
+        "required": [
+          "extent_code",
+          "started_at"
+        ],
         "title": "ActualTimingInput",
         "type": "object"
       },
@@ -2298,7 +2508,11 @@
             "title": "Ended At"
           },
           "extent_code": {
-            "enum": ["instant", "start_only", "interval"],
+            "enum": [
+              "instant",
+              "start_only",
+              "interval"
+            ],
             "title": "Extent Code",
             "type": "string"
           },
@@ -2308,7 +2522,11 @@
             "type": "string"
           }
         },
-        "required": ["extent_code", "started_at", "ended_at"],
+        "required": [
+          "extent_code",
+          "started_at",
+          "ended_at"
+        ],
         "title": "ActualTimingResponse",
         "type": "object"
       },
@@ -2367,7 +2585,10 @@
             "type": "array"
           },
           "owner_kind": {
-            "enum": ["routine", "event"],
+            "enum": [
+              "routine",
+              "event"
+            ],
             "title": "Owner Kind",
             "type": "string"
           },
@@ -2396,14 +2617,20 @@
         "additionalProperties": false,
         "properties": {
           "anchor_mode_code": {
-            "enum": ["previous_completion", "anchor_stream"],
+            "enum": [
+              "previous_completion",
+              "anchor_stream"
+            ],
             "title": "Anchor Mode Code",
             "type": "string"
           },
           "anchor_source_family": {
             "anyOf": [
               {
-                "enum": ["routine", "event"],
+                "enum": [
+                  "routine",
+                  "event"
+                ],
                 "type": "string"
               },
               {
@@ -2479,7 +2706,11 @@
           },
           "range_kind": {
             "default": "open",
-            "enum": ["open", "until_boundary", "expected_count"],
+            "enum": [
+              "open",
+              "until_boundary",
+              "expected_count"
+            ],
             "title": "Range Kind",
             "type": "string"
           }
@@ -2548,14 +2779,20 @@
         "additionalProperties": false,
         "properties": {
           "anchor_mode_code": {
-            "enum": ["previous_completion", "anchor_stream"],
+            "enum": [
+              "previous_completion",
+              "anchor_stream"
+            ],
             "title": "Anchor Mode Code",
             "type": "string"
           },
           "anchor_source_family": {
             "anyOf": [
               {
-                "enum": ["routine", "event"],
+                "enum": [
+                  "routine",
+                  "event"
+                ],
                 "type": "string"
               },
               {
@@ -2615,12 +2852,19 @@
             "type": "string"
           },
           "owner_kind": {
-            "enum": ["routine", "event"],
+            "enum": [
+              "routine",
+              "event"
+            ],
             "title": "Owner Kind",
             "type": "string"
           },
           "range_kind": {
-            "enum": ["open", "until_boundary", "expected_count"],
+            "enum": [
+              "open",
+              "until_boundary",
+              "expected_count"
+            ],
             "title": "Range Kind",
             "type": "string"
           },
@@ -2690,7 +2934,10 @@
             "type": "string"
           }
         },
-        "required": ["operation_id", "expected_revision"],
+        "required": [
+          "operation_id",
+          "expected_revision"
+        ],
         "title": "AppearanceLifeAreaRequest",
         "type": "object"
       },
@@ -2708,7 +2955,10 @@
             "type": "string"
           }
         },
-        "required": ["authorization_url", "expires_at"],
+        "required": [
+          "authorization_url",
+          "expires_at"
+        ],
         "title": "AppleAuthenticationBegunResponse",
         "type": "object"
       },
@@ -2723,7 +2973,9 @@
             "type": "string"
           }
         },
-        "required": ["payload"],
+        "required": [
+          "payload"
+        ],
         "title": "AppleNotificationRequest",
         "type": "object"
       },
@@ -2742,7 +2994,10 @@
             "type": "string"
           }
         },
-        "required": ["operation_id", "expected_revision"],
+        "required": [
+          "operation_id",
+          "expected_revision"
+        ],
         "title": "ArchiveProductTagRequest",
         "type": "object"
       },
@@ -2786,7 +3041,11 @@
             "title": "Userhandle"
           }
         },
-        "required": ["clientDataJSON", "authenticatorData", "signature"],
+        "required": [
+          "clientDataJSON",
+          "authenticatorData",
+          "signature"
+        ],
         "title": "AssertionAuthenticatorResponse",
         "type": "object"
       },
@@ -2836,7 +3095,12 @@
             "type": "string"
           }
         },
-        "required": ["id", "rawId", "type", "response"],
+        "required": [
+          "id",
+          "rawId",
+          "type",
+          "response"
+        ],
         "title": "AssertionCredential",
         "type": "object"
       },
@@ -2880,7 +3144,10 @@
             "type": "array"
           }
         },
-        "required": ["expected_state_ref", "slices"],
+        "required": [
+          "expected_state_ref",
+          "slices"
+        ],
         "title": "AssessExecutionBody",
         "type": "object"
       },
@@ -3024,7 +3291,10 @@
             "type": "string"
           }
         },
-        "required": ["operation_id", "expected_assignment_revision"],
+        "required": [
+          "operation_id",
+          "expected_assignment_revision"
+        ],
         "title": "AtomicLifeArea",
         "type": "object"
       },
@@ -3050,7 +3320,9 @@
             "type": "string"
           }
         },
-        "required": ["name"],
+        "required": [
+          "name"
+        ],
         "title": "AtomicNewLifeArea",
         "type": "object"
       },
@@ -3130,7 +3402,10 @@
             "type": "string"
           }
         },
-        "required": ["schedule_ref", "locked"],
+        "required": [
+          "schedule_ref",
+          "locked"
+        ],
         "title": "AtomicPlacementLock",
         "type": "object"
       },
@@ -3168,7 +3443,9 @@
             "type": "string"
           }
         },
-        "required": ["schedule_ref"],
+        "required": [
+          "schedule_ref"
+        ],
         "title": "AtomicPlannedName",
         "type": "object"
       },
@@ -3406,14 +3683,22 @@
           },
           "requirement_code": {
             "default": "required",
-            "enum": ["required", "optional"],
+            "enum": [
+              "required",
+              "optional"
+            ],
             "title": "Requirement Code",
             "type": "string"
           },
           "session_capture_mode": {
             "anyOf": [
               {
-                "enum": ["disabled", "record", "live", "record_and_live"],
+                "enum": [
+                  "disabled",
+                  "record",
+                  "live",
+                  "record_and_live"
+                ],
                 "type": "string"
               },
               {
@@ -3429,7 +3714,9 @@
             "type": "string"
           }
         },
-        "required": ["title"],
+        "required": [
+          "title"
+        ],
         "title": "AuthorActivityChildRequest",
         "type": "object"
       },
@@ -3474,7 +3761,11 @@
           "child_guard_mode": {
             "anyOf": [
               {
-                "enum": ["none", "confirm", "block"],
+                "enum": [
+                  "none",
+                  "confirm",
+                  "block"
+                ],
                 "type": "string"
               },
               {
@@ -3538,7 +3829,7 @@
           "minimum_session_duration_microseconds": {
             "anyOf": [
               {
-                "maximum": 9.223372036854776e18,
+                "maximum": 9.223372036854776e+18,
                 "minimum": 1.0,
                 "type": "integer"
               },
@@ -3643,7 +3934,12 @@
           "session_capture_mode": {
             "anyOf": [
               {
-                "enum": ["disabled", "record", "live", "record_and_live"],
+                "enum": [
+                  "disabled",
+                  "record",
+                  "live",
+                  "record_and_live"
+                ],
                 "type": "string"
               },
               {
@@ -3659,7 +3955,10 @@
             "type": "string"
           }
         },
-        "required": ["operation_id", "title"],
+        "required": [
+          "operation_id",
+          "title"
+        ],
         "title": "AuthorActivityRequest",
         "type": "object"
       },
@@ -3769,7 +4068,10 @@
             "type": "string"
           }
         },
-        "required": ["operation_id", "title"],
+        "required": [
+          "operation_id",
+          "title"
+        ],
         "title": "AuthorEventRequest",
         "type": "object"
       },
@@ -3803,7 +4105,10 @@
             "type": "integer"
           },
           "requirement_code": {
-            "enum": ["required", "optional"],
+            "enum": [
+              "required",
+              "optional"
+            ],
             "title": "Requirement Code",
             "type": "string"
           },
@@ -3818,7 +4123,12 @@
             ]
           },
           "session_capture_mode": {
-            "enum": ["disabled", "record", "live", "record_and_live"],
+            "enum": [
+              "disabled",
+              "record",
+              "live",
+              "record_and_live"
+            ],
             "title": "Session Capture Mode",
             "type": "string"
           },
@@ -3857,7 +4167,11 @@
             "type": "string"
           },
           "child_guard_mode": {
-            "enum": ["none", "confirm", "block"],
+            "enum": [
+              "none",
+              "confirm",
+              "block"
+            ],
             "title": "Child Guard Mode",
             "type": "string"
           },
@@ -3975,7 +4289,12 @@
             ]
           },
           "session_capture_mode": {
-            "enum": ["disabled", "record", "live", "record_and_live"],
+            "enum": [
+              "disabled",
+              "record",
+              "live",
+              "record_and_live"
+            ],
             "title": "Session Capture Mode",
             "type": "string"
           },
@@ -4203,7 +4522,11 @@
         "additionalProperties": false,
         "properties": {
           "clock_basis_code": {
-            "enum": ["floating_local", "named_zone", "absolute_utc"],
+            "enum": [
+              "floating_local",
+              "named_zone",
+              "absolute_utc"
+            ],
             "title": "Clock Basis Code",
             "type": "string"
           },
@@ -4256,7 +4579,10 @@
             "title": "Zone Id"
           }
         },
-        "required": ["generated_date", "clock_basis_code"],
+        "required": [
+          "generated_date",
+          "clock_basis_code"
+        ],
         "title": "CalendarOccurrenceCoordinate",
         "type": "object"
       },
@@ -4279,7 +4605,10 @@
             "type": "integer"
           }
         },
-        "required": ["weekday_number", "ordinal"],
+        "required": [
+          "weekday_number",
+          "ordinal"
+        ],
         "title": "CalendarOrdinalWeekday",
         "type": "object"
       },
@@ -4289,7 +4618,10 @@
           "ambiguous_local_time_policy": {
             "anyOf": [
               {
-                "enum": ["earlier", "later"],
+                "enum": [
+                  "earlier",
+                  "later"
+                ],
                 "type": "string"
               },
               {
@@ -4299,7 +4631,11 @@
             "title": "Ambiguous Local Time Policy"
           },
           "clock_basis_code": {
-            "enum": ["floating_local", "named_zone", "absolute_utc"],
+            "enum": [
+              "floating_local",
+              "named_zone",
+              "absolute_utc"
+            ],
             "title": "Clock Basis Code",
             "type": "string"
           },
@@ -4397,14 +4733,23 @@
             "type": "string"
           },
           "range_kind": {
-            "enum": ["open", "until_boundary", "expected_count"],
+            "enum": [
+              "open",
+              "until_boundary",
+              "expected_count"
+            ],
             "title": "Range Kind",
             "type": "string"
           },
           "step_unit_code": {
             "anyOf": [
               {
-                "enum": ["day", "week", "month", "year"],
+                "enum": [
+                  "day",
+                  "week",
+                  "month",
+                  "year"
+                ],
                 "type": "string"
               },
               {
@@ -4468,7 +4813,10 @@
           "ambiguous_local_time_policy": {
             "anyOf": [
               {
-                "enum": ["earlier", "later"],
+                "enum": [
+                  "earlier",
+                  "later"
+                ],
                 "type": "string"
               },
               {
@@ -4478,7 +4826,11 @@
             "title": "Ambiguous Local Time Policy"
           },
           "clock_basis_code": {
-            "enum": ["floating_local", "named_zone", "absolute_utc"],
+            "enum": [
+              "floating_local",
+              "named_zone",
+              "absolute_utc"
+            ],
             "title": "Clock Basis Code",
             "type": "string"
           },
@@ -4576,14 +4928,23 @@
             "type": "string"
           },
           "range_kind": {
-            "enum": ["open", "until_boundary", "expected_count"],
+            "enum": [
+              "open",
+              "until_boundary",
+              "expected_count"
+            ],
             "title": "Range Kind",
             "type": "string"
           },
           "step_unit_code": {
             "anyOf": [
               {
-                "enum": ["day", "week", "month", "year"],
+                "enum": [
+                  "day",
+                  "week",
+                  "month",
+                  "year"
+                ],
                 "type": "string"
               },
               {
@@ -4660,7 +5021,10 @@
             "type": "integer"
           }
         },
-        "required": ["month_number", "month_day"],
+        "required": [
+          "month_number",
+          "month_day"
+        ],
         "title": "CalendarYearMonthDay",
         "type": "object"
       },
@@ -4689,7 +5053,12 @@
             "type": "string"
           }
         },
-        "required": ["starts_at", "ends_at", "grid_index", "soft_findings"],
+        "required": [
+          "starts_at",
+          "ends_at",
+          "grid_index",
+          "soft_findings"
+        ],
         "title": "CandidateIntervalResponse",
         "type": "object"
       },
@@ -4708,12 +5077,19 @@
             "type": "string"
           },
           "period": {
-            "enum": ["morning", "afternoon", "evening"],
+            "enum": [
+              "morning",
+              "afternoon",
+              "evening"
+            ],
             "title": "Period",
             "type": "string"
           }
         },
-        "required": ["local_date", "period"],
+        "required": [
+          "local_date",
+          "period"
+        ],
         "title": "CoarseLocalPeriodPlacementRequest",
         "type": "object"
       },
@@ -4728,7 +5104,9 @@
             "type": "string"
           }
         },
-        "required": ["operation_id"],
+        "required": [
+          "operation_id"
+        ],
         "title": "ConditionalEvaluationRequest",
         "type": "object"
       },
@@ -4765,7 +5143,10 @@
             "type": "string"
           },
           "disposition_code": {
-            "enum": ["allow", "withhold"],
+            "enum": [
+              "allow",
+              "withhold"
+            ],
             "title": "Disposition Code",
             "type": "string"
           },
@@ -4784,7 +5165,11 @@
             "type": "boolean"
           },
           "result_code": {
-            "enum": ["satisfied", "not_satisfied", "indeterminate"],
+            "enum": [
+              "satisfied",
+              "not_satisfied",
+              "indeterminate"
+            ],
             "title": "Result Code",
             "type": "string"
           }
@@ -5006,7 +5391,10 @@
             "type": "boolean"
           }
         },
-        "required": ["activity", "constraints"],
+        "required": [
+          "activity",
+          "constraints"
+        ],
         "title": "ConstrainedActivityResponse",
         "type": "object"
       },
@@ -5031,7 +5419,10 @@
             "title": "Material State Ref"
           }
         },
-        "required": ["constraint_ref", "material_state_ref"],
+        "required": [
+          "constraint_ref",
+          "material_state_ref"
+        ],
         "title": "ConstraintBasisResponse",
         "type": "object"
       },
@@ -5044,7 +5435,11 @@
             "type": "string"
           },
           "evaluation": {
-            "enum": ["satisfied", "violated", "not_evaluable"],
+            "enum": [
+              "satisfied",
+              "violated",
+              "not_evaluable"
+            ],
             "title": "Evaluation",
             "type": "string"
           },
@@ -5058,7 +5453,10 @@
             "type": "string"
           },
           "strength": {
-            "enum": ["hard", "soft"],
+            "enum": [
+              "hard",
+              "soft"
+            ],
             "title": "Strength",
             "type": "string"
           }
@@ -5095,7 +5493,11 @@
             "type": "string"
           }
         },
-        "required": ["operation_id", "title", "life_area_ref"],
+        "required": [
+          "operation_id",
+          "title",
+          "life_area_ref"
+        ],
         "title": "CreateActivityRequest",
         "type": "object"
       },
@@ -5151,7 +5553,12 @@
           "session_capture_mode": {
             "anyOf": [
               {
-                "enum": ["disabled", "record", "live", "record_and_live"],
+                "enum": [
+                  "disabled",
+                  "record",
+                  "live",
+                  "record_and_live"
+                ],
                 "type": "string"
               },
               {
@@ -5167,7 +5574,12 @@
             "type": "string"
           }
         },
-        "required": ["operation_id", "title", "life_area_ref", "rules"],
+        "required": [
+          "operation_id",
+          "title",
+          "life_area_ref",
+          "rules"
+        ],
         "title": "CreateConstrainedActivityRequest",
         "type": "object"
       },
@@ -5202,7 +5614,11 @@
             "type": "string"
           }
         },
-        "required": ["operation_id", "title", "life_area_ref"],
+        "required": [
+          "operation_id",
+          "title",
+          "life_area_ref"
+        ],
         "title": "CreateEventRequest",
         "type": "object"
       },
@@ -5222,7 +5638,10 @@
             "type": "string"
           }
         },
-        "required": ["operation_id", "name"],
+        "required": [
+          "operation_id",
+          "name"
+        ],
         "title": "CreateLifeAreaRequest",
         "type": "object"
       },
@@ -5242,7 +5661,10 @@
             "type": "string"
           }
         },
-        "required": ["operation_id", "display_label"],
+        "required": [
+          "operation_id",
+          "display_label"
+        ],
         "title": "CreatePersonReferentRequest",
         "type": "object"
       },
@@ -5262,7 +5684,10 @@
             "type": "string"
           }
         },
-        "required": ["operation_id", "title"],
+        "required": [
+          "operation_id",
+          "title"
+        ],
         "title": "CreatePlanBody",
         "type": "object"
       },
@@ -5326,7 +5751,10 @@
             "type": "string"
           }
         },
-        "required": ["operation_id", "name"],
+        "required": [
+          "operation_id",
+          "name"
+        ],
         "title": "CreateProductTagRequest",
         "type": "object"
       },
@@ -5426,13 +5854,20 @@
             "type": "string"
           },
           "placement_kind": {
-            "enum": ["timed", "all_day"],
+            "enum": [
+              "timed",
+              "all_day"
+            ],
             "title": "Placement Kind",
             "type": "string"
           },
           "reality_mode": {
             "default": "manual",
-            "enum": ["manual", "review_on_end", "auto_confirm_outcome"],
+            "enum": [
+              "manual",
+              "review_on_end",
+              "auto_confirm_outcome"
+            ],
             "title": "Reality Mode",
             "type": "string"
           },
@@ -5482,7 +5917,12 @@
             "type": "string"
           }
         },
-        "required": ["operation_id", "title", "recurrence", "placement_kind"],
+        "required": [
+          "operation_id",
+          "title",
+          "recurrence",
+          "placement_kind"
+        ],
         "title": "CreateRecurringEventRequest",
         "type": "object"
       },
@@ -5578,7 +6018,12 @@
             "type": "string"
           }
         },
-        "required": ["operation_id", "title", "recurrence", "duration_minutes"],
+        "required": [
+          "operation_id",
+          "title",
+          "recurrence",
+          "duration_minutes"
+        ],
         "title": "CreateRecurringRoutineRequest",
         "type": "object"
       },
@@ -5690,7 +6135,12 @@
             "type": "string"
           }
         },
-        "required": ["operation_id", "title", "life_area_ref", "placement"],
+        "required": [
+          "operation_id",
+          "title",
+          "life_area_ref",
+          "placement"
+        ],
         "title": "CreateScheduledActivityRequest",
         "type": "object"
       },
@@ -5755,7 +6205,12 @@
             "type": "string"
           }
         },
-        "required": ["operation_id", "title", "life_area_ref", "placement"],
+        "required": [
+          "operation_id",
+          "title",
+          "life_area_ref",
+          "placement"
+        ],
         "title": "CreateScheduledEventRequest",
         "type": "object"
       },
@@ -5803,7 +6258,11 @@
             "type": "string"
           }
         },
-        "required": ["operation_id", "subject_ref", "rule"],
+        "required": [
+          "operation_id",
+          "subject_ref",
+          "rule"
+        ],
         "title": "CreateTemporalConstraintRequest",
         "type": "object"
       },
@@ -5860,7 +6319,10 @@
             "title": "Rule"
           },
           "subject_kind": {
-            "enum": ["activity", "event"],
+            "enum": [
+              "activity",
+              "event"
+            ],
             "title": "Subject Kind",
             "type": "string"
           },
@@ -5901,7 +6363,10 @@
             "type": "integer"
           }
         },
-        "required": ["generated_date", "position_index"],
+        "required": [
+          "generated_date",
+          "position_index"
+        ],
         "title": "CyclicOccurrenceCoordinate",
         "type": "object"
       },
@@ -5964,12 +6429,19 @@
             "type": "string"
           },
           "position_unit_code": {
-            "enum": ["day", "week"],
+            "enum": [
+              "day",
+              "week"
+            ],
             "title": "Position Unit Code",
             "type": "string"
           },
           "range_kind": {
-            "enum": ["open", "until_boundary", "expected_count"],
+            "enum": [
+              "open",
+              "until_boundary",
+              "expected_count"
+            ],
             "title": "Range Kind",
             "type": "string"
           }
@@ -6044,12 +6516,19 @@
             "type": "string"
           },
           "position_unit_code": {
-            "enum": ["day", "week"],
+            "enum": [
+              "day",
+              "week"
+            ],
             "title": "Position Unit Code",
             "type": "string"
           },
           "range_kind": {
-            "enum": ["open", "until_boundary", "expected_count"],
+            "enum": [
+              "open",
+              "until_boundary",
+              "expected_count"
+            ],
             "title": "Range Kind",
             "type": "string"
           }
@@ -6085,7 +6564,10 @@
             "type": "string"
           }
         },
-        "required": ["start_date", "end_date_exclusive"],
+        "required": [
+          "start_date",
+          "end_date_exclusive"
+        ],
         "title": "DateSpanPlacementRequest",
         "type": "object"
       },
@@ -6135,12 +6617,17 @@
           },
           "requirement_code": {
             "default": "required",
-            "enum": ["required", "optional"],
+            "enum": [
+              "required",
+              "optional"
+            ],
             "title": "Requirement Code",
             "type": "string"
           }
         },
-        "required": ["operation_id"],
+        "required": [
+          "operation_id"
+        ],
         "title": "DecompositionCommand",
         "type": "object"
       },
@@ -6160,7 +6647,11 @@
             "title": "Expected State Ref"
           },
           "mode_code": {
-            "enum": ["none", "confirm", "block"],
+            "enum": [
+              "none",
+              "confirm",
+              "block"
+            ],
             "title": "Mode Code",
             "type": "string"
           },
@@ -6171,7 +6662,10 @@
             "type": "string"
           }
         },
-        "required": ["operation_id", "mode_code"],
+        "required": [
+          "operation_id",
+          "mode_code"
+        ],
         "title": "DecompositionPolicyCommand",
         "type": "object"
       },
@@ -6184,7 +6678,11 @@
             "type": "string"
           },
           "mode_code": {
-            "enum": ["none", "confirm", "block"],
+            "enum": [
+              "none",
+              "confirm",
+              "block"
+            ],
             "title": "Mode Code",
             "type": "string"
           },
@@ -6206,7 +6704,11 @@
             "title": "State Ref"
           }
         },
-        "required": ["activity_ref", "state_ref", "mode_code"],
+        "required": [
+          "activity_ref",
+          "state_ref",
+          "mode_code"
+        ],
         "title": "DecompositionPolicyResponse",
         "type": "object"
       },
@@ -6232,7 +6734,12 @@
             "type": "string"
           }
         },
-        "required": ["decomposition_ref", "state_ref", "active", "replayed"],
+        "required": [
+          "decomposition_ref",
+          "state_ref",
+          "active",
+          "replayed"
+        ],
         "title": "DecompositionResponse",
         "type": "object"
       },
@@ -6257,7 +6764,10 @@
             "type": "string"
           }
         },
-        "required": ["schedule_ref", "expected_material_state_ref"],
+        "required": [
+          "schedule_ref",
+          "expected_material_state_ref"
+        ],
         "title": "DeletePlannedRow",
         "type": "object"
       },
@@ -6288,7 +6798,11 @@
           "evaluation_code": {
             "anyOf": [
               {
-                "enum": ["satisfied", "unsatisfied", "unknown"],
+                "enum": [
+                  "satisfied",
+                  "unsatisfied",
+                  "unknown"
+                ],
                 "type": "string"
               },
               {
@@ -6315,7 +6829,10 @@
             "type": "string"
           },
           "qualifier_code": {
-            "enum": ["actual_occurred", "outcome_code"],
+            "enum": [
+              "actual_occurred",
+              "outcome_code"
+            ],
             "title": "Qualifier Code",
             "type": "string"
           },
@@ -6361,7 +6878,10 @@
             "type": "integer"
           },
           "subject_kind": {
-            "enum": ["activity", "event"],
+            "enum": [
+              "activity",
+              "event"
+            ],
             "title": "Subject Kind",
             "type": "string"
           },
@@ -6419,7 +6939,10 @@
             "type": "object"
           },
           "subject_kind": {
-            "enum": ["activity", "event"],
+            "enum": [
+              "activity",
+              "event"
+            ],
             "title": "Subject Kind",
             "type": "string"
           },
@@ -6463,7 +6986,11 @@
             "title": "State Ref"
           }
         },
-        "required": ["activity_ref", "mode_code", "state_ref"],
+        "required": [
+          "activity_ref",
+          "mode_code",
+          "state_ref"
+        ],
         "title": "EditExecutionPolicy",
         "type": "object"
       },
@@ -6483,7 +7010,11 @@
             "type": "string"
           }
         },
-        "required": ["schedule_ref", "locked", "revision"],
+        "required": [
+          "schedule_ref",
+          "locked",
+          "revision"
+        ],
         "title": "EditPlacementLock",
         "type": "object"
       },
@@ -6507,7 +7038,9 @@
             "type": "string"
           }
         },
-        "required": ["mode_code"],
+        "required": [
+          "mode_code"
+        ],
         "title": "EditPolicyChange",
         "type": "object"
       },
@@ -6560,7 +7093,10 @@
             "type": "string"
           }
         },
-        "required": ["expected_revision", "title"],
+        "required": [
+          "expected_revision",
+          "title"
+        ],
         "title": "EditProfileChange",
         "type": "object"
       },
@@ -6625,7 +7161,11 @@
             "type": "string"
           }
         },
-        "required": ["schedule_ref", "enabled", "lead_minutes"],
+        "required": [
+          "schedule_ref",
+          "enabled",
+          "lead_minutes"
+        ],
         "title": "EditReminderChange",
         "type": "object"
       },
@@ -6644,7 +7184,9 @@
             "type": "string"
           }
         },
-        "required": ["expected_at"],
+        "required": [
+          "expected_at"
+        ],
         "title": "ElapsedOccurrenceCoordinate",
         "type": "object"
       },
@@ -6657,7 +7199,10 @@
             "type": "string"
           },
           "anchor_mode_code": {
-            "enum": ["fixed_anchor", "previous_expected"],
+            "enum": [
+              "fixed_anchor",
+              "previous_expected"
+            ],
             "title": "Anchor Mode Code",
             "type": "string"
           },
@@ -6710,7 +7255,11 @@
             "type": "string"
           },
           "range_kind": {
-            "enum": ["open", "until_boundary", "expected_count"],
+            "enum": [
+              "open",
+              "until_boundary",
+              "expected_count"
+            ],
             "title": "Range Kind",
             "type": "string"
           }
@@ -6734,7 +7283,10 @@
             "type": "string"
           },
           "anchor_mode_code": {
-            "enum": ["fixed_anchor", "previous_expected"],
+            "enum": [
+              "fixed_anchor",
+              "previous_expected"
+            ],
             "title": "Anchor Mode Code",
             "type": "string"
           },
@@ -6779,7 +7331,11 @@
             "type": "string"
           },
           "range_kind": {
-            "enum": ["open", "until_boundary", "expected_count"],
+            "enum": [
+              "open",
+              "until_boundary",
+              "expected_count"
+            ],
             "title": "Range Kind",
             "type": "string"
           }
@@ -6835,7 +7391,10 @@
             "title": "Placement"
           }
         },
-        "required": ["operation_id", "placement"],
+        "required": [
+          "operation_id",
+          "placement"
+        ],
         "title": "EstablishActivityScheduleRequest",
         "type": "object"
       },
@@ -6879,7 +7438,10 @@
             "title": "Placement"
           }
         },
-        "required": ["operation_id", "placement"],
+        "required": [
+          "operation_id",
+          "placement"
+        ],
         "title": "EstablishOccurrenceScheduleRequest",
         "type": "object"
       },
@@ -6895,7 +7457,10 @@
             "type": "string"
           }
         },
-        "required": ["subject_ref", "placement"],
+        "required": [
+          "subject_ref",
+          "placement"
+        ],
         "title": "EvaluateTemporalConstraintsRequest",
         "type": "object"
       },
@@ -6919,7 +7484,10 @@
             "type": "string"
           }
         },
-        "required": ["starts_at", "ends_at"],
+        "required": [
+          "starts_at",
+          "ends_at"
+        ],
         "title": "EventAbsoluteIntervalPlacementRequest",
         "type": "object"
       },
@@ -6949,7 +7517,11 @@
             "type": "boolean"
           }
         },
-        "required": ["event_ref", "agenda_revision", "agenda_parts"],
+        "required": [
+          "event_ref",
+          "agenda_revision",
+          "agenda_parts"
+        ],
         "title": "EventAgendaMutationResponse",
         "type": "object"
       },
@@ -7013,6 +7585,16 @@
               }
             ]
           },
+          "reminder": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/EventAtomicReminderChange"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
           "schedule": {
             "anyOf": [
               {
@@ -7024,7 +7606,9 @@
             ]
           }
         },
-        "required": ["operation_id"],
+        "required": [
+          "operation_id"
+        ],
         "title": "EventAtomicEditCommand",
         "type": "object"
       },
@@ -7041,7 +7625,10 @@
             "type": "array"
           }
         },
-        "required": ["event", "objectives"],
+        "required": [
+          "event",
+          "objectives"
+        ],
         "title": "EventAtomicEditResponse",
         "type": "object"
       },
@@ -7066,8 +7653,50 @@
             "title": "Life Area Ref"
           }
         },
-        "required": ["expected_assignment_revision", "life_area_ref"],
+        "required": [
+          "expected_assignment_revision",
+          "life_area_ref"
+        ],
         "title": "EventAtomicLifeAreaChange",
+        "type": "object"
+      },
+      "EventAtomicReminderChange": {
+        "additionalProperties": false,
+        "properties": {
+          "enabled": {
+            "title": "Enabled",
+            "type": "boolean"
+          },
+          "expected_state_ref": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Expected State Ref"
+          },
+          "lead_minutes": {
+            "maximum": 10080.0,
+            "minimum": 0.0,
+            "title": "Lead Minutes",
+            "type": "integer"
+          },
+          "schedule_ref": {
+            "format": "uuid",
+            "title": "Schedule Ref",
+            "type": "string"
+          }
+        },
+        "required": [
+          "schedule_ref",
+          "enabled",
+          "lead_minutes"
+        ],
+        "title": "EventAtomicReminderChange",
         "type": "object"
       },
       "EventAtomicScheduleChange": {
@@ -7137,12 +7766,19 @@
             "type": "string"
           },
           "period": {
-            "enum": ["morning", "afternoon", "evening"],
+            "enum": [
+              "morning",
+              "afternoon",
+              "evening"
+            ],
             "title": "Period",
             "type": "string"
           }
         },
-        "required": ["local_date", "period"],
+        "required": [
+          "local_date",
+          "period"
+        ],
         "title": "EventCoarseLocalPeriodPlacementRequest",
         "type": "object"
       },
@@ -7166,7 +7802,10 @@
             "type": "string"
           }
         },
-        "required": ["start_date", "end_date_exclusive"],
+        "required": [
+          "start_date",
+          "end_date_exclusive"
+        ],
         "title": "EventDateSpanPlacementRequest",
         "type": "object"
       },
@@ -7195,7 +7834,11 @@
             "title": "Schedule Ref"
           }
         },
-        "required": ["occurrence_ref", "schedule_ref", "display_label"],
+        "required": [
+          "occurrence_ref",
+          "schedule_ref",
+          "display_label"
+        ],
         "title": "EventDeletionOccurrenceChoice",
         "type": "object"
       },
@@ -7219,7 +7862,10 @@
             "type": "string"
           }
         },
-        "required": ["starts_local_at", "ends_local_at"],
+        "required": [
+          "starts_local_at",
+          "ends_local_at"
+        ],
         "title": "EventFloatingLocalIntervalPlacementRequest",
         "type": "object"
       },
@@ -7228,7 +7874,11 @@
         "properties": {
           "disambiguation": {
             "default": "reject",
-            "enum": ["reject", "earlier", "later"],
+            "enum": [
+              "reject",
+              "earlier",
+              "later"
+            ],
             "title": "Disambiguation",
             "type": "string"
           },
@@ -7255,7 +7905,11 @@
             "type": "string"
           }
         },
-        "required": ["starts_local_at", "ends_local_at", "zone_id"],
+        "required": [
+          "starts_local_at",
+          "ends_local_at",
+          "zone_id"
+        ],
         "title": "EventNamedZoneLocalIntervalPlacementRequest",
         "type": "object"
       },
@@ -7473,7 +8127,12 @@
             "title": "Expected State Ref"
           },
           "mode_code": {
-            "enum": ["disabled", "record", "live", "record_and_live"],
+            "enum": [
+              "disabled",
+              "record",
+              "live",
+              "record_and_live"
+            ],
             "title": "Mode Code",
             "type": "string"
           },
@@ -7484,7 +8143,10 @@
             "type": "string"
           }
         },
-        "required": ["operation_id", "mode_code"],
+        "required": [
+          "operation_id",
+          "mode_code"
+        ],
         "title": "ExecutionPolicyCommand",
         "type": "object"
       },
@@ -7497,7 +8159,12 @@
             "type": "string"
           },
           "mode_code": {
-            "enum": ["disabled", "record", "live", "record_and_live"],
+            "enum": [
+              "disabled",
+              "record",
+              "live",
+              "record_and_live"
+            ],
             "title": "Mode Code",
             "type": "string"
           },
@@ -7519,7 +8186,11 @@
             "title": "State Ref"
           }
         },
-        "required": ["activity_ref", "state_ref", "mode_code"],
+        "required": [
+          "activity_ref",
+          "state_ref",
+          "mode_code"
+        ],
         "title": "ExecutionPolicyResponse",
         "type": "object"
       },
@@ -7533,7 +8204,9 @@
             "type": "string"
           }
         },
-        "required": ["outcome"],
+        "required": [
+          "outcome"
+        ],
         "title": "ExistingAccountSignupResponse",
         "type": "object"
       },
@@ -7573,7 +8246,10 @@
           "requirement_code": {
             "anyOf": [
               {
-                "enum": ["required", "optional"],
+                "enum": [
+                  "required",
+                  "optional"
+                ],
                 "type": "string"
               },
               {
@@ -7604,7 +8280,9 @@
             "type": "string"
           }
         },
-        "required": ["operation_id"],
+        "required": [
+          "operation_id"
+        ],
         "title": "ExplicitExtraOccurrenceRequest",
         "type": "object"
       },
@@ -7617,7 +8295,10 @@
             "type": "string"
           },
           "record_kind": {
-            "enum": ["session_ended", "realization_occurred"],
+            "enum": [
+              "session_ended",
+              "realization_occurred"
+            ],
             "title": "Record Kind",
             "type": "string"
           },
@@ -7646,7 +8327,10 @@
             "title": "Started At"
           },
           "subject_kind": {
-            "enum": ["activity", "event"],
+            "enum": [
+              "activity",
+              "event"
+            ],
             "title": "Subject Kind",
             "type": "string"
           },
@@ -7692,7 +8376,10 @@
             "type": "string"
           }
         },
-        "required": ["starts_local_at", "ends_local_at"],
+        "required": [
+          "starts_local_at",
+          "ends_local_at"
+        ],
         "title": "FloatingLocalIntervalPlacementRequest",
         "type": "object"
       },
@@ -7750,7 +8437,11 @@
             "type": "string"
           }
         },
-        "required": ["external_auth_transaction_ref", "state", "credential"],
+        "required": [
+          "external_auth_transaction_ref",
+          "state",
+          "credential"
+        ],
         "title": "GoogleAuthenticationCompleteRequest",
         "type": "object"
       },
@@ -7799,7 +8490,10 @@
             "type": "boolean"
           },
           "subject_kind": {
-            "enum": ["activity", "event"],
+            "enum": [
+              "activity",
+              "event"
+            ],
             "title": "Subject Kind",
             "type": "string"
           },
@@ -7835,7 +8529,11 @@
             "type": "boolean"
           }
         },
-        "required": ["life_area_ref", "accepted_revision", "replayed"],
+        "required": [
+          "life_area_ref",
+          "accepted_revision",
+          "replayed"
+        ],
         "title": "LifeAreaMutationResponse",
         "type": "object"
       },
@@ -7850,7 +8548,10 @@
             "type": "boolean"
           }
         },
-        "required": ["affected_count", "replayed"],
+        "required": [
+          "affected_count",
+          "replayed"
+        ],
         "title": "LifeAreaReorderResponse",
         "type": "object"
       },
@@ -7956,7 +8657,10 @@
             "title": "Occurrence Ref"
           }
         },
-        "required": ["activity_ref", "occurrence_ref"],
+        "required": [
+          "activity_ref",
+          "occurrence_ref"
+        ],
         "title": "MaterializedActivityOriginResponse",
         "type": "object"
       },
@@ -8007,7 +8711,10 @@
             "type": "string"
           }
         },
-        "required": ["operation_id", "expected_revision"],
+        "required": [
+          "operation_id",
+          "expected_revision"
+        ],
         "title": "MutationRequest",
         "type": "object"
       },
@@ -8016,7 +8723,11 @@
         "properties": {
           "disambiguation": {
             "default": "reject",
-            "enum": ["reject", "earlier", "later"],
+            "enum": [
+              "reject",
+              "earlier",
+              "later"
+            ],
             "title": "Disambiguation",
             "type": "string"
           },
@@ -8043,7 +8754,11 @@
             "type": "string"
           }
         },
-        "required": ["starts_local_at", "ends_local_at", "zone_id"],
+        "required": [
+          "starts_local_at",
+          "ends_local_at",
+          "zone_id"
+        ],
         "title": "NamedZoneLocalIntervalPlacementRequest",
         "type": "object"
       },
@@ -8066,7 +8781,11 @@
             "type": "string"
           }
         },
-        "required": ["client_ref", "starts_local_at", "ends_local_at"],
+        "required": [
+          "client_ref",
+          "starts_local_at",
+          "ends_local_at"
+        ],
         "title": "NewIntervalRow",
         "type": "object"
       },
@@ -8092,7 +8811,9 @@
             "title": "Name"
           }
         },
-        "required": ["client_ref"],
+        "required": [
+          "client_ref"
+        ],
         "title": "NewPlannedRow",
         "type": "object"
       },
@@ -8116,7 +8837,11 @@
             "type": "string"
           }
         },
-        "required": ["objective_ref", "operation_id", "expected_revision"],
+        "required": [
+          "objective_ref",
+          "operation_id",
+          "expected_revision"
+        ],
         "title": "ObjectiveBatchRetirement",
         "type": "object"
       },
@@ -8132,7 +8857,10 @@
             "type": "string"
           }
         },
-        "required": ["objective_ref", "change"],
+        "required": [
+          "objective_ref",
+          "change"
+        ],
         "title": "ObjectiveBatchRevision",
         "type": "object"
       },
@@ -8142,7 +8870,12 @@
           "comparator_code": {
             "anyOf": [
               {
-                "enum": ["eq", "gte", "lte", "between"],
+                "enum": [
+                  "eq",
+                  "gte",
+                  "lte",
+                  "between"
+                ],
                 "type": "string"
               },
               {
@@ -8170,7 +8903,12 @@
             "type": "integer"
           },
           "result_kind": {
-            "enum": ["boolean", "quantity", "qualitative", "range"],
+            "enum": [
+              "boolean",
+              "quantity",
+              "qualitative",
+              "range"
+            ],
             "title": "Result Kind",
             "type": "string"
           },
@@ -8247,7 +8985,12 @@
           "comparator_code": {
             "anyOf": [
               {
-                "enum": ["eq", "gte", "lte", "between"],
+                "enum": [
+                  "eq",
+                  "gte",
+                  "lte",
+                  "between"
+                ],
                 "type": "string"
               },
               {
@@ -8304,13 +9047,21 @@
             "type": "integer"
           },
           "result_kind": {
-            "enum": ["boolean", "quantity", "qualitative", "range"],
+            "enum": [
+              "boolean",
+              "quantity",
+              "qualitative",
+              "range"
+            ],
             "title": "Result Kind",
             "type": "string"
           },
           "scope_code": {
             "default": "only_this",
-            "enum": ["only_this", "this_and_following"],
+            "enum": [
+              "only_this",
+              "this_and_following"
+            ],
             "title": "Scope Code",
             "type": "string"
           },
@@ -8457,7 +9208,12 @@
           "comparator_code": {
             "anyOf": [
               {
-                "enum": ["eq", "gte", "lte", "between"],
+                "enum": [
+                  "eq",
+                  "gte",
+                  "lte",
+                  "between"
+                ],
                 "type": "string"
               },
               {
@@ -8496,7 +9252,12 @@
             "type": "integer"
           },
           "result_kind": {
-            "enum": ["boolean", "quantity", "qualitative", "range"],
+            "enum": [
+              "boolean",
+              "quantity",
+              "qualitative",
+              "range"
+            ],
             "title": "Result Kind",
             "type": "string"
           },
@@ -8579,7 +9340,10 @@
             "type": "string"
           }
         },
-        "required": ["operation_id", "expected_revision"],
+        "required": [
+          "operation_id",
+          "expected_revision"
+        ],
         "title": "ObjectiveInputConfirm",
         "type": "object"
       },
@@ -8731,7 +9495,10 @@
             "type": "string"
           }
         },
-        "required": ["operation_id", "input"],
+        "required": [
+          "operation_id",
+          "input"
+        ],
         "title": "ObjectiveInputDraftSave",
         "type": "object"
       },
@@ -8802,7 +9569,12 @@
           "comparator_code": {
             "anyOf": [
               {
-                "enum": ["eq", "gte", "lte", "between"],
+                "enum": [
+                  "eq",
+                  "gte",
+                  "lte",
+                  "between"
+                ],
                 "type": "string"
               },
               {
@@ -8888,7 +9660,12 @@
             "type": "boolean"
           },
           "result_kind": {
-            "enum": ["boolean", "quantity", "qualitative", "range"],
+            "enum": [
+              "boolean",
+              "quantity",
+              "qualitative",
+              "range"
+            ],
             "title": "Result Kind",
             "type": "string"
           },
@@ -9020,7 +9797,9 @@
             "title": "Qualitative Code"
           }
         },
-        "required": ["operation_id"],
+        "required": [
+          "operation_id"
+        ],
         "title": "ObjectiveResultCommand",
         "type": "object"
       },
@@ -9095,7 +9874,10 @@
             "title": "Qualitative Code"
           }
         },
-        "required": ["operation_id", "expected_evaluation_state_ref"],
+        "required": [
+          "operation_id",
+          "expected_evaluation_state_ref"
+        ],
         "title": "ObjectiveResultCorrectionCommand",
         "type": "object"
       },
@@ -9227,12 +10009,21 @@
             "type": "integer"
           },
           "result_kind": {
-            "enum": ["boolean", "quantity", "qualitative", "range"],
+            "enum": [
+              "boolean",
+              "quantity",
+              "qualitative",
+              "range"
+            ],
             "title": "Result Kind",
             "type": "string"
           },
           "subject_kind": {
-            "enum": ["activity", "event", "occurrence"],
+            "enum": [
+              "activity",
+              "event",
+              "occurrence"
+            ],
             "title": "Subject Kind",
             "type": "string"
           },
@@ -9280,7 +10071,10 @@
             "type": "string"
           }
         },
-        "required": ["starts_at", "ends_at"],
+        "required": [
+          "starts_at",
+          "ends_at"
+        ],
         "title": "OccurrenceAbsoluteSchedulePlacementResponse",
         "type": "object"
       },
@@ -9385,12 +10179,19 @@
             "type": "string"
           },
           "period": {
-            "enum": ["morning", "afternoon", "evening"],
+            "enum": [
+              "morning",
+              "afternoon",
+              "evening"
+            ],
             "title": "Period",
             "type": "string"
           }
         },
-        "required": ["local_date", "period"],
+        "required": [
+          "local_date",
+          "period"
+        ],
         "title": "OccurrenceCoarseSchedulePlacementResponse",
         "type": "object"
       },
@@ -9414,7 +10215,10 @@
             "type": "string"
           }
         },
-        "required": ["start_date", "end_date_exclusive"],
+        "required": [
+          "start_date",
+          "end_date_exclusive"
+        ],
         "title": "OccurrenceDateSpanSchedulePlacementResponse",
         "type": "object"
       },
@@ -9486,7 +10290,10 @@
             "type": "string"
           }
         },
-        "required": ["starts_local_at", "ends_local_at"],
+        "required": [
+          "starts_local_at",
+          "ends_local_at"
+        ],
         "title": "OccurrenceFloatingSchedulePlacementResponse",
         "type": "object"
       },
@@ -9506,7 +10313,11 @@
             "type": "boolean"
           }
         },
-        "required": ["occurrence", "accepted_at", "replayed"],
+        "required": [
+          "occurrence",
+          "accepted_at",
+          "replayed"
+        ],
         "title": "OccurrenceMutationResponse",
         "type": "object"
       },
@@ -9608,7 +10419,10 @@
             "type": "string"
           },
           "origin_code": {
-            "enum": ["recurrence_generated", "explicit_extra"],
+            "enum": [
+              "recurrence_generated",
+              "explicit_extra"
+            ],
             "title": "Origin Code",
             "type": "string"
           },
@@ -9741,7 +10555,11 @@
             "type": "string"
           }
         },
-        "required": ["operation_id", "start_date", "end_date_exclusive"],
+        "required": [
+          "operation_id",
+          "start_date",
+          "end_date_exclusive"
+        ],
         "title": "OccurrenceWindowCheckpointRequest",
         "type": "object"
       },
@@ -9803,7 +10621,10 @@
             "type": "string"
           }
         },
-        "required": ["life_area_ref", "expected_revision"],
+        "required": [
+          "life_area_ref",
+          "expected_revision"
+        ],
         "title": "OrderEntry",
         "type": "object"
       },
@@ -9969,7 +10790,11 @@
             "title": "Expected State Ref"
           },
           "mode_code": {
-            "enum": ["manual", "review_on_end", "auto_confirm_outcome"],
+            "enum": [
+              "manual",
+              "review_on_end",
+              "auto_confirm_outcome"
+            ],
             "title": "Mode Code",
             "type": "string"
           },
@@ -9980,7 +10805,10 @@
             "type": "string"
           }
         },
-        "required": ["operation_id", "mode_code"],
+        "required": [
+          "operation_id",
+          "mode_code"
+        ],
         "title": "OutcomeReviewPolicyCommand",
         "type": "object"
       },
@@ -9993,7 +10821,11 @@
             "type": "string"
           },
           "mode_code": {
-            "enum": ["manual", "review_on_end", "auto_confirm_outcome"],
+            "enum": [
+              "manual",
+              "review_on_end",
+              "auto_confirm_outcome"
+            ],
             "title": "Mode Code",
             "type": "string"
           },
@@ -10015,7 +10847,11 @@
             "title": "State Ref"
           }
         },
-        "required": ["activity_ref", "state_ref", "mode_code"],
+        "required": [
+          "activity_ref",
+          "state_ref",
+          "mode_code"
+        ],
         "title": "OutcomeReviewPolicyResponse",
         "type": "object"
       },
@@ -10032,7 +10868,10 @@
             "type": "string"
           }
         },
-        "required": ["webauthn_challenge_ref", "response"],
+        "required": [
+          "webauthn_challenge_ref",
+          "response"
+        ],
         "title": "PasskeyAuthenticationCompleteRequest",
         "type": "object"
       },
@@ -10065,7 +10904,11 @@
             "type": "string"
           }
         },
-        "required": ["webauthn_challenge_ref", "options", "expires_at"],
+        "required": [
+          "webauthn_challenge_ref",
+          "options",
+          "expires_at"
+        ],
         "title": "PasskeyCeremonyResponse",
         "type": "object"
       },
@@ -10140,7 +10983,10 @@
             "type": "string"
           }
         },
-        "required": ["webauthn_challenge_ref", "response"],
+        "required": [
+          "webauthn_challenge_ref",
+          "response"
+        ],
         "title": "PasskeyReauthenticationCompleteRequest",
         "type": "object"
       },
@@ -10174,7 +11020,11 @@
             "type": "string"
           }
         },
-        "required": ["webauthn_challenge_ref", "response", "label"],
+        "required": [
+          "webauthn_challenge_ref",
+          "response",
+          "label"
+        ],
         "title": "PasskeyRegistrationCompleteRequest",
         "type": "object"
       },
@@ -10189,7 +11039,9 @@
             "type": "string"
           }
         },
-        "required": ["label"],
+        "required": [
+          "label"
+        ],
         "title": "PasskeyUpdateRequest",
         "type": "object"
       },
@@ -10204,7 +11056,9 @@
             "type": "string"
           }
         },
-        "required": ["new_password"],
+        "required": [
+          "new_password"
+        ],
         "title": "PasswordEstablishRequest",
         "type": "object"
       },
@@ -10219,7 +11073,9 @@
             "type": "string"
           }
         },
-        "required": ["email"],
+        "required": [
+          "email"
+        ],
         "title": "PasswordRecoveryRequest",
         "type": "object"
       },
@@ -10239,7 +11095,10 @@
             "type": "string"
           }
         },
-        "required": ["password_recovery_ref", "secret"],
+        "required": [
+          "password_recovery_ref",
+          "secret"
+        ],
         "title": "PasswordRecoveryValidationRequest",
         "type": "object"
       },
@@ -10265,7 +11124,11 @@
             "type": "string"
           }
         },
-        "required": ["password_recovery_ref", "secret", "new_password"],
+        "required": [
+          "password_recovery_ref",
+          "secret",
+          "new_password"
+        ],
         "title": "PasswordResetRequest",
         "type": "object"
       },
@@ -10290,7 +11153,12 @@
             "type": "integer"
           }
         },
-        "required": ["person_ref", "display_label", "revision", "replayed"],
+        "required": [
+          "person_ref",
+          "display_label",
+          "revision",
+          "replayed"
+        ],
         "title": "PersonReferentResponse",
         "type": "object"
       },
@@ -10313,7 +11181,11 @@
             "type": "string"
           }
         },
-        "required": ["schedule_ref", "starts_local_at", "ends_local_at"],
+        "required": [
+          "schedule_ref",
+          "starts_local_at",
+          "ends_local_at"
+        ],
         "title": "PlacePlannedRow",
         "type": "object"
       },
@@ -10357,7 +11229,10 @@
             "title": "Placement"
           }
         },
-        "required": ["operation_id", "placement"],
+        "required": [
+          "operation_id",
+          "placement"
+        ],
         "title": "PlacePlanningTrayItemRequest",
         "type": "object"
       },
@@ -10365,7 +11240,10 @@
         "additionalProperties": false,
         "properties": {
           "kind": {
-            "enum": ["activity", "event"],
+            "enum": [
+              "activity",
+              "event"
+            ],
             "title": "Kind",
             "type": "string"
           },
@@ -10471,7 +11349,9 @@
             "type": "boolean"
           }
         },
-        "required": ["locked"],
+        "required": [
+          "locked"
+        ],
         "title": "PlacementLockRequest",
         "type": "object"
       },
@@ -10522,7 +11402,10 @@
         "additionalProperties": false,
         "properties": {
           "kind": {
-            "enum": ["committed", "pending_confirmation"],
+            "enum": [
+              "committed",
+              "pending_confirmation"
+            ],
             "title": "Kind",
             "type": "string"
           },
@@ -10590,7 +11473,12 @@
             "type": "string"
           },
           "basis_status": {
-            "enum": ["supported", "unknown", "blocked", "unsupported"],
+            "enum": [
+              "supported",
+              "unknown",
+              "blocked",
+              "unsupported"
+            ],
             "title": "Basis Status",
             "type": "string"
           },
@@ -10683,7 +11571,11 @@
             "title": "Movement Policy Material State Ref"
           },
           "movement_policy_status": {
-            "enum": ["automatic", "blocked", "missing"],
+            "enum": [
+              "automatic",
+              "blocked",
+              "missing"
+            ],
             "title": "Movement Policy Status",
             "type": "string"
           },
@@ -11034,7 +11926,10 @@
           "execution_strength_code": {
             "anyOf": [
               {
-                "enum": ["hard", "soft"],
+                "enum": [
+                  "hard",
+                  "soft"
+                ],
                 "type": "string"
               },
               {
@@ -11079,7 +11974,10 @@
             "type": "string"
           }
         },
-        "required": ["step_ref", "title"],
+        "required": [
+          "step_ref",
+          "title"
+        ],
         "title": "PlanStepBody",
         "type": "object"
       },
@@ -11112,7 +12010,10 @@
           "execution_strength_code": {
             "anyOf": [
               {
-                "enum": ["hard", "soft"],
+                "enum": [
+                  "hard",
+                  "soft"
+                ],
                 "type": "string"
               },
               {
@@ -11269,7 +12170,11 @@
             "type": "string"
           }
         },
-        "required": ["schedule_ref", "display_name", "replayed"],
+        "required": [
+          "schedule_ref",
+          "display_name",
+          "replayed"
+        ],
         "title": "PlannedSessionNameResponse",
         "type": "object"
       },
@@ -11293,7 +12198,10 @@
             "type": "string"
           }
         },
-        "required": ["starts_at", "ends_at"],
+        "required": [
+          "starts_at",
+          "ends_at"
+        ],
         "title": "PlanningTrayAbsolutePlacementRequest",
         "type": "object"
       },
@@ -11312,12 +12220,19 @@
             "type": "string"
           },
           "period": {
-            "enum": ["morning", "afternoon", "evening"],
+            "enum": [
+              "morning",
+              "afternoon",
+              "evening"
+            ],
             "title": "Period",
             "type": "string"
           }
         },
-        "required": ["local_date", "period"],
+        "required": [
+          "local_date",
+          "period"
+        ],
         "title": "PlanningTrayCoarsePlacementRequest",
         "type": "object"
       },
@@ -11341,7 +12256,10 @@
             "type": "string"
           }
         },
-        "required": ["start_date", "end_date_exclusive"],
+        "required": [
+          "start_date",
+          "end_date_exclusive"
+        ],
         "title": "PlanningTrayDateSpanPlacementRequest",
         "type": "object"
       },
@@ -11365,7 +12283,10 @@
             "type": "string"
           }
         },
-        "required": ["starts_local_at", "ends_local_at"],
+        "required": [
+          "starts_local_at",
+          "ends_local_at"
+        ],
         "title": "PlanningTrayFloatingPlacementRequest",
         "type": "object"
       },
@@ -11378,7 +12299,10 @@
             "type": "string"
           },
           "kind": {
-            "enum": ["activity", "event"],
+            "enum": [
+              "activity",
+              "event"
+            ],
             "title": "Kind",
             "type": "string"
           },
@@ -11419,7 +12343,10 @@
             "title": "Schedule Ref"
           },
           "state": {
-            "enum": ["unplaced", "postponed"],
+            "enum": [
+              "unplaced",
+              "postponed"
+            ],
             "title": "State",
             "type": "string"
           },
@@ -11433,7 +12360,13 @@
             "type": "string"
           }
         },
-        "required": ["kind", "state", "subject_ref", "title", "created_at"],
+        "required": [
+          "kind",
+          "state",
+          "subject_ref",
+          "title",
+          "created_at"
+        ],
         "title": "PlanningTrayItemResponse",
         "type": "object"
       },
@@ -11442,7 +12375,11 @@
         "properties": {
           "disambiguation": {
             "default": "reject",
-            "enum": ["reject", "earlier", "later"],
+            "enum": [
+              "reject",
+              "earlier",
+              "later"
+            ],
             "title": "Disambiguation",
             "type": "string"
           },
@@ -11469,7 +12406,11 @@
             "type": "string"
           }
         },
-        "required": ["starts_local_at", "ends_local_at", "zone_id"],
+        "required": [
+          "starts_local_at",
+          "ends_local_at",
+          "zone_id"
+        ],
         "title": "PlanningTrayNamedZonePlacementRequest",
         "type": "object"
       },
@@ -11629,7 +12570,11 @@
             "type": "string"
           }
         },
-        "required": ["pointer", "code", "detail"],
+        "required": [
+          "pointer",
+          "code",
+          "detail"
+        ],
         "title": "ProblemFieldError",
         "type": "object"
       },
@@ -11641,7 +12586,11 @@
             "type": "string"
           },
           "subject_kind": {
-            "enum": ["activity", "event", "routine"],
+            "enum": [
+              "activity",
+              "event",
+              "routine"
+            ],
             "title": "Subject Kind",
             "type": "string"
           },
@@ -11681,7 +12630,11 @@
             "type": "boolean"
           }
         },
-        "required": ["attached", "accepted_at", "replayed"],
+        "required": [
+          "attached",
+          "accepted_at",
+          "replayed"
+        ],
         "title": "ProductTagEffectResponse",
         "type": "object"
       },
@@ -11701,7 +12654,11 @@
             "type": "string"
           }
         },
-        "required": ["tag_ref", "accepted_revision", "replayed"],
+        "required": [
+          "tag_ref",
+          "accepted_revision",
+          "replayed"
+        ],
         "title": "ProductTagMutationResponse",
         "type": "object"
       },
@@ -11771,7 +12728,11 @@
             "type": "string"
           }
         },
-        "required": ["slice_ref", "starts_at", "ends_at"],
+        "required": [
+          "slice_ref",
+          "starts_at",
+          "ends_at"
+        ],
         "title": "ProposedSlice",
         "type": "object"
       },
@@ -11837,7 +12798,10 @@
             "$ref": "#/components/schemas/ProviderReturnTarget"
           }
         },
-        "required": ["purpose", "return_target"],
+        "required": [
+          "purpose",
+          "return_target"
+        ],
         "title": "ProviderBeginRequest",
         "type": "object"
       },
@@ -11852,7 +12816,9 @@
             "type": "string"
           }
         },
-        "required": ["email"],
+        "required": [
+          "email"
+        ],
         "title": "ProviderEnrollmentEmailRequest",
         "type": "object"
       },
@@ -11926,7 +12892,9 @@
             "type": "string"
           }
         },
-        "required": ["code"],
+        "required": [
+          "code"
+        ],
         "title": "ProviderEnrollmentVerificationRequest",
         "type": "object"
       },
@@ -11957,7 +12925,11 @@
             "type": "string"
           }
         },
-        "required": ["expires_at", "external_link_challenge_ref", "outcome"],
+        "required": [
+          "expires_at",
+          "external_link_challenge_ref",
+          "outcome"
+        ],
         "title": "ProviderLinkRequiredResponse",
         "type": "object"
       },
@@ -11990,13 +12962,20 @@
       },
       "ProviderPurpose": {
         "description": "Security intent bound into one provider transaction.",
-        "enum": ["sign_in", "link", "reauthenticate"],
+        "enum": [
+          "sign_in",
+          "link",
+          "reauthenticate"
+        ],
         "title": "ProviderPurpose",
         "type": "string"
       },
       "ProviderReturnTarget": {
         "description": "Bounded post-provider application destination.",
-        "enum": ["access", "security"],
+        "enum": [
+          "access",
+          "security"
+        ],
         "title": "ProviderReturnTarget",
         "type": "string"
       },
@@ -12010,7 +12989,11 @@
             "type": "string"
           },
           "frame_code": {
-            "enum": ["floating_local", "named_zone", "absolute_utc"],
+            "enum": [
+              "floating_local",
+              "named_zone",
+              "absolute_utc"
+            ],
             "title": "Frame Code",
             "type": "string"
           },
@@ -12077,7 +13060,11 @@
             "type": "string"
           },
           "frame_code": {
-            "enum": ["floating_local", "named_zone", "absolute_utc"],
+            "enum": [
+              "floating_local",
+              "named_zone",
+              "absolute_utc"
+            ],
             "title": "Frame Code",
             "type": "string"
           },
@@ -12100,7 +13087,12 @@
             "type": "integer"
           },
           "period_unit_code": {
-            "enum": ["day", "week", "month", "year"],
+            "enum": [
+              "day",
+              "week",
+              "month",
+              "year"
+            ],
             "title": "Period Unit Code",
             "type": "string"
           },
@@ -12111,7 +13103,10 @@
             "type": "integer"
           },
           "range_kind": {
-            "enum": ["open", "until_boundary"],
+            "enum": [
+              "open",
+              "until_boundary"
+            ],
             "title": "Range Kind",
             "type": "string"
           },
@@ -12184,7 +13179,11 @@
             "type": "string"
           },
           "frame_code": {
-            "enum": ["floating_local", "named_zone", "absolute_utc"],
+            "enum": [
+              "floating_local",
+              "named_zone",
+              "absolute_utc"
+            ],
             "title": "Frame Code",
             "type": "string"
           },
@@ -12207,7 +13206,12 @@
             "type": "integer"
           },
           "period_unit_code": {
-            "enum": ["day", "week", "month", "year"],
+            "enum": [
+              "day",
+              "week",
+              "month",
+              "year"
+            ],
             "title": "Period Unit Code",
             "type": "string"
           },
@@ -12218,7 +13222,10 @@
             "type": "integer"
           },
           "range_kind": {
-            "enum": ["open", "until_boundary"],
+            "enum": [
+              "open",
+              "until_boundary"
+            ],
             "title": "Range Kind",
             "type": "string"
           },
@@ -12276,7 +13283,11 @@
             "title": "Expected State Ref"
           },
           "mode_code": {
-            "enum": ["manual", "review_on_end", "auto_confirm_outcome"],
+            "enum": [
+              "manual",
+              "review_on_end",
+              "auto_confirm_outcome"
+            ],
             "title": "Mode Code",
             "type": "string"
           },
@@ -12287,7 +13298,10 @@
             "type": "string"
           }
         },
-        "required": ["operation_id", "mode_code"],
+        "required": [
+          "operation_id",
+          "mode_code"
+        ],
         "title": "RealityPolicyCommand",
         "type": "object"
       },
@@ -12295,7 +13309,11 @@
         "additionalProperties": false,
         "properties": {
           "mode_code": {
-            "enum": ["manual", "review_on_end", "auto_confirm_outcome"],
+            "enum": [
+              "manual",
+              "review_on_end",
+              "auto_confirm_outcome"
+            ],
             "title": "Mode Code",
             "type": "string"
           },
@@ -12317,7 +13335,11 @@
             "title": "State Ref"
           },
           "subject_kind": {
-            "enum": ["activity", "event", "occurrence"],
+            "enum": [
+              "activity",
+              "event",
+              "occurrence"
+            ],
             "title": "Subject Kind",
             "type": "string"
           },
@@ -12347,7 +13369,9 @@
             "type": "string"
           }
         },
-        "required": ["password"],
+        "required": [
+          "password"
+        ],
         "title": "ReauthenticateRequest",
         "type": "object"
       },
@@ -12425,7 +13449,10 @@
             "type": "string"
           },
           "role_code": {
-            "enum": ["considered", "selected"],
+            "enum": [
+              "considered",
+              "selected"
+            ],
             "title": "Role Code",
             "type": "string"
           }
@@ -12452,7 +13479,10 @@
             "type": "string"
           },
           "role_code": {
-            "enum": ["considered", "selected"],
+            "enum": [
+              "considered",
+              "selected"
+            ],
             "title": "Role Code",
             "type": "string"
           }
@@ -12632,7 +13662,9 @@
             "type": "boolean"
           }
         },
-        "required": ["accepted"],
+        "required": [
+          "accepted"
+        ],
         "title": "RecoveryAcceptedResponse",
         "type": "object"
       },
@@ -12645,7 +13677,9 @@
             "type": "boolean"
           }
         },
-        "required": ["valid"],
+        "required": [
+          "valid"
+        ],
         "title": "RecoveryValidationResponse",
         "type": "object"
       },
@@ -12737,7 +13771,10 @@
             "title": "Recurrence"
           }
         },
-        "required": ["material_state_ref", "recurrence"],
+        "required": [
+          "material_state_ref",
+          "recurrence"
+        ],
         "title": "RecurrenceStateResponse",
         "type": "object"
       },
@@ -12750,7 +13787,10 @@
             "type": "string"
           },
           "owner_kind": {
-            "enum": ["routine", "event"],
+            "enum": [
+              "routine",
+              "event"
+            ],
             "title": "Owner Kind",
             "type": "string"
           },
@@ -12841,7 +13881,10 @@
             "$ref": "#/components/schemas/CalendarRecurrenceRequest"
           },
           "scope_code": {
-            "enum": ["this_and_following", "from_next"],
+            "enum": [
+              "this_and_following",
+              "from_next"
+            ],
             "title": "Scope Code",
             "type": "string"
           },
@@ -12875,7 +13918,10 @@
             "type": "integer"
           },
           "owner_kind": {
-            "enum": ["routine", "event"],
+            "enum": [
+              "routine",
+              "event"
+            ],
             "title": "Owner Kind",
             "type": "string"
           },
@@ -12994,7 +14040,10 @@
             "title": "Location"
           },
           "owner_kind": {
-            "enum": ["routine", "event"],
+            "enum": [
+              "routine",
+              "event"
+            ],
             "title": "Owner Kind",
             "type": "string"
           },
@@ -13061,7 +14110,10 @@
             "type": "string"
           }
         },
-        "required": ["clientDataJSON", "attestationObject"],
+        "required": [
+          "clientDataJSON",
+          "attestationObject"
+        ],
         "title": "RegistrationAuthenticatorResponse",
         "type": "object"
       },
@@ -13111,7 +14163,12 @@
             "type": "string"
           }
         },
-        "required": ["id", "rawId", "type", "response"],
+        "required": [
+          "id",
+          "rawId",
+          "type",
+          "response"
+        ],
         "title": "RegistrationCredential",
         "type": "object"
       },
@@ -13136,7 +14193,11 @@
             "type": "string"
           }
         },
-        "required": ["operation_id", "expected_revision", "name"],
+        "required": [
+          "operation_id",
+          "expected_revision",
+          "name"
+        ],
         "title": "RenameLifeAreaRequest",
         "type": "object"
       },
@@ -13161,7 +14222,11 @@
             "type": "string"
           }
         },
-        "required": ["operation_id", "expected_revision", "display_label"],
+        "required": [
+          "operation_id",
+          "expected_revision",
+          "display_label"
+        ],
         "title": "RenamePersonReferentRequest",
         "type": "object"
       },
@@ -13186,7 +14251,11 @@
             "type": "string"
           }
         },
-        "required": ["operation_id", "expected_revision", "name"],
+        "required": [
+          "operation_id",
+          "expected_revision",
+          "name"
+        ],
         "title": "RenameProductTagRequest",
         "type": "object"
       },
@@ -13211,7 +14280,11 @@
             "type": "string"
           }
         },
-        "required": ["operation_id", "expected_source_revision", "title"],
+        "required": [
+          "operation_id",
+          "expected_source_revision",
+          "title"
+        ],
         "title": "RenameRoutineRequest",
         "type": "object"
       },
@@ -13233,7 +14306,10 @@
             "type": "string"
           }
         },
-        "required": ["operation_id", "entries"],
+        "required": [
+          "operation_id",
+          "entries"
+        ],
         "title": "ReorderLifeAreasRequest",
         "type": "object"
       },
@@ -13263,7 +14339,11 @@
             "type": "string"
           }
         },
-        "required": ["operation_id", "expected_revision", "agenda_parts"],
+        "required": [
+          "operation_id",
+          "expected_revision",
+          "agenda_parts"
+        ],
         "title": "ReplaceEventAgendaRequest",
         "type": "object"
       },
@@ -13296,7 +14376,12 @@
             "type": "string"
           }
         },
-        "required": ["operation_id", "title", "expected_state_ref", "steps"],
+        "required": [
+          "operation_id",
+          "title",
+          "expected_state_ref",
+          "steps"
+        ],
         "title": "ReplacePlanBody",
         "type": "object"
       },
@@ -13348,7 +14433,10 @@
             "title": "Recurrence"
           }
         },
-        "required": ["operation_id", "recurrence"],
+        "required": [
+          "operation_id",
+          "recurrence"
+        ],
         "title": "ReplaceRecurrenceRequest",
         "type": "object"
       },
@@ -13479,7 +14567,9 @@
             "title": "Schedule Ref"
           }
         },
-        "required": ["role"],
+        "required": [
+          "role"
+        ],
         "title": "ReplanChange",
         "type": "object"
       },
@@ -13562,7 +14652,11 @@
             "type": "string"
           }
         },
-        "required": ["operation_id", "unschedule_operation_id", "placement"],
+        "required": [
+          "operation_id",
+          "unschedule_operation_id",
+          "placement"
+        ],
         "title": "ReplanPostponedEventRequest",
         "type": "object"
       },
@@ -13694,7 +14788,11 @@
             "title": "Session Timing Material State Ref"
           },
           "subject_kind": {
-            "enum": ["activity", "event", "occurrence"],
+            "enum": [
+              "activity",
+              "event",
+              "occurrence"
+            ],
             "title": "Subject Kind",
             "type": "string"
           },
@@ -13744,7 +14842,10 @@
             "type": "array"
           }
         },
-        "required": ["items", "count"],
+        "required": [
+          "items",
+          "count"
+        ],
         "title": "ResolutionQueueResponse",
         "type": "object"
       },
@@ -13784,7 +14885,10 @@
             "title": "Responsible Person Ref"
           },
           "subject_kind": {
-            "enum": ["activity", "event"],
+            "enum": [
+              "activity",
+              "event"
+            ],
             "title": "Subject Kind",
             "type": "string"
           },
@@ -13864,7 +14968,11 @@
             "type": "string"
           },
           "period": {
-            "enum": ["morning", "afternoon", "evening"],
+            "enum": [
+              "morning",
+              "afternoon",
+              "evening"
+            ],
             "title": "Period",
             "type": "string"
           },
@@ -14094,7 +15202,9 @@
             "type": "string"
           }
         },
-        "required": ["schedule_ref"],
+        "required": [
+          "schedule_ref"
+        ],
         "title": "RetainedPlannedRow",
         "type": "object"
       },
@@ -14113,7 +15223,10 @@
             "type": "string"
           }
         },
-        "required": ["operation_id", "expected_material_state_ref"],
+        "required": [
+          "operation_id",
+          "expected_material_state_ref"
+        ],
         "title": "RetireTemporalConstraintRequest",
         "type": "object"
       },
@@ -14141,7 +15254,10 @@
             "type": "boolean"
           },
           "subject_kind": {
-            "enum": ["activity", "event"],
+            "enum": [
+              "activity",
+              "event"
+            ],
             "title": "Subject Kind",
             "type": "string"
           },
@@ -14272,7 +15388,11 @@
             "type": "string"
           }
         },
-        "required": ["operation_id", "expected_revision", "title"],
+        "required": [
+          "operation_id",
+          "expected_revision",
+          "title"
+        ],
         "title": "ReviseEventProfileRequest",
         "type": "object"
       },
@@ -14429,7 +15549,11 @@
             "title": "Rule"
           }
         },
-        "required": ["operation_id", "expected_material_state_ref", "rule"],
+        "required": [
+          "operation_id",
+          "expected_material_state_ref",
+          "rule"
+        ],
         "title": "ReviseTemporalConstraintRequest",
         "type": "object"
       },
@@ -14558,7 +15682,11 @@
             "type": "string"
           },
           "period": {
-            "enum": ["morning", "afternoon", "evening"],
+            "enum": [
+              "morning",
+              "afternoon",
+              "evening"
+            ],
             "title": "Period",
             "type": "string"
           },
@@ -14824,7 +15952,10 @@
             "title": "Rule"
           },
           "subject_kind": {
-            "enum": ["activity", "event"],
+            "enum": [
+              "activity",
+              "event"
+            ],
             "title": "Subject Kind",
             "type": "string"
           },
@@ -14893,7 +16024,10 @@
             "type": "string"
           }
         },
-        "required": ["operation_id", "expected_source_revision"],
+        "required": [
+          "operation_id",
+          "expected_source_revision"
+        ],
         "title": "RoutineMutationRequest",
         "type": "object"
       },
@@ -14906,7 +16040,11 @@
             "type": "string"
           },
           "lifecycle_state": {
-            "enum": ["active", "paused", "ended"],
+            "enum": [
+              "active",
+              "paused",
+              "ended"
+            ],
             "title": "Lifecycle State",
             "type": "string"
           },
@@ -14978,7 +16116,11 @@
             "type": "string"
           },
           "lifecycle_state": {
-            "enum": ["active", "paused", "ended"],
+            "enum": [
+              "active",
+              "paused",
+              "ended"
+            ],
             "title": "Lifecycle State",
             "type": "string"
           },
@@ -15048,7 +16190,11 @@
             "type": "boolean"
           }
         },
-        "required": ["attached", "accepted_at", "replayed"],
+        "required": [
+          "attached",
+          "accepted_at",
+          "replayed"
+        ],
         "title": "RoutineTagEffectResponse",
         "type": "object"
       },
@@ -15062,7 +16208,9 @@
             "type": "string"
           }
         },
-        "required": ["operation_id"],
+        "required": [
+          "operation_id"
+        ],
         "title": "RoutineTagOperationRequest",
         "type": "object"
       },
@@ -15098,7 +16246,11 @@
             "type": "string"
           }
         },
-        "required": ["operation_id", "enabled", "lead_minutes"],
+        "required": [
+          "operation_id",
+          "enabled",
+          "lead_minutes"
+        ],
         "title": "ScheduleReminderRequest",
         "type": "object"
       },
@@ -15106,7 +16258,11 @@
         "additionalProperties": false,
         "properties": {
           "disposition_code": {
-            "enum": ["pending", "due", "unavailable"],
+            "enum": [
+              "pending",
+              "due",
+              "unavailable"
+            ],
             "title": "Disposition Code",
             "type": "string"
           },
@@ -15304,7 +16460,11 @@
             "type": "string"
           },
           "period": {
-            "enum": ["morning", "afternoon", "evening"],
+            "enum": [
+              "morning",
+              "afternoon",
+              "evening"
+            ],
             "title": "Period",
             "type": "string"
           },
@@ -15772,7 +16932,11 @@
             "type": "string"
           },
           "period": {
-            "enum": ["morning", "afternoon", "evening"],
+            "enum": [
+              "morning",
+              "afternoon",
+              "evening"
+            ],
             "title": "Period",
             "type": "string"
           },
@@ -16187,7 +17351,11 @@
             "type": "object"
           },
           "scope_code": {
-            "enum": ["only_this", "this_and_following", "from_next"],
+            "enum": [
+              "only_this",
+              "this_and_following",
+              "from_next"
+            ],
             "title": "Scope Code",
             "type": "string"
           }
@@ -16299,7 +17467,11 @@
             "type": "string"
           }
         },
-        "required": ["occurrence_ref", "reason", "expected_at"],
+        "required": [
+          "occurrence_ref",
+          "reason",
+          "expected_at"
+        ],
         "title": "ScopedProfileEditProtectedOccurrence",
         "type": "object"
       },
@@ -16421,7 +17593,9 @@
             "type": "string"
           }
         },
-        "required": ["operation_id"],
+        "required": [
+          "operation_id"
+        ],
         "title": "SessionCommand",
         "type": "object"
       },
@@ -16434,7 +17608,11 @@
             "type": "string"
           },
           "evaluation": {
-            "enum": ["pending", "satisfied", "violated"],
+            "enum": [
+              "pending",
+              "satisfied",
+              "violated"
+            ],
             "title": "Evaluation",
             "type": "string"
           },
@@ -16479,7 +17657,10 @@
             "type": "string"
           }
         },
-        "required": ["operation_id", "expected_material_state_ref"],
+        "required": [
+          "operation_id",
+          "expected_material_state_ref"
+        ],
         "title": "SessionEndCommand",
         "type": "object"
       },
@@ -16503,7 +17684,11 @@
             "type": "string"
           }
         },
-        "required": ["operation_id", "started_at", "ended_at"],
+        "required": [
+          "operation_id",
+          "started_at",
+          "ended_at"
+        ],
         "title": "SessionManualCommand",
         "type": "object"
       },
@@ -16540,7 +17725,9 @@
             "type": "string"
           }
         },
-        "required": ["duration_microseconds"],
+        "required": [
+          "duration_microseconds"
+        ],
         "title": "SessionMinimumDurationRuleRequest",
         "type": "object"
       },
@@ -16561,7 +17748,11 @@
             "type": "string"
           }
         },
-        "required": ["session_ref", "timing_material_state_ref", "paused"],
+        "required": [
+          "session_ref",
+          "timing_material_state_ref",
+          "paused"
+        ],
         "title": "SessionPanelExecution",
         "type": "object"
       },
@@ -16584,7 +17775,11 @@
             "type": "string"
           }
         },
-        "required": ["activity_ref", "title", "rows"],
+        "required": [
+          "activity_ref",
+          "title",
+          "rows"
+        ],
         "title": "SessionPanelGroup",
         "type": "object"
       },
@@ -16608,7 +17803,10 @@
             "type": "string"
           }
         },
-        "required": ["started_at", "ended_at"],
+        "required": [
+          "started_at",
+          "ended_at"
+        ],
         "title": "SessionPanelPauseRange",
         "type": "object"
       },
@@ -16646,7 +17844,11 @@
             "type": "array"
           }
         },
-        "required": ["evaluated_at", "next_change_at", "groups"],
+        "required": [
+          "evaluated_at",
+          "next_change_at",
+          "groups"
+        ],
         "title": "SessionPanelResponse",
         "type": "object"
       },
@@ -16691,7 +17893,11 @@
             "title": "Starts At"
           }
         },
-        "required": ["planned_schedule_ref", "name", "starts_at"],
+        "required": [
+          "planned_schedule_ref",
+          "name",
+          "starts_at"
+        ],
         "title": "SessionPanelRow",
         "type": "object"
       },
@@ -16867,7 +18073,10 @@
           "expected_requirement_code": {
             "anyOf": [
               {
-                "enum": ["required", "optional"],
+                "enum": [
+                  "required",
+                  "optional"
+                ],
                 "type": "string"
               },
               {
@@ -16891,7 +18100,10 @@
           "requirement_code": {
             "anyOf": [
               {
-                "enum": ["required", "optional"],
+                "enum": [
+                  "required",
+                  "optional"
+                ],
                 "type": "string"
               },
               {
@@ -16901,7 +18113,10 @@
             "title": "Requirement Code"
           }
         },
-        "required": ["operation_id", "participant"],
+        "required": [
+          "operation_id",
+          "participant"
+        ],
         "title": "SetExpectedParticipationRequest",
         "type": "object"
       },
@@ -16909,12 +18124,18 @@
         "additionalProperties": false,
         "properties": {
           "acceptance_path": {
-            "enum": ["direct", "confirmation_required"],
+            "enum": [
+              "direct",
+              "confirmation_required"
+            ],
             "title": "Acceptance Path",
             "type": "string"
           },
           "automatic_movement": {
-            "enum": ["blocked", "automatic"],
+            "enum": [
+              "blocked",
+              "automatic"
+            ],
             "title": "Automatic Movement",
             "type": "string"
           },
@@ -16981,7 +18202,9 @@
             "type": "string"
           }
         },
-        "required": ["operation_id"],
+        "required": [
+          "operation_id"
+        ],
         "title": "SetResponsibilityRequest",
         "type": "object"
       },
@@ -17002,7 +18225,10 @@
             "type": "string"
           }
         },
-        "required": ["email", "password"],
+        "required": [
+          "email",
+          "password"
+        ],
         "title": "SignInRequest",
         "type": "object"
       },
@@ -17108,7 +18334,10 @@
             "type": "string"
           }
         },
-        "required": ["email", "password"],
+        "required": [
+          "email",
+          "password"
+        ],
         "title": "SignupRequest",
         "type": "object"
       },
@@ -17122,7 +18351,9 @@
             "type": "string"
           }
         },
-        "required": ["signup_ref"],
+        "required": [
+          "signup_ref"
+        ],
         "title": "SignupResendRequest",
         "type": "object"
       },
@@ -17141,7 +18372,10 @@
             "type": "string"
           }
         },
-        "required": ["signup_ref", "code"],
+        "required": [
+          "signup_ref",
+          "code"
+        ],
         "title": "SignupVerificationRequest",
         "type": "object"
       },
@@ -17167,7 +18401,9 @@
             "title": "Reason"
           }
         },
-        "required": ["operation_id"],
+        "required": [
+          "operation_id"
+        ],
         "title": "SkipOccurrenceRequest",
         "type": "object"
       },
@@ -17410,7 +18646,9 @@
             "type": "string"
           }
         },
-        "required": ["operation_id"],
+        "required": [
+          "operation_id"
+        ],
         "title": "TagOperationRequest",
         "type": "object"
       },
@@ -17418,12 +18656,18 @@
         "additionalProperties": false,
         "properties": {
           "constrained_facet": {
-            "enum": ["schedule.placement", "session.active_duration"],
+            "enum": [
+              "schedule.placement",
+              "session.active_duration"
+            ],
             "title": "Constrained Facet",
             "type": "string"
           },
           "duration_kind": {
-            "enum": ["minimum", "maximum"],
+            "enum": [
+              "minimum",
+              "maximum"
+            ],
             "title": "Duration Kind",
             "type": "string"
           },
@@ -17444,7 +18688,10 @@
             "type": "string"
           },
           "strength": {
-            "enum": ["hard", "soft"],
+            "enum": [
+              "hard",
+              "soft"
+            ],
             "title": "Strength",
             "type": "string"
           }
@@ -17478,12 +18725,20 @@
             "type": "string"
           },
           "evaluation": {
-            "enum": ["satisfied", "violated", "not_evaluable"],
+            "enum": [
+              "satisfied",
+              "violated",
+              "not_evaluable"
+            ],
             "title": "Evaluation",
             "type": "string"
           },
           "family": {
-            "enum": ["boundary", "window", "duration"],
+            "enum": [
+              "boundary",
+              "window",
+              "duration"
+            ],
             "title": "Family",
             "type": "string"
           },
@@ -17501,7 +18756,10 @@
             "type": "string"
           },
           "strength": {
-            "enum": ["hard", "soft"],
+            "enum": [
+              "hard",
+              "soft"
+            ],
             "title": "Strength",
             "type": "string"
           }
@@ -17523,7 +18781,11 @@
         "additionalProperties": false,
         "properties": {
           "hard_set_status": {
-            "enum": ["feasible", "infeasible", "undetermined"],
+            "enum": [
+              "feasible",
+              "infeasible",
+              "undetermined"
+            ],
             "title": "Hard Set Status",
             "type": "string"
           },
@@ -17574,7 +18836,9 @@
             "type": "array"
           }
         },
-        "required": ["items"],
+        "required": [
+          "items"
+        ],
         "title": "TemporalConstraintListResponse",
         "type": "object"
       },
@@ -17619,12 +18883,18 @@
             "title": "Current Rule"
           },
           "status": {
-            "enum": ["active", "retired"],
+            "enum": [
+              "active",
+              "retired"
+            ],
             "title": "Status",
             "type": "string"
           },
           "subject_kind": {
-            "enum": ["activity", "event"],
+            "enum": [
+              "activity",
+              "event"
+            ],
             "title": "Subject Kind",
             "type": "string"
           },
@@ -17664,7 +18934,10 @@
             "type": "string"
           }
         },
-        "required": ["scope", "expected_fingerprint"],
+        "required": [
+          "scope",
+          "expected_fingerprint"
+        ],
         "title": "TemporalHardDeleteCommand",
         "type": "object"
       },
@@ -17692,7 +18965,11 @@
             "type": "string"
           }
         },
-        "required": ["requested_ref", "scope", "fingerprint"],
+        "required": [
+          "requested_ref",
+          "scope",
+          "fingerprint"
+        ],
         "title": "TemporalHardDeletePreview",
         "type": "object"
       },
@@ -17720,7 +18997,11 @@
             "type": "string"
           }
         },
-        "required": ["requested_ref", "scope", "deleted_rows"],
+        "required": [
+          "requested_ref",
+          "scope",
+          "deleted_rows"
+        ],
         "title": "TemporalHardDeleteResult",
         "type": "object"
       },
@@ -17736,7 +19017,11 @@
             "type": "string"
           },
           "evaluation": {
-            "enum": ["satisfied", "violated", "not_evaluable"],
+            "enum": [
+              "satisfied",
+              "violated",
+              "not_evaluable"
+            ],
             "title": "Evaluation",
             "type": "string"
           },
@@ -17745,7 +19030,10 @@
             "type": "string"
           },
           "strength": {
-            "enum": ["hard", "soft"],
+            "enum": [
+              "hard",
+              "soft"
+            ],
             "title": "Strength",
             "type": "string"
           }
@@ -17770,13 +19058,17 @@
             "type": "string"
           },
           "display_ends_local_at": {
-            "examples": ["2026-03-29T01:50:00"],
+            "examples": [
+              "2026-03-29T01:50:00"
+            ],
             "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d{1,6})?$",
             "title": "Display Ends Local At",
             "type": "string"
           },
           "display_starts_local_at": {
-            "examples": ["2026-03-29T01:50:00"],
+            "examples": [
+              "2026-03-29T01:50:00"
+            ],
             "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d{1,6})?$",
             "title": "Display Starts Local At",
             "type": "string"
@@ -17841,13 +19133,17 @@
         "description": "Current absolute Event Schedule plus request-zone projection.",
         "properties": {
           "display_ends_local_at": {
-            "examples": ["2026-03-29T01:50:00"],
+            "examples": [
+              "2026-03-29T01:50:00"
+            ],
             "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d{1,6})?$",
             "title": "Display Ends Local At",
             "type": "string"
           },
           "display_starts_local_at": {
-            "examples": ["2026-03-29T01:50:00"],
+            "examples": [
+              "2026-03-29T01:50:00"
+            ],
             "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d{1,6})?$",
             "title": "Display Starts Local At",
             "type": "string"
@@ -17911,13 +19207,17 @@
         "additionalProperties": false,
         "properties": {
           "display_ends_local_at": {
-            "examples": ["2026-03-29T01:50:00"],
+            "examples": [
+              "2026-03-29T01:50:00"
+            ],
             "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d{1,6})?$",
             "title": "Display Ends Local At",
             "type": "string"
           },
           "display_starts_local_at": {
-            "examples": ["2026-03-29T01:50:00"],
+            "examples": [
+              "2026-03-29T01:50:00"
+            ],
             "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d{1,6})?$",
             "title": "Display Starts Local At",
             "type": "string"
@@ -17952,7 +19252,11 @@
         "additionalProperties": false,
         "properties": {
           "clock_basis_code": {
-            "enum": ["floating_local", "named_zone", "absolute_utc"],
+            "enum": [
+              "floating_local",
+              "named_zone",
+              "absolute_utc"
+            ],
             "title": "Clock Basis Code",
             "type": "string"
           },
@@ -18034,7 +19338,11 @@
             "type": "string"
           },
           "period": {
-            "enum": ["morning", "afternoon", "evening"],
+            "enum": [
+              "morning",
+              "afternoon",
+              "evening"
+            ],
             "title": "Period",
             "type": "string"
           },
@@ -18096,7 +19404,11 @@
             "type": "string"
           },
           "period": {
-            "enum": ["morning", "afternoon", "evening"],
+            "enum": [
+              "morning",
+              "afternoon",
+              "evening"
+            ],
             "title": "Period",
             "type": "string"
           },
@@ -18141,7 +19453,11 @@
             "type": "string"
           },
           "period": {
-            "enum": ["morning", "afternoon", "evening"],
+            "enum": [
+              "morning",
+              "afternoon",
+              "evening"
+            ],
             "title": "Period",
             "type": "string"
           },
@@ -18152,7 +19468,10 @@
             "type": "string"
           }
         },
-        "required": ["local_date", "period"],
+        "required": [
+          "local_date",
+          "period"
+        ],
         "title": "TimelineCoarseOccurrencePlacementResponse",
         "type": "object"
       },
@@ -18176,7 +19495,10 @@
             "type": "integer"
           }
         },
-        "required": ["generated_date", "position_index"],
+        "required": [
+          "generated_date",
+          "position_index"
+        ],
         "title": "TimelineCyclicOccurrenceCoordinateResponse",
         "type": "object"
       },
@@ -18319,7 +19641,10 @@
             "type": "string"
           }
         },
-        "required": ["start_date", "end_date_exclusive"],
+        "required": [
+          "start_date",
+          "end_date_exclusive"
+        ],
         "title": "TimelineDateSpanOccurrencePlacementResponse",
         "type": "object"
       },
@@ -18338,7 +19663,9 @@
             "type": "string"
           }
         },
-        "required": ["expected_at"],
+        "required": [
+          "expected_at"
+        ],
         "title": "TimelineElapsedOccurrenceCoordinateResponse",
         "type": "object"
       },
@@ -18383,7 +19710,10 @@
             "type": "string"
           },
           "source_kind": {
-            "enum": ["routine", "event"],
+            "enum": [
+              "routine",
+              "event"
+            ],
             "title": "Source Kind",
             "type": "string"
           },
@@ -18411,13 +19741,17 @@
         "additionalProperties": false,
         "properties": {
           "ends_local_at": {
-            "examples": ["2026-03-29T01:50:00"],
+            "examples": [
+              "2026-03-29T01:50:00"
+            ],
             "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d{1,6})?$",
             "title": "Ends Local At",
             "type": "string"
           },
           "starts_local_at": {
-            "examples": ["2026-03-29T01:50:00"],
+            "examples": [
+              "2026-03-29T01:50:00"
+            ],
             "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d{1,6})?$",
             "title": "Starts Local At",
             "type": "string"
@@ -18429,7 +19763,10 @@
             "type": "string"
           }
         },
-        "required": ["starts_local_at", "ends_local_at"],
+        "required": [
+          "starts_local_at",
+          "ends_local_at"
+        ],
         "title": "TimelineFloatingOccurrencePlacementResponse",
         "type": "object"
       },
@@ -18443,19 +19780,25 @@
             "type": "string"
           },
           "display_ends_local_at": {
-            "examples": ["2026-03-29T01:50:00"],
+            "examples": [
+              "2026-03-29T01:50:00"
+            ],
             "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d{1,6})?$",
             "title": "Display Ends Local At",
             "type": "string"
           },
           "display_starts_local_at": {
-            "examples": ["2026-03-29T01:50:00"],
+            "examples": [
+              "2026-03-29T01:50:00"
+            ],
             "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d{1,6})?$",
             "title": "Display Starts Local At",
             "type": "string"
           },
           "ends_local_at": {
-            "examples": ["2026-03-29T01:50:00"],
+            "examples": [
+              "2026-03-29T01:50:00"
+            ],
             "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d{1,6})?$",
             "title": "Ends Local At",
             "type": "string"
@@ -18492,7 +19835,9 @@
             "type": "string"
           },
           "starts_local_at": {
-            "examples": ["2026-03-29T01:50:00"],
+            "examples": [
+              "2026-03-29T01:50:00"
+            ],
             "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d{1,6})?$",
             "title": "Starts Local At",
             "type": "string"
@@ -18533,19 +19878,25 @@
         "description": "Current named-zone Event intent and viewing projection.",
         "properties": {
           "display_ends_local_at": {
-            "examples": ["2026-03-29T01:50:00"],
+            "examples": [
+              "2026-03-29T01:50:00"
+            ],
             "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d{1,6})?$",
             "title": "Display Ends Local At",
             "type": "string"
           },
           "display_starts_local_at": {
-            "examples": ["2026-03-29T01:50:00"],
+            "examples": [
+              "2026-03-29T01:50:00"
+            ],
             "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d{1,6})?$",
             "title": "Display Starts Local At",
             "type": "string"
           },
           "ends_local_at": {
-            "examples": ["2026-03-29T01:50:00"],
+            "examples": [
+              "2026-03-29T01:50:00"
+            ],
             "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d{1,6})?$",
             "title": "Ends Local At",
             "type": "string"
@@ -18582,7 +19933,9 @@
             "type": "string"
           },
           "starts_local_at": {
-            "examples": ["2026-03-29T01:50:00"],
+            "examples": [
+              "2026-03-29T01:50:00"
+            ],
             "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d{1,6})?$",
             "title": "Starts Local At",
             "type": "string"
@@ -18622,19 +19975,25 @@
         "additionalProperties": false,
         "properties": {
           "display_ends_local_at": {
-            "examples": ["2026-03-29T01:50:00"],
+            "examples": [
+              "2026-03-29T01:50:00"
+            ],
             "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d{1,6})?$",
             "title": "Display Ends Local At",
             "type": "string"
           },
           "display_starts_local_at": {
-            "examples": ["2026-03-29T01:50:00"],
+            "examples": [
+              "2026-03-29T01:50:00"
+            ],
             "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d{1,6})?$",
             "title": "Display Starts Local At",
             "type": "string"
           },
           "ends_local_at": {
-            "examples": ["2026-03-29T01:50:00"],
+            "examples": [
+              "2026-03-29T01:50:00"
+            ],
             "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d{1,6})?$",
             "title": "Ends Local At",
             "type": "string"
@@ -18650,7 +20009,9 @@
             "type": "string"
           },
           "starts_local_at": {
-            "examples": ["2026-03-29T01:50:00"],
+            "examples": [
+              "2026-03-29T01:50:00"
+            ],
             "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d{1,6})?$",
             "title": "Starts Local At",
             "type": "string"
@@ -18688,7 +20049,11 @@
             "type": "string"
           },
           "frame_code": {
-            "enum": ["floating_local", "named_zone", "absolute_utc"],
+            "enum": [
+              "floating_local",
+              "named_zone",
+              "absolute_utc"
+            ],
             "title": "Frame Code",
             "type": "string"
           },
@@ -18733,7 +20098,9 @@
             "type": "string"
           },
           "ends_local_at": {
-            "examples": ["2026-03-29T01:50:00"],
+            "examples": [
+              "2026-03-29T01:50:00"
+            ],
             "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d{1,6})?$",
             "title": "Ends Local At",
             "type": "string"
@@ -18760,7 +20127,9 @@
             "type": "string"
           },
           "starts_local_at": {
-            "examples": ["2026-03-29T01:50:00"],
+            "examples": [
+              "2026-03-29T01:50:00"
+            ],
             "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d{1,6})?$",
             "title": "Starts Local At",
             "type": "string"
@@ -18792,7 +20161,9 @@
         "description": "Current accepted floating-local Schedule projection for one Event.",
         "properties": {
           "ends_local_at": {
-            "examples": ["2026-03-29T01:50:00"],
+            "examples": [
+              "2026-03-29T01:50:00"
+            ],
             "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d{1,6})?$",
             "title": "Ends Local At",
             "type": "string"
@@ -18819,7 +20190,9 @@
             "type": "string"
           },
           "starts_local_at": {
-            "examples": ["2026-03-29T01:50:00"],
+            "examples": [
+              "2026-03-29T01:50:00"
+            ],
             "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d{1,6})?$",
             "title": "Starts Local At",
             "type": "string"
@@ -18934,7 +20307,10 @@
             "type": "string"
           },
           "source_kind": {
-            "enum": ["routine", "event"],
+            "enum": [
+              "routine",
+              "event"
+            ],
             "title": "Source Kind",
             "type": "string"
           },
@@ -18986,7 +20362,11 @@
             "type": "string"
           }
         },
-        "required": ["start_date", "end_date_exclusive", "effective_zone_id"],
+        "required": [
+          "start_date",
+          "end_date_exclusive",
+          "effective_zone_id"
+        ],
         "title": "TimelineWindowEmptyResponse",
         "type": "object"
       },
@@ -19116,7 +20496,10 @@
             "type": "string"
           },
           "subject_kind": {
-            "enum": ["activity", "event"],
+            "enum": [
+              "activity",
+              "event"
+            ],
             "title": "Subject Kind",
             "type": "string"
           },
@@ -19150,7 +20533,9 @@
             "type": "boolean"
           }
         },
-        "required": ["authenticated"],
+        "required": [
+          "authenticated"
+        ],
         "title": "UnauthenticatedSessionResponse",
         "type": "object"
       },
@@ -19171,7 +20556,10 @@
             "type": "string"
           }
         },
-        "required": ["operation_id", "unschedule_operation_id"],
+        "required": [
+          "operation_id",
+          "unschedule_operation_id"
+        ],
         "title": "UndoScheduleUnscheduleRequest",
         "type": "object"
       },
@@ -19193,7 +20581,9 @@
             "type": "string"
           }
         },
-        "required": ["items"],
+        "required": [
+          "items"
+        ],
         "title": "UnplacedActivitiesResponse",
         "type": "object"
       },
@@ -19213,7 +20603,10 @@
             "type": "string"
           }
         },
-        "required": ["operation_id", "expected_placement_material_state_ref"],
+        "required": [
+          "operation_id",
+          "expected_placement_material_state_ref"
+        ],
         "title": "UnscheduleScheduleRequest",
         "type": "object"
       },
@@ -19281,7 +20674,11 @@
             "type": "string"
           }
         },
-        "required": ["loc", "msg", "type"],
+        "required": [
+          "loc",
+          "msg",
+          "type"
+        ],
         "title": "ValidationError",
         "type": "object"
       },
@@ -19304,7 +20701,11 @@
             "type": "string"
           }
         },
-        "required": ["operation_id", "expected_revision", "hidden"],
+        "required": [
+          "operation_id",
+          "expected_revision",
+          "hidden"
+        ],
         "title": "VisibilityLifeAreaRequest",
         "type": "object"
       },
@@ -19328,7 +20729,10 @@
             "type": "string"
           }
         },
-        "required": ["starts_at", "ends_at"],
+        "required": [
+          "starts_at",
+          "ends_at"
+        ],
         "title": "AbsoluteIntervalPlacementRequest",
         "type": "object"
       },
@@ -19352,7 +20756,10 @@
             "type": "string"
           }
         },
-        "required": ["starts_at", "ends_at"],
+        "required": [
+          "starts_at",
+          "ends_at"
+        ],
         "title": "AbsoluteIntervalPlacementRequest",
         "type": "object"
       }
@@ -19662,7 +21069,9 @@
           }
         ],
         "summary": "Begin Apple Authentication",
-        "tags": ["auth"],
+        "tags": [
+          "auth"
+        ],
         "x-dante-browser-security": {
           "client_header": {
             "name": "X-Dante-Client",
@@ -19722,7 +21131,9 @@
                     "type": "string"
                   }
                 },
-                "required": ["state"],
+                "required": [
+                  "state"
+                ],
                 "type": "object"
               }
             }
@@ -19998,7 +21409,9 @@
           }
         },
         "summary": "Handle Apple Callback",
-        "tags": ["auth"],
+        "tags": [
+          "auth"
+        ],
         "x-dante-external-ingress": {
           "authority": "server-side state verifier and provider proof",
           "browser_proof_exception": true,
@@ -20271,7 +21684,9 @@
           }
         },
         "summary": "Process Apple Notification",
-        "tags": ["auth"],
+        "tags": [
+          "auth"
+        ],
         "x-dante-external-ingress": {
           "authority": "Apple-signed notification JWS verification",
           "browser_proof_exception": true,
@@ -20557,7 +21972,9 @@
           }
         ],
         "summary": "Begin Google Authentication",
-        "tags": ["auth"],
+        "tags": [
+          "auth"
+        ],
         "x-dante-browser-security": {
           "client_header": {
             "name": "X-Dante-Client",
@@ -20875,7 +22292,9 @@
           }
         },
         "summary": "Complete Google Authentication",
-        "tags": ["auth"],
+        "tags": [
+          "auth"
+        ],
         "x-dante-browser-security": {
           "client_header": {
             "name": "X-Dante-Client",
@@ -21170,7 +22589,9 @@
           }
         ],
         "summary": "Get Authentication Methods",
-        "tags": ["auth"]
+        "tags": [
+          "auth"
+        ]
       }
     },
     "/api/v1/auth/passkeys/authentication/begin": {
@@ -21445,7 +22866,9 @@
           }
         },
         "summary": "Begin Passkey Authentication",
-        "tags": ["auth"],
+        "tags": [
+          "auth"
+        ],
         "x-dante-browser-security": {
           "client_header": {
             "name": "X-Dante-Client",
@@ -21744,7 +23167,9 @@
           }
         },
         "summary": "Complete Passkey Authentication",
-        "tags": ["auth"],
+        "tags": [
+          "auth"
+        ],
         "x-dante-browser-security": {
           "client_header": {
             "name": "X-Dante-Client",
@@ -22042,7 +23467,9 @@
           }
         ],
         "summary": "Begin Passkey Reauthentication",
-        "tags": ["auth"],
+        "tags": [
+          "auth"
+        ],
         "x-dante-browser-security": {
           "client_header": {
             "name": "X-Dante-Client",
@@ -22351,7 +23778,9 @@
           }
         ],
         "summary": "Complete Passkey Reauthentication",
-        "tags": ["auth"],
+        "tags": [
+          "auth"
+        ],
         "x-dante-browser-security": {
           "client_header": {
             "name": "X-Dante-Client",
@@ -22654,7 +24083,9 @@
           }
         ],
         "summary": "Begin Passkey Registration",
-        "tags": ["auth"],
+        "tags": [
+          "auth"
+        ],
         "x-dante-browser-security": {
           "client_header": {
             "name": "X-Dante-Client",
@@ -22963,7 +24394,9 @@
           }
         ],
         "summary": "Complete Passkey Registration",
-        "tags": ["auth"],
+        "tags": [
+          "auth"
+        ],
         "x-dante-browser-security": {
           "client_header": {
             "name": "X-Dante-Client",
@@ -23274,7 +24707,9 @@
           }
         ],
         "summary": "Remove Passkey",
-        "tags": ["auth"],
+        "tags": [
+          "auth"
+        ],
         "x-dante-browser-security": {
           "client_header": {
             "name": "X-Dante-Client",
@@ -23580,7 +25015,9 @@
           }
         ],
         "summary": "Update Passkey",
-        "tags": ["auth"],
+        "tags": [
+          "auth"
+        ],
         "x-dante-browser-security": {
           "client_header": {
             "name": "X-Dante-Client",
@@ -23880,7 +25317,9 @@
           }
         ],
         "summary": "Remove Password",
-        "tags": ["auth"],
+        "tags": [
+          "auth"
+        ],
         "x-dante-browser-security": {
           "client_header": {
             "name": "X-Dante-Client",
@@ -24190,7 +25629,9 @@
           }
         ],
         "summary": "Establish Password",
-        "tags": ["auth"],
+        "tags": [
+          "auth"
+        ],
         "x-dante-browser-security": {
           "client_header": {
             "name": "X-Dante-Client",
@@ -24483,7 +25924,9 @@
           }
         ],
         "summary": "Get Provider Enrollment",
-        "tags": ["auth"]
+        "tags": [
+          "auth"
+        ]
       }
     },
     "/api/v1/auth/provider-enrollment/email": {
@@ -24769,7 +26212,9 @@
           }
         ],
         "summary": "Set Provider Enrollment Email",
-        "tags": ["auth"],
+        "tags": [
+          "auth"
+        ],
         "x-dante-browser-security": {
           "client_header": {
             "name": "X-Dante-Client",
@@ -25073,7 +26518,9 @@
           }
         ],
         "summary": "Resend Provider Enrollment Verification",
-        "tags": ["auth"],
+        "tags": [
+          "auth"
+        ],
         "x-dante-browser-security": {
           "client_header": {
             "name": "X-Dante-Client",
@@ -25385,7 +26832,9 @@
           }
         ],
         "summary": "Verify Provider Enrollment",
-        "tags": ["auth"],
+        "tags": [
+          "auth"
+        ],
         "x-dante-browser-security": {
           "client_header": {
             "name": "X-Dante-Client",
@@ -25673,7 +27122,9 @@
           }
         ],
         "summary": "Get Provider Link",
-        "tags": ["auth"]
+        "tags": [
+          "auth"
+        ]
       }
     },
     "/api/v1/auth/provider-link/confirm": {
@@ -25960,7 +27411,9 @@
           }
         ],
         "summary": "Confirm Provider Link",
-        "tags": ["auth"],
+        "tags": [
+          "auth"
+        ],
         "x-dante-browser-security": {
           "client_header": {
             "name": "X-Dante-Client",
@@ -26271,7 +27724,9 @@
           }
         ],
         "summary": "Unlink Provider",
-        "tags": ["auth"],
+        "tags": [
+          "auth"
+        ],
         "x-dante-browser-security": {
           "client_header": {
             "name": "X-Dante-Client",
@@ -26531,7 +27986,9 @@
           }
         ],
         "summary": "Reauthenticate",
-        "tags": ["auth"],
+        "tags": [
+          "auth"
+        ],
         "x-dante-browser-security": {
           "client_header": {
             "name": "X-Dante-Client",
@@ -26780,7 +28237,9 @@
           }
         },
         "summary": "Request Password Recovery",
-        "tags": ["auth"],
+        "tags": [
+          "auth"
+        ],
         "x-dante-browser-security": {
           "client_header": {
             "name": "X-Dante-Client",
@@ -27024,7 +28483,9 @@
           }
         },
         "summary": "Validate Password Recovery",
-        "tags": ["auth"],
+        "tags": [
+          "auth"
+        ],
         "x-dante-browser-security": {
           "client_header": {
             "name": "X-Dante-Client",
@@ -27267,7 +28728,9 @@
           }
         },
         "summary": "Reset Password",
-        "tags": ["auth"],
+        "tags": [
+          "auth"
+        ],
         "x-dante-browser-security": {
           "client_header": {
             "name": "X-Dante-Client",
@@ -27400,7 +28863,9 @@
           }
         ],
         "summary": "Log Out",
-        "tags": ["auth"],
+        "tags": [
+          "auth"
+        ],
         "x-dante-browser-security": {
           "client_header": {
             "name": "X-Dante-Client",
@@ -27526,7 +28991,9 @@
           }
         ],
         "summary": "Get Session",
-        "tags": ["auth"]
+        "tags": [
+          "auth"
+        ]
       }
     },
     "/api/v1/auth/signin": {
@@ -27758,7 +29225,9 @@
           }
         },
         "summary": "Sign In",
-        "tags": ["auth"],
+        "tags": [
+          "auth"
+        ],
         "x-dante-browser-security": {
           "client_header": {
             "name": "X-Dante-Client",
@@ -28002,7 +29471,9 @@
           }
         },
         "summary": "Begin Signup",
-        "tags": ["auth"],
+        "tags": [
+          "auth"
+        ],
         "x-dante-browser-security": {
           "client_header": {
             "name": "X-Dante-Client",
@@ -28246,7 +29717,9 @@
           }
         },
         "summary": "Resend Signup Verification",
-        "tags": ["auth"],
+        "tags": [
+          "auth"
+        ],
         "x-dante-browser-security": {
           "client_header": {
             "name": "X-Dante-Client",
@@ -28504,7 +29977,9 @@
           }
         },
         "summary": "Verify Signup",
-        "tags": ["auth"],
+        "tags": [
+          "auth"
+        ],
         "x-dante-browser-security": {
           "client_header": {
             "name": "X-Dante-Client",
@@ -28561,7 +30036,9 @@
           }
         },
         "summary": "Create Activity",
-        "tags": ["temporal"]
+        "tags": [
+          "temporal"
+        ]
       }
     },
     "/api/v1/temporal/activities/constrained": {
@@ -28601,7 +30078,9 @@
           }
         },
         "summary": "Temporal Create Constrained Activity",
-        "tags": ["temporal"]
+        "tags": [
+          "temporal"
+        ]
       }
     },
     "/api/v1/temporal/activities/scheduled": {
@@ -28667,7 +30146,9 @@
           }
         },
         "summary": "Create Scheduled Activity",
-        "tags": ["temporal"]
+        "tags": [
+          "temporal"
+        ]
       }
     },
     "/api/v1/temporal/activities/unplaced": {
@@ -28686,7 +30167,9 @@
           }
         },
         "summary": "List Unplaced Activities",
-        "tags": ["temporal"]
+        "tags": [
+          "temporal"
+        ]
       }
     },
     "/api/v1/temporal/activities/{activity_ref}": {
@@ -28737,7 +30220,9 @@
           }
         },
         "summary": "Delete Self Activity Hard",
-        "tags": ["temporal"]
+        "tags": [
+          "temporal"
+        ]
       },
       "get": {
         "operationId": "get_activity_api_v1_temporal_activities__activity_ref__get",
@@ -28776,7 +30261,9 @@
           }
         },
         "summary": "Get Activity",
-        "tags": ["temporal"]
+        "tags": [
+          "temporal"
+        ]
       }
     },
     "/api/v1/temporal/activities/{activity_ref}/actual": {
@@ -28817,7 +30304,9 @@
           }
         },
         "summary": "Get Activity Actual",
-        "tags": ["temporal"]
+        "tags": [
+          "temporal"
+        ]
       },
       "post": {
         "operationId": "temporal_record_activity_actual",
@@ -28866,7 +30355,9 @@
           }
         },
         "summary": "Record Activity Actual",
-        "tags": ["temporal"]
+        "tags": [
+          "temporal"
+        ]
       }
     },
     "/api/v1/temporal/activities/{activity_ref}/atomic-edit": {
@@ -28918,7 +30409,9 @@
           }
         },
         "summary": "Apply Activity Atomic Edit",
-        "tags": ["temporal"]
+        "tags": [
+          "temporal"
+        ]
       }
     },
     "/api/v1/temporal/activities/{activity_ref}/child-guard-policy": {
@@ -28959,7 +30452,9 @@
           }
         },
         "summary": "Get Decomposition Policy",
-        "tags": ["temporal"]
+        "tags": [
+          "temporal"
+        ]
       },
       "post": {
         "operationId": "temporal_set_activity_decomposition_policy",
@@ -29008,7 +30503,9 @@
           }
         },
         "summary": "Set Decomposition Policy",
-        "tags": ["temporal"]
+        "tags": [
+          "temporal"
+        ]
       }
     },
     "/api/v1/temporal/activities/{activity_ref}/core-edit": {
@@ -29060,7 +30557,9 @@
           }
         },
         "summary": "Revise Activity Core",
-        "tags": ["temporal"]
+        "tags": [
+          "temporal"
+        ]
       }
     },
     "/api/v1/temporal/activities/{activity_ref}/edit-snapshot": {
@@ -29101,7 +30600,9 @@
           }
         },
         "summary": "Get Activity Edit Snapshot",
-        "tags": ["temporal"]
+        "tags": [
+          "temporal"
+        ]
       }
     },
     "/api/v1/temporal/activities/{activity_ref}/execution-policy": {
@@ -29142,7 +30643,9 @@
           }
         },
         "summary": "Get Execution Policy",
-        "tags": ["temporal"]
+        "tags": [
+          "temporal"
+        ]
       },
       "post": {
         "operationId": "temporal_set_activity_execution_policy",
@@ -29191,7 +30694,9 @@
           }
         },
         "summary": "Set Execution Policy",
-        "tags": ["temporal"]
+        "tags": [
+          "temporal"
+        ]
       }
     },
     "/api/v1/temporal/activities/{activity_ref}/outcome-review-policy": {
@@ -29232,7 +30737,9 @@
           }
         },
         "summary": "Get Outcome Review Policy",
-        "tags": ["temporal"]
+        "tags": [
+          "temporal"
+        ]
       },
       "post": {
         "operationId": "temporal_set_activity_outcome_review_policy",
@@ -29281,7 +30788,9 @@
           }
         },
         "summary": "Set Outcome Review Policy",
-        "tags": ["temporal"]
+        "tags": [
+          "temporal"
+        ]
       }
     },
     "/api/v1/temporal/activities/{activity_ref}/planned-sessions/{schedule_ref}/name": {
@@ -29342,7 +30851,9 @@
           }
         },
         "summary": "Revise Self Planned Session Name",
-        "tags": ["temporal"]
+        "tags": [
+          "temporal"
+        ]
       }
     },
     "/api/v1/temporal/activities/{activity_ref}/planned-sessions/{schedule_ref}/sessions": {
@@ -29403,7 +30914,9 @@
           }
         },
         "summary": "Start Planned Activity Session",
-        "tags": ["temporal"]
+        "tags": [
+          "temporal"
+        ]
       }
     },
     "/api/v1/temporal/activities/{activity_ref}/profile": {
@@ -29444,7 +30957,9 @@
           }
         },
         "summary": "Get Self Activity Profile",
-        "tags": ["temporal"]
+        "tags": [
+          "temporal"
+        ]
       },
       "put": {
         "operationId": "temporal_revise_self_activity_profile",
@@ -29493,7 +31008,9 @@
           }
         },
         "summary": "Revise Self Activity Profile",
-        "tags": ["temporal"]
+        "tags": [
+          "temporal"
+        ]
       }
     },
     "/api/v1/temporal/activities/{activity_ref}/recurrence-origin": {
@@ -29534,7 +31051,9 @@
           }
         },
         "summary": "Get Materialized Activity Occurrence",
-        "tags": ["temporal"]
+        "tags": [
+          "temporal"
+        ]
       }
     },
     "/api/v1/temporal/activities/{activity_ref}/replan": {
@@ -29585,7 +31104,9 @@
           }
         },
         "summary": "Apply Activity Replan",
-        "tags": ["temporal"]
+        "tags": [
+          "temporal"
+        ]
       }
     },
     "/api/v1/temporal/activities/{activity_ref}/replan-preview": {
@@ -29636,7 +31157,9 @@
           }
         },
         "summary": "Preview Activity Replan",
-        "tags": ["temporal"]
+        "tags": [
+          "temporal"
+        ]
       }
     },
     "/api/v1/temporal/activities/{activity_ref}/responsibility": {
@@ -29677,7 +31200,9 @@
           }
         },
         "summary": "Get Activity Responsibility",
-        "tags": ["temporal"]
+        "tags": [
+          "temporal"
+        ]
       },
       "put": {
         "operationId": "temporal_set_activity_responsibility",
@@ -29726,7 +31251,9 @@
           }
         },
         "summary": "Set Activity Responsibility",
-        "tags": ["temporal"]
+        "tags": [
+          "temporal"
+        ]
       }
     },
     "/api/v1/temporal/activities/{activity_ref}/retire": {
@@ -29777,7 +31304,9 @@
           }
         },
         "summary": "Retire Self Activity",
-        "tags": ["temporal"]
+        "tags": [
+          "temporal"
+        ]
       }
     },
     "/api/v1/temporal/activities/{activity_ref}/schedule": {
@@ -29855,7 +31384,9 @@
           }
         },
         "summary": "Establish Activity Schedule",
-        "tags": ["temporal"]
+        "tags": [
+          "temporal"
+        ]
       }
     },
     "/api/v1/temporal/activities/{activity_ref}/session-attempts/{session_ref}": {
@@ -29910,7 +31441,9 @@
           }
         },
         "summary": "Delete Self Activity Session Attempt",
-        "tags": ["temporal"]
+        "tags": [
+          "temporal"
+        ]
       }
     },
     "/api/v1/temporal/activities/{activity_ref}/session-impact": {
@@ -29952,7 +31485,9 @@
           }
         },
         "summary": "Get Self Activity Session Impact",
-        "tags": ["temporal"]
+        "tags": [
+          "temporal"
+        ]
       }
     },
     "/api/v1/temporal/activities/{activity_ref}/sessions": {
@@ -29997,7 +31532,9 @@
           }
         },
         "summary": "List Activity Sessions",
-        "tags": ["temporal"]
+        "tags": [
+          "temporal"
+        ]
       },
       "post": {
         "operationId": "temporal_start_activity_session",
@@ -30046,7 +31583,9 @@
           }
         },
         "summary": "Start Activity Session",
-        "tags": ["temporal"]
+        "tags": [
+          "temporal"
+        ]
       }
     },
     "/api/v1/temporal/activities/{activity_ref}/sessions/manual": {
@@ -30097,7 +31636,9 @@
           }
         },
         "summary": "Record Manual Activity Session",
-        "tags": ["temporal"]
+        "tags": [
+          "temporal"
+        ]
       }
     },
     "/api/v1/temporal/activities/{activity_ref}/tags/{tag_ref}/attach": {
@@ -30158,7 +31699,9 @@
           }
         },
         "summary": "Attach Activity Tag",
-        "tags": ["temporal"]
+        "tags": [
+          "temporal"
+        ]
       }
     },
     "/api/v1/temporal/activities/{activity_ref}/tags/{tag_ref}/detach": {
@@ -30219,7 +31762,9 @@
           }
         },
         "summary": "Detach Activity Tag",
-        "tags": ["temporal"]
+        "tags": [
+          "temporal"
+        ]
       }
     },
     "/api/v1/temporal/activities/{parent_activity_ref}/children": {
@@ -30260,7 +31805,9 @@
           }
         },
         "summary": "Get Activity Children",
-        "tags": ["temporal"]
+        "tags": [
+          "temporal"
+        ]
       }
     },
     "/api/v1/temporal/activities/{parent_activity_ref}/children/{child_activity_ref}": {
@@ -30321,7 +31868,9 @@
           }
         },
         "summary": "Set Activity Child",
-        "tags": ["temporal"]
+        "tags": [
+          "temporal"
+        ]
       }
     },
     "/api/v1/temporal/activities/{subject_ref}/objective-edits": {
@@ -30377,7 +31926,9 @@
           }
         },
         "summary": "Apply Activity Objective Edits",
-        "tags": ["temporal"]
+        "tags": [
+          "temporal"
+        ]
       }
     },
     "/api/v1/temporal/activities/{subject_ref}/objectives": {
@@ -30422,7 +31973,9 @@
           }
         },
         "summary": "List Activity Objectives",
-        "tags": ["temporal"]
+        "tags": [
+          "temporal"
+        ]
       },
       "post": {
         "operationId": "temporal_create_activity_objective",
@@ -30471,7 +32024,9 @@
           }
         },
         "summary": "Create Activity Objective",
-        "tags": ["temporal"]
+        "tags": [
+          "temporal"
+        ]
       }
     },
     "/api/v1/temporal/activities/{subject_ref}/reality-policy": {
@@ -30512,7 +32067,9 @@
           }
         },
         "summary": "Get Activity Reality Policy",
-        "tags": ["temporal"]
+        "tags": [
+          "temporal"
+        ]
       },
       "post": {
         "operationId": "temporal_set_activity_reality_policy",
@@ -30561,7 +32118,9 @@
           }
         },
         "summary": "Set Activity Reality Policy",
-        "tags": ["temporal"]
+        "tags": [
+          "temporal"
+        ]
       }
     },
     "/api/v1/temporal/actuals/{actual_ref}/history": {
@@ -30606,7 +32165,9 @@
           }
         },
         "summary": "List Actual History",
-        "tags": ["temporal"]
+        "tags": [
+          "temporal"
+        ]
       }
     },
     "/api/v1/temporal/actuals/{actual_ref}/outcome": {
@@ -30647,7 +32208,9 @@
           }
         },
         "summary": "Get Actual Outcome",
-        "tags": ["temporal"]
+        "tags": [
+          "temporal"
+        ]
       },
       "post": {
         "operationId": "temporal_record_actual_outcome",
@@ -30696,7 +32259,9 @@
           }
         },
         "summary": "Record Actual Outcome",
-        "tags": ["temporal"]
+        "tags": [
+          "temporal"
+        ]
       }
     },
     "/api/v1/temporal/authoring/activities": {
@@ -30735,7 +32300,9 @@
           }
         },
         "summary": "Author Activity",
-        "tags": ["temporal"]
+        "tags": [
+          "temporal"
+        ]
       }
     },
     "/api/v1/temporal/authoring/events": {
@@ -30774,7 +32341,9 @@
           }
         },
         "summary": "Author Event",
-        "tags": ["temporal"]
+        "tags": [
+          "temporal"
+        ]
       }
     },
     "/api/v1/temporal/conditions/actual-realization": {
@@ -30786,7 +32355,11 @@
             "name": "subject_kind",
             "required": true,
             "schema": {
-              "enum": ["activity", "event", "occurrence"],
+              "enum": [
+                "activity",
+                "event",
+                "occurrence"
+              ],
               "title": "Subject Kind",
               "type": "string"
             }
@@ -30845,7 +32418,9 @@
           }
         },
         "summary": "Find Actual Realization Condition",
-        "tags": ["temporal"]
+        "tags": [
+          "temporal"
+        ]
       },
       "post": {
         "operationId": "temporal_create_actual_realization_condition",
@@ -30952,7 +32527,9 @@
           }
         },
         "summary": "Create Actual Realization Condition",
-        "tags": ["temporal"]
+        "tags": [
+          "temporal"
+        ]
       }
     },
     "/api/v1/temporal/conditions/actual-realization/{condition_ref}": {
@@ -31013,7 +32590,9 @@
           }
         },
         "summary": "Get Actual Realization Condition",
-        "tags": ["temporal"]
+        "tags": [
+          "temporal"
+        ]
       }
     },
     "/api/v1/temporal/conditions/actual-realization/{condition_ref}/evaluations": {
@@ -31134,7 +32713,9 @@
           }
         },
         "summary": "Evaluate Actual Realization Condition",
-        "tags": ["temporal"]
+        "tags": [
+          "temporal"
+        ]
       }
     },
     "/api/v1/temporal/confirmations/{confirmation_ref}/history": {
@@ -31179,7 +32760,9 @@
           }
         },
         "summary": "List Confirmation History",
-        "tags": ["temporal"]
+        "tags": [
+          "temporal"
+        ]
       }
     },
     "/api/v1/temporal/constraints": {
@@ -31220,7 +32803,9 @@
           }
         },
         "summary": "List Temporal Constraints By Subject",
-        "tags": ["temporal"]
+        "tags": [
+          "temporal"
+        ]
       },
       "post": {
         "operationId": "temporal_create_constraint",
@@ -31257,7 +32842,9 @@
           }
         },
         "summary": "Create Temporal Constraint",
-        "tags": ["temporal"]
+        "tags": [
+          "temporal"
+        ]
       }
     },
     "/api/v1/temporal/constraints/evaluate": {
@@ -31296,7 +32883,9 @@
           }
         },
         "summary": "Evaluate Temporal Constraints",
-        "tags": ["temporal"]
+        "tags": [
+          "temporal"
+        ]
       }
     },
     "/api/v1/temporal/constraints/{constraint_ref}": {
@@ -31337,7 +32926,9 @@
           }
         },
         "summary": "Get Temporal Constraint",
-        "tags": ["temporal"]
+        "tags": [
+          "temporal"
+        ]
       }
     },
     "/api/v1/temporal/constraints/{constraint_ref}/retire": {
@@ -31388,7 +32979,9 @@
           }
         },
         "summary": "Retire Temporal Constraint",
-        "tags": ["temporal"]
+        "tags": [
+          "temporal"
+        ]
       }
     },
     "/api/v1/temporal/constraints/{constraint_ref}/rule": {
@@ -31439,7 +33032,9 @@
           }
         },
         "summary": "Revise Temporal Constraint Rule",
-        "tags": ["temporal"]
+        "tags": [
+          "temporal"
+        ]
       }
     },
     "/api/v1/temporal/drafts": {
@@ -31462,7 +33057,9 @@
           }
         },
         "summary": "List Drafts",
-        "tags": ["temporal"]
+        "tags": [
+          "temporal"
+        ]
       }
     },
     "/api/v1/temporal/drafts/{draft_ref}": {
@@ -31505,7 +33102,9 @@
           }
         },
         "summary": "Delete Draft",
-        "tags": ["temporal"]
+        "tags": [
+          "temporal"
+        ]
       },
       "put": {
         "operationId": "temporal_save_draft",
@@ -31554,7 +33153,9 @@
           }
         },
         "summary": "Save Draft",
-        "tags": ["temporal"]
+        "tags": [
+          "temporal"
+        ]
       }
     },
     "/api/v1/temporal/events": {
@@ -31593,7 +33194,9 @@
           }
         },
         "summary": "Create Event",
-        "tags": ["temporal"]
+        "tags": [
+          "temporal"
+        ]
       }
     },
     "/api/v1/temporal/events/postponed": {
@@ -31616,7 +33219,9 @@
           }
         },
         "summary": "List Postponed Events",
-        "tags": ["temporal"]
+        "tags": [
+          "temporal"
+        ]
       }
     },
     "/api/v1/temporal/events/scheduled": {
@@ -31682,7 +33287,9 @@
           }
         },
         "summary": "Create Scheduled Event",
-        "tags": ["temporal"]
+        "tags": [
+          "temporal"
+        ]
       }
     },
     "/api/v1/temporal/events/{event_ref}": {
@@ -31723,7 +33330,9 @@
           }
         },
         "summary": "Get Event",
-        "tags": ["temporal"]
+        "tags": [
+          "temporal"
+        ]
       }
     },
     "/api/v1/temporal/events/{event_ref}/actual": {
@@ -31764,7 +33373,9 @@
           }
         },
         "summary": "Get Event Actual",
-        "tags": ["temporal"]
+        "tags": [
+          "temporal"
+        ]
       },
       "post": {
         "operationId": "temporal_record_event_actual",
@@ -31813,7 +33424,9 @@
           }
         },
         "summary": "Record Event Actual",
-        "tags": ["temporal"]
+        "tags": [
+          "temporal"
+        ]
       }
     },
     "/api/v1/temporal/events/{event_ref}/agenda": {
@@ -31864,7 +33477,9 @@
           }
         },
         "summary": "Replace Event Agenda",
-        "tags": ["temporal"]
+        "tags": [
+          "temporal"
+        ]
       }
     },
     "/api/v1/temporal/events/{event_ref}/atomic-edit": {
@@ -31916,7 +33531,9 @@
           }
         },
         "summary": "Apply One Off Event Atomic Edit",
-        "tags": ["temporal"]
+        "tags": [
+          "temporal"
+        ]
       }
     },
     "/api/v1/temporal/events/{event_ref}/deletion-occurrences": {
@@ -31961,7 +33578,9 @@
           }
         },
         "summary": "List Event Deletion Occurrences",
-        "tags": ["temporal"]
+        "tags": [
+          "temporal"
+        ]
       }
     },
     "/api/v1/temporal/events/{event_ref}/expected-participation": {
@@ -32006,7 +33625,9 @@
           }
         },
         "summary": "List Event Expected Participation",
-        "tags": ["temporal"]
+        "tags": [
+          "temporal"
+        ]
       },
       "put": {
         "operationId": "temporal_set_event_expected_participation",
@@ -32055,7 +33676,9 @@
           }
         },
         "summary": "Set Event Expected Participation",
-        "tags": ["temporal"]
+        "tags": [
+          "temporal"
+        ]
       }
     },
     "/api/v1/temporal/events/{event_ref}/occurrences/checkpoint": {
@@ -32106,7 +33729,9 @@
           }
         },
         "summary": "Checkpoint Event Occurrences",
-        "tags": ["temporal"]
+        "tags": [
+          "temporal"
+        ]
       }
     },
     "/api/v1/temporal/events/{event_ref}/occurrences/exclusions": {
@@ -32157,7 +33782,9 @@
           }
         },
         "summary": "Exclude Event Occurrence Coordinate",
-        "tags": ["temporal"]
+        "tags": [
+          "temporal"
+        ]
       }
     },
     "/api/v1/temporal/events/{event_ref}/occurrences/extra": {
@@ -32208,7 +33835,9 @@
           }
         },
         "summary": "Create Event Extra Occurrence",
-        "tags": ["temporal"]
+        "tags": [
+          "temporal"
+        ]
       }
     },
     "/api/v1/temporal/events/{event_ref}/profile": {
@@ -32260,7 +33889,9 @@
           }
         },
         "summary": "Revise Event Profile",
-        "tags": ["temporal"]
+        "tags": [
+          "temporal"
+        ]
       }
     },
     "/api/v1/temporal/events/{event_ref}/recurrence": {
@@ -32309,7 +33940,9 @@
           }
         },
         "summary": "Get Event Recurrence",
-        "tags": ["temporal"]
+        "tags": [
+          "temporal"
+        ]
       },
       "put": {
         "operationId": "temporal_replace_event_recurrence",
@@ -32358,7 +33991,9 @@
           }
         },
         "summary": "Replace Event Recurrence",
-        "tags": ["temporal"]
+        "tags": [
+          "temporal"
+        ]
       }
     },
     "/api/v1/temporal/events/{event_ref}/responsibility": {
@@ -32399,7 +34034,9 @@
           }
         },
         "summary": "Get Event Responsibility",
-        "tags": ["temporal"]
+        "tags": [
+          "temporal"
+        ]
       },
       "put": {
         "operationId": "temporal_set_event_responsibility",
@@ -32448,7 +34085,9 @@
           }
         },
         "summary": "Set Event Responsibility",
-        "tags": ["temporal"]
+        "tags": [
+          "temporal"
+        ]
       }
     },
     "/api/v1/temporal/events/{event_ref}/schedules/{schedule_ref}/replan": {
@@ -32536,7 +34175,9 @@
           }
         },
         "summary": "Replan Postponed Event",
-        "tags": ["temporal"]
+        "tags": [
+          "temporal"
+        ]
       }
     },
     "/api/v1/temporal/events/{event_ref}/tags/{tag_ref}/attach": {
@@ -32597,7 +34238,9 @@
           }
         },
         "summary": "Attach Event Tag",
-        "tags": ["temporal"]
+        "tags": [
+          "temporal"
+        ]
       }
     },
     "/api/v1/temporal/events/{event_ref}/tags/{tag_ref}/detach": {
@@ -32658,7 +34301,9 @@
           }
         },
         "summary": "Detach Event Tag",
-        "tags": ["temporal"]
+        "tags": [
+          "temporal"
+        ]
       }
     },
     "/api/v1/temporal/events/{source_ref}/advanced-recurrence": {
@@ -32709,7 +34354,9 @@
           }
         },
         "summary": "Get Event Advanced Recurrence",
-        "tags": ["temporal"]
+        "tags": [
+          "temporal"
+        ]
       },
       "put": {
         "operationId": "temporal_replace_event_advanced_recurrence",
@@ -32828,7 +34475,9 @@
           }
         },
         "summary": "Replace Event Advanced Recurrence",
-        "tags": ["temporal"]
+        "tags": [
+          "temporal"
+        ]
       }
     },
     "/api/v1/temporal/events/{source_ref}/advanced-recurrence/checkpoint": {
@@ -32949,7 +34598,9 @@
           }
         },
         "summary": "Checkpoint Event Advanced Recurrence",
-        "tags": ["temporal"]
+        "tags": [
+          "temporal"
+        ]
       }
     },
     "/api/v1/temporal/events/{subject_ref}/objectives": {
@@ -32994,7 +34645,9 @@
           }
         },
         "summary": "List Event Objectives",
-        "tags": ["temporal"]
+        "tags": [
+          "temporal"
+        ]
       },
       "post": {
         "operationId": "temporal_create_event_objective",
@@ -33043,7 +34696,9 @@
           }
         },
         "summary": "Create Event Objective",
-        "tags": ["temporal"]
+        "tags": [
+          "temporal"
+        ]
       }
     },
     "/api/v1/temporal/events/{subject_ref}/reality-policy": {
@@ -33084,7 +34739,9 @@
           }
         },
         "summary": "Get Event Reality Policy",
-        "tags": ["temporal"]
+        "tags": [
+          "temporal"
+        ]
       },
       "post": {
         "operationId": "temporal_set_event_reality_policy",
@@ -33133,7 +34790,9 @@
           }
         },
         "summary": "Set Event Reality Policy",
-        "tags": ["temporal"]
+        "tags": [
+          "temporal"
+        ]
       }
     },
     "/api/v1/temporal/hard-deletion/{requested_ref}": {
@@ -33184,7 +34843,9 @@
           }
         },
         "summary": "Apply Temporal Hard Deletion",
-        "tags": ["temporal"]
+        "tags": [
+          "temporal"
+        ]
       }
     },
     "/api/v1/temporal/hard-deletion/{requested_ref}/preview": {
@@ -33241,7 +34902,9 @@
           }
         },
         "summary": "Preview Temporal Hard Deletion",
-        "tags": ["temporal"]
+        "tags": [
+          "temporal"
+        ]
       }
     },
     "/api/v1/temporal/home/finished-work": {
@@ -33286,7 +34949,9 @@
           }
         },
         "summary": "List Home Finished Work",
-        "tags": ["temporal"]
+        "tags": [
+          "temporal"
+        ]
       }
     },
     "/api/v1/temporal/home/objective-work": {
@@ -33331,7 +34996,9 @@
           }
         },
         "summary": "List Home Objective Work",
-        "tags": ["temporal"]
+        "tags": [
+          "temporal"
+        ]
       }
     },
     "/api/v1/temporal/life-area-assignments": {
@@ -33354,7 +35021,9 @@
           }
         },
         "summary": "List Life Area Assignments",
-        "tags": ["temporal"]
+        "tags": [
+          "temporal"
+        ]
       }
     },
     "/api/v1/temporal/life-area-assignments/activities/{activity_ref}": {
@@ -33405,7 +35074,9 @@
           }
         },
         "summary": "Assign Activity Life Area",
-        "tags": ["temporal"]
+        "tags": [
+          "temporal"
+        ]
       }
     },
     "/api/v1/temporal/life-area-assignments/events/{event_ref}": {
@@ -33456,7 +35127,9 @@
           }
         },
         "summary": "Assign Event Life Area",
-        "tags": ["temporal"]
+        "tags": [
+          "temporal"
+        ]
       }
     },
     "/api/v1/temporal/life-area-assignments/unassigned": {
@@ -33479,7 +35152,9 @@
           }
         },
         "summary": "List Unassigned Life Area Items",
-        "tags": ["temporal"]
+        "tags": [
+          "temporal"
+        ]
       }
     },
     "/api/v1/temporal/life-areas": {
@@ -33502,7 +35177,9 @@
           }
         },
         "summary": "List Life Areas",
-        "tags": ["temporal"]
+        "tags": [
+          "temporal"
+        ]
       },
       "post": {
         "operationId": "temporal_create_life_area",
@@ -33539,7 +35216,9 @@
           }
         },
         "summary": "Create Life Area",
-        "tags": ["temporal"]
+        "tags": [
+          "temporal"
+        ]
       }
     },
     "/api/v1/temporal/life-areas/order": {
@@ -33578,7 +35257,9 @@
           }
         },
         "summary": "Reorder Life Areas",
-        "tags": ["temporal"]
+        "tags": [
+          "temporal"
+        ]
       }
     },
     "/api/v1/temporal/life-areas/{life_area_ref}/appearance": {
@@ -33629,7 +35310,9 @@
           }
         },
         "summary": "Set Life Area Appearance",
-        "tags": ["temporal"]
+        "tags": [
+          "temporal"
+        ]
       }
     },
     "/api/v1/temporal/life-areas/{life_area_ref}/archive": {
@@ -33680,7 +35363,9 @@
           }
         },
         "summary": "Archive Life Area",
-        "tags": ["temporal"]
+        "tags": [
+          "temporal"
+        ]
       }
     },
     "/api/v1/temporal/life-areas/{life_area_ref}/name": {
@@ -33731,7 +35416,9 @@
           }
         },
         "summary": "Rename Life Area",
-        "tags": ["temporal"]
+        "tags": [
+          "temporal"
+        ]
       }
     },
     "/api/v1/temporal/life-areas/{life_area_ref}/visibility": {
@@ -33782,7 +35469,9 @@
           }
         },
         "summary": "Set Life Area Visibility",
-        "tags": ["temporal"]
+        "tags": [
+          "temporal"
+        ]
       }
     },
     "/api/v1/temporal/objective-inputs": {
@@ -33805,7 +35494,9 @@
           }
         },
         "summary": "List Objective Input Drafts",
-        "tags": ["temporal"]
+        "tags": [
+          "temporal"
+        ]
       }
     },
     "/api/v1/temporal/objectives/{objective_ref}/confirm-input": {
@@ -33857,7 +35548,9 @@
           }
         },
         "summary": "Confirm Objective Input Draft",
-        "tags": ["temporal"]
+        "tags": [
+          "temporal"
+        ]
       }
     },
     "/api/v1/temporal/objectives/{objective_ref}/correction": {
@@ -33908,7 +35601,9 @@
           }
         },
         "summary": "Correct Objective Result",
-        "tags": ["temporal"]
+        "tags": [
+          "temporal"
+        ]
       }
     },
     "/api/v1/temporal/objectives/{objective_ref}/definition": {
@@ -33949,7 +35644,9 @@
           }
         },
         "summary": "Get Objective Definition",
-        "tags": ["temporal"]
+        "tags": [
+          "temporal"
+        ]
       },
       "put": {
         "operationId": "temporal_revise_objective_definition",
@@ -33998,7 +35695,9 @@
           }
         },
         "summary": "Revise Objective Definition",
-        "tags": ["temporal"]
+        "tags": [
+          "temporal"
+        ]
       }
     },
     "/api/v1/temporal/objectives/{objective_ref}/input-draft": {
@@ -34049,7 +35748,9 @@
           }
         },
         "summary": "Save Objective Input Draft",
-        "tags": ["temporal"]
+        "tags": [
+          "temporal"
+        ]
       }
     },
     "/api/v1/temporal/objectives/{objective_ref}/result": {
@@ -34100,7 +35801,9 @@
           }
         },
         "summary": "Record Objective Result",
-        "tags": ["temporal"]
+        "tags": [
+          "temporal"
+        ]
       }
     },
     "/api/v1/temporal/objectives/{objective_ref}/series-state": {
@@ -34150,7 +35853,9 @@
           }
         },
         "summary": "Get Objective Series State",
-        "tags": ["temporal"]
+        "tags": [
+          "temporal"
+        ]
       }
     },
     "/api/v1/temporal/occurrences/checkpoint": {
@@ -34190,7 +35895,9 @@
           }
         },
         "summary": "Checkpoint Occurrence Window",
-        "tags": ["temporal"]
+        "tags": [
+          "temporal"
+        ]
       }
     },
     "/api/v1/temporal/occurrences/{occurrence_ref}": {
@@ -34231,7 +35938,9 @@
           }
         },
         "summary": "Get Occurrence",
-        "tags": ["temporal"]
+        "tags": [
+          "temporal"
+        ]
       }
     },
     "/api/v1/temporal/occurrences/{occurrence_ref}/actual": {
@@ -34272,7 +35981,9 @@
           }
         },
         "summary": "Get Occurrence Actual",
-        "tags": ["temporal"]
+        "tags": [
+          "temporal"
+        ]
       },
       "post": {
         "operationId": "temporal_record_occurrence_actual",
@@ -34321,7 +36032,9 @@
           }
         },
         "summary": "Record Occurrence Actual",
-        "tags": ["temporal"]
+        "tags": [
+          "temporal"
+        ]
       }
     },
     "/api/v1/temporal/occurrences/{occurrence_ref}/edit-inventory": {
@@ -34363,7 +36076,9 @@
           }
         },
         "summary": "Get Occurrence Edit Inventory",
-        "tags": ["temporal"]
+        "tags": [
+          "temporal"
+        ]
       }
     },
     "/api/v1/temporal/occurrences/{occurrence_ref}/event-detail": {
@@ -34405,7 +36120,9 @@
           }
         },
         "summary": "Get Recurring Event Occurrence Detail",
-        "tags": ["temporal"]
+        "tags": [
+          "temporal"
+        ]
       }
     },
     "/api/v1/temporal/occurrences/{occurrence_ref}/profile-edit": {
@@ -34457,7 +36174,9 @@
           }
         },
         "summary": "Accept Occurrence Profile Edit",
-        "tags": ["temporal"]
+        "tags": [
+          "temporal"
+        ]
       }
     },
     "/api/v1/temporal/occurrences/{occurrence_ref}/profile-edit-preview": {
@@ -34479,7 +36198,11 @@
             "name": "scope_code",
             "required": true,
             "schema": {
-              "enum": ["only_this", "this_and_following", "from_next"],
+              "enum": [
+                "only_this",
+                "this_and_following",
+                "from_next"
+              ],
               "title": "Scope Code",
               "type": "string"
             }
@@ -34508,7 +36231,9 @@
           }
         },
         "summary": "Get Occurrence Profile Edit Preview",
-        "tags": ["temporal"]
+        "tags": [
+          "temporal"
+        ]
       }
     },
     "/api/v1/temporal/occurrences/{occurrence_ref}/profile-edit-state": {
@@ -34549,7 +36274,9 @@
           }
         },
         "summary": "Get Occurrence Profile Edit State",
-        "tags": ["temporal"]
+        "tags": [
+          "temporal"
+        ]
       }
     },
     "/api/v1/temporal/occurrences/{occurrence_ref}/schedule": {
@@ -34601,7 +36328,9 @@
           }
         },
         "summary": "Establish Occurrence Schedule",
-        "tags": ["temporal"]
+        "tags": [
+          "temporal"
+        ]
       }
     },
     "/api/v1/temporal/occurrences/{occurrence_ref}/series-edit": {
@@ -34652,7 +36381,9 @@
           }
         },
         "summary": "Accept Recurring Series Edit",
-        "tags": ["temporal"]
+        "tags": [
+          "temporal"
+        ]
       }
     },
     "/api/v1/temporal/occurrences/{occurrence_ref}/series-edit-preview": {
@@ -34703,7 +36434,9 @@
           }
         },
         "summary": "Preview Recurring Series Edit",
-        "tags": ["temporal"]
+        "tags": [
+          "temporal"
+        ]
       }
     },
     "/api/v1/temporal/occurrences/{occurrence_ref}/series-edit-source": {
@@ -34744,7 +36477,9 @@
           }
         },
         "summary": "Get Recurring Series Edit Source",
-        "tags": ["temporal"]
+        "tags": [
+          "temporal"
+        ]
       }
     },
     "/api/v1/temporal/occurrences/{occurrence_ref}/sessions": {
@@ -34789,7 +36524,9 @@
           }
         },
         "summary": "List Occurrence Sessions",
-        "tags": ["temporal"]
+        "tags": [
+          "temporal"
+        ]
       },
       "post": {
         "operationId": "temporal_start_occurrence_session",
@@ -34838,7 +36575,9 @@
           }
         },
         "summary": "Start Occurrence Session",
-        "tags": ["temporal"]
+        "tags": [
+          "temporal"
+        ]
       }
     },
     "/api/v1/temporal/occurrences/{occurrence_ref}/skip": {
@@ -34889,7 +36628,9 @@
           }
         },
         "summary": "Skip Occurrence",
-        "tags": ["temporal"]
+        "tags": [
+          "temporal"
+        ]
       }
     },
     "/api/v1/temporal/occurrences/{subject_ref}/objectives": {
@@ -34934,7 +36675,9 @@
           }
         },
         "summary": "List Occurrence Objectives",
-        "tags": ["temporal"]
+        "tags": [
+          "temporal"
+        ]
       }
     },
     "/api/v1/temporal/occurrences/{subject_ref}/reality-policy": {
@@ -34975,7 +36718,9 @@
           }
         },
         "summary": "Get Occurrence Reality Policy",
-        "tags": ["temporal"]
+        "tags": [
+          "temporal"
+        ]
       },
       "post": {
         "operationId": "temporal_set_occurrence_reality_policy",
@@ -35024,7 +36769,9 @@
           }
         },
         "summary": "Set Occurrence Reality Policy",
-        "tags": ["temporal"]
+        "tags": [
+          "temporal"
+        ]
       }
     },
     "/api/v1/temporal/outcomes/{outcome_ref}/confirmations": {
@@ -35069,7 +36816,9 @@
           }
         },
         "summary": "List Outcome Confirmations",
-        "tags": ["temporal"]
+        "tags": [
+          "temporal"
+        ]
       },
       "post": {
         "operationId": "temporal_record_outcome_confirmation",
@@ -35188,7 +36937,9 @@
           }
         },
         "summary": "Record Outcome Confirmation",
-        "tags": ["temporal"]
+        "tags": [
+          "temporal"
+        ]
       }
     },
     "/api/v1/temporal/outcomes/{outcome_ref}/history": {
@@ -35233,7 +36984,9 @@
           }
         },
         "summary": "List Outcome History",
-        "tags": ["temporal"]
+        "tags": [
+          "temporal"
+        ]
       }
     },
     "/api/v1/temporal/outcomes/{outcome_ref}/reconciliations": {
@@ -35288,7 +37041,9 @@
           }
         },
         "summary": "List Outcome Reconciliations",
-        "tags": ["temporal"]
+        "tags": [
+          "temporal"
+        ]
       },
       "post": {
         "operationId": "temporal_record_outcome_reconciliation",
@@ -35407,7 +37162,9 @@
           }
         },
         "summary": "Record Outcome Reconciliation",
-        "tags": ["temporal"]
+        "tags": [
+          "temporal"
+        ]
       }
     },
     "/api/v1/temporal/person-referents": {
@@ -35430,7 +37187,9 @@
           }
         },
         "summary": "List Person Referents",
-        "tags": ["temporal"]
+        "tags": [
+          "temporal"
+        ]
       },
       "post": {
         "operationId": "temporal_create_person_referent",
@@ -35467,7 +37226,9 @@
           }
         },
         "summary": "Create Person Referent",
-        "tags": ["temporal"]
+        "tags": [
+          "temporal"
+        ]
       }
     },
     "/api/v1/temporal/person-referents/{person_ref}": {
@@ -35518,7 +37279,9 @@
           }
         },
         "summary": "Rename Person Referent",
-        "tags": ["temporal"]
+        "tags": [
+          "temporal"
+        ]
       }
     },
     "/api/v1/temporal/planning-tray": {
@@ -35541,7 +37304,9 @@
           }
         },
         "summary": "List Planning Tray",
-        "tags": ["temporal"]
+        "tags": [
+          "temporal"
+        ]
       }
     },
     "/api/v1/temporal/planning-tray/{kind}/{subject_ref}/place": {
@@ -35553,7 +37318,10 @@
             "name": "kind",
             "required": true,
             "schema": {
-              "enum": ["activity", "event"],
+              "enum": [
+                "activity",
+                "event"
+              ],
               "title": "Kind",
               "type": "string"
             }
@@ -35602,7 +37370,9 @@
           }
         },
         "summary": "Place Planning Tray Item",
-        "tags": ["temporal"]
+        "tags": [
+          "temporal"
+        ]
       }
     },
     "/api/v1/temporal/plans": {
@@ -35655,7 +37425,9 @@
           }
         },
         "summary": "List Self Plans",
-        "tags": ["temporal"]
+        "tags": [
+          "temporal"
+        ]
       },
       "post": {
         "operationId": "temporal_create_self_plan",
@@ -35752,7 +37524,9 @@
           }
         },
         "summary": "Create Self Plan",
-        "tags": ["temporal"]
+        "tags": [
+          "temporal"
+        ]
       }
     },
     "/api/v1/temporal/plans/{plan_ref}": {
@@ -35833,7 +37607,9 @@
           }
         },
         "summary": "Get Self Plan",
-        "tags": ["temporal"]
+        "tags": [
+          "temporal"
+        ]
       },
       "put": {
         "operationId": "temporal_replace_self_plan_work",
@@ -35942,7 +37718,9 @@
           }
         },
         "summary": "Replace Self Plan Work",
-        "tags": ["temporal"]
+        "tags": [
+          "temporal"
+        ]
       }
     },
     "/api/v1/temporal/plans/{plan_ref}/conflicts": {
@@ -36043,7 +37821,9 @@
           }
         },
         "summary": "Diagnose Self Plan Conflicts",
-        "tags": ["temporal"]
+        "tags": [
+          "temporal"
+        ]
       }
     },
     "/api/v1/temporal/plans/{plan_ref}/dependencies": {
@@ -36108,7 +37888,9 @@
           }
         },
         "summary": "List Self Plan Dependencies",
-        "tags": ["temporal"]
+        "tags": [
+          "temporal"
+        ]
       },
       "post": {
         "operationId": "temporal_create_self_plan_dependency",
@@ -36217,7 +37999,9 @@
           }
         },
         "summary": "Create Self Plan Dependency",
-        "tags": ["temporal"]
+        "tags": [
+          "temporal"
+        ]
       }
     },
     "/api/v1/temporal/plans/{plan_ref}/dependencies/{dependency_ref}": {
@@ -36298,7 +38082,9 @@
           }
         },
         "summary": "Get Self Plan Dependency",
-        "tags": ["temporal"]
+        "tags": [
+          "temporal"
+        ]
       },
       "put": {
         "operationId": "temporal_revise_self_plan_dependency",
@@ -36407,7 +38193,9 @@
           }
         },
         "summary": "Revise Self Plan Dependency",
-        "tags": ["temporal"]
+        "tags": [
+          "temporal"
+        ]
       }
     },
     "/api/v1/temporal/plans/{plan_ref}/dependencies/{dependency_ref}/history": {
@@ -36492,7 +38280,9 @@
           }
         },
         "summary": "List Self Plan Dependency History",
-        "tags": ["temporal"]
+        "tags": [
+          "temporal"
+        ]
       }
     },
     "/api/v1/temporal/plans/{plan_ref}/steps/{step_ref}/candidate-moves": {
@@ -36603,7 +38393,9 @@
           }
         },
         "summary": "Request Reviewed Plan Candidate Move",
-        "tags": ["temporal"]
+        "tags": [
+          "temporal"
+        ]
       }
     },
     "/api/v1/temporal/plans/{plan_ref}/steps/{step_ref}/candidate-moves/{proposal_ref}/confirm": {
@@ -36724,7 +38516,9 @@
           }
         },
         "summary": "Confirm Reviewed Plan Candidate Move",
-        "tags": ["temporal"]
+        "tags": [
+          "temporal"
+        ]
       }
     },
     "/api/v1/temporal/plans/{plan_ref}/steps/{step_ref}/candidates": {
@@ -36835,7 +38629,9 @@
           }
         },
         "summary": "Search Self Plan Step Candidates",
-        "tags": ["temporal"]
+        "tags": [
+          "temporal"
+        ]
       }
     },
     "/api/v1/temporal/plans/{plan_ref}/steps/{step_ref}/execution/assess": {
@@ -36916,7 +38712,9 @@
           }
         },
         "summary": "Assess Plan Step Execution",
-        "tags": ["temporal"]
+        "tags": [
+          "temporal"
+        ]
       }
     },
     "/api/v1/temporal/reconciliations/{reconciliation_ref}/history": {
@@ -36971,7 +38769,9 @@
           }
         },
         "summary": "List Outcome Reconciliation History",
-        "tags": ["temporal"]
+        "tags": [
+          "temporal"
+        ]
       }
     },
     "/api/v1/temporal/recurring/events": {
@@ -37010,7 +38810,9 @@
           }
         },
         "summary": "Create Recurring Event",
-        "tags": ["temporal"]
+        "tags": [
+          "temporal"
+        ]
       }
     },
     "/api/v1/temporal/recurring/routines": {
@@ -37049,7 +38851,9 @@
           }
         },
         "summary": "Create Recurring Routine",
-        "tags": ["temporal"]
+        "tags": [
+          "temporal"
+        ]
       }
     },
     "/api/v1/temporal/resolution-queue": {
@@ -37069,7 +38873,9 @@
           }
         },
         "summary": "List Resolution Queue",
-        "tags": ["temporal"]
+        "tags": [
+          "temporal"
+        ]
       }
     },
     "/api/v1/temporal/routines": {
@@ -37092,7 +38898,9 @@
           }
         },
         "summary": "List Routines",
-        "tags": ["temporal"]
+        "tags": [
+          "temporal"
+        ]
       },
       "post": {
         "operationId": "temporal_create_routine",
@@ -37129,7 +38937,9 @@
           }
         },
         "summary": "Create Routine",
-        "tags": ["temporal"]
+        "tags": [
+          "temporal"
+        ]
       }
     },
     "/api/v1/temporal/routines/{routine_ref}/end": {
@@ -37180,7 +38990,9 @@
           }
         },
         "summary": "End Routine",
-        "tags": ["temporal"]
+        "tags": [
+          "temporal"
+        ]
       }
     },
     "/api/v1/temporal/routines/{routine_ref}/life-area": {
@@ -37231,7 +39043,9 @@
           }
         },
         "summary": "Assign Life Area",
-        "tags": ["temporal"]
+        "tags": [
+          "temporal"
+        ]
       }
     },
     "/api/v1/temporal/routines/{routine_ref}/occurrences/checkpoint": {
@@ -37282,7 +39096,9 @@
           }
         },
         "summary": "Checkpoint Routine Occurrences",
-        "tags": ["temporal"]
+        "tags": [
+          "temporal"
+        ]
       }
     },
     "/api/v1/temporal/routines/{routine_ref}/occurrences/exclusions": {
@@ -37333,7 +39149,9 @@
           }
         },
         "summary": "Exclude Routine Occurrence Coordinate",
-        "tags": ["temporal"]
+        "tags": [
+          "temporal"
+        ]
       }
     },
     "/api/v1/temporal/routines/{routine_ref}/occurrences/extra": {
@@ -37384,7 +39202,9 @@
           }
         },
         "summary": "Create Routine Extra Occurrence",
-        "tags": ["temporal"]
+        "tags": [
+          "temporal"
+        ]
       }
     },
     "/api/v1/temporal/routines/{routine_ref}/pause": {
@@ -37435,7 +39255,9 @@
           }
         },
         "summary": "Pause Routine",
-        "tags": ["temporal"]
+        "tags": [
+          "temporal"
+        ]
       }
     },
     "/api/v1/temporal/routines/{routine_ref}/recurrence": {
@@ -37476,7 +39298,9 @@
           }
         },
         "summary": "Get Routine Recurrence",
-        "tags": ["temporal"]
+        "tags": [
+          "temporal"
+        ]
       },
       "put": {
         "operationId": "temporal_replace_routine_recurrence",
@@ -37525,7 +39349,9 @@
           }
         },
         "summary": "Replace Routine Recurrence",
-        "tags": ["temporal"]
+        "tags": [
+          "temporal"
+        ]
       }
     },
     "/api/v1/temporal/routines/{routine_ref}/rename": {
@@ -37576,7 +39402,9 @@
           }
         },
         "summary": "Rename Routine",
-        "tags": ["temporal"]
+        "tags": [
+          "temporal"
+        ]
       }
     },
     "/api/v1/temporal/routines/{routine_ref}/resume": {
@@ -37627,7 +39455,9 @@
           }
         },
         "summary": "Resume Routine",
-        "tags": ["temporal"]
+        "tags": [
+          "temporal"
+        ]
       }
     },
     "/api/v1/temporal/routines/{routine_ref}/tags/{tag_ref}/attach": {
@@ -37688,7 +39518,9 @@
           }
         },
         "summary": "Attach Tag",
-        "tags": ["temporal"]
+        "tags": [
+          "temporal"
+        ]
       }
     },
     "/api/v1/temporal/routines/{routine_ref}/tags/{tag_ref}/detach": {
@@ -37749,7 +39581,9 @@
           }
         },
         "summary": "Detach Tag",
-        "tags": ["temporal"]
+        "tags": [
+          "temporal"
+        ]
       }
     },
     "/api/v1/temporal/routines/{source_ref}/advanced-recurrence": {
@@ -37800,7 +39634,9 @@
           }
         },
         "summary": "Get Routine Advanced Recurrence",
-        "tags": ["temporal"]
+        "tags": [
+          "temporal"
+        ]
       },
       "put": {
         "operationId": "temporal_replace_routine_advanced_recurrence",
@@ -37919,7 +39755,9 @@
           }
         },
         "summary": "Replace Routine Advanced Recurrence",
-        "tags": ["temporal"]
+        "tags": [
+          "temporal"
+        ]
       }
     },
     "/api/v1/temporal/routines/{source_ref}/advanced-recurrence/checkpoint": {
@@ -38040,7 +39878,9 @@
           }
         },
         "summary": "Checkpoint Routine Advanced Recurrence",
-        "tags": ["temporal"]
+        "tags": [
+          "temporal"
+        ]
       }
     },
     "/api/v1/temporal/schedules/{schedule_ref}/movement-policy": {
@@ -38141,7 +39981,9 @@
           }
         },
         "summary": "Set Self Schedule Movement Policy",
-        "tags": ["temporal"]
+        "tags": [
+          "temporal"
+        ]
       }
     },
     "/api/v1/temporal/schedules/{schedule_ref}/placement": {
@@ -38219,7 +40061,9 @@
           }
         },
         "summary": "Revise Schedule Placement",
-        "tags": ["temporal"]
+        "tags": [
+          "temporal"
+        ]
       }
     },
     "/api/v1/temporal/schedules/{schedule_ref}/placement-lock": {
@@ -38260,7 +40104,9 @@
           }
         },
         "summary": "Get Self Schedule Placement Lock",
-        "tags": ["temporal"]
+        "tags": [
+          "temporal"
+        ]
       },
       "put": {
         "operationId": "temporal_set_self_schedule_placement_lock",
@@ -38309,7 +40155,9 @@
           }
         },
         "summary": "Set Self Schedule Placement Lock",
-        "tags": ["temporal"]
+        "tags": [
+          "temporal"
+        ]
       }
     },
     "/api/v1/temporal/schedules/{schedule_ref}/reminder": {
@@ -38390,7 +40238,9 @@
           }
         },
         "summary": "Get Schedule Reminder",
-        "tags": ["temporal"]
+        "tags": [
+          "temporal"
+        ]
       },
       "put": {
         "operationId": "temporal_configure_schedule_reminder",
@@ -38509,7 +40359,9 @@
           }
         },
         "summary": "Configure Schedule Reminder",
-        "tags": ["temporal"]
+        "tags": [
+          "temporal"
+        ]
       }
     },
     "/api/v1/temporal/schedules/{schedule_ref}/unschedule": {
@@ -38560,7 +40412,9 @@
           }
         },
         "summary": "Unschedule Schedule",
-        "tags": ["temporal"]
+        "tags": [
+          "temporal"
+        ]
       }
     },
     "/api/v1/temporal/schedules/{schedule_ref}/unschedule/undo": {
@@ -38638,7 +40492,9 @@
           }
         },
         "summary": "Undo Schedule Unschedule",
-        "tags": ["temporal"]
+        "tags": [
+          "temporal"
+        ]
       }
     },
     "/api/v1/temporal/session-panel": {
@@ -38703,7 +40559,9 @@
           }
         },
         "summary": "Get Session Panel",
-        "tags": ["temporal"]
+        "tags": [
+          "temporal"
+        ]
       }
     },
     "/api/v1/temporal/sessions/{session_ref}": {
@@ -38744,7 +40602,9 @@
           }
         },
         "summary": "Get Session",
-        "tags": ["temporal"]
+        "tags": [
+          "temporal"
+        ]
       }
     },
     "/api/v1/temporal/sessions/{session_ref}/end": {
@@ -38795,7 +40655,9 @@
           }
         },
         "summary": "End Session",
-        "tags": ["temporal"]
+        "tags": [
+          "temporal"
+        ]
       }
     },
     "/api/v1/temporal/sessions/{session_ref}/pause": {
@@ -38846,7 +40708,9 @@
           }
         },
         "summary": "Pause Session",
-        "tags": ["temporal"]
+        "tags": [
+          "temporal"
+        ]
       }
     },
     "/api/v1/temporal/sessions/{session_ref}/resume": {
@@ -38897,7 +40761,9 @@
           }
         },
         "summary": "Resume Session",
-        "tags": ["temporal"]
+        "tags": [
+          "temporal"
+        ]
       }
     },
     "/api/v1/temporal/tags": {
@@ -38920,7 +40786,9 @@
           }
         },
         "summary": "List Tags",
-        "tags": ["temporal"]
+        "tags": [
+          "temporal"
+        ]
       },
       "post": {
         "operationId": "temporal_create_product_tag",
@@ -38957,7 +40825,9 @@
           }
         },
         "summary": "Create Tag",
-        "tags": ["temporal"]
+        "tags": [
+          "temporal"
+        ]
       }
     },
     "/api/v1/temporal/tags/assignments": {
@@ -38980,7 +40850,9 @@
           }
         },
         "summary": "List Item Tags",
-        "tags": ["temporal"]
+        "tags": [
+          "temporal"
+        ]
       }
     },
     "/api/v1/temporal/tags/{tag_ref}/archive": {
@@ -39031,7 +40903,9 @@
           }
         },
         "summary": "Archive Tag",
-        "tags": ["temporal"]
+        "tags": [
+          "temporal"
+        ]
       }
     },
     "/api/v1/temporal/tags/{tag_ref}/name": {
@@ -39082,7 +40956,9 @@
           }
         },
         "summary": "Rename Tag",
-        "tags": ["temporal"]
+        "tags": [
+          "temporal"
+        ]
       }
     },
     "/api/v1/temporal/timeline/window": {
@@ -39141,7 +41017,9 @@
           }
         },
         "summary": "Get Timeline Window",
-        "tags": ["temporal"]
+        "tags": [
+          "temporal"
+        ]
       }
     }
   }

@@ -71,6 +71,9 @@ export const eventAtomicEditCommandProfileOneTitleMax = 300;
 
 export const eventAtomicEditCommandRealityOneOperationIdMax = 200;
 
+export const eventAtomicEditCommandReminderOneLeadMinutesMin = 0;
+export const eventAtomicEditCommandReminderOneLeadMinutesMax = 10080;
+
 export const eventAtomicEditCommandScheduleOnePlacementOneKindDefault = `date_span`;
 export const eventAtomicEditCommandScheduleOnePlacementTwoKindDefault = `floating_local_interval`;
 export const eventAtomicEditCommandScheduleOnePlacementThreeDisambiguationDefault = `reject`;
@@ -504,6 +507,33 @@ export const EventAtomicEditCommand = /*#__PURE__*/ zod
                 eventAtomicEditCommandRealityOneOperationIdMax,
               ),
             ),
+        }),
+        /*#__PURE__*/ zod.null(),
+      ]),
+    ),
+    reminder: /*#__PURE__*/ zod.optional(
+      /*#__PURE__*/ zod.union([
+        /*#__PURE__*/ zod.object({
+          enabled: /*#__PURE__*/ zod.boolean(),
+          expected_state_ref: /*#__PURE__*/ zod.optional(
+            /*#__PURE__*/ zod.union([
+              /*#__PURE__*/ zod.uuid(),
+              /*#__PURE__*/ zod.null(),
+            ]),
+          ),
+          lead_minutes: /*#__PURE__*/ zod
+            .int()
+            .check(
+              /*#__PURE__*/ zod.gte(
+                eventAtomicEditCommandReminderOneLeadMinutesMin,
+              ),
+            )
+            .check(
+              /*#__PURE__*/ zod.lte(
+                eventAtomicEditCommandReminderOneLeadMinutesMax,
+              ),
+            ),
+          schedule_ref: /*#__PURE__*/ zod.uuid(),
         }),
         /*#__PURE__*/ zod.null(),
       ]),

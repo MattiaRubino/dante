@@ -38,6 +38,11 @@ import { createRemoteTemporalResponsibilityDataSource } from '../../../temporal/
 import { systemTemporalIdFactory } from '../../../temporal/model';
 import type { ActivityDuplicateSeed } from '../../../temporal-create/application/activity-duplicate-seed';
 import { TemporalCreateEventAgenda } from '../../../temporal-create/ui/temporal-create-event-agenda';
+import { TemporalReminderControl } from '../../../temporal-create/ui/temporal-create-quick-reminder';
+import {
+  createRemoteScheduleReminderDataSource,
+  type ScheduleReminderView,
+} from '../../../temporal/remote-schedule-reminder-data-source';
 import { buildEventDuplicateSeed } from '../../../temporal-create/application/event-duplicate-seed';
 import type { TimelineCanonicalSchedulePlacement } from './model/timeline-types';
 import { TimelineInspectorIcon } from './timeline-inspector-icon';
@@ -102,6 +107,7 @@ export function EventInspectorActions({
   const [profileSource] = useState(createRemoteEventProfileDataSource);
   const [areaSource] = useState(createRemoteEventLifeAreaSettings);
   const [objectiveSource] = useState(createRemoteRealityObjectiveDataSource);
+  const [reminderSource] = useState(createRemoteScheduleReminderDataSource);
   const [organizationSource] = useState(
     createRemoteTemporalOrganizationDataSource,
   );
@@ -119,6 +125,10 @@ export function EventInspectorActions({
   const [scheduleInitial, setScheduleInitial] =
     useState<EventScheduleDraft | null>(null);
   const [scheduleError, setScheduleError] = useState('');
+  const [reminderCurrent, setReminderCurrent] =
+    useState<ScheduleReminderView | null>(null);
+  const [reminderLead, setReminderLead] = useState<number | null>(null);
+  const [reminderInitial, setReminderInitial] = useState<number | null>(null);
   const [objectiveRows, setObjectiveRows] = useState<ActivityObjectiveDraft[]>(
     [],
   );
@@ -166,7 +176,7 @@ export function EventInspectorActions({
     setBusy(true);
     setError('');
     try {
-      const [loaded, area, objectives, reality] = await Promise.all([
+      const [loaded, area, objectives, reality, reminder] = await Promise.all([
         context && occurrenceRef && eventSource.loadOccurrenceEvent
           ? eventSource.loadOccurrenceEvent(occurrenceRef)
           : profileSource.load(eventRef),
@@ -177,6 +187,11 @@ export function EventInspectorActions({
         context
           ? Promise.resolve(null)
           : objectiveSource.getRealityPolicy('event', eventRef),
+        context ||
+        !scheduleRef ||
+        (placement.kind !== 'named-zone-local' && placement.kind !== 'absolute')
+          ? Promise.resolve(null)
+          : reminderSource.get(scheduleRef),
       ]);
       if (loaded.profileRevision === undefined) {
         throw new Error('Revisione del profilo Event non disponibile.');
@@ -191,6 +206,9 @@ export function EventInspectorActions({
       setScheduleDraft(initialSchedule);
       setScheduleInitial(initialSchedule);
       setScheduleError('');
+      setReminderCurrent(reminder);
+      setReminderLead(reminder?.enabled ? reminder.leadMinutes : null);
+      setReminderInitial(reminder?.enabled ? reminder.leadMinutes : null);
       setObjectiveRows(objectives.map(existingObjectiveDraft));
       setRealityPolicy(reality);
       setRealityMode(reality?.mode ?? 'manual');
@@ -272,6 +290,7 @@ export function EventInspectorActions({
         objectiveRows.some((row) => objectiveChanged(row)) ||
         removedObjectives.length > 0 ||
         JSON.stringify(scheduleDraft) !== JSON.stringify(scheduleInitial) ||
+        reminderLead !== reminderInitial ||
         (!recurringContext &&
           realityPolicy !== null &&
           realityMode !== realityPolicy.mode) ||
@@ -399,6 +418,17 @@ export function EventInspectorActions({
         const objectives = await prepareObjectives();
         const scheduleChanged =
           JSON.stringify(scheduleDraft) !== JSON.stringify(scheduleInitial);
+        const reminderChanged = reminderLead !== reminderInitial;
+        if (
+          reminderLead !== null &&
+          scheduleDraft &&
+          (scheduleDraft.kind !== 'timed' || !scheduleDraft.zoneId)
+        ) {
+          throw new Error('Il promemoria richiede un orario con fuso.');
+        }
+        if (reminderChanged && !scheduleRef) {
+          throw new Error('Schedule del promemoria non disponibile.');
+        }
         let schedule: ReturnType<
           typeof eventSchedulePlacementFromDraft
         > | null = null;
@@ -440,7 +470,8 @@ export function EventInspectorActions({
           !areaChanged &&
           !objectives &&
           !realityChanged &&
-          !schedule
+          !schedule &&
+          !reminderChanged
         ) {
           throw new Error('Nessuna modifica da salvare.');
         }
@@ -449,7 +480,8 @@ export function EventInspectorActions({
           areaChanged ||
           objectives ||
           realityChanged ||
-          schedule
+          schedule ||
+          reminderChanged
         ) {
           await profileSource.reviseAtomic(
             eventRef,
@@ -472,6 +504,18 @@ export function EventInspectorActions({
                       scheduleRef,
                       expectedMaterialStateRef: placementMaterialStateRef,
                       placement: schedule,
+                    },
+                  }
+                : {}),
+              ...(reminderChanged && scheduleRef
+                ? {
+                    reminder: {
+                      scheduleRef,
+                      expectedStateRef:
+                        reminderCurrent?.materialStateRef ?? null,
+                      enabled: reminderLead !== null,
+                      leadMinutes:
+                        reminderLead ?? reminderCurrent?.leadMinutes ?? 15,
                     },
                   }
                 : {}),
@@ -801,6 +845,21 @@ export function EventInspectorActions({
                     della Schedule.
                   </p>
                 )}
+                {scheduleRef &&
+                (placement.kind === 'named-zone-local' ||
+                  placement.kind === 'absolute') ? (
+                  <TemporalReminderControl
+                    value={reminderLead}
+                    disabled={
+                      busy ||
+                      (reminderLead === null &&
+                        placement.kind !== 'absolute' &&
+                        (scheduleDraft?.kind !== 'timed' ||
+                          !scheduleDraft.zoneId))
+                    }
+                    onChange={setReminderLead}
+                  />
+                ) : null}
                 <TemporalCreateEventAgenda
                   parts={agendaDraft}
                   maxPartLength={1000}

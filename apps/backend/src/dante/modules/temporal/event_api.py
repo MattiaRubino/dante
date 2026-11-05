@@ -54,6 +54,13 @@ from dante.modules.temporal.schedule import (
     SchedulePlacement,
     revise_schedule_in_session,
 )
+from dante.modules.temporal.schedule_reminder import (
+    ScheduleReminderApplication,
+    ScheduleReminderConflictError,
+    ScheduleReminderInputError,
+    ScheduleReminderNotFoundError,
+    ScheduleReminderPersistenceError,
+)
 from dante.platform.database.references import MaterialStateRef, NativeRef, ScopedRecordRef
 from dante.platform.database.runtime import DatabaseRuntime
 from dante.platform.http.problem import ProblemError
@@ -784,6 +791,15 @@ class EventAtomicScheduleChange(BaseModel):
     placement: EventSchedulePlacementRequest
 
 
+class EventAtomicReminderChange(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    schedule_ref: UUID
+    expected_state_ref: UUID | None = None
+    enabled: bool
+    lead_minutes: int = Field(ge=0, le=10080)
+
+
 class EventAtomicEditCommand(BaseModel):
     """One-off Event metadata, Agenda, Life Area, Reality and Objectives."""
 
@@ -794,6 +810,7 @@ class EventAtomicEditCommand(BaseModel):
     agenda: ReplaceEventAgendaRequest | None = None
     life_area: EventAtomicLifeAreaChange | None = None
     schedule: EventAtomicScheduleChange | None = None
+    reminder: EventAtomicReminderChange | None = None
     reality: RealityPolicyCommand | None = None
     objectives: ActivityObjectiveBatchCommand | None = None
 
@@ -806,6 +823,7 @@ class EventAtomicEditCommand(BaseModel):
                 self.agenda,
                 self.life_area,
                 self.schedule,
+                self.reminder,
                 self.reality,
                 self.objectives,
             )
@@ -954,15 +972,21 @@ async def apply_one_off_event_atomic_edit(
                     title="Recurring Event scope required",
                     detail="Select an Occurrence and an explicit edit scope.",
                 )
-            if body.schedule is not None:
-                change_schedule = body.schedule
+            target_schedule = (
+                body.schedule.schedule_ref
+                if body.schedule is not None
+                else body.reminder.schedule_ref
+                if body.reminder is not None
+                else None
+            )
+            if target_schedule is not None:
                 owned = (
                     await session.execute(
                         text("SELECT dante.assert_self_event_schedule(:actor,:event,:schedule)"),
                         {
                             "actor": actor,
                             "event": native_event,
-                            "schedule": change_schedule.schedule_ref,
+                            "schedule": target_schedule,
                         },
                     )
                 ).scalar_one()
@@ -974,6 +998,39 @@ async def apply_one_off_event_atomic_edit(
                         title="Event Schedule changed",
                         detail="Reload the Event before changing its Schedule.",
                     )
+            if body.reminder is not None:
+                change_reminder = body.reminder
+                if target_schedule != change_reminder.schedule_ref:
+                    raise ProblemError(
+                        status=422,
+                        code="temporal.event_edit.reminder_schedule_mismatch",
+                        category="validation",
+                        title="Invalid reminder target",
+                        detail="The reminder must belong to the revised Event Schedule.",
+                    )
+            async def configure_reminder() -> None:
+                assert body.reminder is not None
+                change_reminder = body.reminder
+                await ScheduleReminderApplication(runtime.session_factory).configure(
+                    self_person_ref=actor,
+                    schedule_ref=ScopedRecordRef(change_reminder.schedule_ref),
+                    operation_id=f"{body.operation_id}:reminder",
+                    expected_material_state_ref=(
+                        MaterialStateRef(change_reminder.expected_state_ref)
+                        if change_reminder.expected_state_ref is not None
+                        else None
+                    ),
+                    enabled=change_reminder.enabled,
+                    lead_minutes=change_reminder.lead_minutes,
+                    session=session,
+                )
+            # A date-span/floating conversion removes the exact start required by
+            # an active reminder. Disable it before revising the placement, in
+            # the same transaction, so the complete edit remains atomic.
+            if body.reminder is not None and not body.reminder.enabled:
+                await configure_reminder()
+            if body.schedule is not None:
+                change_schedule = body.schedule
                 await revise_schedule_in_session(
                     session,
                     self_person_ref=actor,
@@ -984,6 +1041,8 @@ async def apply_one_off_event_atomic_edit(
                     ),
                     placement=_placement_from_request(change_schedule.placement),
                 )
+            if body.reminder is not None and body.reminder.enabled:
+                await configure_reminder()
             if body.profile is not None:
                 change = body.profile
                 await session.execute(
@@ -1087,7 +1146,7 @@ async def apply_one_off_event_atomic_edit(
             title="Event Agenda changed",
             detail="Reload the Event and review the Agenda.",
         ) from exc
-    except (EventInputError, ScheduleInputError) as exc:
+    except (EventInputError, ScheduleInputError, ScheduleReminderInputError) as exc:
         raise ProblemError(
             status=422,
             code="temporal.event_edit.invalid_change",
@@ -1102,6 +1161,8 @@ async def apply_one_off_event_atomic_edit(
         ScheduleOperationIdReuseError,
         SchedulePlacementLockedError,
         ScheduleRevisionConflictError,
+        ScheduleReminderConflictError,
+        ScheduleReminderNotFoundError,
     ) as exc:
         raise ProblemError(
             status=409,
@@ -1137,7 +1198,11 @@ async def apply_one_off_event_atomic_edit(
             detail="The Event edit could not be saved.",
             retryable=True,
         ) from exc
-    except (EventPersistenceError, SchedulePersistenceError) as exc:
+    except (
+        EventPersistenceError,
+        SchedulePersistenceError,
+        ScheduleReminderPersistenceError,
+    ) as exc:
         raise ProblemError(
             status=503,
             code="temporal.event_edit.unavailable",

@@ -51,6 +51,12 @@ export type EventAtomicDraft = Readonly<{
     expectedMaterialStateRef: string;
     placement: EventSchedulePlacementInput;
   }>;
+  reminder?: Readonly<{
+    scheduleRef: string;
+    expectedStateRef: string | null;
+    enabled: boolean;
+    leadMinutes: number;
+  }>;
 }>;
 
 function object(value: unknown): Record<string, unknown> {
@@ -174,6 +180,16 @@ export function createRemoteEventProfileDataSource(
                     expected_material_state_ref:
                       changes.schedule.expectedMaterialStateRef,
                     placement: changes.schedule.placement,
+                  },
+                }
+              : {}),
+            ...(changes.reminder
+              ? {
+                  reminder: {
+                    schedule_ref: changes.reminder.scheduleRef,
+                    expected_state_ref: changes.reminder.expectedStateRef,
+                    enabled: changes.reminder.enabled,
+                    lead_minutes: changes.reminder.leadMinutes,
                   },
                 }
               : {}),
