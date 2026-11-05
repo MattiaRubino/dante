@@ -1,5 +1,20 @@
 # Timeline / Temporal-Operational — Workstream Handoff
 
+## 2026-11-05 — Owner rerun of selected Event edit
+
+On `9950bef` the owner reported the focused PostgreSQL gate **2 passed,
+1 failed**. The Event Occurrence Objective addition called
+`create_self_temporal_objective`, whose contract accepts only Activity/Event
+source subjects. The existing `create_self_occurrence_objective` owns this
+path. The Objective batch helper now selects that routine for occurrence
+subjects while preserving the same operation fingerprint and transaction.
+Focused Ruff check/format and diff whitespace checks passed; the PostgreSQL
+regression is **NOT_RUN** for this correction. The owner also reported Event
+Inspector Vitest **20 passed** and the Event editor scroll browser test
+**1 passed** at `9950bef`. Rerun only the previously failing PostgreSQL test
+before interpreting the aggregate as ready; full gate and visual acceptance
+remain unverified.
+
 ## 2026-11-05 — Owner-local red gate and correction candidate
 
 At `377768e` the owner's focused PostgreSQL run reported **12 passed, 1

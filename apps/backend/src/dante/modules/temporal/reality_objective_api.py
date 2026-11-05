@@ -855,12 +855,20 @@ async def _apply_objective_edits_in_session(
             },
         )
     for addition in payload.add:
+        if subject_kind == "occurrence":
+            statement = """
+                SELECT * FROM dante.create_self_occurrence_objective(
+                    :actor,:operation,:fingerprint,:objective,:subject,
+                    :label,:kind,:comparator,:target,:minimum,:maximum,:unit,:ordering)
+            """
+        else:
+            statement = """
+                SELECT * FROM dante.create_self_temporal_objective(
+                    :actor,:operation,:fingerprint,:objective,:subject_kind,:subject,
+                    :label,:kind,:comparator,:target,:minimum,:maximum,:unit,:ordering)
+            """
         await session.execute(
-            text("""
-            SELECT * FROM dante.create_self_temporal_objective(
-                :actor,:operation,:fingerprint,:objective,:subject_kind,:subject,
-                :label,:kind,:comparator,:target,:minimum,:maximum,:unit,:ordering)
-        """),
+            text(statement),
             {
                 "actor": actor,
                 "operation": addition.operation_id,
