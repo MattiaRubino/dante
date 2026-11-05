@@ -13,6 +13,7 @@ import {
   createRemoteTemporalEventAgendaDataSource,
   TemporalEventAgendaRemoteError,
 } from '../../../temporal/remote-event-agenda-data-source';
+import { subscribeTemporalTimelineInvalidation } from '../../../temporal/timeline-invalidation';
 
 import './timeline-event-agenda-editor.css';
 
@@ -96,6 +97,14 @@ function TimelineEventAgendaEditorInstance({
     });
     return () => controller.abort();
   }, [load]);
+
+  useEffect(
+    () =>
+      subscribeTemporalTimelineInvalidation(() => {
+        void load();
+      }),
+    [load],
+  );
 
   const replace = useCallback(
     async (agendaParts: readonly string[]): Promise<boolean> => {

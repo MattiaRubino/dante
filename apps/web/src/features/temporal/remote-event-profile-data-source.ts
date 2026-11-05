@@ -13,6 +13,15 @@ export type EventProfileDraft = Readonly<{
   colorCode: string | null;
 }>;
 
+export type EventAtomicDraft = Readonly<{
+  profile?: EventProfileDraft;
+  agendaParts?: readonly string[];
+  lifeArea?: Readonly<{
+    ref: string | null;
+    expectedRevision: number;
+  }>;
+}>;
+
 function object(value: unknown): Record<string, unknown> {
   if (value === null || typeof value !== 'object' || Array.isArray(value)) {
     throw new Error('Risposta profilo Event non valida.');
@@ -28,6 +37,108 @@ export function createRemoteEventProfileDataSource(
   return Object.freeze({
     load: (eventRef: string): Promise<TemporalEventDetailRecord> =>
       eventSource.loadEvent(eventRef),
+    async reviseAtomic(
+      eventRef: string,
+      current: TemporalEventDetailRecord,
+      changes: EventAtomicDraft,
+      operationId: string,
+    ): Promise<TemporalEventDetailRecord> {
+      const profile = changes.profile;
+      if (profile && !Number.isSafeInteger(current.profileRevision)) {
+        throw new Error('Revisione del profilo Event non disponibile.');
+      }
+      if (
+        changes.agendaParts &&
+        !Number.isSafeInteger(current.agendaRevision)
+      ) {
+        throw new Error('Revisione della Scaletta non disponibile.');
+      }
+      if (
+        changes.agendaParts?.some((part) => !part.trim() || part.length > 1000)
+      ) {
+        throw new Error('Completa ogni punto della Scaletta.');
+      }
+      const title = profile?.title.trim();
+      const description = profile?.description?.trim() || null;
+      const location = profile?.location?.trim() || null;
+      if (
+        profile &&
+        (!title ||
+          title.length > 300 ||
+          (profile.colorCode !== null &&
+            !/^#[0-9A-F]{6}$/.test(profile.colorCode)))
+      ) {
+        throw new Error('Il titolo o i metadati Event non sono validi.');
+      }
+      const authResponse = await request('/api/v1/auth/session');
+      const auth = object(await authResponse.json());
+      if (
+        !authResponse.ok ||
+        auth.authenticated !== true ||
+        typeof auth.csrf_token !== 'string' ||
+        !auth.csrf_token
+      ) {
+        throw new Error('Sessione non autenticata.');
+      }
+      const response = await request(
+        `/api/v1/temporal/events/${encodeURIComponent(eventRef)}/atomic-edit`,
+        {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+            'X-Dante-CSRF': auth.csrf_token,
+          },
+          body: JSON.stringify({
+            operation_id: operationId,
+            ...(profile
+              ? {
+                  profile: {
+                    operation_id: `${operationId}:profile`,
+                    expected_revision: current.profileRevision,
+                    title,
+                    description,
+                    location,
+                    color_code: profile.colorCode,
+                  },
+                }
+              : {}),
+            ...(changes.agendaParts
+              ? {
+                  agenda: {
+                    operation_id: `${operationId}:agenda`,
+                    expected_revision: current.agendaRevision,
+                    agenda_parts: changes.agendaParts,
+                  },
+                }
+              : {}),
+            ...(changes.lifeArea
+              ? {
+                  life_area: {
+                    life_area_ref: changes.lifeArea.ref,
+                    expected_assignment_revision:
+                      changes.lifeArea.expectedRevision,
+                  },
+                }
+              : {}),
+          }),
+        },
+      );
+      if (!response.ok) {
+        throw new Error(
+          response.status === 409
+            ? 'L’Evento è cambiato: riapri la modifica e riprova.'
+            : 'Impossibile salvare le modifiche Event.',
+        );
+      }
+      const accepted = object(await response.json());
+      const event = object(accepted.event);
+      if (event.event_ref !== eventRef) {
+        throw new Error('Conferma modifica Event non valida.');
+      }
+      invalidateTemporalPlanningRead();
+      invalidateTemporalTimelineRead();
+      return eventSource.loadEvent(eventRef);
+    },
     async revise(
       eventRef: string,
       current: TemporalEventDetailRecord,

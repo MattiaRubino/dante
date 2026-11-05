@@ -30,6 +30,81 @@ function json(body: unknown, status = 200): Response {
 }
 
 describe('owner-scoped Event profile CAS source', () => {
+  it('submits Event profile, Scaletta and Life Area as one atomic command', async () => {
+    const submitted: unknown[] = [];
+    let saved = false;
+    const fetchFn = vi.fn<typeof globalThis.fetch>((input, init) => {
+      const url = fetchRequestUrl(input);
+      if (url === '/api/v1/auth/session') {
+        return Promise.resolve(
+          json({ authenticated: true, csrf_token: 'csrf' }),
+        );
+      }
+      if (url === '/api/v1/temporal/events/' + EVENT) {
+        return Promise.resolve(
+          json({
+            ...original,
+            ...(saved
+              ? {
+                  title: 'Nuova conferenza',
+                  agenda_revision: 1,
+                  agenda_parts: ['Apertura'],
+                }
+              : {}),
+          }),
+        );
+      }
+      if (url === '/api/v1/temporal/events/' + EVENT + '/atomic-edit') {
+        expect(init?.method).toBe('PUT');
+        submitted.push(JSON.parse(fetchRequestBody(init?.body)) as unknown);
+        saved = true;
+        return Promise.resolve(
+          json({ event: { ...original }, objectives: [] }),
+        );
+      }
+      throw new Error('Unexpected Event route ' + url);
+    });
+    const source = createRemoteEventProfileDataSource(fetchFn);
+    const current = await source.load(EVENT);
+    const result = await source.reviseAtomic(
+      EVENT,
+      current,
+      {
+        profile: {
+          title: 'Nuova conferenza',
+          description: null,
+          location: null,
+          colorCode: null,
+        },
+        agendaParts: ['Apertura'],
+        lifeArea: { ref: null, expectedRevision: 2 },
+      },
+      'event:atomic:1',
+    );
+    expect(submitted).toEqual([
+      {
+        operation_id: 'event:atomic:1',
+        profile: {
+          operation_id: 'event:atomic:1:profile',
+          expected_revision: 1,
+          title: 'Nuova conferenza',
+          description: null,
+          location: null,
+          color_code: null,
+        },
+        agenda: {
+          operation_id: 'event:atomic:1:agenda',
+          expected_revision: 0,
+          agenda_parts: ['Apertura'],
+        },
+        life_area: {
+          life_area_ref: null,
+          expected_assignment_revision: 2,
+        },
+      },
+    ]);
+    expect(result.agendaParts).toEqual(['Apertura']);
+  });
   it('uses accepted revision + operation ID and refreshes canonical Event', async () => {
     const sent: unknown[] = [];
     let changed = false;

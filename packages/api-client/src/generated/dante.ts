@@ -77,6 +77,8 @@ import type {
   EstablishOccurrenceScheduleRequest,
   EvaluateTemporalConstraintsRequest,
   EventAgendaMutationResponse,
+  EventAtomicEditCommand,
+  EventAtomicEditResponse,
   EventDeletionOccurrenceChoice,
   EventResponse,
   ExecutionAssessmentResponse,
@@ -8251,6 +8253,79 @@ export const replaceEventAgendaApiV1TemporalEventsEventRefAgendaPut = async (
     status: res.status,
     headers: res.headers,
   } as replaceEventAgendaApiV1TemporalEventsEventRefAgendaPutResponse;
+};
+
+export type temporalApplyOneOffEventAtomicEditResponse200 = {
+  data: EventAtomicEditResponse;
+  status: 200;
+};
+
+export type temporalApplyOneOffEventAtomicEditResponse422 = {
+  data: HTTPValidationError;
+  status: 422;
+};
+
+export type temporalApplyOneOffEventAtomicEditResponseSuccess =
+  temporalApplyOneOffEventAtomicEditResponse200 & {
+    headers: Headers;
+  };
+export type temporalApplyOneOffEventAtomicEditResponseError =
+  temporalApplyOneOffEventAtomicEditResponse422 & {
+    headers: Headers;
+  };
+
+export type temporalApplyOneOffEventAtomicEditResponse =
+  | temporalApplyOneOffEventAtomicEditResponseSuccess
+  | temporalApplyOneOffEventAtomicEditResponseError;
+
+export const getTemporalApplyOneOffEventAtomicEditUrl = (eventRef: string) => {
+  return `/api/v1/temporal/events/${eventRef}/atomic-edit`;
+};
+
+/**
+ * Commit the one-off Event's supported edits in one transaction.
+ *
+ * Recurring sources require an explicit occurrence scope; this command
+ * cannot silently flatten a series or partially persist its descendants.
+ * @summary Apply One Off Event Atomic Edit
+ */
+export const temporalApplyOneOffEventAtomicEdit = async (
+  eventRef: string,
+  eventAtomicEditCommand: EventAtomicEditCommand,
+  options?: RequestInit,
+  fetchFn?: typeof globalThis.fetch,
+): Promise<temporalApplyOneOffEventAtomicEditResponse> => {
+  const getHeaders = (
+    h?: NonNullable<RequestInit['headers']>,
+  ): Record<string, string | readonly string[]> => {
+    if (!h) return {};
+    if (h instanceof Headers) return Object.fromEntries(h.entries());
+    if (Array.isArray(h)) return Object.fromEntries(h);
+    return h;
+  };
+  const res = await (fetchFn ?? fetch)(
+    getTemporalApplyOneOffEventAtomicEditUrl(eventRef),
+    {
+      ...options,
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+        ...getHeaders(options?.headers),
+      },
+      body: JSON.stringify(eventAtomicEditCommand),
+    },
+  );
+
+  const body = [204, 205, 304].includes(res.status) ? null : await res.text();
+
+  const data: temporalApplyOneOffEventAtomicEditResponse['data'] = body
+    ? JSON.parse(body)
+    : {};
+  return {
+    data,
+    status: res.status,
+    headers: res.headers,
+  } as temporalApplyOneOffEventAtomicEditResponse;
 };
 
 export type temporalListEventDeletionOccurrencesResponse200 = {

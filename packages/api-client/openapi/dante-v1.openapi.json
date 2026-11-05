@@ -6953,6 +6953,103 @@
         "title": "EventAgendaMutationResponse",
         "type": "object"
       },
+      "EventAtomicEditCommand": {
+        "additionalProperties": false,
+        "description": "One-off Event metadata, Agenda, Life Area and Objective changes.",
+        "properties": {
+          "agenda": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ReplaceEventAgendaRequest"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "life_area": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/EventAtomicLifeAreaChange"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "objectives": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ActivityObjectiveBatchCommand"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "operation_id": {
+            "maxLength": 140,
+            "minLength": 1,
+            "title": "Operation Id",
+            "type": "string"
+          },
+          "profile": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ReviseEventProfileRequest"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "required": ["operation_id"],
+        "title": "EventAtomicEditCommand",
+        "type": "object"
+      },
+      "EventAtomicEditResponse": {
+        "properties": {
+          "event": {
+            "$ref": "#/components/schemas/EventResponse"
+          },
+          "objectives": {
+            "items": {
+              "$ref": "#/components/schemas/ObjectiveResponse"
+            },
+            "title": "Objectives",
+            "type": "array"
+          }
+        },
+        "required": ["event", "objectives"],
+        "title": "EventAtomicEditResponse",
+        "type": "object"
+      },
+      "EventAtomicLifeAreaChange": {
+        "additionalProperties": false,
+        "properties": {
+          "expected_assignment_revision": {
+            "minimum": 0.0,
+            "title": "Expected Assignment Revision",
+            "type": "integer"
+          },
+          "life_area_ref": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Life Area Ref"
+          }
+        },
+        "required": ["expected_assignment_revision", "life_area_ref"],
+        "title": "EventAtomicLifeAreaChange",
+        "type": "object"
+      },
       "EventCoarseLocalPeriodPlacementRequest": {
         "additionalProperties": false,
         "properties": {
@@ -31695,6 +31792,58 @@
           }
         },
         "summary": "Replace Event Agenda",
+        "tags": ["temporal"]
+      }
+    },
+    "/api/v1/temporal/events/{event_ref}/atomic-edit": {
+      "put": {
+        "description": "Commit the one-off Event's supported edits in one transaction.\n\nRecurring sources require an explicit occurrence scope; this command\ncannot silently flatten a series or partially persist its descendants.",
+        "operationId": "temporal_apply_one_off_event_atomic_edit",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "event_ref",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Event Ref",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/EventAtomicEditCommand"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EventAtomicEditResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Apply One Off Event Atomic Edit",
         "tags": ["temporal"]
       }
     },

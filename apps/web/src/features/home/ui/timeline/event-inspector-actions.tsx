@@ -32,6 +32,7 @@ import { createRemoteTemporalEventAgendaDataSource } from '../../../temporal/rem
 import { createRemoteTemporalResponsibilityDataSource } from '../../../temporal/remote-responsibility-data-source';
 import { systemTemporalIdFactory } from '../../../temporal/model';
 import type { ActivityDuplicateSeed } from '../../../temporal-create/application/activity-duplicate-seed';
+import { TemporalCreateEventAgenda } from '../../../temporal-create/ui/temporal-create-event-agenda';
 import { buildEventDuplicateSeed } from '../../../temporal-create/application/event-duplicate-seed';
 import type { TimelineCanonicalSchedulePlacement } from './model/timeline-types';
 import { TimelineInspectorIcon } from './timeline-inspector-icon';
@@ -86,6 +87,7 @@ export function EventInspectorActions({
   const [profileDraft, setProfileDraft] = useState<EventProfileDraft | null>(
     null,
   );
+  const [agendaDraft, setAgendaDraft] = useState<readonly string[]>([]);
   const [areaChoice, setAreaChoice] = useState<EventLifeAreaChoice | null>(
     null,
   );
@@ -131,10 +133,12 @@ export function EventInspectorActions({
     setBusy(true);
     setError('');
     try {
-      const loaded =
+      const [loaded, area] = await Promise.all([
         context && occurrenceRef && eventSource.loadOccurrenceEvent
-          ? await eventSource.loadOccurrenceEvent(occurrenceRef)
-          : await profileSource.load(eventRef);
+          ? eventSource.loadOccurrenceEvent(occurrenceRef)
+          : profileSource.load(eventRef),
+        context ? Promise.resolve(null) : areaSource.load(eventRef),
+      ]);
       if (loaded.profileRevision === undefined) {
         throw new Error('Revisione del profilo Event non disponibile.');
       }
@@ -143,6 +147,9 @@ export function EventInspectorActions({
         : {};
       const effective = { ...loaded, ...patch };
       setProfile(effective);
+      setAgendaDraft(effective.agendaParts ?? []);
+      setAreaChoice(area);
+      setAreaSelection(area?.currentRef ?? '');
       setProfileDraft({
         title: effective.title,
         description: effective.description ?? null,
@@ -208,7 +215,14 @@ export function EventInspectorActions({
         profileDraft.title !== profile.title ||
         (profileDraft.description ?? '') !== (profile.description ?? '') ||
         (profileDraft.location ?? '') !== (profile.location ?? '') ||
-        (profileDraft.colorCode ?? '') !== (profile.colorCode ?? '');
+        (profileDraft.colorCode ?? '') !== (profile.colorCode ?? '') ||
+        agendaDraft.some(
+          (part, index) => part !== profile.agendaParts?.[index],
+        ) ||
+        agendaDraft.length !== (profile.agendaParts?.length ?? 0) ||
+        (!recurringContext &&
+          areaChoice !== null &&
+          (areaSelection || null) !== areaChoice.currentRef);
       if (
         changed &&
         !window.confirm('Scartare le modifiche Event non salvate?')
@@ -263,17 +277,53 @@ export function EventInspectorActions({
           systemTemporalIdFactory.operationId(),
         );
       } else {
-        await profileSource.revise(
-          eventRef,
-          profile,
-          normalized,
-          systemTemporalIdFactory.operationId(),
-        );
+        const profileChanged =
+          normalized.title !== profile.title ||
+          normalized.description !== (profile.description ?? null) ||
+          normalized.location !== (profile.location ?? null) ||
+          normalized.colorCode !== (profile.colorCode ?? null);
+        const agendaChanged =
+          agendaDraft.length !== (profile.agendaParts?.length ?? 0) ||
+          agendaDraft.some(
+            (part, index) => part !== profile.agendaParts?.[index],
+          );
+        const areaChanged =
+          areaChoice !== null &&
+          (areaSelection || null) !== areaChoice.currentRef;
+        if (!profileChanged && !agendaChanged && !areaChanged) {
+          throw new Error('Nessuna modifica da salvare.');
+        }
+        if (agendaChanged || areaChanged) {
+          await profileSource.reviseAtomic(
+            eventRef,
+            profile,
+            {
+              ...(profileChanged ? { profile: normalized } : {}),
+              ...(agendaChanged ? { agendaParts: agendaDraft } : {}),
+              ...(areaChanged && areaChoice
+                ? {
+                    lifeArea: {
+                      ref: areaSelection || null,
+                      expectedRevision: areaChoice.currentRevision,
+                    },
+                  }
+                : {}),
+            },
+            systemTemporalIdFactory.operationId(),
+          );
+        } else {
+          await profileSource.revise(
+            eventRef,
+            profile,
+            normalized,
+            systemTemporalIdFactory.operationId(),
+          );
+        }
       }
       setProfile(null);
       setProfileDraft(null);
       setEditingProfile(false);
-      setProfileNotice('Metadati Event aggiornati.');
+      setProfileNotice('Evento aggiornato.');
     } catch (reason) {
       setError(
         reason instanceof Error ? reason.message : 'Modifica Event rifiutata.',
@@ -618,6 +668,32 @@ export function EventInspectorActions({
                 />
               </label>
             </div>
+            {!recurringContext ? (
+              <>
+                <TemporalCreateEventAgenda
+                  parts={agendaDraft}
+                  maxPartLength={1000}
+                  onChange={setAgendaDraft}
+                />
+                {areaChoice ? (
+                  <label className="timeline-event-profile-editor__area">
+                    Life Area (opzionale)
+                    <select
+                      disabled={busy}
+                      value={areaSelection}
+                      onChange={(event) => setAreaSelection(event.target.value)}
+                    >
+                      <option value="">Nessuna Life Area</option>
+                      {areaChoice.options.map((row) => (
+                        <option key={row.ref} value={row.ref}>
+                          {row.name}
+                        </option>
+                      ))}
+                    </select>
+                  </label>
+                ) : null}
+              </>
+            ) : null}
             <section
               className="timeline-event-profile-editor__details"
               aria-label="Dettagli Event"
@@ -643,7 +719,9 @@ export function EventInspectorActions({
                   value={profileDraft.colorCode ?? ''}
                   onChange={(event) => {
                     const colorCode = event.currentTarget.value || null;
-                    setProfileDraft((draft) => draft && { ...draft, colorCode });
+                    setProfileDraft(
+                      (draft) => draft && { ...draft, colorCode },
+                    );
                   }}
                 />
               </label>
@@ -674,7 +752,7 @@ export function EventInspectorActions({
               disabled={busy || !profileDraft.title.trim()}
               onClick={() => void saveProfile()}
             >
-              Salva metadati Event
+              Salva modifiche
             </button>
           </div>
         </div>

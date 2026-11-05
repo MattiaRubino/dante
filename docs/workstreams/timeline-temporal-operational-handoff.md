@@ -28,6 +28,29 @@ calls under a misleading all-fields Save. The Inspector Agenda/objective
 presentation and all-fields Event editor are still open. No local test or CI
 was run for this visual checkpoint; the owner requested to run the checks.
 
+The following candidate adds `PUT /api/v1/temporal/events/{ref}/atomic-edit`
+for a **one-off** Event. It serializes supported profile, Agenda, primary
+Life Area and Objective changes under one serializable transaction, rejects a
+recurring source, and re-reads the Event after acceptance. The regression
+checks that a stale Agenda rolls back an earlier profile revision in the same
+request, then that profile/Agenda/Objective changes commit together. Ordinary
+Event Edit now shows the shared Scaletta rows and Life Area selection and
+submits combined changes to this endpoint. Profile-only edits retain their
+existing single-profile CAS path; recurring `only_this` retains its profile
+patch path. This candidate has **NOT RUN** in the user's PostgreSQL/browser
+environment. Schedule, recurrence transition, reminder, participation,
+execution policy and Objective form controls are still missing from ordinary
+Event Edit; the selected recurring occurrence lacks its full aggregate Save.
+The button does not claim those fields were saved. A full visual and behavior
+acceptance remains blocked until those paths are implemented and proven.
+The OpenAPI snapshot and Orval client are regenerated from this endpoint.
+The repository-pinned uv/Node/pnpm versions were unavailable in the scratch
+runtime; generation used the installed versions under temporary local engine
+overrides, then restored both manifests byte-for-byte. The owner's pinned
+toolchain should verify generated drift as part of the next gate. The
+Inspector Scaletta read now refreshes after a successful Event edit
+invalidation instead of retaining the old mounted copy.
+
 ## 2026-11-04 — Unified Activity edit candidate (in progress)
 
 The ordinary Activity editor and the recurring `only_this` path now compose

@@ -21,6 +21,7 @@ const listPersonReferents = vi.fn();
 const loadArea = vi.fn();
 const loadProfile = vi.fn();
 const reviseProfile = vi.fn();
+const reviseAtomic = vi.fn();
 const isRecurring = vi.fn().mockResolvedValue(false);
 const assignArea = vi.fn();
 const previewHardDeletion = vi.fn();
@@ -66,6 +67,7 @@ vi.mock('../../../temporal/remote-event-profile-data-source', () => ({
   createRemoteEventProfileDataSource: () => ({
     load: loadProfile,
     revise: reviseProfile,
+    reviseAtomic,
   }),
 }));
 vi.mock('../../../temporal/remote-event-life-area-settings', () => ({
@@ -149,9 +151,7 @@ describe('Event Inspector actions', () => {
     fireEvent.change(title, {
       target: { value: 'Conferenza locale aggiornata' },
     });
-    fireEvent.click(
-      screen.getByRole('button', { name: 'Salva metadati Event' }),
-    );
+    fireEvent.click(screen.getByRole('button', { name: 'Salva modifiche' }));
     await waitFor(() =>
       expect(saveRecurringEvent).toHaveBeenCalledWith(
         context,
@@ -478,9 +478,7 @@ describe('Event Inspector actions', () => {
         target: { value: 'Incontro' },
       },
     );
-    fireEvent.click(
-      screen.getByRole('button', { name: 'Salva metadati Event' }),
-    );
+    fireEvent.click(screen.getByRole('button', { name: 'Salva modifiche' }));
     await waitFor(() =>
       expect(reviseProfile).toHaveBeenCalledWith(
         eventRef,
@@ -494,8 +492,80 @@ describe('Event Inspector actions', () => {
         expect.any(String),
       ),
     );
-    expect(await screen.findByText('Metadati Event aggiornati.')).toBeTruthy();
+    expect(await screen.findByText('Evento aggiornato.')).toBeTruthy();
     expect(onDuplicate).not.toHaveBeenCalled();
+  });
+
+  it('saves Event metadata, Scaletta and Life Area in one aggregate request', async () => {
+    const current = {
+      eventRef,
+      title: 'Conferenza',
+      description: null,
+      location: null,
+      colorCode: null,
+      profileRevision: 1,
+      agendaRevision: 2,
+      agendaParts: ['Apertura'],
+      lifeAreaRef: null,
+    };
+    loadProfile.mockResolvedValue(current);
+    loadArea.mockResolvedValue({
+      options: [{ ref: 'area-1', name: 'Lavoro' }],
+      currentRef: null,
+      currentRevision: 0,
+    });
+    reviseAtomic.mockResolvedValue({
+      ...current,
+      title: 'Incontro',
+      agendaParts: ['Apertura', 'Discussione'],
+      lifeAreaRef: 'area-1',
+    });
+    render(
+      <EventInspectorActions
+        eventRef={eventRef}
+        placement={placement}
+        onDuplicate={vi.fn()}
+      />,
+    );
+    fireEvent.click(screen.getByRole('button', { name: /^Modifica$/ }));
+    fireEvent.change(
+      await screen.findByRole('textbox', { name: 'Titolo Event' }),
+      { target: { value: 'Incontro' } },
+    );
+    fireEvent.click(
+      screen.getByRole('button', { name: 'Aggiungi punto alla scaletta' }),
+    );
+    fireEvent.change(
+      screen.getByRole('textbox', { name: 'Punto scaletta 2' }),
+      {
+        target: { value: 'Discussione' },
+      },
+    );
+    fireEvent.change(
+      screen.getByRole('combobox', { name: 'Life Area (opzionale)' }),
+      {
+        target: { value: 'area-1' },
+      },
+    );
+    fireEvent.click(screen.getByRole('button', { name: 'Salva modifiche' }));
+    await waitFor(() =>
+      expect(reviseAtomic).toHaveBeenCalledWith(
+        eventRef,
+        current,
+        {
+          profile: {
+            title: 'Incontro',
+            description: null,
+            location: null,
+            colorCode: null,
+          },
+          agendaParts: ['Apertura', 'Discussione'],
+          lifeArea: { ref: 'area-1', expectedRevision: 0 },
+        },
+        expect.any(String),
+      ),
+    );
+    expect(reviseProfile).not.toHaveBeenCalled();
   });
 
   it('opens the Event profile editor as a centered, bounded modal', async () => {
@@ -690,9 +760,7 @@ describe('Event Inspector actions', () => {
     fireEvent.click(screen.getByRole('button', { name: /^Modifica$/ }));
     const title = await screen.findByRole('textbox', { name: 'Titolo Event' });
     fireEvent.change(title, { target: { value: 'Nuovo titolo' } });
-    fireEvent.click(
-      screen.getByRole('button', { name: 'Salva metadati Event' }),
-    );
+    fireEvent.click(screen.getByRole('button', { name: 'Salva modifiche' }));
     expect((await screen.findByRole('alert')).textContent).toContain(
       'è cambiato',
     );

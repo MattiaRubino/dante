@@ -1879,6 +1879,19 @@
   flex: 0 0 auto;
 }
 
+.timeline-event-profile-editor__body .temporal-create-event-agenda {
+  flex: 0 0 auto;
+}
+
+.timeline-event-profile-editor__area {
+  display: grid;
+  gap: 6px;
+  padding: 12px 16px;
+  border: 1px solid var(--dante-semantic-color-home-border-subtle);
+  border-radius: 10px;
+  background: var(--dante-semantic-color-home-surface-control, #172329);
+}
+
 .timeline-event-profile-editor__details,
 .timeline-event-profile-editor__description {
   display: grid;

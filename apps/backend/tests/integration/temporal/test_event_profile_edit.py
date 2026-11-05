@@ -2,11 +2,13 @@
 
 from __future__ import annotations
 
-from typing import Any
+from types import SimpleNamespace
+from typing import Any, cast
 from uuid import uuid7
 
 import psycopg
 import pytest
+from fastapi import Request, Response
 from sqlalchemy import text
 from sqlalchemy.exc import DBAPIError
 from tests.integration.temporal.test_primary_life_area_assignment import (
@@ -14,7 +16,12 @@ from tests.integration.temporal.test_primary_life_area_assignment import (
     _seed_self,
 )
 
+from dante.context.contracts import DanteContext
 from dante.modules.temporal.event import TemporalEventApplication
+from dante.modules.temporal.event_api import (
+    EventAtomicEditCommand,
+    apply_one_off_event_atomic_edit,
+)
 from dante.modules.temporal.reality_objective_api import (
     ActivityObjectiveBatchCommand,
     apply_event_objective_edits_in_session,
@@ -41,6 +48,83 @@ _RETIRE_OBJECTIVE = text("""
         :actor,:objective,:operation,:fingerprint,:expected
     )
 """)
+
+
+@pytest.mark.asyncio
+async def test_one_off_event_atomic_edit_rolls_back_profile_on_stale_agenda(
+    migrated_database: Any,
+) -> None:
+    owner = _seed_self(migrated_database)
+    event = _legacy_event(migrated_database, owner, "Original")
+    runtime = create_database_runtime(migrated_database.runtime_settings())
+    context = cast(
+        DanteContext,
+        SimpleNamespace(self_person_ref=owner, effective_zone_id="Europe/Rome"),
+    )
+    request = Request(
+        {
+            "type": "http",
+            "app": SimpleNamespace(state=SimpleNamespace(database_runtime=runtime)),
+        }
+    )
+    application = TemporalEventApplication(runtime.session_factory)
+    try:
+        stale = EventAtomicEditCommand.model_validate(
+            {
+                "operation_id": "event:atomic:stale",
+                "profile": {
+                    "operation_id": "event:atomic:stale:profile",
+                    "expected_revision": 0,
+                    "title": "Changed",
+                },
+                "agenda": {
+                    "operation_id": "event:atomic:stale:agenda",
+                    "expected_revision": 12,
+                    "agenda_parts": ["Introduction"],
+                },
+            }
+        )
+        with pytest.raises(ProblemError) as failure:
+            await apply_one_off_event_atomic_edit(event, stale, context, request, Response())
+        assert failure.value.status == 409
+        unchanged = await application.get_event(self_person_ref=owner, event_ref=event)
+        assert unchanged is not None
+        assert unchanged.title == "Original"
+        assert unchanged.profile_revision == 0
+        assert unchanged.agenda_parts == ()
+
+        accepted = EventAtomicEditCommand.model_validate(
+            {
+                "operation_id": "event:atomic:accepted",
+                "profile": {
+                    "operation_id": "event:atomic:accepted:profile",
+                    "expected_revision": 0,
+                    "title": "Changed",
+                },
+                "agenda": {
+                    "operation_id": "event:atomic:accepted:agenda",
+                    "expected_revision": 0,
+                    "agenda_parts": ["Introduction"],
+                },
+                "objectives": {
+                    "add": [
+                        {
+                            "operation_id": "event:atomic:objective",
+                            "label": "Result",
+                            "result_kind": "boolean",
+                            "presentation_order": 0,
+                        }
+                    ]
+                },
+            }
+        )
+        saved = await apply_one_off_event_atomic_edit(event, accepted, context, request, Response())
+        assert saved.event.title == "Changed"
+        assert saved.event.profile_revision == 1
+        assert saved.event.agenda_parts == ["Introduction"]
+        assert [row.label for row in saved.objectives] == ["Result"]
+    finally:
+        await runtime.dispose()
 
 
 @pytest.mark.asyncio

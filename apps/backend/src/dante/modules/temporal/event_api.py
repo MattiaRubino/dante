@@ -7,7 +7,7 @@ from typing import Annotated, Any, Literal, cast
 from uuid import UUID
 
 from fastapi import APIRouter, Depends, Request, Response
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel, ConfigDict, Field, model_validator
 from sqlalchemy import text
 from sqlalchemy.exc import DBAPIError, SQLAlchemyError
 
@@ -27,6 +27,15 @@ from dante.modules.temporal.event import (
     EventView,
     PostponedEventView,
     TemporalEventApplication,
+    _read_event_in_session,
+)
+from dante.modules.temporal.life_area_assignment import (
+    _fingerprint as assignment_fingerprint,
+)
+from dante.modules.temporal.reality_objective_api import (
+    ActivityObjectiveBatchCommand,
+    ObjectiveResponse,
+    apply_event_objective_edits_in_session,
 )
 from dante.modules.temporal.schedule import (
     AbsoluteIntervalPlacement,
@@ -752,6 +761,38 @@ class RevisedEventProfileResponse(BaseModel):
     replayed: bool
 
 
+class EventAtomicLifeAreaChange(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    expected_assignment_revision: int = Field(ge=0)
+    life_area_ref: UUID | None
+
+
+class EventAtomicEditCommand(BaseModel):
+    """One-off Event metadata, Agenda, Life Area and Objective changes."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    operation_id: str = Field(min_length=1, max_length=140)
+    profile: ReviseEventProfileRequest | None = None
+    agenda: ReplaceEventAgendaRequest | None = None
+    life_area: EventAtomicLifeAreaChange | None = None
+    objectives: ActivityObjectiveBatchCommand | None = None
+
+    @model_validator(mode="after")
+    def nonempty(self) -> EventAtomicEditCommand:
+        if all(
+            value is None for value in (self.profile, self.agenda, self.life_area, self.objectives)
+        ):
+            raise ValueError("Select at least one Event change.")
+        return self
+
+
+class EventAtomicEditResponse(BaseModel):
+    event: EventResponse
+    objectives: list[ObjectiveResponse]
+
+
 @router.put(
     "/events/{event_ref}/profile",
     response_model=RevisedEventProfileResponse,
@@ -840,3 +881,177 @@ async def revise_event_profile(
             retryable=True,
         ) from exc
     return RevisedEventProfileResponse(**accepted)
+
+
+@router.put(
+    "/events/{event_ref}/atomic-edit",
+    response_model=EventAtomicEditResponse,
+    operation_id="temporal_apply_one_off_event_atomic_edit",
+)
+async def apply_one_off_event_atomic_edit(
+    event_ref: UUID,
+    body: EventAtomicEditCommand,
+    context: MutatingDanteContextDependency,
+    request: Request,
+    response: Response,
+) -> EventAtomicEditResponse:
+    """Commit the one-off Event's supported edits in one transaction.
+
+    Recurring sources require an explicit occurrence scope; this command
+    cannot silently flatten a series or partially persist its descendants.
+    """
+    response.headers["Cache-Control"] = "no-store"
+    actor = context.self_person_ref
+    native_event = NativeRef(event_ref)
+    runtime = cast(DatabaseRuntime, request.app.state.database_runtime)
+    try:
+        async with runtime.session_factory() as session, session.begin():
+            await session.execute(text("SET TRANSACTION ISOLATION LEVEL SERIALIZABLE"))
+            await session.execute(
+                text("SELECT pg_advisory_xact_lock(hashtextextended(:key,0))"),
+                {"key": f"event-atomic:{actor}:{event_ref}"},
+            )
+            current = await _read_event_in_session(
+                session, self_person_ref=actor, event_ref=native_event
+            )
+            if current is None:
+                raise _not_found_problem()
+            recurrence = await session.execute(
+                text("SELECT 1 FROM dante.get_self_event_recurrence(:actor,:source) LIMIT 1"),
+                {"actor": actor, "source": native_event},
+            )
+            if recurrence.first() is not None:
+                raise ProblemError(
+                    status=409,
+                    code="temporal.event_edit.recurring_source",
+                    category="conflict",
+                    title="Recurring Event scope required",
+                    detail="Select an Occurrence and an explicit edit scope.",
+                )
+            if body.profile is not None:
+                change = body.profile
+                await session.execute(
+                    text("""
+                        SELECT * FROM dante.revise_self_event_profile(
+                            :actor,:event,:operation,:expected,:title,
+                            :description,:location,:color)
+                    """),
+                    {
+                        "actor": actor,
+                        "event": native_event,
+                        "operation": change.operation_id,
+                        "expected": change.expected_revision,
+                        "title": change.title,
+                        "description": change.description,
+                        "location": change.location,
+                        "color": change.color_code,
+                    },
+                )
+            if body.agenda is not None:
+                change_agenda = body.agenda
+                await TemporalEventApplication(runtime.session_factory).replace_agenda_in_session(
+                    session,
+                    self_person_ref=actor,
+                    event_ref=native_event,
+                    operation_id=change_agenda.operation_id,
+                    expected_revision=change_agenda.expected_revision,
+                    agenda_parts=change_agenda.agenda_parts,
+                )
+            if body.life_area is not None:
+                change_area = body.life_area
+                await session.execute(
+                    text("""
+                        SELECT * FROM dante.assign_self_event_life_area(
+                            :actor,:operation,:fingerprint,:event,:area,:expected)
+                    """),
+                    {
+                        "actor": actor,
+                        "operation": f"{body.operation_id}:area",
+                        "fingerprint": assignment_fingerprint(
+                            kind="event",
+                            subject_ref=native_event,
+                            life_area_ref=change_area.life_area_ref,
+                            expected=change_area.expected_assignment_revision,
+                        ),
+                        "event": native_event,
+                        "area": change_area.life_area_ref,
+                        "expected": change_area.expected_assignment_revision,
+                    },
+                )
+            objectives = (
+                await apply_event_objective_edits_in_session(
+                    session,
+                    actor=actor,
+                    subject_ref=event_ref,
+                    payload=body.objectives,
+                    effective_zone_id=context.effective_zone_id,
+                )
+                if body.objectives is not None
+                else []
+            )
+            saved = await _read_event_in_session(
+                session, self_person_ref=actor, event_ref=native_event
+            )
+            if saved is None:
+                raise _not_found_problem()
+            return EventAtomicEditResponse(event=_event_response(saved), objectives=objectives)
+    except EventAgendaRevisionConflictError as exc:
+        raise ProblemError(
+            status=409,
+            code="temporal.event_edit.agenda_conflict",
+            category="conflict",
+            title="Event Agenda changed",
+            detail="Reload the Event and review the Agenda.",
+        ) from exc
+    except EventInputError as exc:
+        raise ProblemError(
+            status=422,
+            code="temporal.event_edit.invalid_agenda",
+            category="validation",
+            title="Invalid Event Agenda",
+            detail=str(exc),
+        ) from exc
+    except (EventOperationIdReuseError, EventNotFoundError) as exc:
+        raise ProblemError(
+            status=409,
+            code="temporal.event_edit.conflict",
+            category="conflict",
+            title="Event changed",
+            detail="Reload the Event before saving.",
+        ) from exc
+    except DBAPIError as exc:
+        constraint = getattr(getattr(exc.orig, "diag", None), "constraint_name", None)
+        if constraint or getattr(exc.orig, "sqlstate", None) in {"40001", "23505"}:
+            raise ProblemError(
+                status=409,
+                code="temporal.event_edit.conflict",
+                category="conflict",
+                title="Event changed",
+                detail="Reload the Event before saving.",
+            ) from exc
+        raise ProblemError(
+            status=503,
+            code="temporal.event_edit.unavailable",
+            category="service",
+            title="Event unavailable",
+            detail="The Event edit could not be saved.",
+            retryable=True,
+        ) from exc
+    except SQLAlchemyError as exc:
+        raise ProblemError(
+            status=503,
+            code="temporal.event_edit.unavailable",
+            category="service",
+            title="Event unavailable",
+            detail="The Event edit could not be saved.",
+            retryable=True,
+        ) from exc
+    except EventPersistenceError as exc:
+        raise ProblemError(
+            status=503,
+            code="temporal.event_edit.unavailable",
+            category="service",
+            title="Event unavailable",
+            detail="The Event edit could not be saved.",
+            retryable=True,
+        ) from exc
