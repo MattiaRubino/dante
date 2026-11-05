@@ -42,13 +42,14 @@ failures.
 This work is **not complete**. The one-off Event Edit has an atomic command
 for profile, Schedule, reminder, Agenda, Life Area, Reality, Objectives and
 expected participants, and its form now shares the corresponding controls
-and field order with Create/Activity Edit. The user has not yet run the new
-focused checks or visually accepted this SHA. Do not describe the following
-recurrence work as complete merely because its modal renders many fields.
+and field order with Create/Activity Edit. The owner ran the two focused web
+suites at `68ea1a396` (37/37 passed); visual acceptance and the broader
+gates are still pending. Do not describe the following recurrence work as
+complete merely because its modal renders many fields.
 
 | Event edit scope | Persisted today | Required before parity closure |
 | --- | --- | --- |
-| One-off | Atomic Event command including all listed fields | Owner-run focused/full gates, visual inspection, and correction of resulting defects. |
+| One-off | Atomic Event command including all listed fields; owner-run focused web gate 37/37 passed on `68ea1a396` | Broader gates, visual inspection, and correction of resulting defects. |
 | Selected recurring instance | Scoped `occurrence_profile_edit` accepts only title/description/location/color | Versioned local Event structure and Schedule/Objective/Reality edits, Agenda, Area, reminder and expected participation with one owner-scoped CAS/idempotent aggregate; read effective instance state back into Inspector/Edit. Preserve recorded facts. |
 | This and following | Structural recurrence preview/accept persists time, all-day, Agenda, Area, Reality, Objectives and reminder | Define and persist Event expected participation as governed policy, project it for each instance, and prove protected future instances retain their previous state. Verify parity UI and actual readback. |
 
