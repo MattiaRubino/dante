@@ -1,5 +1,14 @@
 # Timeline / Temporal-Operational — Live Execution Ledger
 
+## 2026-11-05 — Event selected-instance focused gate
+
+The owner pulled `b117b4e` and reran the selected Event Occurrence aggregate
+PostgreSQL regression: **1 passed**. Earlier at `9950bef`, Event Inspector
+Vitest **20 passed** and Event Edit scrolling Playwright **1 passed**. The
+previously red Objective creation path now uses the canonical Occurrence
+routine. Generated OpenAPI/Orval, complete same-SHA gate and user visual
+acceptance remain outstanding; see the handoff for scope and exact evidence.
+
 ## 2026-11-05 — Event focused red gate repair
 
 Owner-local tests on `377768e` found a retired Event Schedule listing called

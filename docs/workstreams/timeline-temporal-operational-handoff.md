@@ -2,6 +2,15 @@
 
 ## 2026-11-05 — Owner rerun of selected Event edit
 
+The owner pulled `b117b4e` and reran
+`test_event_occurrence_local_structure_is_versioned_and_does_not_mutate_source`:
+**1 passed in 7.74s**. This closes the previously red occurrence Objective
+addition regression. The selected Event aggregate has now passed its focused
+PostgreSQL regression; it has not received a complete same-SHA gate or real-app
+visual acceptance. Regenerate/check OpenAPI and Orval from the owner's pinned
+WSL toolchain before the full gate; the new Event local edit endpoint is not
+present in the checked-in generated client yet.
+
 On `9950bef` the owner reported the focused PostgreSQL gate **2 passed,
 1 failed**. The Event Occurrence Objective addition called
 `create_self_temporal_objective`, whose contract accepts only Activity/Event
