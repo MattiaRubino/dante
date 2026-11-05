@@ -22,6 +22,11 @@ const loadArea = vi.fn();
 const loadProfile = vi.fn();
 const reviseProfile = vi.fn();
 const reviseAtomic = vi.fn();
+const listObjectives = vi.fn().mockResolvedValue([]);
+const getRealityPolicy = vi
+  .fn()
+  .mockResolvedValue({ mode: 'manual', stateRef: null });
+const getDefinition = vi.fn();
 const isRecurring = vi.fn().mockResolvedValue(false);
 const assignArea = vi.fn();
 const previewHardDeletion = vi.fn();
@@ -70,6 +75,23 @@ vi.mock('../../../temporal/remote-event-profile-data-source', () => ({
     reviseAtomic,
   }),
 }));
+vi.mock(
+  '../../../temporal/remote-reality-objective-data-source',
+  async (importOriginal) => {
+    const actual =
+      await importOriginal<
+        typeof import('../../../temporal/remote-reality-objective-data-source')
+      >();
+    return {
+      ...actual,
+      createRemoteRealityObjectiveDataSource: () => ({
+        listObjectives,
+        getDefinition,
+        getRealityPolicy,
+      }),
+    };
+  },
+);
 vi.mock('../../../temporal/remote-event-life-area-settings', () => ({
   createRemoteEventLifeAreaSettings: () => ({
     load: loadArea,
@@ -104,6 +126,7 @@ afterEach(() => {
   vi.unstubAllGlobals();
   vi.clearAllMocks();
   isRecurring.mockResolvedValue(false);
+  getRealityPolicy.mockResolvedValue({ mode: 'manual', stateRef: null });
 });
 
 describe('Event Inspector actions', () => {
@@ -566,6 +589,95 @@ describe('Event Inspector actions', () => {
       ),
     );
     expect(reviseProfile).not.toHaveBeenCalled();
+  });
+
+  it('uses the Activity objective row and includes a new Event objective in Save', async () => {
+    const current = {
+      eventRef,
+      title: 'Conferenza',
+      description: null,
+      location: null,
+      colorCode: null,
+      profileRevision: 1,
+      agendaRevision: 0,
+      agendaParts: [],
+    };
+    loadProfile.mockResolvedValue(current);
+    loadArea.mockResolvedValue({
+      options: [],
+      currentRef: null,
+      currentRevision: 0,
+    });
+    reviseAtomic.mockResolvedValue(current);
+    render(
+      <EventInspectorActions
+        eventRef={eventRef}
+        placement={placement}
+        onDuplicate={vi.fn()}
+      />,
+    );
+    fireEvent.click(screen.getByRole('button', { name: /^Modifica$/ }));
+    fireEvent.click(
+      await screen.findByRole('button', { name: '＋ Aggiungi obiettivo' }),
+    );
+    fireEvent.change(screen.getByRole('textbox', { name: 'Nome obiettivo' }), {
+      target: { value: 'Presentare il progetto' },
+    });
+    fireEvent.click(screen.getByRole('button', { name: 'Salva modifiche' }));
+    await waitFor(() => expect(reviseAtomic).toHaveBeenCalledOnce());
+    expect(reviseAtomic.mock.calls[0]?.[2]).toMatchObject({
+      objectives: {
+        add: [
+          {
+            label: 'Presentare il progetto',
+            resultKind: 'boolean',
+            presentationOrder: 0,
+          },
+        ],
+        revise: [],
+        retire: [],
+      },
+    });
+  });
+
+  it('saves a changed Event execution policy with its previous state reference', async () => {
+    const current = {
+      eventRef,
+      title: 'Conferenza',
+      description: null,
+      location: null,
+      colorCode: null,
+      profileRevision: 1,
+      agendaRevision: 0,
+      agendaParts: [],
+    };
+    loadProfile.mockResolvedValue(current);
+    loadArea.mockResolvedValue({
+      options: [],
+      currentRef: null,
+      currentRevision: 0,
+    });
+    getRealityPolicy.mockResolvedValue({
+      mode: 'manual',
+      stateRef: 'policy-state-1',
+    });
+    reviseAtomic.mockResolvedValue(current);
+    render(
+      <EventInspectorActions
+        eventRef={eventRef}
+        placement={placement}
+        onDuplicate={vi.fn()}
+      />,
+    );
+    fireEvent.click(screen.getByRole('button', { name: /^Modifica$/ }));
+    fireEvent.click(
+      await screen.findByRole('radio', { name: 'Chiedi al termine' }),
+    );
+    fireEvent.click(screen.getByRole('button', { name: 'Salva modifiche' }));
+    await waitFor(() => expect(reviseAtomic).toHaveBeenCalledOnce());
+    expect(reviseAtomic.mock.calls[0]?.[2]).toEqual({
+      reality: { mode: 'review_on_end', expectedStateRef: 'policy-state-1' },
+    });
   });
 
   it('opens the Event profile editor as a centered, bounded modal', async () => {

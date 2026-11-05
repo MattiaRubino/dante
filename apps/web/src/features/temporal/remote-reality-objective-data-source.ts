@@ -307,10 +307,10 @@ export function createRemoteRealityObjectiveDataSource(
         : 'occurrences';
 
   return Object.freeze({
-    async getRealityMode(
+    async getRealityPolicy(
       kind: RealitySubjectKind,
       subjectRef: string,
-    ): Promise<RealityMode> {
+    ): Promise<Readonly<{ mode: RealityMode; stateRef: string | null }>> {
       const row = record(
         await send(
           `/api/v1/temporal/${collection(kind)}/${encodeURIComponent(subjectRef)}/reality-policy`,
@@ -325,7 +325,19 @@ export function createRemoteRealityObjectiveDataSource(
       ) {
         throw new Error('Invalid Reality policy response.');
       }
-      return row.mode_code as RealityMode;
+      if (row.state_ref !== null && typeof row.state_ref !== 'string') {
+        throw new Error('Invalid Reality policy response.');
+      }
+      return {
+        mode: row.mode_code as RealityMode,
+        stateRef: row.state_ref as string | null,
+      };
+    },
+    async getRealityMode(
+      kind: RealitySubjectKind,
+      subjectRef: string,
+    ): Promise<RealityMode> {
+      return (await this.getRealityPolicy(kind, subjectRef)).mode;
     },
     async configureReality(
       kind: RealitySubjectKind,

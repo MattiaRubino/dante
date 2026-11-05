@@ -30,7 +30,7 @@ function json(body: unknown, status = 200): Response {
 }
 
 describe('owner-scoped Event profile CAS source', () => {
-  it('submits Event profile, Scaletta and Life Area as one atomic command', async () => {
+  it('submits Event profile, Scaletta, Life Area and execution policy as one atomic command', async () => {
     const submitted: unknown[] = [];
     let saved = false;
     const fetchFn = vi.fn<typeof globalThis.fetch>((input, init) => {
@@ -78,6 +78,7 @@ describe('owner-scoped Event profile CAS source', () => {
         },
         agendaParts: ['Apertura'],
         lifeArea: { ref: null, expectedRevision: 2 },
+        reality: { mode: 'review_on_end', expectedStateRef: null },
       },
       'event:atomic:1',
     );
@@ -100,6 +101,11 @@ describe('owner-scoped Event profile CAS source', () => {
         life_area: {
           life_area_ref: null,
           expected_assignment_revision: 2,
+        },
+        reality: {
+          operation_id: 'event:atomic:1:reality',
+          mode_code: 'review_on_end',
+          expected_state_ref: null,
         },
       },
     ]);

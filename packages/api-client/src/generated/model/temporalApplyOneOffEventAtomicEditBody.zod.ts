@@ -69,6 +69,8 @@ export const temporalApplyOneOffEventAtomicEditBodyProfileOneOperationIdMax = 20
 
 export const temporalApplyOneOffEventAtomicEditBodyProfileOneTitleMax = 300;
 
+export const temporalApplyOneOffEventAtomicEditBodyRealityOneOperationIdMax = 200;
+
 export const TemporalApplyOneOffEventAtomicEditBody = /*#__PURE__*/ zod
   .object({
     agenda: /*#__PURE__*/ zod.optional(
@@ -476,10 +478,36 @@ export const TemporalApplyOneOffEventAtomicEditBody = /*#__PURE__*/ zod
         /*#__PURE__*/ zod.null(),
       ]),
     ),
+    reality: /*#__PURE__*/ zod.optional(
+      /*#__PURE__*/ zod.union([
+        /*#__PURE__*/ zod.object({
+          expected_state_ref: /*#__PURE__*/ zod.optional(
+            /*#__PURE__*/ zod.union([
+              /*#__PURE__*/ zod.uuid(),
+              /*#__PURE__*/ zod.null(),
+            ]),
+          ),
+          mode_code: /*#__PURE__*/ zod.enum([
+            'manual',
+            'review_on_end',
+            'auto_confirm_outcome',
+          ]),
+          operation_id: /*#__PURE__*/ zod
+            .string()
+            .check(/*#__PURE__*/ zod.minLength(1))
+            .check(
+              /*#__PURE__*/ zod.maxLength(
+                temporalApplyOneOffEventAtomicEditBodyRealityOneOperationIdMax,
+              ),
+            ),
+        }),
+        /*#__PURE__*/ zod.null(),
+      ]),
+    ),
   })
   .check(
     /*#__PURE__*/ zod.describe(
-      'One-off Event metadata, Agenda, Life Area and Objective changes.',
+      'One-off Event metadata, Agenda, Life Area, Reality and Objectives.',
     ),
   );
 

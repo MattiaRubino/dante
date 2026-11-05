@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from datetime import date, datetime
 from typing import Annotated, Any, Literal, cast
-from uuid import UUID
+from uuid import UUID, uuid7
 
 from fastapi import APIRouter, Depends, Request, Response
 from pydantic import BaseModel, ConfigDict, Field, model_validator
@@ -35,6 +35,8 @@ from dante.modules.temporal.life_area_assignment import (
 from dante.modules.temporal.reality_objective_api import (
     ActivityObjectiveBatchCommand,
     ObjectiveResponse,
+    RealityPolicyCommand,
+    _fingerprint as reality_fingerprint,
     apply_event_objective_edits_in_session,
 )
 from dante.modules.temporal.schedule import (
@@ -769,7 +771,7 @@ class EventAtomicLifeAreaChange(BaseModel):
 
 
 class EventAtomicEditCommand(BaseModel):
-    """One-off Event metadata, Agenda, Life Area and Objective changes."""
+    """One-off Event metadata, Agenda, Life Area, Reality and Objectives."""
 
     model_config = ConfigDict(extra="forbid")
 
@@ -777,12 +779,14 @@ class EventAtomicEditCommand(BaseModel):
     profile: ReviseEventProfileRequest | None = None
     agenda: ReplaceEventAgendaRequest | None = None
     life_area: EventAtomicLifeAreaChange | None = None
+    reality: RealityPolicyCommand | None = None
     objectives: ActivityObjectiveBatchCommand | None = None
 
     @model_validator(mode="after")
     def nonempty(self) -> EventAtomicEditCommand:
         if all(
-            value is None for value in (self.profile, self.agenda, self.life_area, self.objectives)
+            value is None
+            for value in (self.profile, self.agenda, self.life_area, self.reality, self.objectives)
         ):
             raise ValueError("Select at least one Event change.")
         return self
@@ -976,6 +980,34 @@ async def apply_one_off_event_atomic_edit(
                         "event": native_event,
                         "area": change_area.life_area_ref,
                         "expected": change_area.expected_assignment_revision,
+                    },
+                )
+            if body.reality is not None:
+                change_reality = body.reality
+                intent = {
+                    "version": 1,
+                    "subject_kind": "event",
+                    "subject_native_ref": str(event_ref),
+                    "mode_code": change_reality.mode_code,
+                    "expected_state_ref": (
+                        str(change_reality.expected_state_ref)
+                        if change_reality.expected_state_ref is not None
+                        else None
+                    ),
+                }
+                await session.execute(
+                    text("""
+                        SELECT * FROM dante.set_self_reality_review_policy(
+                            :actor,:operation,:fingerprint,'event',:event,:state,:mode,:expected)
+                    """),
+                    {
+                        "actor": actor,
+                        "operation": change_reality.operation_id,
+                        "fingerprint": reality_fingerprint(intent),
+                        "event": native_event,
+                        "state": uuid7(),
+                        "mode": change_reality.mode_code,
+                        "expected": change_reality.expected_state_ref,
                     },
                 )
             objectives = (

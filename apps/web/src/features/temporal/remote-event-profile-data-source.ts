@@ -2,6 +2,11 @@ import { createWebFetch } from '../../platform/api/web-fetch';
 import { createRemoteTemporalEventAgendaDataSource } from './remote-event-agenda-data-source';
 import type { TemporalEventDetailRecord } from './event-data-source';
 import {
+  serializeActivityObjectiveEdits,
+  type ActivityObjectiveBatch,
+  type RealityMode,
+} from './remote-reality-objective-data-source';
+import {
   invalidateTemporalPlanningRead,
   invalidateTemporalTimelineRead,
 } from './timeline-invalidation';
@@ -20,6 +25,8 @@ export type EventAtomicDraft = Readonly<{
     ref: string | null;
     expectedRevision: number;
   }>;
+  objectives?: ActivityObjectiveBatch;
+  reality?: Readonly<{ mode: RealityMode; expectedStateRef: string | null }>;
 }>;
 
 function object(value: unknown): Record<string, unknown> {
@@ -117,6 +124,22 @@ export function createRemoteEventProfileDataSource(
                     life_area_ref: changes.lifeArea.ref,
                     expected_assignment_revision:
                       changes.lifeArea.expectedRevision,
+                  },
+                }
+              : {}),
+            ...(changes.objectives
+              ? {
+                  objectives: serializeActivityObjectiveEdits(
+                    changes.objectives,
+                  ),
+                }
+              : {}),
+            ...(changes.reality
+              ? {
+                  reality: {
+                    operation_id: `${operationId}:reality`,
+                    mode_code: changes.reality.mode,
+                    expected_state_ref: changes.reality.expectedStateRef,
                   },
                 }
               : {}),

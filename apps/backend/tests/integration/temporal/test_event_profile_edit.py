@@ -116,6 +116,11 @@ async def test_one_off_event_atomic_edit_rolls_back_profile_on_stale_agenda(
                         }
                     ]
                 },
+                "reality": {
+                    "operation_id": "event:atomic:reality",
+                    "mode_code": "review_on_end",
+                    "expected_state_ref": None,
+                },
             }
         )
         saved = await apply_one_off_event_atomic_edit(event, accepted, context, request, Response())
@@ -123,6 +128,20 @@ async def test_one_off_event_atomic_edit_rolls_back_profile_on_stale_agenda(
         assert saved.event.profile_revision == 1
         assert saved.event.agenda_parts == ["Introduction"]
         assert [row.label for row in saved.objectives] == ["Result"]
+        async with runtime.session_factory() as session, session.begin():
+            policy = (
+                (
+                    await session.execute(
+                        text(
+                            "SELECT * FROM dante.get_self_reality_review_policy(:actor,'event',:event)"
+                        ),
+                        {"actor": owner, "event": event},
+                    )
+                )
+                .mappings()
+                .one()
+            )
+        assert policy["mode_code"] == "review_on_end"
     finally:
         await runtime.dispose()
 

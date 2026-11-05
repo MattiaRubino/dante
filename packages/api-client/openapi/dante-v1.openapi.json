@@ -6955,7 +6955,7 @@
       },
       "EventAtomicEditCommand": {
         "additionalProperties": false,
-        "description": "One-off Event metadata, Agenda, Life Area and Objective changes.",
+        "description": "One-off Event metadata, Agenda, Life Area, Reality and Objectives.",
         "properties": {
           "agenda": {
             "anyOf": [
@@ -6997,6 +6997,16 @@
             "anyOf": [
               {
                 "$ref": "#/components/schemas/ReviseEventProfileRequest"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "reality": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/RealityPolicyCommand"
               },
               {
                 "type": "null"

@@ -3,6 +3,11 @@ import { createPortal } from 'react-dom';
 
 import type { TemporalEventDetailRecord } from '../../../temporal/event-data-source';
 import {
+  createRemoteRealityObjectiveDataSource,
+  type ActivityObjectiveBatch,
+  type RealityMode,
+} from '../../../temporal/remote-reality-objective-data-source';
+import {
   createRemoteEventLifeAreaSettings,
   type EventLifeAreaChoice,
 } from '../../../temporal/remote-event-life-area-settings';
@@ -38,6 +43,15 @@ import type { TimelineCanonicalSchedulePlacement } from './model/timeline-types'
 import { TimelineInspectorIcon } from './timeline-inspector-icon';
 import { RecurringEditScopeDialog } from './recurring-edit-scope-dialog';
 import { RecurringSeriesEditor } from './recurring-series-editor';
+import {
+  ActivityObjectiveRow,
+  existingObjectiveDraft,
+  newObjectiveDraft,
+  objectiveChanged,
+  objectiveData,
+  objectiveDraftError,
+  type ActivityObjectiveDraft,
+} from './activity-objective-row';
 
 export function EventInspectorActions({
   eventRef,
@@ -77,6 +91,7 @@ export function EventInspectorActions({
     useState('');
   const [profileSource] = useState(createRemoteEventProfileDataSource);
   const [areaSource] = useState(createRemoteEventLifeAreaSettings);
+  const [objectiveSource] = useState(createRemoteRealityObjectiveDataSource);
   const [organizationSource] = useState(
     createRemoteTemporalOrganizationDataSource,
   );
@@ -88,6 +103,18 @@ export function EventInspectorActions({
     null,
   );
   const [agendaDraft, setAgendaDraft] = useState<readonly string[]>([]);
+  const [objectiveRows, setObjectiveRows] = useState<ActivityObjectiveDraft[]>(
+    [],
+  );
+  const [realityPolicy, setRealityPolicy] = useState<Readonly<{
+    mode: RealityMode;
+    stateRef: string | null;
+  }> | null>(null);
+  const [realityMode, setRealityMode] = useState<RealityMode>('manual');
+  const [removedObjectives, setRemovedObjectives] = useState<string[]>([]);
+  const [objectiveError, setObjectiveError] = useState('');
+  const [inspectingObjective, setInspectingObjective] =
+    useState<ActivityObjectiveDraft | null>(null);
   const [areaChoice, setAreaChoice] = useState<EventLifeAreaChoice | null>(
     null,
   );
@@ -133,11 +160,17 @@ export function EventInspectorActions({
     setBusy(true);
     setError('');
     try {
-      const [loaded, area] = await Promise.all([
+      const [loaded, area, objectives, reality] = await Promise.all([
         context && occurrenceRef && eventSource.loadOccurrenceEvent
           ? eventSource.loadOccurrenceEvent(occurrenceRef)
           : profileSource.load(eventRef),
         context ? Promise.resolve(null) : areaSource.load(eventRef),
+        context
+          ? Promise.resolve([])
+          : objectiveSource.listObjectives('event', eventRef),
+        context
+          ? Promise.resolve(null)
+          : objectiveSource.getRealityPolicy('event', eventRef),
       ]);
       if (loaded.profileRevision === undefined) {
         throw new Error('Revisione del profilo Event non disponibile.');
@@ -148,6 +181,12 @@ export function EventInspectorActions({
       const effective = { ...loaded, ...patch };
       setProfile(effective);
       setAgendaDraft(effective.agendaParts ?? []);
+      setObjectiveRows(objectives.map(existingObjectiveDraft));
+      setRealityPolicy(reality);
+      setRealityMode(reality?.mode ?? 'manual');
+      setRemovedObjectives([]);
+      setObjectiveError('');
+      setInspectingObjective(null);
       setAreaChoice(area);
       setAreaSelection(area?.currentRef ?? '');
       setProfileDraft({
@@ -220,6 +259,11 @@ export function EventInspectorActions({
           (part, index) => part !== profile.agendaParts?.[index],
         ) ||
         agendaDraft.length !== (profile.agendaParts?.length ?? 0) ||
+        objectiveRows.some((row) => objectiveChanged(row)) ||
+        removedObjectives.length > 0 ||
+        (!recurringContext &&
+          realityPolicy !== null &&
+          realityMode !== realityPolicy.mode) ||
         (!recurringContext &&
           areaChoice !== null &&
           (areaSelection || null) !== areaChoice.currentRef);
@@ -230,6 +274,7 @@ export function EventInspectorActions({
         return;
     }
     setProfileDraft(null);
+    setInspectingObjective(null);
     setEditingProfile(false);
   };
 
@@ -249,6 +294,73 @@ export function EventInspectorActions({
       closeRequestRef.current = null;
     };
   });
+
+  const prepareObjectives =
+    async (): Promise<ActivityObjectiveBatch | null> => {
+      const retained = objectiveRows.filter(
+        (row) => !removedObjectives.includes(row.id),
+      );
+      for (const row of retained) {
+        const problem = objectiveDraftError(row);
+        if (problem) {
+          setObjectiveError(`${row.label.trim() || 'Obiettivo'}: ${problem}`);
+          throw new Error(`${row.label.trim() || 'Obiettivo'}: ${problem}`);
+        }
+      }
+      const added = retained.filter((row) => !row.objectiveRef);
+      const revised = retained.filter(
+        (row) => row.objectiveRef && objectiveChanged(row),
+      );
+      const retired = objectiveRows.filter(
+        (row) => row.objectiveRef && removedObjectives.includes(row.id),
+      );
+      if (added.length + revised.length + retired.length === 0) return null;
+      const definitions = await Promise.all(
+        [...revised, ...retired].map(async (row) => {
+          const current = await objectiveSource.getDefinition(
+            row.objectiveRef!,
+          );
+          const original = row.original!;
+          if (
+            current.label !== original.label ||
+            current.resultKind !== original.resultKind ||
+            current.comparatorCode !== original.comparatorCode ||
+            current.targetValue !== original.targetValue ||
+            current.targetMin !== original.targetMin ||
+            current.targetMax !== original.targetMax ||
+            current.unitCode !== original.unitCode ||
+            current.presentationOrder !== original.presentationOrder
+          ) {
+            throw new Error(
+              'Un obiettivo è cambiato: riapri Modifica e riprova.',
+            );
+          }
+          return current;
+        }),
+      );
+      return {
+        add: added.map((row) => ({
+          ...objectiveData(row),
+          operationId: row.operationId,
+        })),
+        revise: revised.map((row, index) => ({
+          objectiveRef: row.objectiveRef!,
+          change: {
+            ...objectiveData(row),
+            operationId: row.operationId,
+            expectedRevision: definitions[index]!.definitionRevision,
+            scopeCode: 'only_this' as const,
+            seriesState: null,
+          },
+        })),
+        retire: retired.map((row, index) => ({
+          objectiveRef: row.objectiveRef!,
+          operationId: row.operationId,
+          expectedRevision:
+            definitions[revised.length + index]!.definitionRevision,
+        })),
+      };
+    };
 
   const saveProfile = async () => {
     if (!profile || !profileDraft || busy) return;
@@ -277,6 +389,7 @@ export function EventInspectorActions({
           systemTemporalIdFactory.operationId(),
         );
       } else {
+        const objectives = await prepareObjectives();
         const profileChanged =
           normalized.title !== profile.title ||
           normalized.description !== (profile.description ?? null) ||
@@ -290,10 +403,18 @@ export function EventInspectorActions({
         const areaChanged =
           areaChoice !== null &&
           (areaSelection || null) !== areaChoice.currentRef;
-        if (!profileChanged && !agendaChanged && !areaChanged) {
+        const realityChanged =
+          realityPolicy !== null && realityMode !== realityPolicy.mode;
+        if (
+          !profileChanged &&
+          !agendaChanged &&
+          !areaChanged &&
+          !objectives &&
+          !realityChanged
+        ) {
           throw new Error('Nessuna modifica da salvare.');
         }
-        if (agendaChanged || areaChanged) {
+        if (agendaChanged || areaChanged || objectives || realityChanged) {
           await profileSource.reviseAtomic(
             eventRef,
             profile,
@@ -305,6 +426,15 @@ export function EventInspectorActions({
                     lifeArea: {
                       ref: areaSelection || null,
                       expectedRevision: areaChoice.currentRevision,
+                    },
+                  }
+                : {}),
+              ...(objectives ? { objectives } : {}),
+              ...(realityChanged && realityPolicy
+                ? {
+                    reality: {
+                      mode: realityMode,
+                      expectedStateRef: realityPolicy.stateRef,
                     },
                   }
                 : {}),
@@ -692,6 +822,172 @@ export function EventInspectorActions({
                     </select>
                   </label>
                 ) : null}
+                <section
+                  className="temporal-create-reality-objectives timeline-activity-editor__outcome"
+                  aria-label="Svolgimento e obiettivi"
+                >
+                  <div className="temporal-create-reality-objectives__heading timeline-activity-editor__section-heading">
+                    <div>
+                      <h3>Svolgimento e obiettivi</h3>
+                      <p>
+                        Decidi se verificare lo svolgimento e quali risultati
+                        vuoi misurare.
+                      </p>
+                    </div>
+                  </div>
+                  <div className="temporal-create-reality-objectives__block is-reality">
+                    <div className="temporal-create-reality-objectives__block-copy">
+                      <strong>Svolgimento dell’evento</strong>
+                      <span>
+                        Come vuoi gestire la conferma dello svolgimento?
+                      </span>
+                    </div>
+                    <div
+                      className="temporal-create-reality-mode"
+                      role="radiogroup"
+                      aria-label="Verifica dello svolgimento"
+                    >
+                      {(
+                        [
+                          ['manual', 'Nessuna verifica'],
+                          ['review_on_end', 'Chiedi al termine'],
+                          ['auto_confirm_outcome', 'Conferma automatica'],
+                        ] as const
+                      ).map(([mode, label]) => (
+                        <button
+                          key={mode}
+                          type="button"
+                          role="radio"
+                          aria-checked={realityMode === mode}
+                          className={realityMode === mode ? 'is-active' : ''}
+                          disabled={busy}
+                          onClick={() => setRealityMode(mode)}
+                        >
+                          {label}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                  <div className="temporal-create-reality-objectives__divider" />
+                  <section
+                    className="temporal-create-reality-objectives__block is-objectives timeline-activity-editor__readback"
+                    aria-label="Obiettivi attuali"
+                  >
+                    <div className="temporal-create-reality-objectives__block-copy">
+                      <strong>Obiettivi</strong>
+                      <span>
+                        Aggiungi solo ciò che vuoi verificare o misurare
+                        separatamente.
+                      </span>
+                    </div>
+                    <div
+                      className="timeline-activity-editor__objectives"
+                      data-edit-invalid={!!objectiveError}
+                    >
+                      {objectiveRows
+                        .filter((row) => !removedObjectives.includes(row.id))
+                        .map((row, index, visible) => (
+                          <ActivityObjectiveRow
+                            key={row.id}
+                            row={row}
+                            index={index}
+                            total={visible.length}
+                            disabled={busy}
+                            onInspect={() => setInspectingObjective(row)}
+                            onChange={(patch) => {
+                              setObjectiveRows((rows) =>
+                                rows.map((item) =>
+                                  item.id === row.id
+                                    ? { ...item, ...patch }
+                                    : item,
+                                ),
+                              );
+                              setObjectiveError('');
+                            }}
+                            onMove={(direction) => {
+                              const target = index + direction;
+                              if (target < 0 || target >= visible.length)
+                                return;
+                              setObjectiveRows((rows) => {
+                                const next = [...rows];
+                                const other = visible[target]!;
+                                const first = next.findIndex(
+                                  (item) => item.id === row.id,
+                                );
+                                const second = next.findIndex(
+                                  (item) => item.id === other.id,
+                                );
+                                if (first < 0 || second < 0) return rows;
+                                next[first] = {
+                                  ...next[first]!,
+                                  presentationOrder: other.presentationOrder,
+                                };
+                                next[second] = {
+                                  ...next[second]!,
+                                  presentationOrder: row.presentationOrder,
+                                };
+                                return next.sort(
+                                  (a, b) =>
+                                    a.presentationOrder - b.presentationOrder,
+                                );
+                              });
+                            }}
+                            onRemove={() => {
+                              if (row.original?.observationRef) {
+                                setObjectiveError(
+                                  'Questo obiettivo ha risultati registrati e non può essere eliminato.',
+                                );
+                                return;
+                              }
+                              if (row.objectiveRef) {
+                                setRemovedObjectives((ids) => [...ids, row.id]);
+                              } else {
+                                setObjectiveRows((rows) =>
+                                  rows.filter((item) => item.id !== row.id),
+                                );
+                              }
+                            }}
+                          />
+                        ))}
+                      {inspectingObjective ? (
+                        <p role="status">
+                          {inspectingObjective.label}:{' '}
+                          {inspectingObjective.original?.observationRef
+                            ? 'risultato registrato; lo storico resta conservato.'
+                            : 'nessun risultato registrato.'}
+                        </p>
+                      ) : null}
+                      <div className="temporal-create-objectives__root-actions">
+                        <button
+                          type="button"
+                          className="temporal-create-objectives__add"
+                          disabled={busy}
+                          onClick={() =>
+                            setObjectiveRows((rows) => [
+                              ...rows,
+                              newObjectiveDraft(
+                                Math.max(
+                                  -1,
+                                  ...rows.map((item) => item.presentationOrder),
+                                ) + 1,
+                              ),
+                            ])
+                          }
+                        >
+                          ＋ Aggiungi obiettivo
+                        </button>
+                      </div>
+                      {objectiveError ? (
+                        <small
+                          className="temporal-create-field-error"
+                          role="alert"
+                        >
+                          {objectiveError}
+                        </small>
+                      ) : null}
+                    </div>
+                  </section>
+                </section>
               </>
             ) : null}
             <section

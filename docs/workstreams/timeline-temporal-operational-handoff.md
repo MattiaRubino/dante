@@ -1,5 +1,28 @@
 # Timeline / Temporal-Operational — Workstream Handoff
 
+## 2026-11-05 — Event one-off Objective and Reality edit checkpoint
+
+After the published `6fe1e178` one-off atomic endpoint, the next candidate
+adds the shared Activity Objective rows to ordinary Event Edit. Existing
+Event Objectives load from the canonical owner-scoped list; edits compare the
+current definition before submission, and new/revised/retired Objectives join
+the profile, Scaletta and Life Area in the same atomic request. The editor
+also loads the Event Reality mode and state reference, renders the same three
+execution choices as Activity Edit, and submits a CAS guarded policy change
+in that transaction. The backend command invokes the canonical Event policy
+routine inside its serializable transaction. Objective order changes now
+reorder the visible rows. Focused UI/client/integration cases were added;
+their results are **NOT_RUN** because the owner runs tests. OpenAPI and Orval
+were regenerated with scratch-runtime temporary manifest overrides and both
+manifests restored; verify generation with the pinned local toolchain.
+
+The user-requested full Event parity is **not delivered**: ordinary Event
+Edit still lacks Schedule, recurrence, reminders and expected participation;
+recurring `only_this` remains profile-only; following-scope editor and
+Inspector presentation still need their complete Event-specific parity pass.
+Do not describe this checkpoint as a finished Event editor. The next editor
+work must preserve one coherent Save and avoid independent partial writes.
+
 ## 2026-11-05 — Event visual parity feedback and current boundary
 
 The owner pulled `62c6bb87` and reported that Ruff format passed, the
