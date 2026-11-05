@@ -145,6 +145,60 @@ def _remove_disposable_cluster(container_name: str, volume_name: str) -> None:
     _docker("volume", "rm", "--force", volume_name, check=False)
 
 
+def _start_disposable_postgres(
+    container_name: str, volume_name: str, admin_password: str
+) -> int:
+    """Retry only Docker Desktop loopback forwarding failures on a fresh port."""
+    for attempt in range(3):
+        host_port = _available_loopback_port()
+        started = _docker(
+            "run",
+            "--detach",
+            "--name",
+            container_name,
+            "--mount",
+            f"type=volume,src={volume_name},dst=/var/lib/postgresql",
+            "--publish",
+            f"127.0.0.1:{host_port}:5432",
+            "--env",
+            "POSTGRES_DB=dante",
+            "--env",
+            "POSTGRES_USER=postgres",
+            "--env",
+            f"POSTGRES_PASSWORD={admin_password}",
+            _POSTGRES_IMAGE,
+            "postgres",
+            "-c",
+            "shared_preload_libraries=pg_stat_statements",
+            "-c",
+            "compute_query_id=on",
+            check=False,
+        )
+        if started.returncode == 0:
+            return host_port
+        # A failed `docker run` can leave a Created container with this name.
+        # Retain the uniquely named volume, which fixture teardown owns.
+        _docker("rm", "--force", container_name, check=False)
+        stderr = started.stderr.strip()
+        retryable = any(
+            marker in stderr.lower()
+            for marker in (
+                "port is already allocated",
+                "address already in use",
+                "failed to bind host port",
+                "/forwards/expose returned unexpected status: 500",
+            )
+        )
+        if not retryable or attempt == 2:
+            pytest.exit(
+                "Disposable PostgreSQL could not start: "
+                f"{stderr}. If Docker reports /forwards/expose status 500 "
+                "repeatedly, restart Docker Desktop and check WSL integration.",
+                returncode=2,
+            )
+    raise AssertionError("Unreachable Docker startup attempt state")
+
+
 def _wait_for_postgres(cluster: PostgresCluster) -> None:
     deadline = time.monotonic() + 60
     last_error: Exception | None = None
@@ -257,37 +311,11 @@ def postgres_cluster() -> Generator[PostgresCluster]:
     admin_password = secrets.token_urlsafe(32)
     # Bind an explicit, dynamically selected port: Docker's auto-published host
     # port may differ after docker stop/start, invalidating preexisting clients.
-    host_port = _available_loopback_port()
     _create_disposable_volume(volume_name)
     try:
-        started = _docker(
-            "run",
-            "--detach",
-            "--name",
-            container_name,
-            "--mount",
-            f"type=volume,src={volume_name},dst=/var/lib/postgresql",
-            "--publish",
-            f"127.0.0.1:{host_port}:5432",
-            "--env",
-            "POSTGRES_DB=dante",
-            "--env",
-            "POSTGRES_USER=postgres",
-            "--env",
-            f"POSTGRES_PASSWORD={admin_password}",
-            _POSTGRES_IMAGE,
-            "postgres",
-            "-c",
-            "shared_preload_libraries=pg_stat_statements",
-            "-c",
-            "compute_query_id=on",
-            check=False,
+        host_port = _start_disposable_postgres(
+            container_name, volume_name, admin_password
         )
-        if started.returncode != 0:
-            pytest.exit(
-                f"Disposable PostgreSQL could not start: {started.stderr.strip()}",
-                returncode=2,
-            )
         published = _docker("port", container_name, "5432/tcp", check=False)
         if published.returncode != 0 or not published.stdout.strip():
             pytest.exit(

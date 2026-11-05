@@ -3435,3 +3435,11 @@ retry by `tooling/testing/run_parallel_gate.py`. For the focused direct run,
 retry once; if the same forwarding error recurs, restart Docker Desktop, check
 its WSL integration and rerun the same unchanged tests. Do not change the
 application or treat this as a green database gate.
+
+The focused pytest fixture now retries only recognized Docker host-port
+publication failures on fresh loopback ports (up to three attempts), removing
+the failed `Created` test container between attempts and preserving the one
+fixture-owned named volume for final cleanup. A colocated harness test checks
+the new-port retry and exact test-container removal. Unrelated Docker errors
+still fail immediately. This candidate has **NOT RUN** in the user's WSL;
+repeated `/forwards/expose` errors still require restarting Docker Desktop.
