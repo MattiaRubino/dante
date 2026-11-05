@@ -1,5 +1,31 @@
 # Timeline / Temporal-Operational — Workstream Handoff
 
+## 2026-11-05 — Event parity closure boundary (still open)
+
+This work is **not complete**. The one-off Event Edit has an atomic command
+for profile, Schedule, reminder, Agenda, Life Area, Reality, Objectives and
+expected participants, and its form now shares the corresponding controls
+and field order with Create/Activity Edit. The user has not yet run the new
+focused checks or visually accepted this SHA. Do not describe the following
+recurrence work as complete merely because its modal renders many fields.
+
+| Event edit scope | Persisted today | Required before parity closure |
+| --- | --- | --- |
+| One-off | Atomic Event command including all listed fields | Owner-run focused/full gates, visual inspection, and correction of resulting defects. |
+| Selected recurring instance | Scoped `occurrence_profile_edit` accepts only title/description/location/color | Versioned local Event structure and Schedule/Objective/Reality edits, Agenda, Area, reminder and expected participation with one owner-scoped CAS/idempotent aggregate; read effective instance state back into Inspector/Edit. Preserve recorded facts. |
+| This and following | Structural recurrence preview/accept persists time, all-day, Agenda, Area, Reality, Objectives and reminder | Define and persist Event expected participation as governed policy, project it for each instance, and prove protected future instances retain their previous state. Verify parity UI and actual readback. |
+
+The selected Event is an Occurrence with its own Schedule, Reality and
+Objectives; the Event source owns Agenda/Life Area and expected participation.
+Writing source fields from `only_this` would silently alter the entire
+series. The safe implementation needs an occurrence-aware aggregate and
+policy snapshot, with changes to the canonical detail/Inspector projection,
+transactional protection and replay checks. `get_self_occurrence_profile_patch`
+currently aggregates only metadata, and the selected Event form deliberately
+does not show fields that its Save cannot persist. Keep the exception policy
+in `docs/domain/decisions/recurring-series-edit-exception-policy-v1.md` as
+the authority. No UI-only expansion should bypass this boundary.
+
 ## 2026-11-05 — Event one-off form ordering and shared detail fields candidate
 
 The ordinary Event editor now places Agenda next to the title, followed by
