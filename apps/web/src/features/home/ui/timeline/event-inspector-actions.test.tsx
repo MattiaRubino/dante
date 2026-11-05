@@ -543,10 +543,17 @@ describe('Event Inspector actions', () => {
       },
     );
     fireEvent.change(
-      screen.getByRole('combobox', { name: 'Life Area (opzionale)' }),
-      {
-        target: { value: 'area-1' },
-      },
+      screen.getByRole('textbox', { name: 'Life Area (opzionale)' }),
+      { target: { value: 'Area inesistente' } },
+    );
+    fireEvent.click(screen.getByRole('button', { name: 'Salva modifiche' }));
+    expect(
+      (await screen.findAllByText('Scegli una Life Area dall’elenco.')).length,
+    ).toBeGreaterThan(0);
+    expect(reviseAtomic).not.toHaveBeenCalled();
+    fireEvent.change(
+      screen.getByRole('textbox', { name: 'Life Area (opzionale)' }),
+      { target: { value: 'Lavoro' } },
     );
     fireEvent.click(screen.getByRole('button', { name: 'Salva modifiche' }));
     await waitFor(() =>
@@ -859,7 +866,7 @@ describe('Event Inspector actions', () => {
       await screen.findByRole('textbox', { name: 'Titolo Event' }),
     ).toBeTruthy();
     expect(
-      screen.getByRole('combobox', { name: 'Life Area (opzionale)' }),
+      screen.getByRole('textbox', { name: 'Life Area (opzionale)' }),
     ).toBeTruthy();
     await waitFor(() =>
       expect(screen.getByRole('dialog').className).toContain(

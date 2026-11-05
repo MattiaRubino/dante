@@ -42,6 +42,11 @@ import { TemporalEventParticipantsFields } from '../../../temporal-create/ui/tem
 import type { TemporalCreateEventParticipantDraft } from '../../../temporal-create/model/temporal-create-u2-authoring';
 import { TemporalReminderControl } from '../../../temporal-create/ui/temporal-create-quick-reminder';
 import {
+  TemporalColorControl,
+  TEMPORAL_DEFAULT_COLOR,
+} from '../../../temporal-create/ui/temporal-color-control';
+import { TemporalLifeAreaSelect } from '../../../temporal-create/ui/temporal-life-area-select';
+import {
   createRemoteScheduleReminderDataSource,
   type ScheduleReminderView,
 } from '../../../temporal/remote-schedule-reminder-data-source';
@@ -153,6 +158,8 @@ export function EventInspectorActions({
     null,
   );
   const [areaSelection, setAreaSelection] = useState('');
+  const [areaQuery, setAreaQuery] = useState('');
+  const [areaError, setAreaError] = useState('');
   const [editingProfile, setEditingProfile] = useState(false);
   const [editChoice, setEditChoice] = useState<{
     context: RecurringProfileContext;
@@ -256,6 +263,11 @@ export function EventInspectorActions({
       setInspectingObjective(null);
       setAreaChoice(area);
       setAreaSelection(area?.currentRef ?? '');
+      setAreaQuery(
+        area?.options.find((option) => option.ref === area.currentRef)?.name ??
+          '',
+      );
+      setAreaError('');
       setProfileDraft({
         title: effective.title,
         description: effective.description ?? null,
@@ -434,6 +446,19 @@ export function EventInspectorActions({
     setBusy(true);
     setError('');
     try {
+      if (
+        !recurringContext &&
+        areaQuery.trim() &&
+        !areaChoice?.options.some(
+          (option) =>
+            option.ref === areaSelection &&
+            option.name.toLocaleLowerCase() ===
+              areaQuery.trim().toLocaleLowerCase(),
+        )
+      ) {
+        setAreaError('Scegli una Life Area dall’elenco.');
+        throw new Error('Scegli una Life Area dall’elenco.');
+      }
       const normalized: EventProfileDraft = {
         title: profileDraft.title.trim(),
         description: profileDraft.description?.trim() || null,
@@ -944,23 +969,65 @@ export function EventInspectorActions({
                   onChange={setParticipantsDraft}
                   disabled={busy}
                 />
-                {areaChoice ? (
-                  <label className="timeline-event-profile-editor__area">
-                    Life Area (opzionale)
-                    <select
-                      disabled={busy}
-                      value={areaSelection}
-                      onChange={(event) => setAreaSelection(event.target.value)}
-                    >
-                      <option value="">Nessuna Life Area</option>
-                      {areaChoice.options.map((row) => (
-                        <option key={row.ref} value={row.ref}>
-                          {row.name}
-                        </option>
-                      ))}
-                    </select>
-                  </label>
-                ) : null}
+                <div className="timeline-activity-editor__area-color">
+                  <div className="temporal-create-life-area-field">
+                    <TemporalColorControl
+                      value={profileDraft.colorCode ?? TEMPORAL_DEFAULT_COLOR}
+                      label="Colore attività o evento"
+                      onChange={(colorCode) =>
+                        setProfileDraft(
+                          (draft) => draft && { ...draft, colorCode },
+                        )
+                      }
+                    />
+                    {areaChoice ? (
+                      <div
+                        className="timeline-activity-editor__area-choice"
+                        data-edit-invalid={!!areaError}
+                      >
+                        <TemporalLifeAreaSelect
+                          query={areaQuery}
+                          label="Life Area (opzionale)"
+                          options={areaChoice.options.map((option) => ({
+                            id: option.ref,
+                            label: option.name,
+                          }))}
+                          selectedId={areaSelection || null}
+                          disabled={busy}
+                          onQueryChange={(query) => {
+                            setAreaQuery(query);
+                            setAreaSelection(
+                              areaChoice.options.find(
+                                (option) =>
+                                  option.name.toLocaleLowerCase() ===
+                                  query.trim().toLocaleLowerCase(),
+                              )?.ref ?? '',
+                            );
+                            setAreaError('');
+                          }}
+                          onChoose={(option) => {
+                            setAreaSelection(option.id);
+                            setAreaQuery(option.label);
+                            setAreaError('');
+                          }}
+                          onClear={() => {
+                            setAreaSelection('');
+                            setAreaQuery('');
+                            setAreaError('');
+                          }}
+                        />
+                        {areaError ? (
+                          <small
+                            className="temporal-create-field-error"
+                            role="alert"
+                          >
+                            {areaError}
+                          </small>
+                        ) : null}
+                      </div>
+                    ) : null}
+                  </div>
+                </div>
                 <section
                   className="temporal-create-reality-objectives timeline-activity-editor__outcome"
                   aria-label="Svolgimento e obiettivi"
@@ -1129,6 +1196,21 @@ export function EventInspectorActions({
                 </section>
               </>
             ) : null}
+            {recurringContext ? (
+              <div className="timeline-activity-editor__area-color">
+                <div className="temporal-create-life-area-field">
+                  <TemporalColorControl
+                    value={profileDraft.colorCode ?? TEMPORAL_DEFAULT_COLOR}
+                    label="Colore attività o evento"
+                    onChange={(colorCode) =>
+                      setProfileDraft(
+                        (draft) => draft && { ...draft, colorCode },
+                      )
+                    }
+                  />
+                </div>
+              </div>
+            ) : null}
             <section
               className="timeline-event-profile-editor__details"
               aria-label="Dettagli Event"
@@ -1142,21 +1224,6 @@ export function EventInspectorActions({
                   onChange={(event) => {
                     const location = event.currentTarget.value || null;
                     setProfileDraft((draft) => draft && { ...draft, location });
-                  }}
-                />
-              </label>
-              <label>
-                Colore Event (#RRGGBB)
-                <input
-                  disabled={busy}
-                  maxLength={7}
-                  placeholder="#RRGGBB"
-                  value={profileDraft.colorCode ?? ''}
-                  onChange={(event) => {
-                    const colorCode = event.currentTarget.value || null;
-                    setProfileDraft(
-                      (draft) => draft && { ...draft, colorCode },
-                    );
                   }}
                 />
               </label>

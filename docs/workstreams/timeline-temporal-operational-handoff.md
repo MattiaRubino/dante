@@ -1,5 +1,16 @@
 # Timeline / Temporal-Operational — Workstream Handoff
 
+## 2026-11-05 — Event Edit Life Area and color parity candidate
+
+The one-off Event editor now uses the same Life Area search and color picker
+controls as Activity Edit/Create. An unrecognized typed Area blocks Save with
+red field state and a compact message rather than silently clearing or
+retaining a different Area. Selecting an existing Area still joins the Event
+atomic Save. The selected recurring Event metadata editor uses the same color
+picker, while its Area remains absent until the selected-occurrence aggregate
+can persist it. Its one-off/following editors and backend recurring policy
+still need parity work; this checkpoint is **NOT_RUN** at the owner's request.
+
 ## 2026-11-05 — Shared Event time-zone control candidate
 
 Create, one-off Event Edit, and following-scope recurring Event Edit now use
