@@ -7,6 +7,8 @@ import { createRemoteEventProfileDataSource } from './remote-event-profile-data-
 
 const EVENT = '0199a111-1111-7111-8111-111111111111';
 const AREA = '0199a222-2222-7222-8222-222222222222';
+const SCHEDULE = '0199a333-3333-7333-8333-333333333333';
+const MATERIAL = '0199a444-4444-7444-8444-444444444444';
 const original = {
   event_ref: EVENT,
   title: 'Conferenza',
@@ -79,6 +81,15 @@ describe('owner-scoped Event profile CAS source', () => {
         agendaParts: ['Apertura'],
         lifeArea: { ref: null, expectedRevision: 2 },
         reality: { mode: 'review_on_end', expectedStateRef: null },
+        schedule: {
+          scheduleRef: SCHEDULE,
+          expectedMaterialStateRef: MATERIAL,
+          placement: {
+            kind: 'floating_local_interval',
+            starts_local_at: '2026-11-05T19:00:00',
+            ends_local_at: '2026-11-05T19:30:00',
+          },
+        },
       },
       'event:atomic:1',
     );
@@ -106,6 +117,15 @@ describe('owner-scoped Event profile CAS source', () => {
           operation_id: 'event:atomic:1:reality',
           mode_code: 'review_on_end',
           expected_state_ref: null,
+        },
+        schedule: {
+          schedule_ref: SCHEDULE,
+          expected_material_state_ref: MATERIAL,
+          placement: {
+            kind: 'floating_local_interval',
+            starts_local_at: '2026-11-05T19:00:00',
+            ends_local_at: '2026-11-05T19:30:00',
+          },
         },
       },
     ]);

@@ -7012,6 +7012,16 @@
                 "type": "null"
               }
             ]
+          },
+          "schedule": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/EventAtomicScheduleChange"
+              },
+              {
+                "type": "null"
+              }
+            ]
           }
         },
         "required": ["operation_id"],
@@ -7058,6 +7068,58 @@
         },
         "required": ["expected_assignment_revision", "life_area_ref"],
         "title": "EventAtomicLifeAreaChange",
+        "type": "object"
+      },
+      "EventAtomicScheduleChange": {
+        "additionalProperties": false,
+        "properties": {
+          "expected_material_state_ref": {
+            "format": "uuid",
+            "title": "Expected Material State Ref",
+            "type": "string"
+          },
+          "placement": {
+            "discriminator": {
+              "mapping": {
+                "absolute_interval": "#/components/schemas/EventAbsoluteIntervalPlacementRequest",
+                "coarse_local_period": "#/components/schemas/EventCoarseLocalPeriodPlacementRequest",
+                "date_span": "#/components/schemas/EventDateSpanPlacementRequest",
+                "floating_local_interval": "#/components/schemas/EventFloatingLocalIntervalPlacementRequest",
+                "named_zone_local_interval": "#/components/schemas/EventNamedZoneLocalIntervalPlacementRequest"
+              },
+              "propertyName": "kind"
+            },
+            "oneOf": [
+              {
+                "$ref": "#/components/schemas/EventDateSpanPlacementRequest"
+              },
+              {
+                "$ref": "#/components/schemas/EventFloatingLocalIntervalPlacementRequest"
+              },
+              {
+                "$ref": "#/components/schemas/EventNamedZoneLocalIntervalPlacementRequest"
+              },
+              {
+                "$ref": "#/components/schemas/EventAbsoluteIntervalPlacementRequest"
+              },
+              {
+                "$ref": "#/components/schemas/EventCoarseLocalPeriodPlacementRequest"
+              }
+            ],
+            "title": "Placement"
+          },
+          "schedule_ref": {
+            "format": "uuid",
+            "title": "Schedule Ref",
+            "type": "string"
+          }
+        },
+        "required": [
+          "schedule_ref",
+          "expected_material_state_ref",
+          "placement"
+        ],
+        "title": "EventAtomicScheduleChange",
         "type": "object"
       },
       "EventCoarseLocalPeriodPlacementRequest": {

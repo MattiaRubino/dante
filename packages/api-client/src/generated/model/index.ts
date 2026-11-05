@@ -176,6 +176,7 @@ export * from './eventAgendaMutationResponse.zod';
 export * from './eventAtomicEditCommand.zod';
 export * from './eventAtomicEditResponse.zod';
 export * from './eventAtomicLifeAreaChange.zod';
+export * from './eventAtomicScheduleChange.zod';
 export * from './eventCoarseLocalPeriodPlacementRequest.zod';
 export * from './eventDateSpanPlacementRequest.zod';
 export * from './eventDeletionOccurrenceChoice.zod';

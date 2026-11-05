@@ -651,6 +651,56 @@ describe('Event Inspector actions', () => {
     });
   });
 
+  it('keeps the Event Schedule material revision in the same Save as metadata', async () => {
+    const current = {
+      eventRef,
+      title: 'Conferenza',
+      description: null,
+      location: null,
+      colorCode: null,
+      profileRevision: 1,
+      agendaRevision: 0,
+      agendaParts: [],
+    };
+    loadProfile.mockResolvedValue(current);
+    loadArea.mockResolvedValue({
+      options: [],
+      currentRef: null,
+      currentRevision: 0,
+    });
+    reviseAtomic.mockResolvedValue(current);
+    render(
+      <EventInspectorActions
+        eventRef={eventRef}
+        placement={placement}
+        scheduleRef="0199a333-3333-7333-8333-333333333333"
+        placementMaterialStateRef="0199a444-4444-7444-8444-444444444444"
+        onDuplicate={vi.fn()}
+      />,
+    );
+    fireEvent.click(screen.getByRole('button', { name: /^Modifica$/ }));
+    fireEvent.change(
+      await screen.findByRole('textbox', { name: 'Titolo Event' }),
+      {
+        target: { value: 'Nuova conferenza' },
+      },
+    );
+    const schedule = screen.getByRole('group', { name: 'Orario Evento' });
+    const time = within(schedule).getByRole('textbox', { name: 'Fine: ore' });
+    fireEvent.change(time, { target: { value: '11' } });
+    fireEvent.blur(time);
+    fireEvent.click(screen.getByRole('button', { name: 'Salva modifiche' }));
+    await waitFor(() => expect(reviseAtomic).toHaveBeenCalledOnce());
+    expect(reviseAtomic.mock.calls[0]?.[2]).toMatchObject({
+      profile: { title: 'Nuova conferenza' },
+      schedule: {
+        scheduleRef: '0199a333-3333-7333-8333-333333333333',
+        expectedMaterialStateRef: '0199a444-4444-7444-8444-444444444444',
+        placement: { kind: 'named_zone_local_interval' },
+      },
+    });
+  });
+
   it('opens the Event profile editor as a centered, bounded modal', async () => {
     loadArea.mockResolvedValue({
       options: [],

@@ -44,6 +44,12 @@ import { TimelineInspectorIcon } from './timeline-inspector-icon';
 import { RecurringEditScopeDialog } from './recurring-edit-scope-dialog';
 import { RecurringSeriesEditor } from './recurring-series-editor';
 import {
+  EventScheduleEditor,
+  eventScheduleDraftFromPlacement,
+  eventSchedulePlacementFromDraft,
+  type EventScheduleDraft,
+} from './event-schedule-editor';
+import {
   ActivityObjectiveRow,
   existingObjectiveDraft,
   newObjectiveDraft,
@@ -57,6 +63,8 @@ export function EventInspectorActions({
   eventRef,
   placement,
   occurrenceRef = null,
+  scheduleRef = null,
+  placementMaterialStateRef = null,
   onDeleted,
   onDuplicate,
   onCancelScope,
@@ -67,6 +75,8 @@ export function EventInspectorActions({
   eventRef: string;
   placement: TimelineCanonicalSchedulePlacement;
   occurrenceRef?: string | null;
+  scheduleRef?: string | null;
+  placementMaterialStateRef?: string | null;
   onDeleted?: () => void;
   onDuplicate: (seed: ActivityDuplicateSeed) => void;
   onCancelScope?: () => void;
@@ -103,6 +113,12 @@ export function EventInspectorActions({
     null,
   );
   const [agendaDraft, setAgendaDraft] = useState<readonly string[]>([]);
+  const [scheduleDraft, setScheduleDraft] = useState<EventScheduleDraft | null>(
+    null,
+  );
+  const [scheduleInitial, setScheduleInitial] =
+    useState<EventScheduleDraft | null>(null);
+  const [scheduleError, setScheduleError] = useState('');
   const [objectiveRows, setObjectiveRows] = useState<ActivityObjectiveDraft[]>(
     [],
   );
@@ -171,6 +187,10 @@ export function EventInspectorActions({
       const effective = { ...loaded, ...patch };
       setProfile(effective);
       setAgendaDraft(effective.agendaParts ?? []);
+      const initialSchedule = eventScheduleDraftFromPlacement(placement);
+      setScheduleDraft(initialSchedule);
+      setScheduleInitial(initialSchedule);
+      setScheduleError('');
       setObjectiveRows(objectives.map(existingObjectiveDraft));
       setRealityPolicy(reality);
       setRealityMode(reality?.mode ?? 'manual');
@@ -251,6 +271,7 @@ export function EventInspectorActions({
         agendaDraft.length !== (profile.agendaParts?.length ?? 0) ||
         objectiveRows.some((row) => objectiveChanged(row)) ||
         removedObjectives.length > 0 ||
+        JSON.stringify(scheduleDraft) !== JSON.stringify(scheduleInitial) ||
         (!recurringContext &&
           realityPolicy !== null &&
           realityMode !== realityPolicy.mode) ||
@@ -376,6 +397,28 @@ export function EventInspectorActions({
         );
       } else {
         const objectives = await prepareObjectives();
+        const scheduleChanged =
+          JSON.stringify(scheduleDraft) !== JSON.stringify(scheduleInitial);
+        let schedule: ReturnType<
+          typeof eventSchedulePlacementFromDraft
+        > | null = null;
+        if (scheduleChanged) {
+          if (!scheduleDraft || !scheduleRef || !placementMaterialStateRef) {
+            throw new Error(
+              'Programmazione Evento non disponibile: riapri la modifica.',
+            );
+          }
+          try {
+            schedule = eventSchedulePlacementFromDraft(scheduleDraft);
+          } catch (reason) {
+            const message =
+              reason instanceof Error
+                ? reason.message
+                : 'Orario Evento non valido.';
+            setScheduleError(message);
+            throw new Error(message);
+          }
+        }
         const profileChanged =
           normalized.title !== profile.title ||
           normalized.description !== (profile.description ?? null) ||
@@ -396,11 +439,18 @@ export function EventInspectorActions({
           !agendaChanged &&
           !areaChanged &&
           !objectives &&
-          !realityChanged
+          !realityChanged &&
+          !schedule
         ) {
           throw new Error('Nessuna modifica da salvare.');
         }
-        if (agendaChanged || areaChanged || objectives || realityChanged) {
+        if (
+          agendaChanged ||
+          areaChanged ||
+          objectives ||
+          realityChanged ||
+          schedule
+        ) {
           await profileSource.reviseAtomic(
             eventRef,
             profile,
@@ -416,6 +466,15 @@ export function EventInspectorActions({
                   }
                 : {}),
               ...(objectives ? { objectives } : {}),
+              ...(schedule && scheduleRef && placementMaterialStateRef
+                ? {
+                    schedule: {
+                      scheduleRef,
+                      expectedMaterialStateRef: placementMaterialStateRef,
+                      placement: schedule,
+                    },
+                  }
+                : {}),
               ...(realityChanged && realityPolicy
                 ? {
                     reality: {
@@ -726,6 +785,22 @@ export function EventInspectorActions({
             </div>
             {!recurringContext ? (
               <>
+                {scheduleDraft ? (
+                  <EventScheduleEditor
+                    draft={scheduleDraft}
+                    disabled={busy}
+                    error={scheduleError}
+                    onChange={(next) => {
+                      setScheduleDraft(next);
+                      setScheduleError('');
+                    }}
+                  />
+                ) : (
+                  <p role="status">
+                    Questa forma di programmazione si modifica dall’Inspector
+                    della Schedule.
+                  </p>
+                )}
                 <TemporalCreateEventAgenda
                   parts={agendaDraft}
                   maxPartLength={1000}

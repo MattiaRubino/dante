@@ -71,6 +71,14 @@ export const eventAtomicEditCommandProfileOneTitleMax = 300;
 
 export const eventAtomicEditCommandRealityOneOperationIdMax = 200;
 
+export const eventAtomicEditCommandScheduleOnePlacementOneKindDefault = `date_span`;
+export const eventAtomicEditCommandScheduleOnePlacementTwoKindDefault = `floating_local_interval`;
+export const eventAtomicEditCommandScheduleOnePlacementThreeDisambiguationDefault = `reject`;
+export const eventAtomicEditCommandScheduleOnePlacementThreeKindDefault = `named_zone_local_interval`;
+export const eventAtomicEditCommandScheduleOnePlacementThreeZoneIdMax = 200;
+
+export const eventAtomicEditCommandScheduleOnePlacementFourKindDefault = `absolute_interval`;
+export const eventAtomicEditCommandScheduleOnePlacementFiveKindDefault = `coarse_local_period`;
 export const EventAtomicEditCommand = /*#__PURE__*/ zod
   .object({
     agenda: /*#__PURE__*/ zod.optional(
@@ -496,6 +504,83 @@ export const EventAtomicEditCommand = /*#__PURE__*/ zod
                 eventAtomicEditCommandRealityOneOperationIdMax,
               ),
             ),
+        }),
+        /*#__PURE__*/ zod.null(),
+      ]),
+    ),
+    schedule: /*#__PURE__*/ zod.optional(
+      /*#__PURE__*/ zod.union([
+        /*#__PURE__*/ zod.object({
+          expected_material_state_ref: /*#__PURE__*/ zod.uuid(),
+          placement: /*#__PURE__*/ zod.union([
+            /*#__PURE__*/ zod.object({
+              end_date_exclusive: /*#__PURE__*/ zod.iso.date(),
+              kind: /*#__PURE__*/ zod
+                ._default(
+                  /*#__PURE__*/ zod.literal('date_span'),
+                  eventAtomicEditCommandScheduleOnePlacementOneKindDefault,
+                )
+                .check(/*#__PURE__*/ zod.meta({ title: 'Kind' })),
+              start_date: /*#__PURE__*/ zod.iso.date(),
+            }),
+            /*#__PURE__*/ zod.object({
+              ends_local_at: /*#__PURE__*/ zod.iso.datetime({ offset: true }),
+              kind: /*#__PURE__*/ zod
+                ._default(
+                  /*#__PURE__*/ zod.literal('floating_local_interval'),
+                  eventAtomicEditCommandScheduleOnePlacementTwoKindDefault,
+                )
+                .check(/*#__PURE__*/ zod.meta({ title: 'Kind' })),
+              starts_local_at: /*#__PURE__*/ zod.iso.datetime({ offset: true }),
+            }),
+            /*#__PURE__*/ zod.object({
+              disambiguation: /*#__PURE__*/ zod._default(
+                /*#__PURE__*/ zod.enum(['reject', 'earlier', 'later']),
+                eventAtomicEditCommandScheduleOnePlacementThreeDisambiguationDefault,
+              ),
+              ends_local_at: /*#__PURE__*/ zod.iso.datetime({ offset: true }),
+              kind: /*#__PURE__*/ zod
+                ._default(
+                  /*#__PURE__*/ zod.literal('named_zone_local_interval'),
+                  eventAtomicEditCommandScheduleOnePlacementThreeKindDefault,
+                )
+                .check(/*#__PURE__*/ zod.meta({ title: 'Kind' })),
+              starts_local_at: /*#__PURE__*/ zod.iso.datetime({ offset: true }),
+              zone_id: /*#__PURE__*/ zod
+                .string()
+                .check(/*#__PURE__*/ zod.minLength(1))
+                .check(
+                  /*#__PURE__*/ zod.maxLength(
+                    eventAtomicEditCommandScheduleOnePlacementThreeZoneIdMax,
+                  ),
+                ),
+            }),
+            /*#__PURE__*/ zod.object({
+              ends_at: /*#__PURE__*/ zod.iso.datetime({ offset: true }),
+              kind: /*#__PURE__*/ zod
+                ._default(
+                  /*#__PURE__*/ zod.literal('absolute_interval'),
+                  eventAtomicEditCommandScheduleOnePlacementFourKindDefault,
+                )
+                .check(/*#__PURE__*/ zod.meta({ title: 'Kind' })),
+              starts_at: /*#__PURE__*/ zod.iso.datetime({ offset: true }),
+            }),
+            /*#__PURE__*/ zod.object({
+              kind: /*#__PURE__*/ zod
+                ._default(
+                  /*#__PURE__*/ zod.literal('coarse_local_period'),
+                  eventAtomicEditCommandScheduleOnePlacementFiveKindDefault,
+                )
+                .check(/*#__PURE__*/ zod.meta({ title: 'Kind' })),
+              local_date: /*#__PURE__*/ zod.iso.date(),
+              period: /*#__PURE__*/ zod.enum([
+                'morning',
+                'afternoon',
+                'evening',
+              ]),
+            }),
+          ]),
+          schedule_ref: /*#__PURE__*/ zod.uuid(),
         }),
         /*#__PURE__*/ zod.null(),
       ]),

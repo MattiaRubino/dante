@@ -272,6 +272,9 @@ describe('Timeline post-create runtime destinations', () => {
       ref: ACTIVITY_REF,
     });
     expect(event.realitySubject).toEqual({ kind: 'event', ref: EVENT_REF });
+    expect(event.eventScheduleRef).toBe(SCHEDULE_REF);
+    expect(event.eventPlacementMaterialStateRef).toBe(STATE_REF);
+    expect(occurrence.eventScheduleRef).toBeUndefined();
     expect(occurrence.realitySubject).toEqual({
       kind: 'occurrence',
       ref: OCCURRENCE_REF,

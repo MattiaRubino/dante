@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from datetime import datetime
 from types import SimpleNamespace
 from typing import Any, cast
 from uuid import uuid7
@@ -18,6 +19,10 @@ from tests.integration.temporal.test_primary_life_area_assignment import (
 
 from dante.context.contracts import DanteContext
 from dante.modules.temporal.event import TemporalEventApplication
+from dante.modules.temporal.schedule import (
+    FloatingLocalIntervalPlacement,
+    TemporalScheduleApplication,
+)
 from dante.modules.temporal.event_api import (
     EventAtomicEditCommand,
     apply_one_off_event_atomic_edit,
@@ -48,6 +53,67 @@ _RETIRE_OBJECTIVE = text("""
         :actor,:objective,:operation,:fingerprint,:expected
     )
 """)
+
+
+@pytest.mark.asyncio
+async def test_one_off_event_schedule_and_profile_commit_together_with_material_cas(
+    migrated_database: Any,
+) -> None:
+    owner = _seed_self(migrated_database)
+    event = _legacy_event(migrated_database, owner, "Scheduled")
+    runtime = create_database_runtime(migrated_database.runtime_settings())
+    context = cast(
+        DanteContext,
+        SimpleNamespace(self_person_ref=owner, effective_zone_id="Europe/Rome"),
+    )
+    request = Request(
+        {"type": "http", "app": SimpleNamespace(state=SimpleNamespace(database_runtime=runtime))}
+    )
+    try:
+        original = await TemporalScheduleApplication(runtime.session_factory).establish_schedule(
+            self_person_ref=owner,
+            operation_id="event:original:schedule",
+            subject_native_ref=event,
+            placement=FloatingLocalIntervalPlacement(
+                starts_local_at=datetime(2026, 11, 5, 18),
+                ends_local_at=datetime(2026, 11, 5, 19),
+            ),
+        )
+        payload = {
+            "operation_id": "event:atomic:schedule",
+            "schedule": {
+                "schedule_ref": original.schedule_ref,
+                "expected_material_state_ref": original.material_state_ref,
+                "placement": {
+                    "kind": "floating_local_interval",
+                    "starts_local_at": "2026-11-05T19:00:00",
+                    "ends_local_at": "2026-11-05T19:30:00",
+                },
+            },
+            "profile": {
+                "operation_id": "event:atomic:schedule:profile",
+                "expected_revision": 0,
+                "title": "Moved",
+            },
+        }
+        saved = await apply_one_off_event_atomic_edit(
+            event, EventAtomicEditCommand.model_validate(payload), context, request, Response()
+        )
+        assert saved.event.title == "Moved"
+        assert saved.event.profile_revision == 1
+        with pytest.raises(ProblemError) as stale:
+            await apply_one_off_event_atomic_edit(
+                event,
+                EventAtomicEditCommand.model_validate(
+                    {**payload, "operation_id": "event:atomic:schedule:again", "profile": None}
+                ),
+                context,
+                request,
+                Response(),
+            )
+        assert stale.value.status == 409
+    finally:
+        await runtime.dispose()
 
 
 @pytest.mark.asyncio

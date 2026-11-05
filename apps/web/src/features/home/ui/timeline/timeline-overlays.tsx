@@ -577,6 +577,8 @@ export type TimelineDetail = Readonly<{
   eventRef?: string;
   occurrenceRef?: string;
   eventPlacement?: TimelineCanonicalSchedulePlacement;
+  eventScheduleRef?: string;
+  eventPlacementMaterialStateRef?: string;
   schedulePlacement?: TimelineCanonicalSchedulePlacement;
   realitySubject?: Readonly<{
     kind: 'activity' | 'event' | 'occurrence';
@@ -1071,6 +1073,10 @@ export function EventDetailDialog({
                     onEditorStateChange={setEventEditorMode}
                     eventRef={detail.eventRef}
                     occurrenceRef={detail.occurrenceRef ?? null}
+                    scheduleRef={detail.eventScheduleRef ?? null}
+                    placementMaterialStateRef={
+                      detail.eventPlacementMaterialStateRef ?? null
+                    }
                     placement={detail.eventPlacement}
                     onCancelScope={onClose}
                     onDuplicate={(seed) => {
@@ -1235,6 +1241,14 @@ export function detailFromEvent(
       : {}),
     ...(ownerKind === undefined ? {} : { ownerKind }),
     ...(eventRef === undefined ? {} : { eventRef }),
+    ...(ownerKind === 'event' &&
+    event.canonicalBasis?.kind === 'scheduled-event'
+      ? {
+          eventScheduleRef: event.canonicalBasis.scheduleRef,
+          eventPlacementMaterialStateRef:
+            event.canonicalBasis.placementMaterialStateRef,
+        }
+      : {}),
     ...(event.canonicalBasis?.kind === 'scheduled-occurrence'
       ? { occurrenceRef: event.canonicalBasis.occurrenceRef }
       : {}),

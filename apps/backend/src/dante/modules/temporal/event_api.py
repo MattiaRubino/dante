@@ -45,10 +45,16 @@ from dante.modules.temporal.schedule import (
     DateSpanPlacement,
     FloatingLocalIntervalPlacement,
     NamedZoneLocalIntervalPlacement,
+    ScheduleNotFoundError,
+    ScheduleOperationIdReuseError,
+    SchedulePersistenceError,
+    SchedulePlacementLockedError,
+    ScheduleRevisionConflictError,
     ScheduleInputError,
     SchedulePlacement,
+    revise_schedule_in_session,
 )
-from dante.platform.database.references import NativeRef
+from dante.platform.database.references import MaterialStateRef, NativeRef, ScopedRecordRef
 from dante.platform.database.runtime import DatabaseRuntime
 from dante.platform.http.problem import ProblemError
 
@@ -770,6 +776,14 @@ class EventAtomicLifeAreaChange(BaseModel):
     life_area_ref: UUID | None
 
 
+class EventAtomicScheduleChange(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    schedule_ref: UUID
+    expected_material_state_ref: UUID
+    placement: EventSchedulePlacementRequest
+
+
 class EventAtomicEditCommand(BaseModel):
     """One-off Event metadata, Agenda, Life Area, Reality and Objectives."""
 
@@ -779,6 +793,7 @@ class EventAtomicEditCommand(BaseModel):
     profile: ReviseEventProfileRequest | None = None
     agenda: ReplaceEventAgendaRequest | None = None
     life_area: EventAtomicLifeAreaChange | None = None
+    schedule: EventAtomicScheduleChange | None = None
     reality: RealityPolicyCommand | None = None
     objectives: ActivityObjectiveBatchCommand | None = None
 
@@ -786,7 +801,14 @@ class EventAtomicEditCommand(BaseModel):
     def nonempty(self) -> EventAtomicEditCommand:
         if all(
             value is None
-            for value in (self.profile, self.agenda, self.life_area, self.reality, self.objectives)
+            for value in (
+                self.profile,
+                self.agenda,
+                self.life_area,
+                self.schedule,
+                self.reality,
+                self.objectives,
+            )
         ):
             raise ValueError("Select at least one Event change.")
         return self
@@ -932,6 +954,36 @@ async def apply_one_off_event_atomic_edit(
                     title="Recurring Event scope required",
                     detail="Select an Occurrence and an explicit edit scope.",
                 )
+            if body.schedule is not None:
+                change_schedule = body.schedule
+                owned = (
+                    await session.execute(
+                        text("SELECT dante.assert_self_event_schedule(:actor,:event,:schedule)"),
+                        {
+                            "actor": actor,
+                            "event": native_event,
+                            "schedule": change_schedule.schedule_ref,
+                        },
+                    )
+                ).scalar_one()
+                if not owned:
+                    raise ProblemError(
+                        status=409,
+                        code="temporal.event_edit.schedule_mismatch",
+                        category="conflict",
+                        title="Event Schedule changed",
+                        detail="Reload the Event before changing its Schedule.",
+                    )
+                await revise_schedule_in_session(
+                    session,
+                    self_person_ref=actor,
+                    operation_id=f"{body.operation_id}:schedule",
+                    schedule_ref=ScopedRecordRef(change_schedule.schedule_ref),
+                    expected_material_state_ref=MaterialStateRef(
+                        change_schedule.expected_material_state_ref
+                    ),
+                    placement=_placement_from_request(change_schedule.placement),
+                )
             if body.profile is not None:
                 change = body.profile
                 await session.execute(
@@ -1035,15 +1087,22 @@ async def apply_one_off_event_atomic_edit(
             title="Event Agenda changed",
             detail="Reload the Event and review the Agenda.",
         ) from exc
-    except EventInputError as exc:
+    except (EventInputError, ScheduleInputError) as exc:
         raise ProblemError(
             status=422,
-            code="temporal.event_edit.invalid_agenda",
+            code="temporal.event_edit.invalid_change",
             category="validation",
-            title="Invalid Event Agenda",
+            title="Invalid Event change",
             detail=str(exc),
         ) from exc
-    except (EventOperationIdReuseError, EventNotFoundError) as exc:
+    except (
+        EventOperationIdReuseError,
+        EventNotFoundError,
+        ScheduleNotFoundError,
+        ScheduleOperationIdReuseError,
+        SchedulePlacementLockedError,
+        ScheduleRevisionConflictError,
+    ) as exc:
         raise ProblemError(
             status=409,
             code="temporal.event_edit.conflict",
@@ -1078,7 +1137,7 @@ async def apply_one_off_event_atomic_edit(
             detail="The Event edit could not be saved.",
             retryable=True,
         ) from exc
-    except EventPersistenceError as exc:
+    except (EventPersistenceError, SchedulePersistenceError) as exc:
         raise ProblemError(
             status=503,
             code="temporal.event_edit.unavailable",

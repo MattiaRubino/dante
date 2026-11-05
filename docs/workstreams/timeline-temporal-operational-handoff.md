@@ -1,5 +1,23 @@
 # Timeline / Temporal-Operational — Workstream Handoff
 
+## 2026-11-05 — One-off Event Schedule edit candidate
+
+The next candidate extends the one-off Event atomic command with a Schedule
+placement revision. It verifies that the submitted Schedule belongs to this
+owner's Event and uses the exact placement MaterialState CAS before any
+profile/Agenda/Life Area/Reality/Objective changes are accepted. The same
+transaction rolls back all fields on conflict. Event Detail passes the
+canonical Schedule and state refs to Event Edit; timed named-zone/floating
+and full-day date-span fields share the Create date/time controls. The form
+retains date-span's exclusive-end convention and submits changed Schedule
+with other changes through one Save. Absolute/coarse placements and any
+stored sub-minute precision are explicitly not editable by this new form.
+Focused conversion, serialization, owner binding and PostgreSQL cases were
+added, **NOT_RUN** by this agent. OpenAPI and Orval were regenerated with
+temporary scratch-runtime version overrides, restoring the manifests.
+Reminder, expected participation, recurrence and selected-instance full
+aggregate Save remain open; this is not complete Event parity.
+
 ## 2026-11-05 — Inspector parity cleanup candidate
 
 Following published `e33c0fdc`, Event Inspector now uses the same four

@@ -18,6 +18,25 @@ export type EventProfileDraft = Readonly<{
   colorCode: string | null;
 }>;
 
+export type EventSchedulePlacementInput =
+  | Readonly<{
+      kind: 'date_span';
+      start_date: string;
+      end_date_exclusive: string;
+    }>
+  | Readonly<{
+      kind: 'floating_local_interval';
+      starts_local_at: string;
+      ends_local_at: string;
+    }>
+  | Readonly<{
+      kind: 'named_zone_local_interval';
+      starts_local_at: string;
+      ends_local_at: string;
+      zone_id: string;
+      disambiguation: 'reject' | 'earlier' | 'later';
+    }>;
+
 export type EventAtomicDraft = Readonly<{
   profile?: EventProfileDraft;
   agendaParts?: readonly string[];
@@ -27,6 +46,11 @@ export type EventAtomicDraft = Readonly<{
   }>;
   objectives?: ActivityObjectiveBatch;
   reality?: Readonly<{ mode: RealityMode; expectedStateRef: string | null }>;
+  schedule?: Readonly<{
+    scheduleRef: string;
+    expectedMaterialStateRef: string;
+    placement: EventSchedulePlacementInput;
+  }>;
 }>;
 
 function object(value: unknown): Record<string, unknown> {
@@ -140,6 +164,16 @@ export function createRemoteEventProfileDataSource(
                     operation_id: `${operationId}:reality`,
                     mode_code: changes.reality.mode,
                     expected_state_ref: changes.reality.expectedStateRef,
+                  },
+                }
+              : {}),
+            ...(changes.schedule
+              ? {
+                  schedule: {
+                    schedule_ref: changes.schedule.scheduleRef,
+                    expected_material_state_ref:
+                      changes.schedule.expectedMaterialStateRef,
+                    placement: changes.schedule.placement,
                   },
                 }
               : {}),
