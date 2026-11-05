@@ -30,7 +30,9 @@ function ScalettaRow({
   onRemove,
 }: ScalettaRowProps) {
   const { i18n } = useTranslation('common');
-  const italian = i18n.language.toLowerCase().startsWith('it');
+  const italian = (i18n.resolvedLanguage ?? i18n.language ?? 'it')
+    .toLowerCase()
+    .startsWith('it');
 
   const onKeyDown = (event: KeyboardEvent<HTMLInputElement>) => {
     if (event.altKey && event.key === 'ArrowUp' && index > 0) {
@@ -112,7 +114,9 @@ export function TemporalCreateEventAgenda({
   maxPartLength = 300,
 }: TemporalCreateEventAgendaProps) {
   const { i18n } = useTranslation('common');
-  const italian = i18n.language.toLowerCase().startsWith('it');
+  const italian = (i18n.resolvedLanguage ?? i18n.language ?? 'it')
+    .toLowerCase()
+    .startsWith('it');
   const rootRef = useRef<HTMLElement>(null);
 
   const publish = (next: readonly string[]) => {

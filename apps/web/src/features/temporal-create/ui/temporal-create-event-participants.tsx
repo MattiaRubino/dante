@@ -27,7 +27,9 @@ export function TemporalEventParticipantsFields({
   disabled?: boolean;
 }>) {
   const { i18n } = useTranslation('common');
-  const italian = i18n.language.toLowerCase().startsWith('it');
+  const italian = (i18n.resolvedLanguage ?? i18n.language ?? 'it')
+    .toLowerCase()
+    .startsWith('it');
   const source = useMemo(
     () => createRemoteTemporalResponsibilityDataSource(globalThis.fetch),
     [],

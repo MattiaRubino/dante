@@ -1,5 +1,18 @@
 # Timeline / Temporal-Operational — Workstream Handoff
 
+## 2026-11-05 — Event Inspector test failure repair candidate
+
+Owner ran `event-inspector-actions.test.tsx` and
+`temporal-create-top-controls.test.tsx` on `aefcaa33`: 12 failures in the
+Inspector suite and 25 total passes. Every failed render hit
+`TemporalCreateEventAgenda` calling `i18n.language.toLowerCase()` with an
+uninitialized test i18n instance; component render aborted, so subsequent
+queries failed together. The Agenda row and root now resolve language from
+`resolvedLanguage ?? language ?? 'it'`, as does the adjacent Event participant
+control to avoid the next same failure after Agenda renders. The owner has
+not yet rerun this repair. Do not classify all twelve as distinct product
+failures or declare the gate green before the owner's rerun.
+
 ## 2026-11-05 — Event parity closure boundary (still open)
 
 This work is **not complete**. The one-off Event Edit has an atomic command
