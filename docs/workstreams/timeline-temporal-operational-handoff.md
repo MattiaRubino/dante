@@ -3420,3 +3420,18 @@ PostgreSQL test; the chained PostgreSQL tests therefore did not execute.
 The separate Event Inspector Vitest run passed **15/15**. The test expressions
 now follow the formatter's reported layout. This is a test formatting repair,
 not evidence for the unrun PostgreSQL batch or an all-fields Event editor.
+
+### 2026-11-05 PostgreSQL infrastructure interruption
+
+After pulling `7e29aad2`, the user's `ruff format --check` passed. Pytest
+exited during the session-scoped disposable PostgreSQL fixture before
+collecting any tests: Docker Desktop returned `ports are not available` and
+`/forwards/expose returned unexpected status: 500` for the dynamically
+selected loopback port. The Event Objective batch and Activity atomic edit
+PostgreSQL suites are therefore **NOT RUN**, not failed assertions. This exact
+Docker Desktop/WSL forwarding symptom is documented in
+`docs/workstreams/backend-scaffold.md` and handled as infrastructure-only
+retry by `tooling/testing/run_parallel_gate.py`. For the focused direct run,
+retry once; if the same forwarding error recurs, restart Docker Desktop, check
+its WSL integration and rerun the same unchanged tests. Do not change the
+application or treat this as a green database gate.
