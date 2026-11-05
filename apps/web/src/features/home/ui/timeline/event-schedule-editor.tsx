@@ -2,6 +2,7 @@ import { Temporal } from '@dante/time';
 
 import { TimeControl } from '../../../temporal-create/ui/temporal-create-core-u2';
 import { TemporalCreateDatePicker } from '../../../temporal-create/ui/temporal-create-date-picker';
+import { TemporalTimeZoneControl } from '../../../temporal-create/ui/temporal-time-zone-control';
 import type { TimelineCanonicalSchedulePlacement } from './model/timeline-types';
 import type { EventSchedulePlacementInput } from '../../../temporal/remote-event-profile-data-source';
 
@@ -140,17 +141,11 @@ export function EventScheduleEditor({
       </div>
       {draft.kind === 'timed' ? (
         <>
-          <label className="timeline-event-schedule-editor__zone">
-            Fuso orario
-            <input
-              disabled={disabled}
-              value={draft.zoneId ?? ''}
-              placeholder="Senza fuso (orario locale)"
-              onChange={(event) =>
-                update({ zoneId: event.target.value.trim() || null })
-              }
-            />
-          </label>
+          <TemporalTimeZoneControl
+            zoneId={draft.zoneId}
+            disabled={disabled}
+            onChange={(zoneId) => update({ zoneId })}
+          />
           <div className="temporal-create-activity-interval__fields timeline-activity-editor__interval-fields">
             <TemporalCreateDatePicker
               label="Data inizio"

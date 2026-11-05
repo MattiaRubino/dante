@@ -26,6 +26,7 @@ import { TemporalCreateDatePicker } from './temporal-create-date-picker';
 import { TemporalCreateLifeAreaField } from './temporal-create-life-area-field';
 import { temporalCreateProductCopy } from './temporal-create-product-copy';
 import { TemporalCreateQuickReminder } from './temporal-create-quick-reminder';
+import { TemporalTimeZoneControl } from './temporal-time-zone-control';
 import { temporalCreateTypeRegistry } from './temporal-create-type-registry';
 import { useTemporalCreateU2Draft } from './temporal-create-u2-draft-context';
 import type { TemporalCreateContextOption } from './temporal-create-ui-types';
@@ -89,48 +90,6 @@ const TIME_BANDS: readonly TimeBand[] = Object.freeze([
   Object.freeze({ key: 'night', start: '23:00', end: '06:00' }),
 ]);
 
-const FALLBACK_TIME_ZONES = Object.freeze([
-  'Europe/Rome',
-  'Europe/London',
-  'Europe/Paris',
-  'Europe/Berlin',
-  'Europe/Madrid',
-  'Europe/Athens',
-  'America/New_York',
-  'America/Chicago',
-  'America/Denver',
-  'America/Los_Angeles',
-  'America/Sao_Paulo',
-  'Asia/Dubai',
-  'Asia/Kolkata',
-  'Asia/Singapore',
-  'Asia/Tokyo',
-  'Australia/Sydney',
-  'Pacific/Auckland',
-  'UTC',
-]);
-
-function supportedTimeZones(): readonly string[] {
-  const intl = Intl as typeof Intl & {
-    supportedValuesOf?: (key: string) => string[];
-  };
-  try {
-    const values = intl.supportedValuesOf?.('timeZone') ?? [];
-    if (values.length > 0) {
-      return Object.freeze(
-        Array.from(new Set(['UTC', ...values])).sort((left, right) =>
-          left.localeCompare(right),
-        ),
-      );
-    }
-  } catch {
-    // Stable fallback for runtimes without Intl.supportedValuesOf.
-  }
-  return FALLBACK_TIME_ZONES;
-}
-
-const TIME_ZONES = supportedTimeZones();
-
 function timeToMinute(value: string): number | null {
   const match = /^(\d{1,2}):(\d{2})$/.exec(value.trim());
   if (!match) return null;
@@ -192,15 +151,6 @@ function ClockIcon() {
     <svg viewBox="0 0 24 24" aria-hidden="true">
       <circle cx="12" cy="12" r="8" />
       <path d="M12 7v5l3 2" />
-    </svg>
-  );
-}
-
-function GlobeIcon() {
-  return (
-    <svg viewBox="0 0 24 24" aria-hidden="true">
-      <circle cx="12" cy="12" r="8" />
-      <path d="M4 12h16M12 4c2.2 2.1 3.3 4.8 3.3 8S14.2 17.9 12 20M12 4c-2.2 2.1-3.3 4.8-3.3 8S9.8 17.9 12 20" />
     </svg>
   );
 }
@@ -501,9 +451,7 @@ export function TemporalCreateCoreFieldsU2({
   const locale = i18n.resolvedLanguage ?? i18n.language ?? 'it';
   const italian = locale.toLowerCase().startsWith('it');
   const typeRegistry = temporalCreateTypeRegistry();
-  const [timeZoneOpen, setTimeZoneOpen] = useState(false);
   const [timeBandOpen, setTimeBandOpen] = useState(false);
-  const timeZoneRootRef = useRef<HTMLDivElement | null>(null);
   const timeBandRootRef = useRef<HTMLDivElement | null>(null);
   const autoRolledEndDateRef = useRef(false);
   const recurrenceOwner: Exclude<TemporalCreateRecurrenceOwner, null> =
@@ -557,20 +505,6 @@ export function TemporalCreateCoreFieldsU2({
           : interval,
       ),
     );
-
-  useEffect(() => {
-    if (!timeZoneOpen) return;
-    const dismiss = (event: PointerEvent) => {
-      if (
-        event.target instanceof Node &&
-        !timeZoneRootRef.current?.contains(event.target)
-      ) {
-        setTimeZoneOpen(false);
-      }
-    };
-    document.addEventListener('pointerdown', dismiss, true);
-    return () => document.removeEventListener('pointerdown', dismiss, true);
-  }, [timeZoneOpen]);
 
   useEffect(() => {
     if (!timeBandOpen) return;
@@ -858,13 +792,6 @@ export function TemporalCreateCoreFieldsU2({
     });
   };
 
-  const timeZoneLabel =
-    fields.timeMode === 'floating'
-      ? italian
-        ? 'Ora locale'
-        : 'Local time'
-      : fields.timeZoneId;
-
   return (
     <>
       <fieldset className="temporal-create-type-fieldset">
@@ -941,76 +868,18 @@ export function TemporalCreateCoreFieldsU2({
 
       {fields.timeSemantics === 'timed' ? (
         <div className="temporal-create-u2-when">
-          <div
-            ref={timeZoneRootRef}
-            className="temporal-create-timezone-control"
-            data-create-path="timeZoneId"
-          >
-            <button
-              className={`temporal-create-timezone-trigger${timeZoneOpen ? ' is-open' : ''}`}
-              type="button"
-              aria-label={`Fuso orario: ${timeZoneLabel}`}
-              aria-expanded={timeZoneOpen}
-              title={timeZoneLabel}
-              onClick={() => setTimeZoneOpen((current) => !current)}
-            >
-              <GlobeIcon />
-              <span
-                className="temporal-create-timezone-divider"
-                aria-hidden="true"
-              />
-              <span className="temporal-create-timezone-label">
-                {italian ? 'Fuso orario' : 'Time zone'} · {timeZoneLabel}
-              </span>
-              <span
-                className="temporal-create-timezone-chevron"
-                aria-hidden="true"
-              >
-                {timeZoneOpen ? '⌃' : '⌄'}
-              </span>
-            </button>
-            {timeZoneOpen ? (
-              <div className="temporal-create-timezone-panel">
-                <div className="temporal-create-timezone-current">
-                  <GlobeIcon />
-                  <span>{timeZoneLabel}</span>
-                </div>
-                <div className="temporal-create-timezone-list">
-                  <button
-                    type="button"
-                    className={
-                      fields.timeMode === 'floating' ? 'is-selected' : ''
-                    }
-                    onClick={() => {
-                      onPatch({ timeMode: 'floating' });
-                      setTimeZoneOpen(false);
-                    }}
-                  >
-                    Ora locale
-                  </button>
-                  {TIME_ZONES.map((zoneId) => (
-                    <button
-                      key={zoneId}
-                      type="button"
-                      className={
-                        fields.timeMode === 'zoned' &&
-                        fields.timeZoneId === zoneId
-                          ? 'is-selected'
-                          : ''
-                      }
-                      onClick={() => {
-                        onPatch({ timeMode: 'zoned', timeZoneId: zoneId });
-                        setTimeZoneOpen(false);
-                      }}
-                    >
-                      {zoneId.replaceAll('_', ' ')}
-                    </button>
-                  ))}
-                </div>
-              </div>
-            ) : null}
-            {renderError('timeZoneId')}
-          </div>
+          <TemporalTimeZoneControl
+            zoneId={fields.timeMode === 'floating' ? null : fields.timeZoneId}
+            italian={italian}
+            onChange={(zoneId) =>
+              onPatch(
+                zoneId === null
+                  ? { timeMode: 'floating' }
+                  : { timeMode: 'zoned', timeZoneId: zoneId },
+              )
+            }
+          />
+          {renderError('timeZoneId')}
 
           <input
             className="temporal-create-u2-date-bridge"

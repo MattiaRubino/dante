@@ -1,5 +1,17 @@
 # Timeline / Temporal-Operational — Workstream Handoff
 
+## 2026-11-05 — Shared Event time-zone control candidate
+
+Create, one-off Event Edit, and following-scope recurring Event Edit now use
+the same named-zone selector. Create and one-off Edit retain the explicit
+floating-time choice; recurring Events require a named-zone recurrence and
+therefore do not offer a floating choice in that editor. A series zone change
+joins its structural preview/accept instead of a separate write. The Event
+series execution label now says Event. Existing Create interaction and Event
+atomic edit cases cover the selector, but all checks remain **NOT_RUN** at
+the owner's request. This visual/field alignment does not implement the
+selected-occurrence aggregate or recurring participation editing.
+
 ## 2026-11-05 — Event Inspector participant readback candidate
 
 Event Inspector now reads current expected participation and local Person

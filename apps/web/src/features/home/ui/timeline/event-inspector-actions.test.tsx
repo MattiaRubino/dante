@@ -693,6 +693,14 @@ describe('Event Inspector actions', () => {
       },
     );
     const schedule = screen.getByRole('group', { name: 'Orario Evento' });
+    fireEvent.click(
+      within(schedule).getByRole('button', {
+        name: /Fuso orario: Europe\/Rome/,
+      }),
+    );
+    fireEvent.click(
+      within(schedule).getByRole('button', { name: 'Ora locale' }),
+    );
     const time = within(schedule).getByRole('textbox', { name: 'Fine: ore' });
     fireEvent.change(time, { target: { value: '11' } });
     fireEvent.blur(time);
@@ -703,7 +711,7 @@ describe('Event Inspector actions', () => {
       schedule: {
         scheduleRef: '0199a333-3333-7333-8333-333333333333',
         expectedMaterialStateRef: '0199a444-4444-7444-8444-444444444444',
-        placement: { kind: 'named_zone_local_interval' },
+        placement: { kind: 'floating_local_interval' },
       },
     });
   });

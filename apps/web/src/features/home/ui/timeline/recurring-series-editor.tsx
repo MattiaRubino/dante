@@ -14,6 +14,7 @@ import { TemporalColorControl } from '../../../temporal-create/ui/temporal-color
 import { TemporalCreateDatePicker } from '../../../temporal-create/ui/temporal-create-date-picker';
 import { TemporalLifeAreaSelect } from '../../../temporal-create/ui/temporal-life-area-select';
 import { TemporalCreateEventAgenda } from '../../../temporal-create/ui/temporal-create-event-agenda';
+import { TemporalTimeZoneControl } from '../../../temporal-create/ui/temporal-time-zone-control';
 import { TemporalObjectiveEditorRow } from '../../../temporal-create/ui/temporal-objective-editor-row';
 import type {
   TemporalCreateObjectiveDraft,
@@ -865,10 +866,21 @@ export function RecurringSeriesEditor({
                   </>
                 )}
               </div>
-              <div className="timeline-activity-editor__timezone">
-                <span aria-hidden="true">◎</span>
-                Fuso orario · {asText(recurrence.zone_id) || 'della serie'}
-              </div>
+              {owner === 'event' ? (
+                <TemporalTimeZoneControl
+                  zoneId={asText(recurrence.zone_id) || null}
+                  allowFloating={false}
+                  onChange={(zoneId) => {
+                    if (zoneId)
+                      changeRecurrence({ ...recurrence, zone_id: zoneId });
+                  }}
+                />
+              ) : (
+                <div className="timeline-activity-editor__timezone">
+                  <span aria-hidden="true">◎</span>
+                  Fuso orario · {asText(recurrence.zone_id) || 'della serie'}
+                </div>
+              )}
               {owner === 'event' && structure.placement_kind === 'timed' ? (
                 <TimeControl
                   label="Inizio"
@@ -1525,7 +1537,10 @@ export function RecurringSeriesEditor({
               </div>
               <div className="temporal-create-reality-objectives__block is-reality">
                 <div className="temporal-create-reality-objectives__block-copy">
-                  <strong>Svolgimento dell’attività</strong>
+                  <strong>
+                    Svolgimento{' '}
+                    {owner === 'event' ? 'dell’evento' : 'dell’attività'}
+                  </strong>
                   <span>Come vuoi gestire la conferma dello svolgimento?</span>
                 </div>
                 <div
