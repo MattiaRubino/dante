@@ -3373,3 +3373,20 @@ explicit read transaction and updates all current-head test constants to
 retirement SQL. PostgreSQL and exact-catalog checks on this repair are
 **NOT_RUN**, pending the user's local recheck; do not relabel the prior gate
 green.
+
+### 2026-11-05 user-local PostgreSQL proof and Event Objective batch candidate
+
+The user pulled `5c43af2d` and reran Event profile/Objective, recurring
+Activity Objective, fresh Alembic head and exact catalog: **5 passed in
+17.64s**. This verifies the focused `_167` migration/catalog and its one-off
+Event Objective retirement regression; it does not prove aggregate Event Save.
+
+The next source candidate extracts the Activity Objective batch's shared
+in-session logic so a one-off Event can use the same create/revise/retire
+transaction with Event subject identity and fingerprints. The Event helper
+rejects source-following Objective scope and an Event recurrence source; it
+assumes the enclosing Event Save owns the serializable transaction and Event
+lock. A PostgreSQL test verifies rollback of a prior revision when a later
+retirement is stale, then successful Event batch readback. This candidate
+does not expose a new HTTP route or UI Save, and requires user-local
+PostgreSQL proof. The existing Activity batch behavior must also be rerun.

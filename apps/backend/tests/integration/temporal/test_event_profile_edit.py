@@ -15,7 +15,12 @@ from tests.integration.temporal.test_primary_life_area_assignment import (
 )
 
 from dante.modules.temporal.event import TemporalEventApplication
+from dante.modules.temporal.reality_objective_api import (
+    ActivityObjectiveBatchCommand,
+    apply_event_objective_edits_in_session,
+)
 from dante.platform.database.runtime import create_database_runtime
+from dante.platform.http.problem import ProblemError
 
 pytestmark = pytest.mark.postgres
 
@@ -36,6 +41,102 @@ _RETIRE_OBJECTIVE = text("""
         :actor,:objective,:operation,:fingerprint,:expected
     )
 """)
+
+
+@pytest.mark.asyncio
+async def test_one_off_event_objective_batch_rolls_back_revision_when_retirement_is_stale(
+    migrated_database: Any,
+) -> None:
+    owner = _seed_self(migrated_database)
+    event = _legacy_event(migrated_database, owner, "One-off")
+    revised, removed = uuid7(), uuid7()
+    runtime = create_database_runtime(migrated_database.runtime_settings())
+    try:
+        async with runtime.session_factory() as session, session.begin():
+            for index, objective in enumerate((revised, removed)):
+                await session.execute(
+                    _CREATE_OBJECTIVE,
+                    {
+                        "actor": owner,
+                        "operation": f"event:batch:create:{index}",
+                        "fingerprint": f"{index + 1}" * 64,
+                        "objective": objective,
+                        "event": event,
+                        "label": f"Original {index}",
+                    },
+                )
+        command = {
+            "add": [
+                {
+                    "operation_id": "event:batch:add",
+                    "label": "Nuovo",
+                    "result_kind": "boolean",
+                    "presentation_order": 2,
+                }
+            ],
+            "revise": [
+                {
+                    "objective_ref": revised,
+                    "change": {
+                        "operation_id": "event:batch:revise",
+                        "expected_revision": 0,
+                        "label": "Aggiornato",
+                        "result_kind": "boolean",
+                        "presentation_order": 0,
+                    },
+                }
+            ],
+            "retire": [
+                {
+                    "objective_ref": removed,
+                    "operation_id": "event:batch:retire",
+                    "expected_revision": 1,
+                }
+            ],
+        }
+        with pytest.raises(DBAPIError):
+            async with runtime.session_factory() as session, session.begin():
+                await session.execute(text("SET TRANSACTION ISOLATION LEVEL SERIALIZABLE"))
+                await apply_event_objective_edits_in_session(
+                    session,
+                    actor=owner,
+                    subject_ref=event,
+                    payload=ActivityObjectiveBatchCommand.model_validate(command),
+                    effective_zone_id="Europe/Rome",
+                )
+        async with runtime.session_factory() as session, session.begin():
+            before = (
+                await session.execute(
+                    text("SELECT * FROM dante.list_self_temporal_objectives(:actor,'event',:event)"),
+                    {"actor": owner, "event": event},
+                )
+            ).mappings().all()
+        assert {row["label"] for row in before} == {"Original 0", "Original 1"}
+
+        command["retire"][0]["expected_revision"] = 0
+        async with runtime.session_factory() as session, session.begin():
+            await session.execute(text("SET TRANSACTION ISOLATION LEVEL SERIALIZABLE"))
+            after = await apply_event_objective_edits_in_session(
+                session,
+                actor=owner,
+                subject_ref=event,
+                payload=ActivityObjectiveBatchCommand.model_validate(command),
+                effective_zone_id="Europe/Rome",
+            )
+        assert {row.label for row in after} == {"Aggiornato", "Nuovo"}
+
+        command["revise"][0]["change"]["scope_code"] = "this_and_following"
+        with pytest.raises(ProblemError):
+            async with runtime.session_factory() as session, session.begin():
+                await apply_event_objective_edits_in_session(
+                    session,
+                    actor=owner,
+                    subject_ref=event,
+                    payload=ActivityObjectiveBatchCommand.model_validate(command),
+                    effective_zone_id="Europe/Rome",
+                )
+    finally:
+        await runtime.dispose()
 
 
 @pytest.mark.asyncio

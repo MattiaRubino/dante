@@ -571,4 +571,6 @@ explicitly refused; their selected Occurrence and following-scope edits need
 their own atomic policy. Activity local exceptions retain the `_166` source
 lock and binding check. The Event PostgreSQL regression lives beside the Event
 profile integration test. Migration, runtime ACL, catalog and regression
-verification are **NOT_RUN** on this candidate; the user runs tests locally.
+verification passed **5/5** in the user's local PostgreSQL selection on
+`5c43af2d`, including the fresh head and exact catalog. This is focused
+evidence, not the full gate.

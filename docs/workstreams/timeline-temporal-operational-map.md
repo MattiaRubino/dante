@@ -778,3 +778,8 @@ integration regression is in `test_event_profile_edit.py`; PostgreSQL proof
 is pending user execution. This is one persistence prerequisite for Event
 edit parity. One-off aggregate Save and separately scoped recurring Event
 edits remain open; see the current handoff for precise boundaries.
+
+The `_167` PostgreSQL/catalog selection passed 5/5 in the user's WSL on
+`5c43af2d`. The Event Objective batch helper is a later, untested source
+candidate. It composes under a future Event aggregate transaction; no new
+Event edit API or all-fields UI Save is available yet.

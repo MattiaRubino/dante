@@ -663,14 +663,82 @@ async def apply_activity_objective_edits_in_session(
     effective_zone_id: str,
 ) -> list[ObjectiveResponse]:
     """Apply all Objective changes in the caller's serializable transaction."""
+    return await _apply_objective_edits_in_session(
+        session,
+        actor=actor,
+        subject_ref=subject_ref,
+        subject_kind="activity",
+        payload=payload,
+        effective_zone_id=effective_zone_id,
+    )
+
+
+async def apply_event_objective_edits_in_session(
+    session: AsyncSession,
+    *,
+    actor: UUID,
+    subject_ref: UUID,
+    payload: ActivityObjectiveBatchCommand,
+    effective_zone_id: str,
+) -> list[ObjectiveResponse]:
+    """Apply one-off Event Objective edits inside the enclosing Event Save.
+
+    The caller owns the Event transaction and locks its aggregate before this
+    method; a recurring Event source is refused even if the batch is empty.
+    """
+    if any(
+        revision.change.scope_code != "only_this"
+        or revision.change.expected_source_revision is not None
+        or revision.change.expected_recurrence_state_ref is not None
+        for revision in payload.revise
+    ):
+        raise ProblemError(
+            status=422,
+            code="temporal.event_edit.objective_scope",
+            category="validation",
+            title="Ambito obiettivo non valido",
+            detail="Un Evento singolo non accetta modifiche di obiettivi della serie.",
+        )
+    recurrence = await session.execute(
+        text("SELECT 1 FROM dante.get_self_event_recurrence(:actor,:source) LIMIT 1"),
+        {"actor": actor, "source": subject_ref},
+    )
+    if recurrence.first() is not None:
+        raise ProblemError(
+            status=409,
+            code="temporal.event_edit.recurring_source",
+            category="conflict",
+            title="Istanza ricorrente richiesta",
+            detail="Seleziona un'istanza e il suo ambito di modifica.",
+        )
+    return await _apply_objective_edits_in_session(
+        session,
+        actor=actor,
+        subject_ref=subject_ref,
+        subject_kind="event",
+        payload=payload,
+        effective_zone_id=effective_zone_id,
+    )
+
+
+async def _apply_objective_edits_in_session(
+    session: AsyncSession,
+    *,
+    actor: UUID,
+    subject_ref: UUID,
+    subject_kind: Literal["activity", "event"],
+    payload: ActivityObjectiveBatchCommand,
+    effective_zone_id: str,
+) -> list[ObjectiveResponse]:
+    """Apply a validated owner's Objective batch without committing it."""
     existing = set(
         (
             await session.scalars(
                 text("""
         SELECT objective_ref FROM dante.list_self_temporal_objectives(
-            :actor,'activity',:activity)
+            :actor,:kind,:subject)
     """),
-                {"actor": actor, "activity": subject_ref},
+                {"actor": actor, "kind": subject_kind, "subject": subject_ref},
             )
         ).all()
     )
@@ -758,7 +826,7 @@ async def apply_activity_objective_edits_in_session(
         await session.execute(
             text("""
             SELECT * FROM dante.create_self_temporal_objective(
-                :actor,:operation,:fingerprint,:objective,'activity',:activity,
+                :actor,:operation,:fingerprint,:objective,:subject_kind,:subject,
                 :label,:kind,:comparator,:target,:minimum,:maximum,:unit,:ordering)
         """),
             {
@@ -767,13 +835,14 @@ async def apply_activity_objective_edits_in_session(
                 "fingerprint": _fingerprint(
                     {
                         "version": 1,
-                        "subject_kind": "activity",
+                        "subject_kind": subject_kind,
                         "subject_native_ref": str(subject_ref),
                         **addition.model_dump(mode="json"),
                     }
                 ),
                 "objective": uuid7(),
-                "activity": subject_ref,
+                "subject_kind": subject_kind,
+                "subject": subject_ref,
                 "label": addition.label,
                 "kind": addition.result_kind,
                 "comparator": addition.comparator_code,
@@ -789,9 +858,9 @@ async def apply_activity_objective_edits_in_session(
             await session.execute(
                 text("""
         SELECT * FROM dante.list_self_temporal_objectives(
-            :actor,'activity',:activity)
+            :actor,:subject_kind,:subject)
     """),
-                {"actor": actor, "activity": subject_ref},
+                {"actor": actor, "subject_kind": subject_kind, "subject": subject_ref},
             )
         )
         .mappings()
