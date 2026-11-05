@@ -1,5 +1,17 @@
 # Timeline / Temporal-Operational — Workstream Handoff
 
+## 2026-11-05 — Owner-run Event web gate on 68ea1a396
+
+The owner pulled `68ea1a396` and ran the two targeted Vitest suites:
+`event-inspector-actions.test.tsx` (20 passed) and
+`temporal-create-top-controls.test.tsx` (17 passed); **37 passed, 0 failed**.
+The earlier mock isolation and modal-layout failures are resolved in this gate.
+The `react-i18next` NO_I18NEXT_INSTANCE message is a non-failing test warning.
+This gate covers those two suites only; selected recurring Event instance
+structure and following-series participation remain open in the parity table
+below. Visual acceptance and broader backend/full-stack gates have not been
+reported for this checkpoint.
+
 ## 2026-11-05 — Event Inspector second owner-run test repair candidate
 
 Owner reran the targeted web suite on `6343eaae`: 29 passed, 8 failed.
@@ -10,7 +22,7 @@ Objective and took the atomic path; the modal layout assertion still expected
 the pre-parity two-field body. The fixture now restores empty Objectives and
 default Area after each case, and the obsolete assertion checks the current
 title/description bounds while a separate test verifies the full field order.
-This repair is **NOT_RUN** pending the owner's next rerun.
+The owner reran the affected suites at `68ea1a396`: 37/37 passed; see the gate above.
 
 ## 2026-11-05 — Event Inspector test failure repair candidate
 
@@ -21,9 +33,9 @@ Inspector suite and 25 total passes. Every failed render hit
 uninitialized test i18n instance; component render aborted, so subsequent
 queries failed together. The Agenda row and root now resolve language from
 `resolvedLanguage ?? language ?? 'it'`, as does the adjacent Event participant
-control to avoid the next same failure after Agenda renders. The owner has
-not yet rerun this repair. Do not classify all twelve as distinct product
-failures or declare the gate green before the owner's rerun.
+control to avoid the next same failure after Agenda renders. The owner reran the affected suites after this repair at `68ea1a396`:
+37/37 passed. Do not classify all twelve earlier failures as distinct product
+failures.
 
 ## 2026-11-05 — Event parity closure boundary (still open)
 
