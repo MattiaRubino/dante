@@ -76,8 +76,8 @@ async def test_one_off_event_schedule_and_profile_commit_together_with_material_
             operation_id="event:original:schedule",
             subject_native_ref=event,
             placement=FloatingLocalIntervalPlacement(
-                starts_local_at=datetime(2026, 11, 5, 18),
-                ends_local_at=datetime(2026, 11, 5, 19),
+                starts_local_at=datetime.fromisoformat("2026-11-05T18:00:00"),
+                ends_local_at=datetime.fromisoformat("2026-11-05T19:00:00"),
             ),
         )
         payload = {
@@ -183,7 +183,8 @@ async def test_event_participant_changes_are_atomic_and_cas_guarded(
         assert conflict.value.status == 409
         async with runtime.session_factory() as session, session.begin():
             after = await _read_event_in_session(session, self_person_ref=owner, event_ref=event)
-        assert after is not None and after.title == "Participants saved"
+        assert after is not None
+        assert after.title == "Participants saved"
     finally:
         await runtime.dispose()
 
@@ -208,8 +209,8 @@ async def test_one_off_event_reminder_and_profile_commit_in_one_transaction(
             operation_id="event:reminder:schedule",
             subject_native_ref=event,
             placement=NamedZoneLocalIntervalPlacement(
-                starts_local_at=datetime(2026, 11, 5, 18),
-                ends_local_at=datetime(2026, 11, 5, 19),
+                starts_local_at=datetime.fromisoformat("2026-11-05T18:00:00"),
+                ends_local_at=datetime.fromisoformat("2026-11-05T19:00:00"),
                 zone_id="Europe/Rome",
             ),
         )
@@ -371,7 +372,7 @@ async def test_one_off_event_objective_batch_rolls_back_revision_when_retirement
                         "label": f"Original {index}",
                     },
                 )
-        command = {
+        command: dict[str, Any] = {
             "add": [
                 {
                     "operation_id": "event:batch:add",

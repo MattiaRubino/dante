@@ -533,7 +533,7 @@ export function EventInspectorActions({
                 ? reason.message
                 : 'Orario Evento non valido.';
             setScheduleError(message);
-            throw new Error(message);
+            throw new Error(message, { cause: reason });
           }
         }
         await recurringSource.saveEventLocal(
@@ -635,7 +635,7 @@ export function EventInspectorActions({
                 ? reason.message
                 : 'Orario Evento non valido.';
             setScheduleError(message);
-            throw new Error(message);
+            throw new Error(message, { cause: reason });
           }
         }
         const profileChanged =

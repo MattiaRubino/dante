@@ -330,7 +330,7 @@ export function createRemoteRealityObjectiveDataSource(
       }
       return {
         mode: row.mode_code as RealityMode,
-        stateRef: row.state_ref as string | null,
+        stateRef: row.state_ref,
       };
     },
     async getRealityMode(

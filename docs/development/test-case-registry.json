@@ -3383,6 +3383,15 @@
       "audit_note": "Needs contract/assertion review, rejection cases, and executable evidence; filename alone is not proof."
     },
     {
+      "path": "apps/web/src/features/home/ui/timeline/event-schedule-editor.test.ts",
+      "suite": "web-unit-component",
+      "contract_id": "T02",
+      "candidate_behavior": "Event Schedule edit conversion",
+      "purpose": "Verify an all-day exclusive end and reject a reversed timed window before mutation.",
+      "invariant": "Editing preserves the displayed final date and never submits a reversed timed interval.",
+      "status": "QUALIFIED"
+    },
+    {
       "path": "apps/web/src/features/home/ui/timeline/timeline-event-participation.test.tsx",
       "suite": "web-unit-component",
       "contract_id": "T02",

@@ -9,7 +9,7 @@ from dante.bootstrap.openapi_export import openapi_document
 _PUBLISHED_OPENAPI = (
     Path(__file__).resolve().parents[3] / "packages/api-client/openapi/dante-v1.openapi.json"
 )
-_CURRENT_ACCEPTED_TEMPORAL_OPERATION_COUNT = 195
+_CURRENT_ACCEPTED_TEMPORAL_OPERATION_COUNT = 198
 
 _HTTP_METHODS = frozenset({"get", "post", "put", "patch", "delete", "options", "head", "trace"})
 
@@ -66,6 +66,18 @@ _EXPECTED_TEMPORAL_OPERATIONS = {
         "/api/v1/temporal/activities/{activity_ref}/atomic-edit",
         "put",
     ): "temporal_apply_activity_atomic_edit",
+    (
+        "/api/v1/temporal/events/{event_ref}/atomic-edit",
+        "put",
+    ): "temporal_apply_one_off_event_atomic_edit",
+    (
+        "/api/v1/temporal/occurrences/{occurrence_ref}/event-local-edit",
+        "post",
+    ): "temporal_accept_event_occurrence_local_edit",
+    (
+        "/api/v1/temporal/occurrences/{occurrence_ref}/expected-participation",
+        "get",
+    ): "temporal_get_recurring_event_occurrence_expected_participation",
     ("/api/v1/temporal/events/postponed", "get"): "temporal_list_postponed_events",
     (
         "/api/v1/temporal/events/{event_ref}/schedules/{schedule_ref}/replan",

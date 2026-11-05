@@ -1,5 +1,29 @@
 # Timeline / Temporal-Operational — Workstream Handoff
 
+## 2026-11-05 — Complete gate at generated-client SHA and quality repair
+
+The owner published nine generated OpenAPI/Orval files at `6d1fe62` and ran
+the complete parallel gate on exactly that SHA: **20/27 groups passed**, source
+stability PASS. PostgreSQL (all shards), generated drift, typecheck, build,
+Vitest and all three browser groups passed. Seven groups were red:
+`TEST_INTEGRITY` missed the new Event Schedule test in the registry;
+`BACKEND_NON_POSTGRES` had a stale 195-operation assertion after three
+accepted Event endpoints; `BACKEND_FORMAT`, `BACKEND_RUFF`, `BACKEND_MYPY`,
+`REPO_FORMAT` and `REPO_ESLINT` found specific code/test quality violations.
+This was a real red gate, not seven independent behavior failures.
+
+The repair candidate registers the Schedule test with its actual assertions,
+freezes all three endpoint paths/operation IDs and count 198, fixes two Python
+format sites, owner/optional type narrowing and test fixture typing, removes
+an assertion from Event reminder write code, preserves caught causes in Event
+Schedule validation, and corrects Web formatting and state typing. Ruff check
+and format on the full backend, targeted ESLint with scratch dependency links,
+JSON parse, and diff whitespace passed. Mypy could not run in this scratch
+environment because the shared Python 3.14 virtualenv interpreter is missing.
+The owner should rerun the **seven previously red gate groups** on the same
+new SHA and then the full 27-group gate for same-SHA acceptance. User real-app
+visual review remains separate.
+
 ## 2026-11-05 — Owner rerun of selected Event edit
 
 The owner pulled `b117b4e` and reran

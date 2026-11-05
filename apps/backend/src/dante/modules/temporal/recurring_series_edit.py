@@ -11,7 +11,7 @@ import json
 from dataclasses import asdict, dataclass
 from datetime import date, datetime, timedelta
 from itertools import pairwise
-from typing import Literal
+from typing import Literal, cast
 from uuid import UUID
 
 from sqlalchemy import text
@@ -319,7 +319,9 @@ def _validate_structure(
                     try:
                         canonical = str(UUID(str(person_ref)))
                     except (TypeError, ValueError, AttributeError) as exc:
-                        raise SeriesReconciliationError("Recurring Event participant is invalid.") from exc
+                        raise SeriesReconciliationError(
+                            "Recurring Event participant is invalid."
+                        ) from exc
                     if canonical != person_ref:
                         raise SeriesReconciliationError("Recurring Event participant is invalid.")
                 if person_ref in seen:
@@ -794,7 +796,7 @@ class RecurringSeriesEditApplication:
             owned_people.add("self")
             if any(
                 item["person_ref"] not in owned_people
-                for item in proposed_structure["expected_participants"]
+                for item in cast(list[dict[str, str]], proposed_structure["expected_participants"])
             ):
                 raise SeriesReconciliationError("Recurring Event participant is unavailable.")
         inventory = await self._inventories.read_in_session(

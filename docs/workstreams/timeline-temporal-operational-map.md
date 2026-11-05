@@ -1,5 +1,14 @@
 # Timeline / Temporal-Operational — Live Execution Ledger
 
+## 2026-11-05 — Generated-client full gate repair
+
+Owner's 27-group gate on `6d1fe62` was source-stable and 20/27 green:
+PostgreSQL, generated drift, typecheck, Vitest and all browser groups passed.
+The seven red groups concern test/endpoint inventory and Python/Web quality
+checks. The candidate repairs those exact findings; Ruff backend static and
+targeted Web ESLint passed in scratch, but user WSL gate and visual acceptance
+are pending. See handoff for exact boundaries.
+
 ## 2026-11-05 — Event selected-instance focused gate
 
 The owner pulled `b117b4e` and reran the selected Event Occurrence aggregate

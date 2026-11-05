@@ -36,8 +36,10 @@ from dante.modules.temporal.reality_objective_api import (
     ActivityObjectiveBatchCommand,
     ObjectiveResponse,
     RealityPolicyCommand,
-    _fingerprint as reality_fingerprint,
     apply_event_objective_edits_in_session,
+)
+from dante.modules.temporal.reality_objective_api import (
+    _fingerprint as reality_fingerprint,
 )
 from dante.modules.temporal.responsibility_participation import (
     ResponsibilityConflictError,
@@ -57,9 +59,9 @@ from dante.modules.temporal.schedule import (
     ScheduleNotFoundError,
     ScheduleOperationIdReuseError,
     SchedulePersistenceError,
+    SchedulePlacement,
     SchedulePlacementLockedError,
     ScheduleRevisionConflictError,
-    SchedulePlacement,
     revise_schedule_in_session,
 )
 from dante.modules.temporal.schedule_reminder import (
@@ -1031,9 +1033,7 @@ async def apply_one_off_event_atomic_edit(
                         detail="The reminder must belong to the revised Event Schedule.",
                     )
 
-            async def configure_reminder() -> None:
-                assert body.reminder is not None
-                change_reminder = body.reminder
+            async def configure_reminder(change_reminder: EventAtomicReminderChange) -> None:
                 await ScheduleReminderApplication(runtime.session_factory).configure(
                     self_person_ref=actor,
                     schedule_ref=ScopedRecordRef(change_reminder.schedule_ref),
@@ -1052,7 +1052,7 @@ async def apply_one_off_event_atomic_edit(
             # an active reminder. Disable it before revising the placement, in
             # the same transaction, so the complete edit remains atomic.
             if body.reminder is not None and not body.reminder.enabled:
-                await configure_reminder()
+                await configure_reminder(body.reminder)
             if body.schedule is not None:
                 change_schedule = body.schedule
                 await revise_schedule_in_session(
@@ -1066,7 +1066,7 @@ async def apply_one_off_event_atomic_edit(
                     placement=_placement_from_request(change_schedule.placement),
                 )
             if body.reminder is not None and body.reminder.enabled:
-                await configure_reminder()
+                await configure_reminder(body.reminder)
             if body.participants:
                 participation = ResponsibilityParticipationApplication(runtime.session_factory)
                 for index, change_participant in enumerate(body.participants):

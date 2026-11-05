@@ -79,6 +79,8 @@ it('reads the selected recurring instance policy rather than the current Event s
   );
   expect(await screen.findByText('Ada')).toBeTruthy();
   expect(screen.getByText('Opzionale')).toBeTruthy();
-  expect(listOccurrenceExpectedParticipation).toHaveBeenCalledWith('occurrence-1');
+  expect(listOccurrenceExpectedParticipation).toHaveBeenCalledWith(
+    'occurrence-1',
+  );
   expect(listExpectedParticipation).not.toHaveBeenCalled();
 });

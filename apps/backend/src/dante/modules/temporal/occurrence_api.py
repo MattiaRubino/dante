@@ -974,6 +974,7 @@ async def accept_event_occurrence_local_edit(
     response.headers["Cache-Control"] = "no-store"
     actor = context.self_person_ref
     patch = body.profile_patch
+    color_code = patch.get("color_code")
     if not set(patch).issubset({"title", "description", "location", "color_code"}):
         raise _problem(OccurrenceInputError("Invalid Event metadata patch."))
     if (
@@ -984,11 +985,11 @@ async def accept_event_occurrence_local_edit(
             if key in {"description", "location"}
         )
         or (
-            patch.get("color_code") is not None
+            color_code is not None
             and (
-                len(patch["color_code"]) != 7
-                or not patch["color_code"].startswith("#")
-                or any(ch not in "0123456789ABCDEF" for ch in patch["color_code"][1:])
+                len(color_code) != 7
+                or not color_code.startswith("#")
+                or any(ch not in "0123456789ABCDEF" for ch in color_code[1:])
             )
         )
     ):

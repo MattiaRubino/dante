@@ -230,7 +230,9 @@ export function RecurringSeriesEditor({
   closeRequestRef?: RefObject<(() => void) | null>;
 }>) {
   const [remote] = useState(createRemoteRecurringSeriesEdit);
-  const [participation] = useState(createRemoteTemporalResponsibilityDataSource);
+  const [participation] = useState(
+    createRemoteTemporalResponsibilityDataSource,
+  );
   const [request] = useState(() => createWebFetch(globalThis.fetch));
   const [source, setSource] = useState<RecurringSeriesSource | null>(null);
   const [structure, setStructure] = useState<Entry>({});
@@ -243,7 +245,9 @@ export function RecurringSeriesEditor({
     readonly { ref: string; name: string; colorCode: string | null }[]
   >([]);
   const [areaQuery, setAreaQuery] = useState('');
-  const [participantLabels, setParticipantLabels] = useState<Record<string, string>>({});
+  const [participantLabels, setParticipantLabels] = useState<
+    Record<string, string>
+  >({});
   const [review, setReview] = useState<RecurringSeriesReview | null>(null);
   const [reviewedIntent, setReviewedIntent] = useState<
     Parameters<typeof remote.preview>[0] | null
@@ -262,7 +266,9 @@ export function RecurringSeriesEditor({
         if (!response.ok) throw new Error('Life Area non disponibili.');
         return response.json() as Promise<unknown>;
       }),
-      owner === 'event' ? participation.listPersonReferents() : Promise.resolve([]),
+      owner === 'event'
+        ? participation.listPersonReferents()
+        : Promise.resolve([]),
     ])
       .then(([loaded, catalog, people]) => {
         if (!active) return;
@@ -278,10 +284,11 @@ export function RecurringSeriesEditor({
             colorCode: asText(area.color_code) || null,
           }));
         setAreas(areaOptions);
-        setParticipantLabels(Object.fromEntries([
-          ['self', 'Io'],
-          ...people.map((person) => [person.personRef, person.displayLabel]),
-        ]));
+        const labels: Record<string, string> = { self: 'Io' };
+        for (const person of people) {
+          labels[person.personRef] = person.displayLabel;
+        }
+        setParticipantLabels(labels);
         setSource(loaded);
         setStructure(loaded.structure);
         setRecurrence(initialRecurrence(loaded, scope));

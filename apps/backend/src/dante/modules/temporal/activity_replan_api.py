@@ -718,9 +718,7 @@ async def _set_atomic_lock(
         # setter represents that same basis with NULL and refuses 0. Check
         # the basis first so an intervening lock still reports a conflict.
         current_revision = await session.scalar(
-            text(
-                "SELECT revision FROM dante.get_self_schedule_placement_lock(:actor,:schedule)"
-            ),
+            text("SELECT revision FROM dante.get_self_schedule_placement_lock(:actor,:schedule)"),
             {"actor": actor, "schedule": change.schedule_ref},
         )
         if current_revision != 0:

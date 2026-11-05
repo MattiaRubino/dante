@@ -41,6 +41,7 @@ from dante.modules.temporal.routine_occurrence_materialization import (
 )
 from dante.modules.temporal.schedule import NamedZoneLocalIntervalPlacement
 from dante.modules.temporal.schedule_reminder import ScheduleReminderApplication
+from dante.platform.database.references import NativeRef
 from dante.platform.database.runtime import create_database_runtime
 from dante.platform.http.problem import ProblemError
 
@@ -184,7 +185,7 @@ async def test_event_occurrence_local_structure_is_versioned_and_does_not_mutate
             assert selected_patch == json.loads(patch)
             assert other_patch == {}
             source_event = await _read_event_in_session(
-                session, self_person_ref=alice, event_ref=created.source_ref
+                session, self_person_ref=alice, event_ref=NativeRef(created.source_ref)
             )
             assert source_event is not None
             assert source_event.agenda_parts == ("Originale",)
@@ -198,7 +199,7 @@ async def test_event_occurrence_local_structure_is_versioned_and_does_not_mutate
                 "app": SimpleNamespace(state=SimpleNamespace(database_runtime=runtime)),
             }
         )
-        payload = {
+        payload: dict[str, Any] = {
             "operation_id": "event:local:aggregate",
             "expected_revision": 1,
             "expected_recurrence_state_ref": created.recurrence_material_state_ref,
@@ -264,23 +265,23 @@ async def test_event_occurrence_local_structure_is_versioned_and_does_not_mutate
                 )
                 == 0
             )
-        accepted = await accept_event_occurrence_local_edit(
+        local_accepted = await accept_event_occurrence_local_edit(
             selected,
             EventOccurrenceLocalEditCommand.model_validate(payload),
             context,
             request,
             Response(),
         )
-        assert accepted.revision == 2
-        replay = await accept_event_occurrence_local_edit(
+        assert local_accepted.revision == 2
+        local_replay = await accept_event_occurrence_local_edit(
             selected,
             EventOccurrenceLocalEditCommand.model_validate(payload),
             context,
             request,
             Response(),
         )
-        assert replay.replayed
-        assert replay.revision == accepted.revision
+        assert local_replay.replayed
+        assert local_replay.revision == local_accepted.revision
         detail = await get_recurring_event_occurrence_detail(selected, context, request, Response())
         assert detail.title == "Event aggiornato"
         assert detail.agenda_parts == ["Punto locale aggiornato"]
@@ -342,7 +343,7 @@ async def test_series_accept_replaces_one_clean_future_event_without_duplicate(
         await participation.set_expected_participation(
             self_person_ref=alice,
             operation_id="structure:accept:participant",
-            event_ref=created.source_ref,
+            event_ref=NativeRef(created.source_ref),
             participant_person_ref=alice,
             requirement_code="required",
             expected_requirement_code=None,
