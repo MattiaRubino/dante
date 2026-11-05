@@ -310,6 +310,21 @@ export function createRemoteTemporalResponsibilityDataSource(
       }
       return value.map(participation);
     },
+    async listOccurrenceExpectedParticipation(
+      occurrenceRef: string,
+    ): Promise<TemporalExpectedParticipationView[]> {
+      const value = await send(
+        `/api/v1/temporal/occurrences/${encodeURIComponent(occurrenceRef)}/expected-participation`,
+        'GET',
+      );
+      if (!Array.isArray(value)) {
+        throw new TemporalResponsibilityRemoteError(
+          'protocol',
+          'Occurrence Participation list must be an array.',
+        );
+      }
+      return value.map(participation);
+    },
     async setExpectedParticipation(
       eventRef: string,
       command: Readonly<{

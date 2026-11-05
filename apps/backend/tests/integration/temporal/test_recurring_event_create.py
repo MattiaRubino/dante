@@ -20,6 +20,7 @@ from dante.modules.temporal.recurrence import CalendarRecurrence, RecurrenceAppl
 from dante.modules.temporal.recurring_authoring import RecurringAuthoringApplication
 from dante.modules.temporal.recurring_series_edit import RecurringSeriesEditApplication
 from dante.modules.temporal.recurring_structure_policy import RecurringStructurePolicyApplication
+from dante.modules.temporal.responsibility_participation import ResponsibilityParticipationApplication
 from dante.modules.temporal.routine_occurrence_materialization import (
     RoutineOccurrenceMaterializationApplication,
 )
@@ -41,6 +42,7 @@ async def test_series_accept_replaces_one_clean_future_event_without_duplicate(
     materializer = RoutineOccurrenceMaterializationApplication(runtime.session_factory)
     timeline = TemporalTimelineApplication(runtime.session_factory)
     series = RecurringSeriesEditApplication(runtime.session_factory)
+    participation = ResponsibilityParticipationApplication(runtime.session_factory)
     try:
         original = _daily_named_zone()
         created = await authoring.create_event(
@@ -61,6 +63,14 @@ async def test_series_accept_replaces_one_clean_future_event_without_duplicate(
             duration_minutes=60,
             duration_days=None,
             reminder_lead_minutes=None,
+        )
+        await participation.set_expected_participation(
+            self_person_ref=alice,
+            operation_id="structure:accept:participant",
+            event_ref=created.source_ref,
+            participant_person_ref=alice,
+            requirement_code="required",
+            expected_requirement_code=None,
         )
         await materializer.checkpoint_window(
             self_person_ref=alice,
@@ -89,6 +99,9 @@ async def test_series_accept_replaces_one_clean_future_event_without_duplicate(
         assert loaded.structure_snapshot["duration_minutes"] == 60
         assert loaded.structure_snapshot["agenda_parts"] == []
         assert loaded.structure_snapshot["life_area_ref"] is None
+        assert loaded.structure_snapshot["expected_participants"] == [
+            {"person_ref": "self", "requirement_code": "required"}
+        ]
         proposed = replace(original, effective_from=date(2027, 1, 2), wall_times=(time(11),))
         structure = {
             "version": 1,
@@ -100,6 +113,7 @@ async def test_series_accept_replaces_one_clean_future_event_without_duplicate(
             "objectives": [],
             "agenda_parts": ["Presentazione"],
             "life_area_ref": None,
+            "expected_participants": [],
         }
         preview = await series.preview(
             self_person_ref=alice,
@@ -165,6 +179,7 @@ async def test_series_accept_replaces_one_clean_future_event_without_duplicate(
             self_person_ref=alice, selected_occurrence_ref=current[0].occurrence_ref
         )
         assert revised_source.structure_snapshot["agenda_parts"] == ["Presentazione"]
+        assert revised_source.structure_snapshot["expected_participants"] == []
     finally:
         await runtime.dispose()
 

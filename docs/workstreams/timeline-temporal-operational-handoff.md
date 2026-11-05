@@ -1,5 +1,22 @@
 # Timeline / Temporal-Operational — Workstream Handoff
 
+## 2026-11-05 — Event following-series participation candidate
+
+The following-series Event editor now exposes the same participant selector as
+Create and stores expected participants in the versioned Event structure
+snapshot. The server validates the owner-scoped person referents, rejects
+duplicates and invalid requirements, and hydrates older snapshots from the
+canonical source on first edit. Event Inspector reads the policy governing
+the selected Occurrence instead of always showing the current source policy.
+This snapshot change is scoped to new series revisions; prior materialized
+instances retain their governing state. Focused unit, PostgreSQL and web
+regressions were added but are **NOT_RUN** because the owner runs tests.
+
+This checkpoint does **not** complete selected-instance Event editing or the
+full Event parity goal. The selected-instance editor still saves metadata
+only; schedule, reminder, Agenda, Life Area, Reality, Objectives and expected
+participants need one consistent local revision path and a matching form.
+
 ## 2026-11-05 — Owner-run Event web gate on 68ea1a396
 
 The owner pulled `68ea1a396` and ran the two targeted Vitest suites:

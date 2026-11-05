@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState, type RefObject } from 'react';
 import { Temporal } from '@dante/time';
 import { createWebFetch } from '../../../../platform/api/web-fetch';
+import { createRemoteTemporalResponsibilityDataSource } from '../../../temporal/remote-responsibility-data-source';
 
 import {
   createRemoteRecurringSeriesEdit,
@@ -14,12 +15,14 @@ import { TemporalColorControl } from '../../../temporal-create/ui/temporal-color
 import { TemporalCreateDatePicker } from '../../../temporal-create/ui/temporal-create-date-picker';
 import { TemporalLifeAreaSelect } from '../../../temporal-create/ui/temporal-life-area-select';
 import { TemporalCreateEventAgenda } from '../../../temporal-create/ui/temporal-create-event-agenda';
+import { TemporalEventParticipantsFields } from '../../../temporal-create/ui/temporal-create-event-participants';
 import { TemporalTimeZoneControl } from '../../../temporal-create/ui/temporal-time-zone-control';
 import { TemporalObjectiveEditorRow } from '../../../temporal-create/ui/temporal-objective-editor-row';
 import type {
   TemporalCreateObjectiveDraft,
   TemporalCreateObjectiveKind,
   TemporalCreateObjectiveComparator,
+  TemporalCreateEventParticipantDraft,
 } from '../../../temporal-create/model/temporal-create-u2-authoring';
 import { TemporalReminderControl } from '../../../temporal-create/ui/temporal-create-quick-reminder';
 import '../../../temporal-create/ui/temporal-create-calendar-recurrence-fields.css';
@@ -227,6 +230,7 @@ export function RecurringSeriesEditor({
   closeRequestRef?: RefObject<(() => void) | null>;
 }>) {
   const [remote] = useState(createRemoteRecurringSeriesEdit);
+  const [participation] = useState(createRemoteTemporalResponsibilityDataSource);
   const [request] = useState(() => createWebFetch(globalThis.fetch));
   const [source, setSource] = useState<RecurringSeriesSource | null>(null);
   const [structure, setStructure] = useState<Entry>({});
@@ -239,6 +243,7 @@ export function RecurringSeriesEditor({
     readonly { ref: string; name: string; colorCode: string | null }[]
   >([]);
   const [areaQuery, setAreaQuery] = useState('');
+  const [participantLabels, setParticipantLabels] = useState<Record<string, string>>({});
   const [review, setReview] = useState<RecurringSeriesReview | null>(null);
   const [reviewedIntent, setReviewedIntent] = useState<
     Parameters<typeof remote.preview>[0] | null
@@ -257,8 +262,9 @@ export function RecurringSeriesEditor({
         if (!response.ok) throw new Error('Life Area non disponibili.');
         return response.json() as Promise<unknown>;
       }),
+      owner === 'event' ? participation.listPersonReferents() : Promise.resolve([]),
     ])
-      .then(([loaded, catalog]) => {
+      .then(([loaded, catalog, people]) => {
         if (!active) return;
         if (loaded.owner !== owner || !Array.isArray(catalog)) {
           throw new Error('La serie selezionata non corrisponde all’editor.');
@@ -272,6 +278,10 @@ export function RecurringSeriesEditor({
             colorCode: asText(area.color_code) || null,
           }));
         setAreas(areaOptions);
+        setParticipantLabels(Object.fromEntries([
+          ['self', 'Io'],
+          ...people.map((person) => [person.personRef, person.displayLabel]),
+        ]));
         setSource(loaded);
         setStructure(loaded.structure);
         setRecurrence(initialRecurrence(loaded, scope));
@@ -301,7 +311,7 @@ export function RecurringSeriesEditor({
     return () => {
       active = false;
     };
-  }, [occurrenceRef, owner, remote, request, scope]);
+  }, [occurrenceRef, owner, participation, remote, request, scope]);
 
   useEffect(() => {
     if (!closeRequestRef) return;
@@ -464,6 +474,14 @@ export function RecurringSeriesEditor({
   const agenda = Array.isArray(structure.agenda_parts)
     ? structure.agenda_parts.map(asText)
     : [];
+  const eventParticipants: TemporalCreateEventParticipantDraft[] = asRows(
+    structure.expected_participants,
+  ).map((item) => ({
+    personRef: asText(item.person_ref),
+    displayLabel:
+      participantLabels[asText(item.person_ref)] ?? 'Persona non disponibile',
+    requirementCode: asText(item.requirement_code) as 'required' | 'optional',
+  }));
   const activeArea = asText(
     owner === 'routine' ? template.life_area_ref : structure.life_area_ref,
   );
@@ -1676,6 +1694,27 @@ export function RecurringSeriesEditor({
                     reminder_lead_minutes: value,
                   })
                 }
+              />
+            ) : null}
+            {owner === 'event' ? (
+              <TemporalEventParticipantsFields
+                participants={eventParticipants}
+                onChange={(next) => {
+                  setParticipantLabels((labels) => ({
+                    ...labels,
+                    ...Object.fromEntries(
+                      next.map((item) => [item.personRef, item.displayLabel]),
+                    ),
+                  }));
+                  changeStructure({
+                    ...structure,
+                    expected_participants: next.map((item) => ({
+                      person_ref: item.personRef,
+                      requirement_code: item.requirementCode,
+                    })),
+                  });
+                }}
+                disabled={busy}
               />
             ) : null}
             <section

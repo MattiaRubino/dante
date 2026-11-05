@@ -1232,6 +1232,110 @@ async def get_recurring_event_occurrence_detail(
         raise _series_problem(exc) from exc
 
 
+class OccurrenceExpectedParticipationResponse(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    event_ref: UUID
+    participant_person_ref: UUID
+    participant_is_self: bool
+    requirement_code: Literal["required", "optional"]
+    established_at: datetime | None = None
+    replayed: bool = False
+
+
+@router.get(
+    "/occurrences/{occurrence_ref}/expected-participation",
+    response_model=list[OccurrenceExpectedParticipationResponse],
+    operation_id="temporal_get_recurring_event_occurrence_expected_participation",
+)
+async def get_recurring_event_occurrence_expected_participation(
+    occurrence_ref: UUID,
+    context: Context,
+    request: Request,
+    response: Response,
+) -> list[OccurrenceExpectedParticipationResponse]:
+    """Read the Event policy governing this Occurrence, including protected history."""
+    response.headers["Cache-Control"] = "no-store"
+    actor = context.self_person_ref
+    try:
+        async with request.app.state.database_runtime.session_factory() as session, session.begin():
+            await session.execute(text("SET TRANSACTION ISOLATION LEVEL REPEATABLE READ"))
+            row = (
+                (
+                    await session.execute(
+                        text("SELECT * FROM dante.get_self_occurrence(:actor,:occurrence)"),
+                        {"actor": actor, "occurrence": occurrence_ref},
+                    )
+                )
+                .mappings()
+                .one_or_none()
+            )
+            if row is None or row["skipped"]:
+                raise RecurringSeriesEditConflictError("Event instance is unavailable.")
+            occurrence = _occurrence(row)
+            source_ref = occurrence.source_native_ref
+            if await _read_event_in_session(
+                session, self_person_ref=actor, event_ref=NativeRef(source_ref)
+            ) is None:
+                raise RecurringSeriesEditConflictError("Event source is unavailable.")
+            state = occurrence.governing_recurrence_state_ref
+            snapshot = (
+                await RecurringStructurePolicyApplication(
+                    request.app.state.database_runtime.session_factory
+                ).get_snapshot_in_session(
+                    session,
+                    self_person_ref=actor,
+                    owner="event",
+                    source_ref=source_ref,
+                    recurrence_state_ref=state,
+                )
+                if state is not None
+                else None
+            )
+            if snapshot is None or "expected_participants" not in snapshot:
+                participants = (
+                    (
+                        await session.execute(
+                            text(
+                                "SELECT participant_person_ref,requirement_code "
+                                "FROM dante.list_self_event_expected_participation(:actor,:event)"
+                            ),
+                            {"actor": actor, "event": source_ref},
+                        )
+                    )
+                    .mappings()
+                    .all()
+                )
+                return [
+                    OccurrenceExpectedParticipationResponse(
+                        event_ref=source_ref,
+                        participant_person_ref=item["participant_person_ref"],
+                        participant_is_self=item["participant_person_ref"] == actor,
+                        requirement_code=item["requirement_code"],
+                    )
+                    for item in participants
+                    if item["requirement_code"] is not None
+                ]
+            values = snapshot["expected_participants"]
+            if not isinstance(values, list):
+                raise RecurringStructurePolicyError("Event participants revision is invalid.")
+            return [
+                OccurrenceExpectedParticipationResponse(
+                    event_ref=source_ref,
+                    participant_person_ref=(
+                        actor if item["person_ref"] == "self" else UUID(item["person_ref"])
+                    ),
+                    participant_is_self=item["person_ref"] == "self",
+                    requirement_code=item["requirement_code"],
+                )
+                for item in values
+            ]
+    except (DBAPIError, SQLAlchemyError) as exc:
+        raise _series_problem(exc) from exc
+    except (RecurringSeriesEditConflictError, RecurringStructurePolicyError, ValueError) as exc:
+        raise _series_problem(exc) from exc
+
+
 @router.post(
     "/occurrences/{occurrence_ref}/series-edit-preview",
     response_model=RecurringSeriesEditPreviewResponse,

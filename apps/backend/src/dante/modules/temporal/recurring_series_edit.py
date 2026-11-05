@@ -302,6 +302,29 @@ def _validate_structure(
                 raise SeriesReconciliationError("Recurring Life Area is invalid.") from exc
     else:
         objectives(structure.get("objectives"))
+        participants = structure.get("expected_participants")
+        if participants is not None:
+            if not isinstance(participants, list) or len(participants) > 100:
+                raise SeriesReconciliationError("Recurring Event participants are invalid.")
+            seen: set[str] = set()
+            for item in participants:
+                if (
+                    not isinstance(item, dict)
+                    or set(item) != {"person_ref", "requirement_code"}
+                    or item["requirement_code"] not in ("required", "optional")
+                ):
+                    raise SeriesReconciliationError("Recurring Event participant is invalid.")
+                person_ref = item["person_ref"]
+                if person_ref != "self":
+                    try:
+                        canonical = str(UUID(str(person_ref)))
+                    except (TypeError, ValueError, AttributeError) as exc:
+                        raise SeriesReconciliationError("Recurring Event participant is invalid.") from exc
+                    if canonical != person_ref:
+                        raise SeriesReconciliationError("Recurring Event participant is invalid.")
+                if person_ref in seen:
+                    raise SeriesReconciliationError("Recurring Event participant is invalid.")
+                seen.add(person_ref)
         kind = structure.get("placement_kind")
         if kind == "timed":
             valid = (
@@ -492,6 +515,32 @@ class RecurringSeriesEditApplication:
                         "life_area_ref", str(event.life_area_ref) if event.life_area_ref else None
                     ),
                 }
+                if "expected_participants" not in structure:
+                    participants = (
+                        (
+                            await session.execute(
+                                text(
+                                    "SELECT participant_person_ref,requirement_code "
+                                    "FROM dante.list_self_event_expected_participation(:actor,:event)"
+                                ),
+                                {"actor": self_person_ref, "event": source_ref},
+                            )
+                        )
+                        .mappings()
+                        .all()
+                    )
+                    structure["expected_participants"] = [
+                        {
+                            "person_ref": (
+                                "self"
+                                if item["participant_person_ref"] == self_person_ref
+                                else str(item["participant_person_ref"])
+                            ),
+                            "requirement_code": item["requirement_code"],
+                        }
+                        for item in participants
+                        if item["requirement_code"] is not None
+                    ]
                 title = event.title
                 description = event.description
                 location = event.location
@@ -732,6 +781,22 @@ class RecurringSeriesEditApplication:
         )
         owner: SeriesOwner = "routine" if routine_owned else "event"
         _validate_structure(owner, proposed_recurrence, proposed_structure)
+        if owner == "event" and "expected_participants" in proposed_structure:
+            owned_people = {
+                str(row[0])
+                for row in (
+                    await session.execute(
+                        text("SELECT person_ref FROM dante.list_self_person_referents(:actor)"),
+                        {"actor": self_person_ref},
+                    )
+                ).all()
+            }
+            owned_people.add("self")
+            if any(
+                item["person_ref"] not in owned_people
+                for item in proposed_structure["expected_participants"]
+            ):
+                raise SeriesReconciliationError("Recurring Event participant is unavailable.")
         inventory = await self._inventories.read_in_session(
             session,
             self_person_ref=self_person_ref,

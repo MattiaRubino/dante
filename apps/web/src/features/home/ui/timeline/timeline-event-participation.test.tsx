@@ -5,12 +5,14 @@ import { afterEach, expect, it, vi } from 'vitest';
 import { TimelineEventParticipation } from './timeline-event-participation';
 
 const listExpectedParticipation = vi.fn();
+const listOccurrenceExpectedParticipation = vi.fn();
 const listPersonReferents = vi.fn();
 const invalidation: { read: (() => void) | null } = { read: null };
 
 vi.mock('../../../temporal/remote-responsibility-data-source', () => ({
   createRemoteTemporalResponsibilityDataSource: () => ({
     listExpectedParticipation,
+    listOccurrenceExpectedParticipation,
     listPersonReferents,
   }),
 }));
@@ -56,4 +58,27 @@ it('shows Event participants and refreshes after a timeline invalidation', async
   await waitFor(() => expect(screen.getByText('Opzionale')).toBeTruthy());
   invalidation.read?.();
   await waitFor(() => expect(screen.queryByText('Ada')).toBeNull());
+});
+
+it('reads the selected recurring instance policy rather than the current Event source', async () => {
+  listPersonReferents.mockResolvedValue([
+    { personRef: 'person-1', displayLabel: 'Ada' },
+  ]);
+  listOccurrenceExpectedParticipation.mockResolvedValue([
+    {
+      participantPersonRef: 'person-1',
+      participantIsSelf: false,
+      requirementCode: 'optional',
+    },
+  ]);
+  render(
+    <TimelineEventParticipation
+      eventRef="event-1"
+      occurrenceRef="occurrence-1"
+    />,
+  );
+  expect(await screen.findByText('Ada')).toBeTruthy();
+  expect(screen.getByText('Opzionale')).toBeTruthy();
+  expect(listOccurrenceExpectedParticipation).toHaveBeenCalledWith('occurrence-1');
+  expect(listExpectedParticipation).not.toHaveBeenCalled();
 });

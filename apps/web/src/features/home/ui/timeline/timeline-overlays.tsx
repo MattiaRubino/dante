@@ -1118,7 +1118,10 @@ export function EventDetailDialog({
               </section>
             ) : null}
             {detail.ownerKind === 'event' && detail.eventRef ? (
-              <TimelineEventParticipation eventRef={detail.eventRef} />
+              <TimelineEventParticipation
+                eventRef={detail.eventRef}
+                occurrenceRef={detail.occurrenceRef}
+              />
             ) : null}
             {detail.ownerKind === 'event' && detail.eventRef ? (
               <TimelineEventAgendaEditor

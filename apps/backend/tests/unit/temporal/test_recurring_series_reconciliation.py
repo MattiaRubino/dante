@@ -154,6 +154,54 @@ def test_series_edit_rejects_a_template_that_would_break_later_materialization()
         assert _series_spec(public) == rule
 
 
+def test_recurring_event_participation_policy_is_bounded_and_unambiguous() -> None:
+    recurrence = CalendarRecurrence(
+        family_code="calendar_wall_clock",
+        range_kind="open",
+        expected_occurrence_count=None,
+        effective_from=date(2027, 1, 2),
+        effective_until=None,
+        pattern_code="daily",
+        interval_count=1,
+        clock_basis_code="named_zone",
+        zone_id="Europe/Rome",
+        wall_times=(time(10),),
+        pattern_anchor_date=None,
+        weekdays=(),
+        month_days=(),
+        ordinal_weekdays=(),
+        year_month_days=(),
+        nonexistent_local_time_policy="skip_civil_candidate",
+        ambiguous_local_time_policy="earlier",
+    )
+    structure: dict[str, object] = {
+        "version": 1,
+        "placement_kind": "timed",
+        "duration_minutes": 60,
+        "duration_days": None,
+        "reminder_lead_minutes": None,
+        "reality_mode": "manual",
+        "objectives": [],
+        "agenda_parts": [],
+        "life_area_ref": None,
+        "expected_participants": [
+            {"person_ref": "self", "requirement_code": "required"},
+            {"person_ref": str(UUID(int=1)), "requirement_code": "optional"},
+        ],
+    }
+    _validate_structure("event", recurrence, structure)
+    for participants in (
+        [{"person_ref": "self", "requirement_code": "required"}] * 2,
+        [{"person_ref": "not-a-person", "requirement_code": "required"}],
+        [{"person_ref": "self", "requirement_code": "unknown"}],
+        [{"person_ref": "self", "requirement_code": "required", "extra": True}],
+    ):
+        with pytest.raises(SeriesReconciliationError, match="participant"):
+            _validate_structure(
+                "event", recurrence, {**structure, "expected_participants": participants}
+            )
+
+
 def _coordinate(day: int) -> CalendarCoordinate:
     return CalendarCoordinate(
         family_code="calendar_wall_clock",

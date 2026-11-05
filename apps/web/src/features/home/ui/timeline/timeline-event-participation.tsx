@@ -11,12 +11,14 @@ type Participant = Readonly<{
 
 export function TimelineEventParticipation({
   eventRef,
-}: Readonly<{ eventRef: string }>) {
+  occurrenceRef = null,
+}: Readonly<{ eventRef: string; occurrenceRef?: string | null }>) {
   const [snapshot, setSnapshot] = useState<Readonly<{
     key: string;
     participants: readonly Participant[];
   }> | null>(null);
   const [failed, setFailed] = useState(false);
+  const key = occurrenceRef ?? eventRef;
 
   useEffect(() => {
     let active = true;
@@ -25,7 +27,9 @@ export function TimelineEventParticipation({
     );
     const read = () => {
       void Promise.all([
-        source.listExpectedParticipation(eventRef),
+        occurrenceRef
+          ? source.listOccurrenceExpectedParticipation(occurrenceRef)
+          : source.listExpectedParticipation(eventRef),
         source.listPersonReferents(),
       ])
         .then(([participation, people]) => {
@@ -34,7 +38,7 @@ export function TimelineEventParticipation({
             people.map((person) => [person.personRef, person.displayLabel]),
           );
           setSnapshot({
-            key: eventRef,
+            key,
             participants: participation.flatMap((row) => {
               if (row.requirementCode === null) return [];
               return [
@@ -61,9 +65,9 @@ export function TimelineEventParticipation({
       active = false;
       unsubscribe();
     };
-  }, [eventRef]);
+  }, [eventRef, occurrenceRef, key]);
 
-  const participants = snapshot?.key === eventRef ? snapshot.participants : [];
+  const participants = snapshot?.key === key ? snapshot.participants : [];
   if (!failed && participants.length === 0) return null;
   return (
     <section
