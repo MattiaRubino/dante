@@ -6,7 +6,7 @@ import { TimelineEventParticipation } from './timeline-event-participation';
 
 const listExpectedParticipation = vi.fn();
 const listPersonReferents = vi.fn();
-let invalidate: (() => void) | null = null;
+const invalidation: { read: (() => void) | null } = { read: null };
 
 vi.mock('../../../temporal/remote-responsibility-data-source', () => ({
   createRemoteTemporalResponsibilityDataSource: () => ({
@@ -16,9 +16,9 @@ vi.mock('../../../temporal/remote-responsibility-data-source', () => ({
 }));
 vi.mock('../../../temporal/timeline-invalidation', () => ({
   subscribeTemporalTimelineInvalidation: (read: () => void) => {
-    invalidate = read;
+    invalidation.read = read;
     return () => {
-      invalidate = null;
+      invalidation.read = null;
     };
   },
 }));
@@ -26,7 +26,7 @@ vi.mock('../../../temporal/timeline-invalidation', () => ({
 afterEach(() => {
   cleanup();
   vi.clearAllMocks();
-  invalidate = null;
+  invalidation.read = null;
 });
 
 it('shows Event participants and refreshes after a timeline invalidation', async () => {
@@ -51,6 +51,6 @@ it('shows Event participants and refreshes after a timeline invalidation', async
   render(<TimelineEventParticipation eventRef="event-1" />);
   expect(await screen.findByText('Ada')).toBeTruthy();
   expect(screen.getByText('Richiesto')).toBeTruthy();
-  invalidate?.();
+  invalidation.read?.();
   await waitFor(() => expect(screen.getByText('Opzionale')).toBeTruthy());
 });
