@@ -1120,7 +1120,7 @@ export function EventDetailDialog({
             {detail.ownerKind === 'event' && detail.eventRef ? (
               <TimelineEventParticipation
                 eventRef={detail.eventRef}
-                occurrenceRef={detail.occurrenceRef}
+                occurrenceRef={detail.occurrenceRef ?? null}
               />
             ) : null}
             {detail.ownerKind === 'event' && detail.eventRef ? (

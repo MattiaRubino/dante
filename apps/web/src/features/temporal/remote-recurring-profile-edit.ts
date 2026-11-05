@@ -7,6 +7,13 @@ import {
   invalidateTemporalPlanningRead,
   invalidateTemporalTimelineRead,
 } from './timeline-invalidation';
+import {
+  serializeActivityObjectiveEdits,
+  type ActivityObjectiveBatch,
+  type RealityMode,
+} from './remote-reality-objective-data-source';
+import type { TemporalCreateEventParticipantDraft } from '../temporal-create/model/temporal-create-u2-authoring';
+import type { EventSchedulePlacementInput } from './remote-event-profile-data-source';
 
 export type RecurringProfileEditScope =
   'only_this' | 'this_and_following' | 'from_next';
@@ -159,6 +166,120 @@ export function createRemoteRecurringProfileEdit(
 
   return Object.freeze({
     loadOccurrenceContext,
+    async saveEventLocal(
+      context: RecurringProfileContext,
+      changes: ProfileChanges,
+      structure: Readonly<{
+        agendaParts: readonly string[];
+        lifeAreaRef: string | null;
+        participants: readonly TemporalCreateEventParticipantDraft[];
+      }>,
+      extras: Readonly<{
+        schedule: {
+          scheduleRef: string;
+          materialStateRef: string;
+          placement: EventSchedulePlacementInput;
+        } | null;
+        reminder: {
+          scheduleRef: string;
+          stateRef: string | null;
+          leadMinutes: number | null;
+        } | null;
+        reality: { mode: RealityMode; stateRef: string | null } | null;
+        objectives: ActivityObjectiveBatch | null;
+      }>,
+      operationId: string,
+    ): Promise<void> {
+      const response = await request(
+        `/api/v1/temporal/occurrences/${encodeURIComponent(context.occurrenceRef)}/event-local-edit`,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'X-Dante-CSRF': await csrf(),
+          },
+          body: JSON.stringify({
+            operation_id: operationId,
+            expected_revision: context.editRevision,
+            expected_recurrence_state_ref: context.recurrenceStateRef,
+            profile_patch: {
+              ...('title' in changes ? { title: changes.title } : {}),
+              ...('description' in changes
+                ? { description: changes.description }
+                : {}),
+              ...('location' in changes ? { location: changes.location } : {}),
+              ...('colorCode' in changes
+                ? { color_code: changes.colorCode }
+                : {}),
+            },
+            structure: {
+              agenda_parts: structure.agendaParts,
+              life_area_ref: structure.lifeAreaRef,
+              expected_participants: structure.participants.map(
+                (participant) => ({
+                  person_ref: participant.personRef,
+                  requirement_code: participant.requirementCode,
+                }),
+              ),
+            },
+            ...(extras.schedule
+              ? {
+                  schedule: {
+                    schedule_ref: extras.schedule.scheduleRef,
+                    expected_material_state_ref:
+                      extras.schedule.materialStateRef,
+                    placement: extras.schedule.placement,
+                  },
+                }
+              : {}),
+            ...(extras.reminder
+              ? {
+                  reminder: {
+                    schedule_ref: extras.reminder.scheduleRef,
+                    expected_state_ref: extras.reminder.stateRef,
+                    enabled: extras.reminder.leadMinutes !== null,
+                    lead_minutes: extras.reminder.leadMinutes ?? 15,
+                  },
+                }
+              : {}),
+            ...(extras.reality
+              ? {
+                  reality: {
+                    operation_id: `${operationId}:reality`,
+                    expected_state_ref: extras.reality.stateRef,
+                    mode_code: extras.reality.mode,
+                  },
+                }
+              : {}),
+            ...(extras.objectives
+              ? {
+                  objectives: serializeActivityObjectiveEdits(
+                    extras.objectives,
+                  ),
+                }
+              : {}),
+          }),
+        },
+      );
+      if (!response.ok) {
+        throw new Error(
+          response.status === 409
+            ? 'Questa istanza è cambiata. Riapri Modifica e controlla i dati.'
+            : 'Non è stato possibile salvare le modifiche dell’istanza.',
+        );
+      }
+      const saved = record(await response.json());
+      if (
+        saved.selected_occurrence_ref !== context.occurrenceRef ||
+        saved.source_native_ref !== context.sourceRef
+      ) {
+        throw new Error(
+          'La risposta della modifica non corrisponde all’istanza selezionata.',
+        );
+      }
+      invalidateTemporalTimelineRead();
+      invalidateTemporalPlanningRead();
+    },
     async loadOccurrencePatch(
       context: RecurringProfileContext,
     ): Promise<

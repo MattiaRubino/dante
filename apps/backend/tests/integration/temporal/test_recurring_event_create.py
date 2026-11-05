@@ -2,33 +2,270 @@
 
 from __future__ import annotations
 
+import json
 from dataclasses import replace
 from datetime import date, time
-from typing import Any
+from types import SimpleNamespace
+from typing import Any, cast
 
 import pytest
+from fastapi import Request, Response
+from sqlalchemy import text
 from tests.integration.temporal.test_primary_life_area_assignment import _seed_self
 from tests.integration.temporal.test_schedule_place import _context
 
+from dante.context.contracts import DanteContext
 from dante.modules.temporal.application import (
     TemporalTimelineApplication,
     TimelineScheduledOccurrenceItem,
 )
 from dante.modules.temporal.contracts import TimelineWindowQuery
+from dante.modules.temporal.event import _read_event_in_session
 from dante.modules.temporal.event_occurrence_policy import EventOccurrencePolicyApplication
+from dante.modules.temporal.occurrence_api import (
+    EventOccurrenceLocalEditCommand,
+    accept_event_occurrence_local_edit,
+    get_recurring_event_occurrence_detail,
+    get_recurring_event_occurrence_expected_participation,
+)
 from dante.modules.temporal.recurrence import CalendarRecurrence, RecurrenceApplication
 from dante.modules.temporal.recurring_authoring import RecurringAuthoringApplication
 from dante.modules.temporal.recurring_series_edit import RecurringSeriesEditApplication
 from dante.modules.temporal.recurring_structure_policy import RecurringStructurePolicyApplication
-from dante.modules.temporal.responsibility_participation import ResponsibilityParticipationApplication
+from dante.modules.temporal.responsibility_participation import (
+    ResponsibilityParticipationApplication,
+)
 from dante.modules.temporal.routine_occurrence_materialization import (
     RoutineOccurrenceMaterializationApplication,
 )
 from dante.modules.temporal.schedule import NamedZoneLocalIntervalPlacement
 from dante.modules.temporal.schedule_reminder import ScheduleReminderApplication
 from dante.platform.database.runtime import create_database_runtime
+from dante.platform.http.problem import ProblemError
 
 pytestmark = pytest.mark.postgres
+
+
+@pytest.mark.asyncio
+async def test_event_occurrence_local_structure_is_versioned_and_does_not_mutate_source(
+    migrated_database: Any,
+) -> None:
+    alice = _seed_self(migrated_database)
+    runtime = create_database_runtime(migrated_database.runtime_settings())
+    authoring = RecurringAuthoringApplication(runtime.session_factory)
+    policies = EventOccurrencePolicyApplication(runtime.session_factory)
+    materializer = RoutineOccurrenceMaterializationApplication(runtime.session_factory)
+    timeline = TemporalTimelineApplication(runtime.session_factory)
+    try:
+        created = await authoring.create_event(
+            self_person_ref=alice,
+            operation_id="event:local:create",
+            title="Event source",
+            life_area_intent=None,
+            agenda_parts=("Originale",),
+            description=None,
+            location=None,
+            item_color_code=None,
+            recurrence=_daily_named_zone(),
+        )
+        await policies.set(
+            self_person_ref=alice,
+            event_ref=created.source_ref,
+            placement_kind="timed",
+            duration_minutes=60,
+            duration_days=None,
+            reminder_lead_minutes=None,
+        )
+        await materializer.checkpoint_window(
+            self_person_ref=alice,
+            operation_id="event:local:window",
+            start_date=date(2027, 1, 2),
+            end_date_exclusive=date(2027, 1, 4),
+            effective_zone_id="Europe/Rome",
+        )
+        window = await timeline.read_window(
+            query=TimelineWindowQuery(
+                start_date=date(2027, 1, 2), end_date_exclusive=date(2027, 1, 4)
+            ),
+            context=_context(alice),
+        )
+        occurrences = [
+            item.occurrence_ref
+            for item in window.items
+            if isinstance(item, TimelineScheduledOccurrenceItem)
+            and item.source_native_ref == created.source_ref
+        ]
+        assert len(occurrences) == 2
+        selected, other = occurrences
+        scheduled = {
+            item.occurrence_ref: item
+            for item in window.items
+            if isinstance(item, TimelineScheduledOccurrenceItem)
+            and item.source_native_ref == created.source_ref
+        }
+        patch = json.dumps(
+            {
+                "title": "Event locale",
+                "event_local": {
+                    "agenda_parts": ["Punto locale"],
+                    "life_area_ref": None,
+                    "expected_participants": [
+                        {"person_ref": "self", "requirement_code": "required"}
+                    ],
+                },
+            }
+        )
+        async with runtime.session_factory() as session, session.begin():
+            params = {
+                "actor": alice,
+                "selected": selected,
+                "operation": "event:local:edit",
+                "expected": 0,
+                "recurrence": created.recurrence_material_state_ref,
+                "zone": "Europe/Rome",
+                "patch": patch,
+            }
+            sql = text(
+                "SELECT * FROM dante.accept_self_occurrence_profile_edit("
+                ":actor,:selected,:operation,:expected,:recurrence,'only_this',"
+                ":zone,CAST(:patch AS jsonb))"
+            )
+            accepted = (await session.execute(sql, params)).mappings().one()
+            assert accepted["revision"] == 1
+            assert not accepted["replayed"]
+            replay = (await session.execute(sql, params)).mappings().one()
+            assert replay["replayed"]
+            selected_patch = await session.scalar(
+                text("SELECT dante.get_self_occurrence_profile_patch(:actor,:occurrence)"),
+                {"actor": alice, "occurrence": selected},
+            )
+            other_patch = await session.scalar(
+                text("SELECT dante.get_self_occurrence_profile_patch(:actor,:occurrence)"),
+                {"actor": alice, "occurrence": other},
+            )
+            assert selected_patch == json.loads(patch)
+            assert other_patch == {}
+            source_event = await _read_event_in_session(
+                session, self_person_ref=alice, event_ref=created.source_ref
+            )
+            assert source_event is not None
+            assert source_event.agenda_parts == ("Originale",)
+        context = cast(
+            DanteContext,
+            SimpleNamespace(self_person_ref=alice, effective_zone_id="Europe/Rome"),
+        )
+        request = Request(
+            {
+                "type": "http",
+                "app": SimpleNamespace(state=SimpleNamespace(database_runtime=runtime)),
+            }
+        )
+        payload = {
+            "operation_id": "event:local:aggregate",
+            "expected_revision": 1,
+            "expected_recurrence_state_ref": created.recurrence_material_state_ref,
+            "profile_patch": {"title": "Event aggiornato"},
+            "structure": {
+                "agenda_parts": ["Punto locale aggiornato"],
+                "life_area_ref": None,
+                "expected_participants": [{"person_ref": "self", "requirement_code": "required"}],
+            },
+            "schedule": {
+                "schedule_ref": scheduled[selected].schedule_ref,
+                "expected_material_state_ref": scheduled[selected].placement_material_state_ref,
+                "placement": {
+                    "kind": "named_zone_local_interval",
+                    "starts_local_at": "2027-01-02T12:00:00",
+                    "ends_local_at": "2027-01-02T13:00:00",
+                    "zone_id": "Europe/Rome",
+                },
+            },
+            "objectives": {
+                "add": [
+                    {
+                        "operation_id": "event:local:objective",
+                        "label": "Esito locale",
+                        "result_kind": "boolean",
+                        "presentation_order": 0,
+                    }
+                ]
+            },
+        }
+        with pytest.raises(ProblemError):
+            await accept_event_occurrence_local_edit(
+                selected,
+                EventOccurrenceLocalEditCommand.model_validate(
+                    {
+                        **payload,
+                        "schedule": {
+                            **payload["schedule"],
+                            "schedule_ref": scheduled[other].schedule_ref,
+                        },
+                    }
+                ),
+                context,
+                request,
+                Response(),
+            )
+        async with runtime.session_factory() as session, session.begin():
+            revision_after_refusal = await session.scalar(
+                text(
+                    "SELECT edit_revision FROM dante.get_self_occurrence_edit_revision("
+                    ":actor,:occurrence)"
+                ),
+                {"actor": alice, "occurrence": selected},
+            )
+            assert revision_after_refusal == 1
+            assert (
+                await session.scalar(
+                    text(
+                        "SELECT count(*) FROM dante.list_self_temporal_objectives("
+                        ":actor,'occurrence',:occurrence)"
+                    ),
+                    {"actor": alice, "occurrence": selected},
+                )
+                == 0
+            )
+        accepted = await accept_event_occurrence_local_edit(
+            selected,
+            EventOccurrenceLocalEditCommand.model_validate(payload),
+            context,
+            request,
+            Response(),
+        )
+        assert accepted.revision == 2
+        replay = await accept_event_occurrence_local_edit(
+            selected,
+            EventOccurrenceLocalEditCommand.model_validate(payload),
+            context,
+            request,
+            Response(),
+        )
+        assert replay.replayed
+        assert replay.revision == accepted.revision
+        detail = await get_recurring_event_occurrence_detail(selected, context, request, Response())
+        assert detail.title == "Event aggiornato"
+        assert detail.agenda_parts == ["Punto locale aggiornato"]
+        participants = await get_recurring_event_occurrence_expected_participation(
+            selected, context, request, Response()
+        )
+        assert len(participants) == 1
+        assert participants[0].participant_is_self
+        assert participants[0].requirement_code == "required"
+        untouched = await get_recurring_event_occurrence_detail(other, context, request, Response())
+        assert untouched.title == "Event source"
+        assert untouched.agenda_parts == ["Originale"]
+        async with runtime.session_factory() as session, session.begin():
+            objective_count = await session.scalar(
+                text(
+                    "SELECT count(*) FROM dante.list_self_temporal_objectives("
+                    ":actor,'occurrence',:occurrence)"
+                ),
+                {"actor": alice, "occurrence": selected},
+            )
+            assert objective_count == 1
+    finally:
+        await runtime.dispose()
 
 
 @pytest.mark.asyncio

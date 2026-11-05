@@ -1,5 +1,30 @@
 # Timeline / Temporal-Operational — Workstream Handoff
 
+## 2026-11-05 — Selected recurring Event aggregate candidate (unverified)
+
+The next candidate adds `_168`: a selected Event Occurrence can keep its own
+Agenda, Life Area and expected participants in the existing versioned,
+owner-checked Occurrence profile edit. The same transaction can revise the
+selected Schedule, reminder, Reality mode and Occurrence Objectives; a failed
+subwrite rolls the whole operation back. The selected Event form now loads
+those occurrence-owned fields and exposes the Create/ordinary Edit controls.
+The effective Event/Participation reads overlay local structure on the
+governing series snapshot. Recorded selected instances reject this structural
+edit; protected future instances remain excluded from following revisions.
+
+**SOURCE CANDIDATE; tests NOT_RUN.** The selected-instance PostgreSQL regression
+now covers versioned structure, replay, rejection of another Occurrence's
+Schedule, rollback, objective creation and readback without changing the source
+or neighboring instance. The existing Event Inspector unit regression covers
+the selected form and one aggregate Save. Static Ruff, Web TypeScript and
+source whitespace checks passed in the assistant's scratch checkout; these are
+not PostgreSQL/browser evidence. The pinned `uv==0.12.5` and Python 3.14
+generator are unavailable here, so OpenAPI/Orval must be regenerated on the
+owner's WSL before generated drift or parity can be claimed. The assistant does
+not run test suites or CI; the owner requested one combined local gate after
+implementation. Visually inspect ordinary, selected and following Event forms
+on the real app.
+
 ## 2026-11-05 — Event following-series participation candidate
 
 The following-series Event editor now exposes the same participant selector as

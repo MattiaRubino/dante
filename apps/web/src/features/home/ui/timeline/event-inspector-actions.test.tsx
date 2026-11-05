@@ -17,6 +17,7 @@ import { EventDetailDialog } from './timeline-overlays';
 const loadEvent = vi.fn();
 const loadOccurrenceEvent = vi.fn();
 const listExpectedParticipation = vi.fn().mockResolvedValue([]);
+const listOccurrenceExpectedParticipation = vi.fn().mockResolvedValue([]);
 const listPersonReferents = vi.fn().mockResolvedValue([]);
 const loadArea = vi.fn();
 const loadProfile = vi.fn();
@@ -54,6 +55,7 @@ vi.mock('../../../temporal/remote-recurring-profile-edit', () => ({
     loadOccurrencePatch,
     loadPreview: loadRecurringPreview,
     saveEventProfile: saveRecurringEvent,
+    saveEventLocal: saveRecurringEvent,
   }),
 }));
 
@@ -109,6 +111,7 @@ vi.mock('../../../temporal/remote-event-agenda-data-source', () => ({
 vi.mock('../../../temporal/remote-responsibility-data-source', () => ({
   createRemoteTemporalResponsibilityDataSource: () => ({
     listExpectedParticipation,
+    listOccurrenceExpectedParticipation,
     listPersonReferents,
   }),
 }));
@@ -137,6 +140,7 @@ afterEach(() => {
     currentRevision: 0,
   });
   listExpectedParticipation.mockResolvedValue([]);
+  listOccurrenceExpectedParticipation.mockResolvedValue([]);
   listPersonReferents.mockResolvedValue([]);
 });
 
@@ -160,12 +164,27 @@ describe('Event Inspector actions', () => {
     loadOccurrenceEvent.mockResolvedValue({
       eventRef,
       title: 'Conferenza',
+      agendaParts: ['Scaletta locale'],
+      lifeAreaRef: null,
       description: null,
       location: null,
       colorCode: null,
       profileRevision: 0,
     });
     loadOccurrencePatch.mockResolvedValue({ title: 'Conferenza locale' });
+    listOccurrenceExpectedParticipation.mockResolvedValue([
+      {
+        participantPersonRef: '0199a333-3333-7333-8333-333333333333',
+        participantIsSelf: false,
+        requirementCode: 'required',
+      },
+    ]);
+    listPersonReferents.mockResolvedValue([
+      {
+        personRef: '0199a333-3333-7333-8333-333333333333',
+        displayLabel: 'Ada',
+      },
+    ]);
     saveRecurringEvent.mockResolvedValue(undefined);
     render(
       <EventInspectorActions
@@ -182,6 +201,12 @@ describe('Event Inspector actions', () => {
     const title = await screen.findByRole('textbox', { name: 'Titolo Event' });
     expect(title).toHaveProperty('value', 'Conferenza locale');
     expect(screen.getByText('Ambito: solo questa istanza.')).toBeTruthy();
+    expect(
+      screen.getByRole('textbox', { name: 'Punto scaletta 1' }),
+    ).toHaveProperty('value', 'Scaletta locale');
+    expect(screen.getByText('Ada')).toBeTruthy();
+    expect(listObjectives).toHaveBeenCalledWith('occurrence', occurrenceRef);
+    expect(getRealityPolicy).toHaveBeenCalledWith('occurrence', occurrenceRef);
     fireEvent.change(title, {
       target: { value: 'Conferenza locale aggiornata' },
     });
@@ -189,8 +214,19 @@ describe('Event Inspector actions', () => {
     await waitFor(() =>
       expect(saveRecurringEvent).toHaveBeenCalledWith(
         context,
-        'only_this',
         { title: 'Conferenza locale aggiornata' },
+        {
+          agendaParts: ['Scaletta locale'],
+          lifeAreaRef: null,
+          participants: [
+            {
+              personRef: '0199a333-3333-7333-8333-333333333333',
+              displayLabel: 'Ada',
+              requirementCode: 'required',
+            },
+          ],
+        },
+        expect.objectContaining({ objectives: null, schedule: null }),
         expect.any(String),
       ),
     );

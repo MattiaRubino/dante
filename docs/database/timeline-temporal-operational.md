@@ -574,3 +574,19 @@ profile integration test. Migration, runtime ACL, catalog and regression
 verification passed **5/5** in the user's local PostgreSQL selection on
 `5c43af2d`, including the fresh head and exact catalog. This is focused
 evidence, not the full gate.
+
+## 2026-11-05 candidate: selected Event Occurrence aggregate
+
+`20261105_168` extends the existing owner-scoped `only_this` Occurrence
+profile revision with an `event_local` JSONB field. It contains the selected
+Event's complete Agenda, Life Area reference and expected participants. The
+original series source and governing policy remain unchanged; effective
+Occurrence reads overlay only the selected local structure. The same
+serializable API transaction revises its canonical Schedule, Reminder,
+Reality policy and Occurrence Objectives. The profile revision is the CAS and
+exact-operation replay boundary; rejected downstream work rolls back the
+revision. The existing protection function identifies the local profile
+revision as a future-series exception. The retirement routine now supports
+an unobserved owned Occurrence Objective under the same recorded-result veto.
+No new table or routine signature is introduced. Owner PostgreSQL and full
+catalog checks are **NOT_RUN**; the user runs the test gate.

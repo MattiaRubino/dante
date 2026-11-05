@@ -8,7 +8,7 @@
     "name": "accept_self_occurrence_profile_edit",
     "ownership_class": "dante_owned"
   },
-  "purpose": "Accept one self-scoped idempotent metadata edit for the clicked Occurrence or its clean future successors; serialize the source, validate recurrence-state and revision CAS, preserve protected future instances in an immutable exclusion snapshot, and retain exact affected materialized references.",
+  "purpose": "Accept one self-scoped, replayable Occurrence metadata edit, or an Event-only selected local Agenda, Life Area and expected-participant snapshot. Serialize the source and preserve protected future instances under recurrence-state and revision CAS.",
   "classification": {
     "persistence_role": "occurrence_scoped_edit_capability",
     "canonicality": "capability_surface",

@@ -6,7 +6,7 @@ import json
 from dataclasses import asdict
 from datetime import date, datetime, time
 from typing import Annotated, Literal
-from uuid import UUID
+from uuid import UUID, uuid7
 
 from fastapi import APIRouter, Depends, Request, Response
 from pydantic import BaseModel, ConfigDict, Field
@@ -21,7 +21,14 @@ from dante.modules.temporal.api import (
     _placement_from_request,
 )
 from dante.modules.temporal.event import _read_event_in_session
-from dante.modules.temporal.event_api import EventResponse
+from dante.modules.temporal.event_api import (
+    EventAtomicReminderChange,
+    EventAtomicScheduleChange,
+    EventResponse,
+)
+from dante.modules.temporal.event_api import (
+    _placement_from_request as _event_placement_from_request,
+)
 from dante.modules.temporal.occurrence import (
     CalendarCoordinate,
     CyclicCoordinate,
@@ -42,6 +49,14 @@ from dante.modules.temporal.occurrence import (
 from dante.modules.temporal.occurrence_edit_inventory import (
     OccurrenceEditInventoryApplication,
     OccurrenceEditInventoryLimitError,
+)
+from dante.modules.temporal.reality_objective_api import (
+    ActivityObjectiveBatchCommand,
+    RealityPolicyCommand,
+    apply_event_occurrence_objective_edits_in_session,
+)
+from dante.modules.temporal.reality_objective_api import (
+    _fingerprint as reality_fingerprint,
 )
 from dante.modules.temporal.recurrence import CalendarRecurrence
 from dante.modules.temporal.recurrence_api import CalendarRecurrenceRequest, _spec
@@ -68,8 +83,18 @@ from dante.modules.temporal.schedule import (
     ScheduleOperationIdReuseError,
     SchedulePersistenceError,
     SchedulePlacement,
+    SchedulePlacementLockedError,
+    ScheduleRevisionConflictError,
+    revise_schedule_in_session,
 )
-from dante.platform.database.references import NativeRef
+from dante.modules.temporal.schedule_reminder import (
+    ScheduleReminderApplication,
+    ScheduleReminderConflictError,
+    ScheduleReminderInputError,
+    ScheduleReminderNotFoundError,
+    ScheduleReminderPersistenceError,
+)
+from dante.platform.database.references import MaterialStateRef, NativeRef, ScopedRecordRef
 from dante.platform.http.problem import ProblemError
 
 router = APIRouter(prefix="/api/v1/temporal", tags=["temporal"])
@@ -292,6 +317,35 @@ class ScopedProfileEditStateResponse(BaseModel):
     edit_revision: int
     recurrence_state_ref: UUID | None
     current_profile_patch: dict[str, str | None]
+
+
+class EventOccurrenceParticipant(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    person_ref: UUID | Literal["self"]
+    requirement_code: Literal["required", "optional"]
+
+
+class EventOccurrenceLocalStructure(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    agenda_parts: list[str] = Field(max_length=100)
+    life_area_ref: UUID | None
+    expected_participants: list[EventOccurrenceParticipant] = Field(max_length=100)
+
+
+class EventOccurrenceLocalEditCommand(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    operation_id: str = Field(min_length=1, max_length=140)
+    expected_revision: int = Field(ge=0)
+    expected_recurrence_state_ref: UUID | None
+    profile_patch: dict[str, str | None] = Field(default_factory=dict, max_length=4)
+    structure: EventOccurrenceLocalStructure
+    schedule: EventAtomicScheduleChange | None = None
+    reminder: EventAtomicReminderChange | None = None
+    reality: RealityPolicyCommand | None = None
+    objectives: ActivityObjectiveBatchCommand | None = None
 
 
 class ScopedProfileEditProtectedOccurrence(BaseModel):
@@ -898,8 +952,274 @@ async def get_occurrence_profile_edit_state(
         source_native_ref=row["source_native_ref"],
         edit_revision=int(row["edit_revision"]),
         recurrence_state_ref=row["recurrence_state_ref"],
-        current_profile_patch=patch or {},
+        current_profile_patch={
+            key: value for key, value in (patch or {}).items() if key != "event_local"
+        },
     )
+
+
+@router.post(
+    "/occurrences/{occurrence_ref}/event-local-edit",
+    response_model=ScopedProfileEditResponse,
+    operation_id="temporal_accept_event_occurrence_local_edit",
+)
+async def accept_event_occurrence_local_edit(
+    occurrence_ref: UUID,
+    body: EventOccurrenceLocalEditCommand,
+    context: MutatingContext,
+    request: Request,
+    response: Response,
+) -> ScopedProfileEditResponse:
+    """One owner-checked revision of selected Event metadata and local policy."""
+    response.headers["Cache-Control"] = "no-store"
+    actor = context.self_person_ref
+    patch = body.profile_patch
+    if not set(patch).issubset({"title", "description", "location", "color_code"}):
+        raise _problem(OccurrenceInputError("Invalid Event metadata patch."))
+    if (
+        ("title" in patch and (not patch["title"] or patch["title"] != patch["title"].strip()))
+        or any(
+            value is not None and (not value or value != value.strip())
+            for key, value in patch.items()
+            if key in {"description", "location"}
+        )
+        or (
+            patch.get("color_code") is not None
+            and (
+                len(patch["color_code"]) != 7
+                or not patch["color_code"].startswith("#")
+                or any(ch not in "0123456789ABCDEF" for ch in patch["color_code"][1:])
+            )
+        )
+    ):
+        raise _problem(OccurrenceInputError("Invalid Event metadata patch."))
+    if any(
+        not item or item != item.strip() or len(item) > 1000 for item in body.structure.agenda_parts
+    ):
+        raise _problem(OccurrenceInputError("Invalid Event Agenda."))
+    people = [str(item.person_ref) for item in body.structure.expected_participants]
+    if len(people) != len(set(people)):
+        raise _problem(OccurrenceInputError("Duplicate Event participant."))
+    try:
+        async with request.app.state.database_runtime.session_factory() as session, session.begin():
+            await session.execute(text("SET TRANSACTION ISOLATION LEVEL SERIALIZABLE"))
+            occurrence = (
+                (
+                    await session.execute(
+                        text("SELECT * FROM dante.get_self_occurrence(:actor,:occurrence)"),
+                        {"actor": actor, "occurrence": occurrence_ref},
+                    )
+                )
+                .mappings()
+                .one_or_none()
+            )
+            if occurrence is None or occurrence["skipped"]:
+                raise RecurringSeriesEditConflictError("Event instance is unavailable.")
+            if (
+                await _read_event_in_session(
+                    session,
+                    self_person_ref=actor,
+                    event_ref=NativeRef(occurrence["source_native_ref"]),
+                )
+                is None
+            ):
+                raise RecurringSeriesEditConflictError("Event source is unavailable.")
+            if occurrence["governing_recurrence_state_ref"] != body.expected_recurrence_state_ref:
+                raise RecurringSeriesEditConflictError("Event recurrence changed.")
+            protection = await session.scalar(
+                text("SELECT dante.get_self_occurrence_edit_protection(:actor,:occurrence)"),
+                {"actor": actor, "occurrence": occurrence_ref},
+            )
+            if protection == "registration":
+                raise RecurringSeriesEditConflictError(
+                    "Recorded Event instance cannot change its local structure."
+                )
+            source_ref = occurrence["source_native_ref"]
+            await session.execute(
+                text("SELECT pg_advisory_xact_lock(hashtextextended(:key,0))"),
+                {"key": f"dante:recurrence-materialization:{source_ref}"},
+            )
+            available = {
+                str(row[0])
+                for row in (
+                    await session.execute(
+                        text("SELECT person_ref FROM dante.list_self_person_referents(:actor)"),
+                        {"actor": actor},
+                    )
+                ).all()
+            }
+            available.add("self")
+            if any(person not in available for person in people):
+                raise RecurringSeriesEditConflictError("Event participant is unavailable.")
+            if body.structure.life_area_ref is not None:
+                area = await session.scalar(
+                    text(
+                        "SELECT life_area_ref FROM dante.list_self_life_areas(:actor) "
+                        "WHERE life_area_ref=:area"
+                    ),
+                    {"actor": actor, "area": body.structure.life_area_ref},
+                )
+                if area is None:
+                    raise RecurringSeriesEditConflictError("Event Life Area is unavailable.")
+            local = body.structure.model_dump(mode="json")
+            target_schedule = (
+                body.schedule.schedule_ref
+                if body.schedule is not None
+                else body.reminder.schedule_ref
+                if body.reminder is not None
+                else None
+            )
+            if target_schedule is not None:
+                owned_schedule = await session.scalar(
+                    text(
+                        "SELECT 1 FROM dante.list_self_event_timeline_schedules(:actor,:event) "
+                        "WHERE schedule_ref=:schedule AND subject_native_ref=:occurrence"
+                    ),
+                    {
+                        "actor": actor,
+                        "event": source_ref,
+                        "schedule": target_schedule,
+                        "occurrence": occurrence_ref,
+                    },
+                )
+                if owned_schedule is None or (
+                    body.schedule is not None
+                    and body.reminder is not None
+                    and body.schedule.schedule_ref != body.reminder.schedule_ref
+                ):
+                    raise RecurringSeriesEditConflictError("Event instance Schedule changed.")
+            accepted = (
+                (
+                    await session.execute(
+                        text(
+                            "SELECT * FROM dante.accept_self_occurrence_profile_edit("
+                            ":actor,:selected,:operation,:expected,:recurrence,'only_this',"
+                            ":zone,CAST(:patch AS jsonb))"
+                        ),
+                        {
+                            "actor": actor,
+                            "selected": occurrence_ref,
+                            "operation": body.operation_id,
+                            "expected": body.expected_revision,
+                            "recurrence": body.expected_recurrence_state_ref,
+                            "zone": context.effective_zone_id,
+                            "patch": json.dumps({**patch, "event_local": local}, sort_keys=True),
+                        },
+                    )
+                )
+                .mappings()
+                .one()
+            )
+            if accepted["replayed"]:
+                return ScopedProfileEditResponse(**dict(accepted))
+
+            async def configure_reminder(change: EventAtomicReminderChange) -> None:
+                await ScheduleReminderApplication(
+                    request.app.state.database_runtime.session_factory
+                ).configure(
+                    self_person_ref=actor,
+                    schedule_ref=ScopedRecordRef(change.schedule_ref),
+                    operation_id=f"{body.operation_id}:reminder",
+                    expected_material_state_ref=(
+                        MaterialStateRef(change.expected_state_ref)
+                        if change.expected_state_ref is not None
+                        else None
+                    ),
+                    enabled=change.enabled,
+                    lead_minutes=change.lead_minutes,
+                    session=session,
+                )
+
+            if body.reminder is not None and not body.reminder.enabled:
+                await configure_reminder(body.reminder)
+            if body.schedule is not None:
+                await revise_schedule_in_session(
+                    session,
+                    self_person_ref=actor,
+                    operation_id=f"{body.operation_id}:schedule",
+                    schedule_ref=ScopedRecordRef(body.schedule.schedule_ref),
+                    expected_material_state_ref=MaterialStateRef(
+                        body.schedule.expected_material_state_ref
+                    ),
+                    placement=_event_placement_from_request(body.schedule.placement),
+                )
+            if body.reminder is not None and body.reminder.enabled:
+                await configure_reminder(body.reminder)
+            if body.reality is not None:
+                change = body.reality
+                intent = {
+                    "version": 1,
+                    "subject_kind": "occurrence",
+                    "subject_native_ref": str(occurrence_ref),
+                    "mode_code": change.mode_code,
+                    "expected_state_ref": (
+                        str(change.expected_state_ref)
+                        if change.expected_state_ref is not None
+                        else None
+                    ),
+                }
+                await session.execute(
+                    text(
+                        "SELECT * FROM dante.set_self_reality_review_policy("
+                        ":actor,:operation,:fingerprint,'occurrence',:subject,:state,:mode,:expected)"
+                    ),
+                    {
+                        "actor": actor,
+                        "operation": f"{body.operation_id}:reality",
+                        "fingerprint": reality_fingerprint(intent),
+                        "subject": occurrence_ref,
+                        "state": uuid7(),
+                        "mode": change.mode_code,
+                        "expected": change.expected_state_ref,
+                    },
+                )
+            if body.objectives is not None:
+                await apply_event_occurrence_objective_edits_in_session(
+                    session,
+                    actor=actor,
+                    subject_ref=occurrence_ref,
+                    payload=body.objectives,
+                    effective_zone_id=context.effective_zone_id,
+                )
+            return ScopedProfileEditResponse(**dict(accepted))
+    except DBAPIError as exc:
+        raise _scoped_edit_problem(exc) from exc
+    except SQLAlchemyError as exc:
+        raise _series_problem(exc) from exc
+    except RecurringSeriesEditConflictError as exc:
+        raise _series_problem(exc) from exc
+    except (ScheduleInputError, ScheduleReminderInputError) as exc:
+        raise ProblemError(
+            status=422,
+            code="temporal.event_edit.invalid_change",
+            category="validation",
+            title="Invalid Event change",
+            detail=str(exc),
+        ) from exc
+    except (
+        ScheduleNotFoundError,
+        ScheduleOperationIdReuseError,
+        SchedulePlacementLockedError,
+        ScheduleRevisionConflictError,
+        ScheduleReminderConflictError,
+        ScheduleReminderNotFoundError,
+    ) as exc:
+        raise ProblemError(
+            status=409,
+            code="temporal.event_edit.conflict",
+            category="conflict",
+            title="Event changed",
+            detail="Reload the selected Event instance before saving.",
+        ) from exc
+    except (SchedulePersistenceError, ScheduleReminderPersistenceError) as exc:
+        raise ProblemError(
+            status=503,
+            code="temporal.event_edit.unavailable",
+            category="service",
+            title="Event unavailable",
+            detail="The selected Event edit could not be saved.",
+            retryable=True,
+        ) from exc
 
 
 @router.get(
@@ -1190,6 +1510,9 @@ async def get_recurring_event_occurrence_detail(
             )
             if not isinstance(patch, dict):
                 patch = {}
+            local = patch.get("event_local")
+            if not isinstance(local, dict):
+                local = {}
             agenda = (
                 event.agenda_parts
                 if snapshot is None
@@ -1200,6 +1523,8 @@ async def get_recurring_event_occurrence_detail(
                 if snapshot is None
                 else snapshot.get("life_area_ref", event.life_area_ref)
             )
+            agenda = local.get("agenda_parts", agenda)
+            area = local.get("life_area_ref", area)
             if area is not None:
                 try:
                     area = UUID(str(area))
@@ -1274,9 +1599,12 @@ async def get_recurring_event_occurrence_expected_participation(
                 raise RecurringSeriesEditConflictError("Event instance is unavailable.")
             occurrence = _occurrence(row)
             source_ref = occurrence.source_native_ref
-            if await _read_event_in_session(
-                session, self_person_ref=actor, event_ref=NativeRef(source_ref)
-            ) is None:
+            if (
+                await _read_event_in_session(
+                    session, self_person_ref=actor, event_ref=NativeRef(source_ref)
+                )
+                is None
+            ):
                 raise RecurringSeriesEditConflictError("Event source is unavailable.")
             state = occurrence.governing_recurrence_state_ref
             snapshot = (
@@ -1292,6 +1620,26 @@ async def get_recurring_event_occurrence_expected_participation(
                 if state is not None
                 else None
             )
+            patch = await session.scalar(
+                text("SELECT dante.get_self_occurrence_profile_patch(:actor,:occurrence)"),
+                {"actor": actor, "occurrence": occurrence_ref},
+            )
+            local = patch.get("event_local") if isinstance(patch, dict) else None
+            if isinstance(local, dict) and "expected_participants" in local:
+                values = local["expected_participants"]
+                if not isinstance(values, list):
+                    raise RecurringStructurePolicyError("Event participants revision is invalid.")
+                return [
+                    OccurrenceExpectedParticipationResponse(
+                        event_ref=source_ref,
+                        participant_person_ref=(
+                            actor if item["person_ref"] == "self" else UUID(item["person_ref"])
+                        ),
+                        participant_is_self=item["person_ref"] == "self",
+                        requirement_code=item["requirement_code"],
+                    )
+                    for item in values
+                ]
             if snapshot is None or "expected_participants" not in snapshot:
                 participants = (
                     (

@@ -203,24 +203,25 @@ export function EventInspectorActions({
         context && occurrenceRef && eventSource.loadOccurrenceEvent
           ? eventSource.loadOccurrenceEvent(occurrenceRef)
           : profileSource.load(eventRef),
-        context ? Promise.resolve(null) : areaSource.load(eventRef),
-        context
-          ? Promise.resolve([])
-          : objectiveSource.listObjectives('event', eventRef),
-        context
-          ? Promise.resolve(null)
-          : objectiveSource.getRealityPolicy('event', eventRef),
-        context ||
+        areaSource.load(eventRef),
+        objectiveSource.listObjectives(
+          context ? 'occurrence' : 'event',
+          context ? context.occurrenceRef : eventRef,
+        ),
+        objectiveSource.getRealityPolicy(
+          context ? 'occurrence' : 'event',
+          context ? context.occurrenceRef : eventRef,
+        ),
         !scheduleRef ||
         (placement.kind !== 'named-zone-local' && placement.kind !== 'absolute')
           ? Promise.resolve(null)
           : reminderSource.get(scheduleRef),
         context
-          ? Promise.resolve([])
+          ? participationSource.listOccurrenceExpectedParticipation(
+              context.occurrenceRef,
+            )
           : participationSource.listExpectedParticipation(eventRef),
-        context
-          ? Promise.resolve([])
-          : participationSource.listPersonReferents(),
+        participationSource.listPersonReferents(),
       ]);
       if (loaded.profileRevision === undefined) {
         throw new Error('Revisione del profilo Event non disponibile.');
@@ -262,10 +263,14 @@ export function EventInspectorActions({
       setObjectiveError('');
       setInspectingObjective(null);
       setAreaChoice(area);
-      setAreaSelection(area?.currentRef ?? '');
+      setAreaSelection(
+        context ? (effective.lifeAreaRef ?? '') : (area?.currentRef ?? ''),
+      );
       setAreaQuery(
-        area?.options.find((option) => option.ref === area.currentRef)?.name ??
-          '',
+        area?.options.find(
+          (option) =>
+            option.ref === (context ? effective.lifeAreaRef : area.currentRef),
+        )?.name ?? '',
       );
       setAreaError('');
       setProfileDraft({
@@ -344,12 +349,12 @@ export function EventInspectorActions({
         reminderLead !== reminderInitial ||
         JSON.stringify(participantsDraft) !==
           JSON.stringify(participantsInitial) ||
-        (!recurringContext &&
-          realityPolicy !== null &&
-          realityMode !== realityPolicy.mode) ||
-        (!recurringContext &&
-          areaChoice !== null &&
-          (areaSelection || null) !== areaChoice.currentRef);
+        (realityPolicy !== null && realityMode !== realityPolicy.mode) ||
+        (areaChoice !== null &&
+          (areaSelection || null) !==
+            (recurringContext
+              ? (profile.lifeAreaRef ?? null)
+              : areaChoice.currentRef));
       if (
         changed &&
         !window.confirm('Scartare le modifiche Event non salvate?')
@@ -447,7 +452,6 @@ export function EventInspectorActions({
     setError('');
     try {
       if (
-        !recurringContext &&
         areaQuery.trim() &&
         !areaChoice?.options.some(
           (option) =>
@@ -471,13 +475,104 @@ export function EventInspectorActions({
             .filter((key) => normalized[key] !== (profile[key] ?? null))
             .map((key) => [key, normalized[key]]),
         );
-        if (Object.keys(changed).length === 0) {
+        const objectives = await prepareObjectives();
+        const scheduleChanged =
+          JSON.stringify(scheduleDraft) !== JSON.stringify(scheduleInitial);
+        const reminderChanged = reminderLead !== reminderInitial;
+        const structureChanged =
+          JSON.stringify(agendaDraft) !==
+            JSON.stringify(profile.agendaParts ?? []) ||
+          (areaSelection || null) !== (profile.lifeAreaRef ?? null) ||
+          JSON.stringify(
+            participantsDraft.map(({ personRef, requirementCode }) => ({
+              personRef,
+              requirementCode,
+            })),
+          ) !==
+            JSON.stringify(
+              participantsInitial.map(({ personRef, requirementCode }) => ({
+                personRef,
+                requirementCode,
+              })),
+            );
+        if (
+          reminderLead !== null &&
+          scheduleDraft &&
+          (scheduleDraft.kind !== 'timed' || !scheduleDraft.zoneId)
+        ) {
+          throw new Error('Il promemoria richiede un orario con fuso.');
+        }
+        if (
+          scheduleChanged &&
+          (!scheduleDraft || !scheduleRef || !placementMaterialStateRef)
+        ) {
+          throw new Error('Programmazione dell’istanza non disponibile.');
+        }
+        if (reminderChanged && !scheduleRef) {
+          throw new Error('Schedule del promemoria non disponibile.');
+        }
+        if (
+          Object.keys(changed).length === 0 &&
+          !structureChanged &&
+          !objectives &&
+          !scheduleChanged &&
+          !reminderChanged &&
+          realityMode === realityPolicy?.mode
+        ) {
           throw new Error('Nessuna modifica da salvare.');
         }
-        await recurringSource.saveEventProfile(
+        let selectedSchedule: ReturnType<
+          typeof eventSchedulePlacementFromDraft
+        > | null = null;
+        if (scheduleChanged && scheduleDraft) {
+          try {
+            selectedSchedule = eventSchedulePlacementFromDraft(scheduleDraft);
+          } catch (reason) {
+            const message =
+              reason instanceof Error
+                ? reason.message
+                : 'Orario Evento non valido.';
+            setScheduleError(message);
+            throw new Error(message);
+          }
+        }
+        await recurringSource.saveEventLocal(
           recurringContext,
-          editScope,
           changed,
+          {
+            agendaParts: agendaDraft,
+            lifeAreaRef: areaSelection || null,
+            participants: participantsDraft,
+          },
+          {
+            schedule:
+              scheduleChanged &&
+              selectedSchedule &&
+              scheduleRef &&
+              placementMaterialStateRef
+                ? {
+                    scheduleRef,
+                    materialStateRef: placementMaterialStateRef,
+                    placement: selectedSchedule,
+                  }
+                : null,
+            reminder:
+              reminderChanged && scheduleRef
+                ? {
+                    scheduleRef,
+                    stateRef: reminderCurrent?.materialStateRef ?? null,
+                    leadMinutes: reminderLead,
+                  }
+                : null,
+            reality:
+              realityMode !== realityPolicy?.mode
+                ? {
+                    mode: realityMode,
+                    stateRef: realityPolicy?.stateRef ?? null,
+                  }
+                : null,
+            objectives,
+          },
           systemTemporalIdFactory.operationId(),
         );
       } else {
@@ -890,7 +985,7 @@ export function EventInspectorActions({
           occurrenceRef={recurringContext.occurrenceRef}
           scope={editScope}
           owner="event"
-          closeRequestRef={closeRequestRef}
+          {...(closeRequestRef ? { closeRequestRef } : {})}
           onSaved={() => {
             setEditingProfile(false);
             setProfileNotice('Serie aggiornata.');
@@ -926,257 +1021,28 @@ export function EventInspectorActions({
                 />
               </label>
             </div>
-            {!recurringContext ? (
-              <>
-                <TemporalCreateEventAgenda
-                  parts={agendaDraft}
-                  maxPartLength={1000}
-                  onChange={setAgendaDraft}
+            <>
+              <TemporalCreateEventAgenda
+                parts={agendaDraft}
+                maxPartLength={1000}
+                onChange={setAgendaDraft}
+              />
+              {scheduleDraft ? (
+                <EventScheduleEditor
+                  draft={scheduleDraft}
+                  disabled={busy}
+                  error={scheduleError}
+                  onChange={(next) => {
+                    setScheduleDraft(next);
+                    setScheduleError('');
+                  }}
                 />
-                {scheduleDraft ? (
-                  <EventScheduleEditor
-                    draft={scheduleDraft}
-                    disabled={busy}
-                    error={scheduleError}
-                    onChange={(next) => {
-                      setScheduleDraft(next);
-                      setScheduleError('');
-                    }}
-                  />
-                ) : (
-                  <p role="status">
-                    Questa forma di programmazione si modifica dall’Inspector
-                    della Schedule.
-                  </p>
-                )}
-                <div className="timeline-activity-editor__area-color">
-                  <div className="temporal-create-life-area-field">
-                    <TemporalColorControl
-                      value={profileDraft.colorCode ?? TEMPORAL_DEFAULT_COLOR}
-                      label="Colore attività o evento"
-                      onChange={(colorCode) =>
-                        setProfileDraft(
-                          (draft) => draft && { ...draft, colorCode },
-                        )
-                      }
-                    />
-                    {areaChoice ? (
-                      <div
-                        className="timeline-activity-editor__area-choice"
-                        data-edit-invalid={!!areaError}
-                      >
-                        <TemporalLifeAreaSelect
-                          query={areaQuery}
-                          label="Life Area (opzionale)"
-                          options={areaChoice.options.map((option) => ({
-                            id: option.ref,
-                            label: option.name,
-                          }))}
-                          selectedId={areaSelection || null}
-                          disabled={busy}
-                          onQueryChange={(query) => {
-                            setAreaQuery(query);
-                            setAreaSelection(
-                              areaChoice.options.find(
-                                (option) =>
-                                  option.name.toLocaleLowerCase() ===
-                                  query.trim().toLocaleLowerCase(),
-                              )?.ref ?? '',
-                            );
-                            setAreaError('');
-                          }}
-                          onChoose={(option) => {
-                            setAreaSelection(option.id);
-                            setAreaQuery(option.label);
-                            setAreaError('');
-                          }}
-                          onClear={() => {
-                            setAreaSelection('');
-                            setAreaQuery('');
-                            setAreaError('');
-                          }}
-                        />
-                        {areaError ? (
-                          <small
-                            className="temporal-create-field-error"
-                            role="alert"
-                          >
-                            {areaError}
-                          </small>
-                        ) : null}
-                      </div>
-                    ) : null}
-                  </div>
-                </div>
-                <section
-                  className="temporal-create-reality-objectives timeline-activity-editor__outcome"
-                  aria-label="Svolgimento e obiettivi"
-                >
-                  <div className="temporal-create-reality-objectives__heading timeline-activity-editor__section-heading">
-                    <div>
-                      <h3>Svolgimento e obiettivi</h3>
-                      <p>
-                        Decidi se verificare lo svolgimento e quali risultati
-                        vuoi misurare.
-                      </p>
-                    </div>
-                  </div>
-                  <div className="temporal-create-reality-objectives__block is-reality">
-                    <div className="temporal-create-reality-objectives__block-copy">
-                      <strong>Svolgimento dell’evento</strong>
-                      <span>
-                        Come vuoi gestire la conferma dello svolgimento?
-                      </span>
-                    </div>
-                    <div
-                      className="temporal-create-reality-mode"
-                      role="radiogroup"
-                      aria-label="Verifica dello svolgimento"
-                    >
-                      {(
-                        [
-                          ['manual', 'Nessuna verifica'],
-                          ['review_on_end', 'Chiedi al termine'],
-                          ['auto_confirm_outcome', 'Conferma automatica'],
-                        ] as const
-                      ).map(([mode, label]) => (
-                        <button
-                          key={mode}
-                          type="button"
-                          role="radio"
-                          aria-checked={realityMode === mode}
-                          className={realityMode === mode ? 'is-active' : ''}
-                          disabled={busy}
-                          onClick={() => setRealityMode(mode)}
-                        >
-                          {label}
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-                  <div className="temporal-create-reality-objectives__divider" />
-                  <section
-                    className="temporal-create-reality-objectives__block is-objectives timeline-activity-editor__readback"
-                    aria-label="Obiettivi attuali"
-                  >
-                    <div className="temporal-create-reality-objectives__block-copy">
-                      <strong>Obiettivi</strong>
-                      <span>
-                        Aggiungi solo ciò che vuoi verificare o misurare
-                        separatamente.
-                      </span>
-                    </div>
-                    <div
-                      className="timeline-activity-editor__objectives"
-                      data-edit-invalid={!!objectiveError}
-                    >
-                      {objectiveRows
-                        .filter((row) => !removedObjectives.includes(row.id))
-                        .map((row, index, visible) => (
-                          <ActivityObjectiveRow
-                            key={row.id}
-                            row={row}
-                            index={index}
-                            total={visible.length}
-                            disabled={busy}
-                            onInspect={() => setInspectingObjective(row)}
-                            onChange={(patch) => {
-                              setObjectiveRows((rows) =>
-                                rows.map((item) =>
-                                  item.id === row.id
-                                    ? { ...item, ...patch }
-                                    : item,
-                                ),
-                              );
-                              setObjectiveError('');
-                            }}
-                            onMove={(direction) => {
-                              const target = index + direction;
-                              if (target < 0 || target >= visible.length)
-                                return;
-                              setObjectiveRows((rows) => {
-                                const next = [...rows];
-                                const other = visible[target]!;
-                                const first = next.findIndex(
-                                  (item) => item.id === row.id,
-                                );
-                                const second = next.findIndex(
-                                  (item) => item.id === other.id,
-                                );
-                                if (first < 0 || second < 0) return rows;
-                                next[first] = {
-                                  ...next[first]!,
-                                  presentationOrder: other.presentationOrder,
-                                };
-                                next[second] = {
-                                  ...next[second]!,
-                                  presentationOrder: row.presentationOrder,
-                                };
-                                return next.sort(
-                                  (a, b) =>
-                                    a.presentationOrder - b.presentationOrder,
-                                );
-                              });
-                            }}
-                            onRemove={() => {
-                              if (row.original?.observationRef) {
-                                setObjectiveError(
-                                  'Questo obiettivo ha risultati registrati e non può essere eliminato.',
-                                );
-                                return;
-                              }
-                              if (row.objectiveRef) {
-                                setRemovedObjectives((ids) => [...ids, row.id]);
-                              } else {
-                                setObjectiveRows((rows) =>
-                                  rows.filter((item) => item.id !== row.id),
-                                );
-                              }
-                            }}
-                          />
-                        ))}
-                      {inspectingObjective ? (
-                        <p role="status">
-                          {inspectingObjective.label}:{' '}
-                          {inspectingObjective.original?.observationRef
-                            ? 'risultato registrato; lo storico resta conservato.'
-                            : 'nessun risultato registrato.'}
-                        </p>
-                      ) : null}
-                      <div className="temporal-create-objectives__root-actions">
-                        <button
-                          type="button"
-                          className="temporal-create-objectives__add"
-                          disabled={busy}
-                          onClick={() =>
-                            setObjectiveRows((rows) => [
-                              ...rows,
-                              newObjectiveDraft(
-                                Math.max(
-                                  -1,
-                                  ...rows.map((item) => item.presentationOrder),
-                                ) + 1,
-                              ),
-                            ])
-                          }
-                        >
-                          ＋ Aggiungi obiettivo
-                        </button>
-                      </div>
-                      {objectiveError ? (
-                        <small
-                          className="temporal-create-field-error"
-                          role="alert"
-                        >
-                          {objectiveError}
-                        </small>
-                      ) : null}
-                    </div>
-                  </section>
-                </section>
-              </>
-            ) : null}
-            {recurringContext ? (
+              ) : (
+                <p role="status">
+                  Questa forma di programmazione si modifica dall’Inspector
+                  della Schedule.
+                </p>
+              )}
               <div className="timeline-activity-editor__area-color">
                 <div className="temporal-create-life-area-field">
                   <TemporalColorControl
@@ -1188,9 +1054,220 @@ export function EventInspectorActions({
                       )
                     }
                   />
+                  {areaChoice ? (
+                    <div
+                      className="timeline-activity-editor__area-choice"
+                      data-edit-invalid={!!areaError}
+                    >
+                      <TemporalLifeAreaSelect
+                        query={areaQuery}
+                        label="Life Area (opzionale)"
+                        options={areaChoice.options.map((option) => ({
+                          id: option.ref,
+                          label: option.name,
+                        }))}
+                        selectedId={areaSelection || null}
+                        disabled={busy}
+                        onQueryChange={(query) => {
+                          setAreaQuery(query);
+                          setAreaSelection(
+                            areaChoice.options.find(
+                              (option) =>
+                                option.name.toLocaleLowerCase() ===
+                                query.trim().toLocaleLowerCase(),
+                            )?.ref ?? '',
+                          );
+                          setAreaError('');
+                        }}
+                        onChoose={(option) => {
+                          setAreaSelection(option.id);
+                          setAreaQuery(option.label);
+                          setAreaError('');
+                        }}
+                        onClear={() => {
+                          setAreaSelection('');
+                          setAreaQuery('');
+                          setAreaError('');
+                        }}
+                      />
+                      {areaError ? (
+                        <small
+                          className="temporal-create-field-error"
+                          role="alert"
+                        >
+                          {areaError}
+                        </small>
+                      ) : null}
+                    </div>
+                  ) : null}
                 </div>
               </div>
-            ) : null}
+              <section
+                className="temporal-create-reality-objectives timeline-activity-editor__outcome"
+                aria-label="Svolgimento e obiettivi"
+              >
+                <div className="temporal-create-reality-objectives__heading timeline-activity-editor__section-heading">
+                  <div>
+                    <h3>Svolgimento e obiettivi</h3>
+                    <p>
+                      Decidi se verificare lo svolgimento e quali risultati vuoi
+                      misurare.
+                    </p>
+                  </div>
+                </div>
+                <div className="temporal-create-reality-objectives__block is-reality">
+                  <div className="temporal-create-reality-objectives__block-copy">
+                    <strong>Svolgimento dell’evento</strong>
+                    <span>
+                      Come vuoi gestire la conferma dello svolgimento?
+                    </span>
+                  </div>
+                  <div
+                    className="temporal-create-reality-mode"
+                    role="radiogroup"
+                    aria-label="Verifica dello svolgimento"
+                  >
+                    {(
+                      [
+                        ['manual', 'Nessuna verifica'],
+                        ['review_on_end', 'Chiedi al termine'],
+                        ['auto_confirm_outcome', 'Conferma automatica'],
+                      ] as const
+                    ).map(([mode, label]) => (
+                      <button
+                        key={mode}
+                        type="button"
+                        role="radio"
+                        aria-checked={realityMode === mode}
+                        className={realityMode === mode ? 'is-active' : ''}
+                        disabled={busy}
+                        onClick={() => setRealityMode(mode)}
+                      >
+                        {label}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+                <div className="temporal-create-reality-objectives__divider" />
+                <section
+                  className="temporal-create-reality-objectives__block is-objectives timeline-activity-editor__readback"
+                  aria-label="Obiettivi attuali"
+                >
+                  <div className="temporal-create-reality-objectives__block-copy">
+                    <strong>Obiettivi</strong>
+                    <span>
+                      Aggiungi solo ciò che vuoi verificare o misurare
+                      separatamente.
+                    </span>
+                  </div>
+                  <div
+                    className="timeline-activity-editor__objectives"
+                    data-edit-invalid={!!objectiveError}
+                  >
+                    {objectiveRows
+                      .filter((row) => !removedObjectives.includes(row.id))
+                      .map((row, index, visible) => (
+                        <ActivityObjectiveRow
+                          key={row.id}
+                          row={row}
+                          index={index}
+                          total={visible.length}
+                          disabled={busy}
+                          onInspect={() => setInspectingObjective(row)}
+                          onChange={(patch) => {
+                            setObjectiveRows((rows) =>
+                              rows.map((item) =>
+                                item.id === row.id
+                                  ? { ...item, ...patch }
+                                  : item,
+                              ),
+                            );
+                            setObjectiveError('');
+                          }}
+                          onMove={(direction) => {
+                            const target = index + direction;
+                            if (target < 0 || target >= visible.length) return;
+                            setObjectiveRows((rows) => {
+                              const next = [...rows];
+                              const other = visible[target]!;
+                              const first = next.findIndex(
+                                (item) => item.id === row.id,
+                              );
+                              const second = next.findIndex(
+                                (item) => item.id === other.id,
+                              );
+                              if (first < 0 || second < 0) return rows;
+                              next[first] = {
+                                ...next[first]!,
+                                presentationOrder: other.presentationOrder,
+                              };
+                              next[second] = {
+                                ...next[second]!,
+                                presentationOrder: row.presentationOrder,
+                              };
+                              return next.sort(
+                                (a, b) =>
+                                  a.presentationOrder - b.presentationOrder,
+                              );
+                            });
+                          }}
+                          onRemove={() => {
+                            if (row.original?.observationRef) {
+                              setObjectiveError(
+                                'Questo obiettivo ha risultati registrati e non può essere eliminato.',
+                              );
+                              return;
+                            }
+                            if (row.objectiveRef) {
+                              setRemovedObjectives((ids) => [...ids, row.id]);
+                            } else {
+                              setObjectiveRows((rows) =>
+                                rows.filter((item) => item.id !== row.id),
+                              );
+                            }
+                          }}
+                        />
+                      ))}
+                    {inspectingObjective ? (
+                      <p role="status">
+                        {inspectingObjective.label}:{' '}
+                        {inspectingObjective.original?.observationRef
+                          ? 'risultato registrato; lo storico resta conservato.'
+                          : 'nessun risultato registrato.'}
+                      </p>
+                    ) : null}
+                    <div className="temporal-create-objectives__root-actions">
+                      <button
+                        type="button"
+                        className="temporal-create-objectives__add"
+                        disabled={busy}
+                        onClick={() =>
+                          setObjectiveRows((rows) => [
+                            ...rows,
+                            newObjectiveDraft(
+                              Math.max(
+                                -1,
+                                ...rows.map((item) => item.presentationOrder),
+                              ) + 1,
+                            ),
+                          ])
+                        }
+                      >
+                        ＋ Aggiungi obiettivo
+                      </button>
+                    </div>
+                    {objectiveError ? (
+                      <small
+                        className="temporal-create-field-error"
+                        role="alert"
+                      >
+                        {objectiveError}
+                      </small>
+                    ) : null}
+                  </div>
+                </section>
+              </section>
+            </>
             <div className="timeline-activity-editor__location">
               <input
                 className="temporal-create-u2-location"
@@ -1204,8 +1281,7 @@ export function EventInspectorActions({
                 }}
               />
             </div>
-            {!recurringContext &&
-            scheduleRef &&
+            {scheduleRef &&
             (placement.kind === 'named-zone-local' ||
               placement.kind === 'absolute') ? (
               <TemporalReminderControl
@@ -1219,13 +1295,11 @@ export function EventInspectorActions({
                 onChange={setReminderLead}
               />
             ) : null}
-            {!recurringContext ? (
-              <TemporalEventParticipantsFields
-                participants={participantsDraft}
-                onChange={setParticipantsDraft}
-                disabled={busy}
-              />
-            ) : null}
+            <TemporalEventParticipantsFields
+              participants={participantsDraft}
+              onChange={setParticipantsDraft}
+              disabled={busy}
+            />
             <section
               className="timeline-activity-editor__description temporal-create-section is-wide temporal-create-description-section"
               aria-label="Descrizione"

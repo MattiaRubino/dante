@@ -1,5 +1,16 @@
 # Timeline / Temporal-Operational — Live Execution Ledger
 
+## 2026-11-05 — Event selected-instance aggregate candidate
+
+The Event-only `only_this` path now keeps Agenda, Life Area, expected
+participants, metadata, Schedule, reminder, Reality and Objectives in one
+owner-scoped Occurrence edit transaction; the Event Inspector loads effective
+instance state. Forward migration `_168` and focused PostgreSQL/Web
+regressions are source candidates. Ruff and Web TypeScript passed in scratch;
+PostgreSQL, generated API/Orval, browser and real-app visual acceptance have
+not run. The user will execute the local gate after pulling the candidate.
+See the handoff for the exact implementation boundary and remaining proof.
+
 ## 2026-10-13 — B14 gate repair continuation (GitHub candidate, unverified)
 
 Current repair series after the previous `ff7cc98b` handoff includes narrow backend typing corrections for the elapsed/weekly recurrence and Activity authoring, and browser fixture scenario migrations for the new Life Area color/selector, rail-bound pinnable Create, root planned Session/capture, calendar recurrence, and the inert Draft Vault (replacing the retired "Da collocare" workflow in the non-auth UI harness). Draft Vault fixture tests explicitly stub only the HTTP contract; durable PostgreSQL behavior remains owned by auth/real-stack tests and is not proved here. The Home Timeline gesture bridge now avoids mutating the new aria-hidden date/time transport inputs after the controlled reseed, with an additional colocated regression.

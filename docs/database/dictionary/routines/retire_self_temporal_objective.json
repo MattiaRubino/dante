@@ -8,7 +8,7 @@
     "name": "retire_self_temporal_objective",
     "ownership_class": "dante_owned"
   },
-  "purpose": "Retire an unobserved Activity or one-off Event Objective under owner scope and expected-definition revision, including a bound recurring Activity instance as a local exception, retaining historical references.",
+  "purpose": "Retire an unobserved, owned Activity, one-off Event or selected Occurrence Objective with expected-definition revision, exact replay and recorded-result veto; preserve history and reject an unscoped recurring Event source.",
   "classification": {
     "persistence_role": "objective_retirement_capability",
     "canonicality": "capability_surface",

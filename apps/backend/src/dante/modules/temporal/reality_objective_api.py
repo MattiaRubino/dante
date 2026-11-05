@@ -721,12 +721,44 @@ async def apply_event_objective_edits_in_session(
     )
 
 
+async def apply_event_occurrence_objective_edits_in_session(
+    session: AsyncSession,
+    *,
+    actor: UUID,
+    subject_ref: UUID,
+    payload: ActivityObjectiveBatchCommand,
+    effective_zone_id: str,
+) -> list[ObjectiveResponse]:
+    """Edit the selected Event instance's own Objectives in its aggregate transaction."""
+    if any(
+        revision.change.scope_code != "only_this"
+        or revision.change.expected_source_revision is not None
+        or revision.change.expected_recurrence_state_ref is not None
+        for revision in payload.revise
+    ):
+        raise ProblemError(
+            status=422,
+            code="temporal.event_edit.objective_scope",
+            category="validation",
+            title="Ambito obiettivo non valido",
+            detail="L'obiettivo dell'istanza accetta solo modifiche locali.",
+        )
+    return await _apply_objective_edits_in_session(
+        session,
+        actor=actor,
+        subject_ref=subject_ref,
+        subject_kind="occurrence",
+        payload=payload,
+        effective_zone_id=effective_zone_id,
+    )
+
+
 async def _apply_objective_edits_in_session(
     session: AsyncSession,
     *,
     actor: UUID,
     subject_ref: UUID,
-    subject_kind: Literal["activity", "event"],
+    subject_kind: Literal["activity", "event", "occurrence"],
     payload: ActivityObjectiveBatchCommand,
     effective_zone_id: str,
 ) -> list[ObjectiveResponse]:
