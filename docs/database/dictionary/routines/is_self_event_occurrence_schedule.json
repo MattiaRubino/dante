@@ -1,0 +1,77 @@
+{
+  "$schema": "../schema/object-v1.schema.json",
+  "dictionary_version": 1,
+  "object": {
+    "key": "routine:dante.is_self_event_occurrence_schedule",
+    "type": "routine",
+    "schema": "dante",
+    "name": "is_self_event_occurrence_schedule",
+    "ownership_class": "dante_owned"
+  },
+  "purpose": "Verify that a selected recurring Event Occurrence owns the exact Schedule being edited, without exposing private tables or truncating a source-wide listing.",
+  "classification": {
+    "persistence_role": "event_occurrence_schedule_identity",
+    "canonicality": "capability_surface",
+    "family": "temporal_operational"
+  },
+  "semantic_traceability": {
+    "authority_sources": ["docs/database/timeline-temporal-operational.md"],
+    "domain_concepts": ["Event", "Occurrence", "Schedule"],
+    "logical_families": ["B14 Create closure"],
+    "reference_families": ["NativeRef", "ScopedRecordRef"],
+    "material_facets": []
+  },
+  "implementation": {
+    "introducing_stage": "B14-EVENT-TIMELINE-PLACEMENT",
+    "alembic_revision": "20261105_169",
+    "sqlalchemy": {"mode": "none", "module": null, "symbol": null},
+    "runtime_acl_stage": "B14-EVENT-TIMELINE-PLACEMENT"
+  },
+  "structure": {
+    "columns": [],
+    "primary_key": null,
+    "foreign_keys": [],
+    "unique_constraints": [],
+    "check_constraints": [],
+    "indexes": [],
+    "triggers": [],
+    "table": null,
+    "view": null,
+    "routine": {
+      "routine_kind": "function",
+      "language": "sql",
+      "argument_types": ["uuid", "uuid", "uuid"],
+      "return_type": "boolean",
+      "security": "DEFINER",
+      "volatility": "STABLE",
+      "parallel_safety": "SAFE",
+      "leakproof": false,
+      "function_search_path": ["pg_catalog", "dante", "pg_temp"],
+      "direct_runtime_execute": true
+    }
+  },
+  "state_history": {
+    "material_state_behavior": null,
+    "current_binding": null,
+    "chronology": null,
+    "immutability_policy": "Read-only identity check; no Event or Schedule state is rewritten."
+  },
+  "lifecycle": {
+    "retention": "No independent state.",
+    "redaction": null,
+    "retirement_tombstone": null,
+    "delete_behavior": "No runtime deletion."
+  },
+  "security": {
+    "owner_role": "dante_owner",
+    "default_deny_non_owner": true,
+    "expected_grants": [
+      {"grantee": "dante_runtime", "privilege": "EXECUTE", "columns": [], "grant_option": false}
+    ]
+  },
+  "proof": {
+    "obligations": ["Owner-scoped Event Occurrence", "Exact Schedule identity", "Cross-instance refusal"],
+    "test_refs": ["apps/backend/tests/integration/temporal/test_recurring_event_create.py"],
+    "staged_evidence": []
+  }
+}

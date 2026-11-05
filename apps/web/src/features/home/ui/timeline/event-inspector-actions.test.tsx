@@ -204,7 +204,9 @@ describe('Event Inspector actions', () => {
     expect(
       screen.getByRole('textbox', { name: 'Punto scaletta 1' }),
     ).toHaveProperty('value', 'Scaletta locale');
-    expect(screen.getByText('Ada')).toBeTruthy();
+    expect(
+      screen.getByRole('combobox', { name: 'Partecipazione di Ada' }),
+    ).toHaveProperty('value', 'required');
     expect(listObjectives).toHaveBeenCalledWith('occurrence', occurrenceRef);
     expect(getRealityPolicy).toHaveBeenCalledWith('occurrence', occurrenceRef);
     fireEvent.change(title, {

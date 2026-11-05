@@ -1072,17 +1072,16 @@ async def accept_event_occurrence_local_edit(
             if target_schedule is not None:
                 owned_schedule = await session.scalar(
                     text(
-                        "SELECT 1 FROM dante.list_self_event_timeline_schedules(:actor,:event) "
-                        "WHERE schedule_ref=:schedule AND subject_native_ref=:occurrence"
+                        "SELECT dante.is_self_event_occurrence_schedule("
+                        ":actor,:occurrence,:schedule)"
                     ),
                     {
                         "actor": actor,
-                        "event": source_ref,
                         "schedule": target_schedule,
                         "occurrence": occurrence_ref,
                     },
                 )
-                if owned_schedule is None or (
+                if not owned_schedule or (
                     body.schedule is not None
                     and body.reminder is not None
                     and body.schedule.schedule_ref != body.reminder.schedule_ref

@@ -6,7 +6,7 @@
 - **Protected-main Alembic head:** `20260906_18`
 - **Protected-main topology:** `89|5|18|77|173|91|272|0|0|0`
 - **Timeline candidate branch:** `feature/timeline-temporal-operational`
-- **Timeline candidate Alembic head:** `20261105_168`; `_167` permits owner-scoped retirement of an unobserved one-off Event Objective while rejecting recurring Event sources. `_166` permits local retirement of an unobserved, bound recurring Activity Objective as an exception. User-local focused PostgreSQL migration/catalog verification on `5c43af2d`: 5/5 passed; the full gate remains open. See `timeline-temporal-operational.md`.
+- **Timeline candidate Alembic head:** `20261105_169`; `_169` validates exact owner-scoped Event Occurrence Schedule identity for selected-instance edits, replacing a call to the retired Timeline listing. `_168` stores local Event structure; `_167` permits owner-scoped one-off Event Objective retirement. User-local focused tests on `377768e`: 12 passed, 1 failed because that retired listing was called; the correction remains unverified. See `timeline-temporal-operational.md`.
 - **Historical B10-C proven topology (2026-09-26):** `20260925_79` / `167|5|123|93|329|279|446`; latest `_142` candidate topology `238|5|228|103|486|421|596` (user-local catalog gate green)
 - **Timeline candidate DB overlay:** `timeline-temporal-operational.md`
 - **Persistence doctrine:** `../development/backend-cp6-02-postgresql-persistence-constitution.md`

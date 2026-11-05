@@ -1900,6 +1900,11 @@
   scrollbar-gutter: stable;
 }
 
+.timeline-event-profile-editor__body > * {
+  flex-shrink: 0;
+  min-width: 0;
+}
+
 .timeline-event-profile-editor__title-row {
   flex: 0 0 auto;
 }

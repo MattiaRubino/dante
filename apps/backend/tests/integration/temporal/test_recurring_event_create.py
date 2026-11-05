@@ -7,6 +7,7 @@ from dataclasses import replace
 from datetime import date, time
 from types import SimpleNamespace
 from typing import Any, cast
+from uuid import uuid4
 
 import pytest
 from fastapi import Request, Response
@@ -103,6 +104,43 @@ async def test_event_occurrence_local_structure_is_versioned_and_does_not_mutate
             if isinstance(item, TimelineScheduledOccurrenceItem)
             and item.source_native_ref == created.source_ref
         }
+        async with runtime.session_factory() as session, session.begin():
+            schedule_identity = text(
+                "SELECT dante.is_self_event_occurrence_schedule(:actor,:occurrence,:schedule)"
+            )
+            assert (
+                await session.scalar(
+                    schedule_identity,
+                    {
+                        "actor": alice,
+                        "occurrence": selected,
+                        "schedule": scheduled[selected].schedule_ref,
+                    },
+                )
+                is True
+            )
+            assert (
+                await session.scalar(
+                    schedule_identity,
+                    {
+                        "actor": alice,
+                        "occurrence": selected,
+                        "schedule": scheduled[other].schedule_ref,
+                    },
+                )
+                is False
+            )
+            assert (
+                await session.scalar(
+                    schedule_identity,
+                    {
+                        "actor": uuid4(),
+                        "occurrence": selected,
+                        "schedule": scheduled[selected].schedule_ref,
+                    },
+                )
+                is False
+            )
         patch = json.dumps(
             {
                 "title": "Event locale",

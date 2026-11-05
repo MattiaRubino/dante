@@ -1,5 +1,14 @@
 # Timeline / Temporal-Operational — Live Execution Ledger
 
+## 2026-11-05 — Event focused red gate repair
+
+Owner-local tests on `377768e` found a retired Event Schedule listing called
+by the selected-instance aggregate, an ambiguous participant assertion and a
+scrolling geometry failure. Forward `_169` supplies an exact owner-scoped
+Schedule identity capability; the test assertion and form flex layout are
+corrected. This repair is unverified pending the owner's focused rerun. See
+the handoff for the original counts and outstanding generated/full gate.
+
 ## 2026-11-05 — Event selected-instance aggregate candidate
 
 The Event-only `only_this` path now keeps Agenda, Life Area, expected

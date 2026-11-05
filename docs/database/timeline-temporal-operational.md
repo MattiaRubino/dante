@@ -590,3 +590,12 @@ revision as a future-series exception. The retirement routine now supports
 an unobserved owned Occurrence Objective under the same recorded-result veto.
 No new table or routine signature is introduced. Owner PostgreSQL and full
 catalog checks are **NOT_RUN**; the user runs the test gate.
+
+`20261105_169` corrects the selected Event Schedule identity check. The
+retired `list_self_event_timeline_schedules` call found by the user's
+PostgreSQL run is replaced with a dedicated owner-scoped boolean capability
+for one exact Occurrence and Schedule. It does not truncate a 1,000-row list
+or grant direct Schedule table access to the runtime role. The additional
+routine changes the candidate topology to **240 tables / 5 views / 249
+routines / 104 triggers / 492 indexes / 428 FKs / 600 CHECK**. Migration and
+runtime behavior of `_169` remain unverified until the owner's rerun.

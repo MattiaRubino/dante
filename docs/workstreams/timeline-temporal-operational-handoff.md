@@ -1,5 +1,24 @@
 # Timeline / Temporal-Operational — Workstream Handoff
 
+## 2026-11-05 — Owner-local red gate and correction candidate
+
+At `377768e` the owner's focused PostgreSQL run reported **12 passed, 1
+failed**: selected Event edit called `list_self_event_timeline_schedules`,
+which was retired at `_159`. The focused Web run reported **41 passed, 1
+failed**: an ambiguous test query matched both the selected participant and
+its option. The Event form browser test failed its scrollability assertion;
+the separate authenticated Event create/read selection passed **4/4**.
+`ECONNREFUSED :8000` in the non-auth browser fixture was background proxy
+noise, not the assertion failure. No full gate or visual acceptance was run.
+
+Correction candidate `_169` adds an exact, owner-scoped Event Occurrence
+Schedule identity function instead of reviving the retired listing. The Web
+participant assertion now targets its requirement control, and Event form
+children keep their natural height so the body scrolls while Save remains
+visible. Focused Ruff, Prettier and Web TypeScript static checks passed in
+scratch; the behavior changes are **NOT_RUN**. The owner should rerun the three
+previously red focused checks before generated artifacts and the full gate.
+
 ## 2026-11-05 — Selected recurring Event aggregate candidate (unverified)
 
 The next candidate adds `_168`: a selected Event Occurrence can keep its own
