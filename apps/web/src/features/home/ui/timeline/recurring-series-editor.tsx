@@ -13,6 +13,7 @@ import { TimeControl } from '../../../temporal-create/ui/temporal-create-core-u2
 import { TemporalColorControl } from '../../../temporal-create/ui/temporal-color-control';
 import { TemporalCreateDatePicker } from '../../../temporal-create/ui/temporal-create-date-picker';
 import { TemporalLifeAreaSelect } from '../../../temporal-create/ui/temporal-life-area-select';
+import { TemporalCreateEventAgenda } from '../../../temporal-create/ui/temporal-create-event-agenda';
 import { TemporalObjectiveEditorRow } from '../../../temporal-create/ui/temporal-objective-editor-row';
 import type {
   TemporalCreateObjectiveDraft,
@@ -984,48 +985,13 @@ export function RecurringSeriesEditor({
                 </section>
               </>
             ) : (
-              <section aria-label="Scaletta">
-                <h3>Scaletta</h3>
-                {agenda.map((part, index) => (
-                  <div key={index}>
-                    <input
-                      aria-label={`Punto ${index + 1}`}
-                      maxLength={1000}
-                      value={part}
-                      onChange={(e) =>
-                        changeStructure({
-                          ...structure,
-                          agenda_parts: agenda.map((item, i) =>
-                            i === index ? e.target.value : item,
-                          ),
-                        })
-                      }
-                    />
-                    <button
-                      type="button"
-                      onClick={() =>
-                        changeStructure({
-                          ...structure,
-                          agenda_parts: agenda.filter((_, i) => i !== index),
-                        })
-                      }
-                    >
-                      Rimuovi
-                    </button>
-                  </div>
-                ))}
-                <button
-                  type="button"
-                  onClick={() =>
-                    changeStructure({
-                      ...structure,
-                      agenda_parts: [...agenda, ''],
-                    })
-                  }
-                >
-                  Aggiungi punto
-                </button>
-              </section>
+              <TemporalCreateEventAgenda
+                parts={agenda}
+                maxPartLength={1000}
+                onChange={(parts) =>
+                  changeStructure({ ...structure, agenda_parts: [...parts] })
+                }
+              />
             )}
             <details className="timeline-recurring-series-editor__repeat-panel">
               <summary className="timeline-activity-editor__repeat">

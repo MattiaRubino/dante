@@ -512,17 +512,6 @@ export function EventInspectorActions({
           'Duplica'
         )}
       </button>
-      {toolbarTarget ? (
-        <button
-          type="button"
-          disabled={busy || editingProfile || editingArea}
-          aria-label="Modifica Life Area"
-          title="Modifica Life Area"
-          onClick={() => void openAreaEditor()}
-        >
-          Life Area
-        </button>
-      ) : null}
       <button
         type="button"
         disabled={busy}
@@ -575,10 +564,11 @@ export function EventInspectorActions({
           }}
         />
       ) : null}
-      {!toolbarTarget ? (
+      {!editingProfile && !editChoice ? (
         <button
           type="button"
           disabled={busy}
+          className="timeline-event-life-area-action"
           onClick={() =>
             editingArea ? setEditingArea(false) : void openAreaEditor()
           }

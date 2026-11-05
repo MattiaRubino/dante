@@ -1,11 +1,14 @@
 .temporal-create-event-agenda {
   position: relative;
-  order: -27;
   display: grid;
   gap: 8px;
   width: 100%;
   min-width: 0;
   padding: 2px 0 6px;
+}
+
+.temporal-create-composer .temporal-create-event-agenda {
+  order: -27;
 }
 
 .temporal-create-event-agenda__list {
@@ -70,7 +73,7 @@
   );
 }
 
-.temporal-create-composer .temporal-create-event-agenda__part > input {
+.temporal-create-event-agenda__part > input {
   box-sizing: border-box;
   width: 100%;
   min-width: 0;
@@ -86,7 +89,7 @@
   font-size: 13px;
 }
 
-.temporal-create-composer .temporal-create-event-agenda__part > input:focus {
+.temporal-create-event-agenda__part > input:focus {
   background: color-mix(in srgb, #ea5c12 5%, transparent) !important;
 }
 
@@ -137,30 +140,6 @@
   gap: 8px;
   margin-left: 28px;
   padding-top: 2px;
-}
-
-.temporal-create-event-agenda__add {
-  display: inline-flex;
-  min-height: 32px;
-  align-items: center;
-  gap: 6px;
-  padding: 0 10px;
-  border: 1px dashed color-mix(in srgb, currentColor 23%, transparent);
-  border-radius: 8px;
-  color: var(--dante-semantic-color-home-text-secondary, #b7c0cf);
-  background: transparent;
-  font: inherit;
-  font-size: 11px;
-  font-weight: 650;
-  cursor: pointer;
-}
-
-.temporal-create-event-agenda__add:hover,
-.temporal-create-event-agenda__add:focus-visible {
-  border-color: color-mix(in srgb, #ea5c12 55%, transparent);
-  color: var(--dante-semantic-color-home-chrome-active-text, #f0a06f);
-  background: color-mix(in srgb, #ea5c12 5%, transparent);
-  outline: none;
 }
 
 @media (max-width: 900px) {

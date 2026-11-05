@@ -1,5 +1,33 @@
 # Timeline / Temporal-Operational — Workstream Handoff
 
+## 2026-11-05 — Event visual parity feedback and current boundary
+
+The owner pulled `62c6bb87` and reported that Ruff format passed, the
+PostgreSQL harness tests passed **3/3**, and the focused Event Objective plus
+Activity atomic edit PostgreSQL tests passed **5/5**. The real stack also
+started successfully at `https://127.0.0.1:4173`. These prove the focused
+backend candidate, not Event Edit parity.
+
+Visual review exposed that ordinary Event Edit still only saves profile
+metadata; Create exposes Schedule, recurrence, Life Area, Objectives,
+participants and Scaletta, while Inspector has a separate Agenda editor and
+Life Area action. The requested target is the Activity Create/Edit/Inspector
+grammar with Event-specific Scaletta and participation, without Sessions,
+for ordinary and both recurring scopes. Do not label this target delivered.
+
+This checkpoint gives Create's `+ Scaletta` the same add-button component as
+`+ Sessione`, reuses the ordered Scaletta rows in recurring Event series Edit,
+and keeps the Event Inspector's four primary toolbar actions icon-only like
+Activity. The separate Life Area command remains available in Inspector
+content. The existing Event profile-only Save intentionally stays labeled
+`Salva metadati Event`: no new fields are shown as if that button committed
+them. A single one-off Event aggregate command and an occurrence-aware command
+must precede an all-fields Event Edit; Schedule, Objectives, Life Area,
+participation, reminders and Agenda cannot be saved by unrelated sequential
+calls under a misleading all-fields Save. The Inspector Agenda/objective
+presentation and all-fields Event editor are still open. No local test or CI
+was run for this visual checkpoint; the owner requested to run the checks.
+
 ## 2026-11-04 — Unified Activity edit candidate (in progress)
 
 The ordinary Activity editor and the recurring `only_this` path now compose

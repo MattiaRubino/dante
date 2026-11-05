@@ -251,8 +251,10 @@ describe('TemporalCreateComposer', () => {
     );
 
     expect(
-      screen.getByRole('button', { name: 'Aggiungi punto alla scaletta' }),
-    ).toBeTruthy();
+      screen
+        .getByRole('button', { name: 'Aggiungi punto alla scaletta' })
+        .classList.contains('temporal-create-tree-add'),
+    ).toBe(true);
     expect(
       screen.getByRole('region', { name: 'Svolgimento e obiettivi' }),
     ).toBeTruthy();

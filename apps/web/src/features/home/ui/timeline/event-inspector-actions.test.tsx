@@ -525,6 +525,20 @@ describe('Event Inspector actions', () => {
     expect(
       await screen.findByRole('button', { name: 'Modifica Life Area' }),
     ).toBeTruthy();
+    const toolbar = document.querySelector(
+      '.timeline-event-modal__owner-actions .timeline-activity-inspector__toolbar',
+    );
+    expect(toolbar).toBeTruthy();
+    expect(
+      within(toolbar as HTMLElement)
+        .getAllByRole('button')
+        .map((button) => button.getAttribute('aria-label')),
+    ).toEqual(['Modifica', 'Duplica', 'Copia in Bozze', 'Elimina Event']);
+    expect(
+      within(toolbar as HTMLElement).queryByRole('button', {
+        name: 'Modifica Life Area',
+      }),
+    ).toBeNull();
     fireEvent.click(screen.getByRole('button', { name: 'Modifica' }));
     expect(
       await screen.findByRole('textbox', { name: 'Titolo Event' }),

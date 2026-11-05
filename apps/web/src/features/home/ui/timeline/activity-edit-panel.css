@@ -91,7 +91,7 @@
 
 .timeline-recurring-series-editor__recurrence,
 .timeline-recurring-series-editor [aria-label='Sottoattività'],
-.timeline-recurring-series-editor [aria-label='Scaletta'] {
+.timeline-recurring-series-editor [data-temporal-create-agenda] {
   display: grid;
   gap: 10px;
   min-width: 0;

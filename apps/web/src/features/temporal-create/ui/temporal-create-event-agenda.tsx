@@ -1,17 +1,20 @@
 import { useRef, type KeyboardEvent } from 'react';
 import { useTranslation } from 'react-i18next';
 
+import './temporal-create-advanced-activity-structure.css';
 import './temporal-create-event-agenda.css';
 
 type TemporalCreateEventAgendaProps = Readonly<{
   parts: readonly string[];
   onChange: (parts: readonly string[]) => void;
+  maxPartLength?: number;
 }>;
 
 type ScalettaRowProps = Readonly<{
   part: string;
   index: number;
   total: number;
+  maxPartLength: number;
   onChange: (index: number, value: string) => void;
   onMove: (index: number, direction: -1 | 1) => void;
   onRemove: (index: number) => void;
@@ -21,6 +24,7 @@ function ScalettaRow({
   part,
   index,
   total,
+  maxPartLength,
   onChange,
   onMove,
   onRemove,
@@ -61,7 +65,7 @@ function ScalettaRow({
         data-agenda-index={index}
         type="text"
         value={part}
-        maxLength={300}
+        maxLength={maxPartLength}
         onChange={(event) => onChange(index, event.currentTarget.value)}
         onKeyDown={onKeyDown}
         aria-label={
@@ -105,6 +109,7 @@ function ScalettaRow({
 export function TemporalCreateEventAgenda({
   parts,
   onChange,
+  maxPartLength = 300,
 }: TemporalCreateEventAgendaProps) {
   const { i18n } = useTranslation('common');
   const italian = i18n.language.toLowerCase().startsWith('it');
@@ -171,6 +176,7 @@ export function TemporalCreateEventAgenda({
               part={part}
               index={index}
               total={parts.length}
+              maxPartLength={maxPartLength}
               onChange={updatePart}
               onMove={movePart}
               onRemove={removePart}
@@ -181,7 +187,7 @@ export function TemporalCreateEventAgenda({
 
       <div className="temporal-create-event-agenda__root-actions">
         <button
-          className="temporal-create-event-agenda__add"
+          className="temporal-create-tree-add"
           type="button"
           onClick={addPart}
           aria-label={
