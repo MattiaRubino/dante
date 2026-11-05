@@ -306,6 +306,7 @@
     "apps/web/src/features/home/ui/orientation/day-route-geometry.test.ts",
     "apps/web/src/features/home/ui/timeline/activity-inspector-actions.test.tsx",
     "apps/web/src/features/home/ui/timeline/event-inspector-actions.test.tsx",
+    "apps/web/src/features/home/ui/timeline/timeline-event-participation.test.tsx",
     "apps/web/src/features/home/ui/timeline/model/timeline-all-day-layout.test.ts",
     "apps/web/src/features/home/ui/timeline/model/timeline-all-day-state.test.ts",
     "apps/web/src/features/home/ui/timeline/model/timeline-canonical-revision.test.ts",
@@ -3380,6 +3381,15 @@
       "invariant": "",
       "status": "UNREVIEWED",
       "audit_note": "Needs contract/assertion review, rejection cases, and executable evidence; filename alone is not proof."
+    },
+    {
+      "path": "apps/web/src/features/home/ui/timeline/timeline-event-participation.test.tsx",
+      "suite": "web-unit-component",
+      "contract_id": "T02",
+      "candidate_behavior": "event inspector expected participation readback",
+      "purpose": "Verify that the Event Inspector shows current expected participants with their requirement and refreshes after an edit invalidates Timeline data.",
+      "invariant": "Removed expected participants do not remain visible after a canonical refresh, and participation never appears as a Session.",
+      "status": "QUALIFIED"
     },
     {
       "path": "apps/web/src/features/home/ui/timeline/model/timeline-all-day-layout.test.ts",

@@ -47,10 +47,13 @@ it('shows Event participants and refreshes after a timeline invalidation', async
         participantIsSelf: false,
         requirementCode: 'optional',
       },
-    ]);
+    ])
+    .mockResolvedValueOnce([]);
   render(<TimelineEventParticipation eventRef="event-1" />);
   expect(await screen.findByText('Ada')).toBeTruthy();
   expect(screen.getByText('Richiesto')).toBeTruthy();
   invalidation.read?.();
   await waitFor(() => expect(screen.getByText('Opzionale')).toBeTruthy());
+  invalidation.read?.();
+  await waitFor(() => expect(screen.queryByText('Ada')).toBeNull());
 });
