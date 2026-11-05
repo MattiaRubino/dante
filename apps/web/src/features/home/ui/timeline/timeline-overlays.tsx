@@ -688,7 +688,7 @@ export function EventDetailDialog({
     null,
   );
   const [eventEditorMode, setEventEditorMode] = useState<
-    'profile' | 'series' | 'area' | null
+    'profile' | 'series' | null
   >(null);
   const [activityEditScope, setActivityEditScope] = useState<
     'only_this' | 'this_and_following' | 'from_next'
@@ -1116,7 +1116,7 @@ export function EventDetailDialog({
                 {...(detail.occurrenceRef
                   ? { occurrenceRef: detail.occurrenceRef }
                   : {})}
-                readOnly={detail.occurrenceRef !== undefined}
+                readOnly
                 hideWhenEmpty
                 showDescription
               />

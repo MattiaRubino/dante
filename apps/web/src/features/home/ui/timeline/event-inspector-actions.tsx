@@ -70,7 +70,7 @@ export function EventInspectorActions({
   onDeleted?: () => void;
   onDuplicate: (seed: ActivityDuplicateSeed) => void;
   onCancelScope?: () => void;
-  onEditorStateChange?: (mode: 'profile' | 'series' | 'area' | null) => void;
+  onEditorStateChange?: (mode: 'profile' | 'series' | null) => void;
   closeRequestRef?: RefObject<(() => void) | null>;
   toolbarTarget?: HTMLElement | null;
 }>) {
@@ -128,11 +128,9 @@ export function EventInspectorActions({
     useState<RecurringProfileEditScope>('only_this');
   const [recurringContext, setRecurringContext] =
     useState<RecurringProfileContext | null>(null);
-  const [editingArea, setEditingArea] = useState(false);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
   const [profileNotice, setProfileNotice] = useState('');
-  const [areaNotice, setAreaNotice] = useState('');
 
   useEffect(() => {
     onEditorStateChange?.(
@@ -140,17 +138,9 @@ export function EventInspectorActions({
         ? recurringContext && editScope !== 'only_this'
           ? 'series'
           : 'profile'
-        : editingArea
-          ? 'area'
-          : null,
+        : null,
     );
-  }, [
-    editScope,
-    editingArea,
-    editingProfile,
-    onEditorStateChange,
-    recurringContext,
-  ]);
+  }, [editScope, editingProfile, onEditorStateChange, recurringContext]);
 
   const openProfileEditor = async (
     selectedScope: RecurringProfileEditScope = 'only_this',
@@ -285,11 +275,7 @@ export function EventInspectorActions({
     ) {
       return;
     }
-    closeRequestRef.current = editingProfile
-      ? cancelProfile
-      : editingArea
-        ? () => setEditingArea(false)
-        : null;
+    closeRequestRef.current = editingProfile ? cancelProfile : null;
     return () => {
       closeRequestRef.current = null;
     };
@@ -463,69 +449,20 @@ export function EventInspectorActions({
     }
   };
 
-  const openAreaEditor = async () => {
-    if (busy) return;
-    setBusy(true);
-    setError('');
-    try {
-      if (await recurrenceGuard.isRecurring(eventRef)) {
-        throw new Error(
-          'La Life Area della ricorrenza richiede una modifica della serie. Non è stata cambiata.',
-        );
-      }
-      const loaded = await areaSource.load(eventRef);
-      setAreaChoice(loaded);
-      setAreaSelection(loaded.currentRef ?? '');
-      setEditingArea(true);
-      setAreaNotice('');
-    } catch (reason) {
-      setError(
-        reason instanceof Error
-          ? reason.message
-          : 'Life Area Event non disponibile.',
-      );
-    } finally {
-      setBusy(false);
-    }
-  };
-
-  const saveArea = async () => {
-    if (!areaChoice || busy) return;
-    setBusy(true);
-    setError('');
-    try {
-      const saved = await areaSource.assign(
-        eventRef,
-        areaChoice,
-        areaSelection || null,
-        systemTemporalIdFactory.operationId(),
-      );
-      setAreaChoice(saved);
-      setAreaSelection(saved.currentRef ?? '');
-      setEditingArea(false);
-      setAreaNotice('Life Area Event aggiornata.');
-    } catch (reason) {
-      setError(
-        reason instanceof Error
-          ? reason.message
-          : 'Salvataggio Life Area Event rifiutato.',
-      );
-    } finally {
-      setBusy(false);
-    }
-  };
-
   const duplicate = async (intoVault = false) => {
     if (busy) return;
     setBusy(true);
     setError('');
     try {
-      const [event, participants, referents, recurring] = await Promise.all([
-        eventSource.loadEvent(eventRef),
-        participationSource.listExpectedParticipation(eventRef),
-        participationSource.listPersonReferents(),
-        recurrenceGuard.isRecurring(eventRef),
-      ]);
+      const [event, participants, referents, recurring, reality, objectives] =
+        await Promise.all([
+          eventSource.loadEvent(eventRef),
+          participationSource.listExpectedParticipation(eventRef),
+          participationSource.listPersonReferents(),
+          recurrenceGuard.isRecurring(eventRef),
+          objectiveSource.getRealityPolicy('event', eventRef),
+          objectiveSource.listObjectives('event', eventRef),
+        ]);
       if (recurring) {
         throw new Error(
           'Questo evento è una sorgente ricorrente: Duplica non può trasformarla in un singolo evento.',
@@ -555,6 +492,8 @@ export function EventInspectorActions({
         event,
         placement,
         expectedParticipants,
+        reality.mode,
+        objectives,
       );
       if (!intoVault) {
         onDuplicate(seed);
@@ -744,19 +683,6 @@ export function EventInspectorActions({
           }}
         />
       ) : null}
-      {!editingProfile && !editChoice ? (
-        <button
-          type="button"
-          disabled={busy}
-          className="timeline-event-life-area-action"
-          onClick={() =>
-            editingArea ? setEditingArea(false) : void openAreaEditor()
-          }
-        >
-          {editingArea ? 'Chiudi Life Area' : 'Modifica Life Area'}
-        </button>
-      ) : null}
-
       {editingProfile && recurringContext && editScope !== 'only_this' ? (
         <RecurringSeriesEditor
           occurrenceRef={recurringContext.occurrenceRef}
@@ -1053,53 +979,7 @@ export function EventInspectorActions({
           </div>
         </div>
       ) : null}
-      {editingArea && areaChoice ? (
-        <div
-          className="timeline-event-profile-editor"
-          aria-label="Modifica Life Area Event"
-        >
-          <div className="timeline-event-profile-editor__body">
-            <label>
-              Life Area Event
-              <select
-                disabled={busy}
-                value={areaSelection}
-                onChange={(event) => {
-                  setAreaSelection(event.target.value);
-                  setAreaNotice('');
-                }}
-              >
-                <option value="">Nessuna Life Area</option>
-                {areaChoice.options.map((row) => (
-                  <option key={row.ref} value={row.ref}>
-                    {row.name}
-                  </option>
-                ))}
-              </select>
-            </label>
-          </div>
-          <div className="timeline-event-profile-editor__actions">
-            <button
-              type="button"
-              disabled={busy}
-              onClick={() => setEditingArea(false)}
-            >
-              Annulla
-            </button>
-            <button
-              type="button"
-              disabled={
-                busy || (areaSelection || null) === areaChoice.currentRef
-              }
-              onClick={() => void saveArea()}
-            >
-              Salva Life Area Event
-            </button>
-          </div>
-        </div>
-      ) : null}
       {profileNotice ? <p role="status">{profileNotice}</p> : null}
-      {areaNotice ? <p role="status">{areaNotice}</p> : null}
       {deletePreviews ? (
         <div className="timeline-activity-inspector__confirmation">
           <p>

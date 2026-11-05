@@ -10,6 +10,7 @@ import { afterEach, expect, it, vi } from 'vitest';
 
 import type { ObjectiveView } from './remote-reality-objective-data-source';
 import { ObjectiveControls } from './objective-controls';
+import { invalidateTemporalTimelineRead } from './timeline-invalidation';
 
 const source = vi.hoisted(() => ({
   listObjectives: vi.fn(),
@@ -149,4 +150,16 @@ it('keeps a long name readable without overlapping the numeric target and omits 
   expect(screen.getByText('Obiettivo ≥ 10 km')).toBeTruthy();
   expect(screen.queryByText('Da verificare')).toBeNull();
   expect(screen.queryByText('Sì / No')).toBeNull();
+});
+
+it('refreshes mounted Event objectives after an atomic editor save', async () => {
+  source.listObjectives
+    .mockResolvedValueOnce([])
+    .mockResolvedValue([{ ...quantity, label: 'Risultato evento' }]);
+  source.listObjectiveInputDrafts.mockResolvedValue([]);
+  render(<ObjectiveControls kind="event" subjectRef="event-1" />);
+  await waitFor(() => expect(source.listObjectives).toHaveBeenCalledOnce());
+  invalidateTemporalTimelineRead();
+  await screen.findByText('Risultato evento');
+  expect(source.listObjectives).toHaveBeenCalledWith('event', 'event-1');
 });

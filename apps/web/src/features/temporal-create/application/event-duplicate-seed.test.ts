@@ -1,5 +1,6 @@
 import { Temporal } from '@dante/time';
 import { describe, expect, it } from 'vitest';
+import type { ObjectiveView } from '../../temporal/remote-reality-objective-data-source';
 
 import { buildEventDuplicateSeed } from './event-duplicate-seed';
 
@@ -69,6 +70,43 @@ describe('canonical Event duplicate seed', () => {
       event: { allDayEndDate: '2026-10-11' },
     });
     expect(result.advanced.endDate).toBe('2026-10-11');
+  });
+
+  it('copies Event objective definitions and execution policy without copying results', () => {
+    const objective: ObjectiveView = {
+      objectiveRef: '0199a444-4444-7444-8444-444444444444',
+      label: 'Intervento',
+      resultKind: 'boolean',
+      comparatorCode: null,
+      targetValue: null,
+      targetMin: null,
+      targetMax: null,
+      unitCode: null,
+      presentationOrder: 0,
+      observationRef: '0199a555-5555-7555-8555-555555555555',
+      observedBoolean: true,
+      observedNumeric: null,
+      qualitativeCode: null,
+      evaluationStateRef: null,
+      assessmentCode: 'satisfied',
+    };
+    const seed = buildEventDuplicateSeed(
+      event,
+      {
+        kind: 'date-span',
+        startDate: Temporal.PlainDate.from('2026-10-09'),
+        endDateExclusive: Temporal.PlainDate.from('2026-10-10'),
+      },
+      [],
+      'review_on_end',
+      [objective],
+    );
+    expect(seed.advanced.realityMode).toBe('review_on_end');
+    expect(seed.advanced.objectives).toMatchObject([
+      { label: 'Intervento', resultKind: 'boolean' },
+    ]);
+    expect(seed.advanced.objectives?.[0]).not.toHaveProperty('observationRef');
+    expect(seed.advanced.objectives?.[0]).not.toHaveProperty('assessmentCode');
   });
 
   it('rejects unsupported absolute time rather than silently moving it', () => {

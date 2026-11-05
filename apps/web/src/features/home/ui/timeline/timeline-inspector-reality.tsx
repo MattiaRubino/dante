@@ -7,6 +7,7 @@ import {
   type RealityMode,
   type RealitySubjectKind,
 } from '../../../temporal/remote-reality-objective-data-source';
+import { subscribeTemporalTimelineInvalidation } from '../../../temporal/timeline-invalidation';
 
 export function TimelineInspectorReality({
   kind,
@@ -28,20 +29,22 @@ export function TimelineInspectorReality({
 
   useEffect(() => {
     let active = true;
-    void createRemoteRealityObjectiveDataSource(globalThis.fetch)
-      .getRealityMode(kind, subjectRef)
-      .then((value) => {
-        if (active) {
-          setResult({ key: requestKey, mode: value, failed: false });
-        }
-      })
-      .catch(() => {
-        if (active) {
-          setResult({ key: requestKey, mode: null, failed: true });
-        }
-      });
+    const read = () => {
+      void createRemoteRealityObjectiveDataSource(globalThis.fetch)
+        .getRealityMode(kind, subjectRef)
+        .then((value) => {
+          if (active)
+            setResult({ key: requestKey, mode: value, failed: false });
+        })
+        .catch(() => {
+          if (active) setResult({ key: requestKey, mode: null, failed: true });
+        });
+    };
+    read();
+    const unsubscribe = subscribeTemporalTimelineInvalidation(read);
     return () => {
       active = false;
+      unsubscribe();
     };
   }, [kind, subjectRef, requestKey]);
 

@@ -2,6 +2,10 @@ import { Temporal } from '@dante/time';
 
 import type { TimelineCanonicalSchedulePlacement } from '../../home/ui/timeline/model/timeline-types';
 import type { TemporalEventDetailRecord } from '../../temporal/event-data-source';
+import type {
+  ObjectiveView,
+  RealityMode,
+} from '../../temporal/remote-reality-objective-data-source';
 import type { TemporalCreateEventParticipantDraft } from '../model/temporal-create-u2-authoring';
 import type { ActivityDuplicateSeed } from './activity-duplicate-seed';
 
@@ -46,7 +50,22 @@ export function buildEventDuplicateSeed(
   event: TemporalEventDetailRecord,
   placement: TimelineCanonicalSchedulePlacement,
   expectedParticipants: readonly TemporalCreateEventParticipantDraft[] = [],
+  realityMode: RealityMode = 'manual',
+  objectives: readonly ObjectiveView[] = [],
 ): ActivityDuplicateSeed {
+  const advancedTruth = {
+    realityMode,
+    objectives: objectives.map((objective) => ({
+      id: crypto.randomUUID(),
+      label: objective.label,
+      resultKind: objective.resultKind,
+      comparatorCode: objective.comparatorCode,
+      targetValue: objective.targetValue?.toString() ?? '',
+      targetMin: objective.targetMin?.toString() ?? '',
+      targetMax: objective.targetMax?.toString() ?? '',
+      unitCode: objective.unitCode ?? '',
+    })),
+  };
   const shared = {
     kind: 'event' as const,
     title: event.title,
@@ -83,6 +102,7 @@ export function buildEventDuplicateSeed(
         event: { ...shared.event, allDayEndDate: finalDate },
       },
       advanced: {
+        ...advancedTruth,
         endDate: finalDate,
         itemColorCode: event.colorCode ?? null,
         eventParticipants: [...expectedParticipants],
@@ -98,6 +118,7 @@ export function buildEventDuplicateSeed(
         coarsePeriod: placement.period,
       },
       advanced: {
+        ...advancedTruth,
         itemColorCode: event.colorCode ?? null,
         eventParticipants: [...expectedParticipants],
       },
@@ -142,6 +163,7 @@ export function buildEventDuplicateSeed(
         : {}),
     },
     advanced: {
+      ...advancedTruth,
       itemColorCode: event.colorCode ?? null,
       eventParticipants: [...expectedParticipants],
     },

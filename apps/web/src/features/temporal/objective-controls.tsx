@@ -15,6 +15,7 @@ import {
   type ObjectiveView,
   type RealitySubjectKind,
 } from './remote-reality-objective-data-source';
+import { subscribeTemporalTimelineInvalidation } from './timeline-invalidation';
 
 import './objective-controls.css';
 
@@ -331,6 +332,16 @@ export function ObjectiveControls({
     setDrafts(staged);
     setMessage(null);
   }, [kind, source, subjectRef]);
+
+  useEffect(
+    () =>
+      subscribeTemporalTimelineInvalidation(() => {
+        void reload().catch(() => {
+          setMessage('Obiettivi non disponibili.');
+        });
+      }),
+    [reload],
+  );
 
   useEffect(() => {
     let cancelled = false;

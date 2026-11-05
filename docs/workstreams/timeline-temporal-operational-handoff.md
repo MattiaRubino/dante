@@ -1,5 +1,20 @@
 # Timeline / Temporal-Operational — Workstream Handoff
 
+## 2026-11-05 — Inspector parity cleanup candidate
+
+Following published `e33c0fdc`, Event Inspector now uses the same four
+primary toolbar actions as Activity without a second, independent Life Area
+edit action. The ordinary Event modal owns Life Area through its atomic Save.
+The Inspector Scaletta is read-only; its edits go through the Event modal.
+The mounted Objective and execution-policy readbacks refresh after timeline
+invalidation, so an Event update can appear without closing and reopening the
+Inspector. Event duplication now copies the execution mode and Objective
+definitions into the new Create draft, without copying observations or
+assessments. Owner-scoped participation and Scaletta were already copied.
+Focused source tests were added/updated and are **NOT_RUN** per owner testing
+preference. This is still a candidate, not full Event parity: Schedule,
+reminders, participants and recurrence editing remain in the open list below.
+
 ## 2026-11-05 — Event one-off Objective and Reality edit checkpoint
 
 After the published `6fe1e178` one-off atomic endpoint, the next candidate

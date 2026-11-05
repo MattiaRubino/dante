@@ -28,7 +28,6 @@ const getRealityPolicy = vi
   .mockResolvedValue({ mode: 'manual', stateRef: null });
 const getDefinition = vi.fn();
 const isRecurring = vi.fn().mockResolvedValue(false);
-const assignArea = vi.fn();
 const previewHardDeletion = vi.fn();
 const confirmHardDeletion = vi.fn();
 const eventOccurrences = vi.fn();
@@ -95,7 +94,6 @@ vi.mock(
 vi.mock('../../../temporal/remote-event-life-area-settings', () => ({
   createRemoteEventLifeAreaSettings: () => ({
     load: loadArea,
-    assign: assignArea,
   }),
 }));
 vi.mock('../../../temporal/remote-event-agenda-data-source', () => ({
@@ -339,6 +337,22 @@ describe('Event Inspector actions', () => {
   });
 
   it('loads owner-scoped Agenda and Participation and opens a new draft without copying truth', async () => {
+    getRealityPolicy.mockResolvedValue({
+      mode: 'review_on_end',
+      stateRef: 'policy-state',
+    });
+    listObjectives.mockResolvedValue([
+      {
+        label: 'Intervento',
+        resultKind: 'boolean',
+        comparatorCode: null,
+        targetValue: null,
+        targetMin: null,
+        targetMax: null,
+        unitCode: null,
+        presentationOrder: 0,
+      },
+    ]);
     loadEvent.mockResolvedValue({
       eventRef,
       title: 'Conferenza',
@@ -383,56 +397,13 @@ describe('Event Inspector actions', () => {
         durationMinutes: 90,
       },
       advanced: {
+        realityMode: 'review_on_end',
+        objectives: [{ label: 'Intervento', resultKind: 'boolean' }],
         eventParticipants: [
           { displayLabel: 'Collaboratore', requirementCode: 'required' },
         ],
       },
     });
-  });
-
-  it('updates the current Event Life Area without creating another Event', async () => {
-    const area = {
-      currentRef: '0199a222-2222-7222-8222-222222222222',
-      currentRevision: 4,
-      options: [
-        { ref: '0199a222-2222-7222-8222-222222222222', name: 'Lavoro' },
-      ],
-    };
-    loadArea.mockResolvedValue(area);
-    assignArea.mockResolvedValue({
-      ...area,
-      currentRef: null,
-      currentRevision: 5,
-    });
-    const onDuplicate = vi.fn();
-    render(
-      <EventInspectorActions
-        eventRef={eventRef}
-        placement={placement}
-        onDuplicate={onDuplicate}
-      />,
-    );
-    fireEvent.click(screen.getByRole('button', { name: 'Modifica Life Area' }));
-    const select = await screen.findByRole('combobox', {
-      name: 'Life Area Event',
-    });
-    fireEvent.change(select, { target: { value: '' } });
-    fireEvent.click(
-      screen.getByRole('button', { name: 'Salva Life Area Event' }),
-    );
-    await waitFor(() =>
-      expect(assignArea).toHaveBeenCalledWith(
-        eventRef,
-        area,
-        null,
-        expect.any(String),
-      ),
-    );
-    expect(await screen.findByRole('status')).toHaveProperty(
-      'textContent',
-      'Life Area Event aggiornata.',
-    );
-    expect(onDuplicate).not.toHaveBeenCalled();
   });
 
   it('does not open an incomplete duplicate when an expected participant cannot be resolved', async () => {
@@ -681,6 +652,11 @@ describe('Event Inspector actions', () => {
   });
 
   it('opens the Event profile editor as a centered, bounded modal', async () => {
+    loadArea.mockResolvedValue({
+      options: [],
+      currentRef: null,
+      currentRevision: 0,
+    });
     loadProfile.mockResolvedValue({
       eventRef,
       title: 'Conferenza',
@@ -705,8 +681,8 @@ describe('Event Inspector actions', () => {
       />,
     );
     expect(
-      await screen.findByRole('button', { name: 'Modifica Life Area' }),
-    ).toBeTruthy();
+      screen.queryByRole('button', { name: 'Modifica Life Area' }),
+    ).toBeNull();
     const toolbar = document.querySelector(
       '.timeline-event-modal__owner-actions .timeline-activity-inspector__toolbar',
     );
@@ -724,6 +700,9 @@ describe('Event Inspector actions', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Modifica' }));
     expect(
       await screen.findByRole('textbox', { name: 'Titolo Event' }),
+    ).toBeTruthy();
+    expect(
+      screen.getByRole('combobox', { name: 'Life Area (opzionale)' }),
     ).toBeTruthy();
     await waitFor(() =>
       expect(screen.getByRole('dialog').className).toContain(
