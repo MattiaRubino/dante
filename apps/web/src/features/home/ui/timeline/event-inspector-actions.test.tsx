@@ -130,6 +130,12 @@ afterEach(() => {
   isRecurring.mockResolvedValue(false);
   getRealityPolicy.mockResolvedValue({ mode: 'manual', stateRef: null });
   getReminder.mockResolvedValue(null);
+  listObjectives.mockResolvedValue([]);
+  loadArea.mockResolvedValue({
+    options: [],
+    currentRef: null,
+    currentRevision: 0,
+  });
   listExpectedParticipation.mockResolvedValue([]);
   listPersonReferents.mockResolvedValue([]);
 });
@@ -908,17 +914,17 @@ describe('Event Inspector actions', () => {
       .getByRole('textbox', { name: 'Titolo Event' })
       .closest('.timeline-event-profile-editor');
     expect(editor).toBeTruthy();
-    expect(
-      Array.from(
-        editor!.querySelectorAll(
-          '.timeline-event-profile-editor__body > :is(div, section)',
-        ),
-      ).map((element) => element.className),
-    ).toEqual([
-      expect.stringContaining('timeline-event-profile-editor__title-row'),
-      'timeline-event-profile-editor__details',
-      'timeline-event-profile-editor__description',
-    ]);
+    const bodySections = Array.from(
+      editor!.querySelectorAll(
+        '.timeline-event-profile-editor__body > :is(div, section)',
+      ),
+    );
+    expect(bodySections[0]?.className).toContain(
+      'timeline-event-profile-editor__title-row',
+    );
+    expect(bodySections.at(-1)?.className).toContain(
+      'timeline-activity-editor__description',
+    );
     expect(screen.getByRole('dialog').style.left).toBe('');
     expect(screen.getByRole('dialog').textContent).toContain('Modifica evento');
   });

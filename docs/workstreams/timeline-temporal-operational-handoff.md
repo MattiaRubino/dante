@@ -1,5 +1,17 @@
 # Timeline / Temporal-Operational — Workstream Handoff
 
+## 2026-11-05 — Event Inspector second owner-run test repair candidate
+
+Owner reran the targeted web suite on `6343eaae`: 29 passed, 8 failed.
+The crash from uninitialized locale is resolved. The remaining failures
+share two test defects: `vi.clearAllMocks()` preserved the previous test's
+`listObjectives` implementation, so later Event edits received an unexpected
+Objective and took the atomic path; the modal layout assertion still expected
+the pre-parity two-field body. The fixture now restores empty Objectives and
+default Area after each case, and the obsolete assertion checks the current
+title/description bounds while a separate test verifies the full field order.
+This repair is **NOT_RUN** pending the owner's next rerun.
+
 ## 2026-11-05 — Event Inspector test failure repair candidate
 
 Owner ran `event-inspector-actions.test.tsx` and
