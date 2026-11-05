@@ -1,5 +1,15 @@
 # Timeline / Temporal-Operational — Workstream Handoff
 
+## 2026-11-05 — Event one-off form ordering and shared detail fields candidate
+
+The ordinary Event editor now places Agenda next to the title, followed by
+Schedule, Life Area and color, Reality/Objectives, location, reminder,
+expected participants and description. The location and description use the
+same visual classes and shape as Activity Edit. The existing save path and
+Event-specific behavior remain; a focused DOM order assertion was added.
+Checks are **NOT_RUN** at the owner's request. Event selected-instance
+structural parity remains blocked on a canonical occurrence aggregate.
+
 ## 2026-11-05 — Event Edit Life Area and color parity candidate
 
 The one-off Event editor now uses the same Life Area search and color picker

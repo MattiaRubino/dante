@@ -928,6 +928,11 @@ export function EventInspectorActions({
             </div>
             {!recurringContext ? (
               <>
+                <TemporalCreateEventAgenda
+                  parts={agendaDraft}
+                  maxPartLength={1000}
+                  onChange={setAgendaDraft}
+                />
                 {scheduleDraft ? (
                   <EventScheduleEditor
                     draft={scheduleDraft}
@@ -944,31 +949,6 @@ export function EventInspectorActions({
                     della Schedule.
                   </p>
                 )}
-                {scheduleRef &&
-                (placement.kind === 'named-zone-local' ||
-                  placement.kind === 'absolute') ? (
-                  <TemporalReminderControl
-                    value={reminderLead}
-                    disabled={
-                      busy ||
-                      (reminderLead === null &&
-                        placement.kind !== 'absolute' &&
-                        (scheduleDraft?.kind !== 'timed' ||
-                          !scheduleDraft.zoneId))
-                    }
-                    onChange={setReminderLead}
-                  />
-                ) : null}
-                <TemporalCreateEventAgenda
-                  parts={agendaDraft}
-                  maxPartLength={1000}
-                  onChange={setAgendaDraft}
-                />
-                <TemporalEventParticipantsFields
-                  participants={participantsDraft}
-                  onChange={setParticipantsDraft}
-                  disabled={busy}
-                />
                 <div className="timeline-activity-editor__area-color">
                   <div className="temporal-create-life-area-field">
                     <TemporalColorControl
@@ -1211,38 +1191,59 @@ export function EventInspectorActions({
                 </div>
               </div>
             ) : null}
+            <div className="timeline-activity-editor__location">
+              <input
+                className="temporal-create-u2-location"
+                aria-label="Località"
+                disabled={busy}
+                placeholder="Località"
+                value={profileDraft.location ?? ''}
+                onChange={(event) => {
+                  const location = event.currentTarget.value || null;
+                  setProfileDraft((draft) => draft && { ...draft, location });
+                }}
+              />
+            </div>
+            {!recurringContext &&
+            scheduleRef &&
+            (placement.kind === 'named-zone-local' ||
+              placement.kind === 'absolute') ? (
+              <TemporalReminderControl
+                value={reminderLead}
+                disabled={
+                  busy ||
+                  (reminderLead === null &&
+                    placement.kind !== 'absolute' &&
+                    (scheduleDraft?.kind !== 'timed' || !scheduleDraft.zoneId))
+                }
+                onChange={setReminderLead}
+              />
+            ) : null}
+            {!recurringContext ? (
+              <TemporalEventParticipantsFields
+                participants={participantsDraft}
+                onChange={setParticipantsDraft}
+                disabled={busy}
+              />
+            ) : null}
             <section
-              className="timeline-event-profile-editor__details"
-              aria-label="Dettagli Event"
+              className="timeline-activity-editor__description temporal-create-section is-wide temporal-create-description-section"
+              aria-label="Descrizione"
             >
-              <label>
-                Località Event
-                <input
-                  disabled={busy}
-                  placeholder="Località"
-                  value={profileDraft.location ?? ''}
-                  onChange={(event) => {
-                    const location = event.currentTarget.value || null;
-                    setProfileDraft((draft) => draft && { ...draft, location });
-                  }}
-                />
-              </label>
-            </section>
-            <section className="timeline-event-profile-editor__description">
-              <label>
-                Descrizione Event
-                <textarea
-                  disabled={busy}
-                  placeholder="Descrizione"
-                  value={profileDraft.description ?? ''}
-                  onChange={(event) => {
-                    const description = event.currentTarget.value || null;
-                    setProfileDraft(
-                      (draft) => draft && { ...draft, description },
-                    );
-                  }}
-                />
-              </label>
+              <h3>Descrizione</h3>
+              <textarea
+                className="temporal-create-u2-description temporal-create-advanced-description"
+                aria-label="Descrizione"
+                rows={5}
+                disabled={busy}
+                value={profileDraft.description ?? ''}
+                onChange={(event) => {
+                  const description = event.currentTarget.value || null;
+                  setProfileDraft(
+                    (draft) => draft && { ...draft, description },
+                  );
+                }}
+              />
             </section>
           </div>
           <div className="timeline-event-profile-editor__actions">

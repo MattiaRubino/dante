@@ -868,6 +868,24 @@ describe('Event Inspector actions', () => {
     expect(
       screen.getByRole('textbox', { name: 'Life Area (opzionale)' }),
     ).toBeTruthy();
+    const eventForm = document.querySelector('.timeline-event-profile-editor');
+    expect(eventForm).not.toBeNull();
+    const sections = [
+      '.timeline-event-profile-editor__title-row',
+      '.temporal-create-event-agenda',
+      '.timeline-event-schedule-editor',
+      '.timeline-activity-editor__area-color',
+      '[aria-label="Svolgimento e obiettivi"]',
+      '.timeline-activity-editor__location',
+      '.temporal-create-event-participants',
+      '.timeline-activity-editor__description',
+    ].map((selector) => eventForm!.querySelector(selector));
+    expect(sections.every(Boolean)).toBe(true);
+    for (let index = 1; index < sections.length; index += 1) {
+      expect(
+        sections[index - 1]?.compareDocumentPosition(sections[index]!),
+      ).toBe(Node.DOCUMENT_POSITION_FOLLOWING);
+    }
     await waitFor(() =>
       expect(screen.getByRole('dialog').className).toContain(
         'timeline-event-modal--event-edit',
