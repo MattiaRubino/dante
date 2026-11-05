@@ -1,5 +1,20 @@
 # Timeline / Temporal-Operational — Workstream Handoff
 
+## 2026-11-05 — One-off Event expected participation edit candidate
+
+The one-off Event modal now reuses Create's participant controls. It loads
+current expected involvement and local Person labels, preserves the current
+selection, and includes additions, requirement changes and removals in the
+same atomic Save as profile, Schedule, reminder, Agenda, Life Area, Reality
+and Objectives. Each change carries the prior requirement for canonical CAS;
+the backend calls the existing owner-scoped participation capability inside
+the Event transaction, mapping stale or unavailable participants to a
+conflict and rolling back the other changes. Creating a local Person is still
+an immediate separate operation, as in Create. Focused client/UI/PostgreSQL
+cases were added, **NOT_RUN** at the owner's request. OpenAPI and Orval were
+regenerated with temporary scratch version overrides. Recurring Event
+instances and following scope still require aggregate parity work.
+
 ## 2026-11-05 — One-off Event reminder edit candidate
 
 The ordinary Event editor now reads the canonical Schedule reminder and shows

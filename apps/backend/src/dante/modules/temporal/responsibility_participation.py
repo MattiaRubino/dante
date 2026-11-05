@@ -224,6 +224,7 @@ class ResponsibilityParticipationApplication:
         participant_person_ref: NativeRef,
         requirement_code: ParticipationRequirement | None,
         expected_requirement_code: ParticipationRequirement | None,
+        session: AsyncSession | None = None,
     ) -> ExpectedParticipationView:
         if requirement_code is not None and requirement_code not in ("required", "optional"):
             raise ResponsibilityInputError("Expected Participation is required or optional.")
@@ -238,25 +239,32 @@ class ResponsibilityParticipationApplication:
                 "expected_requirement_code": expected_requirement_code,
             }
         )
-        row = await self._one(
-            """
+        statement = """
             SELECT event_ref, participant_person_ref, requirement_code,
                    established_at, replayed
               FROM dante.set_self_event_expected_participation(
                 :actor, :operation_id, :fingerprint, :event,
                 :participant, :requirement, :expected
               )
-            """,
-            {
-                "actor": self_person_ref,
-                "operation_id": normalized,
-                "fingerprint": fingerprint,
-                "event": event_ref,
-                "participant": participant_person_ref,
-                "requirement": requirement_code,
-                "expected": expected_requirement_code,
-            },
-        )
+            """
+        parameters = {
+            "actor": self_person_ref,
+            "operation_id": normalized,
+            "fingerprint": fingerprint,
+            "event": event_ref,
+            "participant": participant_person_ref,
+            "requirement": requirement_code,
+            "expected": expected_requirement_code,
+        }
+        if session is None:
+            row = await self._one(statement, parameters)
+        else:
+            try:
+                row = (await session.execute(text(statement), parameters)).mappings().one()
+            except DBAPIError as exc:
+                raise _map_error(exc) from exc
+            except SQLAlchemyError as exc:
+                raise ResponsibilityPersistenceError("Authoring command was rejected.") from exc
         return self._participation(row)
 
     async def list_expected_participation(

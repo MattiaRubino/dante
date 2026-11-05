@@ -6,6 +6,7 @@ import {
   type ParticipationRequirement,
   type TemporalPersonReferent,
 } from '../../temporal/remote-responsibility-data-source';
+import type { TemporalCreateEventParticipantDraft } from '../model/temporal-create-u2-authoring';
 import { useTemporalCreateU2Draft } from './temporal-create-u2-draft-context';
 
 import './temporal-create-event-participants.css';
@@ -14,10 +15,19 @@ function operationId(): string {
   return crypto.randomUUID();
 }
 
-export function TemporalCreateEventParticipants() {
+export function TemporalEventParticipantsFields({
+  participants,
+  onChange,
+  disabled = false,
+}: Readonly<{
+  participants: readonly TemporalCreateEventParticipantDraft[];
+  onChange: (
+    participants: readonly TemporalCreateEventParticipantDraft[],
+  ) => void;
+  disabled?: boolean;
+}>) {
   const { i18n } = useTranslation('common');
   const italian = i18n.language.toLowerCase().startsWith('it');
-  const { draft, patch } = useTemporalCreateU2Draft();
   const source = useMemo(
     () => createRemoteTemporalResponsibilityDataSource(globalThis.fetch),
     [],
@@ -58,21 +68,20 @@ export function TemporalCreateEventParticipants() {
         : 'Me'
       : (people.find((person) => person.personRef === personRef)
           ?.displayLabel ??
-        draft.eventParticipants.find((item) => item.personRef === personRef)
+        participants.find((item) => item.personRef === personRef)
           ?.displayLabel ??
         (italian ? 'Persona' : 'Person'));
 
-  const publish = (eventParticipants: typeof draft.eventParticipants) =>
-    patch({ eventParticipants: Object.freeze([...eventParticipants]) });
+  const publish = (
+    eventParticipants: readonly TemporalCreateEventParticipantDraft[],
+  ) => onChange(Object.freeze([...eventParticipants]));
 
   const addSelected = () => {
-    if (
-      draft.eventParticipants.some((item) => item.personRef === selectedPerson)
-    ) {
+    if (participants.some((item) => item.personRef === selectedPerson)) {
       return;
     }
     publish([
-      ...draft.eventParticipants,
+      ...participants,
       Object.freeze({
         personRef: selectedPerson,
         displayLabel: participantLabel(selectedPerson),
@@ -86,7 +95,7 @@ export function TemporalCreateEventParticipants() {
     requirementCode: ParticipationRequirement,
   ) => {
     publish(
-      draft.eventParticipants.map((item) =>
+      participants.map((item) =>
         item.personRef === personRef
           ? Object.freeze({ ...item, requirementCode })
           : item,
@@ -95,14 +104,12 @@ export function TemporalCreateEventParticipants() {
   };
 
   const remove = (personRef: string) => {
-    publish(
-      draft.eventParticipants.filter((item) => item.personRef !== personRef),
-    );
+    publish(participants.filter((item) => item.personRef !== personRef));
   };
 
   const createPerson = () => {
     const label = newPersonLabel.trim();
-    if (!label || pending) return;
+    if (!label || pending || disabled) return;
     setPending(true);
     setMessage(null);
     void source
@@ -112,12 +119,10 @@ export function TemporalCreateEventParticipants() {
         setSelectedPerson(created.personRef);
         setNewPersonLabel('');
         if (
-          !draft.eventParticipants.some(
-            (item) => item.personRef === created.personRef,
-          )
+          !participants.some((item) => item.personRef === created.personRef)
         ) {
           publish([
-            ...draft.eventParticipants,
+            ...participants,
             Object.freeze({
               personRef: created.personRef,
               displayLabel: created.displayLabel,
@@ -151,15 +156,16 @@ export function TemporalCreateEventParticipants() {
         </span>
       </div>
 
-      {draft.eventParticipants.length > 0 ? (
+      {participants.length > 0 ? (
         <div className="temporal-create-event-participants__list">
-          {draft.eventParticipants.map((item) => (
+          {participants.map((item) => (
             <div
               className="temporal-create-event-participants__row"
               key={item.personRef}
             >
               <span>{item.displayLabel}</span>
               <select
+                disabled={disabled || pending}
                 aria-label={
                   italian
                     ? `Partecipazione di ${item.displayLabel}`
@@ -182,6 +188,7 @@ export function TemporalCreateEventParticipants() {
               </select>
               <button
                 type="button"
+                disabled={disabled || pending}
                 onClick={() => remove(item.personRef)}
                 aria-label={
                   italian
@@ -200,7 +207,7 @@ export function TemporalCreateEventParticipants() {
         <select
           aria-label={italian ? 'Persona' : 'Person'}
           value={selectedPerson}
-          disabled={pending}
+          disabled={disabled || pending}
           onChange={(event) => setSelectedPerson(event.currentTarget.value)}
         >
           <option value="self">{italian ? 'Io' : 'Me'}</option>
@@ -213,7 +220,7 @@ export function TemporalCreateEventParticipants() {
         <select
           aria-label={italian ? 'Tipo partecipazione' : 'Participation type'}
           value={requirement}
-          disabled={pending}
+          disabled={disabled || pending}
           onChange={(event) =>
             setRequirement(
               event.currentTarget.value as ParticipationRequirement,
@@ -226,10 +233,9 @@ export function TemporalCreateEventParticipants() {
         <button
           type="button"
           disabled={
+            disabled ||
             pending ||
-            draft.eventParticipants.some(
-              (item) => item.personRef === selectedPerson,
-            )
+            participants.some((item) => item.personRef === selectedPerson)
           }
           onClick={addSelected}
         >
@@ -242,7 +248,7 @@ export function TemporalCreateEventParticipants() {
           type="text"
           maxLength={100}
           value={newPersonLabel}
-          disabled={pending}
+          disabled={disabled || pending}
           aria-label={italian ? 'Nuova persona locale' : 'New local person'}
           placeholder={italian ? 'Nuova persona' : 'New person'}
           onChange={(event) => setNewPersonLabel(event.currentTarget.value)}
@@ -255,7 +261,7 @@ export function TemporalCreateEventParticipants() {
         />
         <button
           type="button"
-          disabled={pending || !newPersonLabel.trim()}
+          disabled={disabled || pending || !newPersonLabel.trim()}
           onClick={createPerson}
         >
           ＋ {italian ? 'Persona' : 'Person'}
@@ -264,5 +270,15 @@ export function TemporalCreateEventParticipants() {
 
       {message ? <span role="alert">{message}</span> : null}
     </section>
+  );
+}
+
+export function TemporalCreateEventParticipants() {
+  const { draft, patch } = useTemporalCreateU2Draft();
+  return (
+    <TemporalEventParticipantsFields
+      participants={draft.eventParticipants}
+      onChange={(eventParticipants) => patch({ eventParticipants })}
+    />
   );
 }

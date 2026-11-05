@@ -96,6 +96,13 @@ describe('owner-scoped Event profile CAS source', () => {
           enabled: true,
           leadMinutes: 15,
         },
+        participants: [
+          {
+            participantRef: 'self',
+            requirementCode: 'required',
+            expectedRequirementCode: null,
+          },
+        ],
       },
       'event:atomic:1',
     );
@@ -139,6 +146,13 @@ describe('owner-scoped Event profile CAS source', () => {
           enabled: true,
           lead_minutes: 15,
         },
+        participants: [
+          {
+            participant_ref: 'self',
+            requirement_code: 'required',
+            expected_requirement_code: null,
+          },
+        ],
       },
     ]);
     expect(result.agendaParts).toEqual(['Apertura']);

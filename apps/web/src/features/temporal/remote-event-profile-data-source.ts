@@ -57,6 +57,11 @@ export type EventAtomicDraft = Readonly<{
     enabled: boolean;
     leadMinutes: number;
   }>;
+  participants?: readonly Readonly<{
+    participantRef: string;
+    requirementCode: 'required' | 'optional' | null;
+    expectedRequirementCode: 'required' | 'optional' | null;
+  }>[];
 }>;
 
 function object(value: unknown): Record<string, unknown> {
@@ -191,6 +196,16 @@ export function createRemoteEventProfileDataSource(
                     enabled: changes.reminder.enabled,
                     lead_minutes: changes.reminder.leadMinutes,
                   },
+                }
+              : {}),
+            ...(changes.participants
+              ? {
+                  participants: changes.participants.map((participant) => ({
+                    participant_ref: participant.participantRef,
+                    requirement_code: participant.requirementCode,
+                    expected_requirement_code:
+                      participant.expectedRequirementCode,
+                  })),
                 }
               : {}),
           }),

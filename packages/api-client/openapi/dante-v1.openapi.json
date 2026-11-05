@@ -7565,6 +7565,21 @@
             "title": "Operation Id",
             "type": "string"
           },
+          "participants": {
+            "anyOf": [
+              {
+                "items": {
+                  "$ref": "#/components/schemas/EventAtomicParticipantChange"
+                },
+                "minItems": 1,
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Participants"
+          },
           "profile": {
             "anyOf": [
               {
@@ -7658,6 +7673,61 @@
           "life_area_ref"
         ],
         "title": "EventAtomicLifeAreaChange",
+        "type": "object"
+      },
+      "EventAtomicParticipantChange": {
+        "additionalProperties": false,
+        "properties": {
+          "expected_requirement_code": {
+            "anyOf": [
+              {
+                "enum": [
+                  "required",
+                  "optional"
+                ],
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Expected Requirement Code"
+          },
+          "participant_ref": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "const": "self",
+                "type": "string"
+              }
+            ],
+            "title": "Participant Ref"
+          },
+          "requirement_code": {
+            "anyOf": [
+              {
+                "enum": [
+                  "required",
+                  "optional"
+                ],
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Requirement Code"
+          }
+        },
+        "required": [
+          "participant_ref",
+          "requirement_code",
+          "expected_requirement_code"
+        ],
+        "title": "EventAtomicParticipantChange",
         "type": "object"
       },
       "EventAtomicReminderChange": {

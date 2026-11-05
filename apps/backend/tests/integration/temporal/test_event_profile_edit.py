@@ -18,12 +18,7 @@ from tests.integration.temporal.test_primary_life_area_assignment import (
 )
 
 from dante.context.contracts import DanteContext
-from dante.modules.temporal.event import TemporalEventApplication
-from dante.modules.temporal.schedule import (
-    FloatingLocalIntervalPlacement,
-    NamedZoneLocalIntervalPlacement,
-    TemporalScheduleApplication,
-)
+from dante.modules.temporal.event import TemporalEventApplication, _read_event_in_session
 from dante.modules.temporal.event_api import (
     EventAtomicEditCommand,
     apply_one_off_event_atomic_edit,
@@ -31,6 +26,11 @@ from dante.modules.temporal.event_api import (
 from dante.modules.temporal.reality_objective_api import (
     ActivityObjectiveBatchCommand,
     apply_event_objective_edits_in_session,
+)
+from dante.modules.temporal.schedule import (
+    FloatingLocalIntervalPlacement,
+    NamedZoneLocalIntervalPlacement,
+    TemporalScheduleApplication,
 )
 from dante.platform.database.runtime import create_database_runtime
 from dante.platform.http.problem import ProblemError
@@ -113,6 +113,77 @@ async def test_one_off_event_schedule_and_profile_commit_together_with_material_
                 Response(),
             )
         assert stale.value.status == 409
+    finally:
+        await runtime.dispose()
+
+
+@pytest.mark.asyncio
+async def test_event_participant_changes_are_atomic_and_cas_guarded(
+    migrated_database: Any,
+) -> None:
+    owner = _seed_self(migrated_database)
+    event = _legacy_event(migrated_database, owner, "Participants")
+    runtime = create_database_runtime(migrated_database.runtime_settings())
+    context = cast(
+        DanteContext,
+        SimpleNamespace(self_person_ref=owner, effective_zone_id="Europe/Rome"),
+    )
+    request = Request(
+        {"type": "http", "app": SimpleNamespace(state=SimpleNamespace(database_runtime=runtime))}
+    )
+    try:
+        saved = await apply_one_off_event_atomic_edit(
+            event,
+            EventAtomicEditCommand.model_validate(
+                {
+                    "operation_id": "event:participants:first",
+                    "profile": {
+                        "operation_id": "event:participants:profile",
+                        "expected_revision": 0,
+                        "title": "Participants saved",
+                    },
+                    "participants": [
+                        {
+                            "participant_ref": "self",
+                            "requirement_code": "required",
+                            "expected_requirement_code": None,
+                        }
+                    ],
+                }
+            ),
+            context,
+            request,
+            Response(),
+        )
+        assert saved.event.title == "Participants saved"
+        with pytest.raises(ProblemError) as conflict:
+            await apply_one_off_event_atomic_edit(
+                event,
+                EventAtomicEditCommand.model_validate(
+                    {
+                        "operation_id": "event:participants:stale",
+                        "profile": {
+                            "operation_id": "event:participants:stale:profile",
+                            "expected_revision": 1,
+                            "title": "Should roll back",
+                        },
+                        "participants": [
+                            {
+                                "participant_ref": "self",
+                                "requirement_code": "optional",
+                                "expected_requirement_code": None,
+                            }
+                        ],
+                    }
+                ),
+                context,
+                request,
+                Response(),
+            )
+        assert conflict.value.status == 409
+        async with runtime.session_factory() as session, session.begin():
+            after = await _read_event_in_session(session, self_person_ref=owner, event_ref=event)
+        assert after is not None and after.title == "Participants saved"
     finally:
         await runtime.dispose()
 

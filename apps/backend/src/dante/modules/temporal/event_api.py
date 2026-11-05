@@ -39,18 +39,26 @@ from dante.modules.temporal.reality_objective_api import (
     _fingerprint as reality_fingerprint,
     apply_event_objective_edits_in_session,
 )
+from dante.modules.temporal.responsibility_participation import (
+    ResponsibilityConflictError,
+    ResponsibilityInputError,
+    ResponsibilityNotFoundError,
+    ResponsibilityOperationReuseError,
+    ResponsibilityParticipationApplication,
+    ResponsibilityPersistenceError,
+)
 from dante.modules.temporal.schedule import (
     AbsoluteIntervalPlacement,
     CoarseLocalPeriodPlacement,
     DateSpanPlacement,
     FloatingLocalIntervalPlacement,
     NamedZoneLocalIntervalPlacement,
+    ScheduleInputError,
     ScheduleNotFoundError,
     ScheduleOperationIdReuseError,
     SchedulePersistenceError,
     SchedulePlacementLockedError,
     ScheduleRevisionConflictError,
-    ScheduleInputError,
     SchedulePlacement,
     revise_schedule_in_session,
 )
@@ -800,6 +808,14 @@ class EventAtomicReminderChange(BaseModel):
     lead_minutes: int = Field(ge=0, le=10080)
 
 
+class EventAtomicParticipantChange(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    participant_ref: UUID | Literal["self"]
+    requirement_code: Literal["required", "optional"] | None
+    expected_requirement_code: Literal["required", "optional"] | None
+
+
 class EventAtomicEditCommand(BaseModel):
     """One-off Event metadata, Agenda, Life Area, Reality and Objectives."""
 
@@ -811,6 +827,7 @@ class EventAtomicEditCommand(BaseModel):
     life_area: EventAtomicLifeAreaChange | None = None
     schedule: EventAtomicScheduleChange | None = None
     reminder: EventAtomicReminderChange | None = None
+    participants: list[EventAtomicParticipantChange] | None = Field(default=None, min_length=1)
     reality: RealityPolicyCommand | None = None
     objectives: ActivityObjectiveBatchCommand | None = None
 
@@ -824,11 +841,16 @@ class EventAtomicEditCommand(BaseModel):
                 self.life_area,
                 self.schedule,
                 self.reminder,
+                self.participants,
                 self.reality,
                 self.objectives,
             )
         ):
             raise ValueError("Select at least one Event change.")
+        if self.participants is not None and len(
+            {row.participant_ref for row in self.participants}
+        ) != len(self.participants):
+            raise ValueError("Each Event participant may be changed once per edit.")
         return self
 
 
@@ -1008,6 +1030,7 @@ async def apply_one_off_event_atomic_edit(
                         title="Invalid reminder target",
                         detail="The reminder must belong to the revised Event Schedule.",
                     )
+
             async def configure_reminder() -> None:
                 assert body.reminder is not None
                 change_reminder = body.reminder
@@ -1024,6 +1047,7 @@ async def apply_one_off_event_atomic_edit(
                     lead_minutes=change_reminder.lead_minutes,
                     session=session,
                 )
+
             # A date-span/floating conversion removes the exact start required by
             # an active reminder. Disable it before revising the placement, in
             # the same transaction, so the complete edit remains atomic.
@@ -1043,6 +1067,22 @@ async def apply_one_off_event_atomic_edit(
                 )
             if body.reminder is not None and body.reminder.enabled:
                 await configure_reminder()
+            if body.participants:
+                participation = ResponsibilityParticipationApplication(runtime.session_factory)
+                for index, change_participant in enumerate(body.participants):
+                    await participation.set_expected_participation(
+                        self_person_ref=actor,
+                        operation_id=f"{body.operation_id}:participant:{index}",
+                        event_ref=native_event,
+                        participant_person_ref=(
+                            actor
+                            if change_participant.participant_ref == "self"
+                            else NativeRef(change_participant.participant_ref)
+                        ),
+                        requirement_code=change_participant.requirement_code,
+                        expected_requirement_code=change_participant.expected_requirement_code,
+                        session=session,
+                    )
             if body.profile is not None:
                 change = body.profile
                 await session.execute(
@@ -1146,7 +1186,12 @@ async def apply_one_off_event_atomic_edit(
             title="Event Agenda changed",
             detail="Reload the Event and review the Agenda.",
         ) from exc
-    except (EventInputError, ScheduleInputError, ScheduleReminderInputError) as exc:
+    except (
+        EventInputError,
+        ScheduleInputError,
+        ScheduleReminderInputError,
+        ResponsibilityInputError,
+    ) as exc:
         raise ProblemError(
             status=422,
             code="temporal.event_edit.invalid_change",
@@ -1163,6 +1208,9 @@ async def apply_one_off_event_atomic_edit(
         ScheduleRevisionConflictError,
         ScheduleReminderConflictError,
         ScheduleReminderNotFoundError,
+        ResponsibilityConflictError,
+        ResponsibilityNotFoundError,
+        ResponsibilityOperationReuseError,
     ) as exc:
         raise ProblemError(
             status=409,
@@ -1202,6 +1250,7 @@ async def apply_one_off_event_atomic_edit(
         EventPersistenceError,
         SchedulePersistenceError,
         ScheduleReminderPersistenceError,
+        ResponsibilityPersistenceError,
     ) as exc:
         raise ProblemError(
             status=503,

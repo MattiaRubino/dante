@@ -437,6 +437,29 @@ export const EventAtomicEditCommand = /*#__PURE__*/ zod
       .string()
       .check(/*#__PURE__*/ zod.minLength(1))
       .check(/*#__PURE__*/ zod.maxLength(eventAtomicEditCommandOperationIdMax)),
+    participants: /*#__PURE__*/ zod.optional(
+      /*#__PURE__*/ zod.union([
+        /*#__PURE__*/ zod
+          .array(
+            /*#__PURE__*/ zod.object({
+              expected_requirement_code: /*#__PURE__*/ zod.union([
+                /*#__PURE__*/ zod.enum(['required', 'optional']),
+                /*#__PURE__*/ zod.null(),
+              ]),
+              participant_ref: /*#__PURE__*/ zod.union([
+                /*#__PURE__*/ zod.uuid(),
+                /*#__PURE__*/ zod.literal('self'),
+              ]),
+              requirement_code: /*#__PURE__*/ zod.union([
+                /*#__PURE__*/ zod.enum(['required', 'optional']),
+                /*#__PURE__*/ zod.null(),
+              ]),
+            }),
+          )
+          .check(/*#__PURE__*/ zod.minLength(1)),
+        /*#__PURE__*/ zod.null(),
+      ]),
+    ),
     profile: /*#__PURE__*/ zod.optional(
       /*#__PURE__*/ zod.union([
         /*#__PURE__*/ zod.object({

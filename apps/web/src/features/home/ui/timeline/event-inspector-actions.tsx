@@ -38,6 +38,8 @@ import { createRemoteTemporalResponsibilityDataSource } from '../../../temporal/
 import { systemTemporalIdFactory } from '../../../temporal/model';
 import type { ActivityDuplicateSeed } from '../../../temporal-create/application/activity-duplicate-seed';
 import { TemporalCreateEventAgenda } from '../../../temporal-create/ui/temporal-create-event-agenda';
+import { TemporalEventParticipantsFields } from '../../../temporal-create/ui/temporal-create-event-participants';
+import type { TemporalCreateEventParticipantDraft } from '../../../temporal-create/model/temporal-create-u2-authoring';
 import { TemporalReminderControl } from '../../../temporal-create/ui/temporal-create-quick-reminder';
 import {
   createRemoteScheduleReminderDataSource,
@@ -129,6 +131,12 @@ export function EventInspectorActions({
     useState<ScheduleReminderView | null>(null);
   const [reminderLead, setReminderLead] = useState<number | null>(null);
   const [reminderInitial, setReminderInitial] = useState<number | null>(null);
+  const [participantsInitial, setParticipantsInitial] = useState<
+    readonly TemporalCreateEventParticipantDraft[]
+  >([]);
+  const [participantsDraft, setParticipantsDraft] = useState<
+    readonly TemporalCreateEventParticipantDraft[]
+  >([]);
   const [objectiveRows, setObjectiveRows] = useState<ActivityObjectiveDraft[]>(
     [],
   );
@@ -176,7 +184,15 @@ export function EventInspectorActions({
     setBusy(true);
     setError('');
     try {
-      const [loaded, area, objectives, reality, reminder] = await Promise.all([
+      const [
+        loaded,
+        area,
+        objectives,
+        reality,
+        reminder,
+        participants,
+        referents,
+      ] = await Promise.all([
         context && occurrenceRef && eventSource.loadOccurrenceEvent
           ? eventSource.loadOccurrenceEvent(occurrenceRef)
           : profileSource.load(eventRef),
@@ -192,6 +208,12 @@ export function EventInspectorActions({
         (placement.kind !== 'named-zone-local' && placement.kind !== 'absolute')
           ? Promise.resolve(null)
           : reminderSource.get(scheduleRef),
+        context
+          ? Promise.resolve([])
+          : participationSource.listExpectedParticipation(eventRef),
+        context
+          ? Promise.resolve([])
+          : participationSource.listPersonReferents(),
       ]);
       if (loaded.profileRevision === undefined) {
         throw new Error('Revisione del profilo Event non disponibile.');
@@ -209,6 +231,23 @@ export function EventInspectorActions({
       setReminderCurrent(reminder);
       setReminderLead(reminder?.enabled ? reminder.leadMinutes : null);
       setReminderInitial(reminder?.enabled ? reminder.leadMinutes : null);
+      const labels = new Map(
+        referents.map((person) => [person.personRef, person.displayLabel]),
+      );
+      const expectedParticipants = participants
+        .filter((participant) => participant.requirementCode !== null)
+        .map((participant) => ({
+          personRef: participant.participantIsSelf
+            ? 'self'
+            : participant.participantPersonRef,
+          displayLabel: participant.participantIsSelf
+            ? 'Io'
+            : (labels.get(participant.participantPersonRef) ??
+              'Persona non disponibile'),
+          requirementCode: participant.requirementCode!,
+        }));
+      setParticipantsInitial(expectedParticipants);
+      setParticipantsDraft(expectedParticipants);
       setObjectiveRows(objectives.map(existingObjectiveDraft));
       setRealityPolicy(reality);
       setRealityMode(reality?.mode ?? 'manual');
@@ -291,6 +330,8 @@ export function EventInspectorActions({
         removedObjectives.length > 0 ||
         JSON.stringify(scheduleDraft) !== JSON.stringify(scheduleInitial) ||
         reminderLead !== reminderInitial ||
+        JSON.stringify(participantsDraft) !==
+          JSON.stringify(participantsInitial) ||
         (!recurringContext &&
           realityPolicy !== null &&
           realityMode !== realityPolicy.mode) ||
@@ -416,6 +457,34 @@ export function EventInspectorActions({
         );
       } else {
         const objectives = await prepareObjectives();
+        const initialParticipants = new Map(
+          participantsInitial.map((item) => [
+            item.personRef,
+            item.requirementCode,
+          ]),
+        );
+        const currentParticipants = new Map(
+          participantsDraft.map((item) => [
+            item.personRef,
+            item.requirementCode,
+          ]),
+        );
+        const participantChanges = [
+          ...new Set([
+            ...initialParticipants.keys(),
+            ...currentParticipants.keys(),
+          ]),
+        ]
+          .filter(
+            (ref) =>
+              initialParticipants.get(ref) !== currentParticipants.get(ref),
+          )
+          .map((participantRef) => ({
+            participantRef,
+            requirementCode: currentParticipants.get(participantRef) ?? null,
+            expectedRequirementCode:
+              initialParticipants.get(participantRef) ?? null,
+          }));
         const scheduleChanged =
           JSON.stringify(scheduleDraft) !== JSON.stringify(scheduleInitial);
         const reminderChanged = reminderLead !== reminderInitial;
@@ -471,7 +540,8 @@ export function EventInspectorActions({
           !objectives &&
           !realityChanged &&
           !schedule &&
-          !reminderChanged
+          !reminderChanged &&
+          participantChanges.length === 0
         ) {
           throw new Error('Nessuna modifica da salvare.');
         }
@@ -481,7 +551,8 @@ export function EventInspectorActions({
           objectives ||
           realityChanged ||
           schedule ||
-          reminderChanged
+          reminderChanged ||
+          participantChanges.length > 0
         ) {
           await profileSource.reviseAtomic(
             eventRef,
@@ -518,6 +589,9 @@ export function EventInspectorActions({
                         reminderLead ?? reminderCurrent?.leadMinutes ?? 15,
                     },
                   }
+                : {}),
+              ...(participantChanges.length > 0
+                ? { participants: participantChanges }
                 : {}),
               ...(realityChanged && realityPolicy
                 ? {
@@ -864,6 +938,11 @@ export function EventInspectorActions({
                   parts={agendaDraft}
                   maxPartLength={1000}
                   onChange={setAgendaDraft}
+                />
+                <TemporalEventParticipantsFields
+                  participants={participantsDraft}
+                  onChange={setParticipantsDraft}
+                  disabled={busy}
                 />
                 {areaChoice ? (
                   <label className="timeline-event-profile-editor__area">

@@ -16,8 +16,8 @@ import { EventDetailDialog } from './timeline-overlays';
 
 const loadEvent = vi.fn();
 const loadOccurrenceEvent = vi.fn();
-const listExpectedParticipation = vi.fn();
-const listPersonReferents = vi.fn();
+const listExpectedParticipation = vi.fn().mockResolvedValue([]);
+const listPersonReferents = vi.fn().mockResolvedValue([]);
 const loadArea = vi.fn();
 const loadProfile = vi.fn();
 const reviseProfile = vi.fn();
@@ -130,6 +130,8 @@ afterEach(() => {
   isRecurring.mockResolvedValue(false);
   getRealityPolicy.mockResolvedValue({ mode: 'manual', stateRef: null });
   getReminder.mockResolvedValue(null);
+  listExpectedParticipation.mockResolvedValue([]);
+  listPersonReferents.mockResolvedValue([]);
 });
 
 describe('Event Inspector actions', () => {
@@ -745,6 +747,56 @@ describe('Event Inspector actions', () => {
         enabled: true,
         leadMinutes: 15,
       },
+    });
+  });
+
+  it('edits expected participants through the shared Create control and one atomic Save', async () => {
+    const current = {
+      eventRef,
+      title: 'Conferenza',
+      description: null,
+      location: null,
+      colorCode: null,
+      profileRevision: 1,
+      agendaRevision: 0,
+      agendaParts: [],
+    };
+    loadProfile.mockResolvedValue(current);
+    loadArea.mockResolvedValue({
+      options: [],
+      currentRef: null,
+      currentRevision: 0,
+    });
+    listExpectedParticipation.mockResolvedValue([
+      {
+        participantPersonRef: '0199a777-7777-7777-8777-777777777777',
+        participantIsSelf: true,
+        requirementCode: 'required',
+      },
+    ]);
+    reviseAtomic.mockResolvedValue(current);
+    render(
+      <EventInspectorActions
+        eventRef={eventRef}
+        placement={placement}
+        onDuplicate={vi.fn()}
+      />,
+    );
+    fireEvent.click(screen.getByRole('button', { name: /^Modifica$/ }));
+    const requirement = await screen.findByRole('combobox', {
+      name: 'Partecipazione di Io',
+    });
+    fireEvent.change(requirement, { target: { value: 'optional' } });
+    fireEvent.click(screen.getByRole('button', { name: 'Salva modifiche' }));
+    await waitFor(() => expect(reviseAtomic).toHaveBeenCalledOnce());
+    expect(reviseAtomic.mock.calls[0]?.[2]).toEqual({
+      participants: [
+        {
+          participantRef: 'self',
+          requirementCode: 'optional',
+          expectedRequirementCode: 'required',
+        },
+      ],
     });
   });
 
