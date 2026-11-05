@@ -3399,3 +3399,15 @@ The user pulled `7f39b57e` and ran the focused command. Ruff stopped at
 an async helper, leaving a single awaited statement inside
 `pytest.raises(DBAPIError)`. This changes test structure only; the Event
 Objective batch candidate remains unverified.
+
+### 2026-11-05 Event editor visual checkpoint for user review
+
+The ordinary/selected Event profile editor now places its title in the same
+Create/Activity Edit title row, then groups Event location/color and
+description in the scrolling body with the existing pinned action footer.
+The component regression checks the title and section order. This changes
+presentation of the existing profile capability only; the Save button still
+saves profile metadata alone, and the UI does not claim Agenda, Schedule,
+Life Area or Objective edits. User visual review and fixture-browser proof are
+pending. Complete Event Create/Edit parity still requires the aggregate and
+occurrence-aware commands before those controls are activated in this form.

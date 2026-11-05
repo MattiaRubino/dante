@@ -610,54 +610,70 @@ export function EventInspectorActions({
                 <p>Ambito: solo questa istanza.</p>
               </div>
             ) : null}
-            <label>
-              Titolo Event
-              <input
-                disabled={busy}
-                maxLength={300}
-                value={profileDraft.title}
-                onChange={(event) => {
-                  const title = event.currentTarget.value;
-                  setProfileDraft((draft) => draft && { ...draft, title });
-                }}
-              />
-            </label>
-            <label>
-              Descrizione Event
-              <textarea
-                disabled={busy}
-                value={profileDraft.description ?? ''}
-                onChange={(event) => {
-                  const description = event.currentTarget.value || null;
-                  setProfileDraft(
-                    (draft) => draft && { ...draft, description },
-                  );
-                }}
-              />
-            </label>
-            <label>
-              Località Event
-              <input
-                disabled={busy}
-                value={profileDraft.location ?? ''}
-                onChange={(event) => {
-                  const location = event.currentTarget.value || null;
-                  setProfileDraft((draft) => draft && { ...draft, location });
-                }}
-              />
-            </label>
-            <label>
-              Colore Event (#RRGGBB)
-              <input
-                disabled={busy}
-                maxLength={7}
-                value={profileDraft.colorCode ?? ''}
-                onChange={(event) => {
-                  const colorCode = event.currentTarget.value || null;
-                  setProfileDraft((draft) => draft && { ...draft, colorCode });
-                }}
-              />
-            </label>
+            <div className="temporal-create-title-row has-tools timeline-activity-editor__title-row timeline-event-profile-editor__title-row">
+              <label className="timeline-activity-editor__title">
+                <span className="timeline-activity-editor__visually-hidden">
+                  Titolo Event
+                </span>
+                <input
+                  className="temporal-create-title-input"
+                  disabled={busy}
+                  maxLength={300}
+                  placeholder="Titolo"
+                  value={profileDraft.title}
+                  onChange={(event) => {
+                    const title = event.currentTarget.value;
+                    setProfileDraft((draft) => draft && { ...draft, title });
+                  }}
+                />
+              </label>
+            </div>
+            <section
+              className="timeline-event-profile-editor__details"
+              aria-label="Dettagli Event"
+            >
+              <label>
+                Località Event
+                <input
+                  disabled={busy}
+                  placeholder="Località"
+                  value={profileDraft.location ?? ''}
+                  onChange={(event) => {
+                    const location = event.currentTarget.value || null;
+                    setProfileDraft((draft) => draft && { ...draft, location });
+                  }}
+                />
+              </label>
+              <label>
+                Colore Event (#RRGGBB)
+                <input
+                  disabled={busy}
+                  maxLength={7}
+                  placeholder="#RRGGBB"
+                  value={profileDraft.colorCode ?? ''}
+                  onChange={(event) => {
+                    const colorCode = event.currentTarget.value || null;
+                    setProfileDraft((draft) => draft && { ...draft, colorCode });
+                  }}
+                />
+              </label>
+            </section>
+            <section className="timeline-event-profile-editor__description">
+              <label>
+                Descrizione Event
+                <textarea
+                  disabled={busy}
+                  placeholder="Descrizione"
+                  value={profileDraft.description ?? ''}
+                  onChange={(event) => {
+                    const description = event.currentTarget.value || null;
+                    setProfileDraft(
+                      (draft) => draft && { ...draft, description },
+                    );
+                  }}
+                />
+              </label>
+            </section>
           </div>
           <div className="timeline-event-profile-editor__actions">
             <button type="button" disabled={busy} onClick={cancelProfile}>

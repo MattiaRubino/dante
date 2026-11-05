@@ -542,6 +542,26 @@ describe('Event Inspector actions', () => {
         .getByRole('textbox', { name: 'Titolo Event' })
         .closest('.timeline-event-profile-editor__body'),
     ).toBeTruthy();
+    expect(
+      screen
+        .getByRole('textbox', { name: 'Titolo Event' })
+        .closest('.temporal-create-title-row'),
+    ).toBeTruthy();
+    const editor = screen
+      .getByRole('textbox', { name: 'Titolo Event' })
+      .closest('.timeline-event-profile-editor');
+    expect(editor).toBeTruthy();
+    expect(
+      Array.from(
+        editor!.querySelectorAll(
+          '.timeline-event-profile-editor__body > :is(div, section)',
+        ),
+      ).map((element) => element.className),
+    ).toEqual([
+      expect.stringContaining('timeline-event-profile-editor__title-row'),
+      'timeline-event-profile-editor__details',
+      'timeline-event-profile-editor__description',
+    ]);
     expect(screen.getByRole('dialog').style.left).toBe('');
     expect(screen.getByRole('dialog').textContent).toContain('Modifica evento');
   });

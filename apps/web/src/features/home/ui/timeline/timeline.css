@@ -1864,15 +1864,33 @@
 }
 
 .timeline-event-profile-editor__body {
-  display: grid;
+  display: flex;
   flex: 1 1 auto;
-  align-content: start;
-  gap: 14px;
+  flex-direction: column;
+  gap: 16px;
   min-height: 0;
-  padding: 18px 4px 64px 0;
+  padding: 18px 12px 64px 0;
   overflow-x: hidden;
   overflow-y: auto;
   scrollbar-gutter: stable;
+}
+
+.timeline-event-profile-editor__title-row {
+  flex: 0 0 auto;
+}
+
+.timeline-event-profile-editor__details,
+.timeline-event-profile-editor__description {
+  display: grid;
+  gap: 12px;
+  padding: 16px;
+  border: 1px solid var(--dante-semantic-color-home-border-subtle);
+  border-radius: 12px;
+  background: var(--dante-semantic-color-home-surface-control, #172329);
+}
+
+.timeline-event-profile-editor__details {
+  grid-template-columns: minmax(0, 1fr) minmax(150px, 0.3fr);
 }
 
 .timeline-event-profile-editor label {
@@ -1898,6 +1916,13 @@
   resize: vertical;
 }
 
+.timeline-event-profile-editor__title-row input.temporal-create-title-input {
+  padding: 0 12px;
+  border: 0;
+  background: transparent;
+  box-shadow: none;
+}
+
 .timeline-event-profile-editor__actions {
   display: flex;
   justify-content: flex-end;
@@ -1906,6 +1931,12 @@
   flex: 0 0 auto;
   padding: 16px 0;
   border-top: 1px solid var(--dante-semantic-color-home-border-subtle);
+}
+
+@media (max-width: 680px) {
+  .timeline-event-profile-editor__details {
+    grid-template-columns: minmax(0, 1fr);
+  }
 }
 
 .timeline-activity-inspector__toolbar {

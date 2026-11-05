@@ -783,3 +783,7 @@ The `_167` PostgreSQL/catalog selection passed 5/5 in the user's WSL on
 `5c43af2d`. The Event Objective batch helper is a later, untested source
 candidate. It composes under a future Event aggregate transaction; no new
 Event edit API or all-fields UI Save is available yet.
+
+The Event profile editor has a visual layout checkpoint using the shared
+Create/Activity title row and bounded form shell. It retains the profile-only
+Save boundary while the aggregate Event command is incomplete.
