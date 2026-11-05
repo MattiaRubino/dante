@@ -3443,3 +3443,12 @@ fixture-owned named volume for final cleanup. A colocated harness test checks
 the new-port retry and exact test-container removal. Unrelated Docker errors
 still fail immediately. This candidate has **NOT RUN** in the user's WSL;
 repeated `/forwards/expose` errors still require restarting Docker Desktop.
+
+The user pulled `030ab059` and ran the harness gate. Ruff lint passed;
+Ruff format stopped on two line wraps in `tests/integration/conftest.py`.
+Neither the harness unit tests nor either PostgreSQL suite ran. The same
+user subsequently started `tooling/run-access-auth-stack.py` successfully:
+its disposable PostgreSQL 18.6 and HTTPS preview bound loopback port 4173.
+This shows Docker's forwarding worked for that stack run, without proving
+the still-unrun pytest fixture or Event Objective batch. The reported Ruff
+layout is applied in the next formatting-only checkpoint.

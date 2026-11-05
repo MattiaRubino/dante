@@ -145,9 +145,7 @@ def _remove_disposable_cluster(container_name: str, volume_name: str) -> None:
     _docker("volume", "rm", "--force", volume_name, check=False)
 
 
-def _start_disposable_postgres(
-    container_name: str, volume_name: str, admin_password: str
-) -> int:
+def _start_disposable_postgres(container_name: str, volume_name: str, admin_password: str) -> int:
     """Retry only Docker Desktop loopback forwarding failures on a fresh port."""
     for attempt in range(3):
         host_port = _available_loopback_port()
@@ -313,9 +311,7 @@ def postgres_cluster() -> Generator[PostgresCluster]:
     # port may differ after docker stop/start, invalidating preexisting clients.
     _create_disposable_volume(volume_name)
     try:
-        host_port = _start_disposable_postgres(
-            container_name, volume_name, admin_password
-        )
+        host_port = _start_disposable_postgres(container_name, volume_name, admin_password)
         published = _docker("port", container_name, "5432/tcp", check=False)
         if published.returncode != 0 or not published.stdout.strip():
             pytest.exit(
