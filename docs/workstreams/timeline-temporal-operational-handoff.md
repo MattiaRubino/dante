@@ -11,6 +11,10 @@ those occurrence-owned fields and exposes the Create/ordinary Edit controls.
 The effective Event/Participation reads overlay local structure on the
 governing series snapshot. Recorded selected instances reject this structural
 edit; protected future instances remain excluded from following revisions.
+The Timeline detail adapter now passes the selected Event Occurrence's own
+Schedule identity and material-state revision to Edit, so the same-instance
+Schedule/reminder controls can submit the aggregate command. A colocated
+projection regression distinguishes Event Occurrences from Routine Occurrences.
 
 **SOURCE CANDIDATE; tests NOT_RUN.** The selected-instance PostgreSQL regression
 now covers versioned structure, replay, rejection of another Occurrence's

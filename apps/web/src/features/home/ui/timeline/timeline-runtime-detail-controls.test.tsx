@@ -266,6 +266,25 @@ describe('Timeline post-create runtime destinations', () => {
       },
       groups,
     );
+    const eventOccurrence = detailFromEvent(
+      {
+        ...baseEvent(),
+        canonicalBasis: {
+          kind: 'scheduled-occurrence',
+          occurrenceRef: OCCURRENCE_REF,
+          sourceKind: 'event',
+          sourceNativeRef: EVENT_REF,
+          scheduleRef: SCHEDULE_REF,
+          placementMaterialStateRef: STATE_REF,
+          placement: {
+            kind: 'coarse-local-period',
+            localDate: { toString: () => '2026-10-01' } as never,
+            period: 'afternoon',
+          },
+        },
+      },
+      groups,
+    );
 
     expect(activity.realitySubject).toEqual({
       kind: 'activity',
@@ -275,6 +294,10 @@ describe('Timeline post-create runtime destinations', () => {
     expect(event.eventScheduleRef).toBe(SCHEDULE_REF);
     expect(event.eventPlacementMaterialStateRef).toBe(STATE_REF);
     expect(occurrence.eventScheduleRef).toBeUndefined();
+    expect(eventOccurrence.eventRef).toBe(EVENT_REF);
+    expect(eventOccurrence.occurrenceRef).toBe(OCCURRENCE_REF);
+    expect(eventOccurrence.eventScheduleRef).toBe(SCHEDULE_REF);
+    expect(eventOccurrence.eventPlacementMaterialStateRef).toBe(STATE_REF);
     expect(occurrence.realitySubject).toEqual({
       kind: 'occurrence',
       ref: OCCURRENCE_REF,

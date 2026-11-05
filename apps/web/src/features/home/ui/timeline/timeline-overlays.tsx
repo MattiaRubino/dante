@@ -1249,7 +1249,9 @@ export function detailFromEvent(
     ...(ownerKind === undefined ? {} : { ownerKind }),
     ...(eventRef === undefined ? {} : { eventRef }),
     ...(ownerKind === 'event' &&
-    event.canonicalBasis?.kind === 'scheduled-event'
+    (event.canonicalBasis?.kind === 'scheduled-event' ||
+      (event.canonicalBasis?.kind === 'scheduled-occurrence' &&
+        event.canonicalBasis.sourceKind === 'event'))
       ? {
           eventScheduleRef: event.canonicalBasis.scheduleRef,
           eventPlacementMaterialStateRef:
