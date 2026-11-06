@@ -1,5 +1,14 @@
 # Timeline / Temporal-Operational — Workstream Handoff
 
+## 2026-11-06 — Focused gate Ruff format repair
+
+After the PT018 fix, the owner reports Ruff lint green. Ruff format then
+stopped on the newly extended five-day Event recurrence assertion. Apply the
+formatter's exact expression layout; the chained PostgreSQL and Web tests
+remain not run. Event Schedule's ambiguous-hour selector is intended for the
+repeated autumn local hour only, not normal Event times. The UI condition to
+hide it in normal times is in `47e590993`; visual acceptance is pending.
+
 ## 2026-11-06 — Focused gate Ruff assertion repair
 
 The owner pulled `47e590993` and started the focused gate. Ruff stopped on

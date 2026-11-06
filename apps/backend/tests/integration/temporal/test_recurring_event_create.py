@@ -817,10 +817,13 @@ async def test_recurring_event_policy_materializes_schedule_and_reminder(
             ),
             context=_context(alice),
         )
-        assert sum(
-            isinstance(candidate, TimelineScheduledOccurrenceItem)
-            and candidate.source_native_ref == created.source_ref
-            for candidate in five_day_window.items
-        ) == 5
+        assert (
+            sum(
+                isinstance(candidate, TimelineScheduledOccurrenceItem)
+                and candidate.source_native_ref == created.source_ref
+                for candidate in five_day_window.items
+            )
+            == 5
+        )
     finally:
         await runtime.dispose()
