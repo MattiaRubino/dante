@@ -1,9 +1,13 @@
+// @vitest-environment jsdom
+
 import { Temporal } from '@dante/time';
-import { describe, expect, it } from 'vitest';
+import { render, screen } from '@testing-library/react';
+import { createElement } from 'react';
+import { describe, expect, it, vi } from 'vitest';
 
 import {
+  EventScheduleEditor,
   eventScheduleDraftFromPlacement,
-  eventScheduleHasAmbiguousHour,
   eventSchedulePlacementFromDraft,
 } from './event-schedule-editor';
 
@@ -33,34 +37,50 @@ describe('Event Schedule edit conversion', () => {
     ).toThrow('successiva');
   });
 
-  it('offers the clock-change choice only when a named-zone endpoint repeats', () => {
-    const ordinary = {
+  it('automatically chooses one fold and never exposes a DST selector', () => {
+    const repeatedHour = {
       kind: 'timed' as const,
-      startDate: '2026-11-06',
-      endDate: '2026-11-06',
-      startTime: '13:30',
-      endTime: '14:00',
+      startDate: '2026-10-25',
+      endDate: '2026-10-25',
+      startTime: '02:15',
+      endTime: '02:45',
       zoneId: 'Europe/Rome',
-      disambiguation: 'reject' as const,
+      disambiguation: 'earlier' as const,
     };
-    expect(eventScheduleHasAmbiguousHour(ordinary)).toBe(false);
-    expect(
-      eventScheduleHasAmbiguousHour({
-        ...ordinary,
-        startDate: '2026-10-25',
-        endDate: '2026-10-25',
-        startTime: '02:15',
-        endTime: '02:45',
+    render(
+      createElement(EventScheduleEditor, {
+        draft: repeatedHour,
+        onChange: vi.fn(),
+        disabled: false,
+        error: '',
       }),
-    ).toBe(true);
-    expect(
-      eventScheduleHasAmbiguousHour({
-        ...ordinary,
-        startDate: '2026-03-29',
-        endDate: '2026-03-29',
-        startTime: '02:15',
-        endTime: '02:45',
-      }),
-    ).toBe(false);
+    );
+    expect(screen.queryByText('Cambio dell’ora')).toBeNull();
+    expect(screen.queryByText('Rifiuta orari ambigui')).toBeNull();
+    expect(eventSchedulePlacementFromDraft(repeatedHour)).toMatchObject({
+      disambiguation: 'earlier',
+    });
+  });
+
+  it('keeps the original later instant when editing a saved Event in the repeated hour', () => {
+    const start = Temporal.PlainDateTime.from('2026-10-25T02:15');
+    const end = Temporal.PlainDateTime.from('2026-10-25T02:45');
+    const placement = {
+      kind: 'named-zone-local' as const,
+      startsLocalAt: start,
+      endsLocalAt: end,
+      zoneId: 'Europe/Rome',
+      resolvedStartAt: start
+        .toZonedDateTime('Europe/Rome', { disambiguation: 'later' })
+        .toInstant(),
+      resolvedEndAt: end
+        .toZonedDateTime('Europe/Rome', { disambiguation: 'later' })
+        .toInstant(),
+    };
+    const draft = eventScheduleDraftFromPlacement(placement);
+    expect(draft?.disambiguation).toBe('later');
+    expect(eventSchedulePlacementFromDraft(draft!)).toMatchObject({
+      disambiguation: 'later',
+    });
   });
 });

@@ -277,6 +277,10 @@ function normalizeFields(fields: TemporalCreateFields): TemporalCreateFields {
 
   return Object.freeze({
     ...fields,
+    timeDisambiguation:
+      fields.kind === 'event' && fields.timeDisambiguation === 'reject'
+        ? 'earlier'
+        : fields.timeDisambiguation,
     timeSemantics,
     scheduling: freezeScheduling(scheduling),
     execution: freezeExecution(fields.execution),

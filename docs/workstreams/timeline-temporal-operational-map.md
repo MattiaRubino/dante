@@ -1,5 +1,13 @@
 # Timeline / Temporal-Operational — Live Execution Ledger
 
+## 2026-11-06 — Event local-time UI simplification candidate
+
+Event Edit removes the DST selector; Event Create defaults to the earlier
+repeated-hour instant, while existing Event Edit preserves a saved later
+instant. Focused Web and owner visual verification are pending. The Event lock,
+layout and `_170` migration candidate remains subject to the same focused
+PostgreSQL/Web gate; see handoff.
+
 ## 2026-11-06 — Event lock and edit visual candidate
 
 Forward `_170` extends self-owned placement lock to Event and Event Occurrence

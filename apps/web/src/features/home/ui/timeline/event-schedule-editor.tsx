@@ -16,33 +16,31 @@ export type EventScheduleDraft = Readonly<{
   disambiguation: 'reject' | 'earlier' | 'later';
 }>;
 
-export function eventScheduleHasAmbiguousHour(
-  draft: EventScheduleDraft,
-): boolean {
-  if (draft.kind !== 'timed' || !draft.zoneId) return false;
-  const zoneId = draft.zoneId;
+function savedEventDisambiguation(
+  placement: Extract<
+    TimelineCanonicalSchedulePlacement,
+    { kind: 'named-zone-local' }
+  >,
+): EventScheduleDraft['disambiguation'] | null {
   try {
-    const endpoints = [
-      `${draft.startDate}T${draft.startTime}`,
-      `${draft.endDate}T${draft.endTime}`,
-    ] as const;
-    return endpoints.some((value) => {
-      const local = Temporal.PlainDateTime.from(value);
-      const earlier = local.toZonedDateTime(zoneId, {
-        disambiguation: 'earlier',
+    for (const disambiguation of ['earlier', 'later'] as const) {
+      const start = placement.startsLocalAt.toZonedDateTime(placement.zoneId, {
+        disambiguation,
       });
-      const later = local.toZonedDateTime(zoneId, {
-        disambiguation: 'later',
+      const end = placement.endsLocalAt.toZonedDateTime(placement.zoneId, {
+        disambiguation,
       });
-      return (
-        earlier.toPlainDateTime().equals(local) &&
-        later.toPlainDateTime().equals(local) &&
-        earlier.epochNanoseconds !== later.epochNanoseconds
-      );
-    });
+      if (
+        start.toInstant().equals(placement.resolvedStartAt) &&
+        end.toInstant().equals(placement.resolvedEndAt)
+      ) {
+        return disambiguation;
+      }
+    }
   } catch {
-    return false;
+    return null;
   }
+  return null;
 }
 
 export function eventScheduleDraftFromPlacement(
@@ -62,7 +60,7 @@ export function eventScheduleDraftFromPlacement(
       startTime: '09:00',
       endTime: '09:30',
       zoneId: null,
-      disambiguation: 'reject',
+      disambiguation: 'earlier',
     };
   }
   const start = placement.startsLocalAt;
@@ -79,6 +77,11 @@ export function eventScheduleDraftFromPlacement(
   ) {
     return null;
   }
+  const disambiguation =
+    placement.kind === 'named-zone-local'
+      ? savedEventDisambiguation(placement)
+      : 'earlier';
+  if (disambiguation === null) return null;
   return {
     kind: 'timed',
     startDate: start.toPlainDate().toString(),
@@ -86,7 +89,7 @@ export function eventScheduleDraftFromPlacement(
     startTime: start.toPlainTime().toString({ smallestUnit: 'minute' }),
     endTime: end.toPlainTime().toString({ smallestUnit: 'minute' }),
     zoneId: placement.kind === 'named-zone-local' ? placement.zoneId : null,
-    disambiguation: 'reject',
+    disambiguation,
   };
 }
 
@@ -208,25 +211,6 @@ export function EventScheduleEditor({
               onChange={(endDate) => update({ endDate })}
             />
           </div>
-          {eventScheduleHasAmbiguousHour(draft) ? (
-            <label className="timeline-event-schedule-editor__zone">
-              Cambio dell’ora
-              <select
-                disabled={disabled}
-                value={draft.disambiguation}
-                onChange={(event) =>
-                  update({
-                    disambiguation: event.target
-                      .value as EventScheduleDraft['disambiguation'],
-                  })
-                }
-              >
-                <option value="reject">Rifiuta orari ambigui</option>
-                <option value="earlier">Prima occorrenza</option>
-                <option value="later">Seconda occorrenza</option>
-              </select>
-            </label>
-          ) : null}
         </>
       ) : (
         <div className="timeline-event-schedule-editor__dates">

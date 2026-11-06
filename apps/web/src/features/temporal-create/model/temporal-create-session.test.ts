@@ -17,6 +17,29 @@ import {
 } from './temporal-create-session';
 
 describe('timed one-minute Activity/Event validation', () => {
+  it('chooses a single Event instant in a repeated local hour, including after switching from Activity', () => {
+    const fields = createTemporalCreateFields({
+      kind: 'event',
+      title: 'Ora locale',
+      date: '2026-10-25',
+      startTime: '02:15',
+      durationMinutes: 30,
+      timeMode: 'zoned',
+      timeZoneId: 'Europe/Rome',
+    });
+    expect(fields.timeDisambiguation).toBe('earlier');
+    expect(validateTemporalCreateFields(fields)).toEqual([]);
+    expect(buildTemporalCreatePlacement(fields)).toMatchObject({
+      kind: 'zoned',
+      disambiguation: 'earlier',
+    });
+    const switched = updateTemporalCreateFields(
+      createTemporalCreateSession(createTemporalCreateFields()),
+      { kind: 'event' },
+    );
+    expect(switched.draft.current.timeDisambiguation).toBe('earlier');
+  });
+
   it.each(['activity', 'event'] as const)(
     'accepts a one-minute %s but rejects a zero/negative interval',
     (kind) => {

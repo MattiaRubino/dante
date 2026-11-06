@@ -1,5 +1,23 @@
 # Timeline / Temporal-Operational — Workstream Handoff
 
+## 2026-11-06 — Event DST control removal candidate
+
+The owner rejects exposing "Cambio dell’ora / Rifiuta orari ambigui" in Event
+Edit. The Event editor now has no DST choice. New Event Create drafts, including
+those switched from Activity, use the first of two repeated local instants in
+the selected zone; named-zone Event recurrence keeps one Occurrence per civil
+candidate and its existing spring-gap skip policy. Editing an existing Event
+derives earlier/later from the stored resolved instants, preserving a saved
+second-fold Event; a stored interval whose endpoints require incompatible
+choices remains unsupported instead of silently moving historical truth.
+The selector's unused CSS and ambiguity detector are removed. Focused Web
+regressions cover repeated-hour Create, Edit and absence of the selector.
+
+This change is source-only pending the owner's Ruff/PostgreSQL/Web focused gate
+and real-app visual check. The earlier `93e6d2297` Ruff format repair was not
+yet confirmed by the owner when this candidate was prepared. No full-gate
+or visual PASS is claimed.
+
 ## 2026-11-06 — Focused gate Ruff format repair
 
 After the PT018 fix, the owner reports Ruff lint green. Ruff format then

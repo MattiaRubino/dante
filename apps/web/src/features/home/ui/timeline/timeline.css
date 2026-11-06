@@ -1991,10 +1991,6 @@
   color: var(--dante-semantic-color-home-text-primary, #f2f4f2);
 }
 
-.timeline-event-schedule-editor__zone {
-  max-width: 520px;
-}
-
 .timeline-event-profile-editor__body .temporal-create-event-agenda {
   flex: 0 0 auto;
 }
