@@ -8,6 +8,7 @@ type TemporalCreateEventAgendaProps = Readonly<{
   parts: readonly string[];
   onChange: (parts: readonly string[]) => void;
   maxPartLength?: number;
+  editStyle?: boolean;
 }>;
 
 type ScalettaRowProps = Readonly<{
@@ -112,6 +113,7 @@ export function TemporalCreateEventAgenda({
   parts,
   onChange,
   maxPartLength = 300,
+  editStyle = false,
 }: TemporalCreateEventAgendaProps) {
   const { i18n } = useTranslation('common');
   const italian = (i18n.resolvedLanguage ?? i18n.language ?? 'it')
@@ -165,10 +167,16 @@ export function TemporalCreateEventAgenda({
   return (
     <section
       ref={rootRef}
-      className="temporal-create-event-agenda"
+      className={`temporal-create-event-agenda${editStyle ? ' is-edit' : ''}`}
       data-temporal-create-agenda
       aria-label={italian ? 'Scaletta evento' : 'Event run of show'}
     >
+      {editStyle ? (
+        <div
+          className="temporal-create-activity-tree__spine"
+          aria-hidden="true"
+        />
+      ) : null}
       {parts.length > 0 ? (
         <div className="temporal-create-event-agenda__list" role="list">
           <div className="temporal-create-event-agenda__group-label">

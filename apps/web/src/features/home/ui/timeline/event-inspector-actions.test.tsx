@@ -301,7 +301,15 @@ describe('Event Inspector actions', () => {
     expect(title).toHaveProperty('value', 'Conferenza locale');
     expect(screen.queryByRole('button', { name: 'Duplica' })).toBeNull();
     expect(screen.queryByRole('button', { name: 'Copia in Bozze' })).toBeNull();
-    expect(screen.getByText('Ambito: solo questa istanza.')).toBeTruthy();
+    expect(screen.queryByText('Ambito: solo questa istanza.')).toBeNull();
+    const localAgenda = screen.getByRole('region', { name: 'Scaletta evento' });
+    expect(
+      localAgenda.querySelector('.temporal-create-activity-tree__spine'),
+    ).not.toBeNull();
+    expect(
+      title.compareDocumentPosition(localAgenda) &
+        Node.DOCUMENT_POSITION_FOLLOWING,
+    ).toBeTruthy();
     expect(
       screen.getByRole('textbox', { name: 'Punto scaletta 1' }),
     ).toHaveProperty('value', 'Scaletta locale');
@@ -439,6 +447,24 @@ describe('Event Inspector actions', () => {
     fireEvent.change(await screen.findByRole('textbox', { name: 'Titolo' }), {
       target: { value: 'Nuova conferenza' },
     });
+    const seriesAgenda = screen.getByRole('region', {
+      name: 'Scaletta evento',
+    });
+    const seriesTitle = screen.getByRole('textbox', { name: 'Titolo' });
+    const seriesTiming = screen.getByRole('region', {
+      name: 'Orario della serie',
+    });
+    expect(
+      seriesAgenda.querySelector('.temporal-create-activity-tree__spine'),
+    ).not.toBeNull();
+    expect(
+      seriesTitle.compareDocumentPosition(seriesAgenda) &
+        Node.DOCUMENT_POSITION_FOLLOWING,
+    ).toBeTruthy();
+    expect(
+      seriesAgenda.compareDocumentPosition(seriesTiming) &
+        Node.DOCUMENT_POSITION_FOLLOWING,
+    ).toBeTruthy();
     expect(screen.queryByRole('button', { name: 'Duplica' })).toBeNull();
     expect(screen.queryByRole('button', { name: 'Copia in Bozze' })).toBeNull();
     expect(
@@ -1171,11 +1197,9 @@ describe('Event Inspector actions', () => {
     );
     fireEvent.click(screen.getByRole('button', { name: 'Modifica' }));
     const title = await screen.findByRole('textbox', { name: 'Titolo Event' });
-    const toolbar = document.querySelector<HTMLElement>(
-      '.timeline-event-modal__owner-actions',
-    );
-    expect(toolbar).toBeTruthy();
-    toolbar!.style.display = 'none';
+    expect(
+      document.querySelector('.timeline-event-modal__owner-actions'),
+    ).toBeNull();
     const close = screen.getByRole('button', { name: 'Chiudi Inspector' });
     close.focus();
     fireEvent.keyDown(document, { key: 'Tab' });

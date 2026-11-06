@@ -11,6 +11,29 @@
   order: -27;
 }
 
+.temporal-create-event-agenda.is-edit {
+  padding: 4px 0;
+}
+
+.temporal-create-event-agenda.is-edit .temporal-create-event-agenda__part {
+  position: relative;
+}
+
+.temporal-create-event-agenda.is-edit
+  .temporal-create-event-agenda__part::before {
+  position: absolute;
+  top: 22px;
+  left: -14px;
+  width: 14px;
+  height: 1px;
+  background: color-mix(
+    in srgb,
+    var(--dante-semantic-color-home-text-muted, #8f9bad) 24%,
+    transparent
+  );
+  content: '';
+}
+
 .temporal-create-event-agenda__list {
   display: grid;
   gap: 7px;
@@ -156,6 +179,12 @@
 }
 
 @media (max-width: 620px) {
+  .temporal-create-event-agenda.is-edit
+    .temporal-create-event-agenda__part::before {
+    left: -12px;
+    width: 12px;
+  }
+
   .temporal-create-event-agenda__part {
     margin-left: 22px;
   }

@@ -90,14 +90,17 @@
 }
 
 .timeline-recurring-series-editor__recurrence,
-.timeline-recurring-series-editor [aria-label='Sottoattività'],
-.timeline-recurring-series-editor [data-temporal-create-agenda] {
+.timeline-recurring-series-editor [aria-label='Sottoattività'] {
   display: grid;
   gap: 10px;
   min-width: 0;
   padding: 14px 16px;
   border: 1px solid var(--dante-semantic-color-home-border-subtle, #526071);
   border-radius: 12px;
+}
+
+.timeline-recurring-series-editor [data-temporal-create-agenda] {
+  border: 0;
 }
 
 .timeline-event-modal--edit .timeline-recurring-series-editor__recurrence {

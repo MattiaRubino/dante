@@ -1,5 +1,21 @@
 # Timeline / Temporal-Operational — Workstream Handoff
 
+## 2026-11-06 — Event edit Agenda placement and instance scope label
+
+The Event-only-this editor no longer repeats the inert “Ambito: solo questa
+istanza.” banner after the user has chosen the scope. In the Event following
+series editor the Agenda now immediately follows the title, before timing;
+the former placement after the interval fields was the actual DOM order.
+Both Event edit scopes share the Agenda’s numbered rows and editing actions,
+with the Session-like spine and connectors but no enclosing series-only box.
+Create keeps its existing presentation. The Event Inspector suite passed
+locally (23/23), including the selected and following scopes. The stale
+keyboard-focus test now checks that the editor removes its toolbar rather
+than hiding it. Prettier and `git diff --check` passed. Typecheck in this
+scratch clone cannot be trusted with sibling-checkout dependencies (including
+an unrelated `nonexistentTime` resource mismatch). Owner-local pinned
+toolchain typecheck and visual verification remain pending.
+
 ## 2026-11-06 — Card marker removal, Event footer clipping and Activity repeat boundary
 
 Owner's screenshots show saved Agenda in the Event Inspector while the timed

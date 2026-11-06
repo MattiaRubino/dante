@@ -1,5 +1,13 @@
 # Timeline / Temporal-Operational — Live Execution Ledger
 
+## 2026-11-06 — Event edit Agenda aligned with Sessions
+
+Selected-instance Event edit hides the redundant scope banner. Event series
+edit places numbered Agenda directly under the title; both Event edit forms
+use the Session-like spine without the surrounding series box. Focused
+Event Inspector suite 23/23; see handoff for scratch-check limitations. Owner-local
+visual review pending.
+
 ## 2026-11-06 — Event footer visibility and Activity repeat gap
 
 Visible A/E and recurrence markers removed. Event card density reserves room

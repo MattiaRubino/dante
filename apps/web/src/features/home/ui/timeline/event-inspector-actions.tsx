@@ -1002,11 +1002,6 @@ export function EventInspectorActions({
           aria-label="Modifica profilo Event"
         >
           <div className="timeline-event-profile-editor__body">
-            {recurringContext ? (
-              <div role="status">
-                <p>Ambito: solo questa istanza.</p>
-              </div>
-            ) : null}
             <div className="temporal-create-title-row has-tools timeline-activity-editor__title-row timeline-event-profile-editor__title-row">
               <label className="timeline-activity-editor__title">
                 <span className="timeline-activity-editor__visually-hidden">
@@ -1030,6 +1025,7 @@ export function EventInspectorActions({
                 parts={agendaDraft}
                 maxPartLength={1000}
                 onChange={setAgendaDraft}
+                editStyle
               />
               {scheduleDraft ? (
                 <EventScheduleEditor

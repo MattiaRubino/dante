@@ -720,6 +720,16 @@ export function RecurringSeriesEditor({
                 </div>
               ) : null}
             </div>
+            {owner === 'event' ? (
+              <TemporalCreateEventAgenda
+                parts={agenda}
+                maxPartLength={1000}
+                onChange={(parts) =>
+                  changeStructure({ ...structure, agenda_parts: [...parts] })
+                }
+                editStyle
+              />
+            ) : null}
             {owner === 'routine' ? (
               <section
                 className="temporal-create-activity-tree timeline-activity-editor__sessions"
@@ -1107,15 +1117,7 @@ export function RecurringSeriesEditor({
                   </button>
                 </section>
               </>
-            ) : (
-              <TemporalCreateEventAgenda
-                parts={agenda}
-                maxPartLength={1000}
-                onChange={(parts) =>
-                  changeStructure({ ...structure, agenda_parts: [...parts] })
-                }
-              />
-            )}
+            ) : null}
             <details className="timeline-recurring-series-editor__repeat-panel">
               <summary className="timeline-activity-editor__repeat">
                 Ripeti · Serie attiva
