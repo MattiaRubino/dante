@@ -1,4 +1,4 @@
-import type { PlainDate } from '@dante/time';
+import { Temporal, type PlainDate } from '@dante/time';
 import {
   type CSSProperties,
   type KeyboardEvent,
@@ -15,6 +15,7 @@ import { useTranslation } from 'react-i18next';
 import { ActivitySessionCardControls } from '../../../temporal/activity-session-card-controls';
 import { ActivityPlannedSessionsCardDetail } from '../../../temporal/activity-planned-sessions-card-detail';
 import { computeTimelineGaps } from './model/timeline-layout';
+import { timelineCardIdentity } from './model/timeline-card-identity';
 import {
   TIMELINE_MINUTES_PER_DAY,
   TIMELINE_POLICY,
@@ -140,6 +141,32 @@ function eventOrganizationKey(event: TimelineEvent): string | null {
   return `${basis.sourceKind}:${basis.sourceNativeRef}`;
 }
 
+export function timelineCardPlannedIntervalLabel(
+  dateKey: string,
+  startMinute: number,
+  endMinute: number,
+  locale: string,
+): string {
+  const day = Temporal.PlainDate.from(dateKey);
+  const formatter = new Intl.DateTimeFormat(locale, {
+    day: 'numeric',
+    month: 'short',
+    timeZone: 'UTC',
+  });
+  const endpoint = (minute: number) => {
+    const rounded = Math.round(minute);
+    const endpointDay = day.add({
+      days: Math.floor(rounded / TIMELINE_MINUTES_PER_DAY),
+    });
+    const clock = rounded % TIMELINE_MINUTES_PER_DAY;
+    const date = new Date(
+      Date.UTC(endpointDay.year, endpointDay.month - 1, endpointDay.day, 12),
+    );
+    return `${formatter.format(date)} ${formatTimelineMinute(clock)}`;
+  };
+  return `${endpoint(startMinute)}–${endpoint(endMinute)}`;
+}
+
 function TimelineEventCard({
   dateKey,
   layout,
@@ -183,7 +210,7 @@ function TimelineEventCard({
   suppressClickRef: RefObject<string | null>;
   openActivityRefs: ReadonlySet<string>;
 }>) {
-  const { t } = useTranslation('common');
+  const { t, i18n } = useTranslation('common');
   const event = layout.event;
   const details = useTimelineCardDetails(event);
   const plannedDateKey = layout.plannedDateKey ?? dateKey;
@@ -221,7 +248,25 @@ function TimelineEventCard({
       ? event.canonicalBasis.activityRef
       : null;
 
-  const isActivity = sessionActivityRef !== null;
+  const identity = timelineCardIdentity(event.canonicalBasis);
+  const isActivity = identity.kind === 'activity';
+  const recurringInstance = identity.recurringInstance;
+  const locale = i18n.resolvedLanguage ?? i18n.language ?? 'it';
+  const english = locale.toLowerCase().startsWith('en');
+  const kindLabel = isActivity
+    ? english
+      ? 'Activity'
+      : 'Attività'
+    : english
+      ? 'Event'
+      : 'Evento';
+  const recurringLabel = english ? 'Recurring instance' : 'Istanza ricorrente';
+  const plannedIntervalLabel = timelineCardPlannedIntervalLabel(
+    plannedDateKey,
+    event.startMinute,
+    event.endMinute,
+    locale,
+  );
   const siblingSessionOpen =
     sessionActivityRef !== null &&
     layout.sessionReality === undefined &&
@@ -277,7 +322,7 @@ function TimelineEventCard({
 
   return (
     <article
-      className={`timeline-event-card${isActivity ? ' timeline-event-card--activity' : ' timeline-event-card--event'}${expandedSubitems ? ' is-expanded' : ''}${isFocused ? ' is-focused' : ''}${isGroupmate ? ' is-groupmate' : ''}${isDim ? ' is-dim' : ''}`}
+      className={`timeline-event-card${isActivity ? ' timeline-event-card--activity' : ' timeline-event-card--event'}${sessionActivityRef ? ' timeline-event-card--has-session-controls' : ''}${expandedSubitems ? ' is-expanded' : ''}${isFocused ? ' is-focused' : ''}${isGroupmate ? ' is-groupmate' : ''}${isDim ? ' is-dim' : ''}`}
       data-timeline-event={event.id}
       data-timeline-tone={tone}
       data-compact-left={layout.compactLeftPercent}
@@ -289,10 +334,13 @@ function TimelineEventCard({
       data-group-lane={layout.groupLane}
       data-group-lanes={layout.groupLaneCount}
       data-session-reality={layout.sessionReality?.state}
+      data-timeline-kind={isActivity ? 'activity' : 'event'}
+      data-recurring-instance={recurringInstance ? 'true' : 'false'}
+      data-planned-date={plannedDateKey}
       style={style}
       draggable={false}
       tabIndex={0}
-      aria-label={`${event.title}, ${layout.sessionReality ? `reale ${layout.sessionReality.actualLabel}, previsto ` : ''}${formatTimelineMinute(event.startMinute)}–${formatTimelineMinute(event.endMinute)}`}
+      aria-label={`${kindLabel}${recurringInstance ? `, ${recurringLabel}` : ''}: ${event.title}, ${layout.sessionReality ? `${english ? 'actual' : 'reale'} ${layout.sessionReality.actualLabel}, ${english ? 'planned' : 'previsto'} ` : ''}${plannedIntervalLabel}`}
       aria-keyshortcuts="Alt+ArrowUp Alt+ArrowDown Alt+ArrowLeft Alt+ArrowRight"
       onDragStart={(dragEvent) => dragEvent.preventDefault()}
       onKeyDown={keyboardMove}
@@ -324,22 +372,51 @@ function TimelineEventCard({
       ) : null}
       <div className="timeline-event-card__top">
         <div className="timeline-event-card__heading">
-          <button
-            className="timeline-event-card__title"
-            type="button"
-            aria-label={event.title}
-            title={event.title}
-            onClick={(clickEvent) => {
-              clickEvent.stopPropagation();
-              if (suppressClickRef.current === event.id) {
-                suppressClickRef.current = null;
-                return;
-              }
-              onOpenEventDetail(event, clickEvent.currentTarget);
-            }}
-          >
-            {titlePreview}
-          </button>
+          <div className="timeline-event-card__identity">
+            <span
+              className="timeline-event-card__kind-mark"
+              title={kindLabel}
+              aria-hidden="true"
+            >
+              <svg
+                viewBox="0 0 16 16"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="1.7"
+              >
+                {isActivity ? (
+                  <circle cx="8" cy="8" r="5" />
+                ) : (
+                  <path d="M8 2.5 13.5 8 8 13.5 2.5 8Z" />
+                )}
+              </svg>
+            </span>
+            {recurringInstance ? (
+              <span
+                className="timeline-event-card__recurrence-mark"
+                title={recurringLabel}
+                aria-hidden="true"
+              >
+                ↻
+              </span>
+            ) : null}
+            <button
+              className="timeline-event-card__title"
+              type="button"
+              aria-label={event.title}
+              title={event.title}
+              onClick={(clickEvent) => {
+                clickEvent.stopPropagation();
+                if (suppressClickRef.current === event.id) {
+                  suppressClickRef.current = null;
+                  return;
+                }
+                onOpenEventDetail(event, clickEvent.currentTarget);
+              }}
+            >
+              {titlePreview}
+            </button>
+          </div>
           {sessionActivityRef === null ? null : (
             <ActivitySessionCardControls
               activityRef={sessionActivityRef}
@@ -353,10 +430,13 @@ function TimelineEventCard({
             />
           )}
         </div>
-        <div className="timeline-event-card__time">
-          {layout.sessionReality ? 'Pianificata ' : null}
-          {formatTimelineMinute(event.startMinute)}–
-          {formatTimelineMinute(event.endMinute)}
+        <div className="timeline-event-card__time" title={plannedIntervalLabel}>
+          {layout.sessionReality
+            ? english
+              ? 'Planned '
+              : 'Pianificata '
+            : null}
+          {plannedIntervalLabel}
         </div>
         {layout.sessionReality ? (
           <div

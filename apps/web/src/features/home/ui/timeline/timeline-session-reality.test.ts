@@ -9,7 +9,10 @@ import type {
   TimelineTimeMapper,
 } from './model/timeline-types';
 import { applyTimelineSessionReality } from './timeline-session-reality';
-import type { TimelineRenderedDay } from './timeline-day-stream';
+import {
+  timelineCardPlannedIntervalLabel,
+  type TimelineRenderedDay,
+} from './timeline-day-stream';
 import {
   buildTimelineDayProjectionDays,
   buildTimelineRenderedWeek,
@@ -99,6 +102,14 @@ describe('one-card Activity actual Session projection', () => {
     expect(projected?.events).toHaveLength(1);
     expect(projected?.events[0]?.id).toBe('autumn-slot');
     expect(projected?.events[0]?.startMinute).toBe(150);
+    expect(
+      timelineCardPlannedIntervalLabel(
+        projected?.layouts[0]?.plannedDateKey ?? projected!.dateKey,
+        projected?.layouts[0]?.event.startMinute ?? 0,
+        projected?.layouts[0]?.event.endMinute ?? 0,
+        'it',
+      ),
+    ).toBe('25 ott 02:30–25 ott 03:00');
     expect(projected?.layouts[0]?.top).toBeCloseTo(
       projected?.mapper.map(170) ?? 0,
       3,
@@ -550,6 +561,14 @@ describe('one-card Activity actual Session projection', () => {
     expect(visible[0]?.layouts).toHaveLength(1);
     expect(visible[0]?.layouts[0]?.event).toBe(plan);
     expect(visible[0]?.layouts[0]?.plannedDateKey).toBe('2026-11-04');
+    expect(
+      timelineCardPlannedIntervalLabel(
+        visible[0]!.layouts[0]!.plannedDateKey!,
+        plan.startMinute,
+        plan.endMinute,
+        'it',
+      ),
+    ).toBe('4 nov 00:15–4 nov 00:45');
     expect(visible[0]?.layouts[0]?.sessionReality?.state).toBe('running');
     expect(visible[0]?.layouts[0]?.top).toBeCloseTo(
       visible[0]?.mapper.map(20 * 60 + 39) ?? 0,

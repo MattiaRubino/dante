@@ -4,6 +4,9 @@ import { afterEach, beforeAll, describe, expect, it, vi } from 'vitest';
 import { i18n } from '../../../../bootstrap/i18n';
 import { TemporalTimelineRuntimeBoundary } from '../../../temporal/timeline-runtime-boundary';
 import { TIMELINE_PROTOTYPE_TODAY } from './model/timeline-fixtures';
+import { timelineCardIdentity } from './model/timeline-card-identity';
+import type { TimelineEvent } from './model/timeline-types';
+import { timelineCardPlannedIntervalLabel } from './timeline-day-stream';
 import {
   timelineCardTitlePreview,
   timelineDragSnapMinutes,
@@ -113,6 +116,14 @@ describe('TimelineSurface production parity', () => {
     expect(card?.querySelector('.timeline-event-card__time')?.tagName).toBe(
       'DIV',
     );
+    expect(card?.dataset.timelineKind).toBe('event');
+    expect(card?.dataset.recurringInstance).toBe('false');
+    expect(
+      card?.querySelector('.timeline-event-card__kind-mark svg path'),
+    ).not.toBeNull();
+    expect(card?.querySelector('.timeline-event-card__time')?.textContent).toBe(
+      '4 ago 09:00–4 ago 11:00',
+    );
     const indicator = card?.querySelector('.timeline-event-card__indicator');
     expect(indicator?.textContent).toBe('Scaletta3');
     expect(
@@ -130,6 +141,67 @@ describe('TimelineSurface production parity', () => {
     expect(
       card?.querySelector('.timeline-activity-session-card-controls'),
     ).toBeNull();
+  });
+
+  it('labels both planned endpoints across midnight without marking a one-off as recurring', () => {
+    expect(
+      timelineCardPlannedIntervalLabel('2026-12-31', 23 * 60 + 30, 1440, 'it'),
+    ).toBe('31 dic 23:30–1 gen 00:00');
+    expect(
+      timelineCardPlannedIntervalLabel('2026-11-07', 20 * 60, 21 * 60, 'it'),
+    ).toBe('7 nov 20:00–7 nov 21:00');
+    const { container } = renderTimeline();
+    expect(
+      container.querySelector(
+        '[data-timeline-event="2"] .timeline-event-card__recurrence-mark',
+      ),
+    ).toBeNull();
+  });
+
+  it('marks Event and Routine occurrences as distinct recurring instances', () => {
+    const base = {
+      id: 'occurrence',
+      title: 'Pianificazione',
+      groupId: 'personale',
+      startMinute: 540,
+      endMinute: 570,
+    };
+    const occurrence = {
+      kind: 'scheduled-occurrence' as const,
+      occurrenceRef: 'occurrence-ref',
+      sourceNativeRef: 'source-ref',
+      scheduleRef: 'schedule-ref',
+      placementMaterialStateRef: 'placement-ref',
+      placement: {
+        kind: 'floating-local' as const,
+        startsLocalAt: TIMELINE_PROTOTYPE_TODAY.toPlainDateTime('09:00'),
+        endsLocalAt: TIMELINE_PROTOTYPE_TODAY.toPlainDateTime('09:30'),
+      },
+    };
+    const event = {
+      ...base,
+      canonicalBasis: { ...occurrence, sourceKind: 'event' as const },
+    } satisfies TimelineEvent;
+    const routine = {
+      ...base,
+      canonicalBasis: { ...occurrence, sourceKind: 'routine' as const },
+    } satisfies TimelineEvent;
+    expect(timelineCardIdentity(event.canonicalBasis)).toEqual({
+      kind: 'event',
+      recurringInstance: true,
+    });
+    expect(timelineCardIdentity(routine.canonicalBasis)).toEqual({
+      kind: 'activity',
+      recurringInstance: true,
+    });
+    expect(timelineCardIdentity(undefined, 'event')).toEqual({
+      kind: 'event',
+      recurringInstance: true,
+    });
+    expect(timelineCardIdentity(undefined, 'routine')).toEqual({
+      kind: 'activity',
+      recurringInstance: true,
+    });
   });
 
   it('switches between continuous, one-day and seven-column views without changing the frame', () => {

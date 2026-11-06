@@ -1,5 +1,30 @@
 # Timeline / Temporal-Operational — Workstream Handoff
 
+## 2026-11-06 — Card identity, planned dates and Event edit toolbar candidate
+
+Owner chose to distinguish Activity and Event without changing Life Area colors.
+Timed and all-day cards now carry a small outlined circle for Activity or
+diamond for Event, followed by a recurrence arrow on source Occurrence
+instances. Markers derive from canonical source identity, not title or color;
+accessible labels identify both dimensions. Timed cards show a short localized
+date next to each planned start/end clock. A live or completed Activity Session
+continues to paint at its actual time while the planned row retains its
+original planned date, including when execution crosses a day boundary. The
+Event Scaletta count already uses the existing indicator, and the prior
+Occurrence card-detail read supplies the selected instance's count; a
+component regression asserts the visible label and number.
+
+Event Inspector's action toolbar now disappears entirely while any Event edit
+scope is open. This closes the fallback path that rendered textual action
+buttons below the X when the header portal target was absent. The edit modal
+keeps its existing close control and bottom Cancel/Save controls. Focused tests
+assert toolbar absence in one-off, selected and following edits, alongside card
+date/identity behavior and Session planned-date preservation. **NOT_RUN on this
+candidate:** owner WSL focused tests, full gate and manual visual acceptance.
+The user will inspect the actual visual balance and may refine marker sizing.
+Typography and Objective unit wrapping remain the previously requested later
+discussion.
+
 ## 2026-11-06 — Event card and recurring edit visual follow-up candidate
 
 The owner ran the complete local gate against `589fed027` and supplied its

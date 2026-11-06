@@ -13,6 +13,7 @@ import {
   timelineAllDayRangePosition,
   TIMELINE_ALL_DAY_VISIBLE_ROWS,
 } from './model/timeline-all-day-layout';
+import { timelineCardIdentity } from './model/timeline-card-identity';
 import type {
   TimelineAllDayItem,
   TimelineCoarsePeriod,
@@ -221,6 +222,21 @@ export function TimelineAllDayLane({
   const renderItem = (item: TimelineAllDayItem) => {
     const group = groupMap.get(item.groupId);
     const basis = item.canonicalBasis;
+    const identity = timelineCardIdentity(
+      basis,
+      item.occurrenceBasis?.sourceKind,
+    );
+    const kindLabel =
+      identity.kind === 'activity'
+        ? english
+          ? 'Activity'
+          : 'Attività'
+        : english
+          ? 'Event'
+          : 'Evento';
+    const recurringLabel = english
+      ? 'Recurring instance'
+      : 'Istanza ricorrente';
     const details =
       basis?.kind === 'scheduled-activity'
         ? detailsBySubject.get(`activity:${basis.activityRef}`)
@@ -307,11 +323,15 @@ export function TimelineAllDayLane({
             item.origin === 'create' ? item.id : undefined
           }
           data-timeline-tone={tone}
+          data-timeline-kind={identity.kind}
+          data-recurring-instance={
+            identity.recurringInstance ? 'true' : 'false'
+          }
           data-range-position={position}
           data-range-start={startsHere || undefined}
           data-range-end={endsHere || undefined}
           style={itemStyle}
-          aria-label={`${item.title} · ${precisionLabel} · ${group?.label ?? item.groupId}`}
+          aria-label={`${kindLabel}${identity.recurringInstance ? `, ${recurringLabel}` : ''}: ${item.title} · ${precisionLabel} · ${group?.label ?? item.groupId}`}
           onClick={(event) => onOpenItemDetail?.(item, event.currentTarget)}
           onKeyDown={(event) => {
             if (event.key === 'Enter' && onOpenItemDetail) {
@@ -326,7 +346,36 @@ export function TimelineAllDayLane({
           >
             {startsHere ? '' : '‹'}
           </span>
-          <strong>{item.title}</strong>
+          <strong className="timeline-all-day-item__identity">
+            <span
+              className="timeline-all-day-item__kind-mark"
+              title={kindLabel}
+              aria-hidden="true"
+            >
+              <svg
+                viewBox="0 0 16 16"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="1.7"
+              >
+                {identity.kind === 'activity' ? (
+                  <circle cx="8" cy="8" r="5" />
+                ) : (
+                  <path d="M8 2.5 13.5 8 8 13.5 2.5 8Z" />
+                )}
+              </svg>
+            </span>
+            {identity.recurringInstance ? (
+              <span
+                className="timeline-all-day-item__recurrence-mark"
+                title={recurringLabel}
+                aria-hidden="true"
+              >
+                ↻
+              </span>
+            ) : null}
+            <span className="timeline-all-day-item__title">{item.title}</span>
+          </strong>
           <span className="timeline-all-day-item__meta">
             {precisionLabel} · {period}
             {plannedTime}

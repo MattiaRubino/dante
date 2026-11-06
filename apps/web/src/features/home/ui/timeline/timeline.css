@@ -992,6 +992,36 @@
   min-width: 0;
 }
 
+.timeline-event-card__identity {
+  display: flex;
+  flex: 1 1 auto;
+  align-items: center;
+  gap: 4px;
+  min-width: 0;
+}
+
+.timeline-event-card__kind-mark,
+.timeline-event-card__recurrence-mark {
+  display: inline-flex;
+  flex: 0 0 auto;
+  align-items: center;
+  justify-content: center;
+  width: 12px;
+  height: 12px;
+  color: var(--dante-semantic-color-home-text-secondary, #b2bdc1);
+  pointer-events: none;
+}
+
+.timeline-event-card__kind-mark svg {
+  width: 11px;
+  height: 11px;
+}
+
+.timeline-event-card__recurrence-mark {
+  font-size: 13px;
+  line-height: 1;
+}
+
 .timeline-event-card__heading .timeline-event-card__title {
   flex: 1 1 auto;
   min-width: 0;
@@ -1046,6 +1076,9 @@
   font-weight: 500;
   font-variant-numeric: tabular-nums;
   line-height: 1.15;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
   cursor: default;
 }
 

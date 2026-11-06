@@ -1,5 +1,14 @@
 # Timeline / Temporal-Operational — Live Execution Ledger
 
+## 2026-11-06 — Card identity and Event edit visual candidate
+
+Timed/all-day cards use canonical Activity circle, Event diamond and Occurrence
+recurrence arrow. Timed planned rows include both short dates; Session actual
+projection retains the original planned date. The Event Scaletta indicator is
+regression-covered. Event edit scopes suppress the Inspector action toolbar's
+inline fallback, leaving the modal X. Source candidate awaits owner WSL tests,
+full gate and visual acceptance; see handoff.
+
 ## 2026-11-06 — Global DST behavior candidate
 
 Calendar Activity/Event Create chooses the first real instant only in a

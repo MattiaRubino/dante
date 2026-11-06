@@ -238,6 +238,8 @@ describe('Event Inspector actions', () => {
     );
     const title = await screen.findByRole('textbox', { name: 'Titolo Event' });
     expect(title).toHaveProperty('value', 'Conferenza locale');
+    expect(screen.queryByRole('button', { name: 'Duplica' })).toBeNull();
+    expect(screen.queryByRole('button', { name: 'Copia in Bozze' })).toBeNull();
     expect(screen.getByText('Ambito: solo questa istanza.')).toBeTruthy();
     expect(
       screen.getByRole('textbox', { name: 'Punto scaletta 1' }),
@@ -376,6 +378,8 @@ describe('Event Inspector actions', () => {
     fireEvent.change(await screen.findByRole('textbox', { name: 'Titolo' }), {
       target: { value: 'Nuova conferenza' },
     });
+    expect(screen.queryByRole('button', { name: 'Duplica' })).toBeNull();
+    expect(screen.queryByRole('button', { name: 'Copia in Bozze' })).toBeNull();
     expect(
       screen.getAllByRole('button', { name: /^Data inizio:/ }),
     ).toHaveLength(1);
@@ -1017,6 +1021,7 @@ describe('Event Inspector actions', () => {
       .getByRole('textbox', { name: 'Titolo Event' })
       .closest('.timeline-event-profile-editor');
     expect(editor).toBeTruthy();
+    expect(screen.queryByRole('button', { name: 'Duplica' })).toBeNull();
     const bodySections = Array.from(
       editor!.querySelectorAll(
         '.timeline-event-profile-editor__body > :is(div, section)',

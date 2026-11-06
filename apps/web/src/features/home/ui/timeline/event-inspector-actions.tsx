@@ -955,7 +955,11 @@ export function EventInspectorActions({
 
   return (
     <div className="timeline-activity-inspector__actions">
-      {toolbarTarget ? createPortal(toolbar, toolbarTarget) : toolbar}
+      {editingProfile
+        ? null
+        : toolbarTarget
+          ? createPortal(toolbar, toolbarTarget)
+          : toolbar}
       {editChoice ? (
         <RecurringEditScopeDialog
           subjectLabel="Evento"
