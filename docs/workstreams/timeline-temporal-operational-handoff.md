@@ -1,5 +1,25 @@
 # Timeline / Temporal-Operational — Workstream Handoff
 
+## 2026-11-06 — Recurring Event Objective checkpoint failure reproduced
+
+The owner ran the focused PostgreSQL regression on `7c7cfeb19` and it failed
+with `OccurrencePersistenceError`, caused by `sqlalchemy.exc.InvalidRequestError:
+Autobegin is disabled on this Session; please call session.begin()`. The
+five-day HAR had already shown two `POST /occurrences/checkpoint` responses
+with 503. `_create_objectives` iterated over Objective templates and rebound
+its optional `session` parameter in `async with self._write_session(session) as
+session`. After the first Objective committed, the second reused that closed
+session without an active transaction. This affects Event occurrences with at
+least two Objectives; the same helper also handles recurring Activity templates.
+
+The repair candidate opens one write session and transaction around the entire
+Objective batch, under a separate `write_session` name. The existing test
+already exercises Boolean and quantity Objectives, replay, and a five-day
+Timeline checkpoint. **NOT_RUN**: the owner must run that focused PostgreSQL
+test and check the real Event again. Inspector Scaletta visual acceptance is
+also pending. Typography and Objective Unit wrapping remain a separate design
+discussion after these fixes.
+
 ## 2026-11-06 — Full gate accepted; real-app Event recurrence read failure
 
 The owner supplied a Firefox HAR captured after Retry. The two `GET
