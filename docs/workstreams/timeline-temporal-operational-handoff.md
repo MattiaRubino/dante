@@ -1,5 +1,30 @@
 # Timeline / Temporal-Operational — Workstream Handoff
 
+## 2026-11-06 — Event Edit discard and unchanged Save candidate
+
+The one-off and selected-instance Event Edit now close when Save has no changes,
+without submitting a no-op mutation. Cancel and the modal X use the same
+in-editor discard overlay and keyboard close path as Activity Edit instead of
+the browser's native `confirm`. The overlay is positioned within the Event
+editor and makes its other controls inert until the decision is made. Focused
+component regressions cover both unchanged Save scopes, Cancel, X, Escape,
+continue and discard; local Vitest **25 passed**. Local Web typecheck is
+**BLOCKED_ENV** by borrowed dependencies with a pre-existing
+`nonexistentTime` translation type mismatch; owner WSL typecheck, full gate
+and real-app inspection are **NOT_RUN** on this worktree candidate.
+
+The requested existing one-off Activity/Event → recurring conversion remains
+**OPEN**. For Activity, the first existing identity must be bound to its first
+Routine Occurrence before any materializer can generate that slot; source,
+Recurrence, policy and binding require a single owner-scoped CAS transaction.
+For Event, a new Recurrence on an existing Event with its own Schedule would
+create both the original Event and a generated first Occurrence unless the
+first-instance identity/projection is explicitly reconciled. Both conversions
+must preserve local Schedules, Objectives, Session/Actual history, and permit
+retry without another first card. The present Create endpoints make new
+sources, and the generic Event Recurrence replacement does not perform this
+reconciliation. No Edit recurrence toggle is enabled by this patch.
+
 ## 2026-11-06 — Owner correction: Event counters stack and Create Agenda matches Edit
 
 The owner rejected the preceding side-by-side Event Objective/Agenda indicators:

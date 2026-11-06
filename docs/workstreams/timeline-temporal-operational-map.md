@@ -1,5 +1,12 @@
 # Timeline / Temporal-Operational — Live Execution Ledger
 
+## 2026-11-06 — Event Edit close behavior
+
+Event Edit now uses an internal discard confirmation and closes unchanged
+one-off or selected-instance Save; 25 focused component checks passed locally.
+Existing Activity/Event conversion to recurring remains open at the canonical
+first-instance binding boundary; see handoff. WSL and real-app checks pending.
+
 ## 2026-11-06 — Owner correction on Event counter layout
 
 Event Objective and Agenda counters now stack at full width like Activity

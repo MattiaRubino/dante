@@ -1,4 +1,4 @@
-import { type RefObject, useEffect, useState } from 'react';
+import { type RefObject, useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 
 import type { TemporalEventDetailRecord } from '../../../temporal/event-data-source';
@@ -161,6 +161,8 @@ export function EventInspectorActions({
   const [areaQuery, setAreaQuery] = useState('');
   const [areaError, setAreaError] = useState('');
   const [editingProfile, setEditingProfile] = useState(false);
+  const [confirmingDiscard, setConfirmingDiscard] = useState(false);
+  const discardButtonRef = useRef<HTMLButtonElement | null>(null);
   const [editChoice, setEditChoice] = useState<{
     context: RecurringProfileContext;
     selectedProtection: RecurringProfileEditPreview['selectedProtection'];
@@ -333,6 +335,10 @@ export function EventInspectorActions({
   };
 
   const cancelProfile = () => {
+    if (confirmingDiscard) {
+      setConfirmingDiscard(false);
+      return;
+    }
     if (profile && profileDraft) {
       const changed =
         profileDraft.title !== profile.title ||
@@ -355,16 +361,19 @@ export function EventInspectorActions({
             (recurringContext
               ? (profile.lifeAreaRef ?? null)
               : areaChoice.currentRef));
-      if (
-        changed &&
-        !window.confirm('Scartare le modifiche Event non salvate?')
-      )
+      if (changed) {
+        setConfirmingDiscard(true);
         return;
+      }
     }
     setProfileDraft(null);
     setInspectingObjective(null);
     setEditingProfile(false);
   };
+
+  useEffect(() => {
+    if (confirmingDiscard) discardButtonRef.current?.focus();
+  }, [confirmingDiscard]);
 
   useEffect(() => {
     if (
@@ -519,7 +528,9 @@ export function EventInspectorActions({
           !reminderChanged &&
           realityMode === realityPolicy?.mode
         ) {
-          throw new Error('Nessuna modifica da salvare.');
+          setProfileDraft(null);
+          setEditingProfile(false);
+          return;
         }
         let selectedSchedule: ReturnType<
           typeof eventSchedulePlacementFromDraft
@@ -663,7 +674,9 @@ export function EventInspectorActions({
           !reminderChanged &&
           participantChanges.length === 0
         ) {
-          throw new Error('Nessuna modifica da salvare.');
+          setProfileDraft(null);
+          setEditingProfile(false);
+          return;
         }
         if (
           agendaChanged ||
@@ -1001,7 +1014,10 @@ export function EventInspectorActions({
           className="timeline-event-profile-editor"
           aria-label="Modifica profilo Event"
         >
-          <div className="timeline-event-profile-editor__body">
+          <div
+            className="timeline-event-profile-editor__body"
+            inert={confirmingDiscard || undefined}
+          >
             <div className="temporal-create-title-row has-tools timeline-activity-editor__title-row timeline-event-profile-editor__title-row">
               <label className="timeline-activity-editor__title">
                 <span className="timeline-activity-editor__visually-hidden">
@@ -1320,7 +1336,10 @@ export function EventInspectorActions({
               />
             </section>
           </div>
-          <div className="timeline-event-profile-editor__actions dante-temporal-panel-actions">
+          <div
+            className="timeline-event-profile-editor__actions dante-temporal-panel-actions"
+            inert={confirmingDiscard || undefined}
+          >
             <button type="button" disabled={busy} onClick={cancelProfile}>
               Annulla
             </button>
@@ -1333,6 +1352,26 @@ export function EventInspectorActions({
               Salva modifiche
             </button>
           </div>
+          {confirmingDiscard ? (
+            <div className="timeline-activity-editor__discard" role="alert">
+              <p>Scartare le modifiche non salvate?</p>
+              <button
+                ref={discardButtonRef}
+                type="button"
+                onClick={() => {
+                  setConfirmingDiscard(false);
+                  setProfileDraft(null);
+                  setInspectingObjective(null);
+                  setEditingProfile(false);
+                }}
+              >
+                Scarta modifiche
+              </button>
+              <button type="button" onClick={() => setConfirmingDiscard(false)}>
+                Continua a modificare
+              </button>
+            </div>
+          ) : null}
         </div>
       ) : null}
       {profileNotice ? <p role="status">{profileNotice}</p> : null}

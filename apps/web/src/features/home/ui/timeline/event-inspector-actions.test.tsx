@@ -345,6 +345,53 @@ describe('Event Inspector actions', () => {
     expect(acceptSeries).not.toHaveBeenCalled();
   });
 
+  it('closes an unchanged selected recurring Event without revising the series or instance', async () => {
+    const occurrenceRef = '0199a555-5555-7555-8555-555555555555';
+    isRecurring.mockResolvedValue(true);
+    loadOccurrenceContext.mockResolvedValue({
+      occurrenceRef,
+      sourceRef: eventRef,
+      editRevision: 2,
+    });
+    loadRecurringPreview.mockResolvedValue({
+      selectedProtection: null,
+      fingerprint: 'a'.repeat(32),
+      targetOccurrenceRefs: [occurrenceRef],
+      protectedOccurrences: [],
+    });
+    loadOccurrenceEvent.mockResolvedValue({
+      eventRef,
+      title: 'Conferenza',
+      agendaParts: [],
+      description: null,
+      location: null,
+      colorCode: null,
+      profileRevision: 0,
+    });
+    loadOccurrencePatch.mockResolvedValue({});
+    render(
+      <EventInspectorActions
+        eventRef={eventRef}
+        occurrenceRef={occurrenceRef}
+        placement={placement}
+        onDuplicate={vi.fn()}
+      />,
+    );
+    fireEvent.click(screen.getByRole('button', { name: 'Modifica' }));
+    fireEvent.click(
+      await screen.findByRole('button', { name: 'Solo questa istanza' }),
+    );
+    await screen.findByRole('textbox', { name: 'Titolo Event' });
+    fireEvent.click(screen.getByRole('button', { name: 'Salva modifiche' }));
+    await waitFor(() =>
+      expect(
+        screen.queryByRole('textbox', { name: 'Titolo Event' }),
+      ).toBeNull(),
+    );
+    expect(saveRecurringEvent).not.toHaveBeenCalled();
+    expect(acceptSeries).not.toHaveBeenCalled();
+  });
+
   it('chooses from-next for a recorded recurring Event and confirms a reviewed structural revision', async () => {
     const occurrenceRef = '0199a555-5555-7555-8555-555555555555';
     const context = {
@@ -1124,7 +1171,7 @@ describe('Event Inspector actions', () => {
     expect(screen.getByRole('dialog').textContent).toContain('Modifica evento');
   });
 
-  it('keeps a changed Event draft when closing is declined and returns to the Inspector after confirmation', async () => {
+  it('uses the inline discard overlay for Event Cancel and the Inspector close button', async () => {
     loadProfile.mockResolvedValue({
       eventRef,
       title: 'Conferenza',
@@ -1133,10 +1180,7 @@ describe('Event Inspector actions', () => {
       colorCode: null,
       profileRevision: 1,
     });
-    const confirm = vi
-      .fn()
-      .mockReturnValueOnce(false)
-      .mockReturnValueOnce(true);
+    const confirm = vi.fn();
     vi.stubGlobal('confirm', confirm);
     const onClose = vi.fn();
     render(
@@ -1158,17 +1202,56 @@ describe('Event Inspector actions', () => {
     const title = await screen.findByRole('textbox', { name: 'Titolo Event' });
     fireEvent.change(title, { target: { value: 'Conferenza nuova' } });
     fireEvent.click(screen.getByRole('button', { name: 'Chiudi Inspector' }));
-    expect(confirm).toHaveBeenCalledOnce();
+    expect(screen.getByText('Scartare le modifiche non salvate?')).toBeTruthy();
     expect(title).toHaveProperty('value', 'Conferenza nuova');
     expect(onClose).not.toHaveBeenCalled();
+    fireEvent.click(
+      screen.getByRole('button', { name: 'Continua a modificare' }),
+    );
+    fireEvent.click(screen.getByRole('button', { name: 'Annulla' }));
+    expect(screen.getByText('Scartare le modifiche non salvate?')).toBeTruthy();
     fireEvent.keyDown(document, { key: 'Escape' });
+    expect(screen.queryByText('Scartare le modifiche non salvate?')).toBeNull();
+    expect(title).toHaveProperty('value', 'Conferenza nuova');
+    fireEvent.click(screen.getByRole('button', { name: 'Chiudi Inspector' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Scarta modifiche' }));
     await waitFor(() =>
       expect(
         screen.queryByRole('textbox', { name: 'Titolo Event' }),
       ).toBeNull(),
     );
-    expect(confirm).toHaveBeenCalledTimes(2);
+    expect(confirm).not.toHaveBeenCalled();
     expect(onClose).not.toHaveBeenCalled();
+  });
+
+  it('closes an unchanged Event editor without a mutation or error', async () => {
+    loadProfile.mockResolvedValue({
+      eventRef,
+      title: 'Conferenza',
+      description: null,
+      location: null,
+      colorCode: null,
+      profileRevision: 1,
+      agendaParts: [],
+    });
+    render(
+      <EventInspectorActions
+        eventRef={eventRef}
+        placement={placement}
+        onDuplicate={vi.fn()}
+      />,
+    );
+    fireEvent.click(screen.getByRole('button', { name: 'Modifica' }));
+    await screen.findByRole('textbox', { name: 'Titolo Event' });
+    fireEvent.click(screen.getByRole('button', { name: 'Salva modifiche' }));
+    await waitFor(() =>
+      expect(
+        screen.queryByRole('textbox', { name: 'Titolo Event' }),
+      ).toBeNull(),
+    );
+    expect(reviseProfile).not.toHaveBeenCalled();
+    expect(reviseAtomic).not.toHaveBeenCalled();
+    expect(screen.queryByText('Nessuna modifica da salvare.')).toBeNull();
   });
 
   it('skips controls hidden by the Event editor when cycling keyboard focus', async () => {
