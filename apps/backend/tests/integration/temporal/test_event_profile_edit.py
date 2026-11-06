@@ -91,7 +91,8 @@ async def test_event_schedule_lock_is_owner_scoped_and_blocks_movement(
             locked=True,
             expected_revision=None,
         )
-        assert locked.locked and locked.revision == 1
+        assert locked.locked
+        assert locked.revision == 1
         with pytest.raises(PlacementLockNotFoundError):
             await locks.set(
                 self_person_ref=other,

@@ -753,7 +753,8 @@ async def test_recurring_event_policy_materializes_schedule_and_reminder(
             locked=True,
             expected_revision=None,
         )
-        assert locked.locked and locked.revision == 1
+        assert locked.locked
+        assert locked.revision == 1
         assert isinstance(item.placement, NamedZoneLocalIntervalPlacement)
         assert item.placement.starts_local_at.time() == time(10)
         assert item.placement.ends_local_at.time() == time(11)

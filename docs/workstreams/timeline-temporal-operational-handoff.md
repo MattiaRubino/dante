@@ -1,5 +1,14 @@
 # Timeline / Temporal-Operational — Workstream Handoff
 
+## 2026-11-06 — Focused gate Ruff assertion repair
+
+The owner pulled `47e590993` and started the focused gate. Ruff stopped on
+PT018 in two new PostgreSQL tests because each assertion combined lock state
+and revision. Both are now separate assertions. Ruff format, PostgreSQL and Web
+tests in that chained command did not run; repeat the focused gate after pull.
+No runtime or migration behavior changed in this checkpoint. Manual visual
+review of the lock and all three Event edit scopes remains pending.
+
 ## 2026-11-06 — Event Inspector lock and edit-form visual repair candidate
 
 The owner confirmed the focused two-Objective recurring Event checkpoint test
