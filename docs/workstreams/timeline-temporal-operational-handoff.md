@@ -1,5 +1,18 @@
 # Timeline / Temporal-Operational — Workstream Handoff
 
+## 2026-11-06 — Fallback Session projection test correction
+
+The owner pulled `cd028980a`: repository-wide Prettier and Web typecheck PASS;
+focused Vitest ran 83 cases, 82 passed and one new fallback Session assertion
+failed. The test read `projected.events[0].startMinute` as factual 02:50, but
+that array intentionally preserves the canonical planned 02:30. The painted
+layout's `top` uses the factual 02:50 coordinate. Correct the regression to
+assert both truths, retaining the same one-card and actual-instant checks.
+Backend named-zone Occurrence and PostgreSQL Session tests remain 1 PASS each
+on `c4b4da147`. The corrected Vitest test and full gate are **NOT_RUN** on the
+new source SHA; owner WSL verification and visual review remain outstanding.
+
+
 ## 2026-11-06 — Clock-change focused gate formatting follow-up
 
 The owner pulled `c4b4da147` and reports test-integrity PASS. The chained Web

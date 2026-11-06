@@ -98,7 +98,11 @@ describe('one-card Activity actual Session projection', () => {
     );
     expect(projected?.events).toHaveLength(1);
     expect(projected?.events[0]?.id).toBe('autumn-slot');
-    expect(projected?.events[0]?.startMinute).toBe(170);
+    expect(projected?.events[0]?.startMinute).toBe(150);
+    expect(projected?.layouts[0]?.top).toBeCloseTo(
+      projected?.mapper.map(170) ?? 0,
+      3,
+    );
     expect(projected?.layouts[0]?.sessionReality).toMatchObject({
       startedAt: '2026-10-25T00:50:00.000Z',
       endedAt: '2026-10-25T01:10:00.000Z',
