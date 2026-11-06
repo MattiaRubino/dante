@@ -58,12 +58,21 @@ function waitForTimelineRead(page: Page) {
         response.request().method() === 'GET',
       { timeout: E2E_RESPONSE_TIMEOUT_MS },
     )
-    .then(async (response) => {
+    .then((response) => {
       const status = response.status();
-      const payload = (await response.json()) as unknown;
       return {
         status: () => status,
-        json: () => Promise.resolve(payload),
+        // A reload can cancel an earlier Timeline fetch after its headers arrive.
+        // Read the persisted window independently instead of waiting forever for
+        // the cancelled browser response body.
+        json: async () => {
+          const fresh = await page.request.get(response.url(), {
+            headers: { 'X-Dante-Time-Zone': 'Europe/Rome' },
+            timeout: E2E_RESPONSE_TIMEOUT_MS,
+          });
+          expect(fresh.status()).toBe(200);
+          return fresh.json() as Promise<unknown>;
+        },
       };
     });
 }

@@ -1,5 +1,22 @@
 # Timeline / Temporal-Operational — Workstream Handoff
 
+## 2026-11-06 — Full gate 26/27 and browser response race
+
+The owner's full gate on `c033b4f` passed 26/27 groups and source stability.
+`WEB_BROWSER_REAL_STACK` had 91 passed, four skipped and one timed out:
+the one-off Activity deletion test in `schedule-placement-forms.spec.ts`.
+Playwright trace shows the test stopped before opening the Inspector, while
+`waitForTimelineRead` awaited `response.json()` from a Timeline response
+observed during reload. Several Timeline requests overlapped at that point;
+the `browserContext.close` error followed the 60-second test timeout.
+
+The browser test helper now uses the observed response only for its status and,
+when an assertion needs the body, obtains a fresh authenticated Timeline read
+from the same URL with an explicit ten-second limit. This is a **test-only
+candidate, NOT_RUN** by the assistant. The owner should rerun the targeted
+Chromium test and then the complete gate on the resulting SHA. Real-app visual
+acceptance of Event parity remains with the owner.
+
 ## 2026-11-05 — Complete gate at generated-client SHA and quality repair
 
 The owner published nine generated OpenAPI/Orval files at `6d1fe62` and ran
