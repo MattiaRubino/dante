@@ -27,7 +27,12 @@ export function useTimelineCardDetails(
         : basis?.kind === 'scheduled-occurrence' && basis.sourceKind === 'event'
           ? basis.sourceNativeRef
           : null;
-  const key = subjectRef === null ? null : `${kind}:${subjectRef}`;
+  const occurrenceRef =
+    basis?.kind === 'scheduled-occurrence' && basis.sourceKind === 'event'
+      ? basis.occurrenceRef
+      : null;
+  const key =
+    subjectRef === null ? null : `${kind}:${subjectRef}:${occurrenceRef ?? ''}`;
   const [loaded, setLoaded] = useState<LoadedCardDetails | null>(null);
   const [revision, setRevision] = useState(0);
 
@@ -51,13 +56,16 @@ export function useTimelineCardDetails(
           agendaCount: 0,
         };
       }
+      const eventSource = createRemoteTemporalEventAgendaDataSource();
       const [profile, objectives] = await Promise.all([
-        createRemoteTemporalEventAgendaDataSource().loadEvent(
-          subjectRef,
-          controller.signal,
-        ),
+        occurrenceRef && eventSource.loadOccurrenceEvent
+          ? eventSource.loadOccurrenceEvent(occurrenceRef, controller.signal)
+          : eventSource.loadEvent(subjectRef, controller.signal),
         createRemoteRealityObjectiveDataSource()
-          .listObjectives('event', subjectRef)
+          .listObjectives(
+            occurrenceRef ? 'occurrence' : 'event',
+            occurrenceRef ?? subjectRef,
+          )
           .catch(() => []),
       ]);
       return {
@@ -78,7 +86,7 @@ export function useTimelineCardDetails(
       cancelled = true;
       controller.abort();
     };
-  }, [key, kind, subjectRef, revision]);
+  }, [key, kind, occurrenceRef, subjectRef, revision]);
 
   return loaded?.key === key ? loaded.details : null;
 }

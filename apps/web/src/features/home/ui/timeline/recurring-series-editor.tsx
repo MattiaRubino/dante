@@ -506,6 +506,27 @@ export function RecurringSeriesEditor({
     : [];
   const changeTime = (next: string) =>
     changeRecurrence({ ...recurrence, wall_times: [next] });
+  const seriesStartDate =
+    asText(recurrence.effective_from) || source?.selectedDate || '';
+  const seriesStartTime = time.slice(0, 5) || '09:00';
+  const seriesStart = seriesStartDate
+    ? Temporal.PlainDateTime.from(`${seriesStartDate}T${seriesStartTime}`)
+    : null;
+  const seriesEnd = seriesStart?.add({
+    minutes: Math.max(1, asNumber(structure.duration_minutes) || 30),
+  });
+  const seriesLastDay = seriesStartDate
+    ? Temporal.PlainDate.from(seriesStartDate)
+        .add({ days: Math.max(1, asNumber(structure.duration_days) || 1) - 1 })
+        .toString()
+    : '';
+  const changeSeriesEnd = (day: string, clock: string) => {
+    if (!seriesStart) return;
+    const next = Temporal.PlainDateTime.from(`${day}T${clock}`);
+    const minutes = seriesStart.until(next).total({ unit: 'minutes' });
+    if (minutes > 0)
+      changeStructure({ ...structure, duration_minutes: minutes });
+  };
   const changePattern = (pattern: string) => {
     const weekday = Temporal.PlainDate.from(
       source?.selectedDate ?? '2027-01-01',
@@ -906,38 +927,103 @@ export function RecurringSeriesEditor({
                   Fuso orario · {asText(recurrence.zone_id) || 'della serie'}
                 </div>
               )}
-              {owner === 'event' && structure.placement_kind === 'timed' ? (
-                <TimeControl
-                  label="Inizio"
-                  value={time.slice(0, 5)}
-                  dataPath="series.start"
-                  onChange={changeTime}
-                />
+              {owner === 'event' &&
+              structure.placement_kind === 'timed' &&
+              seriesStart &&
+              seriesEnd ? (
+                <div className="temporal-create-activity-interval__fields timeline-activity-editor__interval-fields">
+                  <TemporalCreateDatePicker
+                    label="Data inizio"
+                    locale="it"
+                    value={seriesStartDate}
+                    onChange={(day) =>
+                      changeRecurrence({
+                        ...recurrence,
+                        effective_from: day,
+                        ...(recurrence.pattern_anchor_date
+                          ? { pattern_anchor_date: day }
+                          : {}),
+                      })
+                    }
+                  />
+                  <TimeControl
+                    label="Inizio"
+                    value={seriesStartTime}
+                    dataPath="series.start"
+                    onChange={changeTime}
+                  />
+                  <span
+                    className="temporal-create-activity-interval__arrow"
+                    aria-hidden="true"
+                  >
+                    →
+                  </span>
+                  <TimeControl
+                    label="Fine"
+                    value={seriesEnd
+                      .toPlainTime()
+                      .toString({ smallestUnit: 'minute' })}
+                    dataPath="series.end"
+                    onChange={(clock) =>
+                      changeSeriesEnd(
+                        seriesEnd.toPlainDate().toString() ===
+                          seriesStartDate && clock <= seriesStartTime
+                          ? dayAfter(seriesStartDate)
+                          : seriesEnd.toPlainDate().toString(),
+                        clock,
+                      )
+                    }
+                  />
+                  <TemporalCreateDatePicker
+                    label="Data fine"
+                    align="end"
+                    locale="it"
+                    value={seriesEnd.toPlainDate().toString()}
+                    onChange={(day) =>
+                      changeSeriesEnd(
+                        day,
+                        seriesEnd
+                          .toPlainTime()
+                          .toString({ smallestUnit: 'minute' }),
+                      )
+                    }
+                  />
+                </div>
               ) : null}
-              {owner === 'event' ? (
-                <label>
-                  {structure.placement_kind === 'all_day'
-                    ? 'Giorni'
-                    : 'Durata in minuti'}
-                  <input
-                    type="number"
-                    min={1}
-                    value={asNumber(
-                      structure.placement_kind === 'all_day'
-                        ? structure.duration_days
-                        : structure.duration_minutes,
-                    )}
-                    onChange={(e) => {
-                      const length = Number(e.target.value);
-                      changeStructure({
-                        ...structure,
-                        [structure.placement_kind === 'all_day'
-                          ? 'duration_days'
-                          : 'duration_minutes']: length,
-                      });
+              {owner === 'event' && structure.placement_kind === 'all_day' ? (
+                <div className="timeline-event-schedule-editor__dates">
+                  <TemporalCreateDatePicker
+                    label="Data inizio"
+                    locale="it"
+                    value={seriesStartDate}
+                    onChange={(day) =>
+                      changeRecurrence({
+                        ...recurrence,
+                        effective_from: day,
+                        ...(recurrence.pattern_anchor_date
+                          ? { pattern_anchor_date: day }
+                          : {}),
+                      })
+                    }
+                  />
+                  <TemporalCreateDatePicker
+                    label="Data fine"
+                    align="end"
+                    locale="it"
+                    value={seriesLastDay}
+                    onChange={(day) => {
+                      const duration =
+                        Temporal.PlainDate.from(seriesStartDate)
+                          .until(Temporal.PlainDate.from(day))
+                          .total({ unit: 'days' }) + 1;
+                      if (duration > 0)
+                        changeStructure({
+                          ...structure,
+                          duration_days: duration,
+                        });
                     }}
                   />
-                </label>
+                </div>
               ) : null}
             </section>
             {owner === 'routine' && template.placement_kind === 'all_day' ? (

@@ -1,5 +1,33 @@
 # Timeline / Temporal-Operational — Workstream Handoff
 
+## 2026-11-06 — Event card and recurring edit visual follow-up candidate
+
+The owner ran the complete local gate against `589fed027` and supplied its
+report: source fingerprint stable, all **27/27 groups PASS**. This verifies
+the prior clock-change candidate on that SHA. Visual acceptance is separate.
+The owner now reports four real-app findings: indistinct Event/Activity cards,
+an empty terminal line and missing recurring Event detail counters, an
+intermittent edit warning, and a mismatched Event series editor. The captured
+warning shows an empty third Agenda row and “Completa ogni punto della
+Scaletta.” followed by the normal unsaved-draft discard confirmation; it is
+not evidence of lost canonical data. An unshown intermittent error still
+requires the exact message/request and reproduction.
+
+This source candidate reads recurring Event card Life Area/Agenda from the
+selected Occurrence detail and Objectives from the Occurrence scope; the
+previous card read the Event source for both. A bare card has no terminal
+separator. During Event Edit, Inspector action buttons no longer leak into
+the modal header, and the series editor receives the same Event Edit styling.
+The series timed editor uses the Create/Activity Edit date and clock controls
+for start/end, deriving the accepted duration from the end, while preserving
+the existing recurrence preview/confirmation contract. All-day keeps its day
+count. Existing Web tests now cover occurrence card data, series date/end
+controls and hidden edit toolbar. **NOT_RUN on this new SHA**: owner Web
+typecheck, focused Vitest, full gate and real-app visual check. The distinct
+Event/Activity marker is a product design discussion; do not conflate it with
+Life Area color or silently impose a new palette. Typography and Objective
+unit wrapping remain a separate discussion requested by the owner.
+
 ## 2026-11-06 — Fallback Session projection test correction
 
 The owner pulled `cd028980a`: repository-wide Prettier and Web typecheck PASS;

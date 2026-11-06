@@ -12,6 +12,8 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import { EventInspectorActions } from './event-inspector-actions';
 import { RecurringSeriesEditor } from './recurring-series-editor';
+import { useTimelineCardDetails } from './timeline-card-details';
+import type { TimelineEvent } from './model/timeline-types';
 import { EventDetailDialog } from './timeline-overlays';
 
 const loadEvent = vi.fn();
@@ -145,6 +147,42 @@ afterEach(() => {
 });
 
 describe('Event Inspector actions', () => {
+  it('reads the selected Event occurrence for the card agenda and objective counters', async () => {
+    const occurrenceRef = '0199a555-5555-7555-8555-555555555555';
+    loadOccurrenceEvent.mockResolvedValue({
+      lifeAreaRef: null,
+      agendaParts: ['Apertura', 'Chiusura'],
+    });
+    listObjectives.mockResolvedValue([{ label: 'Presenza' }]);
+    const event = {
+      id: 'selected-event-occurrence',
+      canonicalBasis: {
+        kind: 'scheduled-occurrence',
+        sourceKind: 'event',
+        sourceNativeRef: eventRef,
+        occurrenceRef,
+      },
+    } as TimelineEvent;
+    function CardDetailsProbe() {
+      const details = useTimelineCardDetails(event);
+      return (
+        <output>
+          {details
+            ? `${details.agendaCount}/${details.objectiveCount}`
+            : 'Caricamento'}
+        </output>
+      );
+    }
+    render(<CardDetailsProbe />);
+    expect(await screen.findByText('2/1')).toBeTruthy();
+    expect(loadOccurrenceEvent).toHaveBeenCalledWith(
+      occurrenceRef,
+      expect.any(AbortSignal),
+    );
+    expect(listObjectives).toHaveBeenCalledWith('occurrence', occurrenceRef);
+    expect(loadEvent).not.toHaveBeenCalled();
+  });
+
   it('edits only the selected recurring Event profile without revising the source', async () => {
     const occurrenceRef = '0199a555-5555-7555-8555-555555555555';
     const context = {
@@ -338,6 +376,14 @@ describe('Event Inspector actions', () => {
     fireEvent.change(await screen.findByRole('textbox', { name: 'Titolo' }), {
       target: { value: 'Nuova conferenza' },
     });
+    expect(
+      screen.getAllByRole('button', { name: /^Data inizio:/ }),
+    ).toHaveLength(1);
+    expect(screen.getAllByRole('button', { name: /^Data fine:/ })).toHaveLength(
+      1,
+    );
+    expect(screen.getByRole('group', { name: 'Fine' })).toBeTruthy();
+    expect(screen.queryByText('Durata in minuti')).toBeNull();
     const areaRequest = fetchAreas.mock.calls.find(
       ([url]) => url === '/api/v1/temporal/life-areas',
     );
@@ -952,6 +998,11 @@ describe('Event Inspector actions', () => {
     expect(screen.getByRole('dialog').className).toContain(
       'timeline-event-modal--edit',
     );
+    expect(
+      screen
+        .getByRole('dialog')
+        .querySelector('.timeline-event-modal__owner-actions'),
+    ).toBeNull();
     expect(
       screen
         .getByRole('textbox', { name: 'Titolo Event' })

@@ -277,6 +277,22 @@
   cursor: default;
 }
 
+/* A bare card ends at its time. There is no separator for absent details. */
+.home-m1
+  .home-timeline--production
+  .timeline-event-card:not(
+    :has(
+      .timeline-event-card__meta,
+      .timeline-event-card__reality-status,
+      .timeline-event-card__indicator,
+      .timeline-activity-planned-sessions__indicator,
+      .timeline-event-card__subitems
+    )
+  )
+  .timeline-event-card__time {
+  border-bottom: 0;
+}
+
 .home-m1 .home-timeline--production .timeline-event-card__reality-status,
 .home-m1 .home-timeline--production .timeline-event-card__meta {
   width: 100%;

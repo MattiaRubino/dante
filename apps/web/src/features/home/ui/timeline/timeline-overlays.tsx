@@ -910,7 +910,7 @@ export function EventDetailDialog({
     >
       <div
         ref={dialogRef}
-        className={`timeline-event-modal${currentEditingProfile || eventEditorMode ? ' timeline-event-modal--edit' : ' timeline-event-modal--inspector'}${eventEditorMode && eventEditorMode !== 'series' ? ' timeline-event-modal--event-edit' : ''}`}
+        className={`timeline-event-modal${currentEditingProfile || eventEditorMode ? ' timeline-event-modal--edit' : ' timeline-event-modal--inspector'}${eventEditorMode ? ' timeline-event-modal--event-edit' : ''}`}
         style={
           currentEditingProfile || eventEditorMode
             ? undefined
@@ -929,7 +929,8 @@ export function EventDetailDialog({
       >
         <div className="timeline-event-modal__header">
           <div className="timeline-event-modal__header-actions">
-            {currentEditingProfile ? null : placementLockScheduleRef ===
+            {currentEditingProfile ||
+            eventEditorMode ? null : placementLockScheduleRef ===
               null ? null : (
               <PlacementLockControls
                 key={placementLockScheduleRef}
@@ -937,7 +938,7 @@ export function EventDetailDialog({
                 variant="icon"
               />
             )}
-            {currentEditingProfile ? null : (
+            {currentEditingProfile || eventEditorMode ? null : (
               <div
                 ref={setToolbarTarget}
                 className="timeline-event-modal__owner-actions"
