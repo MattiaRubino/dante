@@ -60,3 +60,47 @@
   font-size: 0.82rem;
   opacity: 0.8;
 }
+
+.timeline-event-agenda.is-read-only {
+  gap: 0.55rem;
+  margin-bottom: 0;
+  border-color: var(--dante-semantic-color-home-border-subtle);
+  background: var(--dante-semantic-color-home-surface-control, #1b2529);
+}
+
+.timeline-event-agenda.is-read-only .timeline-event-agenda__list {
+  gap: 7px;
+  padding: 0;
+  list-style: none;
+}
+
+.timeline-event-agenda.is-read-only .timeline-event-agenda__list li {
+  grid-template-columns: 28px 1px minmax(0, 1fr);
+  min-height: 40px;
+  gap: 0;
+  border: 1px solid var(--dante-semantic-color-home-border-subtle);
+  border-radius: 9px;
+  background: color-mix(
+    in srgb,
+    var(--dante-semantic-color-home-surface-control, #1b2529) 72%,
+    transparent
+  );
+}
+
+.timeline-event-agenda__position {
+  color: var(--dante-semantic-color-home-chrome-active-text, #f0a06f);
+  font-size: 0.78rem;
+  font-variant-numeric: tabular-nums;
+  text-align: center;
+}
+
+.timeline-event-agenda__divider {
+  height: 60%;
+  align-self: center;
+  background: var(--dante-semantic-color-home-border-subtle);
+}
+
+.timeline-event-agenda.is-read-only .timeline-event-agenda__value {
+  padding: 8px 12px;
+  font-size: 0.88rem;
+}

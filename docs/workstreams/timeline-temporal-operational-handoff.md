@@ -1,5 +1,27 @@
 # Timeline / Temporal-Operational — Workstream Handoff
 
+## 2026-11-06 — Full gate accepted; real-app Event recurrence read failure
+
+The owner ran the complete adaptive gate on `de7cc81277dd9b49b55099389085fa097bc1ce40`:
+**27/27 groups passed**, source stability PASS, exit 0. Authenticated real-stack
+browser: 92 passed, four skipped. This is test acceptance for that exact SHA.
+
+In manual visual review the owner created a daily recurring Event with three
+Scaletta parts and Boolean/quantity Objectives. The current-day card and a
+next-day expectation appeared, then Home displayed “Timeline non disponibile”
+while some interactions continued. The runtime first reads a window, checkpoints
+the priority days, reads again, then checkpoints the full 43-day window and
+reads again. The screenshot does not identify which request or protocol parse
+failed; do not hide the error or assume a database cause without the failed
+request status/body. Ask for the `POST /api/v1/temporal/occurrences/checkpoint`
+and `GET /api/v1/temporal/timeline/window` outcomes after Retry in DevTools.
+
+The Inspector Scaletta now uses numbered rows matching Create and omits the
+explanatory sentence in read-only mode. This visual candidate is **NOT_RUN**
+and needs a focused owner test and visual check. The owner also reported narrow
+Objective controls (Unità wraps) and very small type; discuss global sizing and
+translations with the owner after the read failure and Inspector correction.
+
 ## 2026-11-06 — Full gate 26/27 and browser response race
 
 The owner's full gate on `c033b4f` passed 26/27 groups and source stability.

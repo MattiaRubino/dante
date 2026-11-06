@@ -35,6 +35,31 @@ function record(revision: number, agendaParts: readonly string[]) {
 }
 
 describe('B03-D canonical Event Agenda editor', () => {
+  it('presents numbered Scaletta rows without explanatory copy in the Inspector', async () => {
+    render(
+      <TimelineEventAgendaEditor
+        eventRef={EVENT_REF}
+        dataSource={{
+          loadEvent: () => Promise.resolve(record(0, ['Apertura', 'Domande'])),
+          replaceAgenda: vi.fn(),
+        }}
+        readOnly
+      />,
+    );
+    const section = (await screen.findByText('Apertura')).closest('section');
+    expect(section?.classList.contains('is-read-only')).toBe(true);
+    expect(
+      section?.querySelectorAll('.timeline-event-agenda__position'),
+    ).toHaveLength(2);
+    expect(
+      section?.querySelector('.timeline-event-agenda__list')?.textContent,
+    ).toContain('1Apertura');
+    expect(
+      section?.querySelector('.timeline-event-agenda__list')?.textContent,
+    ).toContain('2Domande');
+    expect(section?.querySelectorAll('p')).toHaveLength(0);
+  });
+
   it('uses the existing Event read to show a description after an empty agenda', async () => {
     const loadEvent = vi.fn<TemporalEventAgendaDataSource['loadEvent']>(() =>
       Promise.resolve({

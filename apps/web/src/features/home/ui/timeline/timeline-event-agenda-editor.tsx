@@ -207,7 +207,7 @@ function TimelineEventAgendaEditorInstance({
   return (
     <>
       <section
-        className="timeline-event-agenda"
+        className={`timeline-event-agenda${readOnly ? ' is-read-only' : ''}`}
         aria-busy={busy}
         data-agenda-revision={state.record.agendaRevision}
       >
@@ -216,11 +216,13 @@ function TimelineEventAgendaEditorInstance({
             {t(($) => $.common.home.timeline.create.eventDetails.agenda)}
           </strong>
         </div>
-        <p>
-          {t(
-            ($) => $.common.home.timeline.create.eventDetails.agendaDescription,
-          )}
-        </p>
+        {!readOnly ? (
+          <p>
+            {t(
+              ($) => $.common.home.timeline.create.eventDetails.agendaDescription,
+            )}
+          </p>
+        ) : null}
 
         {notice !== null ? (
           <div
@@ -263,6 +265,20 @@ function TimelineEventAgendaEditorInstance({
               };
               return (
                 <li key={`${position}:${part}`}>
+                  {readOnly ? (
+                    <>
+                      <span
+                        className="timeline-event-agenda__position"
+                        aria-hidden="true"
+                      >
+                        {position}
+                      </span>
+                      <span
+                        className="timeline-event-agenda__divider"
+                        aria-hidden="true"
+                      />
+                    </>
+                  ) : null}
                   {readOnly ? (
                     <span className="timeline-event-agenda__value">{part}</span>
                   ) : editing ? (
