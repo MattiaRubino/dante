@@ -1,5 +1,17 @@
 # Timeline / Temporal-Operational — Workstream Handoff
 
+## 2026-11-06 — Clock-change focused gate formatting follow-up
+
+The owner pulled `c4b4da147` and reports test-integrity PASS. The chained Web
+command stopped at Prettier on ten files, including the previously untouched
+Event Agenda editor; TypeScript and Vitest did not run. The owner separately
+reports the named-zone Occurrence evaluator **1 passed** and PostgreSQL Session
+pause/resume **1 passed** on that SHA. The ten files are formatted with the
+repository's Prettier 3.9.0; focused format check and `git diff --check` pass
+in scratch. The new formatting commit reopens the same-SHA gate. Owner WSL
+typecheck, Vitest, complete gate and visual review remain **NOT_RUN**.
+
+
 ## 2026-11-06 — Unified clock-change contract candidate
 
 The owner chose one planned wall-clock slot for Event and Activity across the

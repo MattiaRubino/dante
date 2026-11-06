@@ -219,7 +219,8 @@ function TimelineEventAgendaEditorInstance({
         {!readOnly ? (
           <p>
             {t(
-              ($) => $.common.home.timeline.create.eventDetails.agendaDescription,
+              ($) =>
+                $.common.home.timeline.create.eventDetails.agendaDescription,
             )}
           </p>
         ) : null}

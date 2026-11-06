@@ -42,9 +42,7 @@ describe('timed one-minute Activity/Event validation', () => {
       expect(placement.start.toInstant().toString()).toBe(
         '2026-10-25T00:15:00Z',
       );
-      expect(placement.end.toInstant().toString()).toBe(
-        '2026-10-25T00:45:00Z',
-      );
+      expect(placement.end.toInstant().toString()).toBe('2026-10-25T00:45:00Z');
     },
   );
 

@@ -41,9 +41,10 @@ describe('calendar-wall-clock DST defaults', () => {
           calendarFrequency: 'daily',
         },
       });
-      const recurrence = kind === 'event'
-        ? buildTemporalCreateEventRecurrence(fields)
-        : buildTemporalCreateActivityRecurrence(fields);
+      const recurrence =
+        kind === 'event'
+          ? buildTemporalCreateEventRecurrence(fields)
+          : buildTemporalCreateActivityRecurrence(fields);
       expect(recurrence).toMatchObject({
         clock_basis_code: 'named_zone',
         wall_times: ['02:30'],

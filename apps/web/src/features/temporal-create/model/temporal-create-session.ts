@@ -292,10 +292,7 @@ export function temporalCreateIntervalDisambiguation(
   start: Temporal.PlainDateTime,
   end: Temporal.PlainDateTime,
 ): TemporalCreateTimeDisambiguation {
-  if (
-    fields.timeDisambiguation !== 'reject' ||
-    fields.timeMode !== 'zoned'
-  ) {
+  if (fields.timeDisambiguation !== 'reject' || fields.timeMode !== 'zoned') {
     return fields.timeDisambiguation;
   }
   try {
@@ -949,9 +946,10 @@ export function validateTemporalCreateFields(
             local?.toZonedDateTime(fields.timeZoneId, { disambiguation });
           } catch {
             issues.push(
-              temporalValidationIssue('temporal.create.dst_resolution.required', [
-                path,
-              ]),
+              temporalValidationIssue(
+                'temporal.create.dst_resolution.required',
+                [path],
+              ),
             );
           }
         }

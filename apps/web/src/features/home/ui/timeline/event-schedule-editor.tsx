@@ -144,12 +144,16 @@ export function eventSchedulePlacementFromDraft(
     const earlier = local.toZonedDateTime(draft.zoneId, {
       disambiguation: 'earlier',
     });
-    const later = local.toZonedDateTime(draft.zoneId, { disambiguation: 'later' });
+    const later = local.toZonedDateTime(draft.zoneId, {
+      disambiguation: 'later',
+    });
     if (
       !earlier.toPlainDateTime().equals(local) &&
       !later.toPlainDateTime().equals(local)
     ) {
-      throw new Error('Questo orario non esiste nel fuso scelto: scegline uno valido.');
+      throw new Error(
+        'Questo orario non esiste nel fuso scelto: scegline uno valido.',
+      );
     }
   }
   return {

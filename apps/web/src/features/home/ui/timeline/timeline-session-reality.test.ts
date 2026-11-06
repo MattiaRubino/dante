@@ -81,12 +81,14 @@ describe('one-card Activity actual Session projection', () => {
     };
     const [projected] = applyTimelineSessionReality(
       [fallDay],
-      [{
-        ...ended,
-        started_at: '2026-10-25T00:50:00Z',
-        ended_at: '2026-10-25T01:10:00Z',
-        pause_ranges: [],
-      }],
+      [
+        {
+          ...ended,
+          started_at: '2026-10-25T00:50:00Z',
+          ended_at: '2026-10-25T01:10:00Z',
+          pause_ranges: [],
+        },
+      ],
       'Europe/Rome',
       '2026-10-25T01:11:00Z',
       Date.parse('2026-10-25T01:11:00Z'),

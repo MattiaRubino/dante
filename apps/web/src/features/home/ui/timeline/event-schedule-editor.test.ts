@@ -114,7 +114,10 @@ describe('Event Schedule edit conversion', () => {
       ends_local_at: '2026-03-29T02:30:00',
     });
     expect(() =>
-      eventSchedulePlacementFromDraft({ ...existingGap, zoneId: 'Europe/Paris' }),
+      eventSchedulePlacementFromDraft({
+        ...existingGap,
+        zoneId: 'Europe/Paris',
+      }),
     ).toThrow('non esiste');
   });
 });
