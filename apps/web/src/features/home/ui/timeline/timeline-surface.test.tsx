@@ -119,10 +119,10 @@ describe('TimelineSurface production parity', () => {
     expect(card?.dataset.timelineKind).toBe('event');
     expect(card?.dataset.recurringInstance).toBe('false');
     expect(
-      card?.querySelector('.timeline-event-card__kind-mark svg path'),
-    ).not.toBeNull();
+      card?.querySelector('.timeline-event-card__kind-mark')?.textContent,
+    ).toBe('E');
     expect(card?.querySelector('.timeline-event-card__time')?.textContent).toBe(
-      '4 ago 09:00–4 ago 11:00',
+      '09:00 – 11:00 (4 ago)',
     );
     const indicator = card?.querySelector('.timeline-event-card__indicator');
     expect(indicator?.textContent).toBe('Scaletta3');
@@ -146,10 +146,10 @@ describe('TimelineSurface production parity', () => {
   it('labels both planned endpoints across midnight without marking a one-off as recurring', () => {
     expect(
       timelineCardPlannedIntervalLabel('2026-12-31', 23 * 60 + 30, 1440, 'it'),
-    ).toBe('31 dic 23:30–1 gen 00:00');
+    ).toBe('23:30 (31 dic) – 00:00 (1 gen)');
     expect(
       timelineCardPlannedIntervalLabel('2026-11-07', 20 * 60, 21 * 60, 'it'),
-    ).toBe('7 nov 20:00–7 nov 21:00');
+    ).toBe('20:00 – 21:00 (7 nov)');
     const { container } = renderTimeline();
     expect(
       container.querySelector(

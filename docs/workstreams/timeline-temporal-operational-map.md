@@ -1,5 +1,14 @@
 # Timeline / Temporal-Operational — Live Execution Ledger
 
+## 2026-11-06 — Corrected card format; Activity recurrence error open
+
+Same-day timed cards now show one trailing planned date; overnight cards label
+each endpoint. Aligned A/E markers replace circle/diamond; recurrence arrow
+remains. Event occurrence detail read falls back to inherited Agenda if its
+instance detail request fails. Owner's new Activity recurrence Timeline error
+needs the failing checkpoint/GET response and backend cause before a safe fix;
+no backend resolution is claimed. See handoff.
+
 ## 2026-11-06 — Card identity and Event edit visual candidate
 
 Timed/all-day cards use canonical Activity circle, Event diamond and Occurrence

@@ -183,6 +183,35 @@ describe('Event Inspector actions', () => {
     expect(loadEvent).not.toHaveBeenCalled();
   });
 
+  it('shows inherited recurring Event agenda when the instance detail is temporarily unavailable', async () => {
+    const occurrenceRef = '0199a555-5555-7555-8555-555555555555';
+    loadOccurrenceEvent.mockRejectedValue(new Error('temporary unavailable'));
+    loadEvent.mockResolvedValue({
+      lifeAreaRef: null,
+      agendaParts: ['Apertura', 'Chiusura'],
+    });
+    const event = {
+      id: 'recurring-event',
+      canonicalBasis: {
+        kind: 'scheduled-occurrence',
+        sourceKind: 'event',
+        sourceNativeRef: eventRef,
+        occurrenceRef,
+      },
+    } as TimelineEvent;
+    function CardDetailsProbe() {
+      const details = useTimelineCardDetails(event);
+      return (
+        <output>
+          {details ? `Scaletta ${details.agendaCount}` : 'Caricamento'}
+        </output>
+      );
+    }
+    render(<CardDetailsProbe />);
+    expect(await screen.findByText('Scaletta 2')).toBeTruthy();
+    expect(loadEvent).toHaveBeenCalledWith(eventRef, expect.any(AbortSignal));
+  });
+
   it('edits only the selected recurring Event profile without revising the source', async () => {
     const occurrenceRef = '0199a555-5555-7555-8555-555555555555';
     const context = {

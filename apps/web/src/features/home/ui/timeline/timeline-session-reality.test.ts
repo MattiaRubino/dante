@@ -109,7 +109,7 @@ describe('one-card Activity actual Session projection', () => {
         projected?.layouts[0]?.event.endMinute ?? 0,
         'it',
       ),
-    ).toBe('25 ott 02:30–25 ott 03:00');
+    ).toBe('02:30 – 03:00 (25 ott)');
     expect(projected?.layouts[0]?.top).toBeCloseTo(
       projected?.mapper.map(170) ?? 0,
       3,
@@ -568,7 +568,7 @@ describe('one-card Activity actual Session projection', () => {
         plan.endMinute,
         'it',
       ),
-    ).toBe('4 nov 00:15–4 nov 00:45');
+    ).toBe('00:15 – 00:45 (4 nov)');
     expect(visible[0]?.layouts[0]?.sessionReality?.state).toBe('running');
     expect(visible[0]?.layouts[0]?.top).toBeCloseTo(
       visible[0]?.mapper.map(20 * 60 + 39) ?? 0,

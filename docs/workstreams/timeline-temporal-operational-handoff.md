@@ -1,5 +1,28 @@
 # Timeline / Temporal-Operational — Workstream Handoff
 
+## 2026-11-06 — Owner card-format correction and recurring Activity read failure
+
+Owner rejected repeated dates on same-day timed cards and the outlined
+circle/diamond markers. Candidate now renders `11:00 – 12:00 (16 nov)` for a
+same-day interval and `11:00 (16 nov) – 12:00 (17 nov)` across days, retaining
+the original planned date when a Session paints elsewhere. Cards use aligned,
+same-size `A` and `E` markers beside the title; the recurrence arrow remains.
+Event Scaletta uses the existing count indicator, and the card-detail read
+tries the inherited source Agenda when a selected Occurrence detail request
+fails. Successful instance detail still determines the effective count. A
+focused component regression covers fallback and the two date forms.
+
+The owner's screenshot shows the Timeline error after creating an Activity
+recurring over several days. There is no HTTP status/body or backend exception
+in the screenshot. The Timeline runtime can fail on either Occurrence
+checkpoint POST or Timeline window GET/protocol parsing. Earlier Event
+recurrence failed specifically at checkpoint due a two-Objective transaction
+bug, but the Activity report is not evidence of the same cause. Do not claim a
+backend fix until the failing request and wrapped cause are identified. Ask
+for the failing checkpoint/window response and, if 503, the backend traceback;
+then add the matching PostgreSQL regression. **NOT_RUN** on this candidate:
+owner WSL focused tests, full gate and visual acceptance.
+
 ## 2026-11-06 — Card identity, planned dates and Event edit toolbar candidate
 
 Owner chose to distinguish Activity and Event without changing Life Area colors.

@@ -352,18 +352,7 @@ export function TimelineAllDayLane({
               title={kindLabel}
               aria-hidden="true"
             >
-              <svg
-                viewBox="0 0 16 16"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="1.7"
-              >
-                {identity.kind === 'activity' ? (
-                  <circle cx="8" cy="8" r="5" />
-                ) : (
-                  <path d="M8 2.5 13.5 8 8 13.5 2.5 8Z" />
-                )}
-              </svg>
+              {identity.kind === 'activity' ? 'A' : 'E'}
             </span>
             {identity.recurringInstance ? (
               <span

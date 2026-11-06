@@ -162,9 +162,17 @@ export function timelineCardPlannedIntervalLabel(
     const date = new Date(
       Date.UTC(endpointDay.year, endpointDay.month - 1, endpointDay.day, 12),
     );
-    return `${formatter.format(date)} ${formatTimelineMinute(clock)}`;
+    return {
+      date: formatter.format(date),
+      clock: formatTimelineMinute(clock),
+      dayKey: endpointDay.toString(),
+    };
   };
-  return `${endpoint(startMinute)}–${endpoint(endMinute)}`;
+  const start = endpoint(startMinute);
+  const end = endpoint(endMinute);
+  return start.dayKey === end.dayKey
+    ? `${start.clock} – ${end.clock} (${start.date})`
+    : `${start.clock} (${start.date}) – ${end.clock} (${end.date})`;
 }
 
 function TimelineEventCard({
@@ -378,18 +386,7 @@ function TimelineEventCard({
               title={kindLabel}
               aria-hidden="true"
             >
-              <svg
-                viewBox="0 0 16 16"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="1.7"
-              >
-                {isActivity ? (
-                  <circle cx="8" cy="8" r="5" />
-                ) : (
-                  <path d="M8 2.5 13.5 8 8 13.5 2.5 8Z" />
-                )}
-              </svg>
+              {isActivity ? 'A' : 'E'}
             </span>
             {recurringInstance ? (
               <span

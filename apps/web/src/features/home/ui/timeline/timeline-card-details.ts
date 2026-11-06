@@ -59,7 +59,14 @@ export function useTimelineCardDetails(
       const eventSource = createRemoteTemporalEventAgendaDataSource();
       const [profile, objectives] = await Promise.all([
         occurrenceRef && eventSource.loadOccurrenceEvent
-          ? eventSource.loadOccurrenceEvent(occurrenceRef, controller.signal)
+          ? eventSource
+              .loadOccurrenceEvent(occurrenceRef, controller.signal)
+              .catch((error: unknown) => {
+                if (controller.signal.aborted) throw error;
+                // Keep inherited Agenda visible if the instance-specific read
+                // is temporarily unavailable. A successful read still wins.
+                return eventSource.loadEvent(subjectRef, controller.signal);
+              })
           : eventSource.loadEvent(subjectRef, controller.signal),
         createRemoteRealityObjectiveDataSource()
           .listObjectives(
