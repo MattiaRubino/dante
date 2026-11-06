@@ -255,6 +255,11 @@ describe('TemporalCreateComposer', () => {
         .getByRole('button', { name: 'Aggiungi punto alla scaletta' })
         .classList.contains('temporal-create-tree-add'),
     ).toBe(true);
+    const agenda = screen.getByRole('region', { name: 'Scaletta evento' });
+    expect(agenda.classList.contains('is-edit')).toBe(true);
+    expect(
+      agenda.querySelector('.temporal-create-activity-tree__spine'),
+    ).not.toBeNull();
     expect(
       screen.getByRole('region', { name: 'Svolgimento e obiettivi' }),
     ).toBeTruthy();

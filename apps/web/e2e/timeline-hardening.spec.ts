@@ -381,10 +381,12 @@ test('Session Objective and agenda indicators sit near the lower card edge', asy
   expect(distanceFromBottom).toBeGreaterThanOrEqual(0);
   expect(distanceFromBottom).toBeLessThanOrEqual(38);
   const plain = page.locator('[data-timeline-event="3"]');
-  const bothInside = await plain.evaluate((element) => {
-    const footer = document.createElement('div');
-    footer.className =
-      'timeline-event-card__indicators has-multiple-event-indicators';
+  const stackedInside = await plain.evaluate((element) => {
+    const footer =
+      element.querySelector('.timeline-event-card__indicators') ??
+      document.createElement('div');
+    footer.className = 'timeline-event-card__indicators';
+    footer.replaceChildren();
     for (const label of ['Obiettivi', 'Scaletta']) {
       const indicator = document.createElement('div');
       indicator.className = 'timeline-event-card__indicator';
@@ -392,13 +394,20 @@ test('Session Objective and agenda indicators sit near the lower card edge', asy
       footer.append(indicator);
     }
     element.append(footer);
-    return [...footer.children].every((indicator) => {
-      const bounds = indicator.getBoundingClientRect();
-      const card = element.getBoundingClientRect();
-      return bounds.top >= card.top && bounds.bottom <= card.bottom;
-    });
+    const [objectives, agenda] = [...footer.children].map((indicator) =>
+      indicator.getBoundingClientRect(),
+    );
+    if (!objectives || !agenda) return false;
+    return (
+      agenda.top >= objectives.bottom &&
+      Math.abs(agenda.width - objectives.width) <= 1 &&
+      [objectives, agenda].every((bounds) => {
+        const card = element.getBoundingClientRect();
+        return bounds.top >= card.top && bounds.bottom <= card.bottom;
+      })
+    );
   });
-  expect(bothInside).toBe(true);
+  expect(stackedInside).toBe(true);
 });
 
 test('title drag previews the same 15-minute destination as drop', async ({

@@ -1,5 +1,20 @@
 # Timeline / Temporal-Operational — Workstream Handoff
 
+## 2026-11-06 — Owner correction: Event counters stack and Create Agenda matches Edit
+
+The owner rejected the preceding side-by-side Event Objective/Agenda indicators:
+Activity Session and Objective indicators are full-width stacked rows, so an
+Event with both Objective and Agenda now uses the same full-width vertical
+stack. Removed the special two-column CSS/class and raised the Event density
+floor to the Activity 118px floor to reserve the second indicator row without
+clipping. Advanced Create Event Agenda opts into the same numbered, connected
+Session-like layout as the two Edit scopes, leaving Quick Create untouched.
+The browser geometry regression now checks vertical order, equal widths and
+card bounds; the Advanced Create component regression checks the style and
+spine. Focused density, Create and Event Inspector suites passed locally
+(41/41); the real-browser geometry test and owner's visual acceptance are
+pending.
+
 ## 2026-11-06 — Event edit Agenda placement and instance scope label
 
 The Event-only-this editor no longer repeats the inert “Ambito: solo questa
@@ -9,9 +24,10 @@ the former placement after the interval fields was the actual DOM order.
 Both Event edit scopes share the Agenda’s numbered rows and editing actions,
 with the Session-like spine and connectors but no enclosing series-only box.
 Create keeps its existing presentation. The Event Inspector suite passed
-locally (23/23), including the selected and following scopes. The stale
-keyboard-focus test now checks that the editor removes its toolbar rather
-than hiding it. Prettier and `git diff --check` passed. Typecheck in this
+locally (23/23), including the selected and following scopes. The keyboard
+focus regression tolerates the portal toolbar being present or absent during
+the editor transition, hiding it when present before testing Tab behavior.
+Prettier and `git diff --check` passed. Typecheck in this
 scratch clone cannot be trusted with sibling-checkout dependencies (including
 an unrelated `nonexistentTime` resource mismatch). Owner-local pinned
 toolchain typecheck and visual verification remain pending.

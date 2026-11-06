@@ -662,6 +662,7 @@ export function TemporalCreateComposer({
               {advanced && fields.kind === 'event' ? (
                 <TemporalCreateEventAgenda
                   parts={fields.event.agendaParts}
+                  editStyle
                   onChange={(agendaParts) =>
                     onPatch({
                       event: Object.freeze({

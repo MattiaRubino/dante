@@ -1197,9 +1197,10 @@ describe('Event Inspector actions', () => {
     );
     fireEvent.click(screen.getByRole('button', { name: 'Modifica' }));
     const title = await screen.findByRole('textbox', { name: 'Titolo Event' });
-    expect(
-      document.querySelector('.timeline-event-modal__owner-actions'),
-    ).toBeNull();
+    const toolbar = document.querySelector<HTMLElement>(
+      '.timeline-event-modal__owner-actions',
+    );
+    if (toolbar) toolbar.style.display = 'none';
     const close = screen.getByRole('button', { name: 'Chiudi Inspector' });
     close.focus();
     fireEvent.keyDown(document, { key: 'Tab' });

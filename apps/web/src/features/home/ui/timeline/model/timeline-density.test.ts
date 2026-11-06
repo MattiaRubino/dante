@@ -124,7 +124,7 @@ describe('timeline density engine', () => {
         },
       },
     };
-    expect(timelineEventReadableHeight(plain)).toBeGreaterThanOrEqual(104);
+    expect(timelineEventReadableHeight(plain)).toBeGreaterThanOrEqual(118);
     expect(
       timelineEventReadableHeight({ ...plain, subitems: ['Scaletta'] }),
     ).toBeGreaterThanOrEqual(128);

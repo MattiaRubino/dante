@@ -1,5 +1,12 @@
 # Timeline / Temporal-Operational — Live Execution Ledger
 
+## 2026-11-06 — Owner correction on Event counter layout
+
+Event Objective and Agenda counters now stack at full width like Activity
+Session/Objective counters; Advanced Create Agenda uses the Edit connected
+layout. Density and component checks passed 41/41 locally; browser geometry
+and owner-local visual review pending. See handoff.
+
 ## 2026-11-06 — Event edit Agenda aligned with Sessions
 
 Selected-instance Event edit hides the redundant scope banner. Event series
