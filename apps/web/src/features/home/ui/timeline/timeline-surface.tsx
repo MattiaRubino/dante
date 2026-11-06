@@ -1996,7 +1996,10 @@ export function TimelineSurface({
         })()}
         placementLockScheduleRef={(() => {
           const basis = detailState?.event.canonicalBasis;
-          return basis?.kind === 'scheduled-activity'
+          return basis?.kind === 'scheduled-activity' ||
+            basis?.kind === 'scheduled-event' ||
+            (basis?.kind === 'scheduled-occurrence' &&
+              basis.sourceKind === 'event')
             ? basis.scheduleRef
             : null;
         })()}

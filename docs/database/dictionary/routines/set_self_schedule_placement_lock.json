@@ -8,7 +8,7 @@
     "name": "set_self_schedule_placement_lock",
     "ownership_class": "dante_owned"
   },
-  "purpose": "Set or clear the explicit self-owned Schedule placement lock with revision control.",
+  "purpose": "Set or clear the explicit self-owned Activity, Event or recurring Event Occurrence Schedule placement lock with revision control.",
   "classification": {
     "persistence_role": "set_self_schedule_placement_lock",
     "canonicality": "capability_surface",

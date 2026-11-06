@@ -19,10 +19,12 @@ import { TemporalTimelineRuntimeBoundary } from '../../../temporal/timeline-runt
 import { TimelineSurface } from './timeline-surface';
 
 const getPlacementLock = vi.hoisted(() => vi.fn());
+const setPlacementLock = vi.hoisted(() => vi.fn());
 
 vi.mock('../../../temporal/remote-placement-lock-data-source', () => ({
   createRemotePlacementLockDataSource: () => ({
     get: getPlacementLock,
+    set: setPlacementLock,
   }),
 }));
 
@@ -44,6 +46,7 @@ afterEach(() => {
   cleanup();
   document.body.innerHTML = '';
   getPlacementLock.mockReset();
+  setPlacementLock.mockReset();
 });
 
 type Deferred<T> = Readonly<{
@@ -108,7 +111,17 @@ function renderEventTimeline(
 }
 
 describe('B03-C Event placement lifecycle from Timeline', () => {
-  it('does not request the Activity placement lock for an Event schedule', async () => {
+  it('shows the Schedule placement lock for a scheduled Event', async () => {
+    getPlacementLock.mockResolvedValue({
+      scheduleRef: SCHEDULE_REF,
+      locked: false,
+      revision: 0,
+    });
+    setPlacementLock.mockResolvedValue({
+      scheduleRef: SCHEDULE_REF,
+      locked: true,
+      revision: 1,
+    });
     const loadWindow = vi
       .fn<TemporalTimelineDataSource['loadWindow']>()
       .mockResolvedValue(
@@ -133,7 +146,16 @@ describe('B03-C Event placement lifecycle from Timeline', () => {
     });
     fireEvent.doubleClick(card);
     expect(await screen.findByRole('dialog')).toBeTruthy();
-    expect(getPlacementLock).not.toHaveBeenCalled();
+    await waitFor(() =>
+      expect(getPlacementLock).toHaveBeenCalledWith(SCHEDULE_REF),
+    );
+    fireEvent.click(screen.getByRole('button', { name: 'Blocca spostamenti' }));
+    await waitFor(() =>
+      expect(setPlacementLock).toHaveBeenCalledWith(SCHEDULE_REF, true, null),
+    );
+    expect(
+      await screen.findByRole('button', { name: 'Sblocca spostamenti' }),
+    ).toBeTruthy();
     expect(
       screen.queryByText('Impossibile leggere il blocco spostamenti.'),
     ).toBeNull();

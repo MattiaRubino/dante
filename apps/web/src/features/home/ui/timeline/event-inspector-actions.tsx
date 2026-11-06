@@ -1320,12 +1320,13 @@ export function EventInspectorActions({
               />
             </section>
           </div>
-          <div className="timeline-event-profile-editor__actions">
+          <div className="timeline-event-profile-editor__actions dante-temporal-panel-actions">
             <button type="button" disabled={busy} onClick={cancelProfile}>
               Annulla
             </button>
             <button
               type="button"
+              className="is-primary"
               disabled={busy || !profileDraft.title.trim()}
               onClick={() => void saveProfile()}
             >

@@ -914,6 +914,20 @@ describe('Event Inspector actions', () => {
     ).toBeTruthy();
     const eventForm = document.querySelector('.timeline-event-profile-editor');
     expect(eventForm).not.toBeNull();
+    const footer = eventForm!.querySelector(
+      '.timeline-event-profile-editor__actions',
+    );
+    expect(footer?.classList.contains('dante-temporal-panel-actions')).toBe(
+      true,
+    );
+    expect(
+      within(footer as HTMLElement)
+        .getByRole('button', { name: 'Salva modifiche' })
+        .classList.contains('is-primary'),
+    ).toBe(true);
+    expect(
+      within(eventForm as HTMLElement).queryByText('Cambio dell’ora'),
+    ).toBeNull();
     const sections = [
       '.timeline-event-profile-editor__title-row',
       '.temporal-create-event-agenda',

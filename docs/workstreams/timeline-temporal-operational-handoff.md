@@ -1,5 +1,33 @@
 # Timeline / Temporal-Operational — Workstream Handoff
 
+## 2026-11-06 — Event Inspector lock and edit-form visual repair candidate
+
+The owner confirmed the focused two-Objective recurring Event checkpoint test
+on `70a2a1e41`: **1 passed in 17.07s**. Manual visual review then found the
+Event Inspector missing the Activity-style placement lock, Event Edit's
+timezone collapsing into the date row, unstyled Cancel/Save buttons, and an
+always-visible ambiguous-clock selector. The separate global text-size and
+Objective Unit wrapping discussion remains deferred until these defects are
+visually accepted by the owner.
+
+Candidate: forward migration `20261106_170` broadens the existing owner-scoped
+Schedule lock getter/setter to one-off Event Schedules and recurring Event
+Occurrence Schedules while retaining the generic move-blocking trigger and
+Activity behavior. The Timeline passes the Event Schedule reference to the
+shared Inspector lock. One-off and selected-instance Event footer buttons use
+the shared panel-action classes; all Event edit scopes use the full-width
+timezone picker. The "Cambio dell’ora" choice is shown only if a named-zone
+endpoint is an actual repeated local hour; normal times and nonexistent spring
+hours do not show it. Existing PostgreSQL and Web test files cover these
+boundaries, and all seven exact-head catalog expectations advance to `_170`.
+
+**NOT_RUN**: no PostgreSQL, Web test, full gate, or real-app visual proof for
+this candidate yet. The owner's WSL should run focused placement lock/Event
+profile/recurrence tests, Web Event lifecycle/Inspector/Schedule tests, then
+manual Event Inspector and all three edit scopes. The assistant's formatting
+attempt was blocked by scratch Node 24.22.1/pnpm 11.25.0 versus pinned
+24.19.0/11.22.0; use the owner's pinned toolchain to check formatting.
+
 ## 2026-11-06 — Recurring Event Objective checkpoint failure reproduced
 
 The owner ran the focused PostgreSQL regression on `7c7cfeb19` and it failed

@@ -23,6 +23,10 @@ from dante.modules.temporal.event_api import (
     EventAtomicEditCommand,
     apply_one_off_event_atomic_edit,
 )
+from dante.modules.temporal.placement_lock import (
+    PlacementLockApplication,
+    PlacementLockNotFoundError,
+)
 from dante.modules.temporal.reality_objective_api import (
     ActivityObjectiveBatchCommand,
     apply_event_objective_edits_in_session,
@@ -30,6 +34,7 @@ from dante.modules.temporal.reality_objective_api import (
 from dante.modules.temporal.schedule import (
     FloatingLocalIntervalPlacement,
     NamedZoneLocalIntervalPlacement,
+    SchedulePlacementLockedError,
     TemporalScheduleApplication,
 )
 from dante.platform.database.runtime import create_database_runtime
@@ -54,6 +59,77 @@ _RETIRE_OBJECTIVE = text("""
         :actor,:objective,:operation,:fingerprint,:expected
     )
 """)
+
+
+@pytest.mark.asyncio
+async def test_event_schedule_lock_is_owner_scoped_and_blocks_movement(
+    migrated_database: Any,
+) -> None:
+    owner = _seed_self(migrated_database)
+    other = _seed_self(migrated_database)
+    event = _legacy_event(migrated_database, owner, "Locked Event")
+    runtime = create_database_runtime(migrated_database.runtime_settings())
+    schedule_app = TemporalScheduleApplication(runtime.session_factory)
+    locks = PlacementLockApplication(runtime.session_factory)
+    try:
+        schedule = await schedule_app.establish_schedule(
+            self_person_ref=owner,
+            operation_id="event:lock:schedule",
+            subject_native_ref=event,
+            placement=FloatingLocalIntervalPlacement(
+                starts_local_at=datetime.fromisoformat("2026-11-06T13:00:00"),
+                ends_local_at=datetime.fromisoformat("2026-11-06T13:30:00"),
+            ),
+        )
+        initial_lock = await locks.get(self_person_ref=owner, schedule_ref=schedule.schedule_ref)
+        assert not initial_lock.locked
+        with pytest.raises(PlacementLockNotFoundError):
+            await locks.get(self_person_ref=other, schedule_ref=schedule.schedule_ref)
+        locked = await locks.set(
+            self_person_ref=owner,
+            schedule_ref=schedule.schedule_ref,
+            locked=True,
+            expected_revision=None,
+        )
+        assert locked.locked and locked.revision == 1
+        with pytest.raises(PlacementLockNotFoundError):
+            await locks.set(
+                self_person_ref=other,
+                schedule_ref=schedule.schedule_ref,
+                locked=False,
+                expected_revision=locked.revision,
+            )
+        with pytest.raises(SchedulePlacementLockedError):
+            await schedule_app.revise_schedule(
+                self_person_ref=owner,
+                operation_id="event:lock:blocked-move",
+                schedule_ref=schedule.schedule_ref,
+                expected_material_state_ref=schedule.material_state_ref,
+                placement=FloatingLocalIntervalPlacement(
+                    starts_local_at=datetime.fromisoformat("2026-11-06T14:00:00"),
+                    ends_local_at=datetime.fromisoformat("2026-11-06T14:30:00"),
+                ),
+            )
+        unlocked = await locks.set(
+            self_person_ref=owner,
+            schedule_ref=schedule.schedule_ref,
+            locked=False,
+            expected_revision=locked.revision,
+        )
+        assert not unlocked.locked
+        moved = await schedule_app.revise_schedule(
+            self_person_ref=owner,
+            operation_id="event:lock:allowed-move",
+            schedule_ref=schedule.schedule_ref,
+            expected_material_state_ref=schedule.material_state_ref,
+            placement=FloatingLocalIntervalPlacement(
+                starts_local_at=datetime.fromisoformat("2026-11-06T14:00:00"),
+                ends_local_at=datetime.fromisoformat("2026-11-06T14:30:00"),
+            ),
+        )
+        assert moved.schedule_ref == schedule.schedule_ref
+    finally:
+        await runtime.dispose()
 
 
 @pytest.mark.asyncio

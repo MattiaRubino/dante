@@ -1,4 +1,4 @@
-"""Self-scoped, CAS-protected user lock for accepted Activity Schedules."""
+"""Self-scoped, CAS-protected user lock for accepted temporal Schedules."""
 
 from __future__ import annotations
 

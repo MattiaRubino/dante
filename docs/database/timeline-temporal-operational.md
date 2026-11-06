@@ -599,3 +599,11 @@ or grant direct Schedule table access to the runtime role. The additional
 routine changes the candidate topology to **240 tables / 5 views / 249
 routines / 104 triggers / 492 indexes / 428 FKs / 600 CHECK**. Migration and
 runtime behavior of `_169` remain unverified until the owner's rerun.
+
+`20261106_170` extends the existing explicit Schedule placement lock to
+self-owned Event Schedules and Occurrence Schedules sourced from self-owned
+Events. Read/write owner checks stay in SECURITY DEFINER functions, and the
+existing Schedule revision trigger continues to block movement while locked.
+The functions are replaced in a forward revision without changing their
+signatures, grants or catalog counts. The owner's PostgreSQL and real-app
+verification are pending.

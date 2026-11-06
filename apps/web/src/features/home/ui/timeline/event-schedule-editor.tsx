@@ -16,6 +16,35 @@ export type EventScheduleDraft = Readonly<{
   disambiguation: 'reject' | 'earlier' | 'later';
 }>;
 
+export function eventScheduleHasAmbiguousHour(
+  draft: EventScheduleDraft,
+): boolean {
+  if (draft.kind !== 'timed' || !draft.zoneId) return false;
+  const zoneId = draft.zoneId;
+  try {
+    const endpoints = [
+      `${draft.startDate}T${draft.startTime}`,
+      `${draft.endDate}T${draft.endTime}`,
+    ] as const;
+    return endpoints.some((value) => {
+      const local = Temporal.PlainDateTime.from(value);
+      const earlier = local.toZonedDateTime(zoneId, {
+        disambiguation: 'earlier',
+      });
+      const later = local.toZonedDateTime(zoneId, {
+        disambiguation: 'later',
+      });
+      return (
+        earlier.toPlainDateTime().equals(local) &&
+        later.toPlainDateTime().equals(local) &&
+        earlier.epochNanoseconds !== later.epochNanoseconds
+      );
+    });
+  } catch {
+    return false;
+  }
+}
+
 export function eventScheduleDraftFromPlacement(
   placement: TimelineCanonicalSchedulePlacement,
 ): EventScheduleDraft | null {
@@ -179,7 +208,7 @@ export function EventScheduleEditor({
               onChange={(endDate) => update({ endDate })}
             />
           </div>
-          {draft.zoneId ? (
+          {eventScheduleHasAmbiguousHour(draft) ? (
             <label className="timeline-event-schedule-editor__zone">
               Cambio dell’ora
               <select

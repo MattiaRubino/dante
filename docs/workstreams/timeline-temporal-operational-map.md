@@ -1,5 +1,12 @@
 # Timeline / Temporal-Operational — Live Execution Ledger
 
+## 2026-11-06 — Event lock and edit visual candidate
+
+Forward `_170` extends self-owned placement lock to Event and Event Occurrence
+Schedules. Shared Inspector lock, timezone layout, matching action buttons,
+and conditional ambiguous-hour control are source candidates. Focused WSL
+tests and user visual review remain **NOT_RUN**. See handoff and DB reference.
+
 ## 2026-11-05 — Generated-client full gate repair
 
 Owner's 27-group gate on `6d1fe62` was source-stable and 20/27 green:

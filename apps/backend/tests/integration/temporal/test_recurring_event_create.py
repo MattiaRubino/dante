@@ -29,6 +29,10 @@ from dante.modules.temporal.occurrence_api import (
     get_recurring_event_occurrence_detail,
     get_recurring_event_occurrence_expected_participation,
 )
+from dante.modules.temporal.placement_lock import (
+    PlacementLockApplication,
+    PlacementLockNotFoundError,
+)
 from dante.modules.temporal.recurrence import CalendarRecurrence, RecurrenceApplication
 from dante.modules.temporal.recurring_authoring import RecurringAuthoringApplication
 from dante.modules.temporal.recurring_series_edit import RecurringSeriesEditApplication
@@ -647,6 +651,7 @@ async def test_recurring_event_policy_materializes_schedule_and_reminder(
     materializer = RoutineOccurrenceMaterializationApplication(runtime.session_factory)
     timeline = TemporalTimelineApplication(runtime.session_factory)
     reminders = ScheduleReminderApplication(runtime.session_factory)
+    locks = PlacementLockApplication(runtime.session_factory)
     try:
         objectives = (
             {
@@ -738,6 +743,17 @@ async def test_recurring_event_policy_materializes_schedule_and_reminder(
         ]
         assert len(event_items) == 1
         item = event_items[0]
+        lock_state = await locks.get(self_person_ref=alice, schedule_ref=item.schedule_ref)
+        assert not lock_state.locked
+        with pytest.raises(PlacementLockNotFoundError):
+            await locks.get(self_person_ref=bob, schedule_ref=item.schedule_ref)
+        locked = await locks.set(
+            self_person_ref=alice,
+            schedule_ref=item.schedule_ref,
+            locked=True,
+            expected_revision=None,
+        )
+        assert locked.locked and locked.revision == 1
         assert isinstance(item.placement, NamedZoneLocalIntervalPlacement)
         assert item.placement.starts_local_at.time() == time(10)
         assert item.placement.ends_local_at.time() == time(11)

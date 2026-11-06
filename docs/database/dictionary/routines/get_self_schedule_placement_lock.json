@@ -8,7 +8,7 @@
     "name": "get_self_schedule_placement_lock",
     "ownership_class": "dante_owned"
   },
-  "purpose": "Read the explicit self-owned Schedule placement lock.",
+  "purpose": "Read the explicit self-owned Activity, Event or recurring Event Occurrence Schedule placement lock.",
   "classification": {
     "persistence_role": "get_self_schedule_placement_lock",
     "canonicality": "capability_surface",

@@ -3,6 +3,7 @@ import { describe, expect, it } from 'vitest';
 
 import {
   eventScheduleDraftFromPlacement,
+  eventScheduleHasAmbiguousHour,
   eventSchedulePlacementFromDraft,
 } from './event-schedule-editor';
 
@@ -30,5 +31,36 @@ describe('Event Schedule edit conversion', () => {
     expect(() =>
       eventSchedulePlacementFromDraft({ ...draft!, endTime: '18:30' }),
     ).toThrow('successiva');
+  });
+
+  it('offers the clock-change choice only when a named-zone endpoint repeats', () => {
+    const ordinary = {
+      kind: 'timed' as const,
+      startDate: '2026-11-06',
+      endDate: '2026-11-06',
+      startTime: '13:30',
+      endTime: '14:00',
+      zoneId: 'Europe/Rome',
+      disambiguation: 'reject' as const,
+    };
+    expect(eventScheduleHasAmbiguousHour(ordinary)).toBe(false);
+    expect(
+      eventScheduleHasAmbiguousHour({
+        ...ordinary,
+        startDate: '2026-10-25',
+        endDate: '2026-10-25',
+        startTime: '02:15',
+        endTime: '02:45',
+      }),
+    ).toBe(true);
+    expect(
+      eventScheduleHasAmbiguousHour({
+        ...ordinary,
+        startDate: '2026-03-29',
+        endDate: '2026-03-29',
+        startTime: '02:15',
+        endTime: '02:45',
+      }),
+    ).toBe(false);
   });
 });
