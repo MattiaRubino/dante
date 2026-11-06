@@ -13,6 +13,7 @@ import {
 import { invalidateTemporalTimelineRead } from '../../temporal/timeline-invalidation';
 import {
   createTemporalCreateFields,
+  temporalCreateEffectiveDisambiguation,
   type TemporalCreateFields,
   type TemporalCreateWeekday,
 } from '../model/temporal-create-session';
@@ -163,7 +164,7 @@ function localAnchorInstant(fields: TemporalCreateFields) {
   );
   return local
     .toZonedDateTime(fields.timeZoneId, {
-      disambiguation: fields.timeDisambiguation,
+      disambiguation: temporalCreateEffectiveDisambiguation(fields),
     })
     .toInstant();
 }
@@ -193,7 +194,7 @@ function elapsedRange(fields: TemporalCreateFields) {
       const boundary = boundaryDate
         .toPlainDateTime('00:00')
         .toZonedDateTime(fields.timeZoneId, {
-          disambiguation: fields.timeDisambiguation,
+          disambiguation: temporalCreateEffectiveDisambiguation(fields),
         })
         .toInstant();
       return Object.freeze({
@@ -219,12 +220,6 @@ function calendarRecurrence(
   const range = rangeForDateFamily(fields);
   const date = Temporal.PlainDate.from(fields.date);
   const namedZone = fields.timeMode === 'zoned';
-  if (namedZone && fields.timeDisambiguation === 'reject') {
-    throw new B06CreateValidationError(
-      'temporal.create.recurrence.named_zone_resolution_required',
-      ['timeDisambiguation'],
-    );
-  }
 
   let patternCode:
     | 'daily'
@@ -292,7 +287,9 @@ function calendarRecurrence(
     year_month_days: yearMonthDays,
     nonexistent_local_time_policy: namedZone ? 'skip_civil_candidate' : null,
     ambiguous_local_time_policy: namedZone
-      ? (fields.timeDisambiguation as 'earlier' | 'later')
+      ? fields.timeDisambiguation === 'later'
+        ? 'later'
+        : 'earlier'
       : null,
     step_unit_code: null,
   });

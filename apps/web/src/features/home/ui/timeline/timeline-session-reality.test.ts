@@ -72,6 +72,38 @@ const ended = {
 } as const;
 
 describe('one-card Activity actual Session projection', () => {
+  it('keeps one factual card across the repeated hour', () => {
+    const planned = activity('autumn-slot', 150, 180);
+    const fallDay = {
+      ...day(planned),
+      date: Temporal.PlainDate.from('2026-10-25'),
+      dateKey: '2026-10-25',
+    };
+    const [projected] = applyTimelineSessionReality(
+      [fallDay],
+      [{
+        ...ended,
+        started_at: '2026-10-25T00:50:00Z',
+        ended_at: '2026-10-25T01:10:00Z',
+        pause_ranges: [],
+      }],
+      'Europe/Rome',
+      '2026-10-25T01:11:00Z',
+      Date.parse('2026-10-25T01:11:00Z'),
+      groups,
+      zoom,
+      expanded,
+    );
+    expect(projected?.events).toHaveLength(1);
+    expect(projected?.events[0]?.id).toBe('autumn-slot');
+    expect(projected?.events[0]?.startMinute).toBe(170);
+    expect(projected?.layouts[0]?.sessionReality).toMatchObject({
+      startedAt: '2026-10-25T00:50:00.000Z',
+      endedAt: '2026-10-25T01:10:00.000Z',
+      actualLabel: '02:50–02:10',
+    });
+  });
+
   it('keeps a Session stopped after a few seconds above the exact now marker', () => {
     const planned = activity('short-session', 20 * 60 + 2, 20 * 60 + 32);
     const [projected] = applyTimelineSessionReality(

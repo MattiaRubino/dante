@@ -17,27 +17,60 @@ import {
 } from './temporal-create-session';
 
 describe('timed one-minute Activity/Event validation', () => {
-  it('chooses a single Event instant in a repeated local hour, including after switching from Activity', () => {
-    const fields = createTemporalCreateFields({
-      kind: 'event',
-      title: 'Ora locale',
-      date: '2026-10-25',
-      startTime: '02:15',
-      durationMinutes: 30,
-      timeMode: 'zoned',
-      timeZoneId: 'Europe/Rome',
-    });
-    expect(fields.timeDisambiguation).toBe('earlier');
-    expect(validateTemporalCreateFields(fields)).toEqual([]);
-    expect(buildTemporalCreatePlacement(fields)).toMatchObject({
-      kind: 'zoned',
-      disambiguation: 'earlier',
-    });
+  it.each(['activity', 'event'] as const)(
+    'chooses one first-fold %s instant without duplicating the wall-clock slot',
+    (kind) => {
+      const fields = createTemporalCreateFields({
+        kind,
+        title: 'Ora locale',
+        date: '2026-10-25',
+        startTime: '02:15',
+        durationMinutes: 30,
+        timeMode: 'zoned',
+        timeZoneId: 'Europe/Rome',
+      });
+      expect(fields.timeDisambiguation).toBe('reject');
+      expect(validateTemporalCreateFields(fields)).toEqual([]);
+      const placement = buildTemporalCreatePlacement(fields);
+      expect(placement).toMatchObject({
+        kind: 'zoned',
+        disambiguation: 'earlier',
+      });
+      if (placement?.kind !== 'zoned') {
+        throw new Error('Expected named-zone interval.');
+      }
+      expect(placement.start.toInstant().toString()).toBe(
+        '2026-10-25T00:15:00Z',
+      );
+      expect(placement.end.toInstant().toString()).toBe(
+        '2026-10-25T00:45:00Z',
+      );
+    },
+  );
+
+  it('resolves the repeated hour when switching from Activity to Event', () => {
     const switched = updateTemporalCreateFields(
-      createTemporalCreateSession(createTemporalCreateFields()),
+      createTemporalCreateSession(
+        createTemporalCreateFields({
+          date: '2026-10-25',
+          startTime: '02:15',
+          durationMinutes: 30,
+          timeMode: 'zoned',
+          timeZoneId: 'Europe/Rome',
+        }),
+      ),
       { kind: 'event' },
     );
-    expect(switched.draft.current.timeDisambiguation).toBe('earlier');
+    expect(switched.draft.current.timeDisambiguation).toBe('reject');
+    expect(buildTemporalCreatePlacement(switched.draft.current)?.kind).toBe(
+      'zoned',
+    );
+    expect(
+      validateTemporalCreateFields({
+        ...switched.draft.current,
+        title: 'Evento',
+      }),
+    ).toEqual([]);
   });
 
   it.each(['activity', 'event'] as const)(
@@ -386,7 +419,7 @@ describe('temporal create session', () => {
     }
   });
 
-  it('requires explicit DST resolution and retains the original named-zone wall-clock gap intent', () => {
+  it('flags a spring gap on the visible end clock and retains explicitly imported resolution', () => {
     const rejected = createTemporalCreateFields({
       title: 'DST gap',
       date: '2026-03-29',
@@ -396,9 +429,27 @@ describe('temporal create session', () => {
       timeZoneId: 'Europe/Rome',
       timeDisambiguation: 'reject',
     });
-    expect(
-      validateTemporalCreateFields(rejected).map((issue) => issue.code),
-    ).toContain('temporal.create.dst_resolution.required');
+    expect(validateTemporalCreateFields(rejected)).toContainEqual(
+      expect.objectContaining({
+        code: 'temporal.create.dst_resolution.required',
+        path: ['durationMinutes'],
+      }),
+    );
+
+    for (const kind of ['activity', 'event'] as const) {
+      const startsInGap = createTemporalCreateFields({
+        ...rejected,
+        kind,
+        startTime: '02:30',
+        durationMinutes: 30,
+      });
+      expect(validateTemporalCreateFields(startsInGap)).toContainEqual(
+        expect.objectContaining({
+          code: 'temporal.create.dst_resolution.required',
+          path: ['startTime'],
+        }),
+      );
+    }
 
     const explicit = createTemporalCreateFields({
       ...rejected,

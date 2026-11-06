@@ -14,6 +14,8 @@ import type { TemporalValidationIssue } from '../../temporal';
 import {
   buildTemporalCreatePlacement,
   createTemporalCreateFields,
+  temporalCreateEffectiveDisambiguation,
+  temporalCreateIntervalDisambiguation,
   validateTemporalCreateFields,
   type TemporalCreateFields,
 } from '../model/temporal-create-session';
@@ -563,7 +565,7 @@ function localIntervalPlacement(
       startsLocalAt: start,
       endsLocalAt: end,
       zoneId: fields.timeZoneId,
-      disambiguation: fields.timeDisambiguation,
+      disambiguation: temporalCreateIntervalDisambiguation(fields, start, end),
     });
   }
   return Object.freeze({
@@ -677,7 +679,7 @@ function placementInput(
         endsLocalAt:
           placement.sourceEndsLocalAt ?? placement.end.toPlainDateTime(),
         zoneId: fields.timeZoneId,
-        disambiguation: fields.timeDisambiguation,
+        disambiguation: temporalCreateEffectiveDisambiguation(fields),
       });
     case 'absolute':
       return Object.freeze({

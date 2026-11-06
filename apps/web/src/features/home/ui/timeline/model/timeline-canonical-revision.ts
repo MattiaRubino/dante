@@ -59,6 +59,20 @@ function resolveLocal(
   }
 }
 
+function resolveNewWallClock(
+  local: PlainDateTime,
+  zoneId: string,
+): Instant | null {
+  const ordinary = resolveLocal(local, zoneId, 'reject');
+  if (ordinary !== null) return ordinary;
+  try {
+    const first = local.toZonedDateTime(zoneId, { disambiguation: 'earlier' });
+    return first.toPlainDateTime().equals(local) ? first.toInstant() : null;
+  } catch {
+    return null;
+  }
+}
+
 function commonDisambiguation(
   startsLocalAt: PlainDateTime,
   endsLocalAt: PlainDateTime,
@@ -170,8 +184,8 @@ function namedZoneInputFromDisplay(
   effectiveZoneId: string,
   sourceZoneId: string,
 ): TemporalSchedulePlacementInput | null {
-  const resolvedStartAt = resolveLocal(start, effectiveZoneId, 'reject');
-  const resolvedEndAt = resolveLocal(end, effectiveZoneId, 'reject');
+  const resolvedStartAt = resolveNewWallClock(start, effectiveZoneId);
+  const resolvedEndAt = resolveNewWallClock(end, effectiveZoneId);
   if (
     resolvedStartAt === null ||
     resolvedEndAt === null ||
@@ -211,8 +225,8 @@ function absoluteInputFromDisplay(
   end: PlainDateTime,
   effectiveZoneId: string,
 ): TemporalSchedulePlacementInput | null {
-  const startsAt = resolveLocal(start, effectiveZoneId, 'reject');
-  const endsAt = resolveLocal(end, effectiveZoneId, 'reject');
+  const startsAt = resolveNewWallClock(start, effectiveZoneId);
+  const endsAt = resolveNewWallClock(end, effectiveZoneId);
   if (
     startsAt === null ||
     endsAt === null ||

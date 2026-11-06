@@ -14,6 +14,7 @@ export type EventScheduleDraft = Readonly<{
   endTime: string;
   zoneId: string | null;
   disambiguation: 'reject' | 'earlier' | 'later';
+  original?: Readonly<{ start: string; end: string; zoneId: string }>;
 }>;
 
 function savedEventDisambiguation(
@@ -90,6 +91,15 @@ export function eventScheduleDraftFromPlacement(
     endTime: end.toPlainTime().toString({ smallestUnit: 'minute' }),
     zoneId: placement.kind === 'named-zone-local' ? placement.zoneId : null,
     disambiguation,
+    ...(placement.kind === 'named-zone-local'
+      ? {
+          original: {
+            start: start.toString(),
+            end: end.toString(),
+            zoneId: placement.zoneId,
+          },
+        }
+      : {}),
   };
 }
 
@@ -123,6 +133,24 @@ export function eventSchedulePlacementFromDraft(
       starts_local_at: start.toString(),
       ends_local_at: end.toString(),
     };
+  }
+  for (const [local, originalValue] of [
+    [start, draft.original?.start],
+    [end, draft.original?.end],
+  ] as const) {
+    const original = draft.original;
+    if (original?.zoneId === draft.zoneId && local.toString() === originalValue)
+      continue;
+    const earlier = local.toZonedDateTime(draft.zoneId, {
+      disambiguation: 'earlier',
+    });
+    const later = local.toZonedDateTime(draft.zoneId, { disambiguation: 'later' });
+    if (
+      !earlier.toPlainDateTime().equals(local) &&
+      !later.toPlainDateTime().equals(local)
+    ) {
+      throw new Error('Questo orario non esiste nel fuso scelto: scegline uno valido.');
+    }
   }
   return {
     kind: 'named_zone_local_interval',

@@ -1410,6 +1410,10 @@ On a DST fall-back day, a local wall-clock time may map to two possible instants
 
 LifeOS must preserve enough zone/resolution semantics to choose/reconstruct the intended instant without creating duplicate Occurrences merely because the clock label appears twice.
 
+For the current Timeline calendar wall-clock Activity and Event authoring contract, the ordinary repeated-hour default is the **first** instant. A calendar candidate at 02:30 therefore has one Occurrence, one planned card at 02:30, and one due/reminder identity; the second passage through 02:30 must not trigger it again. A previously accepted second-fold placement retains its resolved instant on edit or import. The Timeline's current-time marker follows the actual local clock and can move backward over the same visual row.
+
+For the current named-zone calendar recurrence, a candidate in the spring gap is skipped without renumbering or manufacturing a different clock time. A newly entered one-off Activity or Event time in that gap is rejected on the affected visible time control. Explicit historical/imported gap resolutions remain representable; editing unrelated metadata must not silently relocate them. This operational default is scoped to calendar-wall-clock planning, not medication or other specialist policies, floating-local schedules, absolute instants, or elapsed recurrence.
+
 ### No universal UTC-only recurrence truth
 
 A normalized UTC instant may be useful operationally, but it must not replace the canonical semantic distinction among:

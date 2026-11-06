@@ -176,7 +176,33 @@ describe('B02-E3 / B03-C canonical Timeline revision', () => {
     expect(revision).toBeNull();
   });
 
-  it('fails closed when an absolute drag targets an ambiguous viewing-zone wall clock', () => {
+  it('resolves a named-zone Activity drag to one first-fold interval', () => {
+    const revision = timelineCanonicalRevisionForDisplayEdit({
+      basis: basis({
+        kind: 'named-zone-local',
+        startsLocalAt: Temporal.PlainDateTime.from('2026-10-24T02:15'),
+        endsLocalAt: Temporal.PlainDateTime.from('2026-10-24T02:45'),
+        zoneId: 'Europe/Rome',
+        resolvedStartAt: Temporal.Instant.from('2026-10-24T00:15:00Z'),
+        resolvedEndAt: Temporal.Instant.from('2026-10-24T00:45:00Z'),
+      }),
+      fromDateKey: '2026-10-24',
+      previousStartMinute: 135,
+      previousEndMinute: 165,
+      toDateKey: '2026-10-25',
+      startMinute: 135,
+      endMinute: 165,
+      effectiveZoneId: 'Europe/Rome',
+    });
+    expect(revision?.next).toMatchObject({
+      kind: 'named-zone-local-interval',
+      disambiguation: 'earlier',
+      startsLocalAt: Temporal.PlainDateTime.from('2026-10-25T02:15'),
+      endsLocalAt: Temporal.PlainDateTime.from('2026-10-25T02:45'),
+    });
+  });
+
+  it('moves an absolute placement to the first repeated-hour instant', () => {
     const revision = timelineCanonicalRevisionForDisplayEdit({
       basis: basis({
         kind: 'absolute',
@@ -192,7 +218,11 @@ describe('B02-E3 / B03-C canonical Timeline revision', () => {
       effectiveZoneId: 'Europe/Rome',
     });
 
-    expect(revision).toBeNull();
+    expect(revision?.next).toMatchObject({
+      kind: 'absolute-interval',
+      startsAt: Temporal.Instant.from('2026-10-25T00:30:00Z'),
+      endsAt: Temporal.Instant.from('2026-10-25T02:00:00Z'),
+    });
   });
 });
 

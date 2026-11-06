@@ -3387,8 +3387,8 @@
       "suite": "web-unit-component",
       "contract_id": "T02",
       "candidate_behavior": "Event Schedule edit conversion",
-      "purpose": "Verify an all-day exclusive end and reject a reversed timed window before mutation.",
-      "invariant": "Editing preserves the displayed final date and never submits a reversed timed interval.",
+      "purpose": "Verify all-day and timed Event Schedule edits, including repeated and missing local hours and preservation of a saved resolved instant.",
+      "invariant": "Editing preserves the displayed final date, refuses reversed intervals and newly entered spring gaps, and retains accepted historical fold resolution.",
       "status": "QUALIFIED"
     },
     {
@@ -3425,8 +3425,8 @@
       "suite": "web-unit-component",
       "contract_id": "P-OTHER",
       "candidate_behavior": "timeline canonical revision",
-      "purpose": "",
-      "invariant": "",
+      "purpose": "Verify Timeline Activity/Event Schedule revisions, preservation of saved second-fold instants, first-fold edits, and spring-gap refusal.",
+      "invariant": "A new named-zone or absolute move into a repeated hour chooses one first-fold instant while Undo retains historical resolution and gap moves fail closed.",
       "status": "UNREVIEWED",
       "audit_note": "Needs contract/assertion review, rejection cases, and executable evidence; filename alone is not proof."
     },
@@ -3515,8 +3515,8 @@
       "suite": "web-unit-component",
       "contract_id": "P-OTHER",
       "candidate_behavior": "timeline temporal",
-      "purpose": "",
-      "invariant": "",
+      "purpose": "Verify civil-day arithmetic and the Timeline now marker's wall-clock positioning across the autumn fallback.",
+      "invariant": "The marker can return from 02:59 to 02:00 while a planned 02:30 remains one fixed visual slot.",
       "status": "UNREVIEWED",
       "audit_note": "Needs contract/assertion review, rejection cases, and executable evidence; filename alone is not proof."
     },
@@ -3675,8 +3675,8 @@
       "suite": "web-unit-component",
       "contract_id": "T07",
       "candidate_behavior": "timeline session reality",
-      "purpose": "",
-      "invariant": "",
+      "purpose": "Verify factual Session projection onto one Activity card, including a Session spanning both passages through an autumn repeated hour.",
+      "invariant": "Factual start and end instants and one card survive clock fallback without duplicating the Activity.",
       "status": "UNREVIEWED",
       "audit_note": "Needs contract/assertion review, rejection cases, and executable evidence; filename alone is not proof."
     },
@@ -3825,8 +3825,8 @@
       "suite": "web-unit-component",
       "contract_id": "P-OTHER",
       "candidate_behavior": "temporal create quick submit",
-      "purpose": "",
-      "invariant": "",
+      "purpose": "Verify minute-exact Create submit mappings and common Activity/Event calendar recurrence DST defaults.",
+      "invariant": "Both recurring kinds retain one earlier-fold candidate per local date and skip nonexistent spring candidates.",
       "status": "UNREVIEWED",
       "audit_note": "Needs contract/assertion review, rejection cases, and executable evidence; filename alone is not proof."
     },
@@ -3895,8 +3895,8 @@
       "suite": "web-unit-component",
       "contract_id": "P-OTHER",
       "candidate_behavior": "temporal create session",
-      "purpose": "",
-      "invariant": "",
+      "purpose": "Verify Activity/Event Create draft and placement semantics for one-minute intervals, repeated hours, nonexistent local times, and saved explicit resolutions.",
+      "invariant": "Normal authoring selects the first repeated-hour instant once, reports spring gaps on the affected visible time field, and preserves explicit imported resolutions.",
       "status": "UNREVIEWED",
       "audit_note": "Needs contract/assertion review, rejection cases, and executable evidence; filename alone is not proof."
     },

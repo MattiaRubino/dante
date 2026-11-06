@@ -277,10 +277,6 @@ function normalizeFields(fields: TemporalCreateFields): TemporalCreateFields {
 
   return Object.freeze({
     ...fields,
-    timeDisambiguation:
-      fields.kind === 'event' && fields.timeDisambiguation === 'reject'
-        ? 'earlier'
-        : fields.timeDisambiguation,
     timeSemantics,
     scheduling: freezeScheduling(scheduling),
     execution: freezeExecution(fields.execution),
@@ -288,6 +284,63 @@ function normalizeFields(fields: TemporalCreateFields): TemporalCreateFields {
     confirmation: freezeConfirmation(fields.confirmation),
     event: freezeEvent(fields.event),
   });
+}
+
+/** Resolve each planned interval without silently accepting a missing hour. */
+export function temporalCreateIntervalDisambiguation(
+  fields: TemporalCreateFields,
+  start: Temporal.PlainDateTime,
+  end: Temporal.PlainDateTime,
+): TemporalCreateTimeDisambiguation {
+  if (
+    fields.timeDisambiguation !== 'reject' ||
+    fields.timeMode !== 'zoned'
+  ) {
+    return fields.timeDisambiguation;
+  }
+  try {
+    const resolutions = [start, end].map((local) => {
+      const earlier = local.toZonedDateTime(fields.timeZoneId, {
+        disambiguation: 'earlier',
+      });
+      const later = local.toZonedDateTime(fields.timeZoneId, {
+        disambiguation: 'later',
+      });
+      const earlierMatches = earlier.toPlainDateTime().equals(local);
+      const laterMatches = later.toPlainDateTime().equals(local);
+      return {
+        exists: earlierMatches || laterMatches,
+        repeated:
+          earlierMatches &&
+          laterMatches &&
+          !earlier.toInstant().equals(later.toInstant()),
+      };
+    });
+    return resolutions.every((resolution) => resolution.exists) &&
+      resolutions.some((resolution) => resolution.repeated)
+      ? 'earlier'
+      : 'reject';
+  } catch {
+    return 'reject';
+  }
+}
+
+export function temporalCreateEffectiveDisambiguation(
+  fields: TemporalCreateFields,
+): TemporalCreateTimeDisambiguation {
+  if (fields.timeSemantics !== 'timed') return fields.timeDisambiguation;
+  try {
+    const start = Temporal.PlainDateTime.from(
+      `${fields.date}T${fields.startTime}`,
+    );
+    return temporalCreateIntervalDisambiguation(
+      fields,
+      start,
+      start.add({ minutes: fields.durationMinutes }),
+    );
+  } catch {
+    return fields.timeDisambiguation;
+  }
 }
 
 export function createTemporalCreateFields(
@@ -883,20 +936,24 @@ export function validateTemporalCreateFields(
         );
       } else {
         const start = dateTime(fields.date, fields.startTime);
-        const end = start?.add({ minutes: fields.durationMinutes });
-        try {
-          start?.toZonedDateTime(fields.timeZoneId, {
-            disambiguation: fields.timeDisambiguation,
-          });
-          end?.toZonedDateTime(fields.timeZoneId, {
-            disambiguation: fields.timeDisambiguation,
-          });
-        } catch {
-          issues.push(
-            temporalValidationIssue('temporal.create.dst_resolution.required', [
-              'timeDisambiguation',
-            ]),
-          );
+        const end =
+          start && Number.isInteger(fields.durationMinutes)
+            ? start.add({ minutes: fields.durationMinutes })
+            : null;
+        const disambiguation = temporalCreateEffectiveDisambiguation(fields);
+        for (const [local, path] of [
+          [start, 'startTime'],
+          [end, 'durationMinutes'],
+        ] as const) {
+          try {
+            local?.toZonedDateTime(fields.timeZoneId, { disambiguation });
+          } catch {
+            issues.push(
+              temporalValidationIssue('temporal.create.dst_resolution.required', [
+                path,
+              ]),
+            );
+          }
         }
       }
     }
@@ -1073,11 +1130,12 @@ export function buildTemporalCreatePlacement(
   const end = start.add({ minutes: fields.durationMinutes });
 
   if (fields.timeMode === 'zoned') {
+    const disambiguation = temporalCreateEffectiveDisambiguation(fields);
     const zonedStart = start.toZonedDateTime(fields.timeZoneId, {
-      disambiguation: fields.timeDisambiguation,
+      disambiguation,
     });
     const zonedEnd = end.toZonedDateTime(fields.timeZoneId, {
-      disambiguation: fields.timeDisambiguation,
+      disambiguation,
     });
     return Object.freeze({
       kind: 'zoned' as const,
@@ -1085,7 +1143,7 @@ export function buildTemporalCreatePlacement(
       end: zonedEnd,
       sourceStartsLocalAt: start,
       sourceEndsLocalAt: end,
-      disambiguation: fields.timeDisambiguation,
+      disambiguation,
     });
   }
 

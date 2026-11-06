@@ -1,5 +1,18 @@
 # Timeline / Temporal-Operational — Live Execution Ledger
 
+## 2026-11-06 — Global DST behavior candidate
+
+Calendar Activity/Event Create chooses the first real instant only in a
+repeated hour, rejects newly entered spring gaps on the visible clock field,
+and keeps a single wall-clock Timeline slot. Event Edit preserves untouched
+historical resolution and refuses newly entered gap times. Recurring candidates
+skip gaps and select one instant in overlaps. Session truth uses real instants.
+Timeline Schedule moves choose the first fold for new wall-clock placements,
+retain the stored fold for Undo, and refuse missing spring hours.
+Domain Recurrence and Session specs record the accepted policy; focused Web
+tests and the existing Backend evaluator/Session tests await owner execution.
+
+
 ## 2026-11-06 — Event local-time UI simplification candidate
 
 Event Edit removes the DST selector; Event Create defaults to the earlier

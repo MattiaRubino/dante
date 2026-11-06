@@ -397,6 +397,7 @@ export const home = {
         time: 'Inserisci un orario valido.',
         duration: 'Scegli una durata valida.',
         timeZone: 'Inserisci un fuso orario IANA valido.',
+        nonexistentTime: 'Questo orario non esiste nel fuso scelto: scegline uno valido.',
         eventPlacement: 'Un evento richiede una collocazione temporale.',
         allDayRange: 'La data di fine non può precedere la data di inizio.',
         window: 'La finestra deve avere un inizio precedente alla fine.',

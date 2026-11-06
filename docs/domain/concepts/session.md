@@ -1217,6 +1217,8 @@ elapsed_duration = end - start
 active_duration  = elapsed_duration - paused_duration
 ```
 
+Across an autumn repeated hour, a manually started Session records its actual start and end instants, including which passage through the local hour each instant represents. Its elapsed and active durations use those instants and pause intervals. For example, 02:50 on the first passage to 02:10 on the second is 20 real minutes, even though the displayed clock label decreases. It is still one execution attempt, not a second Session caused by the clock change. The planned Activity slot remains at its original wall-clock time; the factual Session does not create a second planned slot.
+
 These are derived quantities.
 
 LifeOS should avoid independently storing conflicting canonical duration values unless there is a legitimate reason, such as imported source data that reports duration but lacks exact boundaries.

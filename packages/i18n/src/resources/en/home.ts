@@ -399,6 +399,7 @@ export const home = {
         time: 'Enter a valid time.',
         duration: 'Choose a valid duration.',
         timeZone: 'Enter a valid IANA time zone.',
+        nonexistentTime: 'This time does not exist in the selected time zone. Choose a valid time.',
         eventPlacement: 'An event requires a temporal placement.',
         allDayRange: 'The end date cannot be before the start date.',
         window: 'The window must start before it ends.',

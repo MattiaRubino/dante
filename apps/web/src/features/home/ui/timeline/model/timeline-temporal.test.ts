@@ -51,4 +51,28 @@ describe('timeline temporal model', () => {
     expect(minute).toBeCloseTo(19 * 60 + 31 + 35.5 / 60, 6);
     expect(formatTimelineMinute(Math.floor(minute))).toBe('19:31');
   });
+
+  it('returns the now marker to the same axis after fallback', () => {
+    const before = timelineMinuteOfClock({
+      hour: 2,
+      minute: 59,
+      second: 59,
+      millisecond: 0,
+    });
+    const after = timelineMinuteOfClock({
+      hour: 2,
+      minute: 0,
+      second: 0,
+      millisecond: 0,
+    });
+    const planned = timelineMinuteOfClock({
+      hour: 2,
+      minute: 30,
+      second: 0,
+      millisecond: 0,
+    });
+    expect(after).toBeLessThan(before);
+    expect(planned).toBe(150);
+    expect(formatTimelineMinute(planned)).toBe('02:30');
+  });
 });

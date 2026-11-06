@@ -1,5 +1,30 @@
 # Timeline / Temporal-Operational — Workstream Handoff
 
+## 2026-11-06 — Unified clock-change contract candidate
+
+The owner chose one planned wall-clock slot for Event and Activity across the
+autumn repeated hour; the current-time marker alone follows the clock backward.
+Ordinary authoring resolves the first passage once, while existing accepted
+second-fold instants remain stable. Calendar recurrence skips an impossible
+spring candidate; newly authored one-off gaps report an error on the actual
+start/end control. Sessions keep actual instants and real elapsed time across
+the fallback. See the Recurrence and Session Domain concepts for scope.
+
+Source candidate: Create no longer normalizes all Event drafts to `earlier`;
+the shared effective resolution chooses `earlier` only for a genuine repeated
+local time and retains `reject` for nonexistent time. Event Edit refuses a
+new spring gap while preserving an unchanged saved gap; the Event and Activity
+calendar recurrence builders retain one earlier-fold Occurrence and gap skip.
+Timeline Schedule moves now resolve a newly chosen repeated hour to its first
+instant for named-zone and absolute placements, while Undo keeps the original
+saved second-fold instant and spring-gap moves still fail closed. Focused Web
+regressions cover both Create kinds, Event Edit, Timeline moves, the now marker,
+and a single factual Session card across fallback. Existing Backend evaluator tests assert gap skip and
+exactly one earlier/later overlap candidate; existing Session integration
+tests assert duration algebra and replay. **NOT_RUN**: owner's WSL focused
+gate, complete gate, and visual acceptance are pending for this candidate.
+
+
 ## 2026-11-06 — Event DST control removal candidate
 
 The owner rejects exposing "Cambio dell’ora / Rifiuta orari ambigui" in Event

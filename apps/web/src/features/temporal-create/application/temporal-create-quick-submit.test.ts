@@ -15,7 +15,44 @@ import {
   validateTemporalCreateU6Structure,
   validateTemporalCreateU6StructureIssue,
 } from './temporal-create-u2-submit';
-import { buildTemporalCreateActivityRecurrence } from './temporal-create-b14-runtime';
+import {
+  buildTemporalCreateActivityRecurrence,
+  buildTemporalCreateEventRecurrence,
+} from './temporal-create-b14-runtime';
+
+describe('calendar-wall-clock DST defaults', () => {
+  it.each(['activity', 'event'] as const)(
+    'uses one earlier-fold candidate and skips spring gaps for recurring %s',
+    (kind) => {
+      const base = createTemporalCreateFields({
+        kind,
+        title: 'Ora locale',
+        date: '2026-10-25',
+        startTime: '02:30',
+        timeMode: 'zoned',
+        timeZoneId: 'Europe/Rome',
+      });
+      const fields = createTemporalCreateFields({
+        ...base,
+        eventRecurrence: {
+          ...base.eventRecurrence,
+          patternKind: 'calendar-wall-clock',
+          owner: kind === 'event' ? 'event' : 'routine',
+          calendarFrequency: 'daily',
+        },
+      });
+      const recurrence = kind === 'event'
+        ? buildTemporalCreateEventRecurrence(fields)
+        : buildTemporalCreateActivityRecurrence(fields);
+      expect(recurrence).toMatchObject({
+        clock_basis_code: 'named_zone',
+        wall_times: ['02:30'],
+        ambiguous_local_time_policy: 'earlier',
+        nonexistent_local_time_policy: 'skip_civil_candidate',
+      });
+    },
+  );
+});
 
 describe('minute-exact U2 submit mappings', () => {
   it.each(['activity', 'event'] as const)(

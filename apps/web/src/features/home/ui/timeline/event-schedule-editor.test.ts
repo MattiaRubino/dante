@@ -83,4 +83,38 @@ describe('Event Schedule edit conversion', () => {
       disambiguation: 'later',
     });
   });
+
+  it('rejects a new spring gap and retains an untouched saved placement', () => {
+    const base = {
+      kind: 'timed' as const,
+      startDate: '2026-03-29',
+      endDate: '2026-03-29',
+      startTime: '01:30',
+      endTime: '03:30',
+      zoneId: 'Europe/Rome',
+      disambiguation: 'earlier' as const,
+    };
+    expect(() =>
+      eventSchedulePlacementFromDraft({ ...base, endTime: '02:30' }),
+    ).toThrow('non esiste');
+    expect(() =>
+      eventSchedulePlacementFromDraft({ ...base, startTime: '02:30' }),
+    ).toThrow('non esiste');
+    const existingGap = {
+      ...base,
+      endTime: '02:30',
+      original: {
+        start: '2026-03-29T01:30:00',
+        end: '2026-03-29T02:30:00',
+        zoneId: 'Europe/Rome',
+      },
+    };
+    expect(eventSchedulePlacementFromDraft(existingGap)).toMatchObject({
+      kind: 'named_zone_local_interval',
+      ends_local_at: '2026-03-29T02:30:00',
+    });
+    expect(() =>
+      eventSchedulePlacementFromDraft({ ...existingGap, zoneId: 'Europe/Paris' }),
+    ).toThrow('non esiste');
+  });
 });

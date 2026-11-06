@@ -333,6 +333,8 @@ export function TemporalCreateComposer({
         return t(($) => $.common.home.timeline.create.validation.duration);
       case 'temporal.create.timezone.invalid':
         return t(($) => $.common.home.timeline.create.validation.timeZone);
+      case 'temporal.create.dst_resolution.required':
+        return t(($) => $.common.home.timeline.create.validation.nonexistentTime);
       case 'temporal.create.event.requires_placement':
         return t(
           ($) => $.common.home.timeline.create.validation.eventPlacement,

@@ -25,6 +25,7 @@ import {
 } from '../../temporal';
 import {
   createTemporalCreateFields,
+  temporalCreateIntervalDisambiguation,
   type TemporalCreateFields,
 } from '../model/temporal-create-session';
 import {
@@ -150,9 +151,14 @@ function absoluteInstant(
   time: string,
   specification: TemporalCreateFields,
 ) {
-  return Temporal.PlainDateTime.from(`${date}T${time}`)
+  const local = Temporal.PlainDateTime.from(`${date}T${time}`);
+  return local
     .toZonedDateTime(specification.timeZoneId, {
-      disambiguation: specification.timeDisambiguation,
+      disambiguation: temporalCreateIntervalDisambiguation(
+        specification,
+        local,
+        local,
+      ),
     })
     .toInstant();
 }
@@ -375,12 +381,20 @@ function hardConstraintPlacement(
         kind: 'absolute' as const,
         start: placement.start
           .toZonedDateTime(specification.timeZoneId, {
-            disambiguation: specification.timeDisambiguation,
+            disambiguation: temporalCreateIntervalDisambiguation(
+              specification,
+              placement.start,
+              placement.end,
+            ),
           })
           .toInstant(),
         end: placement.end
           .toZonedDateTime(specification.timeZoneId, {
-            disambiguation: specification.timeDisambiguation,
+            disambiguation: temporalCreateIntervalDisambiguation(
+              specification,
+              placement.start,
+              placement.end,
+            ),
           })
           .toInstant(),
       });
