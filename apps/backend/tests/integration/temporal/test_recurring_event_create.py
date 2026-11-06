@@ -648,6 +648,28 @@ async def test_recurring_event_policy_materializes_schedule_and_reminder(
     timeline = TemporalTimelineApplication(runtime.session_factory)
     reminders = ScheduleReminderApplication(runtime.session_factory)
     try:
+        objectives = (
+            {
+                "label": "Conferma",
+                "result_kind": "boolean",
+                "comparator_code": None,
+                "target_value": None,
+                "target_min": None,
+                "target_max": None,
+                "unit_code": None,
+                "presentation_order": 0,
+            },
+            {
+                "label": "Pezzi",
+                "result_kind": "quantity",
+                "comparator_code": "gte",
+                "target_value": 4,
+                "target_min": None,
+                "target_max": None,
+                "unit_code": "mle",
+                "presentation_order": 1,
+            },
+        )
         created = await authoring.create_event(
             self_person_ref=alice,
             operation_id="b14:event:create",
@@ -666,6 +688,7 @@ async def test_recurring_event_policy_materializes_schedule_and_reminder(
             duration_minutes=60,
             duration_days=None,
             reminder_lead_minutes=15,
+            objectives=objectives,
         )
         assert not policy.replayed
         assert policy.duration_minutes == 60
@@ -678,6 +701,7 @@ async def test_recurring_event_policy_materializes_schedule_and_reminder(
             duration_minutes=60,
             duration_days=None,
             reminder_lead_minutes=15,
+            objectives=objectives,
         )
         assert replay.replayed
         assert (
@@ -718,6 +742,15 @@ async def test_recurring_event_policy_materializes_schedule_and_reminder(
         assert item.placement.starts_local_at.time() == time(10)
         assert item.placement.ends_local_at.time() == time(11)
         assert item.placement.zone_id == "Europe/Rome"
+        async with runtime.session_factory() as session, session.begin():
+            objective_count = await session.scalar(
+                text(
+                    "SELECT count(*) FROM dante.list_self_temporal_objectives("
+                    ":actor,'occurrence',:occurrence)"
+                ),
+                {"actor": alice, "occurrence": item.occurrence_ref},
+            )
+        assert objective_count == 2
 
         reminder = await reminders.get(
             self_person_ref=alice,
@@ -751,5 +784,26 @@ async def test_recurring_event_policy_materializes_schedule_and_reminder(
         ]
         assert len(replay_event_items) == 1
         assert replay_event_items[0].schedule_ref == item.schedule_ref
+
+        five_day_checkpoint = await materializer.checkpoint_window(
+            self_person_ref=alice,
+            operation_id="b14:event:five-day-window",
+            start_date=date(2026, 10, 6),
+            end_date_exclusive=date(2026, 10, 11),
+            effective_zone_id="Europe/Rome",
+        )
+        assert five_day_checkpoint.occurrence_count >= 5
+        five_day_window = await timeline.read_window(
+            query=TimelineWindowQuery(
+                start_date=date(2026, 10, 6),
+                end_date_exclusive=date(2026, 10, 11),
+            ),
+            context=_context(alice),
+        )
+        assert sum(
+            isinstance(candidate, TimelineScheduledOccurrenceItem)
+            and candidate.source_native_ref == created.source_ref
+            for candidate in five_day_window.items
+        ) == 5
     finally:
         await runtime.dispose()

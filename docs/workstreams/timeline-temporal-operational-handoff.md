@@ -2,6 +2,19 @@
 
 ## 2026-11-06 — Full gate accepted; real-app Event recurrence read failure
 
+The owner supplied a Firefox HAR captured after Retry. The two `GET
+/api/v1/temporal/timeline/window` requests returned 200; both `POST
+/api/v1/temporal/occurrences/checkpoint` requests returned 503 with
+`temporal.occurrence.persistence_unavailable` in ~70 ms for the priority window
+2026-11-05 through 2026-11-10. The frontend correctly surfaces this failure;
+the public error intentionally does not disclose the wrapped database cause.
+The HAR is diagnostic input only and must not be committed (it contains session
+information). The existing recurring Event policy regression now exercises a
+Boolean and quantity Objective, replay, and a five-day checkpoint matching the
+failing path. **TEST CANDIDATE NOT_RUN**: run this single PostgreSQL test with
+`--tb=long` on the owner's WSL to see the wrapped cause before changing
+materialization logic.
+
 The owner ran the complete adaptive gate on `de7cc81277dd9b49b55099389085fa097bc1ce40`:
 **27/27 groups passed**, source stability PASS, exit 0. Authenticated real-stack
 browser: 92 passed, four skipped. This is test acceptance for that exact SHA.
