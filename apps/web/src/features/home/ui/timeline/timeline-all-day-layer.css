@@ -203,29 +203,6 @@
   white-space: nowrap;
 }
 
-.timeline-all-day-item__kind-mark,
-.timeline-all-day-item__recurrence-mark {
-  display: inline-flex;
-  flex: 0 0 auto;
-  align-items: center;
-  justify-content: center;
-  width: 13px;
-  height: 13px;
-  color: var(--dante-semantic-color-home-text-secondary);
-}
-
-.timeline-all-day-item__kind-mark {
-  border-radius: 3px;
-  background: color-mix(in srgb, currentColor 13%, transparent);
-  font-size: 9px;
-  font-weight: 750;
-  line-height: 1;
-}
-
-.timeline-all-day-item__recurrence-mark {
-  font-size: 12px;
-}
-
 .timeline-all-day-item__meta {
   color: color-mix(
     in srgb,

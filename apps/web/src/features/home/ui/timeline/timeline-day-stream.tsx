@@ -381,22 +381,6 @@ function TimelineEventCard({
       <div className="timeline-event-card__top">
         <div className="timeline-event-card__heading">
           <div className="timeline-event-card__identity">
-            <span
-              className="timeline-event-card__kind-mark"
-              title={kindLabel}
-              aria-hidden="true"
-            >
-              {isActivity ? 'A' : 'E'}
-            </span>
-            {recurringInstance ? (
-              <span
-                className="timeline-event-card__recurrence-mark"
-                title={recurringLabel}
-                aria-hidden="true"
-              >
-                ↻
-              </span>
-            ) : null}
             <button
               className="timeline-event-card__title"
               type="button"
@@ -479,11 +463,7 @@ function TimelineEventCard({
       <div className="timeline-event-card__drag-zone" aria-hidden="true" />
 
       <div
-        className={
-          event.subitems?.length
-            ? 'timeline-event-card__indicators has-subitems'
-            : 'timeline-event-card__indicators'
-        }
+        className={`timeline-event-card__indicators${event.subitems?.length ? ' has-subitems' : ''}${!isActivity && agendaCount > 0 && (details?.objectiveCount ?? 0) > 0 ? ' has-multiple-event-indicators' : ''}`}
       >
         {sessionActivityRef === null ? null : (
           <ActivityPlannedSessionsCardDetail

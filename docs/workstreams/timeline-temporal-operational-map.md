@@ -1,5 +1,13 @@
 # Timeline / Temporal-Operational — Live Execution Ledger
 
+## 2026-11-06 — Event footer visibility and Activity repeat gap
+
+Visible A/E and recurrence markers removed. Event card density reserves room
+for title, time, Life Area and Agenda/Objective counters; both counters share
+one footer row. Existing Activity `Ripeti · Mai` is read-only, and safe
+one-off-to-Routine conversion remains OPEN pending an atomic owner/CAS
+contract; see handoff. Source candidate awaits owner's WSL and visual gate.
+
 ## 2026-11-06 — Corrected card format; Activity recurrence error open
 
 Same-day timed cards now show one trailing planned date; overnight cards label

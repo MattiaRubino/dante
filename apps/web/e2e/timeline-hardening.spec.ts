@@ -380,6 +380,25 @@ test('Session Objective and agenda indicators sit near the lower card edge', asy
   // With an Event expander, reserve 30px for its command at the bottom.
   expect(distanceFromBottom).toBeGreaterThanOrEqual(0);
   expect(distanceFromBottom).toBeLessThanOrEqual(38);
+  const plain = page.locator('[data-timeline-event="3"]');
+  const bothInside = await plain.evaluate((element) => {
+    const footer = document.createElement('div');
+    footer.className =
+      'timeline-event-card__indicators has-multiple-event-indicators';
+    for (const label of ['Obiettivi', 'Scaletta']) {
+      const indicator = document.createElement('div');
+      indicator.className = 'timeline-event-card__indicator';
+      indicator.textContent = `${label} 1`;
+      footer.append(indicator);
+    }
+    element.append(footer);
+    return [...footer.children].every((indicator) => {
+      const bounds = indicator.getBoundingClientRect();
+      const card = element.getBoundingClientRect();
+      return bounds.top >= card.top && bounds.bottom <= card.bottom;
+    });
+  });
+  expect(bothInside).toBe(true);
 });
 
 test('title drag previews the same 15-minute destination as drop', async ({

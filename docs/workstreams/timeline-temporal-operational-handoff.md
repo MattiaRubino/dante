@@ -1,5 +1,30 @@
 # Timeline / Temporal-Operational — Workstream Handoff
 
+## 2026-11-06 — Card marker removal, Event footer clipping and Activity repeat boundary
+
+Owner's screenshots show saved Agenda in the Event Inspector while the timed
+card lacks its `Scaletta N` strip; with an Objective the first footer strip is
+visible and the Agenda strip is clipped. The 30-minute Event floor was 78px,
+but title, planned time, optional Life Area and one/two footer rows need more
+room. Timed Event cards now reserve 104px and Event cards with subitems 128px
+in the same density/layout mapper, so collision geometry expands with the card.
+When both Objective and Agenda exist, their indicators share one footer row.
+The previously added visible A/E and recurrence symbols are removed from timed
+and date-lane cards per owner request; semantic identity and accessible labels
+remain. Focused density and real-browser geometry regressions cover the footer,
+and card-detail invalidation regression covers an edit adding Agenda and an
+Objective. **NOT_RUN**: owner WSL focused checks, full gate, visual acceptance.
+
+The Activity Edit `Ripeti · Mai` row is currently noninteractive by design;
+the one-off-to-Routine conversion is still the separate open capability first
+recorded in the 2026-10-12 handoff. It is not a newly disabled toggle. The
+existing Routine authoring transaction creates a new Routine and the
+materializer creates new Activity instances; binding the existing Activity
+to the first Occurrence requires a new atomic owner/CAS conversion contract
+and preservation of recorded Sessions/Objective/Schedule truth. No fake
+conversion or duplicate Activity was introduced in this visual patch. This
+request remains OPEN, not a completed repair.
+
 ## 2026-11-06 — Owner card-format correction and recurring Activity read failure
 
 Owner rejected repeated dates on same-day timed cards and the outlined

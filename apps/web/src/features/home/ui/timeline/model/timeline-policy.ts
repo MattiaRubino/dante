@@ -59,7 +59,7 @@ export const TIMELINE_POLICY = {
       upTo90Minutes: 90,
     },
     activityMinimumHeightPx: 118,
-    eventMinimumHeightPx: 78,
+    eventMinimumHeightPx: 104,
     readableHeightPx: {
       upTo5Minutes: 50,
       upTo15Minutes: 68,
@@ -69,7 +69,7 @@ export const TIMELINE_POLICY = {
       upTo90Minutes: 96,
       longer: 102,
     },
-    subitemsMinimumHeightPx: 98,
+    subitemsMinimumHeightPx: 128,
     expandedSubitemsBaseExtraHeightPx: 18,
     expandedSubitemExtraHeightPx: 27,
   },

@@ -1,6 +1,7 @@
 // @vitest-environment jsdom
 import { Temporal } from '@dante/time';
 import {
+  act,
   cleanup,
   fireEvent,
   render,
@@ -10,6 +11,7 @@ import {
 } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
+import { invalidateTemporalTimelineRead } from '../../../temporal/timeline-invalidation';
 import { EventInspectorActions } from './event-inspector-actions';
 import { RecurringSeriesEditor } from './recurring-series-editor';
 import { useTimelineCardDetails } from './timeline-card-details';
@@ -210,6 +212,36 @@ describe('Event Inspector actions', () => {
     render(<CardDetailsProbe />);
     expect(await screen.findByText('Scaletta 2')).toBeTruthy();
     expect(loadEvent).toHaveBeenCalledWith(eventRef, expect.any(AbortSignal));
+  });
+
+  it('refreshes Event agenda and objectives together after an accepted edit', async () => {
+    loadEvent.mockResolvedValue({ lifeAreaRef: null, agendaParts: [] });
+    const event = {
+      id: 'updated-event',
+      canonicalBasis: {
+        kind: 'scheduled-event',
+        eventRef,
+      },
+    } as TimelineEvent;
+    function CardDetailsProbe() {
+      const details = useTimelineCardDetails(event);
+      return (
+        <output>
+          {details
+            ? `Scaletta ${details.agendaCount} · Obiettivi ${details.objectiveCount}`
+            : 'Caricamento'}
+        </output>
+      );
+    }
+    render(<CardDetailsProbe />);
+    expect(await screen.findByText('Scaletta 0 · Obiettivi 0')).toBeTruthy();
+    loadEvent.mockResolvedValue({
+      lifeAreaRef: null,
+      agendaParts: ['Apertura'],
+    });
+    listObjectives.mockResolvedValue([{ label: 'Presenza' }]);
+    act(() => invalidateTemporalTimelineRead());
+    expect(await screen.findByText('Scaletta 1 · Obiettivi 1')).toBeTruthy();
   });
 
   it('edits only the selected recurring Event profile without revising the source', async () => {

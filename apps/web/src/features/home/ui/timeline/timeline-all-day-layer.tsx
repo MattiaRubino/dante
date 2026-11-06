@@ -347,22 +347,6 @@ export function TimelineAllDayLane({
             {startsHere ? '' : '‹'}
           </span>
           <strong className="timeline-all-day-item__identity">
-            <span
-              className="timeline-all-day-item__kind-mark"
-              title={kindLabel}
-              aria-hidden="true"
-            >
-              {identity.kind === 'activity' ? 'A' : 'E'}
-            </span>
-            {identity.recurringInstance ? (
-              <span
-                className="timeline-all-day-item__recurrence-mark"
-                title={recurringLabel}
-                aria-hidden="true"
-              >
-                ↻
-              </span>
-            ) : null}
             <span className="timeline-all-day-item__title">{item.title}</span>
           </strong>
           <span className="timeline-all-day-item__meta">

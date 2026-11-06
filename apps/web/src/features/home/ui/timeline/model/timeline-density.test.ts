@@ -102,7 +102,7 @@ describe('timeline density engine', () => {
     );
   });
 
-  it('keeps empty Activity and Event cards compact without hiding richer rows', () => {
+  it('reserves footer room for Event details and Activity controls', () => {
     const plain: TimelineEvent = {
       id: 'plain',
       title: 'Poco',
@@ -124,7 +124,10 @@ describe('timeline density engine', () => {
         },
       },
     };
-    expect(timelineEventReadableHeight(plain)).toBeLessThan(90);
+    expect(timelineEventReadableHeight(plain)).toBeGreaterThanOrEqual(104);
+    expect(
+      timelineEventReadableHeight({ ...plain, subitems: ['Scaletta'] }),
+    ).toBeGreaterThanOrEqual(128);
     expect(timelineEventReadableHeight(activity)).toBeLessThan(130);
     expect(timelineEventReadableHeight(activity)).toBeGreaterThanOrEqual(110);
     expect(

@@ -118,9 +118,7 @@ describe('TimelineSurface production parity', () => {
     );
     expect(card?.dataset.timelineKind).toBe('event');
     expect(card?.dataset.recurringInstance).toBe('false');
-    expect(
-      card?.querySelector('.timeline-event-card__kind-mark')?.textContent,
-    ).toBe('E');
+    expect(card?.querySelector('.timeline-event-card__kind-mark')).toBeNull();
     expect(card?.querySelector('.timeline-event-card__time')?.textContent).toBe(
       '09:00 – 11:00 (4 ago)',
     );
