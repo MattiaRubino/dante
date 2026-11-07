@@ -2983,9 +2983,7 @@ body:has(> .timeline-recurring-edit-scope-dialog__backdrop)
 /* Create's composer select uses 13px. Override the broad Activity Edit
    14px input/select rule (and Event's inherited size) only for this shared
    recurrence selector, so both Edit contexts render Create's typography. */
-.timeline-event-modal--edit
-  .timeline-existing-recurrence
-  .temporal-create-u2-repeat select {
+.timeline-event-modal--edit .timeline-existing-recurrence > div > select {
   font-size: 13px;
 }
 
