@@ -4173,3 +4173,24 @@ registry structure pass. Scratch lacks the pinned Python 3.14/PostgreSQL
 runtime, and borrowed packages show one preexisting TypeScript locale
 declaration mismatch, so **the new backend integration, migration/catalog,
 full typecheck, and real-app behavior are NOT VERIFIED**. No CI was run.
+
+## 2026-11-07 — Existing recurrence gate repair
+
+The user's clean full gate on `368d71f` reported 27/27 groups, with failures in
+backend format/lint/types, Dictionary scope schema, OpenAPI inventory/client
+snapshot, two new PostgreSQL tests, eight Web assertions, four fixture browser
+cases and one real-stack timing assertion. The two new PostgreSQL tests reached
+the migrated `_171` schema but their own read sessions lacked an explicit
+transaction. This candidate opens those read transactions and preserves the
+original owner/identity/first-exclusion assertions; the conversion still needs
+a PostgreSQL rerun. Ruff check/format, mypy (502 source files), three focused
+non-PostgreSQL API/Dictionary tests, focused Web Vitest (41/41), and full
+Prettier now pass in scratch. The broader non-PostgreSQL run reached 677 pass
+and two unrelated SOCKS proxy bootstrap errors; both pass when the scratch
+proxy variables are removed. The generated OpenAPI and Orval artifacts were
+regenerated with the pinned tools. Fixture browser assertions now use the
+accepted date-bearing clock label and require a genuinely different drag
+preview; the cross-day keyboard assertion checks the changed date. The
+real-stack recurrence test retains both checkpoint requirements and allows
+30 seconds under concurrent gate load. Browser and PostgreSQL acceptance
+remain NOT_RUN on the repaired candidate; no global PASS is claimed.

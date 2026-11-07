@@ -25,15 +25,18 @@ def upgrade() -> None:
         sa.PrimaryKeyConstraint("event_ref", name="pk_event_recurring_seed"),
         sa.UniqueConstraint("source_event_ref", name="uq_event_recurring_seed_source"),
         sa.ForeignKeyConstraint(
-            ["event_ref"], ["dante.event_expectation.event_ref"],
+            ["event_ref"],
+            ["dante.event_expectation.event_ref"],
             name="fk_event_recurring_seed_event",
         ),
         sa.ForeignKeyConstraint(
-            ["source_event_ref"], ["dante.event_expectation.event_ref"],
+            ["source_event_ref"],
+            ["dante.event_expectation.event_ref"],
             name="fk_event_recurring_seed_source",
         ),
         sa.ForeignKeyConstraint(
-            ["self_person_ref"], ["dante.person.person_ref"],
+            ["self_person_ref"],
+            ["dante.person.person_ref"],
             name="fk_event_recurring_seed_person",
         ),
         schema="dante",

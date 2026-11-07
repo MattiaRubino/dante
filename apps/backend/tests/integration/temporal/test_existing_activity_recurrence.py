@@ -10,7 +10,7 @@ from sqlalchemy import text
 from tests.integration.temporal.test_activity_quick_authoring_metadata import _seed_self
 from tests.integration.temporal.test_schedule_place import _context
 
-from dante.modules.temporal.activity_edit_snapshot_api import ActivityEditSnapshot, _SNAPSHOT
+from dante.modules.temporal.activity_edit_snapshot_api import _SNAPSHOT, ActivityEditSnapshot
 from dante.modules.temporal.application import (
     TemporalTimelineApplication,
     TimelineNamedZoneLocalActivityItem,
@@ -57,7 +57,7 @@ async def test_existing_activity_starts_series_with_same_first_identity_and_one_
             planned_slice_names=("Ripasso",),
         )
         ref = authored.item.subject_native_ref
-        async with runtime.session_factory() as session:
+        async with runtime.session_factory() as session, session.begin():
             snapshot = ActivityEditSnapshot.model_validate(
                 await session.scalar(_SNAPSHOT, {"actor": actor, "activity": ref})
             )
@@ -138,9 +138,9 @@ async def test_existing_activity_starts_series_with_same_first_identity_and_one_
             context=_context(actor),
         )
         cards = [
-            row for row in window.items
-            if isinstance(row, TimelineNamedZoneLocalActivityItem)
-            and row.title == "Studio"
+            row
+            for row in window.items
+            if isinstance(row, TimelineNamedZoneLocalActivityItem) and row.title == "Studio"
         ]
         assert len(cards) == 2
         assert cards[0].activity_ref == ref
@@ -174,7 +174,7 @@ async def test_existing_event_keeps_first_event_and_excludes_duplicate_occurrenc
         original = authored.item.subject_native_ref
         assert authored.schedule is not None
         schedule = authored.schedule
-        async with runtime.session_factory() as session:
+        async with runtime.session_factory() as session, session.begin():
             profile_revision = await session.scalar(
                 text("SELECT dante.get_self_event_profile_revision(:actor,:event)"),
                 {"actor": actor, "event": original},
@@ -251,36 +251,46 @@ async def test_existing_event_keeps_first_event_and_excludes_duplicate_occurrenc
             context=_context(actor),
         )
         originals = [
-            item for item in window.items
-            if isinstance(item, TimelineNamedZoneLocalEventItem)
-            and item.event_ref == original
+            item
+            for item in window.items
+            if isinstance(item, TimelineNamedZoneLocalEventItem) and item.event_ref == original
         ]
         following = [
-            item for item in window.items
+            item
+            for item in window.items
             if isinstance(item, TimelineScheduledOccurrenceItem)
             and item.source_native_ref == started.source_ref
         ]
         assert len(originals) == 1
         assert len(following) == 1
         assert following[0].coordinate is not None
-        async with runtime.session_factory() as session:
-            assert await session.scalar(
-                text(
-                    "SELECT source_event_ref "
-                    "FROM dante.get_self_event_recurring_seed(:actor,:event)"
-                ),
-                {"actor": actor, "event": original},
-            ) == started.source_ref
-            assert await session.scalar(
-                text("SELECT 1 FROM dante.get_self_event_recurrence(:actor,:event)"),
-                {"actor": actor, "event": original},
-            ) is None
-            assert await session.scalar(
-                text(
-                    "SELECT source_event_ref "
-                    "FROM dante.get_self_event_recurring_seed(:actor,:event)"
-                ),
-                {"actor": other, "event": original},
-            ) is None
+        async with runtime.session_factory() as session, session.begin():
+            assert (
+                await session.scalar(
+                    text(
+                        "SELECT source_event_ref "
+                        "FROM dante.get_self_event_recurring_seed(:actor,:event)"
+                    ),
+                    {"actor": actor, "event": original},
+                )
+                == started.source_ref
+            )
+            assert (
+                await session.scalar(
+                    text("SELECT 1 FROM dante.get_self_event_recurrence(:actor,:event)"),
+                    {"actor": actor, "event": original},
+                )
+                is None
+            )
+            assert (
+                await session.scalar(
+                    text(
+                        "SELECT source_event_ref "
+                        "FROM dante.get_self_event_recurring_seed(:actor,:event)"
+                    ),
+                    {"actor": other, "event": original},
+                )
+                is None
+            )
     finally:
         await runtime.dispose()

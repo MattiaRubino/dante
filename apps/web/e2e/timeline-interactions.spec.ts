@@ -289,13 +289,27 @@ test('a same-day drag commits once and Undo restores the exact event state', asy
 
   await page.mouse.move(startX, startY);
   await page.mouse.down();
-  await page.mouse.move(startX, startY + 52, { steps: 5 });
-  await expect(page.locator('.timeline-event-drag-overlay')).toHaveCount(1);
+  const overlay = page.locator('.timeline-event-drag-overlay');
+  const originalClock = originalLabel
+    ?.match(/\d{2}:\d{2} – \d{2}:\d{2}/)?.[0]
+    .replace(' – ', '–');
+  expect(originalClock).toBeTruthy();
+  let previewClock: string | null = null;
+  for (const delta of [52, 104, 156]) {
+    await page.mouse.move(startX, startY + delta, { steps: 5 });
+    await expect(overlay).toHaveCount(1);
+    previewClock = await overlay.getAttribute('data-drag-preview-time');
+    if (previewClock !== originalClock) break;
+  }
+  expect(previewClock).not.toBe(originalClock);
   await page.mouse.up();
 
-  await expect(page.locator('.timeline-event-drag-overlay')).toHaveCount(0);
+  await expect(overlay).toHaveCount(0);
   await expect(card).toHaveCount(1);
-  await expect(card).not.toHaveAttribute('aria-label', originalLabel ?? '');
+  await expect(card).toHaveAttribute(
+    'aria-label',
+    new RegExp(previewClock?.replace('–', ' – ') ?? 'never-match'),
+  );
 
   const undoButton = page.locator('.timeline-move-toast.is-on button');
   await expect(undoButton).toBeVisible();
@@ -339,7 +353,8 @@ test('keyboard next-day move preserves identity and Undo restores the original d
       ),
     )
     .toBe('2026-08-05');
-  await expect(card).toHaveAttribute('aria-label', originalLabel ?? '');
+  await expect(card).not.toHaveAttribute('aria-label', originalLabel ?? '');
+  await expect(card).toHaveAttribute('aria-label', /5 ago/);
 
   const undoButton = page.locator('.timeline-move-toast.is-on button');
   await expect(undoButton).toBeVisible();

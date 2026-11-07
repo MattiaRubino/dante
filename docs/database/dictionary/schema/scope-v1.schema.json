@@ -124,7 +124,7 @@
       "properties": {
         "completed_stages": {
           "type": "array",
-          "maxItems": 73,
+          "maxItems": 74,
           "uniqueItems": true,
           "items": {
             "enum": [
@@ -200,7 +200,8 @@
               "B14-HARD-DELETE-REALITY-POLICY-GRAPH",
               "B14-ACTIVITY-SESSION-SINGLE-DELETE",
               "B14-RECURRING-PROFILE-EXCEPTIONS",
-              "B14-M1-STRUCTURAL-SERIES-REVISION"
+              "B14-M1-STRUCTURAL-SERIES-REVISION",
+              "B14-EXISTING-RECURRENCE"
             ]
           }
         },
@@ -512,7 +513,8 @@
                   "B14-HARD-DELETE-REALITY-POLICY-GRAPH",
                   "B14-ACTIVITY-SESSION-SINGLE-DELETE",
                   "B14-RECURRING-PROFILE-EXCEPTIONS",
-                  "B14-M1-STRUCTURAL-SERIES-REVISION"
+                  "B14-M1-STRUCTURAL-SERIES-REVISION",
+                  "B14-EXISTING-RECURRENCE"
                 ]
               }
             }

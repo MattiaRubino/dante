@@ -248,6 +248,8 @@ import type {
   SignupResendRequest,
   SignupVerificationRequest,
   SkipOccurrenceRequest,
+  StartExistingActivityRecurrenceRequest,
+  StartExistingEventRecurrenceRequest,
   StructuralExclusionRequest,
   StructuralExclusionResponse,
   TagOperationRequest,
@@ -14635,6 +14637,77 @@ export const temporalListOutcomeReconciliationHistory = async (
   } as temporalListOutcomeReconciliationHistoryResponse;
 };
 
+export type temporalStartExistingActivityRecurrenceResponse200 = {
+  data: RecurringAuthoringResponse;
+  status: 200;
+};
+
+export type temporalStartExistingActivityRecurrenceResponse422 = {
+  data: HTTPValidationError;
+  status: 422;
+};
+
+export type temporalStartExistingActivityRecurrenceResponseSuccess =
+  temporalStartExistingActivityRecurrenceResponse200 & {
+    headers: Headers;
+  };
+export type temporalStartExistingActivityRecurrenceResponseError =
+  temporalStartExistingActivityRecurrenceResponse422 & {
+    headers: Headers;
+  };
+
+export type temporalStartExistingActivityRecurrenceResponse =
+  | temporalStartExistingActivityRecurrenceResponseSuccess
+  | temporalStartExistingActivityRecurrenceResponseError;
+
+export const getTemporalStartExistingActivityRecurrenceUrl = (
+  activityRef: string,
+) => {
+  return `/api/v1/temporal/recurring/activities/${activityRef}/start`;
+};
+
+/**
+ * @summary Start Existing Activity Recurrence
+ */
+export const temporalStartExistingActivityRecurrence = async (
+  activityRef: string,
+  startExistingActivityRecurrenceRequest: StartExistingActivityRecurrenceRequest,
+  options?: RequestInit,
+  fetchFn?: typeof globalThis.fetch,
+): Promise<temporalStartExistingActivityRecurrenceResponse> => {
+  const getHeaders = (
+    h?: NonNullable<RequestInit['headers']>,
+  ): Record<string, string | readonly string[]> => {
+    if (!h) return {};
+    if (h instanceof Headers) return Object.fromEntries(h.entries());
+    if (Array.isArray(h)) return Object.fromEntries(h);
+    return h;
+  };
+  const res = await (fetchFn ?? fetch)(
+    getTemporalStartExistingActivityRecurrenceUrl(activityRef),
+    {
+      ...options,
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        ...getHeaders(options?.headers),
+      },
+      body: JSON.stringify(startExistingActivityRecurrenceRequest),
+    },
+  );
+
+  const body = [204, 205, 304].includes(res.status) ? null : await res.text();
+
+  const data: temporalStartExistingActivityRecurrenceResponse['data'] = body
+    ? JSON.parse(body)
+    : {};
+  return {
+    data,
+    status: res.status,
+    headers: res.headers,
+  } as temporalStartExistingActivityRecurrenceResponse;
+};
+
 export type temporalCreateRecurringEventResponse200 = {
   data: RecurringAuthoringResponse;
   status: 200;
@@ -14698,6 +14771,134 @@ export const temporalCreateRecurringEvent = async (
     status: res.status,
     headers: res.headers,
   } as temporalCreateRecurringEventResponse;
+};
+
+export type temporalGetExistingEventRecurrenceSeedResponse200 = {
+  data: string | null;
+  status: 200;
+};
+
+export type temporalGetExistingEventRecurrenceSeedResponse422 = {
+  data: HTTPValidationError;
+  status: 422;
+};
+
+export type temporalGetExistingEventRecurrenceSeedResponseSuccess =
+  temporalGetExistingEventRecurrenceSeedResponse200 & {
+    headers: Headers;
+  };
+export type temporalGetExistingEventRecurrenceSeedResponseError =
+  temporalGetExistingEventRecurrenceSeedResponse422 & {
+    headers: Headers;
+  };
+
+export type temporalGetExistingEventRecurrenceSeedResponse =
+  | temporalGetExistingEventRecurrenceSeedResponseSuccess
+  | temporalGetExistingEventRecurrenceSeedResponseError;
+
+export const getTemporalGetExistingEventRecurrenceSeedUrl = (
+  eventRef: string,
+) => {
+  return `/api/v1/temporal/recurring/events/${eventRef}/seed`;
+};
+
+/**
+ * @summary Get Existing Event Recurrence Seed
+ */
+export const temporalGetExistingEventRecurrenceSeed = async (
+  eventRef: string,
+  options?: RequestInit,
+  fetchFn?: typeof globalThis.fetch,
+): Promise<temporalGetExistingEventRecurrenceSeedResponse> => {
+  const res = await (fetchFn ?? fetch)(
+    getTemporalGetExistingEventRecurrenceSeedUrl(eventRef),
+    {
+      ...options,
+      method: 'GET',
+    },
+  );
+
+  const body = [204, 205, 304].includes(res.status) ? null : await res.text();
+
+  const data: temporalGetExistingEventRecurrenceSeedResponse['data'] = body
+    ? JSON.parse(body)
+    : {};
+  return {
+    data,
+    status: res.status,
+    headers: res.headers,
+  } as temporalGetExistingEventRecurrenceSeedResponse;
+};
+
+export type temporalStartExistingEventRecurrenceResponse200 = {
+  data: RecurringAuthoringResponse;
+  status: 200;
+};
+
+export type temporalStartExistingEventRecurrenceResponse422 = {
+  data: HTTPValidationError;
+  status: 422;
+};
+
+export type temporalStartExistingEventRecurrenceResponseSuccess =
+  temporalStartExistingEventRecurrenceResponse200 & {
+    headers: Headers;
+  };
+export type temporalStartExistingEventRecurrenceResponseError =
+  temporalStartExistingEventRecurrenceResponse422 & {
+    headers: Headers;
+  };
+
+export type temporalStartExistingEventRecurrenceResponse =
+  | temporalStartExistingEventRecurrenceResponseSuccess
+  | temporalStartExistingEventRecurrenceResponseError;
+
+export const getTemporalStartExistingEventRecurrenceUrl = (
+  eventRef: string,
+) => {
+  return `/api/v1/temporal/recurring/events/${eventRef}/start`;
+};
+
+/**
+ * @summary Start Existing Event Recurrence
+ */
+export const temporalStartExistingEventRecurrence = async (
+  eventRef: string,
+  startExistingEventRecurrenceRequest: StartExistingEventRecurrenceRequest,
+  options?: RequestInit,
+  fetchFn?: typeof globalThis.fetch,
+): Promise<temporalStartExistingEventRecurrenceResponse> => {
+  const getHeaders = (
+    h?: NonNullable<RequestInit['headers']>,
+  ): Record<string, string | readonly string[]> => {
+    if (!h) return {};
+    if (h instanceof Headers) return Object.fromEntries(h.entries());
+    if (Array.isArray(h)) return Object.fromEntries(h);
+    return h;
+  };
+  const res = await (fetchFn ?? fetch)(
+    getTemporalStartExistingEventRecurrenceUrl(eventRef),
+    {
+      ...options,
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        ...getHeaders(options?.headers),
+      },
+      body: JSON.stringify(startExistingEventRecurrenceRequest),
+    },
+  );
+
+  const body = [204, 205, 304].includes(res.status) ? null : await res.text();
+
+  const data: temporalStartExistingEventRecurrenceResponse['data'] = body
+    ? JSON.parse(body)
+    : {};
+  return {
+    data,
+    status: res.status,
+    headers: res.headers,
+  } as temporalStartExistingEventRecurrenceResponse;
 };
 
 export type temporalCreateRecurringRoutineResponse200 = {

@@ -16,7 +16,7 @@ from sqlalchemy import text
 from sqlalchemy.exc import DBAPIError, SQLAlchemyError
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 
-from dante.modules.temporal.activity_edit_snapshot_api import ActivityEditSnapshot, _SNAPSHOT
+from dante.modules.temporal.activity_edit_snapshot_api import _SNAPSHOT, ActivityEditSnapshot
 from dante.modules.temporal.authoring import (
     AuthoringLifeAreaIntent,
     TemporalAuthoringApplication,
@@ -30,7 +30,7 @@ from dante.modules.temporal.occurrence import (
     _calendar_candidates,
 )
 from dante.modules.temporal.reality_objective_api import ObjectiveResponse
-from dante.modules.temporal.recurrence import CalendarRecurrence
+from dante.modules.temporal.recurrence import CalendarRecurrence, _validate
 from dante.modules.temporal.recurring_authoring import (
     EventAuthoringPolicy,
     RecurringAuthoringResult,
@@ -41,7 +41,6 @@ from dante.modules.temporal.recurring_authoring import (
     _read_recurrence_in_session,
     _replace_recurrence_in_session,
     _routine_bootstrap,
-    _validate_recurrence,
 )
 from dante.modules.temporal.recurring_series_edit import _validate_structure
 from dante.modules.temporal.recurring_series_reconciliation import SeriesReconciliationError
@@ -90,8 +89,10 @@ def _minute_offset(anchor: datetime, value: datetime) -> int:
     return int(minutes)
 
 
-def _window(anchor: datetime, start: datetime | None, end: datetime | None) -> dict[str, int]:
-    if start is None or end is None:
+def _window(
+    anchor: datetime | None, start: datetime | None, end: datetime | None
+) -> dict[str, int]:
+    if anchor is None or start is None or end is None:
         raise RecurringConversionUnsupportedError("A scheduled Session has no accepted time.")
     offset = _minute_offset(anchor, start)
     duration = _minute_offset(start, end)
@@ -119,9 +120,7 @@ async def _existing_activity(
     )
     if profile is None or profile["revision"] != basis.expected_profile_revision:
         raise RecurringConversionConflictError("The Activity profile changed; reopen Edit.")
-    payload = await session.scalar(
-        _SNAPSHOT, {"actor": actor, "activity": basis.activity_ref}
-    )
+    payload = await session.scalar(_SNAPSHOT, {"actor": actor, "activity": basis.activity_ref})
     if payload is None:
         raise RecurringConversionConflictError("The Activity is unavailable.")
     snapshot = ActivityEditSnapshot.model_validate(payload)
@@ -135,9 +134,7 @@ async def _existing_activity(
         raise RecurringConversionUnsupportedError(
             "An Activity with child Activities needs a complete future child template."
         )
-    envelope = next(
-        (item for item in snapshot.schedules if item.role_code == "envelope"), None
-    )
+    envelope = next((item for item in snapshot.schedules if item.role_code == "envelope"), None)
     if (
         envelope is None
         or envelope.schedule_ref != basis.envelope_schedule_ref
@@ -191,8 +188,7 @@ async def _existing_activity(
     constraint_rows = (
         (
             await session.execute(
-                text(_READ_CONSTRAINT_BASE +
-                     " AND constraint_row.subject_native_ref=:activity"),
+                text(_READ_CONSTRAINT_BASE + " AND constraint_row.subject_native_ref=:activity"),
                 {"self_person_ref": actor, "activity": basis.activity_ref},
             )
         )
@@ -229,9 +225,7 @@ async def _existing_activity(
     if any(item.temporal_form not in {None, "named_zone_local"} for item in planned):
         raise RecurringConversionUnsupportedError("A planned Session uses another time form.")
     if any(
-        item.zone_id != recurrence.zone_id
-        for item in [*intervals, *planned]
-        if item.temporal_form
+        item.zone_id != recurrence.zone_id for item in [*intervals, *planned] if item.temporal_form
     ):
         raise RecurringConversionUnsupportedError("The Activity has Schedules in different zones.")
     template = {
@@ -267,12 +261,14 @@ async def _existing_activity(
             for objective in snapshot.objectives
         ],
         "activity_intervals": [
-            _window(anchor, item.starts_local_at, item.ends_local_at)
-            for item in intervals
-        ] if anchor is not None else [],
+            _window(anchor, item.starts_local_at, item.ends_local_at) for item in intervals
+        ]
+        if anchor is not None
+        else [],
         "planned_slices": [
             {"name": item.display_name or f"Sessione {index + 1}", "time_enabled": False}
-            if item.temporal_form is None else {
+            if item.temporal_form is None
+            else {
                 "name": item.display_name or f"Sessione {index + 1}",
                 **_window(anchor, item.starts_local_at, item.ends_local_at),
             }
@@ -288,19 +284,27 @@ async def _existing_activity(
         reminder_lead = None
     policy = RoutineAuthoringPolicy(duration_minutes, reminder_lead, template)
     try:
-        _validate_structure("routine", recurrence, {
-            "version": 1,
-            "duration_minutes": duration_minutes,
-            "reminder_lead_minutes": reminder_lead,
-            "activity_template": template,
-        })
+        _validate_structure(
+            "routine",
+            recurrence,
+            {
+                "version": 1,
+                "duration_minutes": duration_minutes,
+                "reminder_lead_minutes": reminder_lead,
+                "activity_template": template,
+            },
+        )
     except SeriesReconciliationError as exc:
         raise RecurringConversionUnsupportedError(str(exc)) from exc
-    return ExistingActivityCurrent(
-        title=str(profile["title"]),
-        life_area_ref=snapshot.life_area_ref,
-        policy=policy,
-    ), first_date, envelope.resolved_start_at
+    return (
+        ExistingActivityCurrent(
+            title=str(profile["title"]),
+            life_area_ref=snapshot.life_area_ref,
+            policy=policy,
+        ),
+        first_date,
+        envelope.resolved_start_at,
+    )
 
 
 async def _existing_event(
@@ -385,17 +389,20 @@ async def _existing_event(
     if recurrence.effective_from != first_date:
         raise RecurringConversionUnsupportedError("The recurrence must start on the Event date.")
     if await session.scalar(
-        text("SELECT 1 FROM (" + _READ_CONSTRAINT_BASE +
-             " AND constraint_row.subject_native_ref=:event) AS owned "
-             "WHERE owned.material_state_ref IS NOT NULL LIMIT 1"),
+        text(
+            _READ_CONSTRAINT_BASE + " AND constraint_row.subject_native_ref=:event "
+            "AND current.material_state_ref IS NOT NULL LIMIT 1"
+        ),
         {"self_person_ref": actor, "event": basis.event_ref},
     ):
         raise RecurringConversionUnsupportedError(
             "The Event has a planning constraint without a future recurrence template."
         )
     if await session.scalar(
-        text("SELECT 1 FROM dante.list_self_event_expected_participation(:actor,:event) "
-             "WHERE participant_person_ref<>:actor LIMIT 1"),
+        text(
+            "SELECT 1 FROM dante.list_self_event_expected_participation(:actor,:event) "
+            "WHERE participant_person_ref<>:actor LIMIT 1"
+        ),
         {"actor": actor, "event": basis.event_ref},
     ):
         raise RecurringConversionUnsupportedError(
@@ -415,7 +422,7 @@ async def _existing_event(
         .mappings()
         .all()
     )
-    objectives = tuple(
+    objectives: tuple[dict[str, object], ...] = tuple(
         {
             "label": item.label,
             "result_kind": item.result_kind,
@@ -454,17 +461,21 @@ async def _existing_event(
         objectives=objectives,
     )
     try:
-        _validate_structure("event", recurrence, {
-            "version": 1,
-            "placement_kind": policy.placement_kind,
-            "duration_minutes": minutes,
-            "duration_days": days,
-            "reminder_lead_minutes": lead,
-            "reality_mode": policy.reality_mode,
-            "objectives": list(objectives),
-            "agenda_parts": list(event.agenda_parts),
-            "life_area_ref": str(event.life_area_ref) if event.life_area_ref else None,
-        })
+        _validate_structure(
+            "event",
+            recurrence,
+            {
+                "version": 1,
+                "placement_kind": policy.placement_kind,
+                "duration_minutes": minutes,
+                "duration_days": days,
+                "reminder_lead_minutes": lead,
+                "reality_mode": policy.reality_mode,
+                "objectives": list(objectives),
+                "agenda_parts": list(event.agenda_parts),
+                "life_area_ref": str(event.life_area_ref) if event.life_area_ref else None,
+            },
+        )
     except SeriesReconciliationError as exc:
         raise RecurringConversionUnsupportedError(str(exc)) from exc
     return event, policy, first_date, first_instant
@@ -491,7 +502,7 @@ class RecurringConversionApplication:
     ) -> RecurringAuthoringResult:
         if recurrence.clock_basis_code != "named_zone" or recurrence.zone_id is None:
             raise RecurringConversionUnsupportedError("The Event requires a named-zone rule.")
-        _validate_recurrence(recurrence)
+        _validate(recurrence)
         try:
             async with self._session_factory() as session, session.begin():
                 await session.execute(text("SET TRANSACTION ISOLATION LEVEL SERIALIZABLE"))
@@ -506,7 +517,8 @@ class RecurringConversionApplication:
                     ZoneInfo(recurrence.zone_id),
                 )
                 first = [
-                    item.coordinate for item in candidates
+                    item.coordinate
+                    for item in candidates
                     if isinstance(item.coordinate, CalendarCoordinate)
                     and item.coordinate.generated_date == first_date
                     and (first_instant is None or item.coordinate.resolved_at == first_instant)
@@ -521,7 +533,8 @@ class RecurringConversionApplication:
                     operation_id=operation_id,
                     intent=(
                         AuthoringLifeAreaIntent(life_area_ref=event.life_area_ref)
-                        if event.life_area_ref else None
+                        if event.life_area_ref
+                        else None
                     ),
                 )
                 if area is not None and event.color_code is not None:
@@ -588,8 +601,10 @@ class RecurringConversionApplication:
                     coordinate=first[0],
                 )
                 await session.execute(
-                    text("SELECT * FROM dante.bind_self_event_recurring_seed("
-                         ":actor,:event,:source,:schedule,:state,:revision,:first_day)"),
+                    text(
+                        "SELECT * FROM dante.bind_self_event_recurring_seed("
+                        ":actor,:event,:source,:schedule,:state,:revision,:first_day)"
+                    ),
                     {
                         "actor": self_person_ref,
                         "event": basis.event_ref,
@@ -626,7 +641,7 @@ class RecurringConversionApplication:
     ) -> RecurringAuthoringResult:
         if recurrence.clock_basis_code != "named_zone" or recurrence.zone_id is None:
             raise RecurringConversionUnsupportedError("The Activity requires a named-zone rule.")
-        _validate_recurrence(recurrence)
+        _validate(recurrence)
         starts_on, wall_time = _routine_bootstrap(recurrence)
         try:
             async with self._session_factory() as session, session.begin():
@@ -694,7 +709,8 @@ class RecurringConversionApplication:
                     session=session,
                 )
                 first = [
-                    item for item in checkpoint.occurrences
+                    item
+                    for item in checkpoint.occurrences
                     if not item.skipped
                     and isinstance(item.coordinate, CalendarCoordinate)
                     and item.coordinate.generated_date == first_date

@@ -539,7 +539,7 @@ test.describe('Temporal Create Life Area golden gate', () => {
       );
       await expect
         .poll(() => checkpointDurationsMs.length, {
-          timeout: E2E_RESPONSE_TIMEOUT_MS,
+          timeout: 30_000,
         })
         .toBeGreaterThanOrEqual(2);
       await testInfo.attach('recurring-activity-first-paint.json', {

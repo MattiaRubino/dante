@@ -397,10 +397,14 @@ async def get_existing_event_recurrence_seed(
 ) -> UUID | None:
     response.headers["Cache-Control"] = "no-store"
     async with request.app.state.database_runtime.session_factory() as session:
-        return await session.scalar(
-            text("SELECT source_event_ref FROM dante.get_self_event_recurring_seed(:actor,:event)"),
-            {"actor": context.self_person_ref, "event": event_ref},
-        )
+        async with session.begin():
+            source_ref = await session.scalar(
+                text(
+                    "SELECT source_event_ref FROM dante.get_self_event_recurring_seed(:actor,:event)"
+                ),
+                {"actor": context.self_person_ref, "event": event_ref},
+            )
+        return UUID(str(source_ref)) if source_ref is not None else None
 
 
 @router.post(

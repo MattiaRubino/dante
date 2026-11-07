@@ -17517,6 +17517,82 @@
         "title": "SliceAssessment",
         "type": "object"
       },
+      "StartExistingActivityRecurrenceRequest": {
+        "additionalProperties": false,
+        "properties": {
+          "envelope_schedule_ref": {
+            "format": "uuid",
+            "title": "Envelope Schedule Ref",
+            "type": "string"
+          },
+          "expected_placement_state_ref": {
+            "format": "uuid",
+            "title": "Expected Placement State Ref",
+            "type": "string"
+          },
+          "expected_profile_revision": {
+            "minimum": 0.0,
+            "title": "Expected Profile Revision",
+            "type": "integer"
+          },
+          "operation_id": {
+            "maxLength": 200,
+            "minLength": 1,
+            "title": "Operation Id",
+            "type": "string"
+          },
+          "recurrence": {
+            "$ref": "#/components/schemas/CalendarRecurrenceRequest"
+          }
+        },
+        "required": [
+          "operation_id",
+          "expected_profile_revision",
+          "envelope_schedule_ref",
+          "expected_placement_state_ref",
+          "recurrence"
+        ],
+        "title": "StartExistingActivityRecurrenceRequest",
+        "type": "object"
+      },
+      "StartExistingEventRecurrenceRequest": {
+        "additionalProperties": false,
+        "properties": {
+          "expected_placement_state_ref": {
+            "format": "uuid",
+            "title": "Expected Placement State Ref",
+            "type": "string"
+          },
+          "expected_profile_revision": {
+            "minimum": 0.0,
+            "title": "Expected Profile Revision",
+            "type": "integer"
+          },
+          "operation_id": {
+            "maxLength": 200,
+            "minLength": 1,
+            "title": "Operation Id",
+            "type": "string"
+          },
+          "recurrence": {
+            "$ref": "#/components/schemas/CalendarRecurrenceRequest"
+          },
+          "schedule_ref": {
+            "format": "uuid",
+            "title": "Schedule Ref",
+            "type": "string"
+          }
+        },
+        "required": [
+          "operation_id",
+          "expected_profile_revision",
+          "schedule_ref",
+          "expected_placement_state_ref",
+          "recurrence"
+        ],
+        "title": "StartExistingEventRecurrenceRequest",
+        "type": "object"
+      },
       "StepDiagnosisResponse": {
         "additionalProperties": false,
         "properties": {
@@ -37386,6 +37462,57 @@
         "tags": ["temporal"]
       }
     },
+    "/api/v1/temporal/recurring/activities/{activity_ref}/start": {
+      "post": {
+        "operationId": "temporal_start_existing_activity_recurrence",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "activity_ref",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Activity Ref",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/StartExistingActivityRecurrenceRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RecurringAuthoringResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Start Existing Activity Recurrence",
+        "tags": ["temporal"]
+      }
+    },
     "/api/v1/temporal/recurring/events": {
       "post": {
         "operationId": "temporal_create_recurring_event",
@@ -37422,6 +37549,107 @@
           }
         },
         "summary": "Create Recurring Event",
+        "tags": ["temporal"]
+      }
+    },
+    "/api/v1/temporal/recurring/events/{event_ref}/seed": {
+      "get": {
+        "operationId": "temporal_get_existing_event_recurrence_seed",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "event_ref",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Event Ref",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "anyOf": [
+                    {
+                      "format": "uuid",
+                      "type": "string"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ],
+                  "title": "Response Temporal Get Existing Event Recurrence Seed"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Get Existing Event Recurrence Seed",
+        "tags": ["temporal"]
+      }
+    },
+    "/api/v1/temporal/recurring/events/{event_ref}/start": {
+      "post": {
+        "operationId": "temporal_start_existing_event_recurrence",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "event_ref",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Event Ref",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/StartExistingEventRecurrenceRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RecurringAuthoringResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Start Existing Event Recurrence",
         "tags": ["temporal"]
       }
     },

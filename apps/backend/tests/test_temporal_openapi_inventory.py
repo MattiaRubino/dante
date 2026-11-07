@@ -9,7 +9,7 @@ from dante.bootstrap.openapi_export import openapi_document
 _PUBLISHED_OPENAPI = (
     Path(__file__).resolve().parents[3] / "packages/api-client/openapi/dante-v1.openapi.json"
 )
-_CURRENT_ACCEPTED_TEMPORAL_OPERATION_COUNT = 198
+_CURRENT_ACCEPTED_TEMPORAL_OPERATION_COUNT = 201
 
 _HTTP_METHODS = frozenset({"get", "post", "put", "patch", "delete", "options", "head", "trace"})
 
@@ -148,6 +148,18 @@ _EXPECTED_TEMPORAL_OPERATIONS = {
     ("/api/v1/temporal/routines", "post"): "temporal_create_routine",
     ("/api/v1/temporal/recurring/routines", "post"): "temporal_create_recurring_routine",
     ("/api/v1/temporal/recurring/events", "post"): "temporal_create_recurring_event",
+    (
+        "/api/v1/temporal/recurring/activities/{activity_ref}/start",
+        "post",
+    ): "temporal_start_existing_activity_recurrence",
+    (
+        "/api/v1/temporal/recurring/events/{event_ref}/start",
+        "post",
+    ): "temporal_start_existing_event_recurrence",
+    (
+        "/api/v1/temporal/recurring/events/{event_ref}/seed",
+        "get",
+    ): "temporal_get_existing_event_recurrence_seed",
     ("/api/v1/temporal/routines/{routine_ref}/rename", "post"): "temporal_rename_routine",
     ("/api/v1/temporal/routines/{routine_ref}/pause", "post"): "temporal_pause_routine",
     ("/api/v1/temporal/routines/{routine_ref}/resume", "post"): "temporal_resume_routine",

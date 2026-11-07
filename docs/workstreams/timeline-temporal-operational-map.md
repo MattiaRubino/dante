@@ -914,3 +914,11 @@ Event edit API or all-fields UI Save is available yet.
 The Event profile editor has a visual layout checkpoint using the shared
 Create/Activity title row and bounded form shell. It retains the profile-only
 Save boundary while the aggregate Event command is incomplete.
+
+## 2026-11-07 — Existing recurrence full-gate repair
+
+See the latest handoff: the `368d71f` 27-group gate supplied exact failures.
+The follow-up candidate fixes generated OpenAPI/client inventory, Dictionary
+scope, Python quality/types, read transactions in the two new PostgreSQL
+regressions, and stale date-bearing card assertions. PostgreSQL conversion
+and real browser checks require a new owner-local gate on one published SHA.

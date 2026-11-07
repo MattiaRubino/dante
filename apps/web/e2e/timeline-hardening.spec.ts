@@ -454,7 +454,7 @@ test('title drag previews the same 15-minute destination as drop', async ({
     'false',
   );
   await expect(card.locator('.timeline-event-card__time')).toContainText(
-    preview,
+    preview.replace('–', ' – '),
   );
   await expect(page.locator('.timeline-event-modal--inspector')).toHaveCount(0);
 });

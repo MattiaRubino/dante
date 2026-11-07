@@ -334,14 +334,14 @@ describe('Activity Timeline coordinated replan', () => {
     ]);
     expect(remote.applyReplan.mock.calls[0]?.[4]).toBeUndefined();
     expect(reviseSchedule).not.toHaveBeenCalled();
-    expect(card.getAttribute('aria-label')).toContain('10:00–11:00');
+    expect(card.getAttribute('aria-label')).toContain('10:00 – 11:00 (9 set)');
     await waitFor(() => expect(loadWindow).toHaveBeenCalledTimes(2));
     await waitFor(() =>
       expect(
         container
           .querySelector<HTMLElement>(`[data-timeline-event="${SCHEDULE_REF}"]`)
           ?.getAttribute('aria-label'),
-      ).toContain('10:15–11:15'),
+      ).toContain('10:15 – 11:15 (9 set)'),
     );
     const confirmation = await screen.findByText(
       'Attività riprogrammata per 9 set, 10:15–11:15',
@@ -376,7 +376,9 @@ describe('Activity Timeline coordinated replan', () => {
       await screen.findByTestId('activity-edit-panel');
       expect(remote.applyReplan).not.toHaveBeenCalled();
       expect(reviseSchedule).not.toHaveBeenCalled();
-      expect(card.getAttribute('aria-label')).toContain('10:00–11:00');
+      expect(card.getAttribute('aria-label')).toContain(
+        '10:00 – 11:00 (9 set)',
+      );
     },
   );
 

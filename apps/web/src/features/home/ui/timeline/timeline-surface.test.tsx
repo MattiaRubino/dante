@@ -402,7 +402,7 @@ describe('TimelineSurface production parity', () => {
     );
     const time = card?.querySelector<HTMLElement>('.timeline-event-card__time');
     expect(time?.tagName).toBe('DIV');
-    expect(time?.textContent).toContain('09:00–11:00');
+    expect(time?.textContent).toContain('09:00 – 11:00 (4 ago)');
     fireEvent.click(time as HTMLElement);
     expect(card?.classList.contains('is-focused')).toBe(true);
     expect(
@@ -489,12 +489,14 @@ describe('TimelineSurface production parity', () => {
     }
     // Keyboard placement moves in visible 15-minute slots, independent
     // of focus and elastic Timeline density.
-    expect(getReminder()?.getAttribute('aria-label')).toContain('16:00–16:15');
+    expect(getReminder()?.getAttribute('aria-label')).toContain(
+      '16:00 – 16:15 (4 ago)',
+    );
 
     for (let cycle = 0; cycle < 8; cycle += 1) {
       moveReminder('ArrowDown');
       expect(getReminder()?.getAttribute('aria-label')).toContain(
-        '16:15–16:30',
+        '16:15 – 16:30 (4 ago)',
       );
 
       const isolatedReminder = getReminder();
@@ -505,7 +507,7 @@ describe('TimelineSurface production parity', () => {
 
       moveReminder('ArrowUp');
       expect(getReminder()?.getAttribute('aria-label')).toContain(
-        '16:00–16:15',
+        '16:00 – 16:15 (4 ago)',
       );
     }
 
@@ -513,7 +515,9 @@ describe('TimelineSurface production parity', () => {
       moveReminder('ArrowUp');
     }
 
-    expect(getReminder()?.getAttribute('aria-label')).toContain('14:45–15:00');
+    expect(getReminder()?.getAttribute('aria-label')).toContain(
+      '14:45 – 15:00 (4 ago)',
+    );
     expect(
       container.querySelectorAll('[data-timeline-event="12"]'),
     ).toHaveLength(1);
