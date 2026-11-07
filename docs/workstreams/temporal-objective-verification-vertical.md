@@ -1,10 +1,11 @@
 # DANTE — Objective verification vertical (design and implementation contract)
 
-Status: **DESIGN ONLY — IMPLEMENTATION PENDING**. Do not enable Objective
-verification choices in Create/Edit until the backend, canonical snapshots,
-recurrence semantics and runtime review are all implemented and tested.
-This document does **not** supersede the currently released Reality/Objective
-contracts or claim an implemented feature.
+Status: **IMPLEMENTATION CANDIDATE — TESTS PENDING**. The shared Create/Edit
+Objective verification control, versioned persistence and source-scoped
+inheritance are implemented on `feature/timeline-temporal-operational` using
+migration `20261107_178`. Focused regression tests have been added, but
+the new SHA has not yet passed PostgreSQL, TypeScript, browser and full gate
+acceptance. Automatic assessment remains disabled without evidence sources.
 
 ## Product contract
 
@@ -101,9 +102,11 @@ not to be replaced or overloaded for individual Objective configuration.
 - Runtime Objective recording:
   `apps/web/src/features/temporal/objective-controls.tsx`.
 
-Current Objective definition schema and the Reality completion policy **do
-not** provide a persisted Objective verification mode. Updating only JSX,
-CSS or a recurring JSON payload would be an incomplete/broken implementation.
+Objective-level verification is backed by independent local revision and
+accepted series history, with owner-scoped capabilities and transactional
+Create/Edit saves. The existing Reality completion policy is unchanged.
+Review-queue prompts require an unobserved Objective configured for
+`review_on_end`. This is implementation status, **not test certification**.
 
 ## Mandatory acceptance and test matrix
 
