@@ -1,5 +1,17 @@
 # Timeline / Temporal-Operational — Workstream Handoff
 
+## 2026-11-07 — Legacy Event exclusion coordinate regression
+
+The owner's focused PostgreSQL gate on `1add179` completed all migrations and
+reported **30 passed, 1 failed**. The remaining failure was the legacy-first
+test comparing the exclusion's normalized civil coordinate (`resolved_at=None`)
+with the original Schedule's instant-bearing coordinate. Structural exclusions
+deliberately discard the resolved instant so a repeated local hour retains one
+exclusion; the Event Schedule still keeps its resolved instant. The test now
+asserts both properties. No production persistence or recurrence behavior was
+changed. A fresh run on this new SHA is required before claiming PostgreSQL
+PASS; first-instance structural series editing remains separately unverified.
+
 ## 2026-11-07 — PostgreSQL migration placeholder repair
 
 The owner's focused PostgreSQL gate on `defc7ec` stopped during every fresh

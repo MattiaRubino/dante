@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from dataclasses import replace
 from datetime import date, datetime, time
 from typing import Any
 
@@ -480,7 +481,8 @@ async def test_legacy_event_first_exclusion_recovers_once_without_copying_event(
                     "day": first_date,
                 },
             )
-        assert excluded.coordinate == first
+        assert first.resolved_at is not None
+        assert excluded.coordinate == replace(first, resolved_at=None)
         async with runtime.session_factory() as session, session.begin():
             assert (
                 await session.scalars(
