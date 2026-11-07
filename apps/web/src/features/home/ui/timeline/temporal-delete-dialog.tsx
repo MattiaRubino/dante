@@ -27,9 +27,9 @@ export function TemporalDeleteDialog({
 }: Readonly<{
   subject: 'attività' | 'evento';
   itemTitle: string;
-  scheduleLabel?: string;
+  scheduleLabel?: string | undefined;
   choices: readonly TemporalDeleteChoice[];
-  note?: string;
+  note?: string | undefined;
   error?: string;
   busy: boolean;
   onCancel: () => void;
