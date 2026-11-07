@@ -8,6 +8,7 @@ import {
 } from '../model/temporal-create-session';
 import { TemporalCreateDatePicker } from './temporal-create-date-picker';
 
+import './temporal-create-expanded.css';
 import './temporal-create-calendar-recurrence-fields.css';
 
 type TemporalCreateCalendarRecurrenceFieldsProps = Readonly<{
