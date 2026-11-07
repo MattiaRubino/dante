@@ -810,6 +810,14 @@ class TemporalTimelineApplication:
              WHERE NOT dante.is_self_recurring_occurrence_superseded(
                        :self_person_ref,occurrence.occurrence_ref
                    )
+               AND (
+                   source.source_kind <> 'event'
+                   OR NOT EXISTS (
+                       SELECT 1 FROM dante.get_self_event_recurring_first_by_occurrence(
+                           :self_person_ref, occurrence.occurrence_ref
+                       )
+                   )
+               )
                AND NOT EXISTS (
                        SELECT 1
                          FROM dante.list_self_routine_occurrence_activities(

@@ -97,20 +97,21 @@
       "B14-ACTIVITY-SESSION-SINGLE-DELETE",
       "B14-RECURRING-PROFILE-EXCEPTIONS",
       "B14-M1-STRUCTURAL-SERIES-REVISION",
-      "B14-EXISTING-RECURRENCE"
+      "B14-EXISTING-RECURRENCE",
+      "B14-EXISTING-EVENT-FIRST"
     ],
     "standalone_entries": {
       "tables": 241,
       "views": 5,
-      "routines": 251,
-      "total": 497
+      "routines": 254,
+      "total": 500
     },
     "embedded_objects": {
       "triggers": 104,
-      "physical_indexes": 494
+      "physical_indexes": 495
     },
     "constraints": {
-      "foreign_keys": 431,
+      "foreign_keys": 432,
       "check_constraints": 600
     }
   },

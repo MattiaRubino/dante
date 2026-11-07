@@ -243,8 +243,20 @@ class RoutineOccurrenceMaterializationApplication:
             event_ref=source_ref,
         )
         revisions: dict[UUID, EventOccurrencePolicyView | None] = {}
+        # A first Event already owns its accepted Schedule, Agenda, Objective
+        # and factual graph. Never manufacture a second Schedule or outcomes.
+        async with self._session_factory() as session, session.begin():
+            first_occurrence_ref = await session.scalar(
+                text(
+                    "SELECT first_occurrence_ref "
+                    "FROM dante.get_self_event_recurring_first_by_source(:actor,:source)"
+                ),
+                {"actor": self_person_ref, "source": source_ref},
+            )
 
         for occurrence in checkpoint.occurrences:
+            if occurrence.occurrence_ref == first_occurrence_ref:
+                continue
             if occurrence.skipped or occurrence.coordinate is None:
                 continue
             state = occurrence.governing_recurrence_state_ref

@@ -16,6 +16,7 @@ from dante.modules.temporal.application import (
     TimelineNamedZoneLocalActivityItem,
     TimelineNamedZoneLocalEventItem,
     TimelineScheduledOccurrenceItem,
+    TimelineExpectedOccurrenceItem,
 )
 from dante.modules.temporal.authoring import TemporalAuthoringApplication
 from dante.modules.temporal.contracts import TimelineWindowQuery
@@ -262,9 +263,56 @@ async def test_existing_event_keeps_first_event_and_excludes_duplicate_occurrenc
             and item.source_native_ref == started.source_ref
         ]
         assert len(originals) == 1
+        assert originals[0].schedule_ref == schedule.schedule_ref
         assert len(following) == 1
         assert following[0].coordinate is not None
+        assert not [
+            item
+            for item in window.items
+            if isinstance(item, TimelineExpectedOccurrenceItem)
+            and item.source_native_ref == started.source_ref
+            and item.coordinate.generated_date == date(2027, 1, 2)
+        ]
         async with runtime.session_factory() as session, session.begin():
+            first_occurrence = await session.scalar(
+                text(
+                    "SELECT first_occurrence_ref "
+                    "FROM dante.get_self_event_recurring_first_by_source(:actor,:source)"
+                ),
+                {"actor": actor, "source": started.source_ref},
+            )
+            assert first_occurrence is not None
+            first_origin = (
+                await session.execute(
+                    text(
+                        "SELECT source_native_ref,generated_date "
+                        "FROM dante.get_self_occurrence(:actor,:first)"
+                    ),
+                    {"actor": actor, "first": first_occurrence},
+                )
+            ).one()
+            assert first_origin.source_native_ref == started.source_ref
+            assert first_origin.generated_date == date(2027, 1, 2)
+            assert (
+                await session.scalar(
+                    text(
+                        "SELECT first_event_ref FROM dante.get_self_event_recurring_first_by_occurrence("
+                        ":actor,:first)"
+                    ),
+                    {"actor": actor, "first": first_occurrence},
+                )
+                == original
+            )
+            assert (
+                await session.scalar(
+                    text(
+                        "SELECT first_event_ref FROM dante.get_self_event_recurring_first_by_occurrence("
+                        ":actor,:first)"
+                    ),
+                    {"actor": other, "first": first_occurrence},
+                )
+                is None
+            )
             assert (
                 await session.scalar(
                     text(

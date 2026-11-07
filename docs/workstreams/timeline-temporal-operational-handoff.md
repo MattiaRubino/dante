@@ -1,5 +1,27 @@
 # Timeline / Temporal-Operational — Workstream Handoff
 
+## 2026-11-07 — Existing Event first-Occurrence binding candidate
+
+The 20261107_172 **additive** migration introduces a unique indexed,
+optional first-Occurrence reference on Event seeds, with owner-scoped
+binding and inverse lookup functions. Event conversion now checkpoints
+the first calendar candidate and binds exactly one generated Occurrence
+to the unchanged first Event in one SERIALIZABLE transaction. The
+materializer reuses the Event's original Schedule, Agenda, Objectives,
+and factual history without creating duplicates; Timeline excludes only
+the linked first expected Occurrence, avoiding a duplicate ghost card.
+
+The existing Event keeps its native identity and ordinary local Edit.
+Earlier `20261106_171` associations with first_occurrence_ref=NULL
+are preserved without deleting their historical structural exclusions;
+a separately tested legacy reconciliation is required to repair previously
+saved seed rows. This patch alone is **not yet full first-instance scope
+parity**: the Event's first-instance edit/scope UI still needs acceptance.
+PostgreSQL, migration/catalog, CI and browser tests remain **NOT RUN** for
+this candidate. Do not perform automatic historical exclusion cleanup
+without owner, provenance and first-coordinate proof.
+
+
 ## 2026-11-06 — Event Edit discard and unchanged Save candidate
 
 The one-off and selected-instance Event Edit now close when Save has no changes,

@@ -1,8 +1,9 @@
-"""Start a Routine from an already accepted Activity without replacing its identity.
+"""Start a recurring series from an accepted Activity or Event.
 
-The source, recurrence, future template, first occurrence and Activity binding
-are committed together. A Timeline checkpoint cannot observe a source whose
-first Activity has not been bound yet.
+An Activity binds directly to its first Routine Occurrence. An Event retains
+its physical Event identity and canonical Schedule while binding to the first
+Event Occurrence; neither conversion copies or deletes historical facts.
+Source, recurrence, template, first Occurrence and binding are atomic.
 """
 
 from __future__ import annotations
@@ -591,24 +592,38 @@ class RecurringConversionApplication:
                     reality_mode=policy.reality_mode,
                     objectives=policy.objectives,
                 )
-                await self._occurrences.exclude_in_session(
-                    session,
+                checkpoint = await self._occurrences.checkpoint(
                     owner="event",
                     self_person_ref=self_person_ref,
                     source_ref=source_ref,
-                    governing_recurrence_state_ref=current.material_state_ref,
                     operation_id=_child_operation_id(operation_id, "existing-event-first"),
-                    coordinate=first[0],
+                    start_date=first_date,
+                    end_date_exclusive=first_date + timedelta(days=1),
+                    effective_zone_id=recurrence.zone_id,
+                    session=session,
                 )
+                first_instances = [
+                    item
+                    for item in checkpoint.occurrences
+                    if not item.skipped
+                    and isinstance(item.coordinate, CalendarCoordinate)
+                    and item.coordinate == first[0]
+                    and item.governing_recurrence_state_ref == current.material_state_ref
+                ]
+                if len(first_instances) != 1:
+                    raise RecurringConversionUnsupportedError(
+                        "The Event must be the first materialized Occurrence of its series."
+                    )
                 await session.execute(
                     text(
-                        "SELECT * FROM dante.bind_self_event_recurring_seed("
-                        ":actor,:event,:source,:schedule,:state,:revision,:first_day)"
+                        "SELECT * FROM dante.bind_self_event_recurring_first("
+                        ":actor,:event,:source,:occurrence,:schedule,:state,:revision,:first_day)"
                     ),
                     {
                         "actor": self_person_ref,
                         "event": basis.event_ref,
                         "source": source_ref,
+                        "occurrence": first_instances[0].occurrence_ref,
                         "schedule": basis.schedule_ref,
                         "state": basis.expected_placement_state_ref,
                         "revision": basis.expected_profile_revision,
@@ -625,7 +640,13 @@ class RecurringConversionApplication:
                 )
         except DBAPIError as exc:
             name = getattr(getattr(exc.orig, "diag", None), "constraint_name", None)
-            if name in {"event_recurring_seed_unavailable", "event_recurring_seed_conflict"}:
+            if name in {
+                "event_recurring_first_unavailable",
+                "event_recurring_first_conflict",
+                "event_recurring_seed_unavailable",
+                "event_recurring_seed_conflict",
+                "uq_event_recurring_seed_occurrence",
+            }:
                 raise RecurringConversionConflictError(
                     "The Event is already linked or changed; reopen Edit."
                 ) from exc

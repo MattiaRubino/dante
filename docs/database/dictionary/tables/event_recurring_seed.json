@@ -8,7 +8,7 @@
     "name": "event_recurring_seed",
     "ownership_class": "dante_owned"
   },
-  "purpose": "Associates an existing one-off Event with a separate recurring Event source for following occurrences.",
+  "purpose": "Links the existing Event and the first canonical Occurrence of a separate recurring source; null first Occurrence references identify legacy exclusions.",
   "classification": {
     "persistence_role": "event_recurring_seed",
     "canonicality": "relation",
@@ -90,6 +90,18 @@
         "meaning": "Time the association was accepted.",
         "semantic_type": null,
         "value_contract": "Time the association was accepted."
+      },
+      {
+        "name": "first_occurrence_ref",
+        "postgres_type": "uuid",
+        "nullable": true,
+        "default": {
+          "kind": "none",
+          "expression": null
+        },
+        "meaning": "The canonical first generated Occurrence bound to the existing Event; legacy seed rows may be null.",
+        "semantic_type": "NativeRef",
+        "value_contract": "Owner-scoped immutable first-instance identity."
       }
     ],
     "primary_key": {
@@ -171,6 +183,29 @@
         "reference_family": "NativeRef",
         "cardinality": "many_to_one",
         "semantic_reason": "Both Event identities and the actor remain canonical."
+      },
+      {
+        "name": "fk_event_recurring_seed_occurrence",
+        "columns": [
+          "first_occurrence_ref"
+        ],
+        "target": {
+          "schema": "dante",
+          "table": "occurrence",
+          "columns": [
+            "occurrence_ref"
+          ]
+        },
+        "on_delete": "NO ACTION",
+        "on_update": "NO ACTION",
+        "match_type": "SIMPLE",
+        "deferrable": false,
+        "initially": "NOT DEFERRABLE",
+        "enforced": true,
+        "validated": true,
+        "reference_family": "NativeRef",
+        "cardinality": "many_to_one",
+        "semantic_reason": "A first Event cannot bind an absent canonical Occurrence."
       }
     ],
     "unique_constraints": [
@@ -180,6 +215,16 @@
           "source_event_ref"
         ],
         "reason": "One future source belongs to one first Event.",
+        "deferrable": false,
+        "initially": "NOT DEFERRABLE",
+        "enforced": true
+      },
+      {
+        "name": "uq_event_recurring_seed_occurrence",
+        "columns": [
+          "first_occurrence_ref"
+        ],
+        "reason": "Each canonical first Occurrence may belong to one original Event.",
         "deferrable": false,
         "initially": "NOT DEFERRABLE",
         "enforced": true
@@ -213,6 +258,21 @@
         "include": [],
         "source": "unique_constraint",
         "reason": "Bounded owner lookup.",
+        "valid": true,
+        "ready": true,
+        "live": true
+      },
+      {
+        "name": "uq_event_recurring_seed_occurrence",
+        "method": "btree",
+        "unique": true,
+        "keys": [
+          "first_occurrence_ref"
+        ],
+        "predicate": null,
+        "include": [],
+        "source": "unique_constraint",
+        "reason": "Indexed reverse lookup of first Event by Occurrence.",
         "valid": true,
         "ready": true,
         "live": true

@@ -13,6 +13,7 @@ class EventRecurringSeedRow(Base):
     __tablename__ = "event_recurring_seed"
     __table_args__ = (
         UniqueConstraint("source_event_ref", name="uq_event_recurring_seed_source"),
+        UniqueConstraint("first_occurrence_ref", name="uq_event_recurring_seed_occurrence"),
         ForeignKeyConstraint(
             ["event_ref"],
             ["dante.event_expectation.event_ref"],
@@ -22,6 +23,11 @@ class EventRecurringSeedRow(Base):
             ["source_event_ref"],
             ["dante.event_expectation.event_ref"],
             name="fk_event_recurring_seed_source",
+        ),
+        ForeignKeyConstraint(
+            ["first_occurrence_ref"],
+            ["dante.occurrence.occurrence_ref"],
+            name="fk_event_recurring_seed_occurrence",
         ),
         ForeignKeyConstraint(
             ["self_person_ref"],
@@ -34,3 +40,4 @@ class EventRecurringSeedRow(Base):
     source_event_ref: Mapped[NativeRef] = mapped_column(nullable=False)
     self_person_ref: Mapped[NativeRef] = mapped_column(nullable=False)
     accepted_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
+    first_occurrence_ref: Mapped[NativeRef | None] = mapped_column(nullable=True)
