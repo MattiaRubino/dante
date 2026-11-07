@@ -33,21 +33,25 @@ export function TemporalDeleteDialog({
   const detailId = useId();
   const dialogRef = useRef<HTMLElement | null>(null);
   const cancelRef = useRef<HTMLButtonElement | null>(null);
-  const latest = useRef({ busy, onCancel });
-  latest.current = { busy, onCancel };
+  const triggerRef = useRef<HTMLElement | null>(null);
 
   useEffect(() => {
+    triggerRef.current = document.activeElement as HTMLElement | null;
     cancelRef.current?.focus();
+    return () => triggerRef.current?.focus({ preventScroll: true });
+  }, []);
+
+  useEffect(() => {
     const handleEscape = (event: KeyboardEvent) => {
       if (event.key !== 'Escape') return;
       event.preventDefault();
       event.stopImmediatePropagation();
-      if (!latest.current.busy) latest.current.onCancel();
+      if (!busy) onCancel();
     };
     // Inspector handles Escape in document capture; the modal owns it instead.
     window.addEventListener('keydown', handleEscape, true);
     return () => window.removeEventListener('keydown', handleEscape, true);
-  }, []);
+  }, [busy, onCancel]);
 
   const handleTab = (event: ReactKeyboardEvent<HTMLElement>) => {
     if (event.key !== 'Tab') return;
