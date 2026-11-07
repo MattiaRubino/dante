@@ -360,3 +360,117 @@ test('Activity Edit keeps Create clock controls contained and the series recurre
     scrollbarAtModalEdge: true,
   });
 });
+
+test('existing Activity and Event recurrence keep the Create layout without overlapping controls', async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 1280, height: 900 });
+  await page.goto('/home');
+  await page.getByRole('button', { name: 'Aggiungi alla timeline' }).click();
+  const create = page.locator('[data-temporal-create="composer"]');
+  await create.getByRole('button', { name: /Opzioni avanzate/ }).click();
+  await create.locator('.temporal-create-u2-repeat select').selectOption('weekly');
+  const detail = create.locator('.temporal-create-repeat');
+  await expect(detail).toBeVisible();
+  const [selectMarkup, detailMarkup] = await Promise.all([
+    create
+      .locator('.temporal-create-u2-repeat')
+      .evaluate((element) => element.outerHTML),
+    detail.evaluate((element) => element.outerHTML),
+  ]);
+  await page.addStyleTag({
+    path: 'src/features/home/ui/timeline/timeline.css',
+  });
+  await page.addStyleTag({
+    path: 'src/features/home/ui/timeline/activity-edit-panel.css',
+  });
+
+  const outcomes = await page.evaluate(
+    ({ selectMarkup, detailMarkup }) => {
+      const original = document.querySelector<HTMLSelectElement>(
+        '[data-temporal-create="composer"] .temporal-create-u2-repeat select',
+      )!;
+      const originalStyle = getComputedStyle(original);
+      return (['activity', 'event'] as const).map((kind) => {
+        const modal = document.createElement('div');
+        modal.className = 'timeline-event-modal timeline-event-modal--edit';
+        modal.style.position = 'absolute';
+        modal.style.left = '-2000px';
+        modal.style.width = '820px';
+        modal.style.height = '640px';
+        const editorClass =
+          kind === 'activity'
+            ? 'timeline-activity-editor'
+            : 'timeline-event-profile-editor';
+        const bodyClass =
+          kind === 'activity'
+            ? 'timeline-activity-editor__body'
+            : 'timeline-event-profile-editor__body';
+        modal.innerHTML = `<div class="${editorClass}"><div class="${bodyClass}">
+          <section class="timeline-existing-recurrence">
+            ${selectMarkup}${detailMarkup}
+            <div class="timeline-existing-recurrence__actions"><button>Avvia ripetizione</button></div>
+          </section></div></div>`;
+        document.body.append(modal);
+        const root = modal.querySelector<HTMLElement>(
+          '.timeline-existing-recurrence',
+        )!;
+        const choice = root.querySelector<HTMLSelectElement>(
+          '.temporal-create-u2-repeat select',
+        )!;
+        const panel = root.querySelector<HTMLElement>(
+          '.temporal-create-repeat',
+        )!;
+        const options = panel.querySelector<HTMLElement>(
+          '.temporal-create-repeat__end-choices',
+        )!;
+        const actions = root.querySelector<HTMLElement>(
+          '.timeline-existing-recurrence__actions',
+        )!;
+        const rootBox = root.getBoundingClientRect();
+        const choiceBox = choice.getBoundingClientRect();
+        const panelBox = panel.getBoundingClientRect();
+        const optionsBox = options.getBoundingClientRect();
+        const actionsBox = actions.getBoundingClientRect();
+        const style = getComputedStyle(choice);
+        const output = {
+          kind,
+          createSelectorParity:
+            style.height === originalStyle.height &&
+            style.borderRadius === originalStyle.borderRadius &&
+            style.fontSize === originalStyle.fontSize,
+          stacked:
+            choiceBox.bottom + 8 <= panelBox.top &&
+            panelBox.bottom + 8 <= actionsBox.top,
+          fullWidth:
+            choiceBox.width >= rootBox.width - 2 &&
+            panelBox.width >= rootBox.width - 2,
+          noOverflow:
+            optionsBox.right <= panelBox.right + 1 &&
+            optionsBox.bottom <= panelBox.bottom + 1 &&
+            actionsBox.right <= rootBox.right + 1,
+        };
+        modal.remove();
+        return output;
+      });
+    },
+    { selectMarkup, detailMarkup },
+  );
+
+  expect(outcomes).toEqual([
+    {
+      kind: 'activity',
+      createSelectorParity: true,
+      stacked: true,
+      fullWidth: true,
+      noOverflow: true,
+    },
+    {
+      kind: 'event',
+      createSelectorParity: true,
+      stacked: true,
+      fullWidth: true,
+      noOverflow: true,
+    },
+  ]);
+});
