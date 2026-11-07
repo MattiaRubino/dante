@@ -1,12 +1,18 @@
 import { describe, expect, it } from 'vitest';
 
-import type { TemporalAuthoredActivityResult } from '../../temporal';
+import type {
+  TemporalAuthoredActivityResult,
+  TemporalAuthoredEventResult,
+} from '../../temporal';
 import { createTemporalCreateFields } from '../model/temporal-create-session';
 import {
   createTemporalCreateU2AuthoringDraft,
   patchTemporalCreateU2AuthoringDraft,
 } from '../model/temporal-create-u2-authoring';
-import { createTemporalCreateRealityFinalizer } from './temporal-create-reality-finalizer';
+import {
+  createTemporalCreateEventRealityFinalizer,
+  createTemporalCreateRealityFinalizer,
+} from './temporal-create-reality-finalizer';
 
 describe('Temporal Create policy finalizer', () => {
   it('keeps policy operation ids stable across safe retry', async () => {
@@ -179,6 +185,49 @@ describe('Temporal Create policy finalizer', () => {
     const ids = calls.map(({ operationId }) => operationId);
     await finalize();
     expect(calls.slice(2).map(({ operationId }) => operationId)).toEqual(ids);
+  });
+
+  it('persists a single Event Objective review mode without changing Event completion', async () => {
+    const base = createTemporalCreateU2AuthoringDraft(
+      createTemporalCreateFields({ kind: 'event' }),
+    );
+    const draft = patchTemporalCreateU2AuthoringDraft(base, {
+      objectives: [
+        {
+          id: 'event-goal',
+          label: 'Partecipazione',
+          resultKind: 'boolean',
+          comparatorCode: null,
+          targetValue: '',
+          targetMin: '',
+          targetMax: '',
+          unitCode: '',
+          verificationMode: 'review_on_end',
+        },
+      ],
+    });
+    const authored = {
+      item: { subjectRef: '0199bbbb-bbbb-7bbb-8bbb-bbbbbbbbbbbb' },
+    } as unknown as TemporalAuthoredEventResult;
+    const received: Array<{ kind: string; mode: string }> = [];
+    const source = {
+      configureReality: () =>
+        Promise.reject(new Error('Event completion must remain manual')),
+      createObjective: (
+        kind: string,
+        _ref: string,
+        command: Readonly<{ verificationMode: string }>,
+      ) => {
+        received.push({ kind, mode: command.verificationMode });
+        return Promise.resolve({});
+      },
+    };
+    await createTemporalCreateEventRealityFinalizer(
+      authored,
+      draft,
+      source as never,
+    )();
+    expect(received).toEqual([{ kind: 'event', mode: 'review_on_end' }]);
   });
 
   it('refuses placement protection when authoring produced no Activity Schedule', () => {

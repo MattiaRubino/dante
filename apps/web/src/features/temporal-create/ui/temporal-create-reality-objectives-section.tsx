@@ -74,11 +74,7 @@ export function TemporalCreateRealityObjectivesSection({ fields }: Props) {
           <h3>
             {italian ? 'Svolgimento e obiettivi' : 'Occurrence and objectives'}
           </h3>
-          <p>
-            {italian
-              ? 'Decidi se verificare lo svolgimento e quali risultati vuoi misurare.'
-              : 'Choose whether to review occurrence and which results you want to measure.'}
-          </p>
+
         </div>
       </div>
 
@@ -88,11 +84,7 @@ export function TemporalCreateRealityObjectivesSection({ fields }: Props) {
       >
         <div className="temporal-create-reality-objectives__block-copy">
           <strong>{subjectLabel}</strong>
-          <span>
-            {italian
-              ? 'Come vuoi gestire la conferma dello svolgimento?'
-              : 'How should occurrence confirmation be handled?'}
-          </span>
+
         </div>
 
         <div
@@ -127,11 +119,7 @@ export function TemporalCreateRealityObjectivesSection({ fields }: Props) {
       >
         <div className="temporal-create-reality-objectives__block-copy">
           <strong>{italian ? 'Obiettivi' : 'Objectives'}</strong>
-          <span>
-            {italian
-              ? 'Aggiungi solo ciò che vuoi verificare o misurare separatamente.'
-              : 'Add only the results you want to review or measure separately.'}
-          </span>
+
         </div>
         <TemporalCreateObjectives />
       </div>
