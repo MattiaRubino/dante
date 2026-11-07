@@ -38,26 +38,24 @@ def _patch_function(signature: str, patches: tuple[tuple[str, str], ...]) -> Non
 
 
 def upgrade() -> None:
-    baseline = op.get_bind().exec_driver_sql(
-        "SELECT pg_get_functiondef(%s::regprocedure)",
-        ("dante.get_self_temporal_hard_delete_fingerprint(uuid,uuid,text)",),
-    ).scalar_one()
+    baseline = (
+        op.get_bind()
+        .exec_driver_sql(
+            "SELECT pg_get_functiondef(%s::regprocedure)",
+            ("dante.get_self_temporal_hard_delete_fingerprint(uuid,uuid,text)",),
+        )
+        .scalar_one()
+    )
     if "policy_state text" not in baseline or (
         "reality_review_policy_current_history" not in baseline
     ):
-        raise RuntimeError(
-            "Missing authoritative Reality-Policy protection from migration 158"
-        )
+        raise RuntimeError("Missing authoritative Reality-Policy protection from migration 158")
     _patch_function(
         "get_self_temporal_hard_delete_fingerprint(uuid,uuid,text)",
         _PREVIEW_PATCHES,
     )
-    _patch_function(
-        "delete_self_temporal_hard(uuid,uuid,text,text)", _DELETE_PATCHES
-    )
-    _patch_function(
-        "list_self_event_deletion_occurrences(uuid,uuid)", _CHOICE_PATCHES
-    )
+    _patch_function("delete_self_temporal_hard(uuid,uuid,text,text)", _DELETE_PATCHES)
+    _patch_function("list_self_event_deletion_occurrences(uuid,uuid)", _CHOICE_PATCHES)
 
 
 def downgrade() -> None:

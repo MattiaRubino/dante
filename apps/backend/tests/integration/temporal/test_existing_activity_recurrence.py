@@ -417,8 +417,8 @@ async def test_legacy_event_first_exclusion_recovers_once_without_copying_event(
             title="Appuntamento originale",
             agenda_parts=("Agenda originale",),
             placement=NamedZoneLocalIntervalPlacement(
-                starts_local_at=datetime(2099, 1, 5, 10),
-                ends_local_at=datetime(2099, 1, 5, 11),
+                starts_local_at=datetime(2099, 1, 5, 10),  # noqa: DTZ001
+                ends_local_at=datetime(2099, 1, 5, 11),  # noqa: DTZ001
                 zone_id="Europe/Rome",
                 disambiguation="earlier",
             ),
@@ -452,9 +452,7 @@ async def test_legacy_event_first_exclusion_recovers_once_without_copying_event(
             resolved_at=schedule.placement.resolved_start_at,
         )
         async with runtime.session_factory() as session, session.begin():
-            excluded = await OccurrenceApplication(
-                runtime.session_factory
-            ).exclude_in_session(
+            excluded = await OccurrenceApplication(runtime.session_factory).exclude_in_session(
                 session,
                 owner="event",
                 self_person_ref=actor,
@@ -552,22 +550,28 @@ async def test_legacy_event_first_exclusion_recovers_once_without_copying_event(
                     {"actor": actor},
                 )
             ).all() == []
-        assert len(
-            [
-                item
-                for item in timeline.items
-                if isinstance(item, TimelineNamedZoneLocalEventItem)
-                and item.event_ref == event_ref
-            ]
-        ) == 1
-        assert len(
-            [
-                item
-                for item in timeline.items
-                if isinstance(item, TimelineScheduledOccurrenceItem)
-                and item.source_native_ref == series.source_ref
-            ]
-        ) == 1
+        assert (
+            len(
+                [
+                    item
+                    for item in timeline.items
+                    if isinstance(item, TimelineNamedZoneLocalEventItem)
+                    and item.event_ref == event_ref
+                ]
+            )
+            == 1
+        )
+        assert (
+            len(
+                [
+                    item
+                    for item in timeline.items
+                    if isinstance(item, TimelineScheduledOccurrenceItem)
+                    and item.source_native_ref == series.source_ref
+                ]
+            )
+            == 1
+        )
 
         await checkpoint.checkpoint_window(
             self_person_ref=actor,

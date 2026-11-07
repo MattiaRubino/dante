@@ -3,9 +3,9 @@
 from __future__ import annotations
 
 from datetime import date, datetime
-from uuid import UUID
 from types import SimpleNamespace
 from typing import Any, cast
+from uuid import UUID
 
 import psycopg
 import pytest
@@ -481,9 +481,7 @@ async def _linked_existing_event(
         ),
         recurrence=_daily_named_zone(),
     )
-    await RoutineOccurrenceMaterializationApplication(
-        runtime.session_factory
-    ).checkpoint_window(
+    await RoutineOccurrenceMaterializationApplication(runtime.session_factory).checkpoint_window(
         self_person_ref=actor,
         operation_id=f"{operation_id}:checkpoint",
         start_date=date(2026, 10, 6),
@@ -582,11 +580,10 @@ async def test_existing_first_event_series_deletes_both_roots_and_all_occurrence
     stranger = _seed_self(migrated_database)
     runtime = create_database_runtime(migrated_database.runtime_settings())
     try:
-        original, source, first = await _linked_existing_event(
-            runtime, actor, "hard:first:whole"
-        )
+        original, source, first = await _linked_existing_event(runtime, actor, "hard:first:whole")
         all_occurrences = set(_occurrences(migrated_database, source))
-        assert first in all_occurrences and len(all_occurrences) == 2
+        assert first in all_occurrences
+        assert len(all_occurrences) == 2
         with pytest.raises(ProblemError) as unauthorized:
             await _preview(runtime, stranger, original, "event_series")
         assert unauthorized.value.status == 404
@@ -623,9 +620,7 @@ async def test_existing_first_event_series_rejects_stale_native_state(
     actor = _seed_self(migrated_database)
     runtime = create_database_runtime(migrated_database.runtime_settings())
     try:
-        original, source, first = await _linked_existing_event(
-            runtime, actor, "hard:first:stale"
-        )
+        original, source, first = await _linked_existing_event(runtime, actor, "hard:first:stale")
         stale = await _preview(runtime, actor, source, "event_series")
         if change_kind == "profile":
             async with runtime.session_factory() as session, session.begin():

@@ -70,10 +70,7 @@ SET search_path=pg_catalog,dante,pg_temp AS $function$
               AND excluded.governing_recurrence_state_ref=active.material_state_ref
               AND excluded.family_code='calendar_wall_clock'
               AND provenance.operation_id
-                  ~ '^b06d:existing-event-first:[0-9a-f]{64}
-$function$;
-"""
-
+                  ~ '^b06d:existing-event-first:[0-9a-f]{64}$'
        )
      ORDER BY seed.source_event_ref
 $function$;
