@@ -1,5 +1,14 @@
 # Timeline / Temporal-Operational — Workstream Handoff
 
+## 2026-11-07 — Full parallel gate `2fb09bab`: two narrow catalog/metadata repairs
+
+Owner-provided full gate on `2fb09babf848946ea2cba1d0f6513ff8e6fecc6a`: **27/27 groups collected; 25 PASS, 2 FAIL; source stability PASS**. All Web gates, both browser modes, generated client drift, MyPy, ESLint and formatting passed. `BACKEND_NON_POSTGRES` reported **678 passed, 1 failed, 432 deselected**: Dictionary scope schema capped completed stages at 78, while the exact allowed enum and materialized scope both contain 79 unique stages. `BACKEND_POSTGRES` reported exactly one remaining failure in the Alembic no-drift check: the Event legacy-proof check was named `ck_event_recurring_seed_legacy_proof` in the canonical migration but mapped via an unconverted ORM name, inducing automatic `ck_event_recurring_seed_` prefixing a second time.
+
+The follow-up `70f47ab` adjusts only the schema's `maxItems` to 79 and marks the already-final ORM check-constraint name with SQLAlchemy `conv(...)`, matching the existing repository mapping convention. No migration, data, DDL, runtime capability, API or generated client was changed. Existing exact Dictionary and Alembic checks are the regression owners; **both repairs remain unverified on the new commit** until the owner's targeted re-run and full gate are green.
+
+Separate product question raised by the owner: conversion of an existing Activity/Event dated 2–3 or more days in the past. The present conversion accepts a recurrence whose `effective_from` exactly matches the saved first Schedule date and binds that original as the first Occurrence, without a current-date guard. The calendar checkpoint evaluates a requested bounded window and can derive intervening past expectations. This does **not** assert a Session, Actual, Outcome or attendance. The operational policy for retroactively generating past missed expectations versus suppressing unplanned backfill requires an explicit product decision and regression test; do not silently change it while repairing schema checks.
+
+
 ## 2026-11-07 — Full gate catalog and static corrections
 
 Owner WSL full parallel gate on `ce6553b` ran all 27 groups with stable source.
