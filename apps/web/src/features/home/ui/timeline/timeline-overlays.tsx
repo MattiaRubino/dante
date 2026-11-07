@@ -849,7 +849,9 @@ export function EventDetailDialog({
     const keydown = (event: globalThis.KeyboardEvent) => {
       if (
         event.target instanceof Element &&
-        event.target.closest('.timeline-recurring-edit-scope-dialog__backdrop, .timeline-delete-dialog__backdrop')
+        event.target.closest(
+          '.timeline-recurring-edit-scope-dialog__backdrop, .timeline-delete-dialog__backdrop',
+        )
       ) {
         return;
       }

@@ -1,5 +1,11 @@
 // @vitest-environment jsdom
-import { cleanup, fireEvent, render, screen, within } from '@testing-library/react';
+import {
+  cleanup,
+  fireEvent,
+  render,
+  screen,
+  within,
+} from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import { TemporalDeleteDialog } from './temporal-delete-dialog';
@@ -37,7 +43,9 @@ describe('Temporal deletion dialog', () => {
         within(dialog).getByText('Domenica 8 novembre · 21:00–21:30'),
       ).toBeTruthy();
       expect(
-        within(dialog).getByText('Scegli cosa eliminare. L’operazione è definitiva.'),
+        within(dialog).getByText(
+          'Scegli cosa eliminare. L’operazione è definitiva.',
+        ),
       ).toBeTruthy();
       expect(
         within(dialog).getByRole('button', { name: 'Solo questa istanza' }),

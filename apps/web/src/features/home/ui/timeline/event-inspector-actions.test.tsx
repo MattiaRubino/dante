@@ -1493,7 +1493,9 @@ describe('Event Inspector actions', () => {
     await screen.findByRole('button', {
       name: 'Elimina definitivamente',
     });
-    expect(screen.getByRole('alertdialog', { name: 'Elimina evento' })).toBeTruthy();
+    expect(
+      screen.getByRole('alertdialog', { name: 'Elimina evento' }),
+    ).toBeTruthy();
     expect(previewHardDeletion).toHaveBeenCalledWith(eventRef, 'event_once');
     expect(eventOccurrences).not.toHaveBeenCalled();
     fireEvent.click(screen.getByRole('button', { name: 'Annulla' }));
@@ -1588,9 +1590,15 @@ describe('Event Inspector actions', () => {
       name: 'Elimina evento',
     });
     expect(within(dialog).getByText(/aprila dalla Timeline/)).toBeTruthy();
-    expect(within(dialog).getByRole('button', { name: 'Tutta la serie' })).toBeTruthy();
-    expect(screen.queryByRole('button', { name: 'Solo questa istanza' })).toBeNull();
-    expect(screen.queryByRole('combobox', { name: 'Istanza Event da eliminare' })).toBeNull();
+    expect(
+      within(dialog).getByRole('button', { name: 'Tutta la serie' }),
+    ).toBeTruthy();
+    expect(
+      screen.queryByRole('button', { name: 'Solo questa istanza' }),
+    ).toBeNull();
+    expect(
+      screen.queryByRole('combobox', { name: 'Istanza Event da eliminare' }),
+    ).toBeNull();
     expect(eventOccurrences).not.toHaveBeenCalled();
     fireEvent.click(screen.getByRole('button', { name: 'Annulla' }));
     expect(confirmHardDeletion).not.toHaveBeenCalled();
@@ -1688,9 +1696,16 @@ describe('Event Inspector actions', () => {
 
     fireEvent.click(screen.getByRole('button', { name: 'Elimina Event' }));
     await screen.findByRole('button', { name: 'Solo questa istanza' });
-    expect(screen.queryByRole('combobox', { name: 'Istanza Event da eliminare' })).toBeNull();
-    expect(previewHardDeletion).toHaveBeenCalledWith(occurrenceRef, 'event_instance');
-    fireEvent.click(screen.getByRole('button', { name: 'Solo questa istanza' }));
+    expect(
+      screen.queryByRole('combobox', { name: 'Istanza Event da eliminare' }),
+    ).toBeNull();
+    expect(previewHardDeletion).toHaveBeenCalledWith(
+      occurrenceRef,
+      'event_instance',
+    );
+    fireEvent.click(
+      screen.getByRole('button', { name: 'Solo questa istanza' }),
+    );
     await waitFor(() =>
       expect(confirmHardDeletion).toHaveBeenCalledWith(instance),
     );
