@@ -532,7 +532,10 @@ async def set_occurrence_reality_policy(
 def _objective_intent(payload: ObjectiveCreateCommand) -> dict[str, object]:
     """Retain prior fingerprints when optional verification was not supplied."""
     data: dict[str, object] = payload.model_dump(mode="json")
-    if data.get("verification_mode") in (None, "none"):
+    if data.get("verification_mode") is None or (
+        not isinstance(payload, ObjectiveDefinitionReviseCommand)
+        and data.get("verification_mode") == "none"
+    ):
         data.pop("verification_mode", None)
     if data.get("expected_verification_revision") is None:
         data.pop("expected_verification_revision", None)
