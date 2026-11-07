@@ -1661,6 +1661,50 @@ describe('Event Inspector actions', () => {
     },
   );
 
+  it('never substitutes an invalid explicit Event occurrence with a Schedule match', async () => {
+    const scheduleRef = '0199a444-4444-7444-8444-444444444444';
+    const staleOccurrenceRef = '0199a555-5555-7555-8555-555555555555';
+    const otherOccurrenceRef = '0199a666-6666-7666-8666-666666666666';
+    isRecurring.mockResolvedValue(true);
+    eventOccurrences.mockResolvedValue([
+      {
+        occurrenceRef: otherOccurrenceRef,
+        scheduleRef,
+        displayLabel: 'Altra istanza',
+      },
+    ]);
+    previewHardDeletion.mockImplementation((ref: string, scope: string) =>
+      Promise.resolve({
+        requestedRef: ref,
+        scope,
+        fingerprint: 'c'.repeat(64),
+      }),
+    );
+    render(
+      <EventInspectorActions
+        eventRef={eventRef}
+        placement={placement}
+        occurrenceRef={staleOccurrenceRef}
+        scheduleRef={scheduleRef}
+        onDuplicate={vi.fn()}
+      />,
+    );
+
+    fireEvent.click(screen.getByRole('button', { name: 'Elimina Event' }));
+    await screen.findByRole('button', { name: 'Tutta la serie' });
+    expect(
+      screen.queryByRole('button', { name: 'Solo questa istanza' }),
+    ).toBeNull();
+    expect(previewHardDeletion).not.toHaveBeenCalledWith(
+      otherOccurrenceRef,
+      'event_instance',
+    );
+    expect(previewHardDeletion).not.toHaveBeenCalledWith(
+      staleOccurrenceRef,
+      'event_instance',
+    );
+  });
+
   it('hard-deletes only the explicitly identified recurring Event Occurrence', async () => {
     const occurrenceRef = '0199a222-2222-7222-8222-222222222222';
     const series = {
