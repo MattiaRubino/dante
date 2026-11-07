@@ -749,9 +749,21 @@ describe('Event Inspector actions', () => {
       />,
     );
     fireEvent.click(screen.getByRole('button', { name: /^Modifica$/ }));
-    fireEvent.click(
-      await screen.findByRole('button', { name: 'Ripeti · Mai' }),
+    const recurrenceSelect = await screen.findByRole('combobox', {
+      name: 'Ripeti',
+    });
+    expect(recurrenceSelect).toHaveProperty('value', 'none');
+    expect(recurrenceSelect.closest('.temporal-create-u2-repeat')).toBeTruthy();
+    fireEvent.change(recurrenceSelect, { target: { value: 'custom' } });
+    const details = screen.getByRole('region', { name: 'Ripetizione' });
+    expect(details.classList.contains('temporal-create-repeat')).toBe(true);
+    expect(details.parentElement?.classList.contains('timeline-existing-recurrence')).toBe(
+      true,
     );
+    expect(screen.getByRole('group', { name: 'Giorni della settimana' })).toBeTruthy();
+    fireEvent.change(recurrenceSelect, { target: { value: 'none' } });
+    expect(screen.queryByRole('region', { name: 'Ripetizione' })).toBeNull();
+    fireEvent.change(recurrenceSelect, { target: { value: 'daily' } });
     fireEvent.click(
       screen.getByRole('button', {
         name: 'Avvia ripetizione da questo Evento',
@@ -1298,7 +1310,15 @@ describe('Event Inspector actions', () => {
     const title = await screen.findByRole('textbox', { name: 'Titolo Event' });
     fireEvent.change(title, { target: { value: 'Conferenza nuova' } });
     fireEvent.click(screen.getByRole('button', { name: 'Chiudi Inspector' }));
-    expect(screen.getByText('Scartare le modifiche non salvate?')).toBeTruthy();
+    const discardDialog = screen.getByRole('alertdialog', {
+      name: 'Modifiche non salvate',
+    });
+    expect(discardDialog.className).toBe('timeline-activity-editor__discard');
+    expect(within(discardDialog).getByText('Scartare le modifiche non salvate?')).toBeTruthy();
+    expect(within(discardDialog).getByRole('button', { name: 'Scarta modifiche' })).toHaveProperty(
+      'type',
+      'button',
+    );
     expect(title).toHaveProperty('value', 'Conferenza nuova');
     expect(onClose).not.toHaveBeenCalled();
     fireEvent.click(

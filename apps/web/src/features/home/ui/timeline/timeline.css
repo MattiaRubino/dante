@@ -2128,6 +2128,7 @@ body:has(> .timeline-recurring-edit-scope-dialog__backdrop)
   select:not(
     .temporal-create-life-area-field *,
     .temporal-create-repeat *,
+    .temporal-create-u2-repeat *,
     .temporal-create-reality-objectives *
   ) {
   width: 100%;
@@ -2356,6 +2357,7 @@ body:has(> .timeline-recurring-edit-scope-dialog__backdrop)
   :is(select, textarea):not(
     .temporal-create-life-area-field *,
     .temporal-create-repeat *,
+    .temporal-create-u2-repeat *,
     .temporal-create-reality-objectives *,
     .temporal-create-quick-reminder *,
     .temporal-create-advanced-description

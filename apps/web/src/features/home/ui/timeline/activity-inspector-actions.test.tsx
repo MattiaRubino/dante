@@ -320,9 +320,19 @@ describe('Activity Inspector actions', () => {
         onCancel={() => undefined}
       />,
     );
-    fireEvent.click(
-      await screen.findByRole('button', { name: 'Ripeti · Mai' }),
+    const recurrenceSelect = await screen.findByRole('combobox', {
+      name: 'Ripeti',
+    });
+    expect(recurrenceSelect).toHaveProperty('value', 'none');
+    expect(recurrenceSelect.closest('.temporal-create-u2-repeat')).toBeTruthy();
+    fireEvent.change(recurrenceSelect, { target: { value: 'weekly' } });
+    const details = screen.getByRole('region', { name: 'Ripetizione' });
+    expect(details.classList.contains('temporal-create-repeat')).toBe(true);
+    expect(details.parentElement?.classList.contains('timeline-existing-recurrence')).toBe(
+      true,
     );
+    expect(screen.getByRole('group', { name: 'Giorni della settimana' })).toBeTruthy();
+    fireEvent.change(recurrenceSelect, { target: { value: 'daily' } });
     fireEvent.click(
       screen.getByRole('button', {
         name: 'Avvia ripetizione da questa Attività',
@@ -2343,7 +2353,15 @@ describe('Activity Inspector', () => {
       target: { value: 'Bozza' },
     });
     act(() => closeRequestRef.current?.());
-    expect(screen.getByText('Scartare le modifiche non salvate?')).toBeTruthy();
+    const discardDialog = screen.getByRole('alertdialog', {
+      name: 'Modifiche non salvate',
+    });
+    expect(discardDialog.className).toBe('timeline-activity-editor__discard');
+    expect(within(discardDialog).getByText('Scartare le modifiche non salvate?')).toBeTruthy();
+    expect(within(discardDialog).getByRole('button', { name: 'Scarta modifiche' })).toHaveProperty(
+      'type',
+      'button',
+    );
     expect(onCancel).not.toHaveBeenCalled();
     fireEvent.click(
       screen.getByRole('button', { name: 'Continua a modificare' }),
