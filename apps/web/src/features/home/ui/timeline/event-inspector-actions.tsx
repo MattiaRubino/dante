@@ -894,16 +894,18 @@ export function EventInspectorActions({
         const series = await hardDelete.preview(eventRef, 'event_series');
         // A single instance may only be removed when its identity is certain.
         // No free-form instance picker in a destructive confirmation.
-        let selected = occurrenceRef;
-        if (selected || scheduleRef) {
+        let selected: string | null = null;
+        if (occurrenceRef) {
           const choices = await hardDelete.eventOccurrences(eventRef);
-          if (selected && !choices.some((c) => c.occurrenceRef === selected)) {
-            selected = null;
+          if (choices.some((choice) => choice.occurrenceRef === occurrenceRef)) {
+            selected = occurrenceRef;
           }
-          if (!selected && scheduleRef) {
-            const matches = choices.filter((c) => c.scheduleRef === scheduleRef);
-            if (matches.length === 1) selected = matches[0]!.occurrenceRef;
-          }
+        } else if (scheduleRef) {
+          const choices = await hardDelete.eventOccurrences(eventRef);
+          const matches = choices.filter(
+            (choice) => choice.scheduleRef === scheduleRef,
+          );
+          if (matches.length === 1) selected = matches[0]!.occurrenceRef;
         }
         const instance = selected
           ? await hardDelete.preview(selected, 'event_instance')
