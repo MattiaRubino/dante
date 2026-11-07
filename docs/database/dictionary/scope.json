@@ -102,21 +102,22 @@
       "B14-EXISTING-EVENT-LEGACY-REPAIR",
       "B14-EXISTING-EVENT-REPAIR-PERF",
       "B14-FIRST-EVENT-DELETION-LIFECYCLE",
-      "B14-EXISTING-EVENT-LEGACY-CHECK-NAME"
+      "B14-EXISTING-EVENT-LEGACY-CHECK-NAME",
+      "B14-OBJECTIVE-VERIFICATION"
     ],
     "standalone_entries": {
-      "tables": 241,
+      "tables": 243,
       "views": 5,
-      "routines": 256,
-      "total": 502
+      "routines": 259,
+      "total": 507
     },
     "embedded_objects": {
       "triggers": 104,
-      "physical_indexes": 496
+      "physical_indexes": 500
     },
     "constraints": {
-      "foreign_keys": 432,
-      "check_constraints": 601
+      "foreign_keys": 437,
+      "check_constraints": 608
     }
   },
   "technical_foundation": {
