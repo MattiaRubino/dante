@@ -2975,6 +2975,7 @@ body:has(> .timeline-recurring-edit-scope-dialog__backdrop)
 
 .timeline-existing-recurrence > .temporal-create-u2-repeat,
 .timeline-existing-recurrence > .temporal-create-repeat {
+  box-sizing: border-box;
   min-width: 0;
   width: 100%;
 }
