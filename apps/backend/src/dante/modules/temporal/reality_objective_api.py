@@ -994,8 +994,9 @@ async def _apply_objective_edits_in_session(
                     :actor,:operation,:fingerprint,:objective,:subject_kind,:subject,
                     :label,:kind,:comparator,:target,:minimum,:maximum,:unit,:ordering)
             """
-        await session.execute(
-            text(statement),
+        created = (
+            await session.execute(
+                text(statement),
             {
                 "actor": actor,
                 "operation": addition.operation_id,
@@ -1018,8 +1019,18 @@ async def _apply_objective_edits_in_session(
                 "maximum": addition.target_max,
                 "unit": addition.unit_code,
                 "ordering": addition.presentation_order,
-            },
-        )
+                },
+            )
+        ).mappings().one()
+        if addition.verification_mode != "none":
+            await _set_objective_verification_in_session(
+                session,
+                actor=actor,
+                objective_ref=created["objective_ref"],
+                operation_id=addition.operation_id,
+                verification_mode=addition.verification_mode,
+                expected_revision=0,
+            )
     rows = (
         (
             await session.execute(
