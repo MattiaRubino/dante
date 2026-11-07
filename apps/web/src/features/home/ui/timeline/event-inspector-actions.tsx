@@ -58,6 +58,7 @@ import { TimelineInspectorIcon } from './timeline-inspector-icon';
 import { RecurringEditScopeDialog } from './recurring-edit-scope-dialog';
 import { RecurringSeriesEditor } from './recurring-series-editor';
 import { ExistingRecurrenceControl } from './existing-recurrence-control';
+import { UnsavedChangesDialog } from './unsaved-changes-dialog';
 import {
   EventScheduleEditor,
   eventScheduleDraftFromPlacement,
@@ -167,7 +168,6 @@ export function EventInspectorActions({
   const [areaError, setAreaError] = useState('');
   const [editingProfile, setEditingProfile] = useState(false);
   const [confirmingDiscard, setConfirmingDiscard] = useState(false);
-  const discardButtonRef = useRef<HTMLButtonElement | null>(null);
   const [editChoice, setEditChoice] = useState<{
     context: RecurringProfileContext;
     selectedProtection: RecurringProfileEditPreview['selectedProtection'];
@@ -397,10 +397,6 @@ export function EventInspectorActions({
     setInspectingObjective(null);
     setEditingProfile(false);
   };
-
-  useEffect(() => {
-    if (confirmingDiscard) discardButtonRef.current?.focus();
-  }, [confirmingDiscard]);
 
   useEffect(() => {
     if (
@@ -1476,24 +1472,15 @@ export function EventInspectorActions({
             </button>
           </div>
           {confirmingDiscard ? (
-            <div className="timeline-activity-editor__discard" role="alert">
-              <p>Scartare le modifiche non salvate?</p>
-              <button
-                ref={discardButtonRef}
-                type="button"
-                onClick={() => {
-                  setConfirmingDiscard(false);
-                  setProfileDraft(null);
-                  setInspectingObjective(null);
-                  setEditingProfile(false);
-                }}
-              >
-                Scarta modifiche
-              </button>
-              <button type="button" onClick={() => setConfirmingDiscard(false)}>
-                Continua a modificare
-              </button>
-            </div>
+            <UnsavedChangesDialog
+              onDiscard={() => {
+                setConfirmingDiscard(false);
+                setProfileDraft(null);
+                setInspectingObjective(null);
+                setEditingProfile(false);
+              }}
+              onContinue={() => setConfirmingDiscard(false)}
+            />
           ) : null}
         </div>
       ) : null}

@@ -25,6 +25,10 @@ import {
 import { TemporalCreateDatePicker } from './temporal-create-date-picker';
 import { TemporalCreateLifeAreaField } from './temporal-create-life-area-field';
 import { temporalCreateProductCopy } from './temporal-create-product-copy';
+import {
+  TemporalCreateQuickRecurrenceSelect,
+  type QuickRecurrence,
+} from './temporal-create-quick-recurrence-select';
 import { TemporalCreateQuickReminder } from './temporal-create-quick-reminder';
 import { TemporalTimeZoneControl } from './temporal-time-zone-control';
 import { temporalCreateTypeRegistry } from './temporal-create-type-registry';
@@ -46,9 +50,6 @@ type Props = Readonly<{
   onRequestAdvanced: (target?: 'recurrence') => void;
   renderError: (path: string) => ReactNode;
 }>;
-
-type QuickRecurrence =
-  'none' | 'daily' | 'weekly' | 'monthly' | 'yearly' | 'custom';
 
 type TimeBand = Readonly<{
   key: 'morning' | 'afternoon' | 'evening' | 'night';
@@ -1103,22 +1104,10 @@ export function TemporalCreateCoreFieldsU2({
             className="temporal-create-u2-repeat"
             data-create-path="eventRecurrence"
           >
-            <select
-              aria-label={copy.event.repeat}
+            <TemporalCreateQuickRecurrenceSelect
               value={quickRecurrence(fields)}
-              onChange={(event) =>
-                changeQuickRecurrence(
-                  event.currentTarget.value as QuickRecurrence,
-                )
-              }
-            >
-              <option value="none">{copy.event.repeatNever}</option>
-              <option value="daily">{copy.event.repeatDaily}</option>
-              <option value="weekly">{copy.event.repeatWeekly}</option>
-              <option value="monthly">{copy.event.repeatMonthly}</option>
-              <option value="yearly">{copy.event.repeatYearly}</option>
-              <option value="custom">{copy.event.repeatCustom}</option>
-            </select>
+              onChange={changeQuickRecurrence}
+            />
             {renderError('eventRecurrence')}
           </div>
           {repeatDetails}

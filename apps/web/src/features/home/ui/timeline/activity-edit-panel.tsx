@@ -61,6 +61,7 @@ import '../../../temporal-create/ui/temporal-create-session-time-polish.css';
 import './activity-edit-panel.css';
 import { ExistingRecurrenceControl } from './existing-recurrence-control';
 import { SessionAttemptDeleteDialog } from './session-attempt-delete-dialog';
+import { UnsavedChangesDialog } from './unsaved-changes-dialog';
 import {
   createRemoteRecurringProfileEdit,
   type RecurringProfileContext,
@@ -474,7 +475,6 @@ export function ActivityEditPanel({
   const [pending, setPending] = useState(false);
   const [error, setError] = useState('');
   const [confirmingDiscard, setConfirmingDiscard] = useState(false);
-  const discardButtonRef = useRef<HTMLButtonElement | null>(null);
   const hasIntervals =
     settings?.schedules.some((schedule) => schedule.role === 'interval') ??
     false;
@@ -1065,10 +1065,6 @@ export function ActivityEditPanel({
       closeRequestRef.current = null;
     };
   });
-
-  useEffect(() => {
-    if (confirmingDiscard) discardButtonRef.current?.focus();
-  }, [confirmingDiscard]);
 
   return (
     <form
@@ -2513,15 +2509,10 @@ export function ActivityEditPanel({
         />
       ) : null}
       {confirmingDiscard ? (
-        <div className="timeline-activity-editor__discard" role="alert">
-          <p>Scartare le modifiche non salvate?</p>
-          <button ref={discardButtonRef} type="button" onClick={onCancel}>
-            Scarta modifiche
-          </button>
-          <button type="button" onClick={() => setConfirmingDiscard(false)}>
-            Continua a modificare
-          </button>
-        </div>
+        <UnsavedChangesDialog
+          onDiscard={onCancel}
+          onContinue={() => setConfirmingDiscard(false)}
+        />
       ) : null}
     </form>
   );

@@ -2528,8 +2528,27 @@ body:has(> .timeline-recurring-edit-scope-dialog__backdrop)
   flex-wrap: wrap;
   align-content: center;
   gap: 12px;
+  box-sizing: border-box;
+  z-index: 5;
   padding: 24px;
   background: rgba(3, 7, 13, 0.86);
+}
+
+.timeline-activity-editor__discard button {
+  min-height: 40px;
+  padding: 0 14px;
+  border: 1px solid var(--dante-semantic-color-home-border-subtle, #526071);
+  border-radius: 9px;
+  color: var(--dante-semantic-color-home-text-primary, #edf2f8);
+  background: var(--dante-semantic-color-home-surface-control, #1b2834);
+  font: inherit;
+  font-size: 14px;
+  cursor: pointer;
+}
+
+.timeline-activity-editor__discard button:focus-visible {
+  outline: 2px solid var(--dante-semantic-color-home-chrome-active, #ea5c12);
+  outline-offset: 2px;
 }
 
 .timeline-activity-editor__discard p {
@@ -2941,4 +2960,50 @@ body:has(> .timeline-recurring-edit-scope-dialog__backdrop)
   .timeline-event-card[data-session-reality] {
     transition: none;
   }
+}
+
+/* Existing one-off recurrence uses the exact Create select and detail form.
+   Do not reapply the single-line .timeline-activity-editor__repeat layout. */
+.timeline-existing-recurrence {
+  display: grid;
+  gap: 12px;
+  min-width: 0;
+  width: 100%;
+}
+
+.timeline-existing-recurrence > .temporal-create-u2-repeat,
+.timeline-existing-recurrence > .temporal-create-repeat {
+  min-width: 0;
+  width: 100%;
+}
+
+.timeline-existing-recurrence__actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 12px;
+}
+
+.timeline-existing-recurrence__actions p {
+  margin: 0 auto 0 0;
+  color: var(--dante-semantic-color-home-text-secondary, #b7c0cf);
+  font-size: 12px;
+}
+
+.timeline-existing-recurrence__actions button {
+  min-height: 40px;
+  padding: 0 14px;
+  border: 1px solid var(--dante-semantic-color-home-chrome-active-border, #ea5c12);
+  border-radius: 10px;
+  color: var(--dante-semantic-color-home-text-primary, #edf2f8);
+  background: var(--dante-semantic-color-home-chrome-active-soft, #42251b);
+  font: inherit;
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.timeline-existing-recurrence__actions button:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
 }

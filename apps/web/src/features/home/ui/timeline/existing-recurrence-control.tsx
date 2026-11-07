@@ -1,17 +1,27 @@
 import { useState } from 'react';
 import { Temporal } from '@dante/time';
+
 import {
   createTemporalCreateFields,
   type TemporalCreateFields,
   type TemporalCreateWeekday,
 } from '../../../temporal-create/model/temporal-create-session';
-import { TemporalCreateCalendarRecurrenceFields } from '../../../temporal-create/ui/temporal-create-calendar-recurrence-fields';
 import {
   buildTemporalCreateActivityRecurrence,
   buildTemporalCreateEventRecurrence,
 } from '../../../temporal-create/application/temporal-create-b14-runtime';
 import type { RecurringAuthoringCalendarRecurrence } from '../../../temporal-create/application/remote-recurring-authoring';
+import { TemporalCreateCalendarRecurrenceFields } from '../../../temporal-create/ui/temporal-create-calendar-recurrence-fields';
+import {
+  TemporalCreateQuickRecurrenceSelect,
+  type QuickRecurrence,
+} from '../../../temporal-create/ui/temporal-create-quick-recurrence-select';
 
+type RecurrenceIntent = TemporalCreateFields['eventRecurrence'];
+
+/** Edit uses the same select and detailed calendar editor as Advanced Create.
+ * Starting the series remains an explicit separate action on the saved item.
+ */
 export function ExistingRecurrenceControl({
   kind,
   date,
@@ -31,12 +41,11 @@ export function ExistingRecurrenceControl({
   disabled: boolean;
   onStart: (rule: RecurringAuthoringCalendarRecurrence) => Promise<void>;
 }>) {
-  const [open, setOpen] = useState(false);
-  const [intent, setIntent] = useState<
-    TemporalCreateFields['eventRecurrence'] | null
-  >(null);
+  const [intent, setIntent] = useState<RecurrenceIntent | null>(null);
+  const [customChoice, setCustomChoice] = useState(false);
   const [pending, setPending] = useState(false);
   const [error, setError] = useState('');
+  const owner = kind === 'event' ? 'event' : 'routine';
   const base = createTemporalCreateFields({
     kind,
     date,
@@ -48,54 +57,92 @@ export function ExistingRecurrenceControl({
   });
   const fields: TemporalCreateFields = {
     ...base,
-    eventRecurrence: intent ?? {
-      ...base.eventRecurrence,
-      owner: kind === 'event' ? 'event' : 'routine',
-      patternKind: 'calendar-wall-clock',
-      calendarFrequency: 'daily',
-    },
+    eventRecurrence: intent ?? base.eventRecurrence,
   };
+  const dateValue = Temporal.PlainDate.from(date);
   const weekday = (['MO', 'TU', 'WE', 'TH', 'FR', 'SA', 'SU'] as const)[
-    Temporal.PlainDate.from(date).dayOfWeek - 1
+    dateValue.dayOfWeek - 1
   ] as TemporalCreateWeekday;
+  const selection: QuickRecurrence =
+    intent === null
+      ? 'none'
+      : customChoice ||
+          intent.calendarInterval !== 1 ||
+          intent.calendarFrequency === 'monthly-ordinal'
+        ? 'custom'
+        : intent.calendarFrequency;
+
+  const changeRecurrence = (choice: QuickRecurrence) => {
+    setError('');
+    if (choice === 'none') {
+      setIntent(null);
+      setCustomChoice(false);
+      return;
+    }
+    const previous = intent ?? base.eventRecurrence;
+    const frequency =
+      choice === 'custom'
+        ? intent?.calendarFrequency ?? 'weekly'
+        : choice;
+    setIntent({
+      ...previous,
+      owner,
+      patternKind: 'calendar-wall-clock',
+      calendarFrequency: frequency,
+      ...(choice === 'custom' ? {} : { calendarInterval: 1 }),
+      weekdays:
+        frequency === 'weekly'
+          ? choice === 'custom' && previous.weekdays.length
+            ? previous.weekdays
+            : [weekday]
+          : previous.weekdays,
+      calendarOrdinalWeekday: weekday,
+      calendarOrdinal: Math.ceil(dateValue.day / 7),
+    });
+    setCustomChoice(choice === 'custom');
+  };
+
+  const startRecurrence = () => {
+    setPending(true);
+    setError('');
+    try {
+      const rule =
+        kind === 'activity'
+          ? buildTemporalCreateActivityRecurrence(fields)
+          : buildTemporalCreateEventRecurrence(fields);
+      if (rule.family_code !== 'calendar_wall_clock') {
+        throw new Error('Scegli una ripetizione a calendario.');
+      }
+      void onStart(rule)
+        .catch((reason: unknown) => {
+          setError(
+            reason instanceof Error
+              ? reason.message
+              : 'Ripetizione non riuscita.',
+          );
+        })
+        .finally(() => setPending(false));
+    } catch (reason) {
+      setError(
+        reason instanceof Error ? reason.message : 'Ripetizione non valida.',
+      );
+      setPending(false);
+    }
+  };
 
   return (
-    <section className="timeline-activity-editor__repeat" aria-label="Ripeti">
-      <button type="button" onClick={() => setOpen(!open)}>
-        Ripeti · {open ? 'Configura' : 'Mai'}
-      </button>
-      {open ? (
+    <section className="timeline-existing-recurrence" aria-label="Ripeti">
+      <div
+        className="temporal-create-u2-repeat"
+        data-create-path="eventRecurrence"
+      >
+        <TemporalCreateQuickRecurrenceSelect
+          value={selection}
+          onChange={changeRecurrence}
+        />
+      </div>
+      {intent !== null ? (
         <>
-          <label className="temporal-create-repeat__row">
-            <span className="temporal-create-repeat__row-label">Frequenza</span>
-            <select
-              aria-label="Frequenza ripetizione"
-              value={fields.eventRecurrence.calendarFrequency}
-              onChange={(event) => {
-                const frequency = event.currentTarget
-                  .value as TemporalCreateFields['eventRecurrence']['calendarFrequency'];
-                setIntent({
-                  ...fields.eventRecurrence,
-                  calendarFrequency: frequency,
-                  weekdays:
-                    frequency === 'weekly'
-                      ? [weekday]
-                      : fields.eventRecurrence.weekdays,
-                  calendarOrdinalWeekday: weekday,
-                  calendarOrdinal: Math.ceil(
-                    Temporal.PlainDate.from(date).day / 7,
-                  ),
-                });
-                setError('');
-              }}
-            >
-              <option value="daily">Ogni giorno</option>
-              <option value="weekly">Ogni settimana</option>
-              <option value="monthly">Ogni mese</option>
-              <option value="monthly-ordinal">Ogni mese per posizione</option>
-              <option value="yearly">Ogni anno</option>
-            </select>
-          </label>
           <TemporalCreateCalendarRecurrenceFields
             fields={fields}
             onPatch={(patch) => {
@@ -105,46 +152,20 @@ export function ExistingRecurrenceControl({
             renderError={() => null}
           />
           {error ? <p role="alert">{error}</p> : null}
-          <button
-            type="button"
-            disabled={pending || disabled}
-            onClick={() => {
-              setPending(true);
-              setError('');
-              try {
-                const rule =
-                  kind === 'activity'
-                    ? buildTemporalCreateActivityRecurrence(fields)
-                    : buildTemporalCreateEventRecurrence(fields);
-                if (rule.family_code !== 'calendar_wall_clock') {
-                  throw new Error('Scegli una ripetizione a calendario.');
-                }
-                void onStart(rule)
-                  .catch((reason: unknown) =>
-                    setError(
-                      reason instanceof Error
-                        ? reason.message
-                        : 'Ripetizione non riuscita.',
-                    ),
-                  )
-                  .finally(() => setPending(false));
-              } catch (reason) {
-                setError(
-                  reason instanceof Error
-                    ? reason.message
-                    : 'Ripetizione non valida.',
-                );
-                setPending(false);
-              }
-            }}
-          >
-            {pending
-              ? 'Avvio…'
-              : `Avvia ripetizione da ${kind === 'event' ? 'questo Evento' : 'questa Attività'}`}
-          </button>
-          {disabled ? (
-            <p>Salva le modifiche correnti prima di avviare la ripetizione.</p>
-          ) : null}
+          <div className="timeline-existing-recurrence__actions">
+            {disabled ? (
+              <p>Salva le modifiche correnti prima di avviare la ripetizione.</p>
+            ) : null}
+            <button
+              type="button"
+              disabled={pending || disabled}
+              onClick={startRecurrence}
+            >
+              {pending
+                ? 'Avvio…'
+                : `Avvia ripetizione da ${kind === 'event' ? 'questo Evento' : 'questa Attività'}`}
+            </button>
+          </div>
         </>
       ) : null}
     </section>
