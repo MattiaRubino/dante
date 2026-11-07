@@ -1,4 +1,4 @@
-import { type RefObject, useEffect, useRef, useState } from 'react';
+import { type RefObject, useEffect, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { detectDeviceTimeZone } from '@dante/time';
 
