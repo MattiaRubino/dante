@@ -909,7 +909,8 @@ async def _apply_objective_edits_in_session(
                 ":label,:kind,:comparator,:target,:minimum,:maximum,"
                 ":unit,:ordering,:evaluation)"
             )
-        await session.execute(
+        accepted = (
+            await session.execute(
             text(statement),
             {
                 "actor": actor,
@@ -930,7 +931,8 @@ async def _apply_objective_edits_in_session(
                 "ordering": change.presentation_order,
                 "evaluation": uuid7(),
             },
-        )
+            )
+        ).mappings().one()
         if change.verification_mode is not None:
             if change.scope_code == "this_and_following":
                 await _apply_series_verification_in_session(
@@ -950,6 +952,19 @@ async def _apply_objective_edits_in_session(
                         {"actor": actor, "objective": revision.objective_ref},
                     )
                 ).mappings().one()
+                if (
+                    change.expected_verification_revision is not None
+                    and current["verification_revision"]
+                    != change.expected_verification_revision
+                    and not accepted["replayed"]
+                ):
+                    raise ProblemError(
+                        status=409,
+                        code="temporal.objective.verification_stale",
+                        category="conflict",
+                        title="Verifica obiettivo modificata",
+                        detail="Riapri Modifica per aggiornare l’obiettivo.",
+                    )
                 if current["mode_code"] != change.verification_mode:
                     await _set_objective_verification_in_session(
                         session,
@@ -1330,6 +1345,19 @@ async def revise_objective_definition(
                             {"actor": context.self_person_ref, "objective": objective_ref},
                         )
                     ).mappings().one()
+                    if (
+                        payload.expected_verification_revision is not None
+                        and current["verification_revision"]
+                        != payload.expected_verification_revision
+                        and not row["replayed"]
+                    ):
+                        raise ProblemError(
+                            status=409,
+                            code="temporal.objective.verification_stale",
+                            category="conflict",
+                            title="Verifica obiettivo modificata",
+                            detail="Riapri Modifica per aggiornare l’obiettivo.",
+                        )
                     if current["mode_code"] != payload.verification_mode:
                         await _set_objective_verification_in_session(
                             session,
