@@ -224,3 +224,17 @@ B09-C Person-referent implementation is closed on the user-run 2026-09-25 Postgr
 Provider integration, native/offline, broad analytics and account collaboration are outside this vertical and must not create speculative Dictionary entries.
 
 B08-C / 20260924_65 reuses existing Temporal Constraint duration tables and mutation capability. It adds no physical object count; the current facet CHECK and deferred totality/mutation functions admit only the Activity-owned soft-minimum Session active-duration subset.
+
+## 2026-11-07 — Objective verification candidate (`20261107_178`)
+
+The independent per-Objective verification vertical adds two append-only
+tables and three owner-scoped SECURITY DEFINER functions. The corresponding
+Database Dictionary object entries and SQLAlchemy mappings accompany
+migration `20261107_178`. The **candidate catalog expectations** in
+`scope.json` are 243 tables, 5 views, 259 routines, 104 triggers, 500
+physical indexes, 437 foreign keys and 608 CHECK constraints. Those
+figures are *derived from migration definitions*, not yet measured against
+live PostgreSQL. Run the fresh-database, Alembic drift and Database Dictionary
+current-catalog checks on the same Git SHA before marking this stage accepted.
+The older measured baseline above remains historical evidence, not a claim
+that `_178` has passed.
