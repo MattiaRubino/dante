@@ -608,7 +608,7 @@ async def _create_objective(
         "version": 1,
         "subject_kind": kind,
         "subject_native_ref": str(subject_ref),
-        **payload.model_dump(mode="json"),
+        **_objective_intent(payload),
     }
     try:
         async with (
@@ -646,6 +646,23 @@ async def _create_objective(
                 .mappings()
                 .one()
             )
+            if payload.verification_mode != "none":
+                await _set_objective_verification_in_session(
+                    session,
+                    actor=context.self_person_ref,
+                    objective_ref=row["objective_ref"],
+                    operation_id=payload.operation_id,
+                    verification_mode=payload.verification_mode,
+                    expected_revision=0,
+                )
+            state = (
+                await session.execute(
+                    text("SELECT * FROM dante.get_self_objective_verification(:actor,:objective)"),
+                    {"actor": context.self_person_ref, "objective": row["objective_ref"]},
+                )
+            ).mappings().one()
+            row = {**dict(row), "verification_mode": state["mode_code"],
+                   "verification_revision": state["verification_revision"]}
     except DBAPIError as exc:
         raise _problem(exc, noun="objective") from exc
     except SQLAlchemyError as exc:
@@ -677,8 +694,12 @@ async def _list_objectives(
                 (
                     await session.execute(
                         text(
-                            "SELECT * FROM dante.list_self_temporal_objectives("
-                            ":actor,:kind,:subject)"
+                            "SELECT item.*, mode.mode_code AS verification_mode, "
+                            "mode.verification_revision "
+                            "FROM dante.list_self_temporal_objectives("
+                            ":actor,:kind,:subject) item "
+                            "CROSS JOIN LATERAL dante.get_self_objective_verification("
+                            ":actor,item.objective_ref) mode"
                         ),
                         {
                             "actor": context.self_person_ref,
@@ -951,7 +972,7 @@ async def _apply_objective_edits_in_session(
                         "version": 1,
                         "subject_kind": subject_kind,
                         "subject_native_ref": str(subject_ref),
-                        **addition.model_dump(mode="json"),
+                        **_objective_intent(addition),
                     }
                 ),
                 "objective": uuid7(),
@@ -971,8 +992,12 @@ async def _apply_objective_edits_in_session(
         (
             await session.execute(
                 text("""
-        SELECT * FROM dante.list_self_temporal_objectives(
-            :actor,:subject_kind,:subject)
+        SELECT item.*, mode.mode_code AS verification_mode,
+               mode.verification_revision
+          FROM dante.list_self_temporal_objectives(
+              :actor,:subject_kind,:subject) item
+         CROSS JOIN LATERAL dante.get_self_objective_verification(
+              :actor,item.objective_ref) mode
     """),
                 {"actor": actor, "subject_kind": subject_kind, "subject": subject_ref},
             )
@@ -1182,7 +1207,7 @@ async def revise_objective_definition(
     intent = {
         "version": 1,
         "objective_ref": str(objective_ref),
-        **payload.model_dump(mode="json"),
+        **_objective_intent(payload),
     }
     try:
         async with request.app.state.database_runtime.session_factory() as session, session.begin():
