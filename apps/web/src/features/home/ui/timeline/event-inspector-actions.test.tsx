@@ -1523,9 +1523,14 @@ describe('Event Inspector actions', () => {
 
       fireEvent.click(screen.getByRole('button', { name: 'Elimina Event' }));
       await screen.findByRole('button', { name: 'Solo questa istanza' });
-      expect(screen.getByRole('button', { name: 'Tutta la serie' })).toBeTruthy();
+      expect(
+        screen.getByRole('button', { name: 'Tutta la serie' }),
+      ).toBeTruthy();
       expect(previewHardDeletion).toHaveBeenCalledWith(eventRef, 'event_once');
-      expect(previewHardDeletion).toHaveBeenCalledWith(eventRef, 'event_series');
+      expect(previewHardDeletion).toHaveBeenCalledWith(
+        eventRef,
+        'event_series',
+      );
       expect(eventOccurrences).not.toHaveBeenCalled();
 
       fireEvent.click(screen.getByRole('button', { name: label }));

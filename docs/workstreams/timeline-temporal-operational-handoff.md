@@ -1,5 +1,25 @@
 # Timeline / Temporal-Operational — Workstream Handoff
 
+## 2026-11-07 — Full gate catalog and static corrections
+
+Owner WSL full parallel gate on `ce6553b` ran all 27 groups with stable source.
+Twenty-three groups passed, including Web Vitest, browser fixtures, real-stack
+browser, generated drift and Backend non-PostgreSQL. Four groups failed:
+`BACKEND_MYPY` (three UUID/NativeRef mismatches in the hard-deletion test),
+`REPO_FORMAT` (one Event Inspector test), and `BACKEND_POSTGRES` (two catalog
+assertions reporting the same double-prefixed Event seed CHECK name). The
+catalog failure is a naming-convention effect of migration `_174`; the
+constraint content and PostgreSQL behavior were not reported as failing.
+
+This change types the test owner as `NativeRef`, formats the Web test and adds
+forward-only revision `_177` to rename the existing CHECK without changing
+seed data or editing the installed `_174`. Seven repository-head assertions,
+the Dictionary scope stage and the live database reference now point to `_177`.
+Static checks are local scratch evidence only. Re-run mypy, Prettier and the two
+catalog PostgreSQL tests on the new SHA; the complete 27-group gate remains
+FAIL until all groups pass on the same SHA. First-instance structural series
+editing remains a separate open scenario.
+
 ## 2026-11-07 — Legacy Event exclusion coordinate regression
 
 The owner's focused PostgreSQL gate on `1add179` completed all migrations and

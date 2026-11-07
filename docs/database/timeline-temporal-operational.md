@@ -608,15 +608,17 @@ The functions are replaced in a forward revision without changing their
 signatures, grants or catalog counts. The owner's PostgreSQL and real-app
 verification are pending.
 
-`20261107_176` adds `event_recurring_seed`, an owner-scoped association
-between an existing Event and a separate future recurring Event source. The
-first Event retains its Schedule and ordinary Edit capability; the source has
-no direct Schedule, and its first matching recurrence coordinate is excluded
-structurally in the same serializable transaction. This leaves one visible
-Event on the first date and materializes later Occurrences from the saved
-agenda, profile, Reality, Objective and Reminder templates. The new bind/read
-functions are SECURITY DEFINER; direct runtime table access remains denied.
-Activity conversion instead binds the existing Activity to the first generated
-Routine Occurrence in one transaction, preserving its identity and Schedule.
+`20261106_171` introduced the owner-scoped `event_recurring_seed` association;
+`20261107_172` binds the unchanged physical Event to its canonical first
+generated Occurrence. The first Event retains its Schedule and ordinary local
+Edit capability, while the recurring source has no direct Schedule. Timeline
+shows the original card once and later materializes following Occurrences.
+`20261107_174`–`_175` guard and inventory the automatic repair of proven
+legacy first-instance exclusions; `_176` extends hard deletion to the physical
+first Event; `_177` renames the legacy-proof CHECK to its Dictionary/ORM name
+without changing rows. The bind/read capabilities remain SECURITY DEFINER;
+direct runtime table access remains denied. Activity conversion binds the
+existing Activity to the first generated Routine Occurrence in one transaction,
+preserving its identity and Schedule.
 Current catalog candidate: **241 tables / 5 views / 251 routines / 104 triggers /
 494 indexes / 431 FKs / 600 CHECK**. PostgreSQL proof remains pending.

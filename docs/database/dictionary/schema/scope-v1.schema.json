@@ -205,7 +205,8 @@
               "B14-EXISTING-EVENT-FIRST",
               "B14-EXISTING-EVENT-LEGACY-REPAIR",
               "B14-EXISTING-EVENT-REPAIR-PERF",
-              "B14-FIRST-EVENT-DELETION-LIFECYCLE"
+              "B14-FIRST-EVENT-DELETION-LIFECYCLE",
+              "B14-EXISTING-EVENT-LEGACY-CHECK-NAME"
             ]
           }
         },
@@ -522,7 +523,8 @@
                   "B14-EXISTING-EVENT-FIRST",
                   "B14-EXISTING-EVENT-LEGACY-REPAIR",
                   "B14-EXISTING-EVENT-REPAIR-PERF",
-                  "B14-FIRST-EVENT-DELETION-LIFECYCLE"
+                  "B14-FIRST-EVENT-DELETION-LIFECYCLE",
+                  "B14-EXISTING-EVENT-LEGACY-CHECK-NAME"
                 ]
               }
             }

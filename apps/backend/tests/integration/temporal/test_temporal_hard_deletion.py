@@ -40,6 +40,7 @@ from dante.modules.temporal.routine_occurrence_materialization import (
 )
 from dante.modules.temporal.routine_occurrence_policy import RoutineOccurrencePolicyApplication
 from dante.modules.temporal.schedule import NamedZoneLocalIntervalPlacement
+from dante.platform.database.references import NativeRef
 from dante.platform.database.runtime import create_database_runtime
 from dante.platform.http.problem import ProblemError
 
@@ -451,8 +452,9 @@ async def _linked_existing_event(
     runtime: Any, actor: UUID, operation_id: str
 ) -> tuple[UUID, UUID, UUID]:
     """Author a physical first Event and link it to a canonical recurring source."""
+    owner = NativeRef(actor)
     created = await TemporalAuthoringApplication(runtime.session_factory).create_event(
-        self_person_ref=actor,
+        self_person_ref=owner,
         operation_id=f"{operation_id}:original",
         title="Visita iniziale",
         agenda_parts=("Accoglienza",),
@@ -471,7 +473,7 @@ async def _linked_existing_event(
             {"actor": actor, "event": original},
         )
     started = await RecurringConversionApplication(runtime.session_factory).event(
-        self_person_ref=actor,
+        self_person_ref=owner,
         operation_id=f"{operation_id}:repeat",
         basis=ExistingEventBasis(
             event_ref=original,
@@ -482,7 +484,7 @@ async def _linked_existing_event(
         recurrence=_daily_named_zone(),
     )
     await RoutineOccurrenceMaterializationApplication(runtime.session_factory).checkpoint_window(
-        self_person_ref=actor,
+        self_person_ref=owner,
         operation_id=f"{operation_id}:checkpoint",
         start_date=date(2026, 10, 6),
         end_date_exclusive=date(2026, 10, 8),
