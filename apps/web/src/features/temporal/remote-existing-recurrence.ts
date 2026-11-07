@@ -41,7 +41,10 @@ export function createRemoteExistingRecurrence(
         throw new Error('Impossibile verificare la prima istanza Event.');
       }
       const value: unknown = await response.json();
-      if (value !== null && (typeof value !== 'string' || value.length !== 36)) {
+      if (
+        value !== null &&
+        (typeof value !== 'string' || value.length !== 36)
+      ) {
         throw new Error('Identità della prima istanza Event non valida.');
       }
       return value;

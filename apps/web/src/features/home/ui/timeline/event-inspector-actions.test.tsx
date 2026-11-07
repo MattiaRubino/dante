@@ -721,7 +721,9 @@ describe('Event Inspector actions', () => {
     expect(loadRecurringPreview).toHaveBeenCalledWith(context, 'only_this');
     expect(loadOccurrenceEvent).not.toHaveBeenCalled();
 
-    fireEvent.click(screen.getByRole('button', { name: 'Solo questa istanza' }));
+    fireEvent.click(
+      screen.getByRole('button', { name: 'Solo questa istanza' }),
+    );
     await waitFor(() => expect(loadProfile).toHaveBeenCalledWith(eventRef));
     expect(loadOccurrenceEvent).not.toHaveBeenCalled();
   });
