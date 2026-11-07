@@ -89,8 +89,9 @@ export function ExistingRecurrenceControl({
       return;
     }
     const previous = intent ?? base.eventRecurrence;
+    const fallbackFrequency = intent?.calendarFrequency ?? 'weekly';
     const frequency: RecurrenceIntent['calendarFrequency'] =
-      choice === 'custom' ? (intent?.calendarFrequency ?? 'weekly') : choice;
+      choice === 'custom' ? fallbackFrequency : choice;
     let weekdays: RecurrenceIntent['weekdays'] = previous.weekdays;
     if (
       frequency === 'weekly' &&
