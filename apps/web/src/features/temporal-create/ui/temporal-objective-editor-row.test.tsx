@@ -103,6 +103,24 @@ describe('shared Objective row presentation', () => {
     expect(control.remove).toHaveBeenCalledWith('local-objective');
   });
 
+  it.each(['create', 'edit'] as const)(
+    'exposes one Objective-specific verification selector in %s',
+    (variant) => {
+      const control = show(variant);
+      const chooser = screen.getByRole('combobox', {
+        name: 'Verifica obiettivo 1',
+      });
+      expect(chooser).toHaveProperty('value', 'none');
+      expect(
+        within(chooser).getByRole('option', { name: 'Valutazione automatica · non disponibile' }),
+      ).toHaveProperty('disabled', true);
+      fireEvent.change(chooser, { target: { value: 'review_on_end' } });
+      expect(control.update).toHaveBeenCalledWith('local-objective', {
+        verificationMode: 'review_on_end',
+      });
+    },
+  );
+
   it('renders without i18next context for Activity Edit', () => {
     const view = show('edit');
     expect(

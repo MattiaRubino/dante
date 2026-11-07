@@ -57,6 +57,7 @@ def test_inbox_reviews_shared_reality_and_objectives_without_inventing_actual(
             f"/api/v1/temporal/activities/{activity_ref}/objectives",
             json={
                 "operation_id": "inbox:activity:objective",
+                "verification_mode": "review_on_end",
                 "label": "Completare la corsa",
                 "result_kind": "boolean",
                 "comparator_code": None,
@@ -107,6 +108,7 @@ def test_inbox_reviews_shared_reality_and_objectives_without_inventing_actual(
             f"/api/v1/temporal/events/{event_ref}/objectives",
             json={
                 "operation_id": "inbox:event:objective",
+                "verification_mode": "review_on_end",
                 "label": "Arrivare in tempo",
                 "result_kind": "boolean",
                 "presentation_order": 0,

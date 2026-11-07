@@ -111,7 +111,10 @@ export function TemporalObjectiveEditorRow({
       </div>
 
       <div className="temporal-create-objective__details">
-        <div className="temporal-create-objective__definition" data-result-kind={objective.resultKind}>
+        <div
+          className="temporal-create-objective__definition"
+          data-result-kind={objective.resultKind}
+        >
         <label>
           <span>{italian ? 'Risultato' : 'Result'}</span>
           <select
@@ -284,21 +287,35 @@ export function TemporalObjectiveEditorRow({
         ) : null}
         </div>
         <label className="temporal-create-objective__verification">
-          <span>{italian ? 'Verifica dell’obiettivo' : 'Objective verification'}</span>
+          <span>
+            {italian ? 'Verifica dell’obiettivo' : 'Objective verification'}
+          </span>
           <select
             value={objective.verificationMode ?? 'none'}
             disabled={disabled}
-            aria-label={(italian ? 'Verifica obiettivo ' : 'Verify objective ') + (index + 1)}
+            aria-label={
+              italian
+                ? `Verifica obiettivo ${index + 1}`
+                : `Verify objective ${index + 1}`
+            }
             onChange={(event) =>
               update(objective.id, {
-                verificationMode: event.currentTarget.value as 'none' | 'review_on_end',
+                verificationMode: event.currentTarget.value as
+                  | 'none'
+                  | 'review_on_end',
               })
             }
           >
-            <option value="none">{italian ? "Nessuna richiesta" : "No prompt"}</option>
-            <option value="review_on_end">{italian ? "Chiedi al termine" : "Ask at end"}</option>
+            <option value="none">
+              {italian ? 'Nessuna richiesta' : 'No prompt'}
+            </option>
+            <option value="review_on_end">
+              {italian ? 'Chiedi al termine' : 'Ask at end'}
+            </option>
             <option value="auto_if_evidence" disabled>
-              {italian ? "Valutazione automatica · non disponibile" : "Automatic · unavailable"}
+              {italian
+                ? 'Valutazione automatica · non disponibile'
+                : 'Automatic · unavailable'}
             </option>
           </select>
         </label>
