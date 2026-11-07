@@ -19,6 +19,21 @@ import {
 
 type RecurrenceIntent = TemporalCreateFields['eventRecurrence'];
 
+function quickChoice(
+  intent: RecurrenceIntent | null,
+  customChoice: boolean,
+): QuickRecurrence {
+  if (intent === null) return 'none';
+  if (
+    customChoice ||
+    intent.calendarInterval !== 1 ||
+    intent.calendarFrequency === 'monthly-ordinal'
+  ) {
+    return 'custom';
+  }
+  return intent.calendarFrequency;
+}
+
 /** Edit uses the same select and detailed calendar editor as Advanced Create.
  * Starting the series remains an explicit separate action on the saved item.
  */
@@ -63,14 +78,7 @@ export function ExistingRecurrenceControl({
   const weekday = (['MO', 'TU', 'WE', 'TH', 'FR', 'SA', 'SU'] as const)[
     dateValue.dayOfWeek - 1
   ] as TemporalCreateWeekday;
-  const selection: QuickRecurrence =
-    intent === null
-      ? 'none'
-      : customChoice ||
-          intent.calendarInterval !== 1 ||
-          intent.calendarFrequency === 'monthly-ordinal'
-        ? 'custom'
-        : intent.calendarFrequency;
+  const selection = quickChoice(intent, customChoice);
 
   const changeRecurrence = (choice: QuickRecurrence) => {
     setError('');
@@ -80,22 +88,26 @@ export function ExistingRecurrenceControl({
       return;
     }
     const previous = intent ?? base.eventRecurrence;
-    const frequency =
-      choice === 'custom'
-        ? intent?.calendarFrequency ?? 'weekly'
-        : choice;
+    let frequency: RecurrenceIntent['calendarFrequency'] = 'weekly';
+    if (choice === 'custom') {
+      frequency = intent?.calendarFrequency ?? 'weekly';
+    } else {
+      frequency = choice;
+    }
+    let weekdays: RecurrenceIntent['weekdays'] = previous.weekdays;
+    if (
+      frequency === 'weekly' &&
+      (choice !== 'custom' || weekdays.length === 0)
+    ) {
+      weekdays = [weekday];
+    }
     setIntent({
       ...previous,
       owner,
       patternKind: 'calendar-wall-clock',
       calendarFrequency: frequency,
       ...(choice === 'custom' ? {} : { calendarInterval: 1 }),
-      weekdays:
-        frequency === 'weekly'
-          ? choice === 'custom' && previous.weekdays.length
-            ? previous.weekdays
-            : [weekday]
-          : previous.weekdays,
+      weekdays,
       calendarOrdinalWeekday: weekday,
       calendarOrdinal: Math.ceil(dateValue.day / 7),
     });

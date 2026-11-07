@@ -369,7 +369,9 @@ test('existing Activity and Event recurrence keep the Create layout without over
   await page.getByRole('button', { name: 'Aggiungi alla timeline' }).click();
   const create = page.locator('[data-temporal-create="composer"]');
   await create.getByRole('button', { name: /Opzioni avanzate/ }).click();
-  await create.locator('.temporal-create-u2-repeat select').selectOption('weekly');
+  await create
+    .locator('.temporal-create-u2-repeat select')
+    .selectOption('weekly');
   const detail = create.locator('.temporal-create-repeat');
   await expect(detail).toBeVisible();
   const [selectMarkup, detailMarkup] = await Promise.all([
