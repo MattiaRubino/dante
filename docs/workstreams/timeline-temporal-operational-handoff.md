@@ -1,5 +1,35 @@
 # Timeline / Temporal-Operational — Workstream Handoff
 
+## 2026-11-07 — Visual recurrence selector parity: focused browser failure and repair
+
+Owner's WSL checks on `56ccf202` show Prettier PASS, ESLint PASS, Web
+TypeScript PASS and **104/104 focused Vitest PASS**. The Playwright
+`e2e/temporal-create-unified-ui.spec.ts` run is **5 PASS / 1 FAIL**:
+for both Activity and Event, `createSelectorParity` is false while
+`stacked`, `fullWidth` and `noOverflow` all pass. The Playwright fixture
+compares computed select height, border radius and font size against the
+same Create markup. Source CSS inspection shows Create's
+`.temporal-create-composer select` specifies `font-size: 13px`, whereas
+Activity Edit's broad select font rule forces `14px` and Event Edit has
+no equivalent fixed size for that select.
+
+The candidate CSS repair scopes `font-size: 13px` exclusively to the
+shared `timeline-existing-recurrence` select inside an Edit modal with
+higher specificity than Activity's broad rule. It changes neither Create,
+normal form controls nor recurrence semantics. The existing browser
+assertion remains strict and now reports **each** compared property
+(height / border-radius / font-size) separately rather than a single
+opaque boolean; no assertion was removed or weakened.
+
+**Verification pending for this candidate SHA:** rerun exact focused
+Prettier, ESLint, Web typecheck, 104 Vitest and six Playwright cases.
+The logs' `NO_I18NEXT_INSTANCE` notices are warnings in the test
+harness, not failing assertions; Vite's API ECONNREFUSED diagnostics
+occur when unauthenticated browser-fixture testing lacks its backend
+and do not explain the selector style failure. Real authenticated
+UI/desktop-mobile acceptance and a same-SHA full gate remain open.
+
+
 ## 2026-11-07 — Existing-item repeat and discard visual parity candidate
 
 Owner screenshots show Activity and Event one-off Edit embedding the new "start

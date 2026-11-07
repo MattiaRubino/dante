@@ -437,10 +437,11 @@ test('existing Activity and Event recurrence keep the Create layout without over
         const style = getComputedStyle(choice);
         const output = {
           kind,
-          createSelectorParity:
-            style.height === originalStyle.height &&
-            style.borderRadius === originalStyle.borderRadius &&
-            style.fontSize === originalStyle.fontSize,
+          createSelectorParity: {
+            height: style.height === originalStyle.height,
+            borderRadius: style.borderRadius === originalStyle.borderRadius,
+            fontSize: style.fontSize === originalStyle.fontSize,
+          },
           stacked:
             choiceBox.bottom + 8 <= panelBox.top &&
             panelBox.bottom + 8 <= actionsBox.top,
@@ -462,14 +463,22 @@ test('existing Activity and Event recurrence keep the Create layout without over
   expect(outcomes).toEqual([
     {
       kind: 'activity',
-      createSelectorParity: true,
+      createSelectorParity: {
+        height: true,
+        borderRadius: true,
+        fontSize: true,
+      },
       stacked: true,
       fullWidth: true,
       noOverflow: true,
     },
     {
       kind: 'event',
-      createSelectorParity: true,
+      createSelectorParity: {
+        height: true,
+        borderRadius: true,
+        fontSize: true,
+      },
       stacked: true,
       fullWidth: true,
       noOverflow: true,
