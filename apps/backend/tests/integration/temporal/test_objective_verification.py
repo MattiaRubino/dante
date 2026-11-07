@@ -112,6 +112,20 @@ def test_objective_verification_persists_independently_and_replays(
             ]
             == edit["expected_verification_revision"] + 1
         )
+        stale_edit = {
+            **edit,
+            "operation_id": f"objective:verification:{initial_mode}:stale",
+            "expected_revision": changed_state.json()["definition_revision"],
+            "expected_verification_revision": edit["expected_verification_revision"],
+        }
+        stale = client.put(definition_path, json=stale_edit, headers=headers)
+        assert stale.status_code == 409, stale.text
+        assert (
+            client.get(definition_path, headers=_base_headers()).json()[
+                "verification_revision"
+            ]
+            == edit["expected_verification_revision"] + 1
+        )
         with psycopg.connect(
             host=migrated_database.cluster.host,
             port=migrated_database.cluster.port,
