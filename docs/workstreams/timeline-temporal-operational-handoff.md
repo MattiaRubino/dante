@@ -36,8 +36,11 @@ available through the GitHub-only editing session. The earlier owner's
 27/27 full gate on `4b5603ac` does not attest to these later changes.
 Run focused Web Vitest on `activity-inspector-actions.test.tsx` and
 `event-inspector-actions.test.tsx`, repository format/ESLint/typecheck,
-and real-browser desktop/mobile geometry with Activity/Event conversion,
-dirty X/Cancel/Escape and submit refusal. Only then run/accept a new
+and the geometry regression in `e2e/temporal-create-unified-ui.spec.ts`,
+which measures the actual Create markup inside both production Edit CSS
+contexts for stacking, full-width control sizing and overflow. Real-app
+desktop/mobile acceptance with Activity/Event conversion, dirty
+X/Cancel/Escape and submit refusal is still required. Only then run/accept a new
 same-SHA full gate. No database migration or generated API/client update.
 
 
