@@ -974,7 +974,10 @@ export function ActivityEditPanel({
           current.targetMin !== original.targetMin ||
           current.targetMax !== original.targetMax ||
           current.unitCode !== original.unitCode ||
-          current.presentationOrder !== original.presentationOrder
+          current.presentationOrder !== original.presentationOrder ||
+          current.verificationMode !== (original.verificationMode ?? 'none') ||
+          current.verificationRevision !==
+            (original.verificationRevision ?? 0)
         ) {
           throw new Error(
             'Un obiettivo è cambiato: riapri Modifica prima di salvare.',
