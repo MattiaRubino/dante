@@ -765,3 +765,92 @@ class TemporalObjectiveSeriesEditRow(Base):
             name="label",
         ),
     )
+
+
+class TemporalObjectiveVerificationRevisionRow(Base):
+    __tablename__ = "temporal_objective_verification_revision"
+
+    objective_ref: Mapped[UUID] = mapped_column(primary_key=True)
+    revision: Mapped[int] = mapped_column(BigInteger, primary_key=True)
+    self_person_ref: Mapped[UUID] = mapped_column(nullable=False)
+    operation_id: Mapped[str] = mapped_column(Text, nullable=False)
+    intent_fingerprint: Mapped[str] = mapped_column(Text, nullable=False)
+    mode_code: Mapped[str] = mapped_column(Text, nullable=False)
+    accepted_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
+
+    __table_args__ = (
+        UniqueConstraint(
+            "self_person_ref", "operation_id",
+            name="uq_temporal_objective_verification_operation",
+        ),
+        ForeignKeyConstraint(
+            ["objective_ref"], ["dante.temporal_objective.objective_ref"],
+            name="fk_temporal_objective_verification_objective",
+        ),
+        ForeignKeyConstraint(
+            ["self_person_ref"], ["dante.person.person_ref"],
+            name="fk_temporal_objective_verification_person",
+        ),
+        CheckConstraint(
+            "revision>=1",
+            name=conv("ck_temporal_objective_verification_revision_positive"),
+        ),
+        CheckConstraint(
+            "mode_code IN ('none','review_on_end')",
+            name=conv("ck_temporal_objective_verification_revision_mode"),
+        ),
+        CheckConstraint(
+            "intent_fingerprint ~ '^[0-9a-f]{64}$'",
+            name=conv("ck_temporal_objective_verification_revision_fingerprint"),
+        ),
+        CheckConstraint(
+            "operation_id=btrim(operation_id) AND char_length(operation_id) BETWEEN 1 AND 200",
+            name=conv("ck_temporal_objective_verification_revision_operation"),
+        ),
+        CheckConstraint(
+            "isfinite(accepted_at)",
+            name=conv("ck_temporal_objective_verification_revision_time"),
+        ),
+    )
+
+
+class TemporalObjectiveVerificationSeriesRow(Base):
+    __tablename__ = "temporal_objective_verification_series"
+
+    self_person_ref: Mapped[UUID] = mapped_column(primary_key=True)
+    operation_id: Mapped[str] = mapped_column(Text, primary_key=True)
+    source_native_ref: Mapped[UUID] = mapped_column(nullable=False)
+    selected_occurrence_ref: Mapped[UUID] = mapped_column(nullable=False)
+    template_slot: Mapped[int] = mapped_column(Integer, nullable=False)
+    effective_zone_id: Mapped[str] = mapped_column(Text, nullable=False)
+    anchor_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
+    accepted_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
+    include_selected: Mapped[bool] = mapped_column(Boolean, nullable=False)
+    mode_code: Mapped[str] = mapped_column(Text, nullable=False)
+
+    __table_args__ = (
+        ForeignKeyConstraint(
+            ["source_native_ref"], ["dante.native_address.native_ref"],
+            name="fk_temporal_objective_verification_series_source",
+        ),
+        ForeignKeyConstraint(
+            ["selected_occurrence_ref"], ["dante.occurrence.occurrence_ref"],
+            name="fk_temporal_objective_verification_series_occurrence",
+        ),
+        ForeignKeyConstraint(
+            ["self_person_ref"], ["dante.person.person_ref"],
+            name="fk_temporal_objective_verification_series_person",
+        ),
+        CheckConstraint(
+            "mode_code IN ('none','review_on_end')",
+            name=conv("ck_temporal_objective_verification_series_mode"),
+        ),
+        CheckConstraint(
+            "template_slot BETWEEN 0 AND 99 AND isfinite(anchor_at) AND isfinite(accepted_at)",
+            name=conv("ck_temporal_objective_verification_series_shape"),
+        ),
+        Index(
+            "ix_temporal_objective_verification_series_source",
+            "source_native_ref", "template_slot", "accepted_at",
+        ),
+    )

@@ -153,6 +153,8 @@ MAPPED_TABLES: tuple[Table, ...] = cast(
         b14_create_closure.RealityReviewPolicyCurrentHistoryRow.__table__,
         b14_create_closure.RealityReviewPolicyOperationRow.__table__,
         b14_create_closure.TemporalObjectiveRow.__table__,
+        b14_create_closure.TemporalObjectiveVerificationRevisionRow.__table__,
+        b14_create_closure.TemporalObjectiveVerificationSeriesRow.__table__,
         draft_vault.TemporalDraftVaultRow.__table__,
         draft_vault.TemporalObjectiveInputDraftRow.__table__,
         b14_create_closure.TemporalObjectiveDefinitionRevisionRow.__table__,
