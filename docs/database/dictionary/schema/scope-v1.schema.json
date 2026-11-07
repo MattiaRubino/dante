@@ -124,7 +124,7 @@
       "properties": {
         "completed_stages": {
           "type": "array",
-          "maxItems": 76,
+          "maxItems": 77,
           "uniqueItems": true,
           "items": {
             "enum": [
@@ -203,7 +203,8 @@
               "B14-M1-STRUCTURAL-SERIES-REVISION",
               "B14-EXISTING-RECURRENCE",
               "B14-EXISTING-EVENT-FIRST",
-              "B14-EXISTING-EVENT-LEGACY-REPAIR"
+              "B14-EXISTING-EVENT-LEGACY-REPAIR",
+              "B14-EXISTING-EVENT-REPAIR-PERF"
             ]
           }
         },
@@ -518,7 +519,8 @@
                   "B14-M1-STRUCTURAL-SERIES-REVISION",
                   "B14-EXISTING-RECURRENCE",
                   "B14-EXISTING-EVENT-FIRST",
-                  "B14-EXISTING-EVENT-LEGACY-REPAIR"
+                  "B14-EXISTING-EVENT-LEGACY-REPAIR",
+                  "B14-EXISTING-EVENT-REPAIR-PERF"
                 ]
               }
             }

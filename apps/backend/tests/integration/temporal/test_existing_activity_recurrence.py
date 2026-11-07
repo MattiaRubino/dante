@@ -485,6 +485,25 @@ async def test_legacy_event_first_exclusion_recovers_once_without_copying_event(
         assert excluded.coordinate == first
         async with runtime.session_factory() as session, session.begin():
             assert (
+                await session.scalars(
+                    text(
+                        "SELECT source_event_ref "
+                        "FROM dante.list_self_event_pending_first_sources(:actor)"
+                    ),
+                    {"actor": actor},
+                )
+            ).all() == [series.source_ref]
+            assert (
+                await session.scalars(
+                    text(
+                        "SELECT source_event_ref "
+                        "FROM dante.list_self_event_pending_first_sources(:actor)"
+                    ),
+                    {"actor": stranger},
+                )
+            ).all() == []
+        async with runtime.session_factory() as session, session.begin():
+            assert (
                 await session.scalar(
                     text("SELECT dante.repair_self_event_legacy_first(:actor,:source)"),
                     {"actor": stranger, "source": series.source_ref},
@@ -523,6 +542,16 @@ async def test_legacy_event_first_exclusion_recovers_once_without_copying_event(
             ),
             context=_context(actor),
         )
+        async with runtime.session_factory() as session, session.begin():
+            assert (
+                await session.scalars(
+                    text(
+                        "SELECT source_event_ref "
+                        "FROM dante.list_self_event_pending_first_sources(:actor)"
+                    ),
+                    {"actor": actor},
+                )
+            ).all() == []
         assert len(
             [
                 item

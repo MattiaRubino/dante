@@ -238,14 +238,13 @@ class RoutineOccurrenceMaterializationApplication:
         source_ref: UUID,
         checkpoint: OccurrenceCheckpoint,
     ) -> None:
-        initial_policy = await self._event_policies.get(
-            self_person_ref=self_person_ref,
-            event_ref=source_ref,
-        )
         revisions: dict[UUID, EventOccurrencePolicyView | None] = {}
-        # A first Event already owns its accepted Schedule, Agenda, Objective
-        # and factual graph. Never manufacture a second Schedule or outcomes.
+        # Reuse one consistent read transaction for the source template and
+        # the first-instance link, avoiding a second connection per Event.
         async with self._session_factory() as session, session.begin():
+            initial_policy = await self._event_policies.get_in_session(
+                session, self_person_ref=self_person_ref, event_ref=source_ref
+            )
             first_occurrence_ref = await session.scalar(
                 text(
                     "SELECT first_occurrence_ref "
@@ -940,6 +939,23 @@ class RoutineOccurrenceMaterializationApplication:
                     lead_minutes=policy.reminder_lead_minutes,
                 )
 
+    async def _pending_legacy_event_sources(self, actor: NativeRef) -> frozenset[UUID]:
+        """Read pending Event seeds once; avoid a transaction per healthy Event."""
+        try:
+            async with self._session_factory() as session, session.begin():
+                rows = (
+                    await session.scalars(
+                        text(
+                            "SELECT source_event_ref "
+                            "FROM dante.list_self_event_pending_first_sources(:actor)"
+                        ),
+                        {"actor": actor},
+                    )
+                ).all()
+            return frozenset(UUID(str(source)) for source in rows)
+        except SQLAlchemyError as exc:
+            raise OccurrencePersistenceError() from exc
+
     async def checkpoint_window(
         self,
         *,
@@ -951,8 +967,14 @@ class RoutineOccurrenceMaterializationApplication:
     ) -> OccurrenceWindowCheckpoint:
         checkpoints: list[OccurrenceCheckpoint] = []
         try:
-            for owner, source_ref in await self._sources(self_person_ref):
-                if owner == "event":
+            sources = await self._sources(self_person_ref)
+            pending_first = (
+                await self._pending_legacy_event_sources(self_person_ref)
+                if any(owner == "event" for owner, _ in sources)
+                else frozenset()
+            )
+            for owner, source_ref in sources:
+                if owner == "event" and source_ref in pending_first:
                     # Legacy B06 conversion excluded the first Event coordinate.
                     # Recover it atomically only when its original provenance,
                     # Event Schedule and current Recurrence still agree. Regular

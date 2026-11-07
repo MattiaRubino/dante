@@ -345,6 +345,22 @@
         "valid": true,
         "ready": true,
         "live": true
+      },
+      {
+        "name": "ix_event_recurring_seed_pending_first",
+        "method": "btree",
+        "unique": false,
+        "keys": [
+          "self_person_ref",
+          "source_event_ref"
+        ],
+        "predicate": "first_occurrence_ref IS NULL",
+        "include": [],
+        "source": "explicit_index",
+        "reason": "Owner-scoped range for only unlinked Event seed records; avoids a read-path transaction per healthy Event.",
+        "valid": true,
+        "ready": true,
+        "live": true
       }
     ],
     "triggers": [],

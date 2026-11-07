@@ -1,5 +1,24 @@
 # Timeline / Temporal-Operational — Workstream Handoff
 
+## 2026-11-07 — Legacy first Event hot-path review
+
+The previously published recovery checkpoint opened a SERIALIZABLE
+transaction for **every** recurring Event, including all healthy series.
+Revision `20261107_175` adds one narrow owner-scoped inventory query and a partial
+index on pending Event seed rows. The inventory also checks that the
+original deterministic conversion exclusion still exists for the **current**
+recurrence state; permanently stale or unproven seeds are not repeatedly
+retried on every Timeline load. Only sources returned by that inventory
+enter the repair transaction. Normal recurring Event checkpoint
+latency therefore avoids one unnecessary transaction and admission lock
+per Event source. The existing guarded recovery function is unchanged.
+
+PostgreSQL regression now checks the owner-filtered pending inventory both
+before and after recovery. Database Dictionary and ORM index metadata
+mirror the migration. This remains unverified by the user's local PostgreSQL
+gate; no external CI was consulted.
+
+
 ## 2026-11-07 — Automatic guarded recovery of legacy first Event
 
 Forward-only migration `20261107_174` installs the owner-scoped

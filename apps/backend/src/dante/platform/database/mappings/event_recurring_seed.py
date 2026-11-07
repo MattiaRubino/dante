@@ -2,7 +2,15 @@
 
 from datetime import datetime
 
-from sqlalchemy import CheckConstraint, DateTime, ForeignKeyConstraint, Text, UniqueConstraint
+from sqlalchemy import (
+    CheckConstraint,
+    DateTime,
+    ForeignKeyConstraint,
+    Index,
+    Text,
+    UniqueConstraint,
+    text,
+)
 from sqlalchemy.orm import Mapped, mapped_column
 
 from dante.platform.database.metadata import Base
@@ -14,6 +22,12 @@ class EventRecurringSeedRow(Base):
     __table_args__ = (
         UniqueConstraint("source_event_ref", name="uq_event_recurring_seed_source"),
         UniqueConstraint("first_occurrence_ref", name="uq_event_recurring_seed_occurrence"),
+        Index(
+            "ix_event_recurring_seed_pending_first",
+            "self_person_ref",
+            "source_event_ref",
+            postgresql_where=text("first_occurrence_ref IS NULL"),
+        ),
         CheckConstraint(
             "(legacy_repaired_at IS NULL AND legacy_exclusion_ref IS NULL "
             "AND legacy_exclusion_operation_id IS NULL AND legacy_exclusion_fingerprint IS NULL "
