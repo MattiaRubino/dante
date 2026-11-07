@@ -177,6 +177,12 @@ vi.mock('../../../temporal/remote-reality-objective-data-source', () => ({
   }),
 }));
 const loadRecurringContext = vi.fn().mockResolvedValue(null);
+const startExistingActivity = vi.fn().mockResolvedValue(undefined);
+vi.mock('../../../temporal/remote-existing-recurrence', () => ({
+  createRemoteExistingRecurrence: () => ({
+    startActivity: startExistingActivity,
+  }),
+}));
 const loadRecurringPreview = vi.fn().mockResolvedValue({
   fingerprint: 'a'.repeat(32),
   selectedProtection: null,
@@ -288,6 +294,54 @@ loadLifeAreaChoice.mockResolvedValue({
 });
 
 describe('Activity Inspector actions', () => {
+  it('starts repetition with the saved Activity as the first instance', async () => {
+    loadSettings.mockResolvedValueOnce({
+      ...currentSettings,
+      schedules: [
+        {
+          role: 'envelope',
+          scheduleRef: '0199a777-7777-7777-8777-777777777777',
+          placementStateRef: '0199a888-8888-7888-8888-888888888888',
+          temporalForm: 'named_zone_local',
+          start: '2026-10-09T09:00:00',
+          end: '2026-10-09T10:00:00',
+          zoneId: 'Europe/Rome',
+          name: null,
+          order: null,
+        },
+      ],
+    });
+    const onSaved = vi.fn();
+    render(
+      <ActivityEditPanel
+        profile={profile}
+        closeRequestRef={createRef()}
+        onSaved={onSaved}
+        onCancel={() => undefined}
+      />,
+    );
+    fireEvent.click(
+      await screen.findByRole('button', { name: 'Ripeti · Mai' }),
+    );
+    fireEvent.click(
+      screen.getByRole('button', {
+        name: 'Avvia ripetizione da questa Attività',
+      }),
+    );
+    await waitFor(() => expect(startExistingActivity).toHaveBeenCalledOnce());
+    expect(startExistingActivity).toHaveBeenCalledWith(
+      expect.objectContaining({ activityRef: ref, expectedProfileRevision: 0 }),
+      expect.objectContaining({
+        effective_from: '2026-10-09',
+        wall_times: ['09:00'],
+        zone_id: 'Europe/Rome',
+      }),
+      expect.any(String),
+    );
+    expect(onSaved).toHaveBeenCalledWith(profile);
+    expect(applyAtomicEdit).not.toHaveBeenCalled();
+  });
+
   it('offers Bozze without exposing a second unplaced workflow', () => {
     get.mockResolvedValue(profile);
     render(

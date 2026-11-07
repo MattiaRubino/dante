@@ -6,7 +6,7 @@
 - **Protected-main Alembic head:** `20260906_18`
 - **Protected-main topology:** `89|5|18|77|173|91|272|0|0|0`
 - **Timeline candidate branch:** `feature/timeline-temporal-operational`
-- **Timeline candidate Alembic head:** `20261106_170`; `_170` extends the owner-scoped Schedule placement lock to Events and recurring Event Occurrences. `_169` validates exact Event Occurrence Schedule identity for selected-instance edits. See `timeline-temporal-operational.md`. The `_170` PostgreSQL regression is pending the owner's local run.
+- **Timeline candidate Alembic head:** `20261106_171`; `_171` binds an existing first Event to a separate future recurring source without changing its identity. `_170` extends owner-scoped Schedule placement locks to Events. See `timeline-temporal-operational.md`. The `_171` PostgreSQL regression is pending the owner's local run.
 - **Historical B10-C proven topology (2026-09-26):** `20260925_79` / `167|5|123|93|329|279|446`; latest `_142` candidate topology `238|5|228|103|486|421|596` (user-local catalog gate green)
 - **Timeline candidate DB overlay:** `timeline-temporal-operational.md`
 - **Persistence doctrine:** `../development/backend-cp6-02-postgresql-persistence-constitution.md`

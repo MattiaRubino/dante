@@ -9,9 +9,10 @@ from uuid import UUID
 
 from fastapi import APIRouter, Depends, Request, Response
 from pydantic import BaseModel, ConfigDict, Field, model_validator
+from sqlalchemy import text
 
 from dante.context.contracts import DanteContext
-from dante.context.dependencies import require_mutating_dante_context
+from dante.context.dependencies import require_dante_context, require_mutating_dante_context
 from dante.modules.temporal.authoring import (
     AuthoringLifeAreaIntent,
     TemporalAuthoringInputError,
@@ -54,6 +55,13 @@ from dante.modules.temporal.recurring_authoring import (
     RecurringAuthoringPersistenceError,
     RoutineAuthoringPolicy,
 )
+from dante.modules.temporal.recurring_conversion import (
+    ExistingActivityBasis,
+    ExistingEventBasis,
+    RecurringConversionApplication,
+    RecurringConversionConflictError,
+    RecurringConversionUnsupportedError,
+)
 from dante.modules.temporal.recurring_series_edit import _validate_structure
 from dante.modules.temporal.recurring_series_reconciliation import SeriesReconciliationError
 from dante.modules.temporal.routine import (
@@ -73,6 +81,7 @@ from dante.platform.http.problem import ProblemError
 
 router = APIRouter(prefix="/api/v1/temporal", tags=["temporal"])
 MutatingContext = Annotated[DanteContext, Depends(require_mutating_dante_context)]
+Context = Annotated[DanteContext, Depends(require_dante_context)]
 
 
 class CreateRecurringRoutineRequest(BaseModel):
@@ -142,6 +151,24 @@ class CreateRecurringEventRequest(BaseModel):
     objectives: list[dict[str, Any]] = Field(default_factory=list, max_length=100)
 
 
+class StartExistingActivityRecurrenceRequest(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+    operation_id: str = Field(min_length=1, max_length=200)
+    expected_profile_revision: int = Field(ge=0)
+    envelope_schedule_ref: UUID
+    expected_placement_state_ref: UUID
+    recurrence: CalendarRecurrenceRequest
+
+
+class StartExistingEventRecurrenceRequest(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+    operation_id: str = Field(min_length=1, max_length=200)
+    expected_profile_revision: int = Field(ge=0)
+    schedule_ref: UUID
+    expected_placement_state_ref: UUID
+    recurrence: CalendarRecurrenceRequest
+
+
 class RecurringAuthoringResponse(BaseModel):
     model_config = ConfigDict(extra="forbid")
     owner_kind: Literal["routine", "event"]
@@ -159,6 +186,13 @@ def _application(request: Request) -> RecurringAuthoringApplication:
 Application = Annotated[RecurringAuthoringApplication, Depends(_application)]
 
 
+def _conversion(request: Request) -> RecurringConversionApplication:
+    return RecurringConversionApplication(request.app.state.database_runtime.session_factory)
+
+
+Conversion = Annotated[RecurringConversionApplication, Depends(_conversion)]
+
+
 def _life_area_intent(payload: AuthoringLifeAreaRequest | None) -> AuthoringLifeAreaIntent | None:
     if payload is None:
         return None
@@ -171,6 +205,22 @@ def _life_area_intent(payload: AuthoringLifeAreaRequest | None) -> AuthoringLife
 
 
 def _problem(exc: Exception) -> ProblemError:
+    if isinstance(exc, RecurringConversionUnsupportedError):
+        return ProblemError(
+            status=422,
+            code="temporal.recurring_authoring.existing_unsupported",
+            category="validation",
+            title="Existing Activity cannot start this recurrence",
+            detail=str(exc),
+        )
+    if isinstance(exc, RecurringConversionConflictError):
+        return ProblemError(
+            status=409,
+            code="temporal.recurring_authoring.existing_conflict",
+            category="conflict",
+            title="Existing Activity changed",
+            detail=str(exc),
+        )
     if isinstance(
         exc,
         (
@@ -266,6 +316,91 @@ def _problem(exc: Exception) -> ProblemError:
         detail="The recurring authoring capability could not complete.",
         retryable=True,
     )
+
+
+@router.post(
+    "/recurring/activities/{activity_ref}/start",
+    response_model=RecurringAuthoringResponse,
+    operation_id="temporal_start_existing_activity_recurrence",
+)
+async def start_existing_activity_recurrence(
+    activity_ref: UUID,
+    payload: StartExistingActivityRecurrenceRequest,
+    context: MutatingContext,
+    application: Conversion,
+    response: Response,
+) -> RecurringAuthoringResponse:
+    response.headers["Cache-Control"] = "no-store"
+    try:
+        recurrence = _spec(payload.recurrence)
+        if not isinstance(recurrence, CalendarRecurrence):
+            raise RecurringConversionUnsupportedError("Choose a calendar recurrence.")
+        result = await application.activity(
+            self_person_ref=context.self_person_ref,
+            operation_id=payload.operation_id,
+            basis=ExistingActivityBasis(
+                activity_ref=activity_ref,
+                expected_profile_revision=payload.expected_profile_revision,
+                envelope_schedule_ref=payload.envelope_schedule_ref,
+                expected_placement_state_ref=payload.expected_placement_state_ref,
+            ),
+            recurrence=recurrence,
+        )
+        return RecurringAuthoringResponse(**asdict(result))
+    except Exception as exc:
+        raise _problem(exc) from exc
+
+
+@router.post(
+    "/recurring/events/{event_ref}/start",
+    response_model=RecurringAuthoringResponse,
+    operation_id="temporal_start_existing_event_recurrence",
+)
+async def start_existing_event_recurrence(
+    event_ref: UUID,
+    payload: StartExistingEventRecurrenceRequest,
+    context: MutatingContext,
+    application: Conversion,
+    response: Response,
+) -> RecurringAuthoringResponse:
+    response.headers["Cache-Control"] = "no-store"
+    try:
+        recurrence = _spec(payload.recurrence)
+        if not isinstance(recurrence, CalendarRecurrence):
+            raise RecurringConversionUnsupportedError("Choose a calendar recurrence.")
+        result = await application.event(
+            self_person_ref=context.self_person_ref,
+            operation_id=payload.operation_id,
+            basis=ExistingEventBasis(
+                event_ref=event_ref,
+                expected_profile_revision=payload.expected_profile_revision,
+                schedule_ref=payload.schedule_ref,
+                expected_placement_state_ref=payload.expected_placement_state_ref,
+            ),
+            recurrence=recurrence,
+        )
+        return RecurringAuthoringResponse(**asdict(result))
+    except Exception as exc:
+        raise _problem(exc) from exc
+
+
+@router.get(
+    "/recurring/events/{event_ref}/seed",
+    response_model=UUID | None,
+    operation_id="temporal_get_existing_event_recurrence_seed",
+)
+async def get_existing_event_recurrence_seed(
+    event_ref: UUID,
+    context: Context,
+    request: Request,
+    response: Response,
+) -> UUID | None:
+    response.headers["Cache-Control"] = "no-store"
+    async with request.app.state.database_runtime.session_factory() as session:
+        return await session.scalar(
+            text("SELECT source_event_ref FROM dante.get_self_event_recurring_seed(:actor,:event)"),
+            {"actor": context.self_person_ref, "event": event_ref},
+        )
 
 
 @router.post(

@@ -34,6 +34,8 @@ const getRealityPolicy = vi
 const getDefinition = vi.fn();
 const getReminder = vi.fn().mockResolvedValue(null);
 const isRecurring = vi.fn().mockResolvedValue(false);
+const eventSeed = vi.fn().mockResolvedValue(null);
+const startExistingEvent = vi.fn().mockResolvedValue(undefined);
 const previewHardDeletion = vi.fn();
 const confirmHardDeletion = vi.fn();
 const eventOccurrences = vi.fn();
@@ -112,6 +114,12 @@ vi.mock('../../../temporal/remote-event-agenda-data-source', () => ({
     loadOccurrenceEvent,
   }),
 }));
+vi.mock('../../../temporal/remote-existing-recurrence', () => ({
+  createRemoteExistingRecurrence: () => ({
+    eventSeed,
+    startEvent: startExistingEvent,
+  }),
+}));
 vi.mock('../../../temporal/remote-responsibility-data-source', () => ({
   createRemoteTemporalResponsibilityDataSource: () => ({
     listExpectedParticipation,
@@ -135,6 +143,8 @@ afterEach(() => {
   vi.unstubAllGlobals();
   vi.clearAllMocks();
   isRecurring.mockResolvedValue(false);
+  eventSeed.mockResolvedValue(null);
+  startExistingEvent.mockResolvedValue(undefined);
   getRealityPolicy.mockResolvedValue({ mode: 'manual', stateRef: null });
   getReminder.mockResolvedValue(null);
   listObjectives.mockResolvedValue([]);
@@ -672,6 +682,48 @@ describe('Event Inspector actions', () => {
       'un partecipante non è più disponibile',
     );
     expect(onDuplicate).not.toHaveBeenCalled();
+  });
+
+  it('starts a future recurrence from the saved Event while retaining the first identity', async () => {
+    loadProfile.mockResolvedValue({
+      eventRef,
+      title: 'Visita',
+      description: null,
+      location: null,
+      colorCode: null,
+      profileRevision: 2,
+      agendaRevision: 0,
+      agendaParts: [],
+    });
+    render(
+      <EventInspectorActions
+        eventRef={eventRef}
+        placement={placement}
+        scheduleRef="0199a777-7777-7777-8777-777777777777"
+        placementMaterialStateRef="0199a888-8888-7888-8888-888888888888"
+        onDuplicate={vi.fn()}
+      />,
+    );
+    fireEvent.click(screen.getByRole('button', { name: /^Modifica$/ }));
+    fireEvent.click(
+      await screen.findByRole('button', { name: 'Ripeti · Mai' }),
+    );
+    fireEvent.click(
+      screen.getByRole('button', {
+        name: 'Avvia ripetizione da questo Evento',
+      }),
+    );
+    await waitFor(() => expect(startExistingEvent).toHaveBeenCalledOnce());
+    expect(startExistingEvent).toHaveBeenCalledWith(
+      expect.objectContaining({ eventRef, expectedProfileRevision: 2 }),
+      expect.objectContaining({
+        effective_from: '2026-10-09',
+        wall_times: ['09:00'],
+        zone_id: 'Europe/Rome',
+      }),
+      expect.any(String),
+    );
+    expect(reviseAtomic).not.toHaveBeenCalled();
   });
 
   it('edits current Event metadata with canonical CAS and leaves the existing identity intact', async () => {

@@ -13,17 +13,10 @@ continue and discard; local Vitest **25 passed**. Local Web typecheck is
 `nonexistentTime` translation type mismatch; owner WSL typecheck, full gate
 and real-app inspection are **NOT_RUN** on this worktree candidate.
 
-The requested existing one-off Activity/Event → recurring conversion remains
-**OPEN**. For Activity, the first existing identity must be bound to its first
-Routine Occurrence before any materializer can generate that slot; source,
-Recurrence, policy and binding require a single owner-scoped CAS transaction.
-For Event, a new Recurrence on an existing Event with its own Schedule would
-create both the original Event and a generated first Occurrence unless the
-first-instance identity/projection is explicitly reconciled. Both conversions
-must preserve local Schedules, Objectives, Session/Actual history, and permit
-retry without another first card. The present Create endpoints make new
-sources, and the generic Event Recurrence replacement does not perform this
-reconciliation. No Edit recurrence toggle is enabled by this patch.
+At this historical checkpoint the requested existing one-off Activity/Event
+conversion remained open. The newer `_171` candidate at the end of this
+handoff implements the explicit first-instance association and Edit controls;
+its PostgreSQL and real-app verification remain pending.
 
 ## 2026-11-06 — Owner correction: Event counters stack and Create Agenda matches Edit
 
@@ -4153,3 +4146,30 @@ its disposable PostgreSQL 18.6 and HTTPS preview bound loopback port 4173.
 This shows Docker's forwarding worked for that stack run, without proving
 the still-unrun pytest fixture or Event Objective batch. The reported Ruff
 layout is applied in the next formatting-only checkpoint.
+## 2026-11-06 — Existing Activity/Event recurrence initiation candidate
+
+Ordinary Edit can start a named-zone calendar recurrence from the already
+saved Activity or Event. Save the current edits first. Activity conversion
+creates the Routine, recurrence, policy and first Occurrence, then binds the
+existing Activity in one serializable transaction. Event conversion uses
+forward migration `20261106_171`: the existing Event remains a standalone
+first instance with its original Schedule and normal Edit; a separate
+Schedule-free recurring source holds the future series, and the first
+coordinate is structurally excluded in the same transaction. The new owner
+bind/read functions keep direct runtime table DML denied. Subsequent edits
+of the first Event are independent of the future source; edit a following
+Occurrence with its explicit scope to change later instances. This is an
+intentional product behavior that needs owner visual review.
+
+Supported conversion starts with a saved named-zone timed Schedule or all-day
+date span and an exact first calendar candidate. Activity child trees and
+Events with other expected participants are rejected clearly until their
+future templates can be represented faithfully. Neither prior recorded
+Session facts nor Event Objective outcomes are copied to future instances.
+
+Scratch evidence: Activity Inspector 58/58 and Event Inspector
+26/26 tests pass with borrowed Node dependencies; Python syntax and test
+registry structure pass. Scratch lacks the pinned Python 3.14/PostgreSQL
+runtime, and borrowed packages show one preexisting TypeScript locale
+declaration mismatch, so **the new backend integration, migration/catalog,
+full typecheck, and real-app behavior are NOT VERIFIED**. No CI was run.

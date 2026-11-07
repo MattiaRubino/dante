@@ -1,5 +1,18 @@
 # Timeline / Temporal-Operational — Live Execution Ledger
 
+## 2026-11-06 — Start recurrence from an existing item candidate
+
+Ordinary Activity Edit now offers calendar repetition from its saved plan.
+The transaction creates a Routine, checkpoints the first occurrence and
+binds the existing Activity, retaining its Schedule, identity and recorded
+Session history. Ordinary Event Edit offers the same calendar controls;
+`20261106_171` associates the existing Event with a separate recurring
+source, structurally excludes the first coordinate and keeps the first Event
+independently editable. Future instances use the accepted Event template.
+CAS, owner scope, replay and one-card behavior have PostgreSQL regression
+cases. The source is **NOT VERIFIED** against migrated PostgreSQL; the owner's
+focused gate and real-app visual acceptance are pending. See handoff.
+
 ## 2026-11-06 — Event Edit close behavior
 
 Event Edit now uses an internal discard confirmation and closes unchanged

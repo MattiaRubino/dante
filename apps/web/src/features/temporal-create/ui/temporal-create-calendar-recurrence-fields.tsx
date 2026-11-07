@@ -31,8 +31,8 @@ export function TemporalCreateCalendarRecurrenceFields({
   renderError,
 }: TemporalCreateCalendarRecurrenceFieldsProps) {
   const { i18n } = useTranslation('common');
-  const italian = i18n.language.toLowerCase().startsWith('it');
-  const locale = i18n.resolvedLanguage ?? i18n.language;
+  const locale = i18n.resolvedLanguage ?? i18n.language ?? 'it';
+  const italian = locale.toLowerCase().startsWith('it');
   const recurrence = fields.eventRecurrence;
   const recurrenceOwner = fields.kind === 'event' ? 'event' : 'routine';
 

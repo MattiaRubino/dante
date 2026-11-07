@@ -1,5 +1,6 @@
 import { type RefObject, useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
+import { detectDeviceTimeZone } from '@dante/time';
 
 import type { TemporalEventDetailRecord } from '../../../temporal/event-data-source';
 import {
@@ -16,6 +17,7 @@ import {
   type EventProfileDraft,
 } from '../../../temporal/remote-event-profile-data-source';
 import { createRemoteEventRecurrenceGuard } from '../../../temporal/remote-event-recurrence-guard';
+import { createRemoteExistingRecurrence } from '../../../temporal/remote-existing-recurrence';
 import {
   createRemoteRecurringProfileEdit,
   type RecurringProfileContext,
@@ -55,6 +57,7 @@ import type { TimelineCanonicalSchedulePlacement } from './model/timeline-types'
 import { TimelineInspectorIcon } from './timeline-inspector-icon';
 import { RecurringEditScopeDialog } from './recurring-edit-scope-dialog';
 import { RecurringSeriesEditor } from './recurring-series-editor';
+import { ExistingRecurrenceControl } from './existing-recurrence-control';
 import {
   EventScheduleEditor,
   eventScheduleDraftFromPlacement,
@@ -101,6 +104,8 @@ export function EventInspectorActions({
     createRemoteTemporalResponsibilityDataSource,
   );
   const [recurrenceGuard] = useState(createRemoteEventRecurrenceGuard);
+  const [existingRecurrence] = useState(createRemoteExistingRecurrence);
+  const [existingSeed, setExistingSeed] = useState<string | null>(null);
   const [recurringSource] = useState(createRemoteRecurringProfileEdit);
   const [hardDelete] = useState(createRemoteTemporalHardDeletion);
   const [deletePreviews, setDeletePreviews] = useState<
@@ -201,6 +206,7 @@ export function EventInspectorActions({
         reminder,
         participants,
         referents,
+        seed,
       ] = await Promise.all([
         context && occurrenceRef && eventSource.loadOccurrenceEvent
           ? eventSource.loadOccurrenceEvent(occurrenceRef)
@@ -224,7 +230,11 @@ export function EventInspectorActions({
             )
           : participationSource.listExpectedParticipation(eventRef),
         participationSource.listPersonReferents(),
+        context
+          ? Promise.resolve(null)
+          : existingRecurrence.eventSeed(eventRef),
       ]);
+      setExistingSeed(seed);
       if (loaded.profileRevision === undefined) {
         throw new Error('Revisione del profilo Event non disponibile.');
       }
@@ -1059,6 +1069,78 @@ export function EventInspectorActions({
                   della Schedule.
                 </p>
               )}
+              {!recurringContext && occurrenceRef === null && scheduleDraft ? (
+                existingSeed ? (
+                  <div
+                    className="timeline-activity-editor__repeat"
+                    role="group"
+                    aria-label="Ripeti"
+                  >
+                    Ripeti · Serie attiva
+                  </div>
+                ) : scheduleRef && placementMaterialStateRef ? (
+                  <ExistingRecurrenceControl
+                    kind="event"
+                    date={scheduleDraft.startDate}
+                    startTime={scheduleDraft.startTime}
+                    allDay={scheduleDraft.kind === 'all-day'}
+                    zoneId={scheduleDraft.zoneId ?? detectDeviceTimeZone()}
+                    disambiguation={
+                      scheduleDraft.disambiguation === 'later'
+                        ? 'later'
+                        : 'earlier'
+                    }
+                    disabled={
+                      busy ||
+                      profileDraft.title !== profile.title ||
+                      profileDraft.description !==
+                        (profile.description ?? null) ||
+                      profileDraft.location !== (profile.location ?? null) ||
+                      profileDraft.colorCode !== (profile.colorCode ?? null) ||
+                      JSON.stringify(agendaDraft) !==
+                        JSON.stringify(profile.agendaParts ?? []) ||
+                      JSON.stringify(scheduleDraft) !==
+                        JSON.stringify(scheduleInitial) ||
+                      reminderLead !== reminderInitial ||
+                      (areaSelection || null) !==
+                        (areaChoice?.currentRef ?? null) ||
+                      realityMode !== (realityPolicy?.mode ?? 'manual') ||
+                      removedObjectives.length > 0 ||
+                      objectiveRows.some(objectiveChanged) ||
+                      JSON.stringify(participantsDraft) !==
+                        JSON.stringify(participantsInitial)
+                    }
+                    onStart={async (rule) => {
+                      if (profile.profileRevision === undefined) {
+                        throw new Error('Revisione Event non disponibile.');
+                      }
+                      setBusy(true);
+                      try {
+                        await existingRecurrence.startEvent(
+                          {
+                            eventRef,
+                            expectedProfileRevision: profile.profileRevision,
+                            scheduleRef,
+                            expectedPlacementStateRef:
+                              placementMaterialStateRef,
+                          },
+                          rule,
+                          systemTemporalIdFactory.operationId(),
+                        );
+                        setExistingSeed(
+                          await existingRecurrence.eventSeed(eventRef),
+                        );
+                        setEditingProfile(false);
+                        setProfileNotice(
+                          'Ripetizione avviata da questo Evento.',
+                        );
+                      } finally {
+                        setBusy(false);
+                      }
+                    }}
+                  />
+                ) : null
+              ) : null}
               <div className="timeline-activity-editor__area-color">
                 <div className="temporal-create-life-area-field">
                   <TemporalColorControl

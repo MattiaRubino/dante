@@ -94,6 +94,7 @@
     "apps/backend/tests/integration/temporal/test_event_core.py",
     "apps/backend/tests/integration/temporal/test_event_lifecycle.py",
     "apps/backend/tests/integration/temporal/test_event_profile_edit.py",
+    "apps/backend/tests/integration/temporal/test_existing_activity_recurrence.py",
     "apps/backend/tests/integration/temporal/test_execution_structure.py",
     "apps/backend/tests/integration/temporal/test_governed_schedule_move.py",
     "apps/backend/tests/integration/temporal/test_home_resolution_queue.py",
@@ -1215,6 +1216,16 @@
       "invariant": "",
       "status": "UNREVIEWED",
       "audit_note": "Needs contract/assertion review, rejection cases, and executable evidence; filename alone is not proof."
+    },
+    {
+      "path": "apps/backend/tests/integration/temporal/test_existing_activity_recurrence.py",
+      "suite": "temporal-postgresql-integration",
+      "contract_id": "T04",
+      "candidate_behavior": "start recurrence from an existing Activity",
+      "purpose": "Verify the original Activity identity is the first generated instance and the Timeline shows one card per date.",
+      "invariant": "Atomic first binding, owner scope, replay and duplicate conversion rejection.",
+      "status": "UNREVIEWED",
+      "audit_note": "Requires execution against migrated PostgreSQL and review of generated Session template fidelity."
     },
     {
       "path": "apps/backend/tests/integration/temporal/test_execution_structure.py",

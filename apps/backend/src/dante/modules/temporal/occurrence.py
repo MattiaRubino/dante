@@ -13,6 +13,8 @@ from __future__ import annotations
 import calendar
 import hashlib
 import json
+from collections.abc import AsyncIterator
+from contextlib import asynccontextmanager
 from dataclasses import asdict, dataclass
 from datetime import UTC, date, datetime, time, timedelta
 from decimal import ROUND_CEILING, Decimal
@@ -910,6 +912,14 @@ class OccurrenceApplication:
     def __init__(self, session_factory: async_sessionmaker[AsyncSession]) -> None:
         self._session_factory = session_factory
 
+    @asynccontextmanager
+    async def _write_session(self, existing: AsyncSession | None) -> AsyncIterator[AsyncSession]:
+        if existing is not None:
+            yield existing
+        else:
+            async with self._session_factory() as session, session.begin():
+                yield session
+
     async def checkpoint_window(
         self,
         *,
@@ -997,6 +1007,7 @@ class OccurrenceApplication:
         start_date: date,
         end_date_exclusive: date,
         effective_zone_id: str,
+        session: AsyncSession | None = None,
     ) -> OccurrenceCheckpoint:
         key = _bounded_operation_id(operation_id)
         _validate_window(start_date, end_date_exclusive)
@@ -1012,7 +1023,7 @@ class OccurrenceApplication:
             }
         )
         try:
-            async with self._session_factory() as session, session.begin():
+            async with self._write_session(session) as session:
                 accepted = (
                     (
                         await session.execute(

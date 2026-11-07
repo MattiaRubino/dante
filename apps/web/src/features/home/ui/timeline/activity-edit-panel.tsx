@@ -36,6 +36,7 @@ import {
 import { TemporalColorControl } from '../../../temporal-create/ui/temporal-color-control';
 import { TimeControl } from '../../../temporal-create/ui/temporal-create-core-u2';
 import { TemporalCreateDatePicker } from '../../../temporal-create/ui/temporal-create-date-picker';
+import { createRemoteExistingRecurrence } from '../../../temporal/remote-existing-recurrence';
 import { TemporalLifeAreaSelect } from '../../../temporal-create/ui/temporal-life-area-select';
 import { TemporalReminderControl } from '../../../temporal-create/ui/temporal-create-quick-reminder';
 import '../../../temporal-create/ui/temporal-create-u1.css';
@@ -58,6 +59,7 @@ import '../../../temporal-create/ui/temporal-create-activity-polish.css';
 import '../../../temporal-create/ui/temporal-create-advanced-activity-structure.css';
 import '../../../temporal-create/ui/temporal-create-session-time-polish.css';
 import './activity-edit-panel.css';
+import { ExistingRecurrenceControl } from './existing-recurrence-control';
 import { SessionAttemptDeleteDialog } from './session-attempt-delete-dialog';
 import {
   createRemoteRecurringProfileEdit,
@@ -401,6 +403,7 @@ export function ActivityEditPanel({
 
   const [objectiveSource] = useState(createRemoteRealityObjectiveDataSource);
   const [recurringSource] = useState(createRemoteRecurringProfileEdit);
+  const [existingRecurrence] = useState(createRemoteExistingRecurrence);
   const [recurringContext, setRecurringContext] =
     useState<RecurringProfileContext | null>(null);
   const [recurringLoading, setRecurringLoading] = useState(true);
@@ -2023,13 +2026,46 @@ export function ActivityEditPanel({
                 </div>
               ) : null}
             </section>
-            <div
-              className="timeline-activity-editor__repeat"
-              role="group"
-              aria-label="Ripeti"
-            >
-              Ripeti · {recurringContext ? 'Serie attiva' : 'Mai'}
-            </div>
+            {recurringContext ? (
+              <div
+                className="timeline-activity-editor__repeat"
+                role="group"
+                aria-label="Ripeti"
+              >
+                Ripeti · Serie attiva
+              </div>
+            ) : envelope?.start && envelope.placementStateRef ? (
+              <ExistingRecurrenceControl
+                kind="activity"
+                date={envelope.start.slice(0, 10)}
+                startTime={envelope.start.slice(11, 16) || '09:00'}
+                allDay={envelope.temporalForm === 'date_span'}
+                zoneId={envelope.zoneId ?? timeZone ?? detectDeviceTimeZone()}
+                disambiguation="earlier"
+                disabled={dirty || recurringLoading || !!recurringError}
+                onStart={async (rule) => {
+                  await existingRecurrence.startActivity(
+                    {
+                      activityRef: profile.activityRef,
+                      expectedProfileRevision: profile.revision,
+                      envelopeScheduleRef: envelope.scheduleRef,
+                      expectedPlacementStateRef: envelope.placementStateRef!,
+                    },
+                    rule,
+                    crypto.randomUUID(),
+                  );
+                  onSaved(profile);
+                }}
+              />
+            ) : (
+              <div
+                className="timeline-activity-editor__repeat"
+                role="group"
+                aria-label="Ripeti"
+              >
+                Ripeti · Mai
+              </div>
+            )}
             <div className="timeline-activity-editor__area-color">
               <div className="temporal-create-life-area-field">
                 <TemporalColorControl
