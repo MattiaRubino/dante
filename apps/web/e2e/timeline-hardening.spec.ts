@@ -874,9 +874,11 @@ test('standalone destructive confirmation replaces the Inspector and stays compa
       viewportCentered:
         Math.abs(bounds.left + bounds.width / 2 - window.innerWidth / 2) <= 2,
       dateBelowTitle:
-        dialog.querySelector('.timeline-delete-dialog__subject span')!
+        dialog
+          .querySelector('.timeline-delete-dialog__subject span')!
           .getBoundingClientRect().top >
-        dialog.querySelector('.timeline-delete-dialog__header')!
+        dialog
+          .querySelector('.timeline-delete-dialog__header')!
           .getBoundingClientRect().top,
     };
     inspector.remove();

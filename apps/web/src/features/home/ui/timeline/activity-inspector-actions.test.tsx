@@ -2408,9 +2408,11 @@ describe('Activity Inspector', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Elimina' }));
     expect(retire).not.toHaveBeenCalled();
     expect(deleteHard).not.toHaveBeenCalled();
-    expect(await screen.findByRole('alertdialog', {
-      name: 'Elimina attività',
-    })).toBeTruthy();
+    expect(
+      await screen.findByRole('alertdialog', {
+        name: 'Elimina attività',
+      }),
+    ).toBeTruthy();
     expect(
       screen.getByText(/1 Sessione registrata verrà eliminata/),
     ).toBeTruthy();

@@ -897,7 +897,9 @@ export function EventInspectorActions({
         let selected: string | null = null;
         if (occurrenceRef) {
           const choices = await hardDelete.eventOccurrences(eventRef);
-          if (choices.some((choice) => choice.occurrenceRef === occurrenceRef)) {
+          if (
+            choices.some((choice) => choice.occurrenceRef === occurrenceRef)
+          ) {
             selected = occurrenceRef;
           }
         } else if (scheduleRef) {
@@ -1494,7 +1496,9 @@ export function EventInspectorActions({
           busy={busy}
           error={error}
           note={
-            deletePreviews.some((preview) => preview.scope === 'event_series') &&
+            deletePreviews.some(
+              (preview) => preview.scope === 'event_series',
+            ) &&
             !deletePreviews.some(
               (preview) =>
                 preview.scope === 'event_instance' ||

@@ -1079,7 +1079,11 @@ export function EventDetailDialog({
                     onEditorStateChange={setEventEditorMode}
                     eventRef={detail.eventRef}
                     itemTitle={detail.title}
-                    scheduleLabel={detailScheduleLabel(detail, locale, timeZone)}
+                    scheduleLabel={detailScheduleLabel(
+                      detail,
+                      locale,
+                      timeZone,
+                    )}
                     occurrenceRef={detail.occurrenceRef ?? null}
                     scheduleRef={detail.eventScheduleRef ?? null}
                     placementMaterialStateRef={
