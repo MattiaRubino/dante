@@ -515,7 +515,8 @@
                   "B14-ACTIVITY-SESSION-SINGLE-DELETE",
                   "B14-RECURRING-PROFILE-EXCEPTIONS",
                   "B14-M1-STRUCTURAL-SERIES-REVISION",
-                  "B14-EXISTING-RECURRENCE"
+                  "B14-EXISTING-RECURRENCE",
+                  "B14-EXISTING-EVENT-FIRST"
                 ]
               }
             }
