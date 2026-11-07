@@ -123,7 +123,7 @@ describe('B02-E3 Schedule form rendering', () => {
     expect(screen.getByText('Scrivere relazione')).toBeTruthy();
     expect(screen.getByText(/Pomeriggio · 16 set · Personale/)).toBeTruthy();
     const coarseButton = screen.getByRole('button', {
-      name: 'Scrivere relazione · Pomeriggio · Personale',
+      name: 'Attività: Scrivere relazione · Pomeriggio · Personale',
     });
     expect(coarseButton.getAttribute('data-timeline-date-lane-kind')).toBe(
       'coarse',
