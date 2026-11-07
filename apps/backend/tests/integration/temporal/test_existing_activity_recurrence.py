@@ -20,6 +20,7 @@ from dante.modules.temporal.application import (
 )
 from dante.modules.temporal.authoring import TemporalAuthoringApplication
 from dante.modules.temporal.contracts import TimelineWindowQuery
+from dante.modules.temporal.occurrence import CalendarCoordinate
 from dante.modules.temporal.recurrence import CalendarRecurrence
 from dante.modules.temporal.recurring_conversion import (
     ExistingActivityBasis,
@@ -271,6 +272,7 @@ async def test_existing_event_keeps_first_event_and_excludes_duplicate_occurrenc
             for item in window.items
             if isinstance(item, TimelineExpectedOccurrenceItem)
             and item.source_native_ref == started.source_ref
+            and isinstance(item.coordinate, CalendarCoordinate)
             and item.coordinate.generated_date == date(2027, 1, 2)
         ]
         async with runtime.session_factory() as session, session.begin():
