@@ -75,7 +75,7 @@ def upgrade() -> None:
 
 
 def downgrade() -> None:
-    raise RuntimeError("Per-Objective verification is forward-only")
+    raise RuntimeError("20261107_178 is forward-only")
 
 
 _GET = r"""CREATE FUNCTION dante.get_self_objective_verification(
