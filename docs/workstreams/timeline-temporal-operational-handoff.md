@@ -13,10 +13,11 @@ same Create markup. Source CSS inspection shows Create's
 Activity Edit's broad select font rule forces `14px` and Event Edit has
 no equivalent fixed size for that select.
 
-The candidate CSS repair scopes `font-size: 13px` exclusively to the
-shared `timeline-existing-recurrence` select inside an Edit modal with
-higher specificity than Activity's broad rule. It changes neither Create,
-normal form controls nor recurrence semantics. The existing browser
+The candidate CSS repair defines the quick recurrence select's explicit
+13px font in the shared Create component stylesheet, independently of CSS
+import order, and scopes the same value to the Edit modal with higher
+specificity than Activity's broad rule. It changes neither other Create
+controls, normal Edit controls nor recurrence semantics. The existing browser
 assertion remains strict and now reports **each** compared property
 (height / border-radius / font-size) separately rather than a single
 opaque boolean; no assertion was removed or weakened.
