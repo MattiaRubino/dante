@@ -84,7 +84,8 @@ _GET = r"""CREATE FUNCTION dante.get_self_objective_verification(
 LANGUAGE plpgsql SECURITY DEFINER STABLE PARALLEL RESTRICTED
 SET search_path=pg_catalog,dante,pg_temp AS $function$
 #variable_conflict error
-DECLARE source record; objectives jsonb; inherited_mode text := 'none';
+DECLARE source record; objectives jsonb; structure jsonb;
+        owner_kind text; governing_state uuid; inherited_mode text := 'none';
         local_mode text; local_rev bigint; local_at timestamptz;
         series_mode text; series_at timestamptz;
 BEGIN
@@ -102,11 +103,33 @@ BEGIN
           FROM dante.routine_occurrence_policy r
          WHERE r.routine_ref=source.source_native_ref AND r.self_person_ref=actor;
         IF objectives IS NULL THEN
+            owner_kind:='event';
             SELECT e.objectives INTO objectives
               FROM dante.event_occurrence_policy e
              WHERE e.event_ref=source.source_native_ref AND e.self_person_ref=actor;
+        ELSE
+            owner_kind:='routine';
         END IF;
-        inherited_mode:=COALESCE(objectives->(source.template_slot)->>'verification_mode','none');
+        SELECT o.governing_recurrence_state_ref INTO governing_state
+          FROM dante.get_self_occurrence(actor,source.occurrence_ref) o;
+        IF governing_state IS NOT NULL THEN
+            SELECT p.structure_snapshot::jsonb INTO structure
+              FROM dante.get_self_recurring_structure_policy_revision(
+                  actor,owner_kind,source.source_native_ref,governing_state
+              ) p;
+            IF structure IS NOT NULL THEN
+                IF owner_kind='routine' THEN
+                    objectives:=COALESCE(
+                        structure->'activity_template'->'objectives',objectives
+                    );
+                ELSE
+                    objectives:=COALESCE(structure->'objectives',objectives);
+                END IF;
+            END IF;
+        END IF;
+        inherited_mode:=COALESCE(
+            objectives->(source.template_slot)->>'verification_mode','none'
+        );
         SELECT p.mode_code,p.accepted_at INTO series_mode,series_at
           FROM dante.temporal_objective_verification_series p
          WHERE p.self_person_ref=actor
