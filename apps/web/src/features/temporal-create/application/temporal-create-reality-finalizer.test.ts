@@ -105,6 +105,82 @@ describe('Temporal Create policy finalizer', () => {
     expect(movementCalls[0]?.operationId).toBe(movementCalls[1]?.operationId);
   });
 
+  it('persists independent Objective verification modes without changing completion mode', async () => {
+    const base = createTemporalCreateU2AuthoringDraft(
+      createTemporalCreateFields({ kind: 'activity' }),
+    );
+    const draft = patchTemporalCreateU2AuthoringDraft(base, {
+      objectives: [
+        {
+          id: 'first',
+          label: 'Correre',
+          resultKind: 'quantity',
+          comparatorCode: 'gte',
+          targetValue: '5',
+          targetMin: '',
+          targetMax: '',
+          unitCode: 'km',
+          verificationMode: 'review_on_end',
+        },
+        {
+          id: 'second',
+          label: 'Stretching',
+          resultKind: 'boolean',
+          comparatorCode: null,
+          targetValue: '',
+          targetMin: '',
+          targetMax: '',
+          unitCode: '',
+          verificationMode: 'none',
+        },
+      ],
+    });
+    const authored = {
+      item: { subjectRef: '0199aaaa-aaaa-7aaa-8aaa-aaaaaaaaaaaa' },
+      schedule: null,
+      children: [],
+    } as unknown as TemporalAuthoredActivityResult;
+    const calls: Array<{
+      mode: string;
+      label: string;
+      operationId: string;
+    }> = [];
+    const realitySource = {
+      configureReality: () =>
+        Promise.reject(new Error('Completion mode must remain manual')),
+      createObjective: (
+        _kind: string,
+        _ref: string,
+        command: Readonly<{
+          verificationMode: string;
+          label: string;
+          operationId: string;
+        }>,
+      ) => {
+        calls.push({
+          mode: command.verificationMode,
+          label: command.label,
+          operationId: command.operationId,
+        });
+        return Promise.resolve({});
+      },
+    };
+
+    const finalize = createTemporalCreateRealityFinalizer(
+      authored,
+      draft,
+      realitySource as never,
+    );
+    await finalize();
+    expect(calls.map(({ label, mode }) => ({ label, mode }))).toEqual([
+      { label: 'Correre', mode: 'review_on_end' },
+      { label: 'Stretching', mode: 'none' },
+    ]);
+    const ids = calls.map(({ operationId }) => operationId);
+    await finalize();
+    expect(calls.slice(2).map(({ operationId }) => operationId)).toEqual(ids);
+  });
+
   it('refuses placement protection when authoring produced no Activity Schedule', () => {
     const base = createTemporalCreateU2AuthoringDraft(
       createTemporalCreateFields({ kind: 'activity' }),
