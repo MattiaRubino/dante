@@ -202,7 +202,14 @@ async def list_resolution_queue(request: Request, context: Context) -> Resolutio
                             "SELECT 1 FROM dante.activity_intention AS activity "
                             "WHERE activity.activity_ref=queue.subject_ref "
                             "AND activity.self_person_ref=:self_person_ref "
-                            "AND activity.retired_at IS NOT NULL)"
+                            "AND activity.retired_at IS NOT NULL) "
+                            "AND (queue.reason_code <> 'objective_review' OR EXISTS ("
+                            "SELECT 1 FROM dante.list_self_temporal_objectives("
+                            ":self_person_ref,queue.subject_kind,queue.subject_ref) objective "
+                            "CROSS JOIN LATERAL dante.get_self_objective_verification("
+                            ":self_person_ref,objective.objective_ref) mode "
+                            "WHERE mode.mode_code='review_on_end' "
+                            "AND objective.observation_ref IS NULL))"
                         ),
                         {
                             "self_person_ref": context.self_person_ref,
