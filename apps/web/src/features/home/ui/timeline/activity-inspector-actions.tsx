@@ -27,10 +27,13 @@ import {
 } from '../../../temporal-create/application/activity-duplicate-seed';
 import { TimelineInspectorIcon } from './timeline-inspector-icon';
 import { RecurringEditScopeDialog } from './recurring-edit-scope-dialog';
+import { TemporalDeleteDialog } from './temporal-delete-dialog';
 
 export function ActivityInspectorActions({
   activityRef,
   subitemsCount = 0,
+  itemTitle,
+  scheduleLabel,
   onEdit,
   onDeleted,
   onDuplicate,
@@ -39,6 +42,8 @@ export function ActivityInspectorActions({
 }: Readonly<{
   activityRef: string;
   subitemsCount?: number;
+  itemTitle?: string;
+  scheduleLabel?: string;
   onEdit: (profile: ActivityProfile, scope: RecurringProfileEditScope) => void;
   onDeleted: () => void;
   onDuplicate: (seed: ActivityDuplicateSeed) => void;
@@ -214,7 +219,7 @@ export function ActivityInspectorActions({
           {profile.location ? <p>Località: {profile.location}</p> : null}
         </div>
       ) : null}
-      {error ? <p role="alert">{error}</p> : null}
+      {error && !confirming ? <p role="alert">{error}</p> : null}
       {editChoice ? (
         <RecurringEditScopeDialog
           subjectLabel="attività"
@@ -331,22 +336,66 @@ export function ActivityInspectorActions({
         </div>
       ) : null}
       {confirming && deleteImpact ? (
-        <div className="timeline-activity-inspector__confirmation">
-          <p>
-            Eliminare definitivamente questa attività, i suoi intervalli,
-            promemoria, Sessioni e dati collegati? L'operazione non è
-            reversibile.
-          </p>
-          {deleteImpact.attempts.length > 0 ? (
-            <p>
-              Verranno eliminate anche {deleteImpact.attempts.length} Sessioni
-              registrate (
-              {deleteImpact.attempts
-                .map((attempt) => attempt.status)
-                .join(', ')}
-              ).
-            </p>
-          ) : null}
+        <TemporalDeleteDialog
+          subject="attività"
+          itemTitle={itemTitle ?? profile?.title ?? 'Attività'}
+          scheduleLabel={scheduleLabel}
+          busy={pending}
+          error={error}
+          note={
+            deleteImpact.attempts.length > 0
+              ? `${deleteImpact.attempts.length} ${deleteImpact.attempts.length === 1 ? 'Sessione registrata verrà eliminata' : 'Sessioni registrate verranno eliminate'}.`
+              : undefined
+          }
+          choices={
+            recurringDeletePreview
+              ? [
+                  {
+                    key: 'instance',
+                    label: 'Solo questa istanza',
+                    onConfirm: () =>
+                      void action(async () => {
+                        await hardDelete.deleteConfirmed(
+                          recurringDeletePreview[0],
+                        );
+                        onDeleted();
+                      }),
+                  },
+                  {
+                    key: 'series',
+                    label: 'Tutta la serie',
+                    onConfirm: () =>
+                      void action(async () => {
+                        await hardDelete.deleteConfirmed(
+                          recurringDeletePreview[1],
+                        );
+                        onDeleted();
+                      }),
+                  },
+                ]
+              : [
+                  {
+                    key: 'once',
+                    label: 'Conferma eliminazione definitiva',
+                    onConfirm: () =>
+                      void action(async () => {
+                        await source.deleteHard(
+                          activityRef,
+                          deleteImpact.fingerprint,
+                        );
+                        onDeleted();
+                      }),
+                  },
+                ]
+          }
+          onCancel={() => {
+            setConfirming(false);
+            setDeleteImpact(null);
+            setRecurringDeletePreview(null);
+            setError('');
+          }}
+        />
+      ) : null}
           {recurringDeletePreview ? (
             <>
               <p>
