@@ -839,3 +839,55 @@ test('reduced motion prevents imperative smooth Timeline navigation', async ({
     )
     .toBe(0);
 });
+
+test('standalone destructive confirmation replaces the Inspector and stays compact', async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 1280, height: 900 });
+  await page.goto('/home');
+  await page.addStyleTag({
+    path: 'src/features/home/ui/timeline/timeline.css',
+  });
+  await page.addStyleTag({
+    path: 'src/features/home/ui/timeline/temporal-delete-dialog.css',
+  });
+  const result = await page.evaluate(() => {
+    const inspector = document.createElement('div');
+    inspector.className =
+      'timeline-modal-backdrop timeline-modal-backdrop--inspector is-open';
+    inspector.innerHTML = '<div class="timeline-event-modal">Inspector</div>';
+    const backdrop = document.createElement('div');
+    backdrop.className = 'timeline-delete-dialog__backdrop';
+    backdrop.innerHTML =
+      '<section class="timeline-delete-dialog"><div class="timeline-delete-dialog__header"><h2>Elimina evento</h2></div><div class="timeline-delete-dialog__subject"><strong>Riunione</strong><span>Domenica · 20:45–21:15</span></div><p class="timeline-delete-dialog__description">L’eliminazione è definitiva.</p><div class="timeline-delete-dialog__choices"><button>Elimina definitivamente</button></div><button>Annulla</button></section>';
+    document.body.append(inspector, backdrop);
+    const dialog = backdrop.querySelector<HTMLElement>(
+      '.timeline-delete-dialog',
+    )!;
+    const bounds = dialog.getBoundingClientRect();
+    const output = {
+      inspectorHidden: getComputedStyle(inspector).visibility === 'hidden',
+      modalAboveInspector:
+        Number(getComputedStyle(backdrop).zIndex) >
+        Number(getComputedStyle(inspector).zIndex),
+      widthContained: bounds.width > 300 && bounds.width <= 440,
+      viewportCentered:
+        Math.abs(bounds.left + bounds.width / 2 - window.innerWidth / 2) <= 2,
+      dateBelowTitle:
+        dialog.querySelector('.timeline-delete-dialog__subject span')!
+          .getBoundingClientRect().top >
+        dialog.querySelector('.timeline-delete-dialog__header')!
+          .getBoundingClientRect().top,
+    };
+    inspector.remove();
+    backdrop.remove();
+    return output;
+  });
+  expect(result).toEqual({
+    inspectorHidden: true,
+    modalAboveInspector: true,
+    widthContained: true,
+    viewportCentered: true,
+    dateBelowTitle: true,
+  });
+});

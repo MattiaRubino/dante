@@ -1,5 +1,50 @@
 # Timeline / Temporal-Operational — Workstream Handoff
 
+## 2026-11-07 — Unified hard-delete dialog and series save action (candidate)
+
+Owner acceptance screenshots show Event hard deletion expanding the Inspector,
+with an occurrence dropdown and inconsistent title/date hierarchy relative to
+Activity; both flows have verbose destructive text. The requested visual
+contract is now a **single shared standalone portal**
+(`temporal-delete-dialog.tsx`) for one-off Activity, recurring Activity,
+one-off Event, recurring Event, and the physical first Event in a legacy
+series. It uses compact destructive choices, item title then schedule label
+in the same positions, an explicit irreversible-action statement, a
+non-destructive Cancel and accessible keyboard focus/Escape handling.
+When the portal is open, the Inspector is visually hidden; its document
+keyboard handler excludes the portal. Activity recorded-session impact
+is reduced to one short count message; deletion error remains in the popup.
+
+Event instance deletion never guesses a target from a dropdown. The exact
+selected `occurrenceRef`, or a **unique** match by `scheduleRef`, is
+checked against the authoritative occurrence list before the instance
+preview is offered. If no occurrence can be identified unambiguously,
+the dialog permits only series deletion and tells the owner to open the
+specific occurrence from the Timeline. The existing original Event's
+`event_once` versus `event_series` choices are unchanged. Both Activity
+and Event still require hard-delete previews and fingerprints; the
+backend deletion contract has not changed.
+
+Recurring Activity/Event editor's submit label is now
+**"Salva modifiche"**, followed by the existing impact-review confirmation
+("Conferma salvataggio"). No semantic shortcut around the preview or
+protected-instance rules was added.
+
+`Duplica` and `Sposta/Copia in Bozze` on a recurring source remain
+**unchanged pending user decision**: current implementations reject
+flattening a recurring Activity/Event into a one-off object. Product
+recommendation is to hide these unsupported inspector actions for
+recurrences, with separate future support for full-series duplication.
+
+Tests updated: hard-delete Activity/Event contract cases including
+identifiable vs missing Event occurrences, an independent keyboard/portal
+unit suite, and a CSS browser fixture for overlay geometry. **Candidate
+is not yet tested at this SHA.** Verify Prettier, ESLint, Web typecheck,
+focused Vitest and browser fixture, then functional acceptance on the real
+authenticated Timeline. Only then run the same-SHA full parallel gate.
+No schema migrations or generated API contracts.
+
+
 ## 2026-11-07 — Visual recurrence selector parity: focused browser failure and repair
 
 Owner's WSL checks on `56ccf202` show Prettier PASS, ESLint PASS, Web
