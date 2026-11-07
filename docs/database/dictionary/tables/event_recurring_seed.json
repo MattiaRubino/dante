@@ -102,6 +102,66 @@
         "meaning": "The canonical first generated Occurrence bound to the existing Event; legacy seed rows may be null.",
         "semantic_type": "NativeRef",
         "value_contract": "Owner-scoped immutable first-instance identity."
+      },
+      {
+        "name": "legacy_exclusion_ref",
+        "postgres_type": "uuid",
+        "nullable": true,
+        "default": {
+          "kind": "none",
+          "expression": null
+        },
+        "meaning": "Original 171 structural exclusion identity, retained after canonical repair.",
+        "semantic_type": "NativeRef",
+        "value_contract": null
+      },
+      {
+        "name": "legacy_exclusion_operation_id",
+        "postgres_type": "text",
+        "nullable": true,
+        "default": {
+          "kind": "none",
+          "expression": null
+        },
+        "meaning": "Original deterministic exclusion operation id.",
+        "semantic_type": null,
+        "value_contract": null
+      },
+      {
+        "name": "legacy_exclusion_fingerprint",
+        "postgres_type": "text",
+        "nullable": true,
+        "default": {
+          "kind": "none",
+          "expression": null
+        },
+        "meaning": "Original exclusion intent fingerprint, retained as audit proof.",
+        "semantic_type": null,
+        "value_contract": null
+      },
+      {
+        "name": "legacy_exclusion_accepted_at",
+        "postgres_type": "timestamp with time zone",
+        "nullable": true,
+        "default": {
+          "kind": "none",
+          "expression": null
+        },
+        "meaning": "Acceptance timestamp of the original excluded candidate.",
+        "semantic_type": null,
+        "value_contract": null
+      },
+      {
+        "name": "legacy_repaired_at",
+        "postgres_type": "timestamp with time zone",
+        "nullable": true,
+        "default": {
+          "kind": "none",
+          "expression": null
+        },
+        "meaning": "Time of the guarded, automatic first-Occurrence recovery.",
+        "semantic_type": null,
+        "value_contract": null
       }
     ],
     "primary_key": {
@@ -230,7 +290,16 @@
         "enforced": true
       }
     ],
-    "check_constraints": [],
+    "check_constraints": [
+      {
+        "name": "ck_event_recurring_seed_legacy_proof",
+        "expression_contract": "all five legacy proof fields are either all null or all present with first_occurrence_ref",
+        "reason": "An accepted legacy first-instance repair cannot discard its original exclusion provenance.",
+        "enforced": true,
+        "validated": true,
+        "no_inherit": false
+      }
+    ],
     "indexes": [
       {
         "name": "pk_event_recurring_seed",

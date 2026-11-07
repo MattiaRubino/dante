@@ -1,0 +1,110 @@
+{
+  "$schema": "../schema/object-v1.schema.json",
+  "dictionary_version": 1,
+  "object": {
+    "key": "routine:dante.repair_self_event_legacy_first",
+    "type": "routine",
+    "schema": "dante",
+    "name": "repair_self_event_legacy_first",
+    "ownership_class": "dante_owned"
+  },
+  "purpose": "Automatically recover a uniquely proven legacy first Event Occurrence in a guarded atomic transaction; preserves original Event and audit provenance.",
+  "classification": {
+    "persistence_role": "event_recurring_seed",
+    "canonicality": "capability_surface",
+    "family": "temporal_operational"
+  },
+  "semantic_traceability": {
+    "authority_sources": [
+      "docs/database/timeline-temporal-operational.md"
+    ],
+    "domain_concepts": [
+      "Event",
+      "Recurrence",
+      "Occurrence"
+    ],
+    "logical_families": [
+      "Existing Event recurrence"
+    ],
+    "reference_families": [
+      "NativeRef",
+      "ScopedRecordRef"
+    ],
+    "material_facets": []
+  },
+  "implementation": {
+    "introducing_stage": "B14-EXISTING-EVENT-LEGACY-REPAIR",
+    "alembic_revision": "20261107_174",
+    "sqlalchemy": {
+      "mode": "none",
+      "module": null,
+      "symbol": null
+    },
+    "runtime_acl_stage": "B14-EXISTING-EVENT-LEGACY-REPAIR"
+  },
+  "structure": {
+    "columns": [],
+    "primary_key": null,
+    "foreign_keys": [],
+    "unique_constraints": [],
+    "check_constraints": [],
+    "indexes": [],
+    "triggers": [],
+    "table": null,
+    "view": null,
+    "routine": {
+      "routine_kind": "function",
+      "language": "plpgsql",
+      "argument_types": [
+        "uuid",
+        "uuid"
+      ],
+      "return_type": "uuid",
+      "security": "DEFINER",
+      "volatility": "VOLATILE",
+      "parallel_safety": "UNSAFE",
+      "leakproof": false,
+      "function_search_path": [
+        "pg_catalog",
+        "dante",
+        "pg_temp"
+      ],
+      "direct_runtime_execute": true
+    }
+  },
+  "state_history": {
+    "material_state_behavior": null,
+    "current_binding": null,
+    "chronology": null,
+    "immutability_policy": "Read-only identity check; no Event or Schedule state is rewritten."
+  },
+  "lifecycle": {
+    "retention": "No independent state.",
+    "redaction": null,
+    "retirement_tombstone": null,
+    "delete_behavior": "No runtime deletion."
+  },
+  "security": {
+    "owner_role": "dante_owner",
+    "default_deny_non_owner": true,
+    "expected_grants": [
+      {
+        "grantee": "dante_runtime",
+        "privilege": "EXECUTE",
+        "columns": [],
+        "grant_option": false
+      }
+    ]
+  },
+  "proof": {
+    "obligations": [
+      "Owner-scoped Event Occurrence",
+      "Exact Schedule identity",
+      "Cross-instance refusal"
+    ],
+    "test_refs": [
+      "apps/backend/tests/integration/temporal/test_existing_activity_recurrence.py"
+    ],
+    "staged_evidence": []
+  }
+}

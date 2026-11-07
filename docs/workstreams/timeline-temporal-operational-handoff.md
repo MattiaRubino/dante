@@ -1,5 +1,37 @@
 # Timeline / Temporal-Operational — Workstream Handoff
 
+## 2026-11-07 — Automatic guarded recovery of legacy first Event
+
+Forward-only migration `20261107_174` installs the owner-scoped
+`repair_self_event_legacy_first` capability and five nullable provenance
+fields on the existing Event seed. It does **not** mutate old rows at upgrade
+time. The normal Event Timeline checkpoint invokes this capability
+automatically before materializing later occurrences, in its own SERIALIZABLE
+transaction under the existing source admission lock. The function returns
+immediately for ordinary Events, new first-instance bindings and foreign
+sources. A legacy source is repaired only if the *unchanged current*
+calendar state, original physical Event schedule and **one** exclusion with
+the deterministic 171 operation ID all match the same first coordinate.
+The original exclusion's UUID, operation ID, fingerprint and acceptance
+timestamp are copied to the seed as immutable proof. The structural exclusion
+is removed, the first Occurrence is generated using the existing guarded
+checkpoint materializer, and the existing first Event is linked to it **in
+the same transaction**. A failure rolls back every change. Ambiguous or
+modified placements are left untouched; no unrelated exclusions are removed.
+The Event stays the same physical event, with its original Schedule, Agenda,
+Objectives and factual history.
+
+The PostgreSQL regression constructs a 171-style Event seed and exclusion,
+runs the ordinary checkpoint twice, proves one first physical Event card,
+one following scheduled Event, stable first-Occurrence identity and no
+cross-owner recovery. Activity conversion is unchanged. The database catalog,
+SQLAlchemy mapper and Dictionary stage `B14-EXISTING-EVENT-LEGACY-REPAIR` are updated as a unit.
+
+**Validation is not yet attested in the user's local Postgres runtime.**
+No GitHub Actions results were monitored for this candidate. On local gate
+failure, do not treat it as completed until the same-SHA changes pass.
+
+
 ## 2026-11-07 — First Event factual and local edit protection
 
 Forward-only `20261107_173` extends the existing owner-scoped

@@ -608,7 +608,7 @@ The functions are replaced in a forward revision without changing their
 signatures, grants or catalog counts. The owner's PostgreSQL and real-app
 verification are pending.
 
-`20261107_173` adds `event_recurring_seed`, an owner-scoped association
+`20261107_174` adds `event_recurring_seed`, an owner-scoped association
 between an existing Event and a separate future recurring Event source. The
 first Event retains its Schedule and ordinary Edit capability; the source has
 no direct Schedule, and its first matching recurrence coordinate is excluded

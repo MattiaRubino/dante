@@ -952,6 +952,23 @@ class RoutineOccurrenceMaterializationApplication:
         checkpoints: list[OccurrenceCheckpoint] = []
         try:
             for owner, source_ref in await self._sources(self_person_ref):
+                if owner == "event":
+                    # Legacy B06 conversion excluded the first Event coordinate.
+                    # Recover it atomically only when its original provenance,
+                    # Event Schedule and current Recurrence still agree. Regular
+                    # sources return NULL through an indexed constant-time read.
+                    async with self._session_factory() as repair_session, repair_session.begin():
+                        await repair_session.execute(
+                            text("SET TRANSACTION ISOLATION LEVEL SERIALIZABLE")
+                        )
+                        await repair_session.execute(
+                            text("SELECT pg_advisory_xact_lock(hashtextextended(:key,0))"),
+                            {"key": f"dante:recurrence-materialization:{source_ref}"},
+                        )
+                        await repair_session.scalar(
+                            text("SELECT dante.repair_self_event_legacy_first(:actor,:source)"),
+                            {"actor": self_person_ref, "source": source_ref},
+                        )
                 # A transaction-level lock covers checkpoint + ALL subsequent
                 # policy writes, even though the downstream applications own
                 # independent transactions. Hard-delete takes this same key

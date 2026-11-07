@@ -20,8 +20,12 @@ from dante.modules.temporal.application import (
 )
 from dante.modules.temporal.authoring import TemporalAuthoringApplication
 from dante.modules.temporal.contracts import TimelineWindowQuery
-from dante.modules.temporal.occurrence import CalendarCoordinate
+from dante.modules.temporal.occurrence import CalendarCoordinate, OccurrenceApplication
 from dante.modules.temporal.recurrence import CalendarRecurrence
+from dante.modules.temporal.recurring_authoring import (
+    EventAuthoringPolicy,
+    RecurringAuthoringApplication,
+)
 from dante.modules.temporal.recurring_conversion import (
     ExistingActivityBasis,
     ExistingEventBasis,
@@ -372,6 +376,187 @@ async def test_existing_event_keeps_first_event_and_excludes_duplicate_occurrenc
                     {"actor": actor, "first": first_occurrence},
                 )
                 == "local_change"
+            )
+    finally:
+        await runtime.dispose()
+
+
+@pytest.mark.asyncio
+async def test_legacy_event_first_exclusion_recovers_once_without_copying_event(
+    migrated_database: Any,
+) -> None:
+    """A 171-style seed is repaired on the next ordinary Timeline checkpoint."""
+    actor = _seed_self(migrated_database)
+    stranger = _seed_self(migrated_database)
+    runtime = create_database_runtime(migrated_database.runtime_settings())
+    first_date = date(2099, 1, 5)
+    recurrence = CalendarRecurrence(
+        family_code="calendar_wall_clock",
+        range_kind="open",
+        expected_occurrence_count=None,
+        effective_from=first_date,
+        effective_until=None,
+        pattern_code="daily",
+        interval_count=1,
+        clock_basis_code="named_zone",
+        zone_id="Europe/Rome",
+        pattern_anchor_date=None,
+        wall_times=(time(10),),
+        weekdays=(),
+        month_days=(),
+        ordinal_weekdays=(),
+        year_month_days=(),
+        nonexistent_local_time_policy="skip_civil_candidate",
+        ambiguous_local_time_policy="earlier",
+        step_unit_code=None,
+    )
+    try:
+        existing = await TemporalAuthoringApplication(runtime.session_factory).create_event(
+            self_person_ref=actor,
+            operation_id="legacy-first-event:original",
+            title="Appuntamento originale",
+            agenda_parts=("Agenda originale",),
+            placement=NamedZoneLocalIntervalPlacement(
+                starts_local_at=datetime(2099, 1, 5, 10),
+                ends_local_at=datetime(2099, 1, 5, 11),
+                zone_id="Europe/Rome",
+                disambiguation="earlier",
+            ),
+        )
+        event_ref = existing.item.subject_native_ref
+        assert existing.schedule is not None
+        schedule = existing.schedule
+        series = await RecurringAuthoringApplication(runtime.session_factory).create_event(
+            self_person_ref=actor,
+            operation_id="legacy-first-event:series",
+            title="Appuntamento originale",
+            life_area_intent=None,
+            recurrence=recurrence,
+            agenda_parts=("Agenda originale",),
+            policy=EventAuthoringPolicy(
+                placement_kind="timed",
+                duration_minutes=60,
+                duration_days=None,
+                reminder_lead_minutes=None,
+                reality_mode="manual",
+                objectives=(),
+            ),
+        )
+        assert isinstance(schedule.placement, NamedZoneLocalIntervalPlacement)
+        first = CalendarCoordinate(
+            family_code="calendar_wall_clock",
+            generated_date=first_date,
+            generated_wall_time=time(10),
+            clock_basis_code="named_zone",
+            zone_id="Europe/Rome",
+            resolved_at=schedule.placement.resolved_start_at,
+        )
+        async with runtime.session_factory() as session, session.begin():
+            excluded = await OccurrenceApplication(
+                runtime.session_factory
+            ).exclude_in_session(
+                session,
+                owner="event",
+                self_person_ref=actor,
+                source_ref=series.source_ref,
+                governing_recurrence_state_ref=series.recurrence_material_state_ref,
+                operation_id="b06d:existing-event-first:" + "a" * 64,
+                coordinate=first,
+            )
+            profile_revision = await session.scalar(
+                text("SELECT dante.get_self_event_profile_revision(:actor,:event)"),
+                {"actor": actor, "event": event_ref},
+            )
+            await session.execute(
+                text(
+                    "SELECT * FROM dante.bind_self_event_recurring_seed("
+                    ":actor,:event,:source,:schedule,:placement,:revision,:day)"
+                ),
+                {
+                    "actor": actor,
+                    "event": event_ref,
+                    "source": series.source_ref,
+                    "schedule": schedule.schedule_ref,
+                    "placement": schedule.material_state_ref,
+                    "revision": profile_revision,
+                    "day": first_date,
+                },
+            )
+        assert excluded.coordinate == first
+        async with runtime.session_factory() as session, session.begin():
+            assert (
+                await session.scalar(
+                    text("SELECT dante.repair_self_event_legacy_first(:actor,:source)"),
+                    {"actor": stranger, "source": series.source_ref},
+                )
+                is None
+            )
+
+        checkpoint = RoutineOccurrenceMaterializationApplication(runtime.session_factory)
+        await checkpoint.checkpoint_window(
+            self_person_ref=actor,
+            operation_id="legacy-first-event:checkpoint",
+            start_date=first_date,
+            end_date_exclusive=date(2099, 1, 7),
+            effective_zone_id="Europe/Rome",
+        )
+        async with runtime.session_factory() as session, session.begin():
+            linked_ref = await session.scalar(
+                text(
+                    "SELECT first_occurrence_ref "
+                    "FROM dante.get_self_event_recurring_first_by_source(:actor,:source)"
+                ),
+                {"actor": actor, "source": series.source_ref},
+            )
+            assert linked_ref is not None
+            assert (
+                await session.scalar(
+                    text("SELECT dante.get_self_occurrence_edit_protection(:actor,:first)"),
+                    {"actor": actor, "first": linked_ref},
+                )
+                is None
+            )
+        timeline = await TemporalTimelineApplication(runtime.session_factory).read_window(
+            query=TimelineWindowQuery(
+                start_date=first_date,
+                end_date_exclusive=date(2099, 1, 7),
+            ),
+            context=_context(actor),
+        )
+        assert len(
+            [
+                item
+                for item in timeline.items
+                if isinstance(item, TimelineNamedZoneLocalEventItem)
+                and item.event_ref == event_ref
+            ]
+        ) == 1
+        assert len(
+            [
+                item
+                for item in timeline.items
+                if isinstance(item, TimelineScheduledOccurrenceItem)
+                and item.source_native_ref == series.source_ref
+            ]
+        ) == 1
+
+        await checkpoint.checkpoint_window(
+            self_person_ref=actor,
+            operation_id="legacy-first-event:checkpoint-again",
+            start_date=first_date,
+            end_date_exclusive=date(2099, 1, 7),
+            effective_zone_id="Europe/Rome",
+        )
+        async with runtime.session_factory() as session, session.begin():
+            assert (
+                await session.scalar(
+                    text(
+                        "SELECT first_occurrence_ref "
+                        "FROM dante.get_self_event_recurring_first_by_source(:actor,:source)"
+                    ),
+                    {"actor": actor, "source": series.source_ref},
+                )
+                == linked_ref
             )
     finally:
         await runtime.dispose()

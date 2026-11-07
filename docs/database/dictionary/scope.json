@@ -98,13 +98,14 @@
       "B14-RECURRING-PROFILE-EXCEPTIONS",
       "B14-M1-STRUCTURAL-SERIES-REVISION",
       "B14-EXISTING-RECURRENCE",
-      "B14-EXISTING-EVENT-FIRST"
+      "B14-EXISTING-EVENT-FIRST",
+      "B14-EXISTING-EVENT-LEGACY-REPAIR"
     ],
     "standalone_entries": {
       "tables": 241,
       "views": 5,
-      "routines": 254,
-      "total": 500
+      "routines": 255,
+      "total": 501
     },
     "embedded_objects": {
       "triggers": 104,
@@ -112,7 +113,7 @@
     },
     "constraints": {
       "foreign_keys": 432,
-      "check_constraints": 600
+      "check_constraints": 601
     }
   },
   "technical_foundation": {
