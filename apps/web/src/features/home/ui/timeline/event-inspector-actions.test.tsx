@@ -1491,7 +1491,7 @@ describe('Event Inspector actions', () => {
     );
     fireEvent.click(screen.getByRole('button', { name: 'Elimina Event' }));
     await screen.findByRole('button', {
-      name: 'Conferma eliminazione definitiva',
+      name: 'Elimina definitivamente',
     });
     expect(screen.getByRole('alertdialog', { name: 'Elimina evento' })).toBeTruthy();
     expect(previewHardDeletion).toHaveBeenCalledWith(eventRef, 'event_once');
@@ -1502,10 +1502,10 @@ describe('Event Inspector actions', () => {
 
     fireEvent.click(screen.getByRole('button', { name: 'Elimina Event' }));
     await screen.findByRole('button', {
-      name: 'Conferma eliminazione definitiva',
+      name: 'Elimina definitivamente',
     });
     fireEvent.click(
-      screen.getByRole('button', { name: 'Conferma eliminazione definitiva' }),
+      screen.getByRole('button', { name: 'Elimina definitivamente' }),
     );
     await waitFor(() =>
       expect(confirmHardDeletion).toHaveBeenCalledWith(preview),

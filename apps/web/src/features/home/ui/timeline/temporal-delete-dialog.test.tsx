@@ -61,7 +61,7 @@ describe('Temporal deletion dialog', () => {
         subject="evento"
         itemTitle="Riunione"
         busy={false}
-        choices={[{ key: 'once', label: 'Conferma eliminazione definitiva', onConfirm }]}
+        choices={[{ key: 'once', label: 'Elimina definitivamente', onConfirm }]}
         onCancel={onCancel}
       />,
     );
@@ -78,14 +78,14 @@ describe('Temporal deletion dialog', () => {
         subject="attività"
         itemTitle="Allenamento"
         busy
-        choices={[{ key: 'once', label: 'Conferma eliminazione definitiva', onConfirm }]}
+        choices={[{ key: 'once', label: 'Elimina definitivamente', onConfirm }]}
         onCancel={onCancel}
       />,
     );
     fireEvent.keyDown(window, { key: 'Escape' });
     fireEvent.click(screen.getByRole('button', { name: 'Annulla' }));
     fireEvent.click(
-      screen.getByRole('button', { name: 'Conferma eliminazione definitiva' }),
+      screen.getByRole('button', { name: 'Elimina definitivamente' }),
     );
     expect(onCancel).not.toHaveBeenCalled();
     expect(onConfirm).not.toHaveBeenCalled();

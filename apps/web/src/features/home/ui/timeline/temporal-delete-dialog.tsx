@@ -1,4 +1,9 @@
-import { useEffect, useId, useRef, type KeyboardEvent as ReactKeyboardEvent } from 'react';
+import {
+  useEffect,
+  useId,
+  useRef,
+  type KeyboardEvent as ReactKeyboardEvent,
+} from 'react';
 import { createPortal } from 'react-dom';
 
 import './temporal-delete-dialog.css';

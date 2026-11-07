@@ -2415,7 +2415,7 @@ describe('Activity Inspector', () => {
       screen.getByText(/1 Sessione registrata verrà eliminata/),
     ).toBeTruthy();
     fireEvent.click(
-      screen.getByRole('button', { name: 'Conferma eliminazione definitiva' }),
+      screen.getByRole('button', { name: 'Elimina definitivamente' }),
     );
     await waitFor(() =>
       expect(deleteHard).toHaveBeenCalledWith(ref, fingerprint),
@@ -2441,7 +2441,7 @@ describe('Activity Inspector', () => {
     );
     fireEvent.click(screen.getByRole('button', { name: 'Elimina' }));
     await screen.findByRole('button', {
-      name: 'Conferma eliminazione definitiva',
+      name: 'Elimina definitivamente',
     });
     fireEvent.click(screen.getByRole('button', { name: 'Annulla' }));
     expect(deleteHard).not.toHaveBeenCalled();

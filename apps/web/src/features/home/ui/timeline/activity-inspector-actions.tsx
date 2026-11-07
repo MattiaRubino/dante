@@ -376,7 +376,7 @@ export function ActivityInspectorActions({
               : [
                   {
                     key: 'once',
-                    label: 'Conferma eliminazione definitiva',
+                    label: 'Elimina definitivamente',
                     onConfirm: () =>
                       void action(async () => {
                         await source.deleteHard(

@@ -1507,7 +1507,7 @@ export function EventInspectorActions({
               preview.scope === 'event_once'
                 ? deletePreviews.length > 1
                   ? 'Solo questa istanza'
-                  : 'Conferma eliminazione definitiva'
+                  : 'Elimina definitivamente'
                 : preview.scope === 'event_instance'
                   ? 'Solo questa istanza'
                   : 'Tutta la serie',
