@@ -8,7 +8,7 @@
     "name": "get_self_occurrence_edit_protection",
     "ownership_class": "dante_owned"
   },
-  "purpose": "Return a reason for protecting a self-owned Occurrence from future profile propagation: registration, skip, local change or legacy-unknown provenance. Post-binding Activity Schedule, Session policy, Reality, Objective, Reminder and Life Area changes are individual exceptions.",
+  "purpose": "Self-scoped read of Occurrence protection including factual and local edits of the original bound first Event.",
   "classification": {
     "persistence_role": "occurrence_scoped_edit_capability",
     "canonicality": "capability_surface",
@@ -39,7 +39,7 @@
   },
   "implementation": {
     "introducing_stage": "B14-RECURRING-PROFILE-EXCEPTIONS",
-    "alembic_revision": "20261019_161",
+    "alembic_revision": "20261107_173",
     "sqlalchemy": {
       "mode": "none",
       "module": null,

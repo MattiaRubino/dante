@@ -1,5 +1,21 @@
 # Timeline / Temporal-Operational — Workstream Handoff
 
+## 2026-11-07 — First Event factual and local edit protection
+
+Forward-only `20261107_173` extends the existing owner-scoped
+`get_self_occurrence_edit_protection` procedure. A first Event has native
+Schedule, Agenda, Participants, Objectives and factual reality attached to
+its original Event ref, not to a cloned Occurrence. The guard now checks
+those native facts and post-conversion local edits before allowing a clean
+series update. Recorded first Events are protected as `registration`;
+locally changed originals are `local_change`. The lookup is restricted
+to the *single indexed first Occurrence binding* and adds no per-item
+table scans to unrelated Activity/Events. No persisted Event or Occurrence
+is changed by this migration. Tests cover an untouched first Event and
+subsequent local Event profile revision. PostgreSQL verification is pending
+because the GitHub runner PostGIS 3.6.4 image cannot initialize.
+
+
 ## 2026-11-07 — Existing first Event series scope in Inspector
 
 A read-only owner-scoped first Occurrence lookup now distinguishes a genuinely

@@ -297,6 +297,13 @@ async def test_existing_event_keeps_first_event_and_excludes_duplicate_occurrenc
             assert first_origin.generated_date == date(2027, 1, 2)
             assert (
                 await session.scalar(
+                    text("SELECT dante.get_self_occurrence_edit_protection(:actor,:first)"),
+                    {"actor": actor, "first": first_occurrence},
+                )
+                is None
+            )
+            assert (
+                await session.scalar(
                     text(
                         "SELECT first_event_ref FROM dante.get_self_event_recurring_first_by_occurrence("
                         ":actor,:first)"
@@ -341,6 +348,30 @@ async def test_existing_event_keeps_first_event_and_excludes_duplicate_occurrenc
                     {"actor": other, "event": original},
                 )
                 is None
+            )
+        async with runtime.session_factory() as session, session.begin():
+            await session.execute(
+                text(
+                    "SELECT * FROM dante.revise_self_event_profile("
+                    ":actor,:event,:operation,:expected,:title,:description,:location,:color)"
+                ),
+                {
+                    "actor": actor,
+                    "event": original,
+                    "operation": "existing-event-repeat:local-first-edit",
+                    "expected": profile_revision,
+                    "title": "Visita locale aggiornata",
+                    "description": None,
+                    "location": None,
+                    "color": None,
+                },
+            )
+            assert (
+                await session.scalar(
+                    text("SELECT dante.get_self_occurrence_edit_protection(:actor,:first)"),
+                    {"actor": actor, "first": first_occurrence},
+                )
+                == "local_change"
             )
     finally:
         await runtime.dispose()
