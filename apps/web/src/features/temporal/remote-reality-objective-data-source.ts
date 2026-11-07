@@ -3,6 +3,7 @@ import { invalidateTemporalTimelineRead } from './timeline-invalidation';
 
 export type RealitySubjectKind = 'activity' | 'event' | 'occurrence';
 export type RealityMode = 'manual' | 'review_on_end' | 'auto_confirm_outcome';
+export type ObjectiveVerificationMode = 'none' | 'review_on_end';
 export type ObjectiveKind = 'boolean' | 'quantity' | 'qualitative' | 'range';
 export type ObjectiveComparator = 'eq' | 'gte' | 'lte' | 'between';
 export type ObjectiveAssessment =
@@ -25,6 +26,8 @@ export type ObjectiveInputDraftView = Readonly<{
 
 export type ObjectiveView = Readonly<{
   objectiveRef: string;
+  verificationMode?: ObjectiveVerificationMode | undefined;
+  verificationRevision?: number | undefined;
   label: string;
   resultKind: ObjectiveKind;
   comparatorCode: ObjectiveComparator | null;
@@ -43,6 +46,8 @@ export type ObjectiveView = Readonly<{
 
 export type ObjectiveDefinitionState = Readonly<{
   objectiveRef: string;
+  verificationMode?: ObjectiveVerificationMode | undefined;
+  verificationRevision?: number | undefined;
   definitionRevision: number;
   label: string;
   resultKind: ObjectiveKind;
@@ -57,6 +62,7 @@ export type ObjectiveDefinitionState = Readonly<{
 
 export type ActivityObjectiveBatchCreate = Readonly<{
   operationId: string;
+  verificationMode?: ObjectiveVerificationMode | undefined;
   label: string;
   resultKind: ObjectiveKind;
   comparatorCode: ObjectiveComparator | null;
@@ -94,6 +100,8 @@ export type ObjectiveSeriesEditState = Readonly<{
 
 export type ObjectiveDefinitionChange = Readonly<{
   operationId: string;
+  verificationMode?: ObjectiveVerificationMode | undefined;
+  expectedVerificationRevision?: number | undefined;
   expectedRevision: number;
   label: string;
   resultKind: ObjectiveKind;
@@ -188,6 +196,9 @@ export function parseObjectiveView(value: unknown): ObjectiveView {
   const row = record(value);
   return Object.freeze({
     objectiveRef: String(row.objective_ref),
+    verificationMode:
+      row.verification_mode === 'review_on_end' ? 'review_on_end' : 'none',
+    verificationRevision: Number(row.verification_revision ?? 0),
     label: String(row.label),
     resultKind: row.result_kind as ObjectiveKind,
     comparatorCode:
@@ -216,6 +227,7 @@ export function serializeActivityObjectiveEdits(edit: ActivityObjectiveBatch) {
   return {
     add: edit.add.map((item) => ({
       operation_id: item.operationId,
+      verification_mode: item.verificationMode ?? 'none',
       label: item.label,
       result_kind: item.resultKind,
       comparator_code: item.comparatorCode,
@@ -230,6 +242,9 @@ export function serializeActivityObjectiveEdits(edit: ActivityObjectiveBatch) {
       change: {
         operation_id: item.change.operationId,
         expected_revision: item.change.expectedRevision,
+        verification_mode: item.change.verificationMode ?? null,
+        expected_verification_revision:
+          item.change.expectedVerificationRevision ?? null,
         scope_code: item.change.scopeCode ?? 'only_this',
         expected_source_revision:
           item.change.seriesState?.sourceRevision ?? null,
@@ -430,6 +445,7 @@ export function createRemoteRealityObjectiveDataSource(
         targetMax: number | null;
         unitCode: string | null;
         presentationOrder: number;
+        verificationMode?: ObjectiveVerificationMode | undefined;
       }>,
     ): Promise<ObjectiveView> {
       return parseObjectiveView(
@@ -446,6 +462,7 @@ export function createRemoteRealityObjectiveDataSource(
             target_max: command.targetMax,
             unit_code: command.unitCode,
             presentation_order: command.presentationOrder,
+            verification_mode: command.verificationMode ?? 'none',
           },
         ),
       );
@@ -552,6 +569,9 @@ export function createRemoteRealityObjectiveDataSource(
         objectiveRef,
         definitionRevision: row.definition_revision as number,
         label: String(row.label),
+        verificationMode:
+          row.verification_mode === 'review_on_end' ? 'review_on_end' : 'none',
+        verificationRevision: Number(row.verification_revision ?? 0),
         resultKind: row.result_kind as ObjectiveKind,
         comparatorCode: nullableString(
           row.comparator_code,

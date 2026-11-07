@@ -22,6 +22,7 @@ export type ActivityObjectiveDraft = Readonly<{
   scope: 'only_this' | 'this_and_following';
   seriesState: ObjectiveSeriesEditState | null;
   original: ObjectiveView | null;
+  verificationMode?: 'none' | 'review_on_end' | undefined;
 }>;
 
 export function existingObjectiveDraft(
@@ -43,6 +44,7 @@ export function existingObjectiveDraft(
     scope: 'only_this',
     seriesState: null,
     original: view,
+    verificationMode: view.verificationMode ?? 'none',
   };
 }
 
@@ -63,6 +65,7 @@ export function newObjectiveDraft(order: number): ActivityObjectiveDraft {
     scope: 'only_this',
     seriesState: null,
     original: null,
+    verificationMode: 'none',
   };
 }
 
@@ -86,6 +89,7 @@ export function objectiveData(draft: ActivityObjectiveDraft) {
       ? draft.unitCode.trim() || null
       : null,
     presentationOrder: draft.presentationOrder,
+    verificationMode: draft.verificationMode ?? 'none',
   };
 }
 
@@ -101,7 +105,8 @@ export function objectiveChanged(draft: ActivityObjectiveDraft): boolean {
     definition.targetMin !== original.targetMin ||
     definition.targetMax !== original.targetMax ||
     definition.unitCode !== original.unitCode ||
-    definition.presentationOrder !== original.presentationOrder
+    definition.presentationOrder !== original.presentationOrder ||
+    definition.verificationMode !== (original.verificationMode ?? 'none')
   );
 }
 
