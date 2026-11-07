@@ -924,9 +924,13 @@
   text-overflow: ellipsis;
 }
 
+/* The Create recurrence select owns its font-size (13px); the general
+   14px Edit control treatment must not override shared Create controls. */
 .timeline-event-modal--edit
   .timeline-activity-editor__body
-  :is(input:not([type='checkbox']):not([type='radio']), textarea, select) {
+  :is(input:not([type='checkbox']):not([type='radio']), textarea, select):not(
+    .temporal-create-u2-repeat select
+  ) {
   font-size: 14px;
 }
 
