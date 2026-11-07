@@ -78,3 +78,61 @@ def downgrade() -> None:
     raise RuntimeError("Per-Objective verification is forward-only")
 
 
+_GET = r"""CREATE FUNCTION dante.get_self_objective_verification(
+    actor uuid, requested_objective uuid
+) RETURNS TABLE(mode_code text, verification_revision bigint)
+LANGUAGE plpgsql SECURITY DEFINER STABLE PARALLEL RESTRICTED
+SET search_path=pg_catalog,dante,pg_temp AS $function$
+#variable_conflict error
+DECLARE source record; objectives jsonb; inherited_mode text := 'none';
+        local_mode text; local_rev bigint; local_at timestamptz;
+        series_mode text; series_at timestamptz;
+BEGIN
+    PERFORM 1 FROM dante.temporal_objective o
+     WHERE o.objective_ref=requested_objective AND o.self_person_ref=actor
+       AND o.retired_at IS NULL
+       AND dante._actual_subject_owned_as(actor,o.subject_kind,o.subject_native_ref);
+    IF NOT FOUND THEN RETURN; END IF;
+
+    SELECT * INTO source FROM dante.get_self_objective_series_state(
+        actor,requested_objective
+    );
+    IF FOUND THEN
+        SELECT r.activity_template->'objectives' INTO objectives
+          FROM dante.routine_occurrence_policy r
+         WHERE r.routine_ref=source.source_native_ref AND r.self_person_ref=actor;
+        IF objectives IS NULL THEN
+            SELECT e.objectives INTO objectives
+              FROM dante.event_occurrence_policy e
+             WHERE e.event_ref=source.source_native_ref AND e.self_person_ref=actor;
+        END IF;
+        inherited_mode:=COALESCE(objectives->(source.template_slot)->>'verification_mode','none');
+        SELECT p.mode_code,p.accepted_at INTO series_mode,series_at
+          FROM dante.temporal_objective_verification_series p
+         WHERE p.self_person_ref=actor
+           AND p.source_native_ref=source.source_native_ref
+           AND p.template_slot=source.template_slot
+           AND (
+              (p.include_selected AND p.selected_occurrence_ref=source.occurrence_ref)
+              OR dante.occurrence_edit_coordinate_instant(
+                  actor,source.occurrence_ref,p.effective_zone_id
+              ) > GREATEST(p.anchor_at,p.accepted_at)
+           )
+         ORDER BY p.accepted_at DESC LIMIT 1;
+    END IF;
+
+    SELECT r.mode_code,r.revision,r.accepted_at
+      INTO local_mode,local_rev,local_at
+      FROM dante.temporal_objective_verification_revision r
+     WHERE r.objective_ref=requested_objective AND r.self_person_ref=actor
+     ORDER BY r.revision DESC LIMIT 1;
+
+    IF series_mode IS NOT NULL
+       AND (local_at IS NULL OR series_at>local_at) THEN
+        RETURN QUERY SELECT series_mode,COALESCE(local_rev,0::bigint);
+    ELSE
+        RETURN QUERY SELECT COALESCE(local_mode,inherited_mode),
+                            COALESCE(local_rev,0::bigint);
+    END IF;
+END;
+$function$;"""
