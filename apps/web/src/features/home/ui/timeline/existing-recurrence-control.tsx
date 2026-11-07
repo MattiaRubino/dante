@@ -178,9 +178,7 @@ export function ExistingRecurrenceControl({
               disabled={pending || disabled}
               onClick={startRecurrence}
             >
-              {pending
-                ? 'Avvio…'
-                : `Avvia ripetizione da ${startTarget}`}
+              {pending ? 'Avvio…' : `Avvia ripetizione da ${startTarget}`}
             </button>
           </div>
         </>

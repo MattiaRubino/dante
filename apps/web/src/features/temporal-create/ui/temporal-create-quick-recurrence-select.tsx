@@ -30,11 +30,7 @@ export function TemporalCreateQuickRecurrenceSelect({
   };
 
   return (
-    <select
-      aria-label={copy.repeat}
-      value={value}
-      onChange={handleChange}
-    >
+    <select aria-label={copy.repeat} value={value} onChange={handleChange}>
       <option value="none">{copy.repeatNever}</option>
       <option value="daily">{copy.repeatDaily}</option>
       <option value="weekly">{copy.repeatWeekly}</option>
