@@ -52,7 +52,7 @@ def upgrade() -> None:
         schema="dante",
     )
     connection = op.get_bind()
-    connection.exec_driver_sql(_REPAIR_LEGACY_FIRST)
+    connection.exec_driver_sql(_REPAIR_LEGACY_FIRST.replace("%", "%%"))
     signature = "repair_self_event_legacy_first(uuid,uuid)"
     connection.exec_driver_sql(f"ALTER FUNCTION dante.{signature} OWNER TO dante_owner")
     connection.exec_driver_sql(

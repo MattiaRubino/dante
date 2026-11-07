@@ -1,5 +1,18 @@
 # Timeline / Temporal-Operational — Workstream Handoff
 
+## 2026-11-07 — PostgreSQL migration placeholder repair
+
+The owner's focused PostgreSQL gate on `defc7ec` stopped during every fresh
+upgrade at revision `20261107_174`: Psycopg interpreted the PL/pgSQL
+`%ROWTYPE` token in an unescaped `exec_driver_sql` string as an invalid
+`%R` placeholder. The twenty failed/error cases share this single setup
+failure; the eleven passing cases do not establish Event conversion or
+deletion behavior. Escape percent signs for the DBAPI when installing this
+function, as other existing PL/pgSQL migrations already do. The original SQL
+received by PostgreSQL is unchanged. Re-run the same focused gate on the new
+commit before claiming any PostgreSQL pass. The separate first-instance
+series-edit scenario remains unverified.
+
 ## 2026-11-07 — First physical Event deletion lifecycle parity
 
 Migration `20261107_176` **patches the current** (and already ACL-protected)
