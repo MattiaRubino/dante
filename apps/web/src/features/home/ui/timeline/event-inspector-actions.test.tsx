@@ -545,7 +545,7 @@ describe('Event Inspector actions', () => {
     expect(
       new Headers(areaRequest?.[1]?.headers).has('X-Dante-Time-Zone'),
     ).toBe(true);
-    fireEvent.click(screen.getByRole('button', { name: 'Verifica modifiche' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Salva modifiche' }));
     await waitFor(() =>
       expect(reviewSeries).toHaveBeenCalledWith(
         expect.objectContaining({
@@ -1493,6 +1493,7 @@ describe('Event Inspector actions', () => {
     await screen.findByRole('button', {
       name: 'Conferma eliminazione definitiva',
     });
+    expect(screen.getByRole('alertdialog', { name: 'Elimina evento' })).toBeTruthy();
     expect(previewHardDeletion).toHaveBeenCalledWith(eventRef, 'event_once');
     expect(eventOccurrences).not.toHaveBeenCalled();
     fireEvent.click(screen.getByRole('button', { name: 'Annulla' }));
@@ -1566,7 +1567,36 @@ describe('Event Inspector actions', () => {
     },
   );
 
-  it('does not offer recurring Event instance deletion until an explicit Occurrence is selected', async () => {
+  it('keeps a recurring Event source series-only without an identified Occurrence', async () => {
+    const series = {
+      requestedRef: eventRef,
+      scope: 'event_series',
+      fingerprint: '4'.repeat(64),
+    };
+    isRecurring.mockResolvedValue(true);
+    previewHardDeletion.mockResolvedValue(series);
+    render(
+      <EventInspectorActions
+        eventRef={eventRef}
+        placement={placement}
+        onDuplicate={vi.fn()}
+      />,
+    );
+
+    fireEvent.click(screen.getByRole('button', { name: 'Elimina Event' }));
+    const dialog = await screen.findByRole('alertdialog', {
+      name: 'Elimina evento',
+    });
+    expect(within(dialog).getByText(/aprila dalla Timeline/)).toBeTruthy();
+    expect(within(dialog).getByRole('button', { name: 'Tutta la serie' })).toBeTruthy();
+    expect(screen.queryByRole('button', { name: 'Solo questa istanza' })).toBeNull();
+    expect(screen.queryByRole('combobox', { name: 'Istanza Event da eliminare' })).toBeNull();
+    expect(eventOccurrences).not.toHaveBeenCalled();
+    fireEvent.click(screen.getByRole('button', { name: 'Annulla' }));
+    expect(confirmHardDeletion).not.toHaveBeenCalled();
+  });
+
+  it('hard-deletes only the explicitly identified recurring Event Occurrence', async () => {
     const occurrenceRef = '0199a222-2222-7222-8222-222222222222';
     const series = {
       requestedRef: eventRef,
@@ -1593,29 +1623,17 @@ describe('Event Inspector actions', () => {
       <EventInspectorActions
         eventRef={eventRef}
         placement={placement}
+        occurrenceRef={occurrenceRef}
         onDeleted={onDeleted}
         onDuplicate={vi.fn()}
       />,
     );
 
     fireEvent.click(screen.getByRole('button', { name: 'Elimina Event' }));
-    await screen.findByRole('button', { name: 'Tutta la serie' });
-    expect(
-      screen.queryByRole('button', { name: 'Solo questa istanza' }),
-    ).toBeNull();
-    expect(confirmHardDeletion).not.toHaveBeenCalled();
-    fireEvent.change(
-      screen.getByRole('combobox', { name: 'Istanza Event da eliminare' }),
-      { target: { value: occurrenceRef } },
-    );
     await screen.findByRole('button', { name: 'Solo questa istanza' });
-    expect(previewHardDeletion).toHaveBeenCalledWith(
-      occurrenceRef,
-      'event_instance',
-    );
-    fireEvent.click(
-      screen.getByRole('button', { name: 'Solo questa istanza' }),
-    );
+    expect(screen.queryByRole('combobox', { name: 'Istanza Event da eliminare' })).toBeNull();
+    expect(previewHardDeletion).toHaveBeenCalledWith(occurrenceRef, 'event_instance');
+    fireEvent.click(screen.getByRole('button', { name: 'Solo questa istanza' }));
     await waitFor(() =>
       expect(confirmHardDeletion).toHaveBeenCalledWith(instance),
     );
@@ -1769,7 +1787,7 @@ describe('Event Inspector actions', () => {
     fireEvent.click(
       screen.getByRole('button', { name: /Aggiungi intervallo/ }),
     );
-    fireEvent.click(screen.getByRole('button', { name: 'Verifica modifiche' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Salva modifiche' }));
     await waitFor(() => expect(reviewSeries).toHaveBeenCalled());
     const intent: unknown = reviewSeries.mock.lastCall?.[0];
     expect(intent).toMatchObject({

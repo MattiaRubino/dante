@@ -2408,9 +2408,12 @@ describe('Activity Inspector', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Elimina' }));
     expect(retire).not.toHaveBeenCalled();
     expect(deleteHard).not.toHaveBeenCalled();
+    expect(await screen.findByRole('alertdialog', {
+      name: 'Elimina attività',
+    })).toBeTruthy();
     expect(
-      (await screen.findByText(/1 Sessioni registrate/)).textContent,
-    ).toContain('in pausa');
+      screen.getByText(/1 Sessione registrata verrà eliminata/),
+    ).toBeTruthy();
     fireEvent.click(
       screen.getByRole('button', { name: 'Conferma eliminazione definitiva' }),
     );
@@ -2477,6 +2480,12 @@ describe('Activity Inspector', () => {
     );
 
     fireEvent.click(screen.getByRole('button', { name: 'Elimina' }));
+    const deletionDialog = await screen.findByRole('alertdialog', {
+      name: 'Elimina attività',
+    });
+    expect(deletionDialog.parentElement?.className).toBe(
+      'timeline-delete-dialog__backdrop',
+    );
     await screen.findByRole('button', { name: 'Solo questa istanza' });
     expect(screen.getByRole('button', { name: 'Tutta la serie' })).toBeTruthy();
     expect(previewHardDeletion).toHaveBeenCalledWith(ref, 'activity_instance');
