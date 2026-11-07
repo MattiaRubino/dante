@@ -1166,8 +1166,12 @@ async def get_objective_definition(
                 (
                     await session.execute(
                         text(
-                            "SELECT * FROM dante.get_self_temporal_objective_definition("
-                            ":actor,:objective)"
+                            "SELECT definition.*, mode.mode_code AS verification_mode, "
+                            "mode.verification_revision FROM "
+                            "dante.get_self_temporal_objective_definition("
+                            ":actor,:objective) definition "
+                            "CROSS JOIN LATERAL dante.get_self_objective_verification("
+                            ":actor,definition.objective_ref) mode"
                         ),
                         {"actor": context.self_person_ref, "objective": objective_ref},
                     )
@@ -1304,6 +1308,38 @@ async def revise_objective_definition(
                 .mappings()
                 .one()
             )
+            if payload.verification_mode is not None:
+                if payload.scope_code == "this_and_following":
+                    await _apply_series_verification_in_session(
+                        session,
+                        actor=context.self_person_ref,
+                        objective_ref=objective_ref,
+                        operation_id=payload.operation_id,
+                        verification_mode=payload.verification_mode,
+                    )
+                else:
+                    current = (
+                        await session.execute(
+                            text(
+                                "SELECT * FROM dante.get_self_objective_verification("
+                                ":actor,:objective)"
+                            ),
+                            {"actor": context.self_person_ref, "objective": objective_ref},
+                        )
+                    ).mappings().one()
+                    if current["mode_code"] != payload.verification_mode:
+                        await _set_objective_verification_in_session(
+                            session,
+                            actor=context.self_person_ref,
+                            objective_ref=objective_ref,
+                            operation_id=payload.operation_id,
+                            verification_mode=payload.verification_mode,
+                            expected_revision=(
+                                payload.expected_verification_revision
+                                if payload.expected_verification_revision is not None
+                                else current["verification_revision"]
+                            ),
+                        )
     except DBAPIError as exc:
         raise _problem(exc, noun="objective_definition") from exc
     except SQLAlchemyError as exc:
