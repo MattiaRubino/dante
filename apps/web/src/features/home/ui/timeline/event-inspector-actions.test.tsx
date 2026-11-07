@@ -556,7 +556,7 @@ describe('Event Inspector actions', () => {
       ),
     );
     fireEvent.click(
-      await screen.findByRole('button', { name: 'Conferma modifiche' }),
+      await screen.findByRole('button', { name: 'Conferma salvataggio' }),
     );
     await waitFor(() =>
       expect(acceptSeries).toHaveBeenCalledWith(
