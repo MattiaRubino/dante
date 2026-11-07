@@ -13,10 +13,10 @@ from tests.integration.temporal.test_schedule_place import _context
 from dante.modules.temporal.activity_edit_snapshot_api import _SNAPSHOT, ActivityEditSnapshot
 from dante.modules.temporal.application import (
     TemporalTimelineApplication,
+    TimelineExpectedOccurrenceItem,
     TimelineNamedZoneLocalActivityItem,
     TimelineNamedZoneLocalEventItem,
     TimelineScheduledOccurrenceItem,
-    TimelineExpectedOccurrenceItem,
 )
 from dante.modules.temporal.authoring import TemporalAuthoringApplication
 from dante.modules.temporal.contracts import TimelineWindowQuery
