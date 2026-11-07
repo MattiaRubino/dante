@@ -1055,6 +1055,81 @@ describe('Objective correction in Activity Editor', () => {
     expect(addObjective).not.toHaveBeenCalled();
   });
 
+  it('saves Objective verification for selected and following Activity instances', async () => {
+    const context = {
+      occurrenceRef: '0199a222-2222-7222-8222-222222222222',
+      sourceRef: '0199a444-4444-7444-8444-444444444444',
+      editRevision: 3,
+      recurrenceStateRef: '0199a333-3333-7333-8333-333333333333',
+    };
+    const seriesState = {
+      sourceNativeRef: context.sourceRef,
+      occurrenceRef: context.occurrenceRef,
+      templateSlot: 0,
+      sourceRevision: 2,
+      recurrenceStateRef: context.recurrenceStateRef,
+    };
+    loadRecurringContext.mockResolvedValueOnce(context);
+    loadRecurringPreview.mockResolvedValueOnce({
+      fingerprint: 'a'.repeat(32),
+      selectedProtection: null,
+      targetOccurrenceRefs: [context.occurrenceRef],
+      protectedOccurrences: [],
+    });
+    loadSettings.mockResolvedValueOnce({
+      ...currentSettings,
+      objectives: [objective],
+    });
+    getDefinition.mockResolvedValueOnce({
+      ...objective,
+      definitionRevision: 0,
+      verificationMode: 'none',
+      verificationRevision: 0,
+    });
+    getSeriesState.mockResolvedValueOnce(seriesState);
+    applyActivityEdits.mockResolvedValueOnce([
+      { ...objective, verificationMode: 'review_on_end' },
+    ]);
+    render(
+      <ActivityEditPanel
+        profile={profile}
+        initialScope="this_and_following"
+        closeRequestRef={createRef()}
+        onSaved={() => undefined}
+        onCancel={() => undefined}
+      />,
+    );
+    fireEvent.change(
+      await screen.findByRole('combobox', { name: 'Verifica obiettivo 1' }),
+      { target: { value: 'review_on_end' } },
+    );
+    await waitFor(() =>
+      expect(loadRecurringPreview).toHaveBeenCalledWith(
+        context,
+        'this_and_following',
+      ),
+    );
+    await submitEditor();
+    await waitFor(() =>
+      expect(applyActivityEdits).toHaveBeenCalledWith(
+        ref,
+        containing({
+          revise: [
+            containing({
+              objectiveRef: objective.objectiveRef,
+              change: containing({
+                verificationMode: 'review_on_end',
+                scopeCode: 'this_and_following',
+                seriesState,
+              }),
+            }),
+          ],
+        }),
+      ),
+    );
+    expect(saveRecurringProfile).not.toHaveBeenCalled();
+  });
+
   it('corrects a measured result while keeping the same Objective identity', async () => {
     loadSettings.mockResolvedValueOnce({
       ...currentSettings,
