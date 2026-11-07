@@ -136,3 +136,64 @@ BEGIN
     END IF;
 END;
 $function$;"""
+
+_SET = r"""CREATE FUNCTION dante.set_self_objective_verification(
+    actor uuid, requested_objective uuid, requested_operation text,
+    requested_fingerprint text, expected_revision bigint, requested_mode text
+) RETURNS TABLE(mode_code text, verification_revision bigint, replayed boolean)
+LANGUAGE plpgsql SECURITY DEFINER VOLATILE PARALLEL UNSAFE
+SET search_path=pg_catalog,dante,pg_temp AS $function$
+#variable_conflict error
+DECLARE prior record; current_revision bigint;
+BEGIN
+    IF requested_operation IS NULL
+       OR requested_operation<>btrim(requested_operation)
+       OR char_length(requested_operation) NOT BETWEEN 1 AND 200
+       OR requested_fingerprint IS NULL OR requested_fingerprint !~ '^[0-9a-f]{64}$'
+       OR expected_revision IS NULL OR expected_revision<0
+       OR requested_mode NOT IN ('none','review_on_end') THEN
+        RAISE EXCEPTION USING ERRCODE='23514',
+          CONSTRAINT='temporal_objective_verification_invalid',
+          MESSAGE='Invalid Objective verification policy';
+    END IF;
+    PERFORM 1 FROM dante.temporal_objective o
+     WHERE o.objective_ref=requested_objective AND o.self_person_ref=actor
+       AND o.retired_at IS NULL
+       AND dante._actual_subject_owned_as(actor,o.subject_kind,o.subject_native_ref)
+     FOR UPDATE;
+    IF NOT FOUND THEN
+        RAISE EXCEPTION USING ERRCODE='23503',
+          CONSTRAINT='temporal_objective_unavailable', MESSAGE='Objective unavailable';
+    END IF;
+
+    SELECT r.* INTO prior FROM dante.temporal_objective_verification_revision r
+     WHERE r.self_person_ref=actor AND r.operation_id=requested_operation;
+    IF FOUND THEN
+        IF prior.objective_ref<>requested_objective
+           OR prior.intent_fingerprint IS DISTINCT FROM requested_fingerprint
+           OR prior.mode_code IS DISTINCT FROM requested_mode THEN
+            RAISE EXCEPTION USING ERRCODE='23505',
+              CONSTRAINT='temporal_objective_verification_operation_reused',
+              MESSAGE='Objective verification operation reused';
+        END IF;
+        RETURN QUERY SELECT prior.mode_code,prior.revision,true;
+        RETURN;
+    END IF;
+    SELECT COALESCE(MAX(r.revision),0) INTO current_revision
+      FROM dante.temporal_objective_verification_revision r
+     WHERE r.objective_ref=requested_objective;
+    IF current_revision<>expected_revision THEN
+        RAISE EXCEPTION USING ERRCODE='40001',
+          CONSTRAINT='temporal_objective_verification_stale',
+          MESSAGE='Objective verification changed';
+    END IF;
+    INSERT INTO dante.temporal_objective_verification_revision(
+        objective_ref,revision,self_person_ref,operation_id,
+        intent_fingerprint,mode_code,accepted_at
+    ) VALUES (
+        requested_objective,current_revision+1,actor,requested_operation,
+        requested_fingerprint,requested_mode,clock_timestamp()
+    );
+    RETURN QUERY SELECT requested_mode,current_revision+1,false;
+END;
+$function$;"""
