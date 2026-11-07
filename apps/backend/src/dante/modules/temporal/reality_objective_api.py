@@ -28,6 +28,7 @@ RealitySubjectKind = Literal["activity", "event", "occurrence"]
 ObjectiveSubjectKind = Literal["activity", "event", "occurrence"]
 RealityMode = Literal["manual", "review_on_end", "auto_confirm_outcome"]
 ObjectiveKind = Literal["boolean", "quantity", "qualitative", "range"]
+ObjectiveVerificationMode = Literal["none", "review_on_end"]
 ComparatorCode = Literal["eq", "gte", "lte", "between"]
 AssessmentCode = Literal["satisfied", "partial", "not_satisfied", "unknown", "indeterminate"]
 
@@ -144,6 +145,7 @@ class ObjectiveCreateCommand(BaseModel):
     target_max: Decimal | None = None
     unit_code: str | None = Field(default=None, max_length=40)
     presentation_order: int = Field(ge=0, le=999)
+    verification_mode: ObjectiveVerificationMode = "none"
 
     @model_validator(mode="after")
     def validate_shape(self) -> ObjectiveCreateCommand:
@@ -193,6 +195,8 @@ class ObjectiveCreateCommand(BaseModel):
 class ObjectiveResponse(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
+    verification_mode: ObjectiveVerificationMode = "none"
+    verification_revision: int = 0
     objective_ref: UUID
     label: str
     result_kind: ObjectiveKind
@@ -225,6 +229,8 @@ class ObjectiveDefinitionStateResponse(BaseModel):
     """Current user-visible definition of the SAME logical Objective."""
 
     model_config = ConfigDict(extra="forbid")
+    verification_mode: ObjectiveVerificationMode = "none"
+    verification_revision: int = 0
     objective_ref: UUID
     definition_revision: int
     label: str
@@ -240,6 +246,8 @@ class ObjectiveDefinitionStateResponse(BaseModel):
 
 class ObjectiveDefinitionReviseCommand(ObjectiveCreateCommand):
     expected_revision: int = Field(ge=0)
+    verification_mode: ObjectiveVerificationMode | None = None
+    expected_verification_revision: int | None = Field(default=None, ge=0)
     scope_code: Literal["only_this", "this_and_following"] = "only_this"
     expected_source_revision: int | None = Field(default=None, ge=0)
     expected_recurrence_state_ref: UUID | None = None
@@ -519,6 +527,72 @@ async def set_occurrence_reality_policy(
     response: Response,
 ) -> RealityPolicyResponse:
     return await _reality_set("occurrence", subject_ref, payload, context, request, response)
+
+
+def _objective_intent(payload: ObjectiveCreateCommand) -> dict[str, object]:
+    """Retain prior fingerprints when optional verification was not supplied."""
+    data: dict[str, object] = payload.model_dump(mode="json")
+    if data.get("verification_mode") in (None, "none"):
+        data.pop("verification_mode", None)
+    if data.get("expected_verification_revision") is None:
+        data.pop("expected_verification_revision", None)
+    return data
+
+
+async def _set_objective_verification_in_session(
+    session: AsyncSession,
+    *,
+    actor: UUID,
+    objective_ref: UUID,
+    operation_id: str,
+    verification_mode: ObjectiveVerificationMode,
+    expected_revision: int,
+) -> None:
+    """A save's Objective and verification write share the same transaction."""
+    verification_op = "verify:" + hashlib.sha256(operation_id.encode()).hexdigest()
+    await session.execute(
+        text(
+            "SELECT * FROM dante.set_self_objective_verification("
+            ":actor,:objective,:operation,:fingerprint,:expected,:mode)"
+        ),
+        {
+            "actor": actor,
+            "objective": objective_ref,
+            "operation": verification_op,
+            "fingerprint": _fingerprint(
+                {
+                    "objective_ref": str(objective_ref),
+                    "operation_id": operation_id,
+                    "expected_revision": expected_revision,
+                    "verification_mode": verification_mode,
+                }
+            ),
+            "expected": expected_revision,
+            "mode": verification_mode,
+        },
+    )
+
+
+async def _apply_series_verification_in_session(
+    session: AsyncSession,
+    *,
+    actor: UUID,
+    objective_ref: UUID,
+    operation_id: str,
+    verification_mode: ObjectiveVerificationMode,
+) -> None:
+    await session.execute(
+        text(
+            "SELECT dante.apply_self_objective_verification_series("
+            ":actor,:objective,:operation,:mode)"
+        ),
+        {
+            "actor": actor,
+            "objective": objective_ref,
+            "operation": operation_id,
+            "mode": verification_mode,
+        },
+    )
 
 
 async def _create_objective(
