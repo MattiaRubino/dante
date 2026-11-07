@@ -228,7 +228,6 @@ export function serializeActivityObjectiveEdits(edit: ActivityObjectiveBatch) {
     add: edit.add.map((item) => ({
       operation_id: item.operationId,
       verification_mode: item.verificationMode ?? 'none',
-      verification_mode: item.verificationMode ?? 'none',
       label: item.label,
       result_kind: item.resultKind,
       comparator_code: item.comparatorCode,
@@ -246,9 +245,6 @@ export function serializeActivityObjectiveEdits(edit: ActivityObjectiveBatch) {
         expected_verification_revision:
           item.change.expectedVerificationRevision ?? null,
         verification_mode: item.change.verificationMode ?? null,
-        verification_mode: item.change.verificationMode ?? null,
-        expected_verification_revision:
-          item.change.expectedVerificationRevision ?? null,
         scope_code: item.change.scopeCode ?? 'only_this',
         expected_source_revision:
           item.change.seriesState?.sourceRevision ?? null,
@@ -586,9 +582,6 @@ export function createRemoteRealityObjectiveDataSource(
         unitCode: nullableString(row.unit_code),
         presentationOrder: Number(row.presentation_order),
         evaluationStateRef: nullableString(row.evaluation_state_ref),
-        verificationMode:
-          row.verification_mode === 'review_on_end' ? 'review_on_end' : 'none',
-        verificationRevision: Number(row.verification_revision ?? 0),
       });
     },
 
