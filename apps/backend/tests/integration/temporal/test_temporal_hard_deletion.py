@@ -2,7 +2,8 @@
 
 from __future__ import annotations
 
-from datetime import date
+from datetime import date, datetime
+from uuid import UUID
 from types import SimpleNamespace
 from typing import Any, cast
 
@@ -30,10 +31,15 @@ from dante.modules.temporal.reality_objective_api import (
     set_occurrence_reality_policy,
 )
 from dante.modules.temporal.recurring_authoring import RecurringAuthoringApplication
+from dante.modules.temporal.recurring_conversion import (
+    ExistingEventBasis,
+    RecurringConversionApplication,
+)
 from dante.modules.temporal.routine_occurrence_materialization import (
     RoutineOccurrenceMaterializationApplication,
 )
 from dante.modules.temporal.routine_occurrence_policy import RoutineOccurrencePolicyApplication
+from dante.modules.temporal.schedule import NamedZoneLocalIntervalPlacement
 from dante.platform.database.runtime import create_database_runtime
 from dante.platform.http.problem import ProblemError
 
@@ -436,6 +442,242 @@ async def test_single_event_delete_keeps_unrelated_actors(
             "SELECT EXISTS(SELECT 1 FROM dante.reality_review_policy "
             "WHERE subject_kind='event' AND subject_native_ref=%s)",
             ref,
+        )
+    finally:
+        await runtime.dispose()
+
+
+async def _linked_existing_event(
+    runtime: Any, actor: UUID, operation_id: str
+) -> tuple[UUID, UUID, UUID]:
+    """Author a physical first Event and link it to a canonical recurring source."""
+    created = await TemporalAuthoringApplication(runtime.session_factory).create_event(
+        self_person_ref=actor,
+        operation_id=f"{operation_id}:original",
+        title="Visita iniziale",
+        agenda_parts=("Accoglienza",),
+        placement=NamedZoneLocalIntervalPlacement(
+            starts_local_at=datetime(2026, 10, 6, 10),  # noqa: DTZ001
+            ends_local_at=datetime(2026, 10, 6, 11),  # noqa: DTZ001
+            zone_id="Europe/Rome",
+            disambiguation="earlier",
+        ),
+    )
+    original = created.item.subject_native_ref
+    assert created.schedule is not None
+    async with runtime.session_factory() as session, session.begin():
+        revision = await session.scalar(
+            text("SELECT dante.get_self_event_profile_revision(:actor,:event)"),
+            {"actor": actor, "event": original},
+        )
+    started = await RecurringConversionApplication(runtime.session_factory).event(
+        self_person_ref=actor,
+        operation_id=f"{operation_id}:repeat",
+        basis=ExistingEventBasis(
+            event_ref=original,
+            expected_profile_revision=revision,
+            schedule_ref=created.schedule.schedule_ref,
+            expected_placement_state_ref=created.schedule.material_state_ref,
+        ),
+        recurrence=_daily_named_zone(),
+    )
+    await RoutineOccurrenceMaterializationApplication(
+        runtime.session_factory
+    ).checkpoint_window(
+        self_person_ref=actor,
+        operation_id=f"{operation_id}:checkpoint",
+        start_date=date(2026, 10, 6),
+        end_date_exclusive=date(2026, 10, 8),
+        effective_zone_id="Europe/Rome",
+    )
+    async with runtime.session_factory() as session, session.begin():
+        first = await session.scalar(
+            text(
+                "SELECT first_occurrence_ref "
+                "FROM dante.get_self_event_recurring_first_by_source(:actor,:source)"
+            ),
+            {"actor": actor, "source": started.source_ref},
+        )
+        assert first is not None
+    return original, started.source_ref, first
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize("scope", ["event_once", "event_instance"])
+async def test_existing_first_event_single_delete_keeps_future_siblings(
+    migrated_database: Any, scope: TemporalHardDeleteScope
+) -> None:
+    actor = _seed_self(migrated_database)
+    stranger = _seed_self(migrated_database)
+    runtime = create_database_runtime(migrated_database.runtime_settings())
+    try:
+        original, source, first = await _linked_existing_event(
+            runtime, actor, f"hard:first:{scope}"
+        )
+        siblings = set(_occurrences(migrated_database, source)) - {first}
+        assert len(siblings) == 1
+        choices = await list_event_deletion_occurrences(
+            source, _context(actor), _request(runtime), Response()
+        )
+        selected = next(item for item in choices if item.occurrence_ref == first)
+        assert selected.schedule_ref is not None
+        assert "2026-10-06" in selected.display_label
+
+        target = original if scope == "event_once" else first
+        with pytest.raises(ProblemError) as unauthorized:
+            await _preview(runtime, stranger, target, scope)
+        assert unauthorized.value.status == 404
+
+        fingerprint = await _preview(runtime, actor, target, scope)
+        await _delete(runtime, actor, target, scope, fingerprint)
+        assert not _exists(
+            migrated_database,
+            "SELECT EXISTS(SELECT 1 FROM dante.event WHERE event_ref=%s)",
+            original,
+        )
+        assert _exists(
+            migrated_database,
+            "SELECT EXISTS(SELECT 1 FROM dante.event WHERE event_ref=%s)",
+            source,
+        )
+        assert _exists(
+            migrated_database,
+            "SELECT EXISTS(SELECT 1 FROM dante.occurrence_skip WHERE occurrence_ref=%s)",
+            first,
+        )
+        assert set(_occurrences(migrated_database, source)) == siblings | {first}
+        for remaining in siblings:
+            assert _exists(
+                migrated_database,
+                "SELECT EXISTS(SELECT 1 FROM dante.schedule WHERE subject_native_ref=%s)",
+                remaining,
+            )
+        await RoutineOccurrenceMaterializationApplication(
+            runtime.session_factory
+        ).checkpoint_window(
+            self_person_ref=actor,
+            operation_id=f"hard:first:{scope}:repeat-checkpoint",
+            start_date=date(2026, 10, 6),
+            end_date_exclusive=date(2026, 10, 8),
+            effective_zone_id="Europe/Rome",
+        )
+        assert _exists(
+            migrated_database,
+            "SELECT EXISTS(SELECT 1 FROM dante.occurrence_skip WHERE occurrence_ref=%s)",
+            first,
+        )
+        selectable = await list_event_deletion_occurrences(
+            source, _context(actor), _request(runtime), Response()
+        )
+        assert {item.occurrence_ref for item in selectable} == siblings
+    finally:
+        await runtime.dispose()
+
+
+@pytest.mark.asyncio
+async def test_existing_first_event_series_deletes_both_roots_and_all_occurrences(
+    migrated_database: Any,
+) -> None:
+    actor = _seed_self(migrated_database)
+    stranger = _seed_self(migrated_database)
+    runtime = create_database_runtime(migrated_database.runtime_settings())
+    try:
+        original, source, first = await _linked_existing_event(
+            runtime, actor, "hard:first:whole"
+        )
+        all_occurrences = set(_occurrences(migrated_database, source))
+        assert first in all_occurrences and len(all_occurrences) == 2
+        with pytest.raises(ProblemError) as unauthorized:
+            await _preview(runtime, stranger, original, "event_series")
+        assert unauthorized.value.status == 404
+        from_original = await _preview(runtime, actor, original, "event_series")
+        from_source = await _preview(runtime, actor, source, "event_series")
+        assert from_original != from_source
+        await _delete(runtime, actor, original, "event_series", from_original)
+        for native in (original, source):
+            assert not _exists(
+                migrated_database,
+                "SELECT EXISTS(SELECT 1 FROM dante.event WHERE event_ref=%s)",
+                native,
+            )
+        assert _occurrences(migrated_database, source) == []
+        await RoutineOccurrenceMaterializationApplication(
+            runtime.session_factory
+        ).checkpoint_window(
+            self_person_ref=actor,
+            operation_id="hard:first:whole:repeat-checkpoint",
+            start_date=date(2026, 10, 6),
+            end_date_exclusive=date(2026, 10, 8),
+            effective_zone_id="Europe/Rome",
+        )
+        assert _occurrences(migrated_database, source) == []
+    finally:
+        await runtime.dispose()
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize("change_kind", ["profile", "reality_policy"])
+async def test_existing_first_event_series_rejects_stale_native_state(
+    migrated_database: Any, change_kind: str
+) -> None:
+    actor = _seed_self(migrated_database)
+    runtime = create_database_runtime(migrated_database.runtime_settings())
+    try:
+        original, source, first = await _linked_existing_event(
+            runtime, actor, "hard:first:stale"
+        )
+        stale = await _preview(runtime, actor, source, "event_series")
+        if change_kind == "profile":
+            async with runtime.session_factory() as session, session.begin():
+                revision = await session.scalar(
+                    text("SELECT dante.get_self_event_profile_revision(:actor,:event)"),
+                    {"actor": actor, "event": original},
+                )
+                await session.execute(
+                    text(
+                        "SELECT * FROM dante.revise_self_event_profile("
+                        ":actor,:event,:operation,:expected,:title,:description,:location,:color)"
+                    ),
+                    {
+                        "actor": actor,
+                        "event": original,
+                        "operation": "hard:first:stale:revise",
+                        "expected": revision,
+                        "title": "Visita cambiata",
+                        "description": None,
+                        "location": None,
+                        "color": None,
+                    },
+                )
+        else:
+            await set_event_reality_policy(
+                original,
+                RealityPolicyCommand(
+                    operation_id="hard:first:stale:reality",
+                    mode_code="review_on_end",
+                ),
+                _context(actor),
+                _request(runtime),
+                Response(),
+            )
+        with pytest.raises(ProblemError) as rejected:
+            await _delete(runtime, actor, source, "event_series", stale)
+        assert rejected.value.status == 409
+        assert _exists(
+            migrated_database,
+            "SELECT EXISTS(SELECT 1 FROM dante.event WHERE event_ref=%s)",
+            original,
+        )
+        assert _exists(
+            migrated_database,
+            "SELECT EXISTS(SELECT 1 FROM dante.event WHERE event_ref=%s)",
+            source,
+        )
+        assert first in _occurrences(migrated_database, source)
+        assert not _exists(
+            migrated_database,
+            "SELECT EXISTS(SELECT 1 FROM dante.occurrence_skip WHERE occurrence_ref=%s)",
+            first,
         )
     finally:
         await runtime.dispose()

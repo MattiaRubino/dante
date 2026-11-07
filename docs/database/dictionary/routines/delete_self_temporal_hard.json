@@ -8,7 +8,7 @@
     "name": "delete_self_temporal_hard",
     "ownership_class": "dante_owned"
   },
-  "purpose": "Atomically skip/delete one recurring Activity/Event occurrence or hard delete an entire Routine/Event series under source materialization serialization, graph ownership, and confirmation fingerprint.",
+  "purpose": "Owner-scoped atomic hard deletion of one-off Activity/Event, one generated instance or a whole series; a bound first physical Event participates in Event Occurrence and series scopes without resurrection or orphaning.",
   "classification": {
     "persistence_role": "temporal_hard_deletion_capability",
     "canonicality": "capability_surface",
@@ -38,7 +38,7 @@
   },
   "implementation": {
     "introducing_stage": "B14-ATOMIC-RECURRING-DELETION",
-    "alembic_revision": "20261015_152",
+    "alembic_revision": "20261107_176",
     "sqlalchemy": {
       "mode": "none",
       "module": null,
@@ -109,11 +109,17 @@
       "Skip prevents rematerialization",
       "Full-series source and dependent graphs",
       "Fresh impact fingerprint and concurrent checkpoint serialization",
-      "Protect independent people/Life Areas and sibling occurrences"
+      "Protect independent people/Life Areas and sibling occurrences",
+      "Physical first Event and canonical first Occurrence are deleted together for instance scope",
+      "First Event alone uses durable first Occurrence skip and retains future Event source",
+      "Whole Event series deletes both original Event root and recurring Event source",
+      "Fresh fingerprint includes first physical Event and rejects stale edits",
+      "Shared source checkpoint serialization and rollback preserve foreign siblings"
     ],
     "test_refs": [
       "apps/backend/tests/integration/temporal/test_temporal_hard_deletion.py",
-      "apps/backend/tests/integration/database/test_database_current_catalog.py"
+      "apps/backend/tests/integration/database/test_database_current_catalog.py",
+      "apps/web/src/features/home/ui/timeline/event-inspector-actions.test.tsx"
     ],
     "staged_evidence": []
   }

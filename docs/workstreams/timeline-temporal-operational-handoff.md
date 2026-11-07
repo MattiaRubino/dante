@@ -1,5 +1,43 @@
 # Timeline / Temporal-Operational — Workstream Handoff
 
+## 2026-11-07 — First physical Event deletion lifecycle parity
+
+Migration `20261107_176` **patches the current** (and already ACL-protected)
+hard-delete preview, acceptance and Event instance-choice SQL capabilities
+using exact guarded source anchors, without creating another deletion authority
+or granting runtime table DELETE. This intentionally preserves the Reality
+Policy fingerprint protection introduced by migration `20261015_158`, plus
+all previously installed graph and ownership protections. A mismatched
+database function definition rejects migration instead of reverting fixes.
+
+**Product contract:** for an Event converted from a one-off Event, its physical
+original is the canonical first generated Occurrence, not a separately
+deletable unrelated Event. The Inspector offers `Solo questa istanza` and
+`Tutta la serie` from that original, matching Activity scope semantics.
+Deleting only the first Event records a **durable skip** for that first
+Occurrence before deleting the original native Event-owned graph; subsequent
+Event Occurrences and the recurring source remain. Deleting the entire
+series traverses both the original native first Event and its recurring source
+under the same source checkpoint lock and SERIALIZABLE transaction. Deleting
+the first via its generated Occurrence ID follows the same invariant.
+The bounded Occurrence-choice reader uses the original Event's authoritative
+Schedule for the first row, rather than presenting its UUID or inventing a
+new Schedule. The preview fingerprint includes the native first Event's
+profile, Schedule, Reality Policy and Objective graph to reject stale acceptance.
+
+The original source graph traversal, shared Person/Life Area owner safety,
+source-lock discipline and all Activity hard-delete paths are unchanged.
+The PostgreSQL regression exercises first-only deletion via both original
+Event and canonical Occurrence, whole-series deletion from the physical
+Event, stale first profile edits, cross-owner refusal and repeat checkpoint.
+Vitest covers both deletion choices from the original Event Inspector.
+
+**Local gate still required.** Source review and test authoring are not real
+PostgreSQL migration evidence. Do not call this production-accepted until
+local fresh/data-bearing migration, PostgreSQL, frontend and browser gates
+pass on the SAME head SHA. GitHub Actions were not monitored.
+
+
 ## 2026-11-07 — Legacy first Event hot-path review
 
 The previously published recovery checkpoint opened a SERIALIZABLE

@@ -1489,6 +1489,55 @@ describe('Event Inspector actions', () => {
     expect(onDeleted).toHaveBeenCalledOnce();
   });
 
+  it.each([
+    ['Solo questa istanza', 'event_once'],
+    ['Tutta la serie', 'event_series'],
+  ] as const)(
+    'offers %s when deleting the physical first Event of a recurring series',
+    async (label, scope) => {
+      const seededSource = '0199a111-1111-7111-8111-333333333333';
+      const onlyThis = {
+        requestedRef: eventRef,
+        scope: 'event_once' as const,
+        fingerprint: 'a'.repeat(64),
+      };
+      const series = {
+        requestedRef: eventRef,
+        scope: 'event_series' as const,
+        fingerprint: 'b'.repeat(64),
+      };
+      eventSeed.mockResolvedValue(seededSource);
+      previewHardDeletion.mockImplementation((_ref: string, kind: string) =>
+        Promise.resolve(kind === 'event_once' ? onlyThis : series),
+      );
+      confirmHardDeletion.mockResolvedValue(undefined);
+      const onDeleted = vi.fn();
+      render(
+        <EventInspectorActions
+          eventRef={eventRef}
+          placement={placement}
+          onDeleted={onDeleted}
+          onDuplicate={vi.fn()}
+        />,
+      );
+
+      fireEvent.click(screen.getByRole('button', { name: 'Elimina Event' }));
+      await screen.findByRole('button', { name: 'Solo questa istanza' });
+      expect(screen.getByRole('button', { name: 'Tutta la serie' })).toBeTruthy();
+      expect(previewHardDeletion).toHaveBeenCalledWith(eventRef, 'event_once');
+      expect(previewHardDeletion).toHaveBeenCalledWith(eventRef, 'event_series');
+      expect(eventOccurrences).not.toHaveBeenCalled();
+
+      fireEvent.click(screen.getByRole('button', { name: label }));
+      await waitFor(() =>
+        expect(confirmHardDeletion).toHaveBeenCalledWith(
+          scope === 'event_once' ? onlyThis : series,
+        ),
+      );
+      expect(onDeleted).toHaveBeenCalledOnce();
+    },
+  );
+
   it('does not offer recurring Event instance deletion until an explicit Occurrence is selected', async () => {
     const occurrenceRef = '0199a222-2222-7222-8222-222222222222';
     const series = {

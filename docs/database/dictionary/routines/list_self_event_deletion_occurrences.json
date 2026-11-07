@@ -8,7 +8,7 @@
     "name": "list_self_event_deletion_occurrences",
     "ownership_class": "dante_owned"
   },
-  "purpose": "Owner-scoped bounded read of materialized, non-skipped recurring Event Occurrences and their canonical Schedule date labels for explicit per-instance deletion.",
+  "purpose": "Owner-scoped bounded Event occurrence choices with the physical first Event's original Schedule and date instead of a synthetic empty Occurrence schedule.",
   "classification": {
     "persistence_role": "event_deletion_occurrence_selection",
     "canonicality": "capability_surface",
@@ -36,7 +36,7 @@
   },
   "implementation": {
     "introducing_stage": "B14-EVENT-DELETION-INSTANCE-CHOICES",
-    "alembic_revision": "20261015_156",
+    "alembic_revision": "20261107_176",
     "sqlalchemy": {
       "mode": "none",
       "module": null,
@@ -103,11 +103,15 @@
       "Owner-scoped non-skipped Event Occurrence identity",
       "No source/instance confusion",
       "Bounded 1000 result pagination horizon",
-      "Runtime cannot SELECT private tables"
+      "Runtime cannot SELECT private tables",
+      "First linked Event lists its original Schedule and local date",
+      "Skipped/deleted Occurrences are absent",
+      "Pagination bound and owner isolation remain unchanged"
     ],
     "test_refs": [
       "apps/backend/tests/integration/temporal/test_temporal_hard_deletion.py",
-      "apps/backend/tests/integration/database/test_database_current_catalog.py"
+      "apps/backend/tests/integration/database/test_database_current_catalog.py",
+      "apps/web/src/features/home/ui/timeline/event-inspector-actions.test.tsx"
     ],
     "staged_evidence": []
   }

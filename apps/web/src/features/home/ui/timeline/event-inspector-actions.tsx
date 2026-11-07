@@ -883,9 +883,20 @@ export function EventInspectorActions({
     try {
       const recurring = await recurrenceGuard.isRecurring(eventRef);
       if (!recurring) {
+        const seededSource = await existingRecurrence.eventSeed(eventRef);
         setDeletionChoices([]);
         setSelectedDeletionOccurrence('');
-        setDeletePreviews([await hardDelete.preview(eventRef, 'event_once')]);
+        if (seededSource === null) {
+          setDeletePreviews([await hardDelete.preview(eventRef, 'event_once')]);
+        } else {
+          // The first physical Event belongs to the source series. Offer
+          // the same deletion scopes as a generated Event Occurrence.
+          const [instance, series] = await Promise.all([
+            hardDelete.preview(eventRef, 'event_once'),
+            hardDelete.preview(eventRef, 'event_series'),
+          ]);
+          setDeletePreviews([instance, series]);
+        }
       } else {
         const [series, choices] = await Promise.all([
           hardDelete.preview(eventRef, 'event_series'),
@@ -1553,7 +1564,9 @@ export function EventInspectorActions({
               onClick={() => void acceptDeletion(preview)}
             >
               {preview.scope === 'event_once'
-                ? 'Conferma eliminazione definitiva'
+                ? deletePreviews.length > 1
+                  ? 'Solo questa istanza'
+                  : 'Conferma eliminazione definitiva'
                 : preview.scope === 'event_instance'
                   ? 'Solo questa istanza'
                   : 'Tutta la serie'}
