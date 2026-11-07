@@ -709,8 +709,8 @@
   .timeline-activity-editor__outcome
   > .timeline-activity-editor__readback {
   display: grid;
-  grid-template-columns: minmax(180px, 0.42fr) minmax(0, 1fr);
-  gap: 18px;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 10px;
   align-items: start;
   min-width: 0;
   margin: 0;

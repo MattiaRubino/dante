@@ -46,7 +46,14 @@
 }
 
 .temporal-create-reality-objectives__block.is-objectives {
+  grid-template-columns: minmax(0, 1fr);
   align-items: start;
+  gap: 10px;
+}
+
+.temporal-create-reality-objectives__block.is-objectives
+  .temporal-create-reality-objectives__block-copy span {
+  display: none;
 }
 
 .temporal-create-reality-objectives__block-copy {
