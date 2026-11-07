@@ -1,5 +1,24 @@
 # Timeline / Temporal-Operational — Workstream Handoff
 
+## 2026-11-07 — Objective verification vertical: staged, not complete
+
+The product brief and explicit non-retroactive recurrence semantics are fixed in
+[temporal-objective-verification-vertical.md](temporal-objective-verification-vertical.md).
+This is **DESIGN ONLY** for the Objective-level verification policy, not a
+persisted feature yet. The existing Activity/Event completion policy remains
+distinct. The shared Create/Edit Objective section has received a conservative
+CSS-only full-width/scaletta layout foundation in `8d65d23b`; name, result
+inputs and the Add control remain the same. There is currently **no**
+Objective-level verification-mode selector or backend state, and no claims of
+functional parity for such a selector.
+
+The earlier focused Vitest run on `565f886d` passed TypeScript and 94/95
+tests; the only failure was the stale `Conferma modifiche` test label, fixed
+in `eeb2983f`. Playwright and the new CSS change have not been verified
+together on a single SHA. Re-run focused checks on the current branch before
+judging the deletion fix or visual CSS foundation as accepted.
+
+
 ## 2026-11-07 — Unified hard-delete dialog and series save action (candidate)
 
 Owner acceptance screenshots show Event hard deletion expanding the Inspector,
