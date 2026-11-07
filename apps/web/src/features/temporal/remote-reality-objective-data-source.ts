@@ -596,6 +596,9 @@ export function createRemoteRealityObjectiveDataSource(
           {
             operation_id: change.operationId,
             expected_revision: change.expectedRevision,
+            expected_verification_revision:
+              change.expectedVerificationRevision ?? null,
+            verification_mode: change.verificationMode ?? null,
             scope_code: change.scopeCode ?? 'only_this',
             expected_source_revision:
               change.seriesState?.sourceRevision ?? null,
