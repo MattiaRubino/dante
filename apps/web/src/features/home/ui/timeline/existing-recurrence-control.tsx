@@ -10,12 +10,8 @@ import {
   buildTemporalCreateActivityRecurrence,
   buildTemporalCreateEventRecurrence,
 } from '../../../temporal-create/application/temporal-create-b14-runtime';
-import type {
-  RecurringAuthoringCalendarRecurrence,
-} from '../../../temporal-create/application/remote-recurring-authoring';
-import {
-  TemporalCreateCalendarRecurrenceFields,
-} from '../../../temporal-create/ui/temporal-create-calendar-recurrence-fields';
+import type { RecurringAuthoringCalendarRecurrence } from '../../../temporal-create/application/remote-recurring-authoring';
+import { TemporalCreateCalendarRecurrenceFields } from '../../../temporal-create/ui/temporal-create-calendar-recurrence-fields';
 import {
   TemporalCreateQuickRecurrenceSelect,
   type QuickRecurrence,
@@ -93,12 +89,8 @@ export function ExistingRecurrenceControl({
       return;
     }
     const previous = intent ?? base.eventRecurrence;
-    let frequency: RecurrenceIntent['calendarFrequency'] = 'weekly';
-    if (choice === 'custom') {
-      frequency = intent?.calendarFrequency ?? 'weekly';
-    } else {
-      frequency = choice;
-    }
+    const frequency: RecurrenceIntent['calendarFrequency'] =
+      choice === 'custom' ? (intent?.calendarFrequency ?? 'weekly') : choice;
     let weekdays: RecurrenceIntent['weekdays'] = previous.weekdays;
     if (
       frequency === 'weekly' &&
