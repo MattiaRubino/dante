@@ -786,6 +786,7 @@ class TemporalObjectiveVerificationRevisionRow(Base):
         ForeignKeyConstraint(
             ["objective_ref"], ["dante.temporal_objective.objective_ref"],
             name="fk_temporal_objective_verification_objective",
+            ondelete="CASCADE",
         ),
         ForeignKeyConstraint(
             ["self_person_ref"], ["dante.person.person_ref"],
@@ -820,7 +821,7 @@ class TemporalObjectiveVerificationSeriesRow(Base):
     self_person_ref: Mapped[UUID] = mapped_column(primary_key=True)
     operation_id: Mapped[str] = mapped_column(Text, primary_key=True)
     source_native_ref: Mapped[UUID] = mapped_column(nullable=False)
-    selected_occurrence_ref: Mapped[UUID] = mapped_column(nullable=False)
+    selected_occurrence_ref: Mapped[UUID | None] = mapped_column(nullable=True)
     template_slot: Mapped[int] = mapped_column(Integer, nullable=False)
     effective_zone_id: Mapped[str] = mapped_column(Text, nullable=False)
     anchor_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
@@ -832,10 +833,12 @@ class TemporalObjectiveVerificationSeriesRow(Base):
         ForeignKeyConstraint(
             ["source_native_ref"], ["dante.native_address.native_ref"],
             name="fk_temporal_objective_verification_series_source",
+            ondelete="CASCADE",
         ),
         ForeignKeyConstraint(
             ["selected_occurrence_ref"], ["dante.occurrence.occurrence_ref"],
             name="fk_temporal_objective_verification_series_occurrence",
+            ondelete="SET NULL",
         ),
         ForeignKeyConstraint(
             ["self_person_ref"], ["dante.person.person_ref"],
