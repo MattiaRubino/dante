@@ -1,5 +1,46 @@
 # Timeline / Temporal-Operational — Workstream Handoff
 
+## 2026-11-07 — Existing-item repeat and discard visual parity candidate
+
+Owner screenshots show Activity and Event one-off Edit embedding the new "start
+recurrence" form inside the single-line `timeline-activity-editor__repeat`
+container. Its flex sizing compressed the select, labels, end-mode choices
+and submit button into overlapping columns. Create correctly renders a
+full-width quick frequency select followed by a separate detailed calendar
+panel. The same screenshots show Event's dirty-close confirmation using
+unstyled native buttons, unlike the Activity confirmation.
+
+The current branch candidate shares `TemporalCreateQuickRecurrenceSelect`
+between Create and existing-item Edit (same options, labels, and CSS) and
+reuses the existing `TemporalCreateCalendarRecurrenceFields` in a dedicated
+full-width Edit layout for **both** Activity and Event. The old extra
+frequency select and cramped single-row wrapper are gone; no recurrence API,
+source semantics or saved-identity contract changed. "Ripeti · Mai" does not
+start a series; selecting a cadence exposes the full calendar panel.
+"Personalizzata…" opens that same detailed panel. Existing Edit still
+requires the explicit `Avvia ripetizione` action and refuses it while there
+are unsaved local changes.
+
+The Event and Activity local editors now render the *same*
+`UnsavedChangesDialog` with consistent button styling and focus handling,
+including Tab focus cycling within the confirmation. Both keep their
+existing X/Cancel/Continue/discard semantics, and both preserve the draft
+unless "Scarta modifiche" is chosen. Existing local Activity and Event
+component tests were updated to exercise the Create-format frequency
+selection, panel visibility and the shared confirmation. The generic
+Activity form-select style reset excludes the shared recurrence selector
+to avoid overriding Create presentation.
+
+**Status: UNVERIFIED CANDIDATE.** No WSL/Vitest/Playwright execution is
+available through the GitHub-only editing session. The earlier owner's
+27/27 full gate on `4b5603ac` does not attest to these later changes.
+Run focused Web Vitest on `activity-inspector-actions.test.tsx` and
+`event-inspector-actions.test.tsx`, repository format/ESLint/typecheck,
+and real-browser desktop/mobile geometry with Activity/Event conversion,
+dirty X/Cancel/Escape and submit refusal. Only then run/accept a new
+same-SHA full gate. No database migration or generated API/client update.
+
+
 ## 2026-11-07 — Full parallel gate `2fb09bab`: two narrow catalog/metadata repairs
 
 Owner-provided full gate on `2fb09babf848946ea2cba1d0f6513ff8e6fecc6a`: **27/27 groups collected; 25 PASS, 2 FAIL; source stability PASS**. All Web gates, both browser modes, generated client drift, MyPy, ESLint and formatting passed. `BACKEND_NON_POSTGRES` reported **678 passed, 1 failed, 432 deselected**: Dictionary scope schema capped completed stages at 78, while the exact allowed enum and materialized scope both contain 79 unique stages. `BACKEND_POSTGRES` reported exactly one remaining failure in the Alembic no-drift check: the Event legacy-proof check was named `ck_event_recurring_seed_legacy_proof` in the canonical migration but mapped via an unconverted ORM name, inducing automatic `ck_event_recurring_seed_` prefixing a second time.

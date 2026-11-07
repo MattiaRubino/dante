@@ -2996,7 +2996,8 @@ body:has(> .timeline-recurring-edit-scope-dialog__backdrop)
 .timeline-existing-recurrence__actions button {
   min-height: 40px;
   padding: 0 14px;
-  border: 1px solid var(--dante-semantic-color-home-chrome-active-border, #ea5c12);
+  border: 1px solid
+    var(--dante-semantic-color-home-chrome-active-border, #ea5c12);
   border-radius: 10px;
   color: var(--dante-semantic-color-home-text-primary, #edf2f8);
   background: var(--dante-semantic-color-home-chrome-active-soft, #42251b);
