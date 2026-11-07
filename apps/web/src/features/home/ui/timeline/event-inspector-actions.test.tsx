@@ -1596,6 +1596,63 @@ describe('Event Inspector actions', () => {
     expect(confirmHardDeletion).not.toHaveBeenCalled();
   });
 
+  it.each([
+    ['unique', true],
+    ['ambiguous', false],
+  ] as const)(
+    'does not guess a recurring Event Occurrence from a %s Schedule',
+    async (_case, unique) => {
+      const scheduleRef = '0199a444-4444-7444-8444-444444444444';
+      const occurrenceRef = '0199a555-5555-7555-8555-555555555555';
+      const anotherRef = '0199a666-6666-7666-8666-666666666666';
+      isRecurring.mockResolvedValue(true);
+      eventOccurrences.mockResolvedValue([
+        { occurrenceRef, scheduleRef, displayLabel: 'Prima istanza' },
+        {
+          occurrenceRef: anotherRef,
+          scheduleRef: unique ? 'other-schedule' : scheduleRef,
+          displayLabel: 'Seconda istanza',
+        },
+      ]);
+      previewHardDeletion.mockImplementation((ref: string, scope: string) =>
+        Promise.resolve({
+          requestedRef: ref,
+          scope,
+          fingerprint: 'a'.repeat(64),
+        }),
+      );
+      render(
+        <EventInspectorActions
+          eventRef={eventRef}
+          placement={placement}
+          scheduleRef={scheduleRef}
+          onDuplicate={vi.fn()}
+        />,
+      );
+
+      fireEvent.click(screen.getByRole('button', { name: 'Elimina Event' }));
+      await screen.findByRole('button', { name: 'Tutta la serie' });
+      if (unique) {
+        expect(
+          screen.getByRole('button', { name: 'Solo questa istanza' }),
+        ).toBeTruthy();
+        expect(previewHardDeletion).toHaveBeenCalledWith(
+          occurrenceRef,
+          'event_instance',
+        );
+      } else {
+        expect(
+          screen.queryByRole('button', { name: 'Solo questa istanza' }),
+        ).toBeNull();
+        expect(previewHardDeletion).not.toHaveBeenCalledWith(
+          occurrenceRef,
+          'event_instance',
+        );
+      }
+      expect(eventOccurrences).toHaveBeenCalledWith(eventRef);
+    },
+  );
+
   it('hard-deletes only the explicitly identified recurring Event Occurrence', async () => {
     const occurrenceRef = '0199a222-2222-7222-8222-222222222222';
     const series = {
