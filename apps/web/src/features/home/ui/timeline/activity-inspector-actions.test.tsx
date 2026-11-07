@@ -328,10 +328,12 @@ describe('Activity Inspector actions', () => {
     fireEvent.change(recurrenceSelect, { target: { value: 'weekly' } });
     const details = screen.getByRole('region', { name: 'Ripetizione' });
     expect(details.classList.contains('temporal-create-repeat')).toBe(true);
-    expect(details.parentElement?.classList.contains('timeline-existing-recurrence')).toBe(
-      true,
-    );
-    expect(screen.getByRole('group', { name: 'Giorni della settimana' })).toBeTruthy();
+    expect(
+      details.parentElement?.classList.contains('timeline-existing-recurrence'),
+    ).toBe(true);
+    expect(
+      screen.getByRole('group', { name: 'Giorni della settimana' }),
+    ).toBeTruthy();
     fireEvent.change(recurrenceSelect, { target: { value: 'daily' } });
     fireEvent.click(
       screen.getByRole('button', {
@@ -2357,11 +2359,12 @@ describe('Activity Inspector', () => {
       name: 'Modifiche non salvate',
     });
     expect(discardDialog.className).toBe('timeline-activity-editor__discard');
-    expect(within(discardDialog).getByText('Scartare le modifiche non salvate?')).toBeTruthy();
-    expect(within(discardDialog).getByRole('button', { name: 'Scarta modifiche' })).toHaveProperty(
-      'type',
-      'button',
-    );
+    expect(
+      within(discardDialog).getByText('Scartare le modifiche non salvate?'),
+    ).toBeTruthy();
+    expect(
+      within(discardDialog).getByRole('button', { name: 'Scarta modifiche' }),
+    ).toHaveProperty('type', 'button');
     expect(onCancel).not.toHaveBeenCalled();
     fireEvent.click(
       screen.getByRole('button', { name: 'Continua a modificare' }),
