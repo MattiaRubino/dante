@@ -1948,7 +1948,7 @@ export function RecurringSeriesEditor({
           disabled={busy || !source}
           onClick={() => void prepare()}
         >
-          {busy ? 'Attendi…' : 'Verifica modifiche'}
+          {busy ? 'Attendi…' : 'Salva modifiche'}
         </button>
       </div>
       {review ? (
@@ -2005,7 +2005,7 @@ export function RecurringSeriesEditor({
                 disabled={busy}
                 onClick={() => void accept()}
               >
-                {busy ? 'Attendi…' : 'Conferma modifiche'}
+                {busy ? 'Attendi…' : 'Conferma salvataggio'}
               </button>
             </div>
           </div>

@@ -849,7 +849,7 @@ export function EventDetailDialog({
     const keydown = (event: globalThis.KeyboardEvent) => {
       if (
         event.target instanceof Element &&
-        event.target.closest('.timeline-recurring-edit-scope-dialog__backdrop')
+        event.target.closest('.timeline-recurring-edit-scope-dialog__backdrop, .timeline-delete-dialog__backdrop')
       ) {
         return;
       }
@@ -1008,6 +1008,8 @@ export function EventDetailDialog({
                 toolbarTarget={toolbarTarget}
                 activityRef={sessionSubject.ref}
                 subitemsCount={detail.subitemsCount ?? 0}
+                itemTitle={detail.title}
+                scheduleLabel={detailScheduleLabel(detail, locale, timeZone)}
                 onEdit={(profile, scope) => {
                   setActivityEditScope(scope);
                   setEditingProfile(profile);
@@ -1074,6 +1076,8 @@ export function EventDetailDialog({
                     closeRequestRef={eventEditCloseRequestRef}
                     onEditorStateChange={setEventEditorMode}
                     eventRef={detail.eventRef}
+                    itemTitle={detail.title}
+                    scheduleLabel={detailScheduleLabel(detail, locale, timeZone)}
                     occurrenceRef={detail.occurrenceRef ?? null}
                     scheduleRef={detail.eventScheduleRef ?? null}
                     placementMaterialStateRef={
