@@ -37552,6 +37552,57 @@
         "tags": ["temporal"]
       }
     },
+    "/api/v1/temporal/recurring/events/{event_ref}/first-occurrence": {
+      "get": {
+        "description": "Return the canonical first Occurrence only for a verified owner seed.\n\nLegacy seeds without such a link return None rather than guessing the\nnext generated instance and potentially editing the wrong Event.",
+        "operationId": "temporal_get_existing_event_first_occurrence",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "event_ref",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Event Ref",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "anyOf": [
+                    {
+                      "format": "uuid",
+                      "type": "string"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ],
+                  "title": "Response Temporal Get Existing Event First Occurrence"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Get Existing Event First Occurrence",
+        "tags": ["temporal"]
+      }
+    },
     "/api/v1/temporal/recurring/events/{event_ref}/seed": {
       "get": {
         "operationId": "temporal_get_existing_event_recurrence_seed",

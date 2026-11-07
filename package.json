@@ -7,7 +7,7 @@
     "build": "turbo run build",
     "dev": "turbo run dev",
     "format": "prettier --write .",
-    "format:check": "node tooling/temporal-generated-capture.mjs && prettier --check .",
+    "format:check": "prettier --check .",
     "generated:check": "node tooling/check-generated.mjs",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",

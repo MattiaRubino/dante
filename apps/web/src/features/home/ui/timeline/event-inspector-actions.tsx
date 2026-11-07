@@ -316,11 +316,13 @@ export function EventInspectorActions({
       if (!recurring) {
         // The physical Event is standalone, but its saved schedule can also
         // be the canonical first generated Occurrence of a second source.
-        const first =
-          await existingRecurrence.eventFirstOccurrence(eventRef);
+        const first = await existingRecurrence.eventFirstOccurrence(eventRef);
         if (first !== null) {
           const context = await recurringSource.loadOccurrenceContext(first);
-          const preview = await recurringSource.loadPreview(context, 'only_this');
+          const preview = await recurringSource.loadPreview(
+            context,
+            'only_this',
+          );
           setEditChoice({
             context,
             selectedProtection: preview.selectedProtection,

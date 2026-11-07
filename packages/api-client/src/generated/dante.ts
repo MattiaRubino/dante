@@ -14773,6 +14773,67 @@ export const temporalCreateRecurringEvent = async (
   } as temporalCreateRecurringEventResponse;
 };
 
+export type temporalGetExistingEventFirstOccurrenceResponse200 = {
+  data: string | null;
+  status: 200;
+};
+
+export type temporalGetExistingEventFirstOccurrenceResponse422 = {
+  data: HTTPValidationError;
+  status: 422;
+};
+
+export type temporalGetExistingEventFirstOccurrenceResponseSuccess =
+  temporalGetExistingEventFirstOccurrenceResponse200 & {
+    headers: Headers;
+  };
+export type temporalGetExistingEventFirstOccurrenceResponseError =
+  temporalGetExistingEventFirstOccurrenceResponse422 & {
+    headers: Headers;
+  };
+
+export type temporalGetExistingEventFirstOccurrenceResponse =
+  | temporalGetExistingEventFirstOccurrenceResponseSuccess
+  | temporalGetExistingEventFirstOccurrenceResponseError;
+
+export const getTemporalGetExistingEventFirstOccurrenceUrl = (
+  eventRef: string,
+) => {
+  return `/api/v1/temporal/recurring/events/${eventRef}/first-occurrence`;
+};
+
+/**
+ * Return the canonical first Occurrence only for a verified owner seed.
+ *
+ * Legacy seeds without such a link return None rather than guessing the
+ * next generated instance and potentially editing the wrong Event.
+ * @summary Get Existing Event First Occurrence
+ */
+export const temporalGetExistingEventFirstOccurrence = async (
+  eventRef: string,
+  options?: RequestInit,
+  fetchFn?: typeof globalThis.fetch,
+): Promise<temporalGetExistingEventFirstOccurrenceResponse> => {
+  const res = await (fetchFn ?? fetch)(
+    getTemporalGetExistingEventFirstOccurrenceUrl(eventRef),
+    {
+      ...options,
+      method: 'GET',
+    },
+  );
+
+  const body = [204, 205, 304].includes(res.status) ? null : await res.text();
+
+  const data: temporalGetExistingEventFirstOccurrenceResponse['data'] = body
+    ? JSON.parse(body)
+    : {};
+  return {
+    data,
+    status: res.status,
+    headers: res.headers,
+  } as temporalGetExistingEventFirstOccurrenceResponse;
+};
+
 export type temporalGetExistingEventRecurrenceSeedResponse200 = {
   data: string | null;
   status: 200;
