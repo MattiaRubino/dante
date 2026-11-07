@@ -19,6 +19,7 @@ function newObjective(): TemporalCreateObjectiveDraft {
     targetMin: '',
     targetMax: '',
     unitCode: '',
+    verificationMode: 'none',
   });
 }
 

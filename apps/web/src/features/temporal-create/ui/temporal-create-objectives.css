@@ -132,10 +132,21 @@
   color: rgba(255, 174, 150, 0.88);
 }
 
-.temporal-create-objective__definition {
-  display: flex;
+.temporal-create-objective__details {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(210px, 0.33fr);
+  gap: 8px;
   min-width: 0;
-  flex-wrap: wrap;
+}
+
+.temporal-create-objective {
+  container-type: inline-size;
+}
+
+.temporal-create-objective__definition {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  min-width: 0;
   align-items: end;
   gap: 6px;
   margin-left: 0;
@@ -145,9 +156,14 @@
   background: rgba(0, 0, 0, 0.11);
 }
 
+.temporal-create-objective__definition[data-result-kind='quantity'],
+.temporal-create-objective__definition[data-result-kind='range'] {
+  grid-template-columns: minmax(96px, 0.8fr) minmax(78px, 0.65fr) minmax(100px, 1fr) minmax(100px, 1fr);
+}
+
 .temporal-create-objective__definition label {
   display: grid;
-  min-width: 90px;
+  min-width: 0;
   gap: 4px;
   color: var(--dante-semantic-color-home-text-muted, #8f9bad);
   font-size: 10px;
@@ -156,7 +172,8 @@
 .temporal-create-objective__definition select,
 .temporal-create-objective__definition input {
   box-sizing: border-box;
-  min-width: 82px;
+  width: 100%;
+  min-width: 0;
   padding: 0 7px;
 }
 
@@ -249,4 +266,47 @@
   margin: 0;
   color: var(--dante-semantic-color-home-text-muted, #8f9bad);
   font-size: 12px;
+}
+
+.temporal-create-objective__verification {
+  display: grid;
+  min-width: 0;
+  align-content: start;
+  gap: 5px;
+  padding: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  border-radius: 9px;
+  background: rgba(0, 0, 0, 0.11);
+}
+
+.temporal-create-objective__verification > span {
+  color: var(--dante-semantic-color-home-text-muted, #8f9bad);
+  font-size: 11px;
+}
+
+.temporal-create-objective__verification select {
+  box-sizing: border-box;
+  min-height: 32px;
+  width: 100%;
+  min-width: 0;
+  padding: 0 8px;
+  border: 1px solid rgba(255, 255, 255, 0.105);
+  border-radius: 8px;
+  color: var(--dante-semantic-color-home-text-secondary, #b7c0cf);
+  background: var(--dante-semantic-color-home-surface-control, #151f2e);
+  font: inherit;
+  font-size: 12px;
+}
+
+@container (max-width: 810px) {
+  .temporal-create-objective__details {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+@container (max-width: 540px) {
+  .temporal-create-objective__definition[data-result-kind='quantity'],
+  .temporal-create-objective__definition[data-result-kind='range'] {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
 }
