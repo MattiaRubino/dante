@@ -1006,6 +1006,10 @@ export function ActivityEditPanel({
           ...objectiveData(row),
           operationId: row.operationId,
           expectedRevision: revisions[index]!.definitionRevision,
+          expectedVerificationRevision:
+            revisions[index]!.verificationRevision ??
+            row.original?.verificationRevision ??
+            0,
           scopeCode: row.scope,
           seriesState: row.seriesState,
         },

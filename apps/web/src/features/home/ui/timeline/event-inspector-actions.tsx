@@ -465,6 +465,10 @@ export function EventInspectorActions({
             ...objectiveData(row),
             operationId: row.operationId,
             expectedRevision: definitions[index]!.definitionRevision,
+            expectedVerificationRevision:
+              definitions[index]!.verificationRevision ??
+              row.original?.verificationRevision ??
+              0,
             scopeCode: 'only_this' as const,
             seriesState: null,
           },
