@@ -4,13 +4,14 @@
 
 The product brief and explicit non-retroactive recurrence semantics are fixed in
 [temporal-objective-verification-vertical.md](temporal-objective-verification-vertical.md).
-This is **DESIGN ONLY** for the Objective-level verification policy, not a
-persisted feature yet. The existing Activity/Event completion policy remains
-distinct. The shared Create/Edit Objective section has received a conservative
-CSS-only full-width/scaletta layout foundation in `8d65d23b`; name, result
-inputs and the Add control remain the same. There is currently **no**
-Objective-level verification-mode selector or backend state, and no claims of
-functional parity for such a selector.
+The shared Objective editor now has a candidate `none` /
+`review_on_end` selector and canonical versioned storage, independent from
+Activity/Event completion. Authoring and local/scoped-series edit paths
+serialize the new choice. The Inbox only prompts for unobserved Objectives
+configured for `review_on_end`. Automatic assessment is disabled until an
+authoritative evidence source exists. **Same-SHA PostgreSQL, typecheck,
+browser acceptance and full gate are still pending**. No production-complete
+claim is made for this candidate.
 
 The earlier focused Vitest run on `565f886d` passed TypeScript and 94/95
 tests; the only failure was the stale `Conferma modifiche` test label, fixed
