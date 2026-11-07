@@ -409,6 +409,8 @@ export function RecurringSeriesEditor({
     targetMin: objectiveNumber(row.target_min),
     targetMax: objectiveNumber(row.target_max),
     unitCode: asText(row.unit_code),
+    verificationMode:
+      row.verification_mode === 'review_on_end' ? 'review_on_end' : 'none',
   });
   const updateObjectiveDraft = (
     index: number,
@@ -429,6 +431,8 @@ export function RecurringSeriesEditor({
         patch.targetMax === '' ? null : Number(patch.targetMax);
     if (patch.unitCode !== undefined)
       changes.unit_code = patch.unitCode.trim() || null;
+    if (patch.verificationMode !== undefined)
+      changes.verification_mode = patch.verificationMode;
     changeObjective(index, changes);
   };
   const moveObjective = (index: number, direction: -1 | 1) => {
@@ -1754,6 +1758,7 @@ export function RecurringSeriesEditor({
                             target_max: null,
                             unit_code: null,
                             presentation_order: objectives.length,
+                            verification_mode: 'none',
                           },
                         ])
                       }

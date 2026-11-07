@@ -99,6 +99,7 @@ export type RecurringObjectiveTemplate = Readonly<{
   target_max: number | null;
   unit_code: string | null;
   presentation_order: number;
+  verification_mode?: 'none' | 'review_on_end' | undefined;
 }>;
 
 export type RecurringActivityPlannedSliceTemplate =

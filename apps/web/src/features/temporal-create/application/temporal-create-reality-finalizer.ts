@@ -85,6 +85,7 @@ function sharedFinalizer(
         targetMax: task.objective.target_max,
         unitCode: task.objective.unit_code,
         presentationOrder: task.objective.presentation_order,
+        verificationMode: task.objective.verification_mode ?? 'none',
       });
     }
   };

@@ -53,6 +53,10 @@ export function buildTemporalCreateObjectiveTemplates(
           target_max: null,
           unit_code: null,
           presentation_order: index,
+          verification_mode:
+            objective.verificationMode === 'review_on_end'
+              ? 'review_on_end'
+              : 'none',
         });
       }
 
@@ -66,6 +70,10 @@ export function buildTemporalCreateObjectiveTemplates(
           target_max: null,
           unit_code: null,
           presentation_order: index,
+          verification_mode:
+            objective.verificationMode === 'review_on_end'
+              ? 'review_on_end'
+              : 'none',
         });
       }
 
@@ -96,6 +104,10 @@ export function buildTemporalCreateObjectiveTemplates(
           target_max: null,
           unit_code: unit,
           presentation_order: index,
+          verification_mode:
+            objective.verificationMode === 'review_on_end'
+              ? 'review_on_end'
+              : 'none',
         });
       }
 
@@ -123,6 +135,10 @@ export function buildTemporalCreateObjectiveTemplates(
         target_max: maximum,
         unit_code: unit,
         presentation_order: index,
+        verification_mode:
+          objective.verificationMode === 'review_on_end'
+            ? 'review_on_end'
+            : 'none',
       });
     }),
   );
