@@ -7,12 +7,7 @@ import './temporal-create-core-u2.css';
 
 /** Same quick recurrence choice in Create and existing-item Edit. */
 export type QuickRecurrence =
-  | 'none'
-  | 'daily'
-  | 'weekly'
-  | 'monthly'
-  | 'yearly'
-  | 'custom';
+  'none' | 'daily' | 'weekly' | 'monthly' | 'yearly' | 'custom';
 
 export function TemporalCreateQuickRecurrenceSelect({
   value,

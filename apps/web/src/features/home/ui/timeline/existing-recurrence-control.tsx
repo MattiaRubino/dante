@@ -164,7 +164,9 @@ export function ExistingRecurrenceControl({
           {error ? <p role="alert">{error}</p> : null}
           <div className="timeline-existing-recurrence__actions">
             {disabled ? (
-              <p>Salva le modifiche correnti prima di avviare la ripetizione.</p>
+              <p>
+                Salva le modifiche correnti prima di avviare la ripetizione.
+              </p>
             ) : null}
             <button
               type="button"
