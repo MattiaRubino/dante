@@ -1106,7 +1106,8 @@ export function ActivityEditPanel({
             planDirty ||
             lockDirty ||
             areaDirty ||
-            objectiveDirty ||
+            (objectiveDirty &&
+              (editScope !== 'this_and_following' || metadataDirty)) ||
             nameDirty ||
             captureMode !== settings.capture.mode ||
             realityMode !== settings.reality.mode ||
@@ -1117,9 +1118,9 @@ export function ActivityEditPanel({
             );
             return;
           }
-          if (!metadataDirty) {
+          if (!metadataDirty && !objectiveDirty) {
             setError(
-              'Modifica un dato generale per aggiornare le istanze della serie.',
+              'Modifica un dato generale o un obiettivo per aggiornare la serie.',
             );
             return;
           }
@@ -1296,9 +1297,62 @@ export function ActivityEditPanel({
             onSaved(saved.profile);
             return;
           }
-          // Following-series edits are handled by the series editor. This
-          // fallback only revises the recurrence profile when that editor
-          // delegates an unchanged structural proposal here.
+          if (recurringContext && editScope === 'this_and_following' && objectiveDirty) {
+            if (
+              removedObjectives.length > 0 ||
+              objectiveRows.some((row) => !row.objectiveRef)
+            ) {
+              throw new Error(
+                'Per aggiungere o rimuovere obiettivi della serie usa Modifica ricorrenza.',
+              );
+            }
+            const batch = await prepareObjectiveRows();
+            const revisions = await Promise.all(
+              batch.revise.map(async (revision) => {
+                const seriesState =
+                  revision.change.seriesState ??
+                  (await objectiveSource.getSeriesState(revision.objectiveRef));
+                if (!seriesState) {
+                  throw new Error(
+                    'Obiettivo senza origine ricorrente: riapri la modifica della serie.',
+                  );
+                }
+                return {
+                  objectiveRef: revision.objectiveRef,
+                  change: {
+                    ...revision.change,
+                    scopeCode: 'this_and_following' as const,
+                    seriesState,
+                  },
+                };
+              }),
+            );
+            const atomicOperation = planOperation ?? crypto.randomUUID();
+            setPlanOperation(atomicOperation);
+            const saved = await settingsSource.applyAtomicEdit(
+              profile,
+              settings,
+              {
+                objectives: {
+                  add: [],
+                  revise: revisions,
+                  retire: [],
+                },
+              },
+              atomicOperation,
+            );
+            setSettings(saved.settings);
+            setObjectiveRows(
+              saved.settings.objectives.map(existingObjectiveDraft),
+            );
+            setRemovedObjectives([]);
+            setPlanOperation(null);
+            onSaved(saved.profile);
+            return;
+          }
+          // Structure-wide Objective addition/removal is handled by the
+          // Recurrence editor, which also updates future materialization.
+          // The profile-only fallback keeps the existing preview contract.
           if (!recurringContext || !metadataDirty) {
             throw new Error(
               'Modifica i dati generali della serie prima di salvare.',
