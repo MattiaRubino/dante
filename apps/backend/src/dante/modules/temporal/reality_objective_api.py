@@ -882,7 +882,7 @@ async def _apply_objective_edits_in_session(
         intent = {
             "version": 1,
             "objective_ref": str(revision.objective_ref),
-            **change.model_dump(mode="json"),
+            **_objective_intent(change),
         }
         if change.scope_code == "this_and_following":
             if change.expected_source_revision is None:
@@ -928,6 +928,38 @@ async def _apply_objective_edits_in_session(
                 "evaluation": uuid7(),
             },
         )
+        if change.verification_mode is not None:
+            if change.scope_code == "this_and_following":
+                await _apply_series_verification_in_session(
+                    session,
+                    actor=actor,
+                    objective_ref=revision.objective_ref,
+                    operation_id=change.operation_id,
+                    verification_mode=change.verification_mode,
+                )
+            else:
+                current = (
+                    await session.execute(
+                        text(
+                            "SELECT * FROM dante.get_self_objective_verification("
+                            ":actor,:objective)"
+                        ),
+                        {"actor": actor, "objective": revision.objective_ref},
+                    )
+                ).mappings().one()
+                if current["mode_code"] != change.verification_mode:
+                    await _set_objective_verification_in_session(
+                        session,
+                        actor=actor,
+                        objective_ref=revision.objective_ref,
+                        operation_id=change.operation_id,
+                        verification_mode=change.verification_mode,
+                        expected_revision=(
+                            change.expected_verification_revision
+                            if change.expected_verification_revision is not None
+                            else current["verification_revision"]
+                        ),
+                    )
     for retirement in payload.retire:
         await session.execute(
             text("""
