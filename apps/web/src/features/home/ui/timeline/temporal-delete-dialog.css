@@ -1,0 +1,117 @@
+/* One standalone deletion dialog for Activity and Event, including series. */
+.timeline-delete-dialog__backdrop {
+  position: fixed;
+  z-index: 1500;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  padding: 20px;
+  background: rgba(3, 7, 13, 0.72);
+  backdrop-filter: blur(3px);
+}
+
+body:has(> .timeline-delete-dialog__backdrop)
+  .timeline-modal-backdrop--inspector.is-open {
+  visibility: hidden;
+}
+
+.timeline-delete-dialog {
+  box-sizing: border-box;
+  display: grid;
+  width: min(100%, 440px);
+  max-height: calc(100dvh - 40px);
+  gap: 14px;
+  overflow-y: auto;
+  padding: 20px;
+  border: 1px solid var(--dante-semantic-color-home-border-strong, #52606b);
+  border-radius: 16px;
+  color: var(--dante-semantic-color-home-text-primary, #edf2f8);
+  background: var(--dante-semantic-color-home-surface-overlay, #192328);
+  box-shadow: 0 24px 72px rgb(0 0 0 / 52%);
+  font-size: 14px;
+}
+
+.timeline-delete-dialog__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.timeline-delete-dialog__header h2,
+.timeline-delete-dialog p {
+  margin: 0;
+}
+
+.timeline-delete-dialog__header h2 {
+  font-size: 17px;
+  font-weight: 700;
+}
+
+.timeline-delete-dialog__subject {
+  display: grid;
+  gap: 4px;
+  min-width: 0;
+}
+
+.timeline-delete-dialog__subject strong {
+  overflow-wrap: anywhere;
+  font-size: 15px;
+}
+
+.timeline-delete-dialog__subject span,
+.timeline-delete-dialog__note {
+  color: var(--dante-semantic-color-home-text-secondary, #b7c0cf);
+  font-size: 12px;
+}
+
+.timeline-delete-dialog__description {
+  color: var(--dante-semantic-color-home-text-secondary, #b7c0cf);
+  font-size: 13px;
+}
+
+.timeline-delete-dialog__choices {
+  display: grid;
+  gap: 8px;
+}
+
+.timeline-delete-dialog button {
+  min-height: 40px;
+  padding: 9px 13px;
+  border: 1px solid var(--dante-semantic-color-home-border-subtle, #52606b);
+  border-radius: 9px;
+  color: inherit;
+  background: var(--dante-semantic-color-home-surface-control, #26343b);
+  font: inherit;
+  cursor: pointer;
+}
+
+.timeline-delete-dialog__choices button {
+  border-color: color-mix(in srgb, #d16a63 56%, transparent);
+  color: #ffcbc5;
+}
+
+.timeline-delete-dialog__choices button:hover:not(:disabled) {
+  background: color-mix(in srgb, #bf443b 18%, #26343b);
+}
+
+.timeline-delete-dialog__cancel {
+  background: transparent !important;
+}
+
+.timeline-delete-dialog__close {
+  min-width: 36px;
+  min-height: 36px !important;
+  padding: 0 !important;
+  font-size: 20px !important;
+}
+
+.timeline-delete-dialog button:focus-visible {
+  outline: 2px solid var(--dante-semantic-color-home-chrome-active, #ea5c12);
+  outline-offset: 2px;
+}
+
+.timeline-delete-dialog button:disabled {
+  opacity: 0.55;
+  cursor: wait;
+}
