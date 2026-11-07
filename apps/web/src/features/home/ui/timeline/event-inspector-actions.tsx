@@ -171,6 +171,7 @@ export function EventInspectorActions({
   const [editChoice, setEditChoice] = useState<{
     context: RecurringProfileContext;
     selectedProtection: RecurringProfileEditPreview['selectedProtection'];
+    firstExistingEvent?: boolean;
   } | null>(null);
   const [editScope, setEditScope] =
     useState<RecurringProfileEditScope>('only_this');
@@ -313,6 +314,19 @@ export function EventInspectorActions({
     try {
       const recurring = await recurrenceGuard.isRecurring(eventRef);
       if (!recurring) {
+        // The physical Event is standalone, but its saved schedule can also
+        // be the canonical first generated Occurrence of a second source.
+        const first = await existingRecurrence.eventFirstOccurrence(eventRef);
+        if (first !== null) {
+          const context = await recurringSource.loadOccurrenceContext(first);
+          const preview = await recurringSource.loadPreview(context, 'only_this');
+          setEditChoice({
+            context,
+            selectedProtection: preview.selectedProtection,
+            firstExistingEvent: true,
+          });
+          return;
+        }
         await openProfileEditor();
         return;
       }
@@ -991,16 +1005,29 @@ export function EventInspectorActions({
           onOnlyThis={() => {
             const choice = editChoice;
             setEditChoice(null);
-            void openProfileEditor('only_this', choice.context);
+            void (choice.firstExistingEvent
+              ? openProfileEditor()
+              : openProfileEditor('only_this', choice.context));
           }}
           onFollowing={() => {
             const choice = editChoice;
             setEditChoice(null);
+            if (choice.firstExistingEvent) {
+              // The shared series editor reads the generated Occurrence.
+              // Do not fetch a second synthetic Event for the physical first.
+              setEditScope(
+                choice.selectedProtection ? 'from_next' : 'this_and_following',
+              );
+              setRecurringContext(choice.context);
+              setEditingProfile(true);
+              setProfileNotice('');
+              return;
+            }
             void openProfileEditor(
               choice.selectedProtection ? 'from_next' : 'this_and_following',
               choice.context,
             );
-          }}
+          }
           onCancel={() => {
             setEditChoice(null);
             onCancelScope?.();

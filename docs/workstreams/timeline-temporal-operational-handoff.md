@@ -1,5 +1,19 @@
 # Timeline / Temporal-Operational — Workstream Handoff
 
+## 2026-11-07 — Existing first Event series scope in Inspector
+
+A read-only owner-scoped first Occurrence lookup now distinguishes a genuinely
+bound Event seed from a legacy 171 seed without a first Occurrence. The Event
+Inspector shows the canonical recurring scope chooser when editing that
+original Event. "Only this" edits the **physical original Event**, retaining
+its Schedule, Agenda and factual history; "this and following" opens the
+structural series editor anchored to the first canonical Occurrence, without
+loading a fake copy. The endpoint is additive and requires official
+OpenAPI/client regeneration; code is a candidate until full tests and local
+PostgreSQL acceptance confirm correctness. Legacy repair is not implemented
+by this change and must not be guessed from the earliest later Occurrence.
+
+
 ## 2026-11-07 — Existing Event first-Occurrence binding candidate
 
 The 20261107_172 **additive** migration introduces a unique indexed,

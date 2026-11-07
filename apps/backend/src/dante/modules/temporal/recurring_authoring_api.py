@@ -407,6 +407,37 @@ async def get_existing_event_recurrence_seed(
         return UUID(str(source_ref)) if source_ref is not None else None
 
 
+@router.get(
+    "/recurring/events/{event_ref}/first-occurrence",
+    response_model=UUID | None,
+    operation_id="temporal_get_existing_event_first_occurrence",
+)
+async def get_existing_event_first_occurrence(
+    event_ref: UUID,
+    context: Context,
+    request: Request,
+    response: Response,
+) -> UUID | None:
+    """Return the canonical first Occurrence only for a verified owner seed.
+
+    Legacy seeds without such a link return None rather than guessing the
+    next generated instance and potentially editing the wrong Event.
+    """
+    response.headers["Cache-Control"] = "no-store"
+    async with request.app.state.database_runtime.session_factory() as session:
+        async with session.begin():
+            first_ref = await session.scalar(
+                text(
+                    "SELECT first.first_occurrence_ref "
+                    "FROM dante.get_self_event_recurring_seed(:actor,:event) AS seed "
+                    "JOIN LATERAL dante.get_self_event_recurring_first_by_source("
+                    ":actor,seed.source_event_ref) AS first ON true"
+                ),
+                {"actor": context.self_person_ref, "event": event_ref},
+            )
+        return UUID(str(first_ref)) if first_ref is not None else None
+
+
 @router.post(
     "/recurring/routines",
     response_model=RecurringAuthoringResponse,

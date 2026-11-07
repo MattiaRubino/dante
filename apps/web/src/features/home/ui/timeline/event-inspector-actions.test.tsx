@@ -35,6 +35,7 @@ const getDefinition = vi.fn();
 const getReminder = vi.fn().mockResolvedValue(null);
 const isRecurring = vi.fn().mockResolvedValue(false);
 const eventSeed = vi.fn().mockResolvedValue(null);
+const eventFirstOccurrence = vi.fn().mockResolvedValue(null);
 const startExistingEvent = vi.fn().mockResolvedValue(undefined);
 const previewHardDeletion = vi.fn();
 const confirmHardDeletion = vi.fn();
@@ -117,6 +118,7 @@ vi.mock('../../../temporal/remote-event-agenda-data-source', () => ({
 vi.mock('../../../temporal/remote-existing-recurrence', () => ({
   createRemoteExistingRecurrence: () => ({
     eventSeed,
+    eventFirstOccurrence,
     startEvent: startExistingEvent,
   }),
 }));
@@ -144,6 +146,7 @@ afterEach(() => {
   vi.clearAllMocks();
   isRecurring.mockResolvedValue(false);
   eventSeed.mockResolvedValue(null);
+  eventFirstOccurrence.mockResolvedValue(null);
   startExistingEvent.mockResolvedValue(undefined);
   getRealityPolicy.mockResolvedValue({ mode: 'manual', stateRef: null });
   getReminder.mockResolvedValue(null);
@@ -682,6 +685,45 @@ describe('Event Inspector actions', () => {
       'un partecipante non è più disponibile',
     );
     expect(onDuplicate).not.toHaveBeenCalled();
+  });
+
+  it('edits the original Event locally or its first canonical series Occurrence', async () => {
+    const firstRef = '0199a111-1111-7111-8111-222222222222';
+    const sourceRef = '0199a111-1111-7111-8111-333333333333';
+    const context = {
+      occurrenceRef: firstRef,
+      sourceRef,
+      editRevision: 0,
+      recurrenceStateRef: '0199a111-1111-7111-8111-444444444444',
+    };
+    eventFirstOccurrence.mockResolvedValue(firstRef);
+    loadOccurrenceContext.mockResolvedValue(context);
+    loadRecurringPreview.mockResolvedValue({ selectedProtection: null });
+    loadProfile.mockResolvedValue({
+      eventRef,
+      title: 'Primo Evento',
+      description: null,
+      location: null,
+      colorCode: null,
+      profileRevision: 0,
+      agendaParts: [],
+    });
+    render(
+      <EventInspectorActions
+        eventRef={eventRef}
+        placement={placement}
+        onDuplicate={vi.fn()}
+      />,
+    );
+    fireEvent.click(screen.getByRole('button', { name: 'Modifica' }));
+    await screen.findByRole('dialog', { name: 'Modifica ricorrenza' });
+    expect(loadOccurrenceContext).toHaveBeenCalledWith(firstRef);
+    expect(loadRecurringPreview).toHaveBeenCalledWith(context, 'only_this');
+    expect(loadOccurrenceEvent).not.toHaveBeenCalled();
+
+    fireEvent.click(screen.getByRole('button', { name: 'Solo questa istanza' }));
+    await waitFor(() => expect(loadProfile).toHaveBeenCalledWith(eventRef));
+    expect(loadOccurrenceEvent).not.toHaveBeenCalled();
   });
 
   it('starts a future recurrence from the saved Event while retaining the first identity', async () => {
