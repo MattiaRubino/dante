@@ -124,7 +124,7 @@
       "properties": {
         "completed_stages": {
           "type": "array",
-          "maxItems": 78,
+          "maxItems": 79,
           "uniqueItems": true,
           "items": {
             "enum": [

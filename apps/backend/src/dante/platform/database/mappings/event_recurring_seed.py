@@ -12,6 +12,7 @@ from sqlalchemy import (
     text,
 )
 from sqlalchemy.orm import Mapped, mapped_column
+from sqlalchemy.schema import conv
 
 from dante.platform.database.metadata import Base
 from dante.platform.database.references import NativeRef
@@ -36,7 +37,7 @@ class EventRecurringSeedRow(Base):
             "AND legacy_exclusion_ref IS NOT NULL AND legacy_exclusion_operation_id IS NOT NULL "
             "AND legacy_exclusion_fingerprint IS NOT NULL "
             "AND legacy_exclusion_accepted_at IS NOT NULL)",
-            name="ck_event_recurring_seed_legacy_proof",
+            name=conv("ck_event_recurring_seed_legacy_proof"),
         ),
         ForeignKeyConstraint(
             ["event_ref"],
