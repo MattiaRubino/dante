@@ -27,7 +27,6 @@ import {
 import {
   createRemoteTemporalHardDeletion,
   type TemporalHardDeletionPreview,
-  type EventDeletionOccurrenceChoice,
 } from '../../../temporal/remote-temporal-hard-deletion';
 import { createRemoteTemporalOrganizationDataSource } from '../../../temporal/remote-organization';
 import {
@@ -59,6 +58,7 @@ import { RecurringEditScopeDialog } from './recurring-edit-scope-dialog';
 import { RecurringSeriesEditor } from './recurring-series-editor';
 import { ExistingRecurrenceControl } from './existing-recurrence-control';
 import { UnsavedChangesDialog } from './unsaved-changes-dialog';
+import { TemporalDeleteDialog } from './temporal-delete-dialog';
 import {
   EventScheduleEditor,
   eventScheduleDraftFromPlacement,
@@ -78,6 +78,8 @@ import {
 export function EventInspectorActions({
   eventRef,
   placement,
+  itemTitle,
+  scheduleLabel,
   occurrenceRef = null,
   scheduleRef = null,
   placementMaterialStateRef = null,
@@ -90,6 +92,8 @@ export function EventInspectorActions({
 }: Readonly<{
   eventRef: string;
   placement: TimelineCanonicalSchedulePlacement;
+  itemTitle?: string;
+  scheduleLabel?: string;
   occurrenceRef?: string | null;
   scheduleRef?: string | null;
   placementMaterialStateRef?: string | null;
@@ -112,11 +116,7 @@ export function EventInspectorActions({
   const [deletePreviews, setDeletePreviews] = useState<
     readonly TemporalHardDeletionPreview[] | null
   >(null);
-  const [deletionChoices, setDeletionChoices] = useState<
-    readonly EventDeletionOccurrenceChoice[]
-  >([]);
-  const [selectedDeletionOccurrence, setSelectedDeletionOccurrence] =
-    useState('');
+
   const [profileSource] = useState(createRemoteEventProfileDataSource);
   const [areaSource] = useState(createRemoteEventLifeAreaSettings);
   const [objectiveSource] = useState(createRemoteRealityObjectiveDataSource);
@@ -880,13 +880,10 @@ export function EventInspectorActions({
       const recurring = await recurrenceGuard.isRecurring(eventRef);
       if (!recurring) {
         const seededSource = await existingRecurrence.eventSeed(eventRef);
-        setDeletionChoices([]);
-        setSelectedDeletionOccurrence('');
         if (seededSource === null) {
           setDeletePreviews([await hardDelete.preview(eventRef, 'event_once')]);
         } else {
-          // The first physical Event belongs to the source series. Offer
-          // the same deletion scopes as a generated Event Occurrence.
+          // Preserve the source Event's physical first-instance identity.
           const [instance, series] = await Promise.all([
             hardDelete.preview(eventRef, 'event_once'),
             hardDelete.preview(eventRef, 'event_series'),
@@ -894,22 +891,24 @@ export function EventInspectorActions({
           setDeletePreviews([instance, series]);
         }
       } else {
-        const [series, choices] = await Promise.all([
-          hardDelete.preview(eventRef, 'event_series'),
-          hardDelete.eventOccurrences(eventRef),
-        ]);
-        const selected =
-          occurrenceRef !== null &&
-          choices.some((choice) => choice.occurrenceRef === occurrenceRef)
-            ? occurrenceRef
-            : '';
-        setDeletionChoices(choices);
-        setSelectedDeletionOccurrence(selected);
-        const instance =
-          selected === ''
-            ? null
-            : await hardDelete.preview(selected, 'event_instance');
-        setDeletePreviews(instance === null ? [series] : [instance, series]);
+        const series = await hardDelete.preview(eventRef, 'event_series');
+        // A single instance may only be removed when its identity is certain.
+        // No free-form instance picker in a destructive confirmation.
+        let selected = occurrenceRef;
+        if (selected || scheduleRef) {
+          const choices = await hardDelete.eventOccurrences(eventRef);
+          if (selected && !choices.some((c) => c.occurrenceRef === selected)) {
+            selected = null;
+          }
+          if (!selected && scheduleRef) {
+            const matches = choices.filter((c) => c.scheduleRef === scheduleRef);
+            if (matches.length === 1) selected = matches[0]!.occurrenceRef;
+          }
+        }
+        const instance = selected
+          ? await hardDelete.preview(selected, 'event_instance')
+          : null;
+        setDeletePreviews(instance ? [instance, series] : [series]);
       }
     } catch (reason) {
       setError(
@@ -1486,99 +1485,41 @@ export function EventInspectorActions({
       ) : null}
       {profileNotice ? <p role="status">{profileNotice}</p> : null}
       {deletePreviews ? (
-        <div className="timeline-activity-inspector__confirmation">
-          <p>
-            L’eliminazione è definitiva e comprende Schedule, promemoria,
-            Objective e dati storici collegati all’Evento o all’istanza. La
-            rimozione dalla Timeline è un’operazione diversa.
-          </p>
-          {deletionChoices.length > 0 ? (
-            <label>
-              Istanza Event da eliminare
-              <select
-                value={selectedDeletionOccurrence}
-                disabled={busy}
-                onChange={(event) => {
-                  const selected = event.currentTarget.value;
-                  void (async () => {
-                    setBusy(true);
-                    setError('');
-                    try {
-                      const series = deletePreviews.find(
-                        (preview) => preview.scope === 'event_series',
-                      );
-                      if (!series) {
-                        throw new Error(
-                          'Anteprima della serie non disponibile.',
-                        );
-                      }
-                      const instance = selected
-                        ? await hardDelete.preview(selected, 'event_instance')
-                        : null;
-                      setSelectedDeletionOccurrence(selected);
-                      setDeletePreviews(
-                        instance ? [instance, series] : [series],
-                      );
-                    } catch (reason) {
-                      setError(
-                        reason instanceof Error
-                          ? reason.message
-                          : 'Impossibile selezionare l’istanza.',
-                      );
-                    } finally {
-                      setBusy(false);
-                    }
-                  })();
-                }}
-              >
-                <option value="">Seleziona una Occurrence specifica</option>
-                {deletionChoices.map((choice) => (
-                  <option
-                    key={choice.occurrenceRef}
-                    value={choice.occurrenceRef}
-                  >
-                    {choice.displayLabel}
-                  </option>
-                ))}
-              </select>
-            </label>
-          ) : null}
-          {deletePreviews.map((preview) => (
-            <button
-              type="button"
-              key={preview.scope}
-              disabled={busy}
-              onClick={() => void acceptDeletion(preview)}
-            >
-              {preview.scope === 'event_once'
+        <TemporalDeleteDialog
+          subject="evento"
+          itemTitle={itemTitle ?? profile?.title ?? 'Evento'}
+          scheduleLabel={scheduleLabel}
+          busy={busy}
+          error={error}
+          note={
+            deletePreviews.some((preview) => preview.scope === 'event_series') &&
+            !deletePreviews.some(
+              (preview) =>
+                preview.scope === 'event_instance' ||
+                preview.scope === 'event_once',
+            )
+              ? 'Per eliminare una singola istanza, aprila dalla Timeline.'
+              : undefined
+          }
+          choices={deletePreviews.map((preview) => ({
+            key: preview.scope,
+            label:
+              preview.scope === 'event_once'
                 ? deletePreviews.length > 1
                   ? 'Solo questa istanza'
                   : 'Conferma eliminazione definitiva'
                 : preview.scope === 'event_instance'
                   ? 'Solo questa istanza'
-                  : 'Tutta la serie'}
-            </button>
-          ))}
-          {deletionChoices.length !== 0 && selectedDeletionOccurrence === '' ? (
-            <p>
-              Per «Solo questa istanza» seleziona la data dell’Occurrence.
-              «Tutta la serie» elimina anche tutte le altre istanze.
-            </p>
-          ) : null}
-          <button
-            type="button"
-            disabled={busy}
-            onClick={() => {
-              setDeletePreviews(null);
-              setDeletionChoices([]);
-              setSelectedDeletionOccurrence('');
-            }}
-          >
-            Annulla
-          </button>
-        </div>
+                  : 'Tutta la serie',
+            onConfirm: () => void acceptDeletion(preview),
+          }))}
+          onCancel={() => {
+            setDeletePreviews(null);
+            setError('');
+          }}
+        />
       ) : null}
-      {error ? <p role="alert">{error}</p> : null}
+      {error && !deletePreviews ? <p role="alert">{error}</p> : null}
     </div>
   );
 }
