@@ -2362,9 +2362,18 @@ describe('Activity Inspector', () => {
     expect(
       within(discardDialog).getByText('Scartare le modifiche non salvate?'),
     ).toBeTruthy();
-    expect(
-      within(discardDialog).getByRole('button', { name: 'Scarta modifiche' }),
-    ).toHaveProperty('type', 'button');
+    const discardButton = within(discardDialog).getByRole('button', {
+      name: 'Scarta modifiche',
+    });
+    const continueButton = within(discardDialog).getByRole('button', {
+      name: 'Continua a modificare',
+    });
+    expect(discardButton).toHaveProperty('type', 'button');
+    expect(document.activeElement).toBe(discardButton);
+    fireEvent.keyDown(discardButton, { key: 'Tab', shiftKey: true });
+    expect(document.activeElement).toBe(continueButton);
+    fireEvent.keyDown(continueButton, { key: 'Tab' });
+    expect(document.activeElement).toBe(discardButton);
     expect(onCancel).not.toHaveBeenCalled();
     fireEvent.click(
       screen.getByRole('button', { name: 'Continua a modificare' }),
