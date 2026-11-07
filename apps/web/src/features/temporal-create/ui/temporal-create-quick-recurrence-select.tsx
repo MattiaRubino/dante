@@ -1,3 +1,4 @@
+import type { ChangeEventHandler } from 'react';
 import { useTranslation } from 'react-i18next';
 
 import { temporalCreateProductCopy } from './temporal-create-product-copy';
@@ -24,14 +25,15 @@ export function TemporalCreateQuickRecurrenceSelect({
   const copy = temporalCreateProductCopy(
     i18n.resolvedLanguage ?? i18n.language ?? 'it',
   ).event;
+  const handleChange: ChangeEventHandler<HTMLSelectElement> = (event) => {
+    onChange(event.currentTarget.value as QuickRecurrence);
+  };
 
   return (
     <select
       aria-label={copy.repeat}
       value={value}
-      onChange={(event) =>
-        onChange(event.currentTarget.value as QuickRecurrence)
-      }
+      onChange={handleChange}
     >
       <option value="none">{copy.repeatNever}</option>
       <option value="daily">{copy.repeatDaily}</option>

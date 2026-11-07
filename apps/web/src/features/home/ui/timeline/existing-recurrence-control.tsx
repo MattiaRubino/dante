@@ -10,8 +10,12 @@ import {
   buildTemporalCreateActivityRecurrence,
   buildTemporalCreateEventRecurrence,
 } from '../../../temporal-create/application/temporal-create-b14-runtime';
-import type { RecurringAuthoringCalendarRecurrence } from '../../../temporal-create/application/remote-recurring-authoring';
-import { TemporalCreateCalendarRecurrenceFields } from '../../../temporal-create/ui/temporal-create-calendar-recurrence-fields';
+import type {
+  RecurringAuthoringCalendarRecurrence,
+} from '../../../temporal-create/application/remote-recurring-authoring';
+import {
+  TemporalCreateCalendarRecurrenceFields,
+} from '../../../temporal-create/ui/temporal-create-calendar-recurrence-fields';
 import {
   TemporalCreateQuickRecurrenceSelect,
   type QuickRecurrence,
@@ -79,6 +83,7 @@ export function ExistingRecurrenceControl({
     dateValue.dayOfWeek - 1
   ] as TemporalCreateWeekday;
   const selection = quickChoice(intent, customChoice);
+  const startTarget = kind === 'event' ? 'questo Evento' : 'questa Attività';
 
   const changeRecurrence = (choice: QuickRecurrence) => {
     setError('');
@@ -175,7 +180,7 @@ export function ExistingRecurrenceControl({
             >
               {pending
                 ? 'Avvio…'
-                : `Avvia ripetizione da ${kind === 'event' ? 'questo Evento' : 'questa Attività'}`}
+                : `Avvia ripetizione da ${startTarget}`}
             </button>
           </div>
         </>
