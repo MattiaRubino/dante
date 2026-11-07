@@ -197,3 +197,48 @@ BEGIN
     RETURN QUERY SELECT requested_mode,current_revision+1,false;
 END;
 $function$;"""
+
+_APPLY_SERIES = r"""CREATE FUNCTION dante.apply_self_objective_verification_series(
+    actor uuid, selected_objective uuid, source_operation text,
+    requested_mode text
+) RETURNS void
+LANGUAGE plpgsql SECURITY DEFINER VOLATILE PARALLEL UNSAFE
+SET search_path=pg_catalog,dante,pg_temp AS $function$
+#variable_conflict error
+DECLARE accepted record; prior record;
+BEGIN
+    IF requested_mode NOT IN ('none','review_on_end') THEN
+        RAISE EXCEPTION USING ERRCODE='23514',
+          CONSTRAINT='temporal_objective_verification_invalid',
+          MESSAGE='Invalid Objective verification mode';
+    END IF;
+    SELECT p.* INTO accepted FROM dante.temporal_objective_series_edit p
+     WHERE p.self_person_ref=actor AND p.operation_id=source_operation
+       AND p.selected_objective_ref=selected_objective;
+    IF NOT FOUND THEN
+        RAISE EXCEPTION USING ERRCODE='23503',
+          CONSTRAINT='temporal_objective_verification_series_unavailable',
+          MESSAGE='Accepted Objective series edit required';
+    END IF;
+    SELECT p.* INTO prior FROM dante.temporal_objective_verification_series p
+     WHERE p.self_person_ref=actor AND p.operation_id=source_operation;
+    IF FOUND THEN
+        IF prior.mode_code<>requested_mode
+           OR prior.selected_occurrence_ref<>accepted.selected_occurrence_ref THEN
+            RAISE EXCEPTION USING ERRCODE='23505',
+              CONSTRAINT='temporal_objective_verification_series_reused',
+              MESSAGE='Objective verification series operation reused';
+        END IF;
+        RETURN;
+    END IF;
+    INSERT INTO dante.temporal_objective_verification_series(
+        self_person_ref,operation_id,source_native_ref,selected_occurrence_ref,
+        template_slot,effective_zone_id,anchor_at,accepted_at,include_selected,mode_code
+    ) VALUES (
+        actor,source_operation,accepted.source_native_ref,
+        accepted.selected_occurrence_ref,accepted.template_slot,
+        accepted.effective_zone_id,accepted.anchor_at,accepted.accepted_at,
+        true,requested_mode
+    );
+END;
+$function$;"""
