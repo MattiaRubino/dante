@@ -37,6 +37,7 @@ import { TemporalColorControl } from '../../../temporal-create/ui/temporal-color
 import { TimeControl } from '../../../temporal-create/ui/temporal-create-core-u2';
 import { TemporalCreateDatePicker } from '../../../temporal-create/ui/temporal-create-date-picker';
 import { TemporalAuthoringTitleRow } from '../../../temporal-create/ui/temporal-authoring-title-row';
+import { TemporalCreatePlacementLockButton } from '../../../temporal-create/ui/temporal-create-placement-lock-button';
 import { createRemoteExistingRecurrence } from '../../../temporal/remote-existing-recurrence';
 import { TemporalLifeAreaSelect } from '../../../temporal-create/ui/temporal-life-area-select';
 import { TemporalReminderControl } from '../../../temporal-create/ui/temporal-create-quick-reminder';
@@ -1447,53 +1448,18 @@ export function ActivityEditPanel({
           {settings ? (
             <div className="temporal-create-title-row__tools timeline-activity-editor__title-tools">
               {settings.placementLockScheduleRef ? (
-                <button
-                  type="button"
-                  className="temporal-create-placement-lock"
-                  data-edit-invalid={!!lockError}
-                  aria-label={
-                    placementProtected
-                      ? 'Sblocca spostamenti'
-                      : 'Blocca spostamenti'
-                  }
-                  aria-pressed={
-                    placementProtected ?? settings.placementProtected
-                  }
-                  title={
-                    placementProtected
-                      ? 'Sblocca spostamenti'
-                      : 'Blocca spostamenti'
-                  }
+                <TemporalCreatePlacementLockButton
+                  kind="activity"
+                  locked={placementProtected ?? settings.placementProtected}
+                  invalid={!!lockError}
                   disabled={pending || planPending}
-                  onClick={() => {
+                  onToggle={() => {
                     setPlacementProtected(
                       !(placementProtected ?? settings.placementProtected),
                     );
                     setLockError('');
                   }}
-                >
-                  <svg
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="1.8"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    aria-hidden="true"
-                  >
-                    <rect x="5" y="10" width="14" height="11" rx="2" />
-                    {(placementProtected ?? settings.placementProtected) ? (
-                      <path d="M8 10V7a4 4 0 0 1 8 0v3" />
-                    ) : (
-                      <path d="M8 10V7a4 4 0 0 1 7.5-1.9" />
-                    )}
-                  </svg>
-                  <span>
-                    {placementProtected
-                      ? 'Sblocca spostamenti'
-                      : 'Blocca spostamenti'}
-                  </span>
-                </button>
+                />
               ) : null}
               <label className="temporal-create-structure-session-toggle timeline-activity-editor__capture">
                 <input

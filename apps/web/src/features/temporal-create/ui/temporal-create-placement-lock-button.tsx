@@ -9,12 +9,14 @@ export function TemporalCreatePlacementLockButton({
   kind,
   italian = true,
   disabled = false,
+  invalid = false,
 }: Readonly<{
   locked: boolean;
   onToggle: () => void;
   kind: 'activity' | 'event';
   italian?: boolean;
   disabled?: boolean;
+  invalid?: boolean;
 }>) {
   const label = italian
     ? locked
@@ -40,6 +42,7 @@ export function TemporalCreatePlacementLockButton({
       type="button"
       className="temporal-create-placement-lock"
       data-placement-protection={kind}
+      data-edit-invalid={invalid}
       aria-pressed={locked}
       aria-label={label}
       title={title}
