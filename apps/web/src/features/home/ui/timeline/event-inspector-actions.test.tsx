@@ -933,11 +933,13 @@ describe('Event Inspector actions', () => {
     fireEvent.change(recurrenceSelect, { target: { value: 'none' } });
     expect(screen.queryByRole('region', { name: 'Ripetizione' })).toBeNull();
     fireEvent.change(recurrenceSelect, { target: { value: 'daily' } });
-    fireEvent.click(
-      screen.getByRole('button', {
+    expect(
+      screen.queryByRole('button', {
         name: 'Avvia ripetizione da questo Evento',
       }),
-    );
+    ).toBeNull();
+    expect(startExistingEvent).not.toHaveBeenCalled();
+    fireEvent.click(screen.getByRole('button', { name: 'Salva modifiche' }));
     await waitFor(() => expect(startExistingEvent).toHaveBeenCalledOnce());
     expect(startExistingEvent).toHaveBeenCalledWith(
       expect.objectContaining({ eventRef, expectedProfileRevision: 2 }),
@@ -949,6 +951,90 @@ describe('Event Inspector actions', () => {
       expect.any(String),
     );
     expect(reviseAtomic).not.toHaveBeenCalled();
+  });
+
+  it('saves Event metadata before activating recurrence and uses the fresh profile revision', async () => {
+    const original = {
+      eventRef,
+      title: 'Visita',
+      description: null,
+      location: null,
+      colorCode: null,
+      profileRevision: 2,
+      agendaRevision: 0,
+      agendaParts: [],
+    };
+    loadProfile.mockResolvedValue(original);
+    reviseProfile.mockResolvedValue({ ...original, title: 'Visita medica', profileRevision: 3 });
+    render(
+      <EventInspectorActions
+        eventRef={eventRef}
+        placement={placement}
+        scheduleRef="0199a777-7777-7777-8777-777777777777"
+        placementMaterialStateRef="0199a888-8888-7888-8888-888888888888"
+        onDuplicate={vi.fn()}
+      />,
+    );
+    fireEvent.click(screen.getByRole('button', { name: /^Modifica$/ }));
+    fireEvent.change(await screen.findByRole('textbox', { name: 'Titolo Event' }), {
+      target: { value: 'Visita medica' },
+    });
+    const recurrence = screen.getByRole('combobox', { name: 'Ripeti' });
+    fireEvent.change(recurrence, { target: { value: 'daily' } });
+    fireEvent.click(screen.getByRole('button', { name: 'Salva modifiche' }));
+
+    await waitFor(() => expect(startExistingEvent).toHaveBeenCalledOnce());
+    expect(reviseProfile).toHaveBeenCalledOnce();
+    expect(startExistingEvent).toHaveBeenCalledWith(
+      expect.objectContaining({
+        eventRef,
+        expectedProfileRevision: 3,
+        expectedPlacementStateRef: '0199a888-8888-7888-8888-888888888888',
+      }),
+      expect.objectContaining({ family_code: 'calendar_wall_clock' }),
+      expect.any(String),
+    );
+  });
+
+  it('retries a failed Event recurrence without replaying already saved profile changes', async () => {
+    const original = {
+      eventRef,
+      title: 'Visita',
+      description: null,
+      location: null,
+      colorCode: null,
+      profileRevision: 2,
+      agendaRevision: 0,
+      agendaParts: [],
+    };
+    loadProfile.mockResolvedValue(original);
+    reviseProfile.mockResolvedValue({ ...original, title: 'Nuovo titolo', profileRevision: 3 });
+    startExistingEvent.mockRejectedValueOnce(new Error('Conversione temporaneamente non disponibile'));
+    render(
+      <EventInspectorActions
+        eventRef={eventRef}
+        placement={placement}
+        scheduleRef="0199a777-7777-7777-8777-777777777777"
+        placementMaterialStateRef="0199a888-8888-7888-8888-888888888888"
+        onDuplicate={vi.fn()}
+      />,
+    );
+    fireEvent.click(screen.getByRole('button', { name: /^Modifica$/ }));
+    fireEvent.change(await screen.findByRole('textbox', { name: 'Titolo Event' }), {
+      target: { value: 'Nuovo titolo' },
+    });
+    fireEvent.change(screen.getByRole('combobox', { name: 'Ripeti' }), {
+      target: { value: 'daily' },
+    });
+    fireEvent.click(screen.getByRole('button', { name: 'Salva modifiche' }));
+    expect(
+      await screen.findByText(/Modifiche salvate, ripetizione non avviata/),
+    ).toBeTruthy();
+    expect(reviseProfile).toHaveBeenCalledOnce();
+    fireEvent.click(screen.getByRole('button', { name: 'Salva modifiche' }));
+    await waitFor(() => expect(startExistingEvent).toHaveBeenCalledTimes(2));
+    expect(reviseProfile).toHaveBeenCalledOnce();
+    expect(startExistingEvent.mock.calls[0]?.[2]).toBe(startExistingEvent.mock.calls[1]?.[2]);
   });
 
   it('edits current Event metadata with canonical CAS and leaves the existing identity intact', async () => {
