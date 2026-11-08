@@ -133,7 +133,10 @@ test.describe('Timeline — real user Activity/Event lifecycle matrix', () => {
       name: 'Elimina definitivamente',
     }).click();
     const accepted = await responsePromise;
-    expect(accepted.status()).toBe(200);
+    expect(
+      accepted.status(),
+      `${item.kind} destructive command: ${await accepted.text()}`,
+    ).toBe(200);
   }
 
   for (const [slot, kind] of [
@@ -560,9 +563,23 @@ test.describe('Timeline — real user Activity/Event lifecycle matrix', () => {
         name: 'Controlla prima di salvare',
       });
       await expect(confirmation).toBeVisible();
+      // Navigation before the accepted server command can abort the POST and
+      // produce a false negative: wait for authoritative persistence first.
+      const acceptedSeries = page.waitForResponse(
+        (response) =>
+          response.url().includes('/api/v1/temporal/occurrences/') &&
+          response.url().endsWith('/profile-edit') &&
+          response.request().method() === 'POST',
+      );
       await confirmation.getByRole('button', {
         name: 'Conferma salvataggio',
       }).click();
+      const seriesResponse = await acceptedSeries;
+      expect(
+        seriesResponse.status(),
+        `Series profile edit rejected: ${await seriesResponse.text()}`,
+      ).toBe(200);
+      await expect(confirmation).toHaveCount(0);
       await openHome(page, dateAfter(day, 1));
       await expect(onDay(page, dateAfter(day, 1), seriesTitle))
         .toHaveCount(1);
