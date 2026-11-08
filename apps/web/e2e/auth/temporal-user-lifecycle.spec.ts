@@ -232,6 +232,7 @@ test.describe('Timeline — real user Activity/Event lifecycle matrix', () => {
         const day = scenarioDate();
         await openHome(page, day);
         const created: CreatedItem[] = [];
+        let dailyLifeArea: string | null = null;
         for (const [index, variant] of variants.entries()) {
           const label = uniqueTitle(kind + ' ' + variant.cadence);
           const options = {
@@ -264,6 +265,7 @@ test.describe('Timeline — real user Activity/Event lifecycle matrix', () => {
                 }
               : {}),
           } as const;
+          if (index === 0) dailyLifeArea = options.lifeArea ?? null;
           const dialog = await openCreate(page, kind);
           await configureCreate(dialog, options);
           const panel = dialog.getByRole('region', {
@@ -324,13 +326,27 @@ test.describe('Timeline — real user Activity/Event lifecycle matrix', () => {
             }).first(),
           ).toBeVisible();
         }
+        const dailyFirst = page.locator('[data-timeline-event]').filter({
+          hasText: created[0]!.title,
+        });
+        await expect(dailyFirst).toHaveCount(1);
+        if (dailyLifeArea !== null) {
+          await expect(
+            dailyFirst.locator('.timeline-event-card__meta'),
+          ).toContainText(dailyLifeArea);
+        }
         // A second Timeline checkpoint on the next calendar day must keep
-        // the daily source consistent and must not create duplicate cards.
+        // the daily source and its inherited Life Area consistent.
         await openHome(page, dateAfter(day, 1));
         const dailyFuture = page.locator('[data-timeline-event]').filter({
           hasText: created[0]!.title,
         });
         await expect(dailyFuture).toHaveCount(1);
+        if (dailyLifeArea !== null) {
+          await expect(
+            dailyFuture.locator('.timeline-event-card__meta'),
+          ).toContainText(dailyLifeArea);
+        }
         const dailyFutureSchedule = await dailyFuture.getAttribute(
           'data-timeline-event',
         );
