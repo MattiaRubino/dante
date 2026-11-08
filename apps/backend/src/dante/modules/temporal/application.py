@@ -593,11 +593,25 @@ class TemporalTimelineApplication:
                 SELECT 'event'::text AS owner_kind,
                        expectation.event_ref AS subject_native_ref,
                        expectation.self_person_ref,
-                       expectation.title,
+                       COALESCE(first_edit.patch->>'title', expectation.title) AS title,
                        NULL::text AS source_kind,
                        NULL::uuid AS source_native_ref,
                        NULL::uuid AS occurrence_ref
                   FROM dante.event_expectation AS expectation
+             LEFT JOIN LATERAL (
+                 -- A converted Event keeps its physical first Schedule.
+                 -- That card must read the accepted first-Occurrence patch,
+                 -- not the unmodified original Event descriptor.
+                 SELECT dante.get_self_occurrence_profile_patch(
+                     :self_person_ref, linked.first_occurrence_ref
+                 ) AS patch
+                   FROM dante.get_self_event_recurring_seed(
+                       :self_person_ref, expectation.event_ref
+                   ) AS seed
+                   JOIN dante.get_self_event_recurring_first_by_source(
+                       :self_person_ref, seed.source_event_ref
+                   ) AS linked ON TRUE
+             ) AS first_edit ON TRUE
                 UNION ALL
                 SELECT 'occurrence'::text AS owner_kind,
                        occurrence.occurrence_ref AS subject_native_ref,

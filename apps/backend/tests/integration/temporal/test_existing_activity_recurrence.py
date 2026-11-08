@@ -34,6 +34,7 @@ from dante.modules.temporal.recurring_conversion import (
     RecurringConversionApplication,
     RecurringConversionConflictError,
 )
+from dante.modules.temporal.recurring_series_edit import RecurringSeriesEditApplication
 from dante.modules.temporal.routine_occurrence_materialization import (
     RoutineOccurrenceMaterializationApplication,
 )
@@ -378,6 +379,58 @@ async def test_existing_event_keeps_first_event_and_excludes_duplicate_occurrenc
                 )
                 is None
             )
+        # Re-edit the already converted Event from its *physical first*
+        # Occurrence. Its Event Schedule is retained, but it must read the
+        # selected+following title correction just like later Occurrences.
+        series = RecurringSeriesEditApplication(runtime.session_factory)
+        source = await series.source(
+            self_person_ref=actor,
+            selected_occurrence_ref=first_occurrence,
+        )
+        assert source.owner == "event"
+        review = await series.preview(
+            self_person_ref=actor,
+            selected_occurrence_ref=first_occurrence,
+            requested_scope="this_and_following",
+            expected_revision=source.edit_revision,
+            expected_state_ref=source.recurrence_state_ref,
+            effective_zone_id="Europe/Rome",
+            proposed_recurrence=source.recurrence,
+            proposed_structure=source.structure_snapshot,
+            profile_patch={"title": "Visita aggiornata"},
+        )
+        assert first_occurrence in review.scope.target_occurrence_refs
+        await series.accept(
+            self_person_ref=actor,
+            selected_occurrence_ref=first_occurrence,
+            requested_scope="this_and_following",
+            expected_revision=source.edit_revision,
+            expected_state_ref=source.recurrence_state_ref,
+            effective_zone_id="Europe/Rome",
+            proposed_recurrence=source.recurrence,
+            proposed_structure=source.structure_snapshot,
+            profile_patch={"title": "Visita aggiornata"},
+            expected_fingerprint=review.fingerprint,
+            operation_id="existing-event-repeat:edit-first",
+        )
+        revised_window = await TemporalTimelineApplication(
+            runtime.session_factory
+        ).read_window(
+            query=TimelineWindowQuery(
+                start_date=date(2027, 1, 2),
+                end_date_exclusive=date(2027, 1, 4),
+            ),
+            context=_context(actor),
+        )
+        revised_original = [
+            item
+            for item in revised_window.items
+            if isinstance(item, TimelineNamedZoneLocalEventItem) and item.event_ref == original
+        ]
+        assert len(revised_original) == 1
+        assert revised_original[0].schedule_ref == schedule.schedule_ref
+        assert revised_original[0].title == "Visita aggiornata"
+
         async with runtime.session_factory() as session, session.begin():
             await session.execute(
                 text(
