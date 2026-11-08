@@ -2428,9 +2428,11 @@ describe('Event Inspector actions', () => {
       '[aria-label="Configurazione obiettivi"]',
       '.timeline-activity-editor__location',
       '.timeline-activity-editor__description',
-      ':scope > .timeline-recurring-series-editor__advanced',
     ].map((selector) => form.querySelector(selector));
     expect(formSections.every(Boolean)).toBe(true);
+    expect(
+      form.querySelector(':scope > .timeline-recurring-series-editor__advanced'),
+    ).toBeNull();
     const routineTitleRow = form.querySelector('.temporal-authoring-title-row');
     expect(routineTitleRow?.getAttribute('data-authoring-title-kind')).toBe('activity');
     expect(routineTitleRow?.firstElementChild?.textContent).toBe('◇');

@@ -87,7 +87,13 @@ test('Advanced Activity and Event share one actual title rail without displaced 
   }
 
   const activity = await rail('activity');
-  await dialog.getByRole('button', { name: 'Evento', exact: true }).click();
+  const eventChoice = dialog.getByRole('radio', {
+    name: 'Evento',
+    exact: true,
+  });
+  await expect(eventChoice).toBeEnabled();
+  await eventChoice.click();
+  await expect(eventChoice).toHaveAttribute('aria-checked', 'true');
   const event = await rail('event');
 
   for (const result of [activity, event]) {

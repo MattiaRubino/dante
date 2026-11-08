@@ -212,7 +212,8 @@ async def test_one_off_event_lock_change_is_atomic_and_cas_guarded(
             current = await _read_event_in_session(
                 session, self_person_ref=owner, event_ref=event
             )
-        assert current is not None and current.title == "Evento protetto"
+        assert current is not None
+        assert current.title == "Evento protetto"
 
         moved = await apply_one_off_event_atomic_edit(
             event,
@@ -243,7 +244,8 @@ async def test_one_off_event_lock_change_is_atomic_and_cas_guarded(
         final = await locks.get(
             self_person_ref=owner, schedule_ref=original.schedule_ref
         )
-        assert not final.locked and final.revision == 2
+        assert not final.locked
+        assert final.revision == 2
     finally:
         await runtime.dispose()
 
