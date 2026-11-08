@@ -477,4 +477,122 @@ test.describe('Timeline — real user Activity/Event lifecycle matrix', () => {
       await user.close();
     }
   });
+  test('recurring Event: instance-only and following edits, scoped deletion then whole-series deletion', async ({
+    browser,
+  }, testInfo) => {
+    const user = await signedInPage(browser, testInfo, 7);
+    try {
+      const { page } = user;
+      const day = scenarioDate();
+      await openHome(page, day);
+      const title = uniqueTitle('evento serie');
+      await create(page, {
+        kind: 'event',
+        title,
+        date: day,
+        clock: '14:20',
+        recurrence: 'daily',
+        agenda: 'Ordine del giorno',
+      });
+      await openHome(page, day);
+      const first = page.locator('[data-timeline-event]')
+        .filter({ hasText: title }).first();
+      await expect(first).toBeVisible();
+      await first.getByRole('button', { name: title, exact: true }).click();
+      let inspector = page.locator('.timeline-event-modal[role="dialog"]');
+      await inspector.getByRole('button', { name: 'Modifica' }).click();
+      const scope = page.getByRole('dialog', {
+        name: 'Modifica ricorrenza',
+      });
+      await expect(scope).toBeVisible();
+      await scope.getByRole('button', { name: 'Solo questa istanza' }).click();
+      await expect(inspector.getByRole('region', {
+        name: 'Ripetizione', exact: true,
+      })).toHaveCount(0);
+      const localTitle = title + ' locale';
+      await inspector.getByRole('textbox', { name: 'Titolo Event' })
+        .fill(localTitle);
+      await inspector.getByRole('button', { name: 'Salva modifiche' }).click();
+
+      await openHome(page, day);
+      await expect(page.locator('[data-timeline-event]')
+        .filter({ hasText: localTitle }).first()).toBeVisible();
+      await openHome(page, dateAfter(day, 1));
+      await expect(page.locator('[data-timeline-event]')
+        .filter({ hasText: localTitle })).toHaveCount(0);
+
+      const following = page.locator('[data-timeline-event]')
+        .filter({ hasText: title }).first();
+      await expect(following).toBeVisible();
+      await following.getByRole('button', { name: title, exact: true }).click();
+      inspector = page.locator('.timeline-event-modal[role="dialog"]');
+      await inspector.getByRole('button', { name: 'Modifica' }).click();
+      await page.getByRole('dialog', { name: 'Modifica ricorrenza' })
+        .getByRole('button', { name: 'Questa e le successive' }).click();
+      const repeat = inspector.getByRole('region', {
+        name: 'Ripetizione', exact: true,
+      });
+      await expect(repeat).toHaveAttribute('data-recurrence-expanded', 'true');
+      const seriesTitle = title + ' futuro';
+      await inspector.getByRole('textbox', { name: 'Titolo' })
+        .fill(seriesTitle);
+      await inspector.getByRole('button', { name: 'Salva modifiche' }).click();
+      const review = page.getByRole('dialog', {
+        name: 'Controlla prima di salvare',
+      });
+      await expect(review).toBeVisible();
+      await review.getByRole('button', { name: 'Conferma salvataggio' }).click();
+
+      await openHome(page, dateAfter(day, 1));
+      const current = page.locator('[data-timeline-event]')
+        .filter({ hasText: seriesTitle }).first();
+      await expect(current).toBeVisible();
+      await current.getByRole('button', {
+        name: seriesTitle, exact: true,
+      }).click();
+      inspector = page.locator('.timeline-event-modal[role="dialog"]');
+      await inspector.getByRole('button', { name: 'Elimina Event' }).click();
+      await expect(
+        inspector.getByRole('button', { name: 'Solo questa istanza' }),
+      ).toBeVisible();
+      await expect(
+        inspector.getByRole('button', { name: 'Tutta la serie' }),
+      ).toBeVisible();
+      await inspector.getByRole('button', { name: 'Annulla' }).click();
+
+      // Delete the selected generated instance without touching the source.
+      await inspector.getByRole('button', { name: 'Elimina Event' }).click();
+      const instanceDelete = page.waitForResponse(
+        (response) =>
+          response.url().includes('/api/v1/temporal/hard-deletion/') &&
+          response.request().method() === 'DELETE',
+      );
+      await inspector.getByRole('button', {
+        name: 'Solo questa istanza',
+      }).click();
+      expect((await instanceDelete).status()).toBe(200);
+      await openHome(page, dateAfter(day, 2));
+      const future = page.locator('[data-timeline-event]')
+        .filter({ hasText: seriesTitle }).first();
+      await expect(future).toBeVisible();
+      await future.getByRole('button', {
+        name: seriesTitle, exact: true,
+      }).click();
+      inspector = page.locator('.timeline-event-modal[role="dialog"]');
+      await inspector.getByRole('button', { name: 'Elimina Event' }).click();
+      const seriesDelete = page.waitForResponse(
+        (response) =>
+          response.url().includes('/api/v1/temporal/hard-deletion/') &&
+          response.request().method() === 'DELETE',
+      );
+      await inspector.getByRole('button', { name: 'Tutta la serie' }).click();
+      expect((await seriesDelete).status()).toBe(200);
+      await openHome(page, dateAfter(day, 3));
+      await expect(page.locator('[data-timeline-event]')
+        .filter({ hasText: seriesTitle })).toHaveCount(0);
+    } finally {
+      await user.close();
+    }
+  });
+
 });
