@@ -170,6 +170,23 @@ test.describe('Timeline — real user Activity/Event lifecycle matrix', () => {
           { headers: { 'X-Dante-Time-Zone': 'Europe/Rome' } },
         );
         expect(deletedRead.status()).toBe(404);
+        // Advancing the Timeline and checkpointing a later day must never
+        // regenerate a deleted one-off or move an unrelated duplicate.
+        await openHome(page, dateAfter(day, 1));
+        await expect(
+          page.locator('[data-timeline-event="' + original.scheduleRef + '"]'),
+        ).toHaveCount(0);
+        await expect(
+          page.locator('[data-timeline-event="' + duplicate.scheduleRef + '"]'),
+        ).toHaveCount(0);
+        await openHome(page, day);
+        await expect(
+          page.locator('[data-timeline-event="' + original.scheduleRef + '"]'),
+        ).toHaveCount(0);
+        await expect(
+          page.locator('[data-timeline-event="' + duplicate.scheduleRef + '"]'),
+        ).toHaveCount(1);
+        await assertPersistedTitle(page, duplicate, copiedTitle);
       } finally {
         await user.close();
       }
@@ -307,6 +324,30 @@ test.describe('Timeline — real user Activity/Event lifecycle matrix', () => {
             }).first(),
           ).toBeVisible();
         }
+        // A second Timeline checkpoint on the next calendar day must keep
+        // the daily source consistent and must not create duplicate cards.
+        await openHome(page, dateAfter(day, 1));
+        const dailyFuture = page.locator('[data-timeline-event]').filter({
+          hasText: created[0]!.title,
+        });
+        await expect(dailyFuture).toHaveCount(1);
+        const dailyFutureSchedule = await dailyFuture.getAttribute(
+          'data-timeline-event',
+        );
+        expect(dailyFutureSchedule).toMatch(/^[\da-f-]{36}$/i);
+        if (created[0]!.scheduleRef) {
+          expect(dailyFutureSchedule).not.toBe(created[0]!.scheduleRef);
+        }
+        await openHome(page, day);
+        await expect(
+          page.locator('[data-timeline-event]').filter({
+            hasText: created[0]!.title,
+          }),
+        ).toHaveCount(1);
+        await openHome(page, dateAfter(day, 1));
+        await expect(
+          page.locator('[data-timeline-event="' + dailyFutureSchedule + '"]'),
+        ).toHaveCount(1);
         if (kind === 'activity') {
           const routines = (await serverRead(
             page,
@@ -384,11 +425,39 @@ test.describe('Timeline — real user Activity/Event lifecycle matrix', () => {
         ).toHaveCount(1);
         await assertPersistedTitle(page, original, title);
         await openHome(page, dateAfter(day, 1));
+        const future = page.locator('[data-timeline-event]').filter({
+          hasText: title,
+        });
+        await expect(future).toHaveCount(1);
+        const firstFutureSchedule = await future.getAttribute(
+          'data-timeline-event',
+        );
+        expect(firstFutureSchedule).toMatch(/^[\da-f-]{36}$/i);
+        expect(firstFutureSchedule).not.toBe(original.scheduleRef);
+
+        await openHome(page, dateAfter(day, 2));
+        const later = page.locator('[data-timeline-event]').filter({
+          hasText: title,
+        });
+        await expect(later).toHaveCount(1);
+        const secondFutureSchedule = await later.getAttribute(
+          'data-timeline-event',
+        );
+        expect(secondFutureSchedule).not.toBe(firstFutureSchedule);
+        expect(secondFutureSchedule).not.toBe(original.scheduleRef);
+
+        // After materializing later Occurrences, revisit both earlier dates:
+        // the first physical identity and accepted future identities must not
+        // be replaced or rewritten by checkpoint/reconciliation.
+        await openHome(page, day);
         await expect(
-          page.locator('[data-timeline-event]').filter({
-            hasText: title,
-          }).first(),
-        ).toBeVisible();
+          page.locator('[data-timeline-event="' + original.scheduleRef + '"]'),
+        ).toHaveCount(1);
+        await assertPersistedTitle(page, original, title);
+        await openHome(page, dateAfter(day, 1));
+        await expect(
+          page.locator('[data-timeline-event="' + firstFutureSchedule + '"]'),
+        ).toHaveCount(1);
       }
     } finally {
       await user.close();
