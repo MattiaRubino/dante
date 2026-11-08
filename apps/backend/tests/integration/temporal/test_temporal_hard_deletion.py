@@ -19,6 +19,10 @@ from tests.integration.temporal.test_recurring_event_create import _daily_named_
 from dante.context.contracts import DanteContext
 from dante.modules.temporal.authoring import TemporalAuthoringApplication
 from dante.modules.temporal.event_occurrence_policy import EventOccurrencePolicyApplication
+from dante.modules.temporal.execution_policy_api import (
+    ExecutionPolicyCommand,
+    set_execution_policy,
+)
 from dante.modules.temporal.reality_objective_api import (
     ObjectiveCreateCommand,
     RealityPolicyCommand,
@@ -309,11 +313,36 @@ async def test_open_live_activity_session_blocks_destructive_instance_deletion(
         activity = await _activity_for(runtime, actor, occurrence)
         assert activity is not None
 
-        await enable_live_capture(
-            runtime.session_factory,
-            actor=actor,
-            activity_ref=activity,
-        )
+        # Materialization may already seed an Activity execution policy.
+        # Treat the canonical state as a CAS precondition; the generic
+        # enable_live_capture() fixture assumes a brand-new Activity and
+        # incorrectly passes a null expected state for an inherited policy.
+        async with runtime.session_factory() as session, session.begin():
+            current_policy = (
+                (
+                    await session.execute(
+                        text(
+                            "SELECT state_ref, mode_code "
+                            "FROM dante.get_self_activity_execution_policy(:actor,:activity)"
+                        ),
+                        {"actor": actor, "activity": activity},
+                    )
+                )
+                .mappings()
+                .one()
+            )
+        if current_policy["mode_code"] not in {"live", "record_and_live"}:
+            await set_execution_policy(
+                activity,
+                ExecutionPolicyCommand(
+                    operation_id="hard:active-session:enable",
+                    mode_code="live",
+                    expected_state_ref=current_policy["state_ref"],
+                ),
+                _context(actor),
+                _request(runtime),
+                Response(),
+            )
         started = await sessions.start(
             self_person_ref=actor,
             operation_id="hard:active-session:start",
@@ -325,7 +354,8 @@ async def test_open_live_activity_session_blocks_destructive_instance_deletion(
         try:
             fingerprint = await _preview(runtime, actor, activity, "activity_instance")
         except ProblemError as denied:
-            assert denied.status == 409
+            if denied.status != 409:
+                raise
         else:
             with pytest.raises(ProblemError) as denied:
                 await _delete(runtime, actor, activity, "activity_instance", fingerprint)
@@ -355,9 +385,7 @@ async def test_open_live_activity_session_blocks_destructive_instance_deletion(
             effective_zone_id="Europe/Rome",
         )
         assert await _activity_for(runtime, actor, occurrence) == activity
-        assert (
-            await sessions.get(self_person_ref=actor, session_ref=started.session_ref)
-        ).open
+        assert (await sessions.get(self_person_ref=actor, session_ref=started.session_ref)).open
 
         stopped = await sessions.end(
             self_person_ref=actor,
