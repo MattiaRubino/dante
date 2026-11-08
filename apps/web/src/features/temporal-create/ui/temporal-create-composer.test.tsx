@@ -230,6 +230,7 @@ describe('TemporalCreateComposer', () => {
       'full',
     );
     const onPatch = vi.fn();
+    const onU2DraftChange = vi.fn();
 
     render(
       <TemporalCreateComposer
@@ -241,6 +242,7 @@ describe('TemporalCreateComposer', () => {
         postCreateRetry={false}
         u2Draft={createTemporalCreateU2AuthoringDraft(session.draft.current)}
         onPatch={onPatch}
+        onU2DraftChange={onU2DraftChange}
         onSurfaceChange={vi.fn()}
         onRequestClose={vi.fn()}
         onContinueEditing={vi.fn()}
@@ -248,6 +250,29 @@ describe('TemporalCreateComposer', () => {
         onMoveToUnplaced={vi.fn()}
         onSubmit={vi.fn()}
       />,
+    );
+
+    const eventTitleRow = document.querySelector('.temporal-event-title-row');
+    expect(eventTitleRow).not.toBeNull();
+    expect(eventTitleRow?.querySelector('[data-create-path="title"]')).toBeTruthy();
+    const eventLock = screen.getByRole('button', { name: 'Blocca spostamenti' });
+    expect(eventTitleRow?.contains(eventLock)).toBe(true);
+    expect(eventLock.getAttribute('data-placement-protection')).toBe('event');
+    expect(eventLock.getAttribute('aria-pressed')).toBe('false');
+    fireEvent.click(eventLock);
+    expect(
+      screen.getByRole('button', { name: 'Sblocca spostamenti' })
+        .getAttribute('aria-pressed'),
+    ).toBe('true');
+    expect(onU2DraftChange).toHaveBeenCalledWith(
+      expect.objectContaining({ eventPlacementProtected: true }),
+      'user',
+    );
+    fireEvent.click(screen.getByRole('button', { name: 'Sblocca spostamenti' }));
+    expect(eventLock.getAttribute('aria-pressed')).toBe('false');
+    expect(onU2DraftChange).toHaveBeenLastCalledWith(
+      expect.objectContaining({ eventPlacementProtected: false }),
+      'user',
     );
 
     expect(

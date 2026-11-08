@@ -429,6 +429,7 @@ describe('Event Inspector actions', () => {
         eventRef={eventRef}
         occurrenceRef={occurrenceRef}
         placement={placement}
+        scheduleRef="0199a444-4444-7444-8444-444444444444"
         onDuplicate={vi.fn()}
       />,
     );
@@ -438,6 +439,17 @@ describe('Event Inspector actions', () => {
     );
     const title = await screen.findByRole('textbox', { name: 'Titolo Event' });
     expect(title).toHaveProperty('value', 'Conferenza locale');
+    const localRow = title.closest('.temporal-event-title-row');
+    expect(localRow).not.toBeNull();
+    const localLock = screen.getByRole('button', { name: 'Blocca spostamenti' });
+    expect(localRow?.contains(localLock)).toBe(true);
+    expect(localLock.getAttribute('aria-pressed')).toBe('false');
+    fireEvent.click(localLock);
+    expect(
+      screen.getByRole('button', { name: 'Sblocca spostamenti' })
+        .getAttribute('aria-pressed'),
+    ).toBe('true');
+    expect(saveRecurringEvent).not.toHaveBeenCalled();
     expect(screen.queryByRole('button', { name: 'Duplica' })).toBeNull();
     expect(screen.queryByRole('button', { name: 'Copia in Bozze' })).toBeNull();
     expect(screen.queryByText('Ambito: solo questa istanza.')).toBeNull();
@@ -476,7 +488,15 @@ describe('Event Inspector actions', () => {
             },
           ],
         },
-        expect.objectContaining({ objectives: null, schedule: null }),
+        expect.objectContaining({
+          objectives: null,
+          schedule: null,
+          placementLock: {
+            scheduleRef: '0199a444-4444-7444-8444-444444444444',
+            locked: true,
+            expectedRevision: 0,
+          },
+        }),
         expect.any(String),
       ),
     );
@@ -637,6 +657,19 @@ describe('Event Inspector actions', () => {
       name: 'Scaletta evento',
     });
     const seriesTitle = screen.getByRole('textbox', { name: 'Titolo' });
+    const seriesTitleRow = seriesTitle.closest('.temporal-event-title-row');
+    expect(seriesTitleRow).not.toBeNull();
+    const seriesLock = screen.getByRole('button', {
+      name: 'Blocca spostamenti',
+    });
+    expect(seriesTitleRow?.contains(seriesLock)).toBe(true);
+    expect(seriesLock.getAttribute('aria-pressed')).toBe('false');
+    fireEvent.click(seriesLock);
+    expect(
+      screen.getByRole('button', { name: 'Sblocca spostamenti' })
+        .getAttribute('aria-pressed'),
+    ).toBe('true');
+    expect(acceptSeries).not.toHaveBeenCalled();
     const seriesTiming = screen.getByRole('region', {
       name: 'Orario della serie',
     });
@@ -678,6 +711,7 @@ describe('Event Inspector actions', () => {
           selectedRef: occurrenceRef,
           scope: 'from_next',
           profilePatch: { title: 'Nuova conferenza' },
+          structure: expect.objectContaining({ placement_protected: true }),
         }),
       ),
     );
