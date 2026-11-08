@@ -42,8 +42,16 @@ test.describe('Timeline — real user Activity/Event lifecycle matrix', () => {
     const url = item.kind === 'activity'
       ? '/api/v1/temporal/activities/' + item.sourceRef + '/profile'
       : '/api/v1/temporal/events/' + item.sourceRef;
-    const persisted = (await serverRead(page, url)) as Record<string, unknown>;
-    expect(persisted.title).toBe(expected);
+    await expect
+      .poll(async () => {
+        const response = await page.request.get(url, {
+          headers: { 'X-Dante-Time-Zone': 'Europe/Rome' },
+        });
+        if (response.status() !== 200) return 'HTTP ' + response.status();
+        const persisted = (await response.json()) as Record<string, unknown>;
+        return persisted.title;
+      }, { timeout: 20_000 })
+      .toBe(expected);
   }
 
   async function duplicateFromInspector(

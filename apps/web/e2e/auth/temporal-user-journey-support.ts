@@ -279,7 +279,22 @@ export async function submitCreate(
     { timeout: REQUEST_TIMEOUT },
   );
   await composer.getByRole('button', { name: 'Aggiungi', exact: true }).click();
-  const response = await accepted;
+  let response: Awaited<typeof accepted>;
+  try {
+    response = await accepted;
+  } catch (error) {
+    const alerts = await composer.locator('[role="alert"]').allTextContents();
+    const startDate = await composer
+      .getByRole('button', { name: /^Data inizio:/ })
+      .getAttribute('data-temporal-date')
+      .catch(() => null);
+    throw new Error(
+      'Create POST absent for ' + options.title +
+        '; start=' + startDate +
+        '; validation=' + JSON.stringify(alerts),
+      { cause: error },
+    );
+  }
   const payload = (await response.json()) as Record<string, unknown>;
   expect(response.ok(), JSON.stringify({ path, payload })).toBe(true);
   await expect(composer).toHaveCount(0);
