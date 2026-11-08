@@ -2517,6 +2517,17 @@ describe('Event Inspector actions', () => {
       screen.getByRole('textbox', { name: 'Nome obiettivo' }).closest('input')
         ?.value,
     ).toBe('Completato');
+    const firstInterval = screen
+      .getByText('Intervallo 1')
+      .closest('.temporal-create-activity-interval') as HTMLElement;
+    expect(firstInterval).not.toBeNull();
+    // The actual interval control is the editable time source; no second
+    // technical anchor-clock control may be exposed in the editor.
+    fireEvent.click(
+      within(firstInterval).getByRole('button', {
+        name: 'Fine: aumenta 1 minuto',
+      }),
+    );
     fireEvent.click(
       screen.getByRole('button', { name: /Aggiungi intervallo/ }),
     );
@@ -2528,7 +2539,7 @@ describe('Event Inspector actions', () => {
       structure: {
         activity_template: {
           activity_intervals: [
-            { start_offset_minutes: 0, duration_minutes: 30 },
+            { start_offset_minutes: 0, duration_minutes: 31 },
             { start_offset_minutes: 60, duration_minutes: 60 },
             { start_offset_minutes: 135, duration_minutes: 30 },
           ],
