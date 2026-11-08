@@ -2,15 +2,17 @@
 
 from __future__ import annotations
 
-from datetime import date, datetime
+from datetime import date, datetime, timedelta
 from types import SimpleNamespace
 from typing import Any, cast
 from uuid import UUID
+from zoneinfo import ZoneInfo
 
 import psycopg
 import pytest
 from fastapi import Request, Response
 from sqlalchemy import text
+from tests.integration.temporal._u6_policy import enable_live_capture
 from tests.integration.temporal.test_primary_life_area_assignment import _seed_self
 from tests.integration.temporal.test_recurring_event_create import _daily_named_zone
 
@@ -40,6 +42,7 @@ from dante.modules.temporal.routine_occurrence_materialization import (
 )
 from dante.modules.temporal.routine_occurrence_policy import RoutineOccurrencePolicyApplication
 from dante.modules.temporal.schedule import NamedZoneLocalIntervalPlacement
+from dante.modules.temporal.session_runtime import SessionApplication
 from dante.platform.database.references import NativeRef
 from dante.platform.database.runtime import create_database_runtime
 from dante.platform.http.problem import ProblemError
@@ -261,6 +264,105 @@ async def test_recurring_activity_instance_skip_and_whole_series_no_regeneration
                 "SELECT count(*) FROM dante.activity WHERE activity_ref IN (%s,%s)",
                 (first_activity, second_activity),
             ).fetchone() == (0,)
+    finally:
+        await runtime.dispose()
+
+
+@pytest.mark.asyncio
+async def test_open_live_activity_session_blocks_destructive_instance_deletion(
+    migrated_database: Any,
+) -> None:
+    """Rejected deletion must not orphan an active Session or skip its Occurrence."""
+    actor = _seed_self(migrated_database)
+    runtime = create_database_runtime(migrated_database.runtime_settings())
+    materializer = RoutineOccurrenceMaterializationApplication(runtime.session_factory)
+    sessions = SessionApplication(runtime.session_factory)
+    try:
+        routine = await RecurringAuthoringApplication(runtime.session_factory).create_routine(
+            self_person_ref=actor,
+            operation_id="hard:active-session:routine",
+            title="Active Session must survive deletion attempt",
+            life_area_intent=None,
+            recurrence=_daily_named_zone(),
+        )
+        await RoutineOccurrencePolicyApplication(runtime.session_factory).set(
+            self_person_ref=actor,
+            routine_ref=routine.source_ref,
+            duration_minutes=30,
+            reminder_lead_minutes=None,
+            activity_template={"version": 1, "planned_slices": []},
+        )
+        target_day = datetime.now(ZoneInfo("Europe/Rome")).date()
+        await materializer.checkpoint_window(
+            self_person_ref=actor,
+            operation_id="hard:active-session:initial",
+            start_date=target_day,
+            end_date_exclusive=target_day + timedelta(days=1),
+            effective_zone_id="Europe/Rome",
+        )
+        instances = _occurrences(migrated_database, routine.source_ref)
+        assert len(instances) == 1
+        occurrence = instances[0]
+        activity = await _activity_for(runtime, actor, occurrence)
+        assert activity is not None
+
+        await enable_live_capture(
+            runtime.session_factory,
+            actor=actor,
+            activity_ref=activity,
+        )
+        started = await sessions.start(
+            self_person_ref=actor,
+            operation_id="hard:active-session:start",
+            subject_kind="activity",
+            subject_native_ref=activity,
+        )
+        assert started.open
+
+        try:
+            fingerprint = await _preview(runtime, actor, activity, "activity_instance")
+        except ProblemError as denied:
+            assert denied.status == 409
+        else:
+            with pytest.raises(ProblemError) as denied:
+                await _delete(runtime, actor, activity, "activity_instance", fingerprint)
+            assert denied.value.status == 409
+
+        # The guard is not satisfied by hiding a Timeline card. All canonical
+        # native references and open Session timing facts must remain intact.
+        assert await _activity_for(runtime, actor, occurrence) == activity
+        assert not _exists(
+            migrated_database,
+            "SELECT EXISTS(SELECT 1 FROM dante.occurrence_skip WHERE occurrence_ref=%s)",
+            occurrence,
+        )
+        still_running = await sessions.get(
+            self_person_ref=actor,
+            session_ref=started.session_ref,
+        )
+        assert still_running.open
+        assert still_running.subject_native_ref == activity
+        assert still_running.timing_material_state_ref == started.timing_material_state_ref
+
+        await materializer.checkpoint_window(
+            self_person_ref=actor,
+            operation_id="hard:active-session:recheckpoint",
+            start_date=target_day,
+            end_date_exclusive=target_day + timedelta(days=1),
+            effective_zone_id="Europe/Rome",
+        )
+        assert await _activity_for(runtime, actor, occurrence) == activity
+        assert (
+            await sessions.get(self_person_ref=actor, session_ref=started.session_ref)
+        ).open
+
+        stopped = await sessions.end(
+            self_person_ref=actor,
+            operation_id="hard:active-session:stop",
+            session_ref=started.session_ref,
+            expected_material_state_ref=started.timing_material_state_ref,
+        )
+        assert not stopped.open
     finally:
         await runtime.dispose()
 
