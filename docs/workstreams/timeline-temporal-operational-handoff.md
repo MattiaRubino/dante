@@ -1,5 +1,16 @@
 # Timeline / Temporal-Operational — Workstream Handoff
 
+## 2026-11-08 — User-lifecycle E2E performance and bounded-failure follow-up
+
+Owner QA archive `TEMPORAL_QA_054607866.tar.gz` on `054607866`: backend 51/51 PostgreSQL, Web 117/117 Vitest, Ruff/MyPy/Dictionary/ESLint PASS; one backend formatting issue and one Web Prettier issue; authenticated Chromium user lifecycle 1 PASS / 6 FAIL, approximately 5m 18s.
+
+Trace analysis identified two disproportionate blockers: the one-off Event test hung during `page.goto('/home?...')` after deletion until its 300s test timeout, and Activity one-off-to-recurring conversion observed HTTP 200 but `response.json()` never completed before the 120s timeout. The `openHome` test helper now uses `waitUntil:'domcontentloaded'` and a bounded navigation while retaining **both** the authenticated canonical Timeline GET 200 and the UI `ready` assertion. The conversion test bounds JSON-body completion at 12s, failing loudly if HTTP body is incomplete; status-only success is not substituted. The Activity inspector regression formatting issue is corrected.
+
+The traces also reveal high backend read volume: one recurring Event journey recorded 555 Temporal API records / 32 Timeline window reads; the conversion trace recorded 253 Temporal API records including 87 per-Activity `/sessions` reads. This suggests a separately measurable app data-fetch efficiency issue; do not hide it by weakening Playwright consistency assertions.
+
+**Unresolved:** Activity deletion 503, monthly/ordinal recurrence visibility, conversion HTTP body completeness, and any remaining Event browser error. Do not label functional journeys PASS before same-SHA real-stack evidence. During debugging run a focused Playwright `--grep` selection, keep isolated users, and execute all seven plus 27-group gate only at a coherent checkpoint. No new product or database migration was introduced in the bounded test-performance patch.
+
+
 ## 2026-11-08 — Web regression contract refresh after 896f643e full gate
 
 After the canonical backend alignment, obsolete frontend assertions were updated without relaxing persistence checks: Create and revise Objective payloads now assert their explicit verification fields, the global completion-mode UI is correctly absent, and shared recurrence geometry is asserted in the shared panel. Existing Activity recurrence starts through the single Edit Save rather than the retired independent action. Authenticated one-off Activity/Event deletion tests now drive the portal `alertdialog`, retaining cancel-before-confirm, HTTP response, and post-reload absence assertions. The Life Area golden test selects the precise `Ripeti` combobox, avoiding the label/region collision.
