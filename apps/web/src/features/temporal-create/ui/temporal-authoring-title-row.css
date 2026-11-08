@@ -19,7 +19,8 @@
   margin: 0;
   padding: 0;
   overflow: hidden;
-  border: 1px solid var(--dante-semantic-color-home-border-subtle, rgba(255, 255, 255, 0.13));
+  border: 1px solid
+    var(--dante-semantic-color-home-border-subtle, rgba(255, 255, 255, 0.13));
   border-radius: 11px;
   background: var(--dante-semantic-color-home-surface-control, #1c292d);
   transition: border-color 120ms ease, box-shadow 120ms ease;
@@ -40,7 +41,8 @@
   width: 36px;
   min-height: 50px;
   align-self: stretch;
-  border-right: 1px solid var(--dante-semantic-color-home-border-subtle, rgba(255, 255, 255, 0.13));
+  border-right: 1px solid
+    var(--dante-semantic-color-home-border-subtle, rgba(255, 255, 255, 0.13));
   color: var(--dante-semantic-color-home-chrome-active-text, #f0a06f);
   font-size: 18px;
   font-weight: 650;
@@ -113,7 +115,8 @@
   min-height: 50px;
   margin: 0;
   padding: 0;
-  border-left: 1px solid var(--dante-semantic-color-home-border-subtle, rgba(255, 255, 255, 0.13));
+  border-left: 1px solid
+    var(--dante-semantic-color-home-border-subtle, rgba(255, 255, 255, 0.13));
   background: transparent;
 }
 
@@ -132,6 +135,7 @@
   border-radius: 0;
   background: transparent;
   white-space: nowrap;
+  color: var(--dante-semantic-color-home-text-secondary, #b7c0cf);
   font-size: 13px;
 }
 
@@ -139,7 +143,8 @@
   > .temporal-create-title-row__tools
   > :is(button, label, .temporal-create-reality-section)
   + :is(button, label, .temporal-create-reality-section) {
-  border-left: 1px solid var(--dante-semantic-color-home-border-subtle, rgba(255, 255, 255, 0.13));
+  border-left: 1px solid
+    var(--dante-semantic-color-home-border-subtle, rgba(255, 255, 255, 0.13));
 }
 
 .temporal-authoring-title-row.has-tools
@@ -155,6 +160,7 @@
   border: 0;
   border-radius: 0;
   background: transparent;
+  color: var(--dante-semantic-color-home-text-secondary, #b7c0cf);
   white-space: nowrap;
   font-size: 13px;
 }
@@ -167,12 +173,22 @@
 }
 
 .temporal-authoring-title-row.has-tools:focus-within {
-  border-color: color-mix(in srgb, var(--dante-semantic-color-home-chrome-active, #ea5c12) 68%, transparent);
+  border-color: color-mix(
+    in srgb,
+    var(--dante-semantic-color-home-chrome-active, #ea5c12) 68%,
+    transparent
+  );
   box-shadow: 0 0 0 1px color-mix(in srgb, #ea5c12 13%, transparent);
 }
 
 .temporal-authoring-title-row.is-quick .temporal-authoring-title-row__marker {
   display: none;
+}
+
+.temporal-authoring-title-row.has-tools
+  .temporal-create-placement-lock:hover:not(:disabled) {
+  color: var(--dante-semantic-color-home-chrome-active-text, #f0a06f);
+  background: color-mix(in srgb, #ea5c12 6%, transparent);
 }
 
 @media (max-width: 640px) {
