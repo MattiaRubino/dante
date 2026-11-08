@@ -201,6 +201,78 @@ test('Activity Edit applies readable font sizes rather than inherited tiny label
   });
 });
 
+test('Advanced Create and every Edit surface share section typography and control sizes', async ({
+  page,
+}) => {
+  await page.goto('/home');
+  // Use the actual shared stylesheet, independent of authenticated fixtures.
+  await page.addStyleTag({
+    path: 'src/features/temporal-create/ui/temporal-editor-section-typography.css',
+  });
+  const surfaces = await page.evaluate(() => {
+    const root = document.createElement('div');
+    root.innerHTML = [
+      '<section class="temporal-create-composer is-advanced" data-surface="create">',
+      '  <strong class="temporal-editor-section-heading">Obiettivi</strong>',
+      '  <button class="temporal-create-tree-add">Sessione</button>',
+      '</section>',
+      '<section class="timeline-event-modal--edit" data-surface="activity">',
+      '  <div class="timeline-activity-editor__body">',
+      '    <strong class="temporal-editor-section-heading">Sessioni attività</strong>',
+      '    <button class="temporal-create-tree-add">Sessione</button>',
+      '  </div>',
+      '</section>',
+      '<section class="timeline-event-modal--edit" data-surface="event">',
+      '  <div class="timeline-activity-editor__body">',
+      '    <strong class="temporal-editor-section-heading">Scaletta</strong>',
+      '    <button class="temporal-create-tree-add">Scaletta</button>',
+      '  </div>',
+      '</section>',
+      '<section class="timeline-event-modal--edit" data-surface="series">',
+      '  <div class="timeline-activity-editor__body">',
+      '    <strong class="temporal-editor-section-heading">Obiettivi</strong>',
+      '    <button class="temporal-create-tree-add">Sessione</button>',
+      '  </div>',
+      '</section>',
+    ].join('');
+    document.body.appendChild(root);
+    const values = ['create', 'activity', 'event', 'series'].map((name) => {
+      const surface = root.querySelector(`[data-surface="${name}"]`)!;
+      const heading = getComputedStyle(
+        surface.querySelector('.temporal-editor-section-heading')!,
+      );
+      const button = getComputedStyle(
+        surface.querySelector('.temporal-create-tree-add')!,
+      );
+      return {
+        name,
+        titleSize: heading.fontSize,
+        titleWeight: heading.fontWeight,
+        titleCase: heading.textTransform,
+        titleColor: heading.color,
+        actionSize: button.fontSize,
+        actionHeight: parseFloat(button.minHeight),
+      };
+    });
+    root.remove();
+    return values;
+  });
+  expect(surfaces.map(({ name }) => name)).toEqual([
+    'create',
+    'activity',
+    'event',
+    'series',
+  ]);
+  for (const surface of surfaces) {
+    expect(surface.titleSize).toBe('15px');
+    expect(surface.titleCase).toBe('none');
+    expect(surface.titleWeight).toBe('650');
+    expect(surface.actionSize).toBe('14px');
+    expect(surface.actionHeight).toBeGreaterThanOrEqual(38);
+  }
+  expect(new Set(surfaces.map(({ titleColor }) => titleColor)).size).toBe(1);
+});
+
 test('Event Edit keeps its form scrollable and its Save action visible in the Activity modal shell', async ({
   page,
 }) => {
