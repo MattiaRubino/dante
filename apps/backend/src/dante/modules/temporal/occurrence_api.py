@@ -1088,13 +1088,17 @@ async def accept_event_occurrence_local_edit(
                         "occurrence": occurrence_ref,
                     },
                 )
-                if not owned_schedule or (
-                    body.schedule is not None
-                    and body.reminder is not None
-                    and body.schedule.schedule_ref != body.reminder.schedule_ref
-                ) or (
-                    body.placement_lock is not None
-                    and body.placement_lock.schedule_ref != target_schedule
+                if (
+                    not owned_schedule
+                    or (
+                        body.schedule is not None
+                        and body.reminder is not None
+                        and body.schedule.schedule_ref != body.reminder.schedule_ref
+                    )
+                    or (
+                        body.placement_lock is not None
+                        and body.placement_lock.schedule_ref != target_schedule
+                    )
                 ):
                     raise RecurringSeriesEditConflictError("Event instance Schedule changed.")
             accepted = (

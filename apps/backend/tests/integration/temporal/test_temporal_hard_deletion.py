@@ -378,17 +378,14 @@ async def test_confirmed_recurring_instance_deletion_removes_open_session_atomic
             "SELECT EXISTS(SELECT 1 FROM dante.occurrence_skip WHERE occurrence_ref=%s)",
             occurrence,
         )
-        for table, column in (
-            ("dante.session", "session_ref"),
-            ("dante.session_execution_subject", "session_ref"),
-            ("dante.session_timing_current_history", "session_ref"),
-            ("dante.native_address", "native_ref"),
+        # Allowlists use static SQL identifiers, never interpolated query text.
+        for query in (
+            "SELECT EXISTS(SELECT 1 FROM dante.session WHERE session_ref=%s)",
+            "SELECT EXISTS(SELECT 1 FROM dante.session_execution_subject WHERE session_ref=%s)",
+            "SELECT EXISTS(SELECT 1 FROM dante.session_timing_current_history WHERE session_ref=%s)",
+            "SELECT EXISTS(SELECT 1 FROM dante.native_address WHERE native_ref=%s)",
         ):
-            assert not _exists(
-                migrated_database,
-                f"SELECT EXISTS(SELECT 1 FROM {table} WHERE {column}=%s)",
-                started.session_ref,
-            )
+            assert not _exists(migrated_database, query, started.session_ref)
         assert not _exists(
             migrated_database,
             "SELECT EXISTS(SELECT 1 FROM dante.activity_intention WHERE activity_ref=%s)",

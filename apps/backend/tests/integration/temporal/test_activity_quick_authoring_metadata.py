@@ -32,8 +32,8 @@ async def test_event_creation_placement_lock_is_transactional_and_replay_safe(
     runtime = create_database_runtime(migrated_database.runtime_settings())
     authoring = TemporalAuthoringApplication(runtime.session_factory)
     placement = FloatingLocalIntervalPlacement(
-        starts_local_at=datetime(2026, 11, 9, 9, 0),
-        ends_local_at=datetime(2026, 11, 9, 10, 0),
+        starts_local_at=datetime(2026, 11, 9, 9, 0),  # noqa: DTZ001 - intentionally floating local
+        ends_local_at=datetime(2026, 11, 9, 10, 0),  # noqa: DTZ001 - intentionally floating local
     )
     try:
         first = await authoring.create_event(
@@ -51,7 +51,8 @@ async def test_event_creation_placement_lock_is_transactional_and_replay_safe(
             self_person_ref=actor,
             schedule_ref=first.schedule.schedule_ref,
         )
-        assert state.locked and state.revision == 1
+        assert state.locked
+        assert state.revision == 1
 
         replay = await authoring.create_event(
             self_person_ref=actor,

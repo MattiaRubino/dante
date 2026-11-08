@@ -7,7 +7,7 @@ import json
 from collections.abc import Mapping
 from datetime import datetime
 from decimal import Decimal
-from typing import Annotated, Literal
+from typing import Annotated, Literal, Self
 from uuid import UUID, uuid7
 
 from fastapi import APIRouter, Depends, Request, Response
@@ -133,7 +133,7 @@ class RealityPolicyResponse(BaseModel):
     replayed: bool = False
 
 
-class ObjectiveCreateCommand(BaseModel):
+class _ObjectiveDefinitionFields(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
     operation_id: str = Field(min_length=1, max_length=200)
@@ -145,10 +145,8 @@ class ObjectiveCreateCommand(BaseModel):
     target_max: Decimal | None = None
     unit_code: str | None = Field(default=None, max_length=40)
     presentation_order: int = Field(ge=0, le=999)
-    verification_mode: ObjectiveVerificationMode = "none"
-
     @model_validator(mode="after")
-    def validate_shape(self) -> ObjectiveCreateCommand:
+    def validate_shape(self) -> Self:
         # The materializer reserves this namespace for canonical Objective
         # template lineage. Public authoring must never forge its authority.
         if self.operation_id.startswith("b14:objective:"):
@@ -190,6 +188,12 @@ class ObjectiveCreateCommand(BaseModel):
         ):
             raise ValueError("range Objective requires ordered target_min/target_max")
         return self
+
+
+class ObjectiveCreateCommand(_ObjectiveDefinitionFields):
+    """Creation defaults to no user-facing review; revised definitions may omit a change."""
+
+    verification_mode: ObjectiveVerificationMode = "none"
 
 
 class ObjectiveResponse(BaseModel):
@@ -244,7 +248,7 @@ class ObjectiveDefinitionStateResponse(BaseModel):
     evaluation_state_ref: UUID | None
 
 
-class ObjectiveDefinitionReviseCommand(ObjectiveCreateCommand):
+class ObjectiveDefinitionReviseCommand(_ObjectiveDefinitionFields):
     expected_revision: int = Field(ge=0)
     verification_mode: ObjectiveVerificationMode | None = None
     expected_verification_revision: int | None = Field(default=None, ge=0)
@@ -529,7 +533,9 @@ async def set_occurrence_reality_policy(
     return await _reality_set("occurrence", subject_ref, payload, context, request, response)
 
 
-def _objective_intent(payload: ObjectiveCreateCommand) -> dict[str, object]:
+def _objective_intent(
+    payload: ObjectiveCreateCommand | ObjectiveDefinitionReviseCommand,
+) -> dict[str, object]:
     """Retain prior fingerprints when optional verification was not supplied."""
     data: dict[str, object] = payload.model_dump(mode="json")
     if data.get("verification_mode") is None or (
