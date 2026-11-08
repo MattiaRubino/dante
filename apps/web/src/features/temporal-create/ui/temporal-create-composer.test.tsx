@@ -113,6 +113,18 @@ describe('TemporalCreateComposer', () => {
         onSubmit={vi.fn()}
       />,
     );
+    const titleRow = document.querySelector(
+      '.temporal-authoring-title-row--activity',
+    );
+    expect(titleRow?.getAttribute('data-authoring-title-kind')).toBe('activity');
+    expect(titleRow?.firstElementChild?.textContent).toBe('◇');
+    expect(titleRow?.children).toHaveLength(3);
+    expect(titleRow?.children[1]?.classList.contains('temporal-create-title-row__name')).toBe(
+      true,
+    );
+    expect(titleRow?.children[2]?.classList.contains('temporal-create-title-row__tools')).toBe(
+      true,
+    );
     const date = document.querySelector('[data-create-path="date"]');
     expect(date?.classList.contains('temporal-create-u2-date-field')).toBe(
       true,
@@ -255,6 +267,19 @@ describe('TemporalCreateComposer', () => {
     const eventTitleRow = document.querySelector('.temporal-event-title-row');
     expect(eventTitleRow).not.toBeNull();
     expect(eventTitleRow?.querySelector('[data-create-path="title"]')).toBeTruthy();
+    expect(eventTitleRow?.getAttribute('data-authoring-title-kind')).toBe('event');
+    expect(
+      [...(eventTitleRow?.children ?? [])].map((child) =>
+        child.classList.contains('temporal-authoring-title-row__marker')
+          ? 'marker'
+          : child.classList.contains('temporal-create-title-row__name')
+            ? 'name'
+            : child.classList.contains('temporal-create-title-row__tools')
+              ? 'actions'
+              : 'unexpected',
+      ),
+    ).toEqual(['marker', 'name', 'actions']);
+    expect(eventTitleRow?.firstElementChild?.textContent).toBe('○');
     const eventLock = screen.getByRole('button', { name: 'Blocca spostamenti' });
     expect(eventTitleRow?.contains(eventLock)).toBe(true);
     expect(eventLock.getAttribute('data-placement-protection')).toBe('event');

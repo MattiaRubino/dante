@@ -473,17 +473,6 @@
   background: color-mix(in srgb, #ea5c12 7%, transparent);
 }
 
-.temporal-create-backdrop.is-advanced
-  .temporal-create-title-row__tools
-  .temporal-create-placement-lock {
-  min-height: 50px;
-  padding: 0 12px;
-  border: 0;
-  border-left: 1px solid
-    var(--dante-semantic-color-home-border-subtle, rgba(255, 255, 255, 0.09));
-  border-radius: 0;
-}
-
 .temporal-create-backdrop.is-advanced .temporal-create-outcome-field {
   order: -28;
   display: grid;

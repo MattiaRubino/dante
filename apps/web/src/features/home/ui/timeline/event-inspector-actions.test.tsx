@@ -216,6 +216,9 @@ describe('Event Inspector actions', () => {
     expect(reviseAtomic).not.toHaveBeenCalled();
     const unifiedTitle = lock.closest('.temporal-event-title-row');
     expect(unifiedTitle).not.toBeNull();
+    expect(unifiedTitle?.getAttribute('data-authoring-title-kind')).toBe('event');
+    expect(unifiedTitle?.firstElementChild?.textContent).toBe('○');
+    expect(unifiedTitle?.children).toHaveLength(3);
     expect(unifiedTitle?.querySelector('.temporal-create-title-input')).toBeTruthy();
     expect(
       unifiedTitle?.querySelector('.temporal-create-title-row__tools')?.contains(lock),
@@ -659,6 +662,8 @@ describe('Event Inspector actions', () => {
     const seriesTitle = screen.getByRole('textbox', { name: 'Titolo' });
     const seriesTitleRow = seriesTitle.closest('.temporal-event-title-row');
     expect(seriesTitleRow).not.toBeNull();
+    expect(seriesTitleRow?.firstElementChild?.textContent).toBe('○');
+    expect(seriesTitleRow?.children).toHaveLength(3);
     const seriesLock = screen.getByRole('button', {
       name: 'Blocca spostamenti',
     });
@@ -2289,6 +2294,10 @@ describe('Event Inspector actions', () => {
       ':scope > .timeline-recurring-series-editor__advanced',
     ].map((selector) => form.querySelector(selector));
     expect(formSections.every(Boolean)).toBe(true);
+    const routineTitleRow = form.querySelector('.temporal-authoring-title-row');
+    expect(routineTitleRow?.getAttribute('data-authoring-title-kind')).toBe('activity');
+    expect(routineTitleRow?.firstElementChild?.textContent).toBe('◇');
+    expect(routineTitleRow?.children).toHaveLength(3);
     const obsoleteReality = form.querySelector(
       '.temporal-create-reality-objectives__block.is-reality',
     );
