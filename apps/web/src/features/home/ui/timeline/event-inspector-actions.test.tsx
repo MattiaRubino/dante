@@ -33,6 +33,7 @@ const getRealityPolicy = vi
   .fn()
   .mockResolvedValue({ mode: 'manual', stateRef: null });
 const getDefinition = vi.fn();
+const correctResult = vi.fn();
 const getReminder = vi.fn().mockResolvedValue(null);
 const isRecurring = vi.fn().mockResolvedValue(false);
 const eventSeed = vi.fn().mockResolvedValue(null);
@@ -101,6 +102,7 @@ vi.mock(
         listObjectives,
         getDefinition,
         getRealityPolicy,
+        correctResult,
       }),
     };
   },
@@ -836,6 +838,78 @@ describe('Event Inspector actions', () => {
     );
     expect(await screen.findByText('Evento aggiornato.')).toBeTruthy();
     expect(onDuplicate).not.toHaveBeenCalled();
+  });
+
+  it('corrects an Event Objective result with CAS and keeps the prior history', async () => {
+    const oldResult = {
+      objectiveRef: '0199a999-9999-7999-8999-999999999999',
+      label: 'Partecipazione',
+      resultKind: 'boolean',
+      comparatorCode: null,
+      targetValue: null,
+      targetMin: null,
+      targetMax: null,
+      unitCode: null,
+      presentationOrder: 0,
+      verificationMode: 'review_on_end',
+      observedBoolean: true,
+      observedNumeric: null,
+      qualitativeCode: null,
+      assessmentCode: 'satisfied',
+      observationRef: 'previous-observation',
+      evaluationStateRef: 'current-evaluation-state',
+    };
+    const newResult = {
+      ...oldResult,
+      observedBoolean: false,
+      assessmentCode: 'not_satisfied',
+      observationRef: 'new-observation',
+      evaluationStateRef: 'new-evaluation-state',
+    };
+    listObjectives.mockResolvedValueOnce([oldResult]).mockResolvedValueOnce([
+      newResult,
+    ]);
+    loadProfile.mockResolvedValue({
+      eventRef,
+      title: 'Conferenza',
+      description: null,
+      location: null,
+      colorCode: null,
+      profileRevision: 1,
+      agendaRevision: 0,
+      agendaParts: [],
+    });
+    correctResult.mockResolvedValue({});
+    render(
+      <EventInspectorActions
+        eventRef={eventRef}
+        placement={placement}
+        onDuplicate={vi.fn()}
+      />,
+    );
+    fireEvent.click(screen.getByRole('button', { name: /^Modifica$/ }));
+    fireEvent.click(
+      await screen.findByRole('button', { name: 'Correggi risultato' }),
+    );
+    fireEvent.change(screen.getByLabelText('Risultato corretto'), {
+      target: { value: 'false' },
+    });
+    fireEvent.click(screen.getByRole('button', { name: 'Salva rettifica' }));
+    await waitFor(() => expect(correctResult).toHaveBeenCalledOnce());
+    expect(correctResult).toHaveBeenCalledWith(
+      oldResult.objectiveRef,
+      expect.objectContaining({
+        expectedEvaluationStateRef: 'current-evaluation-state',
+        observedBoolean: false,
+        observedNumeric: null,
+        qualitativeCode: null,
+      }),
+    );
+    await waitFor(() =>
+      expect(screen.queryByRole('button', { name: 'Salva rettifica' })).toBeNull(),
+    );
+    expect(reviseAtomic).not.toHaveBeenCalled();
+    expect(listObjectives).toHaveBeenCalledTimes(2);
   });
 
   it('saves Event metadata, Scaletta and Life Area in one aggregate request', async () => {

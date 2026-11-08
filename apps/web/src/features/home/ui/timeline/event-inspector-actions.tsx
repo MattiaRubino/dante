@@ -1,4 +1,4 @@
-import { type RefObject, useEffect, useState } from 'react';
+import { type RefObject, useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { detectDeviceTimeZone } from '@dante/time';
 
@@ -6,6 +6,8 @@ import type { TemporalEventDetailRecord } from '../../../temporal/event-data-sou
 import {
   createRemoteRealityObjectiveDataSource,
   type ActivityObjectiveBatch,
+  type ObjectiveAssessment,
+  type ObjectiveView,
   type RealityMode,
 } from '../../../temporal/remote-reality-objective-data-source';
 import {
@@ -152,6 +154,16 @@ export function EventInspectorActions({
   const [objectiveRows, setObjectiveRows] = useState<ActivityObjectiveDraft[]>(
     [],
   );
+  const [recordedObjectives, setRecordedObjectives] = useState<
+    readonly ObjectiveView[]
+  >([]);
+  const [correctingObjective, setCorrectingObjective] =
+    useState<ObjectiveView | null>(null);
+  const [correctedValue, setCorrectedValue] = useState('');
+  const [correctedBoolean, setCorrectedBoolean] = useState('true');
+  const [correctedAssessment, setCorrectedAssessment] =
+    useState<ObjectiveAssessment>('unknown');
+  const correctionOperation = useRef<string | null>(null);
   const [realityPolicy, setRealityPolicy] = useState<Readonly<{
     mode: RealityMode;
     stateRef: string | null;
@@ -296,6 +308,9 @@ export function EventInspectorActions({
       setParticipantsInitial(expectedParticipants);
       setParticipantsDraft(expectedParticipants);
       setObjectiveRows(objectives.map(existingObjectiveDraft));
+      setRecordedObjectives(objectives);
+      setCorrectingObjective(null);
+      correctionOperation.current = null;
       setRealityPolicy(reality);
       setRealityMode(reality?.mode ?? 'manual');
       setRemovedObjectives([]);
@@ -421,6 +436,8 @@ export function EventInspectorActions({
     }
     setProfileDraft(null);
     setInspectingObjective(null);
+    setCorrectingObjective(null);
+    correctionOperation.current = null;
     setEditingProfile(false);
   };
 
@@ -436,6 +453,86 @@ export function EventInspectorActions({
       closeRequestRef.current = null;
     };
   });
+
+  const beginResultCorrection = (objective: ObjectiveView) => {
+    if (busy || !objective.observationRef || !objective.evaluationStateRef) {
+      setObjectiveError('Rettifica non disponibile senza una valutazione corrente.');
+      return;
+    }
+    if (
+      removedObjectives.length > 0 ||
+      objectiveRows.some((row) => objectiveChanged(row))
+    ) {
+      setObjectiveError(
+        'Salva prima le modifiche agli obiettivi, poi rettifica il risultato.',
+      );
+      return;
+    }
+    setCorrectingObjective(objective);
+    setCorrectedValue(
+      objective.resultKind === 'qualitative'
+        ? (objective.qualitativeCode ?? '')
+        : (objective.observedNumeric?.toString() ?? ''),
+    );
+    setCorrectedBoolean(objective.observedBoolean === false ? 'false' : 'true');
+    setCorrectedAssessment(objective.assessmentCode ?? 'unknown');
+    correctionOperation.current = null;
+    setObjectiveError('');
+  };
+
+  const applyResultCorrection = () => {
+    if (!correctingObjective || busy) return;
+    const objective = correctingObjective;
+    if (!objective.evaluationStateRef) {
+      setObjectiveError('Aggiorna la scheda: manca la valutazione corrente.');
+      return;
+    }
+    const numeric =
+      objective.resultKind === 'quantity' || objective.resultKind === 'range'
+        ? Number(correctedValue)
+        : null;
+    if (
+      (numeric !== null &&
+        (!correctedValue.trim() || !Number.isFinite(numeric))) ||
+      (objective.resultKind === 'qualitative' && !correctedValue.trim())
+    ) {
+      setObjectiveError('Inserisci il risultato corretto.');
+      return;
+    }
+    setBusy(true);
+    setObjectiveError('');
+    const kind = recurringContext ? 'occurrence' : 'event';
+    const subjectRef = recurringContext?.occurrenceRef ?? eventRef;
+    void objectiveSource
+      .correctResult(objective.objectiveRef, {
+        operationId: (correctionOperation.current ??= crypto.randomUUID()),
+        expectedEvaluationStateRef: objective.evaluationStateRef,
+        observedBoolean:
+          objective.resultKind === 'boolean'
+            ? correctedBoolean === 'true'
+            : null,
+        observedNumeric: numeric,
+        qualitativeCode:
+          objective.resultKind === 'qualitative' ? correctedValue.trim() : null,
+        assessmentCode:
+          objective.resultKind === 'qualitative' ? correctedAssessment : null,
+      })
+      .then(() => objectiveSource.listObjectives(kind, subjectRef))
+      .then((fresh) => {
+        setRecordedObjectives(fresh);
+        setObjectiveRows(fresh.map(existingObjectiveDraft));
+        setCorrectingObjective(null);
+        correctionOperation.current = null;
+      })
+      .catch((reason: unknown) => {
+        setObjectiveError(
+          reason instanceof Error
+            ? reason.message
+            : 'Rettifica del risultato non riuscita.',
+        );
+      })
+      .finally(() => setBusy(false));
+  };
 
   const prepareObjectives =
     async (): Promise<ActivityObjectiveBatch | null> => {
@@ -1411,6 +1508,95 @@ export function EventInspectorActions({
                         ＋ Aggiungi obiettivo
                       </button>
                     </div>
+                    {recordedObjectives
+                      .filter((objective) => objective.observationRef)
+                      .map((objective) => (
+                        <div key={objective.objectiveRef}>
+                          <span>{objective.label} · risultato registrato</span>
+                          <button
+                            type="button"
+                            disabled={busy}
+                            onClick={() => beginResultCorrection(objective)}
+                          >
+                            Correggi risultato
+                          </button>
+                        </div>
+                      ))}
+                    {correctingObjective ? (
+                      <fieldset disabled={busy}>
+                        <legend>
+                          Rettifica risultato — {correctingObjective.label}
+                        </legend>
+                        {correctingObjective.resultKind === 'boolean' ? (
+                          <label>
+                            Risultato corretto
+                            <select
+                              value={correctedBoolean}
+                              onChange={(event) => {
+                                setCorrectedBoolean(event.target.value);
+                                correctionOperation.current = null;
+                              }}
+                            >
+                              <option value="true">Sì</option>
+                              <option value="false">No</option>
+                            </select>
+                          </label>
+                        ) : (
+                          <label>
+                            Risultato corretto
+                            <input
+                              type={
+                                correctingObjective.resultKind === 'qualitative'
+                                  ? 'text'
+                                  : 'number'
+                              }
+                              step="any"
+                              value={correctedValue}
+                              onChange={(event) => {
+                                setCorrectedValue(event.target.value);
+                                correctionOperation.current = null;
+                              }}
+                            />
+                          </label>
+                        )}
+                        {correctingObjective.resultKind === 'qualitative' ? (
+                          <label>
+                            Valutazione corretta
+                            <select
+                              value={correctedAssessment}
+                              onChange={(event) => {
+                                setCorrectedAssessment(
+                                  event.target.value as ObjectiveAssessment,
+                                );
+                                correctionOperation.current = null;
+                              }}
+                            >
+                              <option value="satisfied">Raggiunto</option>
+                              <option value="partial">Parziale</option>
+                              <option value="not_satisfied">Non raggiunto</option>
+                              <option value="unknown">Sconosciuto</option>
+                              <option value="indeterminate">Indeterminato</option>
+                            </select>
+                          </label>
+                        ) : null}
+                        <button type="button" onClick={applyResultCorrection}>
+                          Salva rettifica
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setCorrectingObjective(null);
+                            correctionOperation.current = null;
+                          }}
+                        >
+                          Annulla rettifica
+                        </button>
+                        <p>
+                          La rettifica non elimina osservazioni o valutazioni
+                          precedenti.
+                        </p>
+                      </fieldset>
+                    ) : null}
                     {objectiveError ? (
                       <small
                         className="temporal-create-field-error"
