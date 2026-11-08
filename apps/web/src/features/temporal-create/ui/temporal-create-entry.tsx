@@ -766,13 +766,6 @@ export function TemporalCreateEntry({
   const executeRecurringEvent = async (
     fields: TemporalCreateSession['draft']['current'],
   ): Promise<boolean> => {
-    if (u2DraftRef.current.eventPlacementProtected === true) {
-      setLifecycle('failed');
-      setFailureMessage(
-        'La protezione della collocazione per una serie di Eventi richiede ancora il supporto delle istanze ricorrenti. Disattiva «Blocca spostamenti» per creare la serie.',
-      );
-      return false;
-    }
     if (rejectInvalidLifeAreaName()) return false;
     const validation = validateTemporalCreateU2QuickFields(fields);
     if (validation.length > 0) {
@@ -830,6 +823,7 @@ export function TemporalCreateEntry({
         reminderLeadMinutes: fields.confirmation.reminderLeadMinutes,
         realityMode: u2DraftRef.current.realityMode,
         objectives: buildTemporalCreateObjectiveTemplates(u2DraftRef.current),
+        placementProtected: u2DraftRef.current.eventPlacementProtected === true,
       });
       const participantCommands = Object.freeze(
         u2DraftRef.current.eventParticipants.map((participant) =>

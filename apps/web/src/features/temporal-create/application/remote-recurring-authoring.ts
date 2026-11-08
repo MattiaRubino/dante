@@ -160,6 +160,7 @@ export type CreateRecurringEventRequest = Readonly<{
   reminderLeadMinutes?: number | null;
   realityMode?: 'manual' | 'review_on_end' | 'auto_confirm_outcome';
   objectives?: readonly RecurringObjectiveTemplate[];
+  placementProtected?: boolean;
 }>;
 
 export type RecurringAuthoringResult = Readonly<{
@@ -388,6 +389,7 @@ export function createRemoteRecurringAuthoringDataSource(
         reminder_lead_minutes: request.reminderLeadMinutes ?? null,
         reality_mode: request.realityMode ?? 'manual',
         objectives: [...(request.objectives ?? [])],
+        placement_protected: request.placementProtected === true,
       });
     },
   });

@@ -1,5 +1,14 @@
 # Timeline / Temporal-Operational — Workstream Handoff
 
+## 2026-11-08 — Event title-bar parity and recurring placement protection (candidate)
+
+All Event editor surfaces use the same name row: circular Event marker, name, separator and accessible `Blocca spostamenti` button. One-off/selected-instance Event lock changes continue to use existing atomic CAS. Structural series Edit stores the flag in the versioned Event snapshot and clean newly generated Occurrences create Schedule plus lock in one transaction. Schedule replay deliberately preserves local lock/unlock overrides instead of forcing the template again.
+
+New forward-only `20261108_180` adds a protected flag to immutable recurring Event Create policy, with `false` legacy default and V3 owner-scoped Create/read routines. Old V2 routines remain intact. Recurring Event Create now accepts the lock intent; both fresh creation and replay must agree on the same immutable value.
+
+**Implementation candidate, verification pending:** database migrations, API/client regeneration and drift, backend regression tests, Web formatting/lint/TypeScript, Vitest, PostgreSQL and browser. Existing 37/37 Vitest on `6b91a3e8` predates these changes; do not describe the new branch as green. The first selected recurring Event boundary bug remains a separate task.
+
+
 ## 2026-11-08 — Event placement-lock QA follow-up (second owner run)
 
 On commit `9e8470d19760da263e449569bb3d1eaa7d856aee`
