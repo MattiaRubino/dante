@@ -357,6 +357,9 @@ export function EventInspectorActions({
         )?.name ?? '',
       );
       setAreaError('');
+      setRecurrenceSelected(false);
+      recurrenceOperation.current = null;
+      recurrenceResume.current = null;
       setProfileDraft({
         title: effective.title,
         description: effective.description ?? null,
@@ -468,6 +471,9 @@ export function EventInspectorActions({
       }
     }
     setProfileDraft(null);
+    setRecurrenceSelected(false);
+    recurrenceOperation.current = null;
+    recurrenceResume.current = null;
     setPlacementLockInitial(null);
     setInspectingObjective(null);
     setCorrectingObjective(null);
@@ -655,6 +661,7 @@ export function EventInspectorActions({
         recurrenceResume.current = null;
         setProfile(null);
         setProfileDraft(null);
+        setRecurrenceSelected(false);
         setEditingProfile(false);
         setProfileNotice('Modifiche salvate; ripetizione non avviata.');
         return;
@@ -683,6 +690,7 @@ export function EventInspectorActions({
         setExistingSeed(await existingRecurrence.eventSeed(eventRef));
         setProfile(null);
         setProfileDraft(null);
+        setRecurrenceSelected(false);
         setEditingProfile(false);
         setProfileNotice('Ripetizione avviata da questo Evento.');
         return;
@@ -1026,9 +1034,12 @@ export function EventInspectorActions({
       }
       setProfile(null);
       setProfileDraft(null);
+      setRecurrenceSelected(false);
       setEditingProfile(false);
       setProfileNotice(
-        recurrenceSelected ? 'Ripetizione avviata da questo Evento.' : 'Evento aggiornato.',
+        proposedRecurrence
+          ? 'Ripetizione avviata da questo Evento.'
+          : 'Evento aggiornato.',
       );
     } catch (reason) {
       const message =
@@ -1787,6 +1798,9 @@ export function EventInspectorActions({
               onDiscard={() => {
                 setConfirmingDiscard(false);
                 setProfileDraft(null);
+                setRecurrenceSelected(false);
+                recurrenceOperation.current = null;
+                recurrenceResume.current = null;
                 setInspectingObjective(null);
                 setEditingProfile(false);
               }}
