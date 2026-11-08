@@ -2338,22 +2338,20 @@ describe('Event Inspector actions', () => {
     expect(
       within(sessionRow as HTMLElement).queryByRole('checkbox'),
     ).toBeNull();
-    fireEvent.click(screen.getByText('Opzioni avanzate della serie'));
-    // Internal Sessions are named and untimed, even with advanced series
-    // options expanded. The series envelope and Activity intervals retain
-    // their independent time controls and original offsets.
+    // Sessione is already managed in the common title rail. The old
+    // advanced series controls must never resurface below the description.
+    expect(screen.queryByText('Opzioni avanzate della serie')).toBeNull();
+    expect(screen.queryByRole('combobox', { name: 'Sessione dell’attività' })).toBeNull();
     expect(
-      screen.queryByRole('checkbox', { name: /Con orario Sessione/ }),
-    ).toBeNull();
-    expect(screen.queryByText('Regola per le sottoattività')).toBeNull();
-    expect(
-      screen.getByRole('combobox', { name: 'Sessione dell’attività' }),
-    ).toBeTruthy();
-    expect(
-      screen.getByRole('spinbutton', {
+      screen.queryByRole('spinbutton', {
         name: 'Durata minima della Sessione (minuti)',
       }),
-    ).toBeTruthy();
+    ).toBeNull();
+    expect(screen.queryByText('Regola per le sottoattività')).toBeNull();
+    const routineActions = routineTitleRow?.querySelector('.temporal-create-title-row__tools');
+    expect(routineActions?.querySelector('.temporal-create-structure-session-toggle')).toBeTruthy();
+    // The canonical Session capture mode and minimum remain in the versioned
+    // template, even though the duplicate controls are removed from the UI.
     expect(
       screen.getAllByRole('button', { name: /^Data inizio:/ }),
     ).toHaveLength(2);

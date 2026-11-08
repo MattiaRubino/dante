@@ -1766,49 +1766,6 @@ export function RecurringSeriesEditor({
                 }
               />
             </section>
-            {owner === 'routine' ? (
-              <details className="timeline-recurring-series-editor__advanced">
-                <summary>Opzioni avanzate della serie</summary>
-                <label>
-                  Sessione dell’attività{' '}
-                  <select
-                    value={asText(template.session_capture_mode)}
-                    onChange={(e) =>
-                      updateTemplate({
-                        session_capture_mode: e.target.value,
-                      })
-                    }
-                  >
-                    <option value="disabled">Disattivata</option>
-                    <option value="live">Attiva</option>
-                    <option value="record">Registrazione</option>
-                    <option value="record_and_live">Entrambe</option>
-                  </select>
-                </label>
-                <label>
-                  Durata minima della Sessione (minuti)
-                  <input
-                    type="number"
-                    min={1}
-                    value={
-                      template.minimum_session_duration_microseconds == null
-                        ? ''
-                        : asNumber(
-                            template.minimum_session_duration_microseconds,
-                          ) / 60_000_000
-                    }
-                    onChange={(e) =>
-                      updateTemplate({
-                        minimum_session_duration_microseconds:
-                          e.target.value === ''
-                            ? null
-                            : Number(e.target.value) * 60_000_000,
-                      })
-                    }
-                  />
-                </label>
-              </details>
-            ) : null}
           </>
         ) : null}
       </div>
