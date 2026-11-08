@@ -766,6 +766,13 @@ export function TemporalCreateEntry({
   const executeRecurringEvent = async (
     fields: TemporalCreateSession['draft']['current'],
   ): Promise<boolean> => {
+    if (u2DraftRef.current.eventPlacementProtected === true) {
+      setLifecycle('failed');
+      setFailureMessage(
+        'La protezione della collocazione per una serie di Eventi richiede ancora il supporto delle istanze ricorrenti. Disattiva «Blocca spostamenti» per creare la serie.',
+      );
+      return false;
+    }
     if (rejectInvalidLifeAreaName()) return false;
     const validation = validateTemporalCreateU2QuickFields(fields);
     if (validation.length > 0) {
@@ -949,6 +956,14 @@ export function TemporalCreateEntry({
         i18n.language.toLowerCase().startsWith('en')
           ? 'These advanced settings cannot yet be combined with Activity intervals or planned Sessions.'
           : 'Queste impostazioni avanzate non possono ancora essere combinate con intervalli dell’attività o Sessioni pianificate.',
+      );
+      return;
+    }
+    if (!useU2Quick && fields.kind === 'event' &&
+        u2DraftRef.current.eventPlacementProtected === true) {
+      setLifecycle('failed');
+      setFailureMessage(
+        'Questa configurazione Event non supporta ancora il blocco della collocazione. Nessuna modifica è stata salvata.',
       );
       return;
     }

@@ -55,6 +55,11 @@ import {
   type ScheduleReminderView,
 } from '../../../temporal/remote-schedule-reminder-data-source';
 import { buildEventDuplicateSeed } from '../../../temporal-create/application/event-duplicate-seed';
+import {
+  createRemotePlacementLockDataSource,
+  type PlacementLockState,
+} from '../../../temporal/remote-placement-lock-data-source';
+import { TemporalCreatePlacementLockButton } from '../../../temporal-create/ui/temporal-create-placement-lock-button';
 import type { TimelineCanonicalSchedulePlacement } from './model/timeline-types';
 import { TimelineInspectorIcon } from './timeline-inspector-icon';
 import { RecurringEditScopeDialog } from './recurring-edit-scope-dialog';
@@ -121,6 +126,10 @@ export function EventInspectorActions({
   >(null);
 
   const [profileSource] = useState(createRemoteEventProfileDataSource);
+  const [placementLockSource] = useState(createRemotePlacementLockDataSource);
+  const [placementLockInitial, setPlacementLockInitial] =
+    useState<PlacementLockState | null>(null);
+  const [placementLockDraft, setPlacementLockDraft] = useState(false);
   const [areaSource] = useState(createRemoteEventLifeAreaSettings);
   const [objectiveSource] = useState(createRemoteRealityObjectiveDataSource);
   const [reminderSource] = useState(createRemoteScheduleReminderDataSource);
@@ -246,6 +255,7 @@ export function EventInspectorActions({
         participants,
         referents,
         seed,
+        placementLock,
       ] = await Promise.all([
         context && occurrenceRef && eventSource.loadOccurrenceEvent
           ? eventSource.loadOccurrenceEvent(occurrenceRef)
@@ -272,7 +282,16 @@ export function EventInspectorActions({
         context
           ? Promise.resolve(null)
           : existingRecurrence.eventSeed(eventRef),
+        scheduleRef ? placementLockSource.get(scheduleRef) : Promise.resolve(null),
       ]);
+      if (
+        scheduleRef !== null &&
+        placementLock?.scheduleRef !== scheduleRef.toLowerCase()
+      ) {
+        throw new Error('Blocco spostamenti Event non disponibile.');
+      }
+      setPlacementLockInitial(placementLock);
+      setPlacementLockDraft(placementLock?.locked ?? false);
       setExistingSeed(seed);
       if (loaded.profileRevision === undefined) {
         throw new Error('Revisione del profilo Event non disponibile.');
@@ -421,6 +440,8 @@ export function EventInspectorActions({
         removedObjectives.length > 0 ||
         JSON.stringify(scheduleDraft) !== JSON.stringify(scheduleInitial) ||
         reminderLead !== reminderInitial ||
+        (placementLockInitial !== null &&
+          placementLockDraft !== placementLockInitial.locked) ||
         JSON.stringify(participantsDraft) !==
           JSON.stringify(participantsInitial) ||
         (realityPolicy !== null && realityMode !== realityPolicy.mode) ||
@@ -435,6 +456,7 @@ export function EventInspectorActions({
       }
     }
     setProfileDraft(null);
+    setPlacementLockInitial(null);
     setInspectingObjective(null);
     setCorrectingObjective(null);
     correctionOperation.current = null;
@@ -634,6 +656,9 @@ export function EventInspectorActions({
         location: profileDraft.location?.trim() || null,
         colorCode: profileDraft.colorCode?.trim().toUpperCase() || null,
       };
+      const placementLockChanged =
+        placementLockInitial !== null &&
+        placementLockDraft !== placementLockInitial.locked;
       if (recurringContext) {
         const changed = Object.fromEntries(
           (Object.keys(normalized) as (keyof EventProfileDraft)[])
@@ -682,6 +707,7 @@ export function EventInspectorActions({
           !objectives &&
           !scheduleChanged &&
           !reminderChanged &&
+          !placementLockChanged &&
           realityMode === realityPolicy?.mode
         ) {
           setProfileDraft(null);
@@ -712,6 +738,14 @@ export function EventInspectorActions({
             participants: participantsDraft,
           },
           {
+            placementLock:
+              placementLockChanged && placementLockInitial
+                ? {
+                    scheduleRef: placementLockInitial.scheduleRef,
+                    locked: placementLockDraft,
+                    expectedRevision: placementLockInitial.revision,
+                  }
+                : null,
             schedule:
               scheduleChanged &&
               selectedSchedule &&
@@ -828,6 +862,7 @@ export function EventInspectorActions({
           !realityChanged &&
           !schedule &&
           !reminderChanged &&
+          !placementLockChanged &&
           participantChanges.length === 0
         ) {
           setProfileDraft(null);
@@ -841,6 +876,7 @@ export function EventInspectorActions({
           realityChanged ||
           schedule ||
           reminderChanged ||
+          placementLockChanged ||
           participantChanges.length > 0
         ) {
           await profileSource.reviseAtomic(
@@ -858,6 +894,15 @@ export function EventInspectorActions({
                   }
                 : {}),
               ...(objectives ? { objectives } : {}),
+              ...(placementLockChanged && placementLockInitial
+                ? {
+                    placementLock: {
+                      scheduleRef: placementLockInitial.scheduleRef,
+                      locked: placementLockDraft,
+                      expectedRevision: placementLockInitial.revision,
+                    },
+                  }
+                : {}),
               ...(schedule && scheduleRef && placementMaterialStateRef
                 ? {
                     schedule: {
@@ -1248,6 +1293,18 @@ export function EventInspectorActions({
                   }}
                 />
               </label>
+              <div className="temporal-create-title-row__tools">
+                <TemporalCreatePlacementLockButton
+                  kind="event"
+                  locked={placementLockDraft}
+                  disabled={
+                    busy ||
+                    !scheduleRef ||
+                    placementLockInitial?.scheduleRef !== scheduleRef.toLowerCase()
+                  }
+                  onToggle={() => setPlacementLockDraft((locked) => !locked)}
+                />
+              </div>
             </div>
             <>
               <TemporalCreateEventAgenda

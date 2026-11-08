@@ -50,6 +50,7 @@ export type TemporalAuthorActivityRequest = TemporalAuthoringBaseRequest &
 export type TemporalAuthorEventRequest = TemporalAuthoringBaseRequest &
   Readonly<{
     agendaParts: readonly string[];
+    placementProtected?: boolean;
   }>;
 
 export type TemporalAuthoringItem = Readonly<{

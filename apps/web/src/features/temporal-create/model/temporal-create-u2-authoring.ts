@@ -54,6 +54,7 @@ export type TemporalCreateU2AuthoringDraft = Readonly<{
   endDate: string;
   lifeArea: TemporalCreateU2LifeAreaDraft;
   itemColorCode: string | null;
+  eventPlacementProtected?: boolean;
   realityMode: TemporalCreateRealityMode;
   objectives: readonly TemporalCreateObjectiveDraft[];
   eventParticipants: readonly TemporalCreateEventParticipantDraft[];
@@ -123,6 +124,7 @@ export function createTemporalCreateU2AuthoringDraft(
     endDate: inferredEndDate(fields),
     lifeArea: Object.freeze({ kind: 'none' as const }),
     itemColorCode: TEMPORAL_CREATE_U2_DEFAULT_COLOR,
+    eventPlacementProtected: false,
     realityMode: 'manual' as const,
     objectives: Object.freeze([]),
     eventParticipants: Object.freeze([]),

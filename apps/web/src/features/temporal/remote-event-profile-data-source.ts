@@ -46,6 +46,11 @@ export type EventAtomicDraft = Readonly<{
   }>;
   objectives?: ActivityObjectiveBatch;
   reality?: Readonly<{ mode: RealityMode; expectedStateRef: string | null }>;
+  placementLock?: Readonly<{
+    scheduleRef: string;
+    locked: boolean;
+    expectedRevision: number;
+  }>;
   schedule?: Readonly<{
     scheduleRef: string;
     expectedMaterialStateRef: string;
@@ -175,6 +180,15 @@ export function createRemoteEventProfileDataSource(
                     operation_id: `${operationId}:reality`,
                     mode_code: changes.reality.mode,
                     expected_state_ref: changes.reality.expectedStateRef,
+                  },
+                }
+              : {}),
+            ...(changes.placementLock
+              ? {
+                  placement_lock: {
+                    schedule_ref: changes.placementLock.scheduleRef,
+                    locked: changes.placementLock.locked,
+                    expected_revision: changes.placementLock.expectedRevision,
                   },
                 }
               : {}),

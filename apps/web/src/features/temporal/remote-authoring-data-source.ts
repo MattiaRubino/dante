@@ -658,7 +658,10 @@ function requestBody(
         ? null
         : serializePlacement(request.placement),
   };
-  if ('agendaParts' in request) result.agenda_parts = [...request.agendaParts];
+  if ('agendaParts' in request) {
+    result.agenda_parts = [...request.agendaParts];
+    result.placement_protected = request.placementProtected === true;
+  }
   else {
     if (request.sessionCaptureMode !== undefined) {
       result.session_capture_mode = request.sessionCaptureMode;

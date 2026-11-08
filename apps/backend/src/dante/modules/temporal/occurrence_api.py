@@ -22,6 +22,7 @@ from dante.modules.temporal.api import (
 )
 from dante.modules.temporal.event import _read_event_in_session
 from dante.modules.temporal.event_api import (
+    EventAtomicPlacementLockChange,
     EventAtomicReminderChange,
     EventAtomicScheduleChange,
     EventResponse,

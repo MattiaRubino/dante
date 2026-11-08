@@ -902,6 +902,7 @@ export function buildTemporalCreateU2Request(
       kind: 'event' as const,
       request: Object.freeze({
         ...base,
+        placementProtected: draft.eventPlacementProtected === true,
         agendaParts: Object.freeze(
           fields.event.agendaParts
             .map((part) => part.trim())

@@ -22,6 +22,7 @@ import {
   TemporalCreateAdvancedActivityStructure,
 } from './temporal-create-advanced-activity-structure';
 import { TemporalCreateEventAgenda } from './temporal-create-event-agenda';
+import { TemporalCreateAdvancedEventHeaderActions } from './temporal-create-placement-lock-button';
 import { TemporalCreateRealityObjectivesSection } from './temporal-create-reality-objectives-section';
 import { TemporalCreateCalendarRecurrenceFields } from './temporal-create-calendar-recurrence-fields';
 import {
@@ -611,9 +612,7 @@ export function TemporalCreateComposer({
               <div
                 className={
                   advanced
-                    ? fields.kind === 'activity'
-                      ? 'temporal-create-title-row has-tools'
-                      : 'temporal-create-title-row'
+                    ? 'temporal-create-title-row has-tools'
                     : 'temporal-create-title-row is-quick'
                 }
               >
@@ -643,9 +642,13 @@ export function TemporalCreateComposer({
                   />
                   {!advanced ? renderError('title') : null}
                 </div>
-                {advanced && fields.kind === 'activity' ? (
+                {advanced ? (
                   <div className="temporal-create-title-row__tools">
-                    <TemporalCreateAdvancedActivityHeaderActions />
+                    {fields.kind === 'activity' ? (
+                      <TemporalCreateAdvancedActivityHeaderActions />
+                    ) : (
+                      <TemporalCreateAdvancedEventHeaderActions />
+                    )}
                   </div>
                 ) : null}
               </div>

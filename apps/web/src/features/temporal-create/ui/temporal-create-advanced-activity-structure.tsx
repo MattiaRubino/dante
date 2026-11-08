@@ -4,6 +4,7 @@ import { Temporal } from '@dante/time';
 import type { TemporalCreateFields } from '../model/temporal-create-session';
 import type { TemporalCreatePlannedSliceDraft } from '../model/temporal-create-u2-authoring';
 import { useTemporalCreateU2Draft } from './temporal-create-u2-draft-context';
+import { TemporalCreatePlacementLockButton } from './temporal-create-placement-lock-button';
 
 import './temporal-create-advanced-activity-structure.css';
 import './temporal-create-outcome-dropdown.css';
@@ -75,22 +76,6 @@ export function TemporalCreateAdvancedActivityHeaderActions() {
   const patchStructure = (changes: Partial<typeof structure>) =>
     patch({ activityStructure: Object.freeze({ ...structure, ...changes }) });
 
-  const placementActionLabel = italian
-    ? structure.placementProtected
-      ? 'Sblocca spostamenti'
-      : 'Blocca spostamenti'
-    : structure.placementProtected
-      ? 'Unlock placement'
-      : 'Lock placement';
-
-  const placementActionTitle = italian
-    ? structure.placementProtected
-      ? 'Consenti di nuovo gli spostamenti manuali e automatici della collocazione'
-      : 'Blocca gli spostamenti manuali e automatici della collocazione'
-    : structure.placementProtected
-      ? 'Allow manual and automatic placement changes again'
-      : 'Block manual and automatic placement changes';
-
   return (
     <>
       <label
@@ -109,35 +94,14 @@ export function TemporalCreateAdvancedActivityHeaderActions() {
         />
         {italian ? 'Sessione' : 'Session'}
       </label>
-      <button
-        type="button"
-        className="temporal-create-placement-lock"
-        data-placement-protection="activity"
-        aria-pressed={structure.placementProtected}
-        aria-label={placementActionLabel}
-        title={placementActionTitle}
-        onClick={() =>
+      <TemporalCreatePlacementLockButton
+        kind="activity"
+        italian={italian}
+        locked={structure.placementProtected}
+        onToggle={() =>
           patchStructure({ placementProtected: !structure.placementProtected })
         }
-      >
-        <svg
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="1.8"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          aria-hidden="true"
-        >
-          <rect x="5" y="10" width="14" height="11" rx="2" />
-          {structure.placementProtected ? (
-            <path d="M8 10V7a4 4 0 0 1 8 0v3" />
-          ) : (
-            <path d="M8 10V7a4 4 0 0 1 7.5-1.9" />
-          )}
-        </svg>
-        <span>{placementActionLabel}</span>
-      </button>
+      />
     </>
   );
 }

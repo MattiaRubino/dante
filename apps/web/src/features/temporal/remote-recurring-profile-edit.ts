@@ -180,6 +180,11 @@ export function createRemoteRecurringProfileEdit(
           materialStateRef: string;
           placement: EventSchedulePlacementInput;
         } | null;
+        placementLock: {
+          scheduleRef: string;
+          locked: boolean;
+          expectedRevision: number;
+        } | null;
         reminder: {
           scheduleRef: string;
           stateRef: string | null;
@@ -222,6 +227,15 @@ export function createRemoteRecurringProfileEdit(
                 }),
               ),
             },
+            ...(extras.placementLock
+              ? {
+                  placement_lock: {
+                    schedule_ref: extras.placementLock.scheduleRef,
+                    locked: extras.placementLock.locked,
+                    expected_revision: extras.placementLock.expectedRevision,
+                  },
+                }
+              : {}),
             ...(extras.schedule
               ? {
                   schedule: {
