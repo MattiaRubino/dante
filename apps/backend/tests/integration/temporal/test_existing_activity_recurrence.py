@@ -160,8 +160,10 @@ async def test_existing_activity_starts_series_with_same_first_identity_and_one_
 
 
 @pytest.mark.asyncio
+@pytest.mark.parametrize("locked", [False, True], ids=["unlocked", "protected"])
 async def test_existing_event_keeps_first_event_and_excludes_duplicate_occurrence(
     migrated_database: Any,
+    locked: bool,
 ) -> None:
     actor = _seed_self(migrated_database)
     other = _seed_self(migrated_database)
@@ -183,13 +185,18 @@ async def test_existing_event_keeps_first_event_and_excludes_duplicate_occurrenc
         assert authored.schedule is not None
         schedule = authored.schedule
         locks = PlacementLockApplication(runtime.session_factory)
-        original_lock = await locks.set(
-            self_person_ref=actor,
-            schedule_ref=schedule.schedule_ref,
-            locked=True,
-            expected_revision=None,
-        )
-        assert original_lock.locked is True
+        if locked:
+            original_lock = await locks.set(
+                self_person_ref=actor,
+                schedule_ref=schedule.schedule_ref,
+                locked=True,
+                expected_revision=None,
+            )
+            assert original_lock.locked is True
+        else:
+            assert (
+                await locks.get(self_person_ref=actor, schedule_ref=schedule.schedule_ref)
+            ).locked is False
         async with runtime.session_factory() as session, session.begin():
             profile_revision = await session.scalar(
                 text("SELECT dante.get_self_event_profile_revision(:actor,:event)"),
@@ -285,10 +292,10 @@ async def test_existing_event_keeps_first_event_and_excludes_duplicate_occurrenc
         # future Event Schedules; re-materialization must not drop it.
         assert (
             await locks.get(self_person_ref=actor, schedule_ref=schedule.schedule_ref)
-        ).locked is True
+        ).locked is locked
         assert (
             await locks.get(self_person_ref=actor, schedule_ref=following[0].schedule_ref)
-        ).locked is True
+        ).locked is locked
         assert not [
             item
             for item in window.items
