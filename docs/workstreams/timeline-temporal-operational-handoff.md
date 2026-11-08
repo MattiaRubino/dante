@@ -1,5 +1,34 @@
 # Timeline / Temporal-Operational — Workstream Handoff
 
+## 2026-11-08 — Duplicate Inspector focused QA on `4b892f2d` (follow-up)
+
+Owner WSL focused report: **TypeScript PASS; Vitest 131/132 PASS**. The
+remaining Event modal test expected a normal Event's `Copia in Bozze`
+immediately, before the newly added asynchronous recurrence-origin probe
+returned. The underlying action is still required for ordinary Events; the
+test now awaits eligibility and still checks the entire four-button toolbar.
+
+**ESLint (7 errors):** two `react-hooks/set-state-in-effect` violations
+were caused by synchronous `setState` in the recurrence guards; five
+`no-unsafe-*` errors came from an untyped Event duplicate mock.
+The current candidate derives Vault eligibility from asynchronously verified,
+identity-stamped owner/source state, with **no synchronous state updates inside
+an effect**. Unknown/stale ownership fails closed and a different card cannot
+inherit a previous card's eligibility. Event duplicate test callbacks are
+strongly typed so factual-exclusion assertions remain meaningful.
+
+**Prettier:** the owner's previous report flagged Event Inspector source/test
+and the Create Composer test. Source guard line breaking, the objective UI
+assertion and the newer test's long description were simplified. These are
+formatting candidates, **not a claimed formatter PASS** without execution of
+the repository's Prettier 3.9.0 on this final SHA.
+
+No DB/API/client/schema changes or weakening/removal of the recurring
+duplicate tests were involved. Next required evidence: same-SHA
+`pnpm format:check`, `pnpm lint`, web typecheck, focused Vitest, then
+authenticated UX and the full gate after the owner's remaining UI fixes.
+
+
 ## 2026-11-08 — Duplicate recurring instance into Advanced Create (candidate)
 
 The Inspector's **Duplica** opens the existing Create Advanced surface with
