@@ -875,6 +875,8 @@ def _scoped_edit_problem(exc: DBAPIError) -> ProblemError:
         "occurrence_edit_future_conflict",
         "occurrence_edit_preview_stale",
         "occurrence_edit_selected_facts",
+        "schedule_placement_lock_stale",
+        "schedule_placement_lock_schedule_unavailable",
     }:
         return ProblemError(
             status=409,

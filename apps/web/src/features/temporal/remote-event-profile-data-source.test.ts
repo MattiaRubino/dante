@@ -81,6 +81,11 @@ describe('owner-scoped Event profile CAS source', () => {
         agendaParts: ['Apertura'],
         lifeArea: { ref: null, expectedRevision: 2 },
         reality: { mode: 'review_on_end', expectedStateRef: null },
+        placementLock: {
+          scheduleRef: SCHEDULE,
+          locked: true,
+          expectedRevision: 0,
+        },
         schedule: {
           scheduleRef: SCHEDULE,
           expectedMaterialStateRef: MATERIAL,
@@ -130,6 +135,11 @@ describe('owner-scoped Event profile CAS source', () => {
           operation_id: 'event:atomic:1:reality',
           mode_code: 'review_on_end',
           expected_state_ref: null,
+        },
+        placement_lock: {
+          schedule_ref: SCHEDULE,
+          locked: true,
+          expected_revision: 0,
         },
         schedule: {
           schedule_ref: SCHEDULE,

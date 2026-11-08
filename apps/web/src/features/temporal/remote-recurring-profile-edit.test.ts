@@ -122,6 +122,75 @@ describe('Structural recurring series remote contract', () => {
 });
 
 describe('Recurring Activity metadata edit remote contract', () => {
+  it('serializes selected Event placement protection in one occurrence transaction', async () => {
+    const recorded: Record<string, unknown>[] = [];
+    const fetchFn = vi.fn(
+      (input: RequestInfo | URL, init?: RequestInit): Promise<Response> => {
+        const path =
+          typeof input === 'string'
+            ? input
+            : input instanceof URL
+              ? input.href
+              : input.url;
+        if (path.endsWith('/auth/session')) {
+          return Promise.resolve(
+            response({ authenticated: true, csrf_token: 'csrf' }),
+          );
+        }
+        if (path.endsWith('/event-local-edit')) {
+          recorded.push(
+            JSON.parse(fetchRequestBody(init?.body)) as Record<string, unknown>,
+          );
+          return Promise.resolve(
+            response({
+              revision: 3,
+              source_native_ref: sourceRef,
+              selected_occurrence_ref: occurrenceRef,
+              target_occurrence_refs: [occurrenceRef],
+              accepted_at: '2026-11-09T09:00:00Z',
+              replayed: false,
+            }),
+          );
+        }
+        throw new Error('Unexpected Event local route ' + path);
+      },
+    );
+    const source = createRemoteRecurringProfileEdit(fetchFn);
+    await source.saveEventLocal(
+      {
+        occurrenceRef,
+        sourceRef,
+        editRevision: 2,
+        recurrenceStateRef,
+      },
+      {},
+      { agendaParts: [], lifeAreaRef: null, participants: [] },
+      {
+        schedule: null,
+        placementLock: {
+          scheduleRef: sourceRef,
+          locked: true,
+          expectedRevision: 0,
+        },
+        reminder: null,
+        reality: null,
+        objectives: null,
+      },
+      'event:lock:local',
+    );
+    expect(recorded).toHaveLength(1);
+    expect(recorded[0]?.placement_lock).toEqual({
+      schedule_ref: sourceRef,
+      locked: true,
+      expected_revision: 0,
+    });
+    expect(recorded[0]?.expected_revision).toBe(2);
+    expect(recorded[0]?.expected_recurrence_state_ref).toBe(
+      recurrenceStateRef,
+    );
+  });
+
+
   it('uses canonical origin/state and a single idempotent scoped POST', async () => {
     const requests: Record<string, unknown>[] = [];
     const fetchFn = vi.fn(

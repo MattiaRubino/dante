@@ -225,6 +225,42 @@ describe('Event Inspector actions', () => {
   });
 
 
+  it('discards a staged Event placement lock without mutating its Schedule', async () => {
+    const scheduleRef = '0199a333-3333-7333-8333-333333333333';
+    loadProfile.mockResolvedValue({
+      eventRef,
+      title: 'Evento da conservare',
+      description: null,
+      location: null,
+      colorCode: null,
+      profileRevision: 0,
+      agendaRevision: 0,
+      agendaParts: [],
+    });
+    render(
+      <EventInspectorActions
+        eventRef={eventRef}
+        placement={placement}
+        scheduleRef={scheduleRef}
+        onDuplicate={vi.fn()}
+      />,
+    );
+    fireEvent.click(screen.getByRole('button', { name: /^Modifica$/ }));
+    fireEvent.click(
+      await screen.findByRole('button', { name: 'Blocca spostamenti' }),
+    );
+    fireEvent.click(screen.getByRole('button', { name: 'Annulla' }));
+    const confirm = screen.getByRole('alertdialog', {
+      name: 'Modifiche non salvate',
+    });
+    fireEvent.click(
+      within(confirm).getByRole('button', { name: 'Scarta modifiche' }),
+    );
+    expect(reviseAtomic).not.toHaveBeenCalled();
+    expect(reviseProfile).not.toHaveBeenCalled();
+    expect(getPlacementLock).toHaveBeenCalledWith(scheduleRef);
+  });
+
   it('reads the selected Event occurrence for the card agenda and objective counters', async () => {
     const occurrenceRef = '0199a555-5555-7555-8555-555555555555';
     loadOccurrenceEvent.mockResolvedValue({

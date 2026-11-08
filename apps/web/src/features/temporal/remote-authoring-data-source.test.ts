@@ -134,18 +134,17 @@ describe('remote U2 authoring data source', () => {
       location: 'Studio',
       lifeArea: { newName: 'Lavoro', colorCode: '#8A4FFF' },
       agendaParts: ['Decisioni'],
+      placementProtected: false,
     });
 
     expect(result.item.lifeAreaRef).toBe(SCHEDULE_REF);
     expect(result.item.lifeAreaColorCode).toBe('#8A4FFF');
     expect(result.agendaParts).toEqual(['Decisioni']);
-    expect(
-      (
-        JSON.parse(
-          fetchRequestBody(fetchFn.mock.calls[1]?.[1]?.body),
-        ) as Record<string, unknown>
-      ).life_area,
-    ).toEqual({
+    const body = JSON.parse(
+      fetchRequestBody(fetchFn.mock.calls[1]?.[1]?.body),
+    ) as Record<string, unknown>;
+    expect(body.placement_protected).toBe(false);
+    expect(body.life_area).toEqual({
       new_name: 'Lavoro',
       color_code: '#8A4FFF',
     });
