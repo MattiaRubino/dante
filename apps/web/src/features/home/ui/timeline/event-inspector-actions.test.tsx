@@ -1403,6 +1403,57 @@ describe('Event Inspector actions', () => {
     });
   });
 
+  it('uses the accepted Schedule CAS after changing Event timing and enabling recurrence in one Save', async () => {
+    const current = {
+      eventRef,
+      title: 'Conferenza',
+      description: null,
+      location: null,
+      colorCode: null,
+      profileRevision: 1,
+      agendaRevision: 0,
+      agendaParts: [],
+    };
+    loadProfile.mockResolvedValue(current);
+    const acceptedState = '0199a555-5555-7555-8555-555555555555';
+    reviseAtomic.mockResolvedValue({
+      ...current,
+      updatedPlacementStateRef: acceptedState,
+    });
+    render(
+      <EventInspectorActions
+        eventRef={eventRef}
+        placement={placement}
+        scheduleRef="0199a333-3333-7333-8333-333333333333"
+        placementMaterialStateRef="0199a444-4444-7444-8444-444444444444"
+        onDuplicate={vi.fn()}
+      />,
+    );
+    fireEvent.click(screen.getByRole('button', { name: /^Modifica$/ }));
+    await screen.findByRole('textbox', { name: 'Titolo Event' });
+    const schedule = screen.getByRole('group', { name: 'Orario Evento' });
+    const time = within(schedule).getByRole('textbox', { name: 'Fine: ore' });
+    fireEvent.change(time, { target: { value: '11' } });
+    fireEvent.blur(time);
+    fireEvent.change(screen.getByRole('combobox', { name: 'Ripeti' }), {
+      target: { value: 'daily' },
+    });
+    fireEvent.click(screen.getByRole('button', { name: 'Salva modifiche' }));
+    await waitFor(() => expect(startExistingEvent).toHaveBeenCalledOnce());
+    expect(reviseAtomic).toHaveBeenCalledOnce();
+    expect(reviseAtomic.mock.calls[0]?.[2]).toMatchObject({
+      schedule: { expectedMaterialStateRef: '0199a444-4444-7444-8444-444444444444' },
+    });
+    expect(startExistingEvent).toHaveBeenCalledWith(
+      expect.objectContaining({
+        expectedProfileRevision: 1,
+        expectedPlacementStateRef: acceptedState,
+      }),
+      expect.any(Object),
+      expect.any(String),
+    );
+  });
+
   it('includes the Event reminder in the atomic Save instead of writing separately', async () => {
     const current = {
       eventRef,
