@@ -19,7 +19,16 @@ export function TemporalAuthoringTitleRow({
 }>) {
   return (
     <div
-      className={`temporal-create-title-row temporal-authoring-title-row ${compact ? 'is-quick' : 'has-tools'} temporal-authoring-title-row--${kind}${kind === 'event' ? ' temporal-event-title-row' : ''} ${className}`.trim()}
+      className={[
+        'temporal-create-title-row',
+        'temporal-authoring-title-row',
+        compact ? 'is-quick' : 'has-tools',
+        `temporal-authoring-title-row--${kind}`,
+        kind === 'event' ? 'temporal-event-title-row' : '',
+        className,
+      ]
+        .filter(Boolean)
+        .join(' ')}
       data-authoring-title-kind={kind}
     >
       <span className="temporal-authoring-title-row__marker" aria-hidden="true">

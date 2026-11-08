@@ -78,6 +78,14 @@ export function TemporalCreateAdvancedActivityHeaderActions() {
 
   return (
     <>
+      <TemporalCreatePlacementLockButton
+        kind="activity"
+        italian={italian}
+        locked={structure.placementProtected}
+        onToggle={() =>
+          patchStructure({ placementProtected: !structure.placementProtected })
+        }
+      />
       <label
         className="temporal-create-structure-session-toggle"
         data-create-structure-actions
@@ -94,14 +102,6 @@ export function TemporalCreateAdvancedActivityHeaderActions() {
         />
         {italian ? 'Sessione' : 'Session'}
       </label>
-      <TemporalCreatePlacementLockButton
-        kind="activity"
-        italian={italian}
-        locked={structure.placementProtected}
-        onToggle={() =>
-          patchStructure({ placementProtected: !structure.placementProtected })
-        }
-      />
     </>
   );
 }

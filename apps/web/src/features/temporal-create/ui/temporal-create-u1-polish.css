@@ -352,7 +352,6 @@
 .temporal-create-backdrop.is-advanced
   .temporal-create-title-row__tools
   .temporal-create-structure-session-toggle {
-  order: 1;
   min-height: 50px;
   padding: 0 12px;
   border: 0 !important;

@@ -1,5 +1,14 @@
 # Timeline / Temporal-Operational — Workstream Handoff
 
+## 2026-11-08 — One canonical Edit-style title rail across Create/Edit/Series (visual acceptance pending)
+
+The user confirmed the existing Edit Activity/Event title bar as the visual reference. We removed the conflicting Create Event pseudo-grid and duplicated Activity/Event/Series title-layout CSS, introducing `TemporalAuthoringTitleRow` in the real Create and Edit components. All six authoring variants now have one DOM shape: visible type-specific marker (`◇` Activity, `○` Event), flexible editable title, integrated action rail. Existing actions/owner-scoped persistence remain with their current owners. Create Activity action order now matches Edit (placement lock, then Session), rather than relying on CSS flex `order` to invert the keyboard and visual order. Quick Create stays compact.
+
+New DOM assertions enforce three structural children and both marker types, while the browser regression `Advanced Activity and Event share one actual title rail without displaced controls` measures real rendered rectangles and catches the prior Event title displacement. The older Event-specific stylesheet was deleted, and old Activity/Edit/Series overrides no longer compete with the shared component geometry.
+
+**Owner gate NOT_RUN** for this change: typecheck, Prettier, targeted Vitest, Playwright and whole DANTE gate must run on the exact pulled SHA. The previously reported 47/47 Vitest, 5/5 PostgreSQL and TypeScript passed on an earlier SHA before this refactor; they do not verify this change. No new backend/SQL semantics were introduced by this visual-only follow-up.
+
+
 ## 2026-11-08 — Event title-row and placement-lock regression inventory (candidate, owner gate pending)
 
 Commits through this handoff add meaningful tests at the owning boundaries. The Create component tests assert its Event name, integrated lock button, both draft states and event-specific draft callback. The Event Inspector tests assert the unified local-only title row and lock CAS payload as part of one Save, as well as the versioned lock template in both `this_and_following` and `from_next` structural preview scopes. A new qualified `remote-recurring-authoring.test.ts` proves the authenticated Event Create request serializes both `placement_protected=true` and `false`. PostgreSQL `test_recurring_event_create.py` now checks immutable initial policy replay, cross-owner isolation, initial automatic Schedule lock, subsequent manual unlock preserved by a materialization checkpoint, and the locked revised source policy for newly materialized future Event Occurrences. Existing legacy Event policy explicitly asserts the unlocked default.

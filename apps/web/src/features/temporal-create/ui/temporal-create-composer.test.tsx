@@ -122,9 +122,17 @@ describe('TemporalCreateComposer', () => {
     expect(titleRow?.children[1]?.classList.contains('temporal-create-title-row__name')).toBe(
       true,
     );
-    expect(titleRow?.children[2]?.classList.contains('temporal-create-title-row__tools')).toBe(
-      true,
+    expect(
+      titleRow?.children[2]?.classList.contains('temporal-create-title-row__tools'),
+    ).toBe(true);
+    const activityActions = titleRow?.children[2];
+    expect(activityActions?.children).toHaveLength(2);
+    expect(activityActions?.children[0]?.getAttribute('data-placement-protection')).toBe(
+      'activity',
     );
+    expect(
+      activityActions?.children[1]?.getAttribute('data-session-capability'),
+    ).toBe('activity');
     const date = document.querySelector('[data-create-path="date"]');
     expect(date?.classList.contains('temporal-create-u2-date-field')).toBe(
       true,
