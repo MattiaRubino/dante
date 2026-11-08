@@ -204,7 +204,10 @@ export async function configureCreate(
     options.placementProtected === true;
   if (advanced) {
     await composer.getByRole('button', { name: /Opzioni avanzate/ }).click();
-    await expect(composer).toHaveAttribute('data-temporal-create-surface', 'full');
+    // The production data contract uses "advanced" for the expanded form.
+    // "is-full" is a layout class, not a third surface state.
+    await expect(composer).toHaveAttribute('data-temporal-create-surface', 'advanced');
+    await expect(composer).toHaveClass(/\bis-full\b/);
   }
   if (options.placementProtected) {
     await composer.getByRole('button', { name: 'Blocca spostamenti' }).click();

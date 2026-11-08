@@ -84,14 +84,21 @@ test.describe('Timeline — real user Activity/Event lifecycle matrix', () => {
       name: item.kind === 'event' ? 'Elimina Event' : 'Elimina',
       exact: true,
     }).click();
-    // Cancel must not mutate anything.
+    // The shared destructive confirmation is portaled to document.body.
+    // It is an alertdialog, never a button nested under the Inspector.
+    const deletion = page.getByRole('alertdialog', {
+      name: item.kind === 'event' ? 'Elimina evento' : 'Elimina attività',
+    });
     await expect(
-      inspector.getByRole('button', { name: 'Conferma eliminazione definitiva' }),
+      deletion.getByRole('button', { name: 'Elimina definitivamente' }),
     ).toBeVisible();
-    await inspector.getByRole('button', { name: 'Annulla', exact: true }).click();
+    await deletion.getByRole('button', { name: 'Annulla', exact: true }).click();
+    await expect(deletion).toHaveCount(0);
     await expect(
       page.locator('[data-timeline-event="' + item.scheduleRef + '"]'),
     ).toHaveCount(1);
+    // Cancelling must preserve persisted profile, not merely a stale card.
+    await assertPersistedTitle(page, item, item.title);
 
     await inspector.getByRole('button', {
       name: item.kind === 'event' ? 'Elimina Event' : 'Elimina',
@@ -105,8 +112,9 @@ test.describe('Timeline — real user Activity/Event lifecycle matrix', () => {
         response.url().endsWith(endpoint) &&
         response.request().method() === 'DELETE',
     );
-    await inspector.getByRole('button', {
-      name: 'Conferma eliminazione definitiva',
+    await expect(deletion).toBeVisible();
+    await deletion.getByRole('button', {
+      name: 'Elimina definitivamente',
     }).click();
     const accepted = await responsePromise;
     expect(accepted.status()).toBe(200);
