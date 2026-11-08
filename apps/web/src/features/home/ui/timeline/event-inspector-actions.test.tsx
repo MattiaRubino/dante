@@ -922,16 +922,30 @@ describe('Event Inspector actions', () => {
     expect(recurrenceSelect).toHaveProperty('value', 'none');
     expect(recurrenceSelect.closest('.temporal-create-u2-repeat')).toBeTruthy();
     fireEvent.change(recurrenceSelect, { target: { value: 'custom' } });
-    const details = screen.getByRole('region', { name: 'Ripetizione' });
+    const panel = screen.getByRole('region', {
+      name: 'Ripetizione',
+    });
+    expect(panel.classList.contains('temporal-recurrence-panel')).toBe(true);
+    expect(panel.classList.contains('timeline-existing-recurrence')).toBe(true);
+    expect(panel.getAttribute('data-recurrence-owner')).toBe('event');
+    expect(panel.getAttribute('data-recurrence-expanded')).toBe('true');
+    expect(
+      within(panel).getAllByRole('heading', { name: 'Ripetizione' }),
+    ).toHaveLength(1);
+    const details = within(panel).getByRole('region', {
+      name: 'Dettagli ripetizione',
+    });
     expect(details.classList.contains('temporal-create-repeat')).toBe(true);
+    expect(panel.querySelector('.temporal-recurrence-panel__details')?.contains(details))
+      .toBe(true);
     expect(
-      details.parentElement?.classList.contains('timeline-existing-recurrence'),
-    ).toBe(true);
-    expect(
-      screen.getByRole('group', { name: 'Giorni della settimana' }),
+      within(panel).getByRole('group', { name: 'Giorni della settimana' }),
     ).toBeTruthy();
     fireEvent.change(recurrenceSelect, { target: { value: 'none' } });
-    expect(screen.queryByRole('region', { name: 'Ripetizione' })).toBeNull();
+    expect(panel.getAttribute('data-recurrence-expanded')).toBe('false');
+    expect(panel.querySelector('.temporal-recurrence-panel__details')).toBeNull();
+    expect(within(panel).getByRole('combobox', { name: 'Ripeti' }))
+      .toHaveProperty('value', 'none');
     fireEvent.change(recurrenceSelect, { target: { value: 'daily' } });
     expect(
       screen.queryByRole('button', {

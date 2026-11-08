@@ -578,7 +578,10 @@ test('Activity and Event repeat selectors stay inside one shared panel in Create
   await create.getByRole('button', { name: /Opzioni avanzate/ }).click();
 
   async function checkRealPanel(kind: 'activity' | 'event') {
-    const panel = create.getByRole('region', { name: 'Ripetizione' });
+    const panel = create.getByRole('region', {
+      name: 'Ripetizione',
+      exact: true,
+    });
     await expect(panel).toHaveAttribute('data-recurrence-owner', kind);
     const choice = panel.getByRole('combobox', { name: 'Ripeti' });
     await choice.selectOption('none');
