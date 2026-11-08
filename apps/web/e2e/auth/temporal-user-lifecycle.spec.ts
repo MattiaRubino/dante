@@ -1,4 +1,10 @@
-import { expect, test, type Locator, type Page } from '@playwright/test';
+import {
+  expect,
+  test,
+  type Locator,
+  type Page,
+  type Response as PlaywrightResponse,
+} from '@playwright/test';
 
 import {
   configureCreate,
@@ -22,6 +28,33 @@ import {
  * PostgreSQL -> reload is required; the isolated /home fixture is insufficient.
  * Each test owns one disposable seeded E2E account and its own created data.
  */
+/** HTTP 200 is not sufficient when the browser response body never finishes.
+ * Keep that failure explicit and bounded instead of consuming the entire
+ * 120-second user journey budget on an unresolved response.json().
+ */
+async function boundedJsonResponse(
+  response: PlaywrightResponse,
+  timeoutMs = 12_000,
+): Promise<Record<string, unknown>> {
+  let timeout: ReturnType<typeof setTimeout> | undefined;
+  try {
+    return (await Promise.race([
+      response.json(),
+      new Promise<never>((_resolve, reject) => {
+        timeout = setTimeout(() => {
+          reject(
+            new Error(
+              `HTTP ${response.status()} body did not finish within ${timeoutMs} ms: ${response.url()}`,
+            ),
+          );
+        }, timeoutMs);
+      }),
+    ])) as Record<string, unknown>;
+  } finally {
+    if (timeout !== undefined) clearTimeout(timeout);
+  }
+}
+
 test.describe('Timeline — real user Activity/Event lifecycle matrix', () => {
   // Seven independent seeded users: allow this suite (and only this suite)
   // to run concurrently when Playwright is invoked with --workers=2.
@@ -457,7 +490,7 @@ test.describe('Timeline — real user Activity/Event lifecycle matrix', () => {
             await inspector.getByRole('button', { name: 'Salva modifiche' }).click();
             const accepted = await conversion;
             expect(accepted.status()).toBe(200);
-            const body = (await accepted.json()) as Record<string, unknown>;
+            const body = await boundedJsonResponse(accepted);
             expect(body).toMatchObject({
               owner_kind: kind === 'event' ? 'event' : 'routine',
               replayed: false,
