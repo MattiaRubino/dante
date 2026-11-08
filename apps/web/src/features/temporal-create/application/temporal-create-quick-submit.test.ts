@@ -509,6 +509,7 @@ describe('U2 Quick Create submit mapping', () => {
         target_max: null,
         unit_code: 'km',
         presentation_order: 0,
+        verification_mode: 'none',
       },
       {
         label: 'Tecnica',
@@ -519,6 +520,7 @@ describe('U2 Quick Create submit mapping', () => {
         target_max: null,
         unit_code: null,
         presentation_order: 1,
+        verification_mode: 'none',
       },
     ]);
   });

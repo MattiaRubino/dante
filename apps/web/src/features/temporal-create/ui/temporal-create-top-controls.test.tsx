@@ -529,11 +529,12 @@ describe('Temporal Create U1 top controls', () => {
 
     // Reminder remains one primary Create control, not a second Advanced copy.
     expect(screen.getAllByLabelText('Ricorda')).toHaveLength(1);
+    // Completion policy is no longer a global authoring control.
     expect(
-      screen.getByRole('radiogroup', {
+      screen.queryByRole('radiogroup', {
         name: 'Modalità svolgimento dell’attività',
       }),
-    ).toBeTruthy();
+    ).toBeNull();
     expect(screen.queryByText('Aspetto')).toBeNull();
 
     const backToQuick = screen.getByRole('button', {

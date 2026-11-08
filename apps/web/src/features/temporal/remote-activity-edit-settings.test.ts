@@ -1051,6 +1051,7 @@ describe('Activity editor settings remote contract', () => {
         target_min: null,
         target_max: null,
         unit_code: 'km',
+        verification_mode: 'none',
         presentation_order: 3,
       },
     ]);

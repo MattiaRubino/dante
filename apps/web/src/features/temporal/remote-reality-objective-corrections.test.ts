@@ -143,6 +143,8 @@ describe('M2 Objective corrections', () => {
         scope_code: 'only_this',
         expected_source_revision: null,
         expected_recurrence_state_ref: null,
+        expected_verification_revision: null,
+        verification_mode: null,
         label: '6 km',
         result_kind: 'quantity',
         comparator_code: 'gte',
