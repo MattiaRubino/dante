@@ -1348,6 +1348,32 @@ describe('Activity Inspector', () => {
     expect(revise).not.toHaveBeenCalled();
   });
 
+  it('keeps Save disabled until registered Sessions are safely loaded', async () => {
+    let completeLoad: ((sessions: readonly unknown[]) => void) | undefined;
+    listActivitySessions.mockReturnValueOnce(
+      new Promise<readonly unknown[]>((resolve) => {
+        completeLoad = resolve;
+      }),
+    );
+    render(
+      <ActivityEditPanel
+        profile={profile}
+        closeRequestRef={createRef()}
+        onSaved={() => undefined}
+        onCancel={() => undefined}
+      />,
+    );
+    const save = await screen.findByRole('button', {
+      name: 'Salva modifiche',
+    });
+    expect(save).toHaveProperty('disabled', true);
+    expect(applyAtomicEdit).not.toHaveBeenCalled();
+    await act(async () => {
+      completeLoad?.([]);
+    });
+    await waitFor(() => expect(save).toHaveProperty('disabled', false));
+  });
+
   it('stages Objective additions and preserves retry identity after one Save error', async () => {
     applyActivityEdits
       .mockRejectedValueOnce(new Error('Errore temporaneo'))
