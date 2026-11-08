@@ -828,6 +828,7 @@ async def test_recurring_event_policy_materializes_schedule_and_reminder(
         assert not policy.replayed
         assert policy.duration_minutes == 60
         assert policy.reminder_lead_minutes == 15
+        assert policy.placement_protected is False
 
         replay = await policies.set(
             self_person_ref=alice,

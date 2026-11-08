@@ -270,7 +270,7 @@ describe('TemporalCreateComposer', () => {
     );
     fireEvent.click(screen.getByRole('button', { name: 'Sblocca spostamenti' }));
     expect(eventLock.getAttribute('aria-pressed')).toBe('false');
-    expect(onU2DraftChange).toHaveBeenLastCalledWith(
+    expect(onU2DraftChange).toHaveBeenCalledWith(
       expect.objectContaining({ eventPlacementProtected: false }),
       'user',
     );

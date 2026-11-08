@@ -2109,6 +2109,97 @@ describe('Event Inspector actions', () => {
     expect(onDeleted).toHaveBeenCalledOnce();
   });
 
+
+  it('edits this Event and following instances with a versioned protected Schedule template', async () => {
+    const occurrenceRef = '0199a555-5555-7555-8555-555555555555';
+    const recurrenceStateRef = '0199a666-6666-7666-8666-666666666666';
+    loadSeries.mockResolvedValue({
+      sourceRef: eventRef,
+      owner: 'event',
+      selectedDate: '2027-01-02',
+      editRevision: 2,
+      recurrenceStateRef,
+      title: 'Riunione',
+      description: null,
+      location: null,
+      colorCode: null,
+      recurrence: {
+        family_code: 'calendar_wall_clock',
+        range_kind: 'open',
+        effective_from: '2027-01-02',
+        effective_until: null,
+        pattern_code: 'daily',
+        interval_count: 1,
+        clock_basis_code: 'named_zone',
+        zone_id: 'Europe/Rome',
+        wall_times: ['09:00:00'],
+      },
+      structure: {
+        version: 1,
+        placement_kind: 'timed',
+        duration_minutes: 60,
+        duration_days: null,
+        reminder_lead_minutes: null,
+        reality_mode: 'manual',
+        placement_protected: false,
+        agenda_parts: ['Apertura'],
+        objectives: [],
+        life_area_ref: null,
+        expected_participants: [],
+      },
+    });
+    reviewSeries.mockResolvedValue({
+      fingerprint: 'a'.repeat(64),
+      targetRefs: [occurrenceRef],
+      newExpectedCount: 1,
+      protected: [],
+    });
+    vi.stubGlobal('fetch', vi.fn().mockResolvedValue(Response.json([])));
+    render(
+      <RecurringSeriesEditor
+        occurrenceRef={occurrenceRef}
+        scope="this_and_following"
+        owner="event"
+        onSaved={vi.fn()}
+        onCancel={vi.fn()}
+      />,
+    );
+
+    const title = await screen.findByRole('textbox', { name: 'Titolo' });
+    const row = title.closest('.temporal-event-title-row');
+    expect(row).not.toBeNull();
+    const lock = within(row as HTMLElement).getByRole('button', {
+      name: 'Blocca spostamenti',
+    });
+    expect(lock.getAttribute('aria-pressed')).toBe('false');
+    fireEvent.click(lock);
+    expect(
+      within(row as HTMLElement)
+        .getByRole('button', { name: 'Sblocca spostamenti' })
+        .getAttribute('aria-pressed'),
+    ).toBe('true');
+    expect(reviewSeries).not.toHaveBeenCalled();
+    expect(acceptSeries).not.toHaveBeenCalled();
+
+    fireEvent.click(screen.getByRole('button', { name: 'Salva modifiche' }));
+    await waitFor(() =>
+      expect(reviewSeries).toHaveBeenCalledWith(
+        expect.objectContaining({
+          selectedRef: occurrenceRef,
+          scope: 'this_and_following',
+          structure: expect.objectContaining({ placement_protected: true }),
+        }),
+      ),
+    );
+    const confirmation = await screen.findByRole('dialog', {
+      name: 'Controlla prima di salvare',
+    });
+    fireEvent.click(
+      within(confirmation).getByRole('button', { name: 'Torna alla modifica' }),
+    );
+    expect(acceptSeries).not.toHaveBeenCalled();
+  });
+
   it('edits following Activity instances with the shared date, Session and Objective controls', async () => {
     const occurrenceRef = '0199a555-5555-7555-8555-555555555555';
     loadSeries.mockResolvedValue({
