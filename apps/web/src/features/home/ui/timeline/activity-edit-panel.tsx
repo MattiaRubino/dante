@@ -2167,9 +2167,23 @@ export function ActivityEditPanel({
               <ExistingRecurrenceControl
                 ref={recurrenceControl}
                 kind="activity"
-                date={envelope.start.slice(0, 10)}
-                startTime={envelope.start.slice(11, 16) || '09:00'}
-                allDay={envelope.temporalForm === 'date_span'}
+                date={
+                  allDay
+                    ? dateSpanDraft.start
+                    : (planDraft[envelope.scheduleRef]?.start ?? envelope.start).slice(
+                        0,
+                        10,
+                      )
+                }
+                startTime={
+                  allDay
+                    ? '00:00'
+                    : (planDraft[envelope.scheduleRef]?.start ?? envelope.start).slice(
+                        11,
+                        16,
+                      ) || '09:00'
+                }
+                allDay={allDay}
                 zoneId={envelope.zoneId ?? timeZone ?? detectDeviceTimeZone()}
                 disambiguation="earlier"
                 onSelectionChange={(selected) => {

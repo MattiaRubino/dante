@@ -674,6 +674,7 @@ export function EventInspectorActions({
       }
       let acceptedProfile = profile;
       let acceptedStateRef = placementMaterialStateRef;
+      let acceptedEdit = false;
       if (
         areaQuery.trim() &&
         !areaChoice?.options.some(
@@ -978,6 +979,7 @@ export function EventInspectorActions({
           acceptedProfile = saved ?? profile;
           acceptedStateRef =
             saved?.updatedPlacementStateRef ?? placementMaterialStateRef;
+          acceptedEdit = true;
         } else if (profileChanged) {
           acceptedProfile = await profileSource.revise(
             eventRef,
@@ -985,6 +987,7 @@ export function EventInspectorActions({
             normalized,
             systemTemporalIdFactory.operationId(),
           );
+          acceptedEdit = true;
         }
       }
       if (proposedRecurrence && scheduleRef && acceptedStateRef) {
@@ -997,7 +1000,7 @@ export function EventInspectorActions({
           scheduleRef,
           expectedPlacementStateRef: acceptedStateRef,
         };
-        recurrenceResume.current = basis;
+        if (acceptedEdit) recurrenceResume.current = basis;
         await existingRecurrence.startEvent(
           basis,
           proposedRecurrence,
