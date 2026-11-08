@@ -1,5 +1,14 @@
 # Timeline / Temporal-Operational — Workstream Handoff
 
+## 2026-11-08 — Recurrence from sole Edit Save and legacy series UI removal (candidate)
+
+The old `ExistingRecurrenceControl` mutation action (`Avvia ripetizione da questa Attività / questo Evento`) is removed. Calendar choices remain in the same Create-consistent UI but now stage a rule exposed to the owning Save via a typed `ExistingRecurrenceControlHandle`. Save starts a recurring source only when explicitly selected. For a pre-existing profile/schedule modification, the existing atomic Edit runs first, followed by the conversion using fresh profile/placement CAS basis; Event atomic Edit now returns the exact accepted Schedule placement state as an API response field. If conversion fails after the Edit has been accepted, the UI reports the partial outcome and keeps a retry basis so Save does not replay the prior profile mutation.
+
+The obsolete `Opzioni avanzate della serie` panel is removed from Activity structural series Edit; it duplicated the Session capture toggle in the shared title rail and surfaced legacy record/record_and_live choices and minimum duration in the wrong section. Existing versioned Session policy data remains unchanged.
+
+**Verification NOT_RUN:** focused Event Inspector, shared recurrence component, backend tests, TypeScript, browser and full DANTE gate must run at the pulled SHA. A selected recurrence plus simultaneous profile/Schedule edits exercises two separate existing backend commands; the UI now sequences them, but this is **not a single database transaction** across profile Edit and source conversion. Failed conversion is reported, not silently called success. OpenAPI/client drift must be checked for the new atomic Event response field.
+
+
 ## 2026-11-08 — One canonical Edit-style title rail across Create/Edit/Series (visual acceptance pending)
 
 The user confirmed the existing Edit Activity/Event title bar as the visual reference. We removed the conflicting Create Event pseudo-grid and duplicated Activity/Event/Series title-layout CSS, introducing `TemporalAuthoringTitleRow` in the real Create and Edit components. All six authoring variants now have one DOM shape: visible type-specific marker (`◇` Activity, `○` Event), flexible editable title, integrated action rail. Existing actions/owner-scoped persistence remain with their current owners. Create Activity action order now matches Edit (placement lock, then Session), rather than relying on CSS flex `order` to invert the keyboard and visual order. Quick Create stays compact.

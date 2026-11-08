@@ -3403,6 +3403,16 @@
       "status": "QUALIFIED"
     },
     {
+      "path": "apps/web/src/features/home/ui/timeline/existing-recurrence-control.test.tsx",
+      "suite": "web-unit-component",
+      "contract_id": "T02",
+      "candidate_behavior": "existing Activity/Event recurrence staged in Save",
+      "purpose": "Prevent duplicate mutation controls and ensure the same calendar rule is readable by the owning Edit Save for Activity and Event.",
+      "invariant": "Selecting or clearing recurrence only changes draft state; it never invokes a second mutation control. Save reads a canonical calendar rule from the existing recurrence fields.",
+      "status": "QUALIFIED",
+      "audit_note": "Code-level design and positive/negative assertions reviewed, execution pending owner WSL run and browser gate on exact branch SHA."
+    },
+    {
       "path": "apps/web/src/features/home/ui/timeline/timeline-event-participation.test.tsx",
       "suite": "web-unit-component",
       "contract_id": "T02",
