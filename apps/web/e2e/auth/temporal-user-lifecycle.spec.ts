@@ -345,11 +345,20 @@ test.describe('Timeline — real user Activity/Event lifecycle matrix', () => {
         const allRefs = new Set(created.map((item) => item.sourceRef));
         expect(allRefs.size).toBe(variants.length);
         // Independent, versioned series are visible after a fresh Timeline GET.
-        for (const item of created) {
+        for (const [index, item] of created.entries()) {
+          const variant = variants[index]!;
           await expect(
             page.locator('[data-timeline-event]').filter({
               hasText: item.title,
             }).first(),
+            `Missing ${kind} recurrence on the materialized Timeline: ${JSON.stringify({
+              title: item.title,
+              cadence: variant.cadence,
+              interval: variant.interval,
+              monthlyOrdinal: variant.monthlyOrdinal ?? false,
+              effectiveDate: day,
+              sourceRef: item.sourceRef,
+            })}`,
           ).toBeVisible();
         }
         const dailyFirst = onDay(page, day, created[0]!.title);
@@ -414,82 +423,84 @@ test.describe('Timeline — real user Activity/Event lifecycle matrix', () => {
       const day = scenarioDate();
       await openHome(page, day);
       for (const kind of ['activity', 'event'] as const) {
-        const title = uniqueTitle(kind + ' conversione');
-        const original = await create(page, {
-          kind,
-          title,
-          date: day,
-          clock: kind === 'activity' ? '08:20' : '15:20',
-          placementProtected: true,
-        });
-        await openHome(page, day);
-        const inspector = await openInspector(page, original);
-        await titleEditor(inspector, kind);
-        const panel = inspector.getByRole('region', {
-          name: 'Ripetizione',
-          exact: true,
-        });
-        await panel.getByRole('combobox', { name: 'Ripeti' })
-          .selectOption('daily');
-        await expect(panel).toHaveAttribute('data-recurrence-expanded', 'true');
-        const startPath =
-          '/api/v1/temporal/recurring/' +
-          (kind === 'event' ? 'events/' : 'activities/') +
-          original.sourceRef + '/start';
-        const conversion = page.waitForResponse(
-          (response) =>
-            response.url().endsWith(startPath) &&
-            response.request().method() === 'POST',
-          { timeout: 35_000 },
-        );
-        await inspector.getByRole('button', { name: 'Salva modifiche' }).click();
-        const accepted = await conversion;
-        expect(accepted.status()).toBe(200);
-        const body = (await accepted.json()) as Record<string, unknown>;
-        expect(body).toMatchObject({
-          owner_kind: kind === 'event' ? 'event' : 'routine',
-          replayed: false,
-        });
-        expect(body.source_ref).toEqual(expect.stringMatching(/^[\da-f-]{36}$/i));
-        const intent = accepted.request().postDataJSON() as Record<string, unknown>;
-        expect(intent.recurrence).toMatchObject({
-          pattern_code: 'daily',
-          effective_from: day,
-          clock_basis_code: 'named_zone',
-        });
-        await openHome(page, day);
-        await expect(
-          page.locator('[data-timeline-event="' + original.scheduleRef + '"]'),
-        ).toHaveCount(1);
-        await assertPersistedTitle(page, original, title);
-        await openHome(page, dateAfter(day, 1));
-        const future = onDay(page, dateAfter(day, 1), title);
-        await expect(future).toHaveCount(1);
-        const firstFutureSchedule = await future.getAttribute(
-          'data-timeline-event',
-        );
-        expect(firstFutureSchedule).toMatch(/^[\da-f-]{36}$/i);
-        expect(firstFutureSchedule).not.toBe(original.scheduleRef);
+        await test.step(`${kind}: convert once to recurring and preserve identity`, async () => {
+          const title = uniqueTitle(kind + ' conversione');
+          const original = await create(page, {
+            kind,
+            title,
+            date: day,
+            clock: kind === 'activity' ? '08:20' : '15:20',
+            placementProtected: true,
+          });
+          await openHome(page, day);
+          const inspector = await openInspector(page, original);
+          await titleEditor(inspector, kind);
+          const panel = inspector.getByRole('region', {
+            name: 'Ripetizione',
+            exact: true,
+          });
+          await panel.getByRole('combobox', { name: 'Ripeti' })
+            .selectOption('daily');
+          await expect(panel).toHaveAttribute('data-recurrence-expanded', 'true');
+          const startPath =
+            '/api/v1/temporal/recurring/' +
+            (kind === 'event' ? 'events/' : 'activities/') +
+            original.sourceRef + '/start';
+          const conversion = page.waitForResponse(
+            (response) =>
+              response.url().endsWith(startPath) &&
+              response.request().method() === 'POST',
+            { timeout: 35_000 },
+          );
+          await inspector.getByRole('button', { name: 'Salva modifiche' }).click();
+          const accepted = await conversion;
+          expect(accepted.status()).toBe(200);
+          const body = (await accepted.json()) as Record<string, unknown>;
+          expect(body).toMatchObject({
+            owner_kind: kind === 'event' ? 'event' : 'routine',
+            replayed: false,
+          });
+          expect(body.source_ref).toEqual(expect.stringMatching(/^[\da-f-]{36}$/i));
+          const intent = accepted.request().postDataJSON() as Record<string, unknown>;
+          expect(intent.recurrence).toMatchObject({
+            pattern_code: 'daily',
+            effective_from: day,
+            clock_basis_code: 'named_zone',
+          });
+          await openHome(page, day);
+          await expect(
+            page.locator('[data-timeline-event="' + original.scheduleRef + '"]'),
+          ).toHaveCount(1);
+          await assertPersistedTitle(page, original, title);
+          await openHome(page, dateAfter(day, 1));
+          const future = onDay(page, dateAfter(day, 1), title);
+          await expect(future).toHaveCount(1);
+          const firstFutureSchedule = await future.getAttribute(
+            'data-timeline-event',
+          );
+          expect(firstFutureSchedule).toMatch(/^[\da-f-]{36}$/i);
+          expect(firstFutureSchedule).not.toBe(original.scheduleRef);
 
-        await openHome(page, dateAfter(day, 2));
-        const later = onDay(page, dateAfter(day, 2), title);
-        await expect(later).toHaveCount(1);
-        const secondFutureSchedule = await later.getAttribute(
-          'data-timeline-event',
-        );
-        expect(secondFutureSchedule).not.toBe(firstFutureSchedule);
-        expect(secondFutureSchedule).not.toBe(original.scheduleRef);
+          await openHome(page, dateAfter(day, 2));
+          const later = onDay(page, dateAfter(day, 2), title);
+          await expect(later).toHaveCount(1);
+          const secondFutureSchedule = await later.getAttribute(
+            'data-timeline-event',
+          );
+          expect(secondFutureSchedule).not.toBe(firstFutureSchedule);
+          expect(secondFutureSchedule).not.toBe(original.scheduleRef);
 
-        // After materializing later Occurrences, revisit both earlier dates:
-        // the first physical identity and accepted future identities must not
-        // be replaced or rewritten by checkpoint/reconciliation.
-        await openHome(page, day);
-        await expect(onDay(page, day, title))
-          .toHaveAttribute('data-timeline-event', original.scheduleRef!);
-        await assertPersistedTitle(page, original, title);
-        await openHome(page, dateAfter(day, 1));
-        await expect(onDay(page, dateAfter(day, 1), title))
-          .toHaveAttribute('data-timeline-event', firstFutureSchedule!);
+          // After materializing later Occurrences, revisit both earlier dates:
+          // the first physical identity and accepted future identities must not
+          // be replaced or rewritten by checkpoint/reconciliation.
+          await openHome(page, day);
+          await expect(onDay(page, day, title))
+            .toHaveAttribute('data-timeline-event', original.scheduleRef!);
+          await assertPersistedTitle(page, original, title);
+          await openHome(page, dateAfter(day, 1));
+          await expect(onDay(page, dateAfter(day, 1), title))
+            .toHaveAttribute('data-timeline-event', firstFutureSchedule!);
+        });
       }
     } finally {
       await user.close();
