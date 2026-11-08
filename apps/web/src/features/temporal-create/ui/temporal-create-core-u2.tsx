@@ -30,6 +30,7 @@ import {
   type QuickRecurrence,
 } from './temporal-create-quick-recurrence-select';
 import { TemporalCreateQuickReminder } from './temporal-create-quick-reminder';
+import { TemporalRecurrencePanel } from './temporal-recurrence-panel';
 import { TemporalTimeZoneControl } from './temporal-time-zone-control';
 import { temporalCreateTypeRegistry } from './temporal-create-type-registry';
 import { useTemporalCreateU2Draft } from './temporal-create-u2-draft-context';
@@ -1099,19 +1100,26 @@ export function TemporalCreateCoreFieldsU2({
       ) : null}
 
       {showRecurrence && fields.timeSemantics !== 'unscheduled' ? (
-        <>
-          <div
-            className="temporal-create-u2-repeat"
-            data-create-path="eventRecurrence"
-          >
-            <TemporalCreateQuickRecurrenceSelect
-              value={quickRecurrence(fields)}
-              onChange={changeQuickRecurrence}
-            />
-            {renderError('eventRecurrence')}
-          </div>
+        <TemporalRecurrencePanel
+          kind={fields.kind}
+          expanded={
+            fields.eventRecurrence.patternKind === 'calendar-wall-clock'
+          }
+          choice={
+            <div
+              className="temporal-create-u2-repeat"
+              data-create-path="eventRecurrence"
+            >
+              <TemporalCreateQuickRecurrenceSelect
+                value={quickRecurrence(fields)}
+                onChange={changeQuickRecurrence}
+              />
+              {renderError('eventRecurrence')}
+            </div>
+          }
+        >
           {repeatDetails}
-        </>
+        </TemporalRecurrencePanel>
       ) : null}
 
       <TemporalCreateLifeAreaField

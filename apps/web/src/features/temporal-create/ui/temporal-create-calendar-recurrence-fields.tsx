@@ -15,6 +15,7 @@ type TemporalCreateCalendarRecurrenceFieldsProps = Readonly<{
   fields: TemporalCreateFields;
   onPatch: (patch: Partial<TemporalCreateFields>) => void;
   renderError: (path: string) => ReactNode;
+  embedded?: boolean;
 }>;
 
 type CalendarFrequency = Exclude<
@@ -30,6 +31,7 @@ export function TemporalCreateCalendarRecurrenceFields({
   fields,
   onPatch,
   renderError,
+  embedded = false,
 }: TemporalCreateCalendarRecurrenceFieldsProps) {
   const { i18n } = useTranslation('common');
   const locale = i18n.resolvedLanguage ?? i18n.language ?? 'it';
@@ -168,14 +170,17 @@ export function TemporalCreateCalendarRecurrenceFields({
   return (
     <section
       className="temporal-create-section is-wide temporal-create-repeat"
-      aria-labelledby="temporal-create-repeat-heading"
+      aria-label={embedded ? 'Dettagli ripetizione' : undefined}
+      aria-labelledby={embedded ? undefined : 'temporal-create-repeat-heading'}
       data-create-recurrence-owner={recurrenceOwner}
     >
-      <div className="temporal-create-section__heading temporal-create-repeat__heading">
-        <h3 id="temporal-create-repeat-heading">
-          {italian ? 'Ripetizione' : 'Repeat'}
-        </h3>
-      </div>
+      {!embedded ? (
+        <div className="temporal-create-section__heading temporal-create-repeat__heading">
+          <h3 id="temporal-create-repeat-heading">
+            {italian ? 'Ripetizione' : 'Repeat'}
+          </h3>
+        </div>
+      ) : null}
 
       <div className="temporal-create-repeat__row">
         <span className="temporal-create-repeat__row-label">

@@ -687,6 +687,7 @@ export function TemporalCreateComposer({
                       fields={fields}
                       onPatch={onPatch}
                       renderError={renderError}
+                      embedded
                     />
                   ) : null
                 }

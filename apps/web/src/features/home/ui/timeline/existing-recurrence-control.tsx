@@ -16,6 +16,7 @@ import {
   TemporalCreateQuickRecurrenceSelect,
   type QuickRecurrence,
 } from '../../../temporal-create/ui/temporal-create-quick-recurrence-select';
+import { TemporalRecurrencePanel } from '../../../temporal-create/ui/temporal-recurrence-panel';
 
 type RecurrenceIntent = TemporalCreateFields['eventRecurrence'];
 
@@ -132,30 +133,33 @@ export const ExistingRecurrenceControl = forwardRef<
   }));
 
   return (
-    <section className="timeline-existing-recurrence" aria-label="Ripeti">
-      <div
-        className="temporal-create-u2-repeat"
-        data-create-path="eventRecurrence"
-      >
-        <TemporalCreateQuickRecurrenceSelect
-          value={selection}
-          onChange={changeRecurrence}
-        />
-      </div>
-      {intent !== null ? (
-        <>
-          <TemporalCreateCalendarRecurrenceFields
-            fields={fields}
-            onPatch={(patch) => {
-              if (patch.eventRecurrence) {
-                setIntent(patch.eventRecurrence);
-                onSelectionChange(true);
-              }
-            }}
-            renderError={() => null}
+    <TemporalRecurrencePanel
+      kind={kind}
+      className="timeline-existing-recurrence"
+      expanded={intent !== null}
+      choice={
+        <div
+          className="temporal-create-u2-repeat"
+          data-create-path="eventRecurrence"
+        >
+          <TemporalCreateQuickRecurrenceSelect
+            value={selection}
+            onChange={changeRecurrence}
           />
-        </>
-      ) : null}
-    </section>
+        </div>
+      }
+    >
+      <TemporalCreateCalendarRecurrenceFields
+        fields={fields}
+        onPatch={(patch) => {
+          if (patch.eventRecurrence) {
+            setIntent(patch.eventRecurrence);
+            onSelectionChange(true);
+          }
+        }}
+        renderError={() => null}
+        embedded
+      />
+    </TemporalRecurrencePanel>
   );
 });

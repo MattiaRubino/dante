@@ -1,0 +1,112 @@
+/* Shared presentation for creation, standalone Edit and series Edit.
+   Domain-specific calendar controls remain in their owning components. */
+.temporal-recurrence-panel {
+  box-sizing: border-box;
+  display: grid;
+  gap: 12px;
+  width: 100%;
+  min-width: 0;
+  padding: 10px 16px 14px;
+  border: 1px solid var(
+    --dante-semantic-color-home-border-subtle,
+    rgba(255, 255, 255, 0.13)
+  );
+  border-radius: 12px;
+  background: var(
+    --dante-semantic-color-home-surface-control,
+    rgba(255, 255, 255, 0.025)
+  );
+}
+
+.temporal-recurrence-panel__heading {
+  margin: 0;
+  color: var(--dante-semantic-color-home-text-primary, #edf2f8);
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.temporal-recurrence-panel__choice {
+  box-sizing: border-box;
+  display: grid;
+  min-width: 0;
+  width: 100%;
+}
+
+.temporal-recurrence-panel__choice .temporal-create-u2-repeat,
+.temporal-recurrence-panel__choice .temporal-create-u2-repeat select {
+  box-sizing: border-box;
+  width: 100%;
+  min-width: 0;
+  margin: 0;
+}
+
+.temporal-recurrence-panel__details {
+  box-sizing: border-box;
+  display: grid;
+  gap: 10px;
+  min-width: 0;
+  width: 100%;
+  padding-top: 12px;
+  border-top: 1px solid var(
+    --dante-semantic-color-home-border-subtle,
+    rgba(255, 255, 255, 0.09)
+  );
+}
+
+.temporal-recurrence-panel__details
+  > .temporal-create-section.temporal-create-repeat {
+  box-sizing: border-box;
+  display: grid;
+  gap: 12px;
+  width: 100%;
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+}
+
+.temporal-recurrence-panel__details
+  .temporal-create-repeat__end-row {
+  margin-top: 0;
+}
+
+.temporal-recurrence-panel__frequency {
+  display: grid;
+  gap: 6px;
+  min-width: 0;
+  color: var(--dante-semantic-color-home-text-secondary, #b7c0cf);
+  font-size: 12px;
+}
+
+.temporal-recurrence-panel__frequency select {
+  box-sizing: border-box;
+  width: 100%;
+  min-height: 44px;
+  padding: 0 12px;
+  border: 1px solid var(
+    --dante-semantic-color-home-border-subtle,
+    rgba(255, 255, 255, 0.13)
+  );
+  border-radius: 10px;
+  background: var(--dante-semantic-color-home-surface-control, #1c292d);
+  color: var(--dante-semantic-color-home-text-primary, #edf2f8);
+  font: inherit;
+  font-size: 14px;
+}
+
+.temporal-recurrence-panel__frequency select:focus-visible {
+  outline: 2px solid var(
+    --dante-semantic-color-home-chrome-active,
+    #ea5c12
+  );
+  outline-offset: 1px;
+}
+
+@media (max-width: 620px) {
+  .temporal-recurrence-panel {
+    padding: 10px 12px 12px;
+  }
+}

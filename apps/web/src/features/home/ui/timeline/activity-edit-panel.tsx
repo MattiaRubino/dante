@@ -2169,15 +2169,7 @@ export function ActivityEditPanel({
                 </div>
               ) : null}
             </section>
-            {recurringContext ? (
-              <div
-                className="timeline-activity-editor__repeat"
-                role="group"
-                aria-label="Ripeti"
-              >
-                Ripeti · Serie attiva
-              </div>
-            ) : envelope?.start && envelope.placementStateRef ? (
+            {recurringContext ? null : envelope?.start && envelope.placementStateRef ? (
               <ExistingRecurrenceControl
                 ref={recurrenceControl}
                 kind="activity"
