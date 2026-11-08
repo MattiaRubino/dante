@@ -1124,6 +1124,20 @@ export function ActivityEditPanel({
           );
           return;
         }
+        if (recurrenceResume.current && !proposedRecurrence) {
+          const accepted = recurrenceResume.current;
+          recurrenceResume.current = null;
+          onSaved(accepted.profile);
+          return;
+        }
+        if (
+          proposedRecurrence &&
+          !allDay &&
+          envelope?.temporalForm === 'floating_local'
+        ) {
+          setError('Per ripetere questa Attività serve un orario con fuso.');
+          return;
+        }
         if (recurringContext && editScope !== 'only_this') {
           if (!seriesPreview || seriesPreviewError) {
             setError(

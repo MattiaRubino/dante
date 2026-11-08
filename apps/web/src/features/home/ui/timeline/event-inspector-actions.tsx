@@ -651,6 +651,21 @@ export function EventInspectorActions({
     setError('');
     try {
       const proposedRecurrence = recurrenceControl.current?.getRule() ?? null;
+      if (recurrenceResume.current && !proposedRecurrence) {
+        recurrenceResume.current = null;
+        setProfile(null);
+        setProfileDraft(null);
+        setEditingProfile(false);
+        setProfileNotice('Modifiche salvate; ripetizione non avviata.');
+        return;
+      }
+      if (
+        proposedRecurrence &&
+        scheduleDraft?.kind === 'timed' &&
+        !scheduleDraft.zoneId
+      ) {
+        throw new Error('Per ripetere questo Evento serve un orario con fuso.');
+      }
       if (
         proposedRecurrence &&
         (!scheduleRef || !placementMaterialStateRef ||
