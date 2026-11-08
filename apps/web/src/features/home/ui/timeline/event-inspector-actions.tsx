@@ -175,6 +175,29 @@ export function EventInspectorActions({
   } | null>(null);
   const [editScope, setEditScope] =
     useState<RecurringProfileEditScope>('only_this');
+  const [vaultEligible, setVaultEligible] = useState<boolean | null>(
+    occurrenceRef === null ? null : false,
+  );
+  useEffect(() => {
+    if (occurrenceRef !== null) {
+      setVaultEligible(false);
+      return;
+    }
+    setVaultEligible(null);
+    let active = true;
+    void recurrenceGuard
+      .isRecurring(eventRef)
+      .then((recurring) => {
+        if (active) setVaultEligible(!recurring);
+      })
+      .catch(() => {
+        if (active) setVaultEligible(null);
+      });
+    return () => {
+      active = false;
+    };
+  }, [eventRef, occurrenceRef, recurrenceGuard]);
+
   const [recurringContext, setRecurringContext] =
     useState<RecurringProfileContext | null>(null);
   const [busy, setBusy] = useState(false);
@@ -1014,7 +1037,7 @@ export function EventInspectorActions({
           'Duplica'
         )}
       </button>
-      {occurrenceRef === null ? (
+      {vaultEligible === true ? (
         <button
           type="button"
           disabled={busy}

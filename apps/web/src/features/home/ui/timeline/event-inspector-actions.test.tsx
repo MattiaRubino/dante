@@ -567,7 +567,7 @@ describe('Event Inspector actions', () => {
     expect(saveRecurringEvent).not.toHaveBeenCalled();
     expect(reviseProfile).not.toHaveBeenCalled();
   });
-  it('offers a copy to Bozze without exposing canonical unplacement', () => {
+  it('offers a copy to Bozze without exposing canonical unplacement', async () => {
     render(
       <EventInspectorActions
         eventRef={eventRef}
@@ -575,7 +575,9 @@ describe('Event Inspector actions', () => {
         onDuplicate={() => undefined}
       />,
     );
-    expect(screen.getByRole('button', { name: 'Copia in Bozze' })).toBeTruthy();
+    expect(
+      await screen.findByRole('button', { name: 'Copia in Bozze' }),
+    ).toBeTruthy();
     expect(
       screen.queryByRole('button', { name: /Rimuovi Event dalla Timeline/ }),
     ).toBeNull();
@@ -1484,6 +1486,9 @@ describe('Event Inspector actions', () => {
       'Apri un’istanza',
     );
     expect(isRecurring).toHaveBeenCalledWith(eventRef);
+    expect(
+      screen.queryByRole('button', { name: 'Copia in Bozze' }),
+    ).toBeNull();
     expect(onDuplicate).not.toHaveBeenCalled();
   });
 

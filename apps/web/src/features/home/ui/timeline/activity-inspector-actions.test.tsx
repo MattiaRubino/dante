@@ -354,7 +354,7 @@ describe('Activity Inspector actions', () => {
     expect(applyAtomicEdit).not.toHaveBeenCalled();
   });
 
-  it('offers Bozze without exposing a second unplaced workflow', () => {
+  it('offers Bozze without exposing a second unplaced workflow', async () => {
     get.mockResolvedValue(profile);
     render(
       <ActivityInspectorActions
@@ -365,7 +365,7 @@ describe('Activity Inspector actions', () => {
       />,
     );
     expect(
-      screen.getByRole('button', { name: 'Sposta in Bozze' }),
+      await screen.findByRole('button', { name: 'Sposta in Bozze' }),
     ).toBeTruthy();
     expect(
       screen.queryByRole('button', { name: /Rimuovi dalla Timeline/ }),
@@ -373,6 +373,31 @@ describe('Activity Inspector actions', () => {
     expect(
       screen.queryByRole('button', { name: /Annulla rimozione Timeline/ }),
     ).toBeNull();
+  });
+});
+
+describe('Recurring Activity Vault suppression', () => {
+  it('hides Bozze for a materialized Routine even when the Timeline card omits its Occurrence ref', async () => {
+    get.mockResolvedValue(profile);
+    loadRecurringContext.mockResolvedValueOnce({
+      occurrenceRef: '0199a222-2222-7222-8222-222222222222',
+      sourceRef: '0199a444-4444-7444-8444-444444444444',
+      editRevision: 3,
+      recurrenceStateRef: null,
+    });
+    render(
+      <ActivityInspectorActions
+        activityRef={ref}
+        onEdit={() => undefined}
+        onDeleted={() => undefined}
+        onDuplicate={() => undefined}
+      />,
+    );
+    await waitFor(() => expect(loadRecurringContext).toHaveBeenCalledWith(ref));
+    expect(
+      screen.queryByRole('button', { name: 'Sposta in Bozze' }),
+    ).toBeNull();
+    expect(screen.getByRole('button', { name: 'Duplica' })).toBeTruthy();
   });
 });
 
@@ -1198,6 +1223,7 @@ describe('Activity Inspector', () => {
     render(
       <ActivityInspectorActions
         activityRef={ref}
+        recurringOccurrenceRef={context.occurrenceRef}
         onEdit={onEdit}
         onDeleted={() => undefined}
         onDuplicate={() => undefined}
@@ -1237,6 +1263,7 @@ describe('Activity Inspector', () => {
     render(
       <ActivityInspectorActions
         activityRef={ref}
+        recurringOccurrenceRef={context.occurrenceRef}
         onEdit={onEdit}
         onDeleted={() => undefined}
         onDuplicate={() => undefined}
@@ -2578,6 +2605,7 @@ describe('Activity Inspector', () => {
     render(
       <ActivityInspectorActions
         activityRef={ref}
+        recurringOccurrenceRef="0199a222-2222-7222-8222-222222222222"
         onEdit={() => undefined}
         onDeleted={onDeleted}
         onDuplicate={() => undefined}

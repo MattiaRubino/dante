@@ -58,6 +58,9 @@ export function ActivityInspectorActions({
   const [hardDelete] = useState(createRemoteTemporalHardDeletion);
   const [draftVault] = useState(createRemoteDraftVault);
   const [profile, setProfile] = useState<ActivityProfile | null>(null);
+  const [recurringMember, setRecurringMember] = useState<boolean | null>(
+    recurringOccurrenceRef === null ? null : true,
+  );
   const [editChoice, setEditChoice] = useState<{
     profile: ActivityProfile;
     selectedProtection: RecurringProfileEditPreview['selectedProtection'];
@@ -91,6 +94,28 @@ export function ActivityInspectorActions({
       active = false;
     };
   }, [activityRef, source]);
+
+  useEffect(() => {
+    if (recurringOccurrenceRef !== null) {
+      setRecurringMember(true);
+      return;
+    }
+    setRecurringMember(null);
+    if (!profile || profile.activityRef !== activityRef) return;
+    let active = true;
+    void recurringSource
+      .loadActivityContext(activityRef)
+      .then((context) => {
+        if (active) setRecurringMember(context !== null);
+      })
+      .catch(() => {
+        // An unresolved owner-scoped origin cannot authorize retirement.
+        if (active) setRecurringMember(null);
+      });
+    return () => {
+      active = false;
+    };
+  }, [activityRef, profile, recurringOccurrenceRef, recurringSource]);
 
   async function action(task: () => Promise<void>) {
     setPending(true);
@@ -166,7 +191,7 @@ export function ActivityInspectorActions({
       >
         {toolbarTarget ? <TimelineInspectorIcon name="copy" /> : 'Duplica'}
       </button>
-      {recurringOccurrenceRef === null ? (
+      {recurringMember === false ? (
         <button
           type="button"
           aria-label="Sposta in Bozze"
@@ -243,7 +268,7 @@ export function ActivityInspectorActions({
           }}
         />
       ) : null}
-      {confirmingVault && recurringOccurrenceRef === null ? (
+      {confirmingVault && recurringMember === false ? (
         <div className="timeline-activity-inspector__confirmation">
           <p>
             L'Attività verrà conservata come bozza non operativa e ritirata
