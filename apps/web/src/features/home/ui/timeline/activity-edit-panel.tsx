@@ -1521,7 +1521,7 @@ export function ActivityEditPanel({
           canReplan) ? (
           <section
             className="temporal-create-activity-tree timeline-activity-editor__sessions"
-            aria-label="Sessioni pianificate"
+            aria-label="Sessioni attività"
           >
             <div
               className="temporal-create-activity-tree__spine"

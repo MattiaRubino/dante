@@ -1,5 +1,31 @@
 # Timeline / Temporal-Operational — Workstream Handoff
 
+## 2026-11-08 — Advanced Create/Edit visual parity and series cleanup
+
+**Visual decision:** 15px high-contrast sentence-case structural headings;
+14px primary controls and 36–38px editor button targets. The headers
+`Sessioni attività` and `Scaletta` remain **conditional on the first row**,
+not duplicated above the add button when empty. Shared CSS is scoped to
+Advanced Create/Edit, leaving Quick Create, Timeline cards and clock arrows
+unchanged.
+
+The Activity Session group now has accessible name `Sessioni attività`
+instead of the obsolete `Sessioni pianificate`. The recurring-series advanced
+editor no longer exposes independent `Con orario Sessione` controls or
+`Regola per le sottoattività`. Underlying `time_enabled` and
+`child_guard_mode` data are **preserved as loaded**; this is a UI
+authoring cleanup, not a data migration. The Activity Session capture and
+minimum-duration controls remain.
+
+**Not claimed implemented here:** Event placement-lock precreate/Edit atomic
+lifecycle; Life Area/color semantics across series and occurrence scopes;
+recurrence authoring component parity; Event Objective historical correction.
+These require separate guarded domain work rather than an unsafe CSS shortcut.
+
+**Unverified on this SHA:** Prettier, ESLint, TypeScript, Vitest, browser UX,
+authenticated persistence, and global gate.
+
+
 ## 2026-11-08 — Duplicate Inspector focused QA on `4b892f2d` (follow-up)
 
 Owner WSL focused report: **TypeScript PASS; Vitest 131/132 PASS**. The

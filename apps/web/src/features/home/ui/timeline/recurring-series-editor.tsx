@@ -738,7 +738,7 @@ export function RecurringSeriesEditor({
             {owner === 'routine' ? (
               <section
                 className="temporal-create-activity-tree timeline-activity-editor__sessions"
-                aria-label="Sessioni pianificate"
+                aria-label="Sessioni attività"
               >
                 <div
                   className="temporal-create-activity-tree__spine"
@@ -1772,57 +1772,6 @@ export function RecurringSeriesEditor({
             {owner === 'routine' ? (
               <details className="timeline-recurring-series-editor__advanced">
                 <summary>Opzioni avanzate della serie</summary>
-                {sessions.map((row, index) => (
-                  <div
-                    key={index}
-                    className="timeline-recurring-series-editor__session-options"
-                  >
-                    <label>
-                      {asText(row.name) || `Sessione ${index + 1}`} · Con orario
-                      <input
-                        type="checkbox"
-                        aria-label={`Con orario Sessione ${index + 1}`}
-                        checked={row.time_enabled !== false}
-                        onChange={(e) =>
-                          editRows(
-                            'planned_slices',
-                            sessions.map((part, i) =>
-                              i === index
-                                ? e.target.checked
-                                  ? {
-                                      name: asText(part.name),
-                                      start_offset_minutes: 0,
-                                      duration_minutes: 30,
-                                    }
-                                  : {
-                                      name: asText(part.name),
-                                      time_enabled: false,
-                                    }
-                                : part,
-                            ),
-                          )
-                        }
-                      />
-                    </label>
-                    {row.time_enabled !== false ? (
-                      <SeriesIntervalFields
-                        kind="session"
-                        selectedDate={source.selectedDate}
-                        wallTime={time}
-                        row={row}
-                        index={index}
-                        onChange={(next) =>
-                          editRows(
-                            'planned_slices',
-                            sessions.map((part, i) =>
-                              i === index ? next : part,
-                            ),
-                          )
-                        }
-                      />
-                    ) : null}
-                  </div>
-                ))}
                 <label>
                   Sessione dell’attività{' '}
                   <select
@@ -1860,19 +1809,6 @@ export function RecurringSeriesEditor({
                       })
                     }
                   />
-                </label>
-                <label>
-                  Regola per le sottoattività
-                  <select
-                    value={asText(template.child_guard_mode)}
-                    onChange={(e) =>
-                      updateTemplate({ child_guard_mode: e.target.value })
-                    }
-                  >
-                    <option value="none">Libere</option>
-                    <option value="confirm">Conferma</option>
-                    <option value="block">Bloccate</option>
-                  </select>
                 </label>
               </details>
             ) : null}

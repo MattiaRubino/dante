@@ -1979,14 +1979,18 @@ describe('Event Inspector actions', () => {
     ).toBeNull();
     expect(
       screen
-        .getByRole('region', { name: 'Sessioni pianificate' })
+        .getByRole('region', { name: 'Sessioni attività' })
         .querySelector('.temporal-create-activity-tree__root-sessions')
         ?.contains(sessionRow),
     ).toBe(true);
     expect(form.querySelector('.temporal-create-objective')).not.toBeNull();
     expect(
+      screen.queryByRole('checkbox', { name: /Con orario Sessione/ }),
+    ).toBeNull();
+    expect(screen.queryByText('Regola per le sottoattività')).toBeNull();
+    expect(
       screen
-        .getByRole('region', { name: 'Sessioni pianificate' })
+        .getByRole('region', { name: 'Sessioni attività' })
         .compareDocumentPosition(
           screen.getByRole('region', { name: 'Orario della serie' }),
         ) & Node.DOCUMENT_POSITION_FOLLOWING,

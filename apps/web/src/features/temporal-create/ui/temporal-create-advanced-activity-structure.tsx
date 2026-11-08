@@ -188,7 +188,7 @@ export function TemporalCreateAdvancedActivityStructure({
       className="temporal-create-activity-tree"
       data-create-activity-structure
       data-create-path="activityStructure"
-      aria-label={italian ? 'Sessioni pianificate' : 'Planned Sessions'}
+      aria-label={italian ? 'Sessioni attività' : 'Activity sessions'}
     >
       <div
         className="temporal-create-activity-tree__spine"
