@@ -7,6 +7,7 @@ from uuid import UUID
 from sqlalchemy import (
     BigInteger,
     Boolean,
+    Boolean,
     CheckConstraint,
     DateTime,
     ForeignKeyConstraint,
@@ -201,6 +202,9 @@ class EventOccurrencePolicyRow(Base):
     reality_mode: Mapped[str] = mapped_column(Text, nullable=False, server_default=text("'manual'"))
     objectives: Mapped[list[dict[str, object]]] = mapped_column(
         JSONB, nullable=False, server_default=text("'[]'::jsonb")
+    )
+    placement_protected: Mapped[bool] = mapped_column(
+        Boolean, nullable=False, server_default=text("false")
     )
 
 

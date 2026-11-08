@@ -124,7 +124,7 @@
       "properties": {
         "completed_stages": {
           "type": "array",
-          "maxItems": 79,
+          "maxItems": 80,
           "uniqueItems": true,
           "items": {
             "enum": [
@@ -206,7 +206,8 @@
               "B14-EXISTING-EVENT-LEGACY-REPAIR",
               "B14-EXISTING-EVENT-REPAIR-PERF",
               "B14-FIRST-EVENT-DELETION-LIFECYCLE",
-              "B14-EXISTING-EVENT-LEGACY-CHECK-NAME"
+              "B14-EXISTING-EVENT-LEGACY-CHECK-NAME",
+              "B14-OBJECTIVE-VERIFICATION"
             ]
           }
         },
@@ -524,7 +525,8 @@
                   "B14-EXISTING-EVENT-LEGACY-REPAIR",
                   "B14-EXISTING-EVENT-REPAIR-PERF",
                   "B14-FIRST-EVENT-DELETION-LIFECYCLE",
-                  "B14-EXISTING-EVENT-LEGACY-CHECK-NAME"
+                  "B14-EXISTING-EVENT-LEGACY-CHECK-NAME",
+                  "B14-OBJECTIVE-VERIFICATION"
                 ]
               }
             }

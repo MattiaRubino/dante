@@ -152,6 +152,18 @@
         "meaning": "Canonical objectives field for the B14 Create-closure capability.",
         "semantic_type": null,
         "value_contract": "Validated by the objectives PostgreSQL contract."
+      },
+      {
+        "name": "placement_protected",
+        "postgres_type": "boolean",
+        "nullable": false,
+        "default": {
+          "kind": "server",
+          "expression": "false"
+        },
+        "meaning": "Source placement protection inherited by recurring Event Occurrences.",
+        "semantic_type": null,
+        "value_contract": "Immutable boolean protection set in migration 20261108_180."
       }
     ],
     "primary_key": {
