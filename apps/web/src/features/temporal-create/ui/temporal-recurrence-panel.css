@@ -110,3 +110,11 @@
     padding: 10px 12px 12px;
   }
 }
+
+/* Series may use richer calendar families, but not a second wrapper style. */
+.timeline-recurring-series-editor .temporal-recurrence-panel__details
+  > .timeline-recurring-series-editor__recurrence {
+  border: 0;
+  padding: 0;
+  background: transparent;
+}

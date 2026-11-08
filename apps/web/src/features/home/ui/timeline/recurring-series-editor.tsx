@@ -15,6 +15,7 @@ import { TemporalAuthoringTitleRow } from '../../../temporal-create/ui/temporal-
 import { TimeControl } from '../../../temporal-create/ui/temporal-create-core-u2';
 import { TemporalColorControl } from '../../../temporal-create/ui/temporal-color-control';
 import { TemporalCreateDatePicker } from '../../../temporal-create/ui/temporal-create-date-picker';
+import { TemporalRecurrencePanel } from '../../../temporal-create/ui/temporal-recurrence-panel';
 import { TemporalLifeAreaSelect } from '../../../temporal-create/ui/temporal-life-area-select';
 import { TemporalCreateEventAgenda } from '../../../temporal-create/ui/temporal-create-event-agenda';
 import { TemporalEventParticipantsFields } from '../../../temporal-create/ui/temporal-create-event-participants';
@@ -937,6 +938,21 @@ export function RecurringSeriesEditor({
                   Fuso orario · {asText(recurrence.zone_id) || 'della serie'}
                 </div>
               )}
+              {owner === 'routine' &&
+              template.placement_kind !== 'all_day' ? (
+                <div className="timeline-recurring-series-editor__start-clock">
+                  <TimeControl
+                    label="Ora iniziale della serie"
+                    value={time.slice(0, 5)}
+                    dataPath="series.anchorTime"
+                    onChange={changeTime}
+                  />
+                  <p>
+                    Da quest’ora vengono calcolati gli intervalli di ogni
+                    occorrenza.
+                  </p>
+                </div>
+              ) : null}
               {owner === 'event' &&
               structure.placement_kind === 'timed' &&
               seriesStart &&
@@ -1118,32 +1134,15 @@ export function RecurringSeriesEditor({
                 </section>
               </>
             ) : null}
-            <details className="timeline-recurring-series-editor__repeat-panel">
-              <summary className="timeline-activity-editor__repeat">
-                Ripeti · Serie attiva
-              </summary>
-              <section
-                className="temporal-create-section is-wide temporal-create-repeat timeline-recurring-series-editor__recurrence"
-                aria-label="Ricorrenza"
-              >
-                <div className="temporal-create-section__heading temporal-create-repeat__heading">
-                  <h3>Ripetizione</h3>
-                </div>
-                {owner === 'routine' &&
-                template.placement_kind !== 'all_day' ? (
-                  <details className="timeline-recurring-series-editor__advanced">
-                    <summary>Ora di riferimento della ricorrenza</summary>
-                    <TimeControl
-                      label="Ora di riferimento"
-                      value={time.slice(0, 5)}
-                      dataPath="series.anchorTime"
-                      onChange={changeTime}
-                    />
-                  </details>
-                ) : null}
-                <label>
-                  Frequenza{' '}
+            <TemporalRecurrencePanel
+              kind={owner === 'routine' ? 'activity' : 'event'}
+              className="timeline-recurring-series-editor__repeat-panel"
+              expanded
+              choice={
+                <label className="temporal-recurrence-panel__frequency">
+                  <span>Ripeti</span>
                   <select
+                    aria-label="Ripeti"
                     value={asText(recurrence.pattern_code)}
                     onChange={(e) => changePattern(e.target.value)}
                   >
@@ -1159,6 +1158,12 @@ export function RecurringSeriesEditor({
                     <option value="anchor_step">Passo fisso</option>
                   </select>
                 </label>
+              }
+            >
+              <section
+                className="temporal-create-section is-wide temporal-create-repeat timeline-recurring-series-editor__recurrence"
+                aria-label="Dettagli ripetizione"
+              >
                 <div className="temporal-create-repeat__row">
                   <span className="temporal-create-repeat__row-label">
                     Ripeti ogni
@@ -1594,7 +1599,7 @@ export function RecurringSeriesEditor({
                   </div>
                 </div>
               </section>
-            </details>
+            </TemporalRecurrencePanel>
             <section
               className="timeline-activity-editor__area-color"
               aria-label="Life Area"

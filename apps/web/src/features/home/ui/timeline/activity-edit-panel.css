@@ -55,25 +55,20 @@
   font-size: 13px;
 }
 
-.timeline-recurring-series-editor__repeat-panel {
+.timeline-recurring-series-editor__start-clock {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px 14px;
   min-width: 0;
 }
 
-.timeline-recurring-series-editor__repeat-panel > summary {
-  cursor: pointer;
-  list-style: none;
+.timeline-recurring-series-editor__start-clock > p {
+  margin: 0;
+  color: var(--dante-semantic-color-home-text-muted, #8f9bad);
+  font-size: 11px;
 }
 
-.timeline-recurring-series-editor__repeat-panel
-  > summary::-webkit-details-marker {
-  display: none;
-}
-
-.timeline-recurring-series-editor__repeat-panel[open] > summary {
-  margin-bottom: 10px;
-}
-
-.timeline-recurring-series-editor__recurrence,
 .timeline-recurring-series-editor [aria-label='Sottoattività'] {
   display: grid;
   gap: 10px;
@@ -94,11 +89,6 @@
   gap: 12px;
   max-width: 100%;
   overflow: visible;
-}
-
-.timeline-recurring-series-editor__recurrence > label {
-  justify-self: start;
-  width: min(100%, 320px);
 }
 
 .timeline-recurring-series-editor__recurrence .temporal-create-repeat__row,
@@ -123,11 +113,6 @@
 .timeline-recurring-series-editor__recurrence
   .temporal-create-repeat__end-option {
   min-width: 0;
-}
-
-.timeline-recurring-series-editor__recurrence > h3 {
-  margin: 0;
-  font-size: 13px;
 }
 
 .timeline-recurring-series-editor__recurrence > label {
