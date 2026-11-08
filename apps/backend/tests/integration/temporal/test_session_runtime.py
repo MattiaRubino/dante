@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+import asyncio
+
 from datetime import date, time
 from typing import Any
 
@@ -314,5 +316,98 @@ async def test_b08_a_occurrence_session_uses_the_occurrence_identity_without_sch
         assert schedule_count == 0
         assert actual_count == 0
         assert historical_old_end is None
+    finally:
+        await runtime.dispose()
+
+
+@pytest.mark.asyncio
+async def test_live_session_time_progression_is_persisted_and_stops_after_end(
+    migrated_database: Any,
+) -> None:
+    """Exercise the real PostgreSQL clock, not a frozen browser-only clock.
+
+    A running Session must retain its identity while its active duration
+    advances; after Stop a later read must not continue accumulating time.
+    This is an independent temporal fact check, not date navigation.
+    """
+    actor = _seed_self(migrated_database)
+    runtime = create_database_runtime(migrated_database.runtime_settings())
+    areas = LifeAreaApplication(runtime.session_factory)
+    activities = TemporalActivityApplication(runtime.session_factory)
+    sessions = SessionApplication(runtime.session_factory)
+    try:
+        area = (
+            await areas.create(
+                self_person_ref=actor,
+                operation_id="journey:elapsed:area",
+                name="Time progression",
+            )
+        ).area
+        activity = (
+            await activities.create_activity(
+                self_person_ref=actor,
+                operation_id="journey:elapsed:activity",
+                title="Real elapsed Session",
+                life_area_ref=area.life_area_ref,
+            )
+        ).activity
+        await enable_live_capture(
+            runtime.session_factory,
+            actor=actor,
+            activity_ref=activity.activity_ref,
+        )
+        started = await sessions.start(
+            self_person_ref=actor,
+            operation_id="journey:elapsed:start",
+            subject_kind="activity",
+            subject_native_ref=activity.activity_ref,
+        )
+        first = await sessions.get(
+            self_person_ref=actor,
+            session_ref=started.session_ref,
+        )
+        assert first.open
+        assert not first.paused
+
+        await asyncio.sleep(0.8)
+        progressing = await sessions.get(
+            self_person_ref=actor,
+            session_ref=started.session_ref,
+        )
+        assert progressing.open
+        assert progressing.session_ref == started.session_ref
+        assert progressing.active_seconds > first.active_seconds + 0.3
+        assert progressing.elapsed_seconds >= progressing.active_seconds
+        assert [
+            item.session_ref
+            for item in await sessions.list_for_subject(
+                self_person_ref=actor,
+                subject_native_ref=activity.activity_ref,
+            )
+        ] == [started.session_ref]
+
+        stopped = await sessions.end(
+            self_person_ref=actor,
+            operation_id="journey:elapsed:stop",
+            session_ref=started.session_ref,
+            expected_material_state_ref=started.timing_material_state_ref,
+        )
+        assert not stopped.open
+        assert stopped.timing_material_state_ref != started.timing_material_state_ref
+        at_stop = await sessions.get(
+            self_person_ref=actor,
+            session_ref=started.session_ref,
+        )
+        assert not at_stop.open
+        assert at_stop.active_seconds >= progressing.active_seconds
+
+        await asyncio.sleep(0.3)
+        after_wait = await sessions.get(
+            self_person_ref=actor,
+            session_ref=started.session_ref,
+        )
+        assert not after_wait.open
+        assert after_wait.timing_material_state_ref == stopped.timing_material_state_ref
+        assert abs(after_wait.active_seconds - at_stop.active_seconds) < 0.01
     finally:
         await runtime.dispose()
