@@ -201,6 +201,21 @@ test('Activity Edit applies readable font sizes rather than inherited tiny label
   });
 });
 
+test('Advanced Create only shows Sessioni attività after the first Session', async ({
+  page,
+}) => {
+  await page.goto('/home');
+  await page.getByRole('button', { name: 'Aggiungi alla timeline' }).click();
+  const dialog = page.locator('[data-temporal-create="composer"]');
+  await dialog.getByRole('button', { name: /Opzioni avanzate/ }).click();
+  const heading = dialog.locator('.temporal-create-activity-tree__group-label');
+  await expect(heading).toHaveCount(0);
+  await dialog.getByRole('button', { name: 'Sessione', exact: true }).click();
+  await expect(heading).toHaveText('Sessioni attività');
+  await expect(heading).toHaveCSS('font-size', '15px');
+  await expect(heading).toHaveCSS('text-transform', 'none');
+});
+
 test('Advanced Create and every Edit surface share section typography and control sizes', async ({
   page,
 }) => {
