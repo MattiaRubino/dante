@@ -105,7 +105,10 @@ export function ActivityInspectorActions({
   }, [activityRef, source]);
 
   useEffect(() => {
-    if (recurringOccurrenceRef !== null || profile?.activityRef !== activityRef) {
+    if (
+      recurringOccurrenceRef !== null ||
+      profile?.activityRef !== activityRef
+    ) {
       return;
     }
     const profileRevision = profile.revision;

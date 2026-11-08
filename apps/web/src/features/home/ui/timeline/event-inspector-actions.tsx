@@ -854,7 +854,7 @@ export function EventInspectorActions({
           objectiveSource.getRealityPolicy(subjectKind, subjectRef),
           objectiveSource.listObjectives(subjectKind, subjectRef),
           scheduleRef &&
-          (placement.kind === 'named-zone-local' || placement.kind === 'absolute')
+          ['named-zone-local', 'absolute'].includes(placement.kind)
             ? reminderSource.get(scheduleRef)
             : Promise.resolve(null),
         ]);
