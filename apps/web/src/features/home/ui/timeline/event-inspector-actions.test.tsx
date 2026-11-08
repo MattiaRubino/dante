@@ -905,9 +905,11 @@ describe('Event Inspector actions', () => {
         qualitativeCode: null,
       }),
     );
-    await waitFor(() =>
-      expect(screen.queryByRole('button', { name: 'Salva rettifica' })).toBeNull(),
-    );
+    await waitFor(() => {
+      expect(
+        screen.queryByRole('button', { name: 'Salva rettifica' }),
+      ).toBeNull();
+    });
     expect(reviseAtomic).not.toHaveBeenCalled();
     expect(listObjectives).toHaveBeenCalledTimes(2);
   });

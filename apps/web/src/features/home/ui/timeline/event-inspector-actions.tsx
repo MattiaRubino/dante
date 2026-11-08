@@ -456,7 +456,9 @@ export function EventInspectorActions({
 
   const beginResultCorrection = (objective: ObjectiveView) => {
     if (busy || !objective.observationRef || !objective.evaluationStateRef) {
-      setObjectiveError('Rettifica non disponibile senza una valutazione corrente.');
+      setObjectiveError(
+        'Rettifica non disponibile senza una valutazione corrente.',
+      );
       return;
     }
     if (
@@ -1410,7 +1412,9 @@ export function EventInspectorActions({
                   aria-label="Obiettivi attuali"
                 >
                   <div className="temporal-create-reality-objectives__block-copy">
-                    <strong className="temporal-editor-section-heading">Obiettivi</strong>
+                    <strong className="temporal-editor-section-heading">
+                      Obiettivi
+                    </strong>
                   </div>
                   <div
                     className="timeline-activity-editor__objectives"
