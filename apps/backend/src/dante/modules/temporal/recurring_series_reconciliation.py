@@ -141,10 +141,17 @@ def reconcile_materialized_series(
     if scope.scope == "this_and_following" and anchor < captured_at:
         raise SeriesReconciliationError("The selected series anchor is already past.")
     cutover = max(anchor, captured_at)
+    selected_date = indexed[scope.selected_occurrence_ref].generated_date
     for coordinate in regenerated:
         expected_at = _candidate_instant(coordinate, zone).astimezone(UTC)
+        # A selected-and-following authoring scope is anchored to the civil
+        # date, not the *old* hour. Moving the selected interval earlier on
+        # that day must not silently drop its replacement Occurrence.
+        # The supported Activity/Event structure has one wall time per day.
         outside_boundary = (
-            expected_at <= cutover if scope.scope == "from_next" else expected_at < cutover
+            expected_at <= cutover
+            if scope.scope == "from_next"
+            else coordinate.generated_date < selected_date
         )
         if outside_boundary:
             raise SeriesReconciliationError(
@@ -228,8 +235,11 @@ def preview_calendar_series_reconciliation(
         raise SeriesReconciliationError("Calendar preview exceeds the bounded instance limit.")
 
     def is_in_scope(coordinate: CalendarCoordinate) -> bool:
-        expected_at = _candidate_instant(coordinate, zone).astimezone(UTC)
-        return expected_at > cutover if scope.scope == "from_next" else expected_at >= cutover
+        if scope.scope == "this_and_following":
+            # The selected *day* is included even when the new time precedes
+            # the selected old time; otherwise the chosen instance vanishes.
+            return coordinate.generated_date >= selected.generated_date
+        return _candidate_instant(coordinate, zone).astimezone(UTC) > cutover
 
     regenerated = tuple(
         candidate.coordinate
