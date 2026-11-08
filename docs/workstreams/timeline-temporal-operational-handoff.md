@@ -1,5 +1,45 @@
 # Timeline / Temporal-Operational — Workstream Handoff
 
+## 2026-11-08 — Event placement lock, isolated from recurrence fixes
+
+Scope explicitly narrowed by owner: implement real **Blocca spostamenti**
+next to the Event title in Advanced Create and Event Edit. DO NOT revise
+the user-reported selected-vs-following recurrence semantics in this batch.
+
+The existing canonical Schedule placement-lock revision is reused. For a
+one-off Event Create, `placement_protected` is accepted by U2 authoring
+and written **in the same Postgres transaction as the Event + Schedule**.
+Replay compares locked state; a changed lock intent fails closed. A locked
+Event must have an accepted Schedule.
+
+For a one-off Event Edit, `placement_lock` joins the existing atomic-edit
+contract with Schedule, Profile, Agenda, Life Area, Reminder, participants,
+Reality and Objectives. The lock is read when opening Edit, staged in the
+form, included in unsaved-change detection, and mutated **only on Save**.
+Unlock is ordered before an optional Schedule change; lock occurs after.
+CAS uses the original lock revision and the Schedule belongs to the Event.
+Conflicts roll back the transaction.
+
+For the selected recurring Event **Occurrence** with a Schedule, the same
+control uses `event-local-edit`, `only_this`, Schedule ownership and
+the original revision. It does not alter the series' recurrence engine.
+A new recurring Event Create with the lock enabled is intentionally
+**rejected before creation** rather than pretending to lock instances
+that do not yet have materialized Schedules. Future-series lock inheritance
+remains a separate domain feature. Unscheduled Event Create/Edit does not
+create a fictitious Schedule.
+
+UI control is shared with Activity styling. Both label and
+`aria-pressed` state reflect staged protection. Single-source data and
+transport, React create, cancel and save, Postgres owner+CAS and transactional
+creation are covered by focused tests. Lock-CAS exceptions on selected
+Occurrence are classified as conflicts rather than service unavailable.
+
+Verification status at time of this handoff: **implementation and tests
+committed; no same-SHA local lint/typecheck/Vitest/Pg/Playwright report yet**.
+Run the focused checks and fix failures before calling it production-ready.
+
+
 ## 2026-11-08 — WSL editor-parity focused gate and regression fix
 
 Owner's exact-`8784a009` local results: **ESLint PASS, TypeScript PASS,
