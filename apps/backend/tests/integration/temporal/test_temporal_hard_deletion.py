@@ -380,7 +380,10 @@ async def test_confirmed_recurring_instance_deletion_removes_open_session_atomic
         for query in (
             "SELECT EXISTS(SELECT 1 FROM dante.session WHERE session_ref=%s)",
             "SELECT EXISTS(SELECT 1 FROM dante.session_execution_subject WHERE session_ref=%s)",
-            "SELECT EXISTS(SELECT 1 FROM dante.session_timing_current_history WHERE session_ref=%s)",
+            (
+                "SELECT EXISTS(SELECT 1 FROM dante.session_timing_current_history "
+                "WHERE session_ref=%s)"
+            ),
             "SELECT EXISTS(SELECT 1 FROM dante.native_address WHERE native_ref=%s)",
         ):
             assert not _exists(migrated_database, query, started.session_ref)
