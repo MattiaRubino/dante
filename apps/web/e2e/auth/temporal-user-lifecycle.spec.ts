@@ -381,7 +381,7 @@ test.describe('Timeline — real user Activity/Event lifecycle matrix', () => {
         .filter({ hasText: title }).first();
       await expect(card).toBeVisible();
       await card.getByRole('button', { name: title, exact: true }).click();
-      let inspector = page.getByRole('dialog', { name: title });
+      let inspector = page.locator('.timeline-event-modal[role="dialog"]');
       await inspector.getByRole('button', { name: 'Modifica' }).click();
       const chooseScope = page.getByRole('dialog', { name: 'Modifica ricorrenza' });
       await expect(chooseScope).toBeVisible();
@@ -408,7 +408,7 @@ test.describe('Timeline — real user Activity/Event lifecycle matrix', () => {
         .filter({ hasText: title }).first();
       await expect(following).toBeVisible();
       await following.getByRole('button', { name: title, exact: true }).click();
-      inspector = page.getByRole('dialog', { name: title });
+      inspector = page.locator('.timeline-event-modal[role="dialog"]');
       await inspector.getByRole('button', { name: 'Modifica' }).click();
       const scope = page.getByRole('dialog', { name: 'Modifica ricorrenza' });
       await scope.getByRole('button', {
@@ -437,7 +437,7 @@ test.describe('Timeline — real user Activity/Event lifecycle matrix', () => {
       const current = page.locator('[data-timeline-event]')
         .filter({ hasText: seriesTitle }).first();
       await current.getByRole('button', { name: seriesTitle, exact: true }).click();
-      inspector = page.getByRole('dialog', { name: seriesTitle });
+      inspector = page.locator('.timeline-event-modal[role="dialog"]');
       await inspector.getByRole('button', { name: 'Elimina' }).click();
       // Both scoped destructive choices must be explicit and cancellable.
       await expect(
@@ -447,6 +447,32 @@ test.describe('Timeline — real user Activity/Event lifecycle matrix', () => {
         inspector.getByRole('button', { name: 'Tutta la serie' }),
       ).toBeVisible();
       await inspector.getByRole('button', { name: 'Annulla' }).click();
+
+      await inspector.getByRole('button', { name: 'Elimina' }).click();
+      const localDelete = page.waitForResponse(
+        (response) =>
+          response.url().includes('/api/v1/temporal/hard-deletion/') &&
+          response.request().method() === 'DELETE',
+      );
+      await inspector.getByRole('button', { name: 'Solo questa istanza' }).click();
+      expect((await localDelete).status()).toBe(200);
+      await openHome(page, dateAfter(day, 2));
+      const future = page.locator('[data-timeline-event]')
+        .filter({ hasText: seriesTitle }).first();
+      await expect(future).toBeVisible();
+      await future.getByRole('button', { name: seriesTitle, exact: true }).click();
+      inspector = page.locator('.timeline-event-modal[role="dialog"]');
+      await inspector.getByRole('button', { name: 'Elimina' }).click();
+      const seriesDelete = page.waitForResponse(
+        (response) =>
+          response.url().includes('/api/v1/temporal/hard-deletion/') &&
+          response.request().method() === 'DELETE',
+      );
+      await inspector.getByRole('button', { name: 'Tutta la serie' }).click();
+      expect((await seriesDelete).status()).toBe(200);
+      await openHome(page, dateAfter(day, 3));
+      await expect(page.locator('[data-timeline-event]')
+        .filter({ hasText: seriesTitle })).toHaveCount(0);
     } finally {
       await user.close();
     }
