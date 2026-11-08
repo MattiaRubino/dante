@@ -261,9 +261,29 @@ export async function configureCreate(
         throw new Error('Ordinal weekdays require a monthly recurrence.');
       }
       await panel.getByRole('button', { name: 'Per posizione' }).click();
+      // Choosing "By position" defaults to first Monday. The journey
+      // explicitly selects the ordinal weekday of its requested start date;
+      // otherwise the first valid occurrence could be weeks later and the
+      // current-day card expectation would be logically invalid.
+      const initialDate = Temporal.PlainDate.from(options.date);
+      const weekday = (['MO', 'TU', 'WE', 'TH', 'FR', 'SA', 'SU'] as const)[
+        initialDate.dayOfWeek - 1
+      ];
+      const nth = Math.ceil(initialDate.day / 7);
+      const ordinal = nth === 5 ? -1 : nth;
+      if (!weekday) {
+        throw new Error('Invalid ordinal weekday for ' + options.date);
+      }
+      await panel.getByRole('combobox', { name: 'Posizione nel mese' })
+        .selectOption(String(ordinal));
+      await panel.getByRole('combobox', { name: 'Giorno della settimana' })
+        .selectOption(weekday);
       await expect(
         panel.getByRole('combobox', { name: 'Posizione nel mese' }),
-      ).toBeVisible();
+      ).toHaveValue(String(ordinal));
+      await expect(
+        panel.getByRole('combobox', { name: 'Giorno della settimana' }),
+      ).toHaveValue(weekday);
     }
     if (options.repeatCount) {
       await panel.getByRole('radio', { name: 'Dopo' }).click();
