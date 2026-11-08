@@ -1227,7 +1227,7 @@ describe('Event Inspector actions', () => {
       '.temporal-create-event-agenda',
       '.timeline-event-schedule-editor',
       '.timeline-activity-editor__area-color',
-      '[aria-label="Svolgimento e obiettivi"]',
+      '[aria-label="Configurazione obiettivi"]',
       '.timeline-activity-editor__location',
       '.temporal-create-event-participants',
       '.timeline-activity-editor__description',
@@ -1840,12 +1840,15 @@ describe('Event Inspector actions', () => {
       '.timeline-activity-editor__intervals',
       '.timeline-recurring-series-editor__repeat-panel',
       '[aria-label="Life Area"]',
-      '[aria-label="Svolgimento e obiettivi"]',
+      '[aria-label="Configurazione obiettivi"]',
       '.timeline-activity-editor__location',
       '.timeline-activity-editor__description',
       ':scope > .timeline-recurring-series-editor__advanced',
     ].map((selector) => form.querySelector(selector));
     expect(formSections.every(Boolean)).toBe(true);
+    expect(
+      form.querySelector('.temporal-create-reality-objectives__block.is-reality'),
+    ).toBeNull();
     for (let index = 1; index < formSections.length; index += 1) {
       expect(
         formSections[index - 1]?.compareDocumentPosition(formSections[index]!),
@@ -1872,7 +1875,7 @@ describe('Event Inspector actions', () => {
       screen
         .getByRole('region', { name: 'Life Area' })
         .compareDocumentPosition(
-          screen.getByRole('region', { name: 'Svolgimento e obiettivi' }),
+          screen.getByRole('region', { name: 'Configurazione obiettivi' }),
         ) & Node.DOCUMENT_POSITION_FOLLOWING,
     ).toBeTruthy();
     expect(

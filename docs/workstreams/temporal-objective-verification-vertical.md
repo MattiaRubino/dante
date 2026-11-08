@@ -11,8 +11,11 @@ acceptance. Automatic assessment remains disabled without evidence sources.
 
 The **Activity/Event occurrence completion** policy and **individual Objective
 verification** are different facts. Completing an Activity or Event does not
-prove any Objective was satisfied. Keep the existing completion policy, but
-present it separately and with compact copy.
+prove any Objective was satisfied. Create/Edit now expose only the Objective
+section and each Objective's independent verification choice. Legacy
+occurrence-completion policy values remain persisted and are not silently reset
+by visual changes or unrelated edits. Retiring that underlying policy requires
+its own explicit Domain and persistence decision, not a frontend shortcut.
 
 For each Objective, keep the current title field and result definition
 (`Sì/No`, `Quantità`, `Intervallo`, `Qualitativo`) in the same layout and

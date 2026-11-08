@@ -260,18 +260,14 @@ describe('TemporalCreateComposer', () => {
     expect(
       agenda.querySelector('.temporal-create-activity-tree__spine'),
     ).not.toBeNull();
+    const eventObjectives = screen.getByRole('region', {
+      name: 'Configurazione obiettivi',
+    });
     expect(
-      screen.getByRole('region', { name: 'Svolgimento e obiettivi' }),
+      within(eventObjectives).getByRole('button', { name: 'Aggiungi obiettivo' }),
     ).toBeTruthy();
-    const eventReality = document.querySelector<HTMLElement>(
-      '[data-reality-policy="event"]',
-    );
-    if (!eventReality) throw new Error('Expected Event occurrence review.');
-    expect(
-      within(eventReality)
-        .getByRole('radio', { name: 'Nessuna verifica' })
-        .getAttribute('aria-checked'),
-    ).toBe('true');
+    expect(eventObjectives.querySelector('[data-reality-policy]')).toBeNull();
+    expect(screen.queryByText('Svolgimento e obiettivi')).toBeNull();
     expect(screen.queryByText('Disponibilità')).toBeNull();
     expect(screen.queryByText('Visibilità')).toBeNull();
     expect(screen.queryByText('Risorse')).toBeNull();

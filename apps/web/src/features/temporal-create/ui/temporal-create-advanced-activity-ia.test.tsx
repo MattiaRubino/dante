@@ -107,29 +107,13 @@ describe('Temporal Create Advanced Activity IA', () => {
       titleRow?.querySelector('[data-reality-policy="activity"]'),
     ).toBeNull();
 
-    const rootReality = document.querySelector<HTMLElement>(
-      '[data-reality-policy="activity"]',
-    );
-    if (!rootReality) throw new Error('Expected Activity occurrence review.');
-
-    const noReview = within(rootReality).getByRole('radio', {
-      name: 'Nessuna verifica',
+    const objectives = screen.getByRole('region', {
+      name: 'Configurazione obiettivi',
     });
-    const askAtEnd = within(rootReality).getByRole('radio', {
-      name: 'Chiedi al termine',
-    });
-    const autoConfirm = within(rootReality).getByRole('radio', {
-      name: 'Conferma automatica',
-    });
-
-    expect(noReview.getAttribute('aria-checked')).toBe('true');
-    fireEvent.click(askAtEnd);
-    expect(askAtEnd.getAttribute('aria-checked')).toBe('true');
-    fireEvent.click(autoConfirm);
-    expect(autoConfirm.getAttribute('aria-checked')).toBe('true');
-    expect(screen.getByText('Svolgimento e obiettivi')).toBeTruthy();
+    expect(document.querySelector('[data-reality-policy="activity"]')).toBeNull();
+    expect(screen.queryByText('Svolgimento e obiettivi')).toBeNull();
     expect(
-      screen.getByRole('button', { name: 'Aggiungi obiettivo' }),
+      within(objectives).getByRole('button', { name: 'Aggiungi obiettivo' }),
     ).toBeTruthy();
 
     const tree = document.querySelector<HTMLElement>(

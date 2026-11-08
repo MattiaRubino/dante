@@ -105,8 +105,9 @@ test('Quick keeps its compact clock field while Advanced uses the Edit interval 
   );
   const advancedWhen = dialog.locator('.temporal-create-u2-when');
   await expect(
-    dialog.locator('.temporal-create-reality-mode > button').first(),
-  ).toHaveCSS('font-size', '14px');
+    dialog.getByRole('region', { name: 'Configurazione obiettivi' }),
+  ).toBeVisible();
+  await expect(dialog.locator('.temporal-create-reality-mode')).toHaveCount(0);
   // Advanced intentionally increases the footer labels from Quick's 13px.
   for (const button of await footer.locator(':scope > button').all()) {
     await expect(button).toHaveCSS('font-size', '14px');
@@ -129,6 +130,9 @@ test('Quick keeps its compact clock field while Advanced uses the Edit interval 
   await expect(
     dialog.getByRole('textbox', { name: 'Obiettivo 1' }),
   ).toBeVisible();
+  await expect(
+    dialog.getByRole('combobox', { name: 'Verifica obiettivo 1' }),
+  ).toBeVisible();
 });
 
 test('Activity Edit applies readable font sizes rather than inherited tiny labels', async ({
@@ -147,11 +151,7 @@ test('Activity Edit applies readable font sizes rather than inherited tiny label
     root.innerHTML = `
       <div class="timeline-activity-editor__body">
         <div class="temporal-create-reality-objectives__block-copy">
-          <strong>Svolgimento dell’attività</strong>
-          <span>Come vuoi gestire la conferma?</span>
-        </div>
-        <div class="temporal-create-reality-mode">
-          <button>Nessuna verifica</button>
+          <strong>Obiettivi</strong>
         </div>
         <div class="timeline-activity-editor__repeat">Ripeti · Mai</div>
         <div class="temporal-create-objectives__root-actions">
@@ -163,8 +163,6 @@ test('Activity Edit applies readable font sizes rather than inherited tiny label
       getComputedStyle(root.querySelector(selector)!).fontSize;
     const result = {
       primary: size('.temporal-create-reality-objectives__block-copy strong'),
-      secondary: size('.temporal-create-reality-objectives__block-copy span'),
-      verification: size('.temporal-create-reality-mode > button'),
       repeat: size('.timeline-activity-editor__repeat'),
       objective: size('.temporal-create-objectives__add'),
     };
@@ -173,8 +171,6 @@ test('Activity Edit applies readable font sizes rather than inherited tiny label
   });
   expect(fonts).toEqual({
     primary: '14px',
-    secondary: '13px',
-    verification: '14px',
     repeat: '14px',
     objective: '14px',
   });
@@ -271,7 +267,7 @@ test('Activity Edit keeps Create clock controls contained and the series recurre
         </section>
       </details>
       <section class="timeline-activity-editor__area-color" aria-label="Life Area"><input placeholder="Life Area (opzionale)" /></section>
-      <section class="temporal-create-reality-objectives timeline-activity-editor__outcome" aria-label="Svolgimento e obiettivi"><div class="timeline-activity-editor__objectives">Obiettivo</div></section>
+      <section class="temporal-create-reality-objectives timeline-activity-editor__outcome" aria-label="Configurazione obiettivi"><div class="timeline-activity-editor__objectives">Obiettivo</div></section>
       </div></div>`;
     document.body.append(modal);
     const fields = modal.querySelector<HTMLElement>(

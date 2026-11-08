@@ -852,7 +852,7 @@ describe('Recurring Activity profile scope', () => {
       '.timeline-activity-editor__title-row',
       '[aria-label="Programmazione attuale"]',
       '.timeline-activity-editor__area-color',
-      '[aria-label="Svolgimento e obiettivi"]',
+      '[aria-label="Configurazione obiettivi"]',
       '.timeline-activity-editor__location',
       '.timeline-activity-editor__description',
     ].map((selector) => body?.querySelector(selector));
@@ -1313,7 +1313,7 @@ describe('Activity Inspector', () => {
     );
   });
 
-  it('retries one atomic policy change with the same operation ID', async () => {
+  it('retries a Session capture change with the same operation ID', async () => {
     saveCore
       .mockRejectedValueOnce(new Error('Connessione interrotta'))
       .mockResolvedValueOnce({ profile, settings: currentSettings });
@@ -1327,7 +1327,9 @@ describe('Activity Inspector', () => {
       />,
     );
     fireEvent.click(await screen.findByRole('checkbox', { name: 'Sessione' }));
-    fireEvent.click(screen.getByRole('radio', { name: 'Chiedi al termine' }));
+    expect(
+      screen.queryByRole('radiogroup', { name: 'Verifica dello svolgimento' }),
+    ).toBeNull();
     await submitEditor();
     expect(await screen.findByRole('alert')).toHaveProperty(
       'textContent',
@@ -1336,7 +1338,7 @@ describe('Activity Inspector', () => {
     expect(saveCore).toHaveBeenCalledWith(
       profile,
       currentSettings,
-      { capture: 'live', reality: 'review_on_end' },
+      { capture: 'live' },
       expect.any(String),
     );
     expect(onSaved).not.toHaveBeenCalled();

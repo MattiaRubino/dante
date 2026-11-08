@@ -1,5 +1,26 @@
 # Timeline / Temporal-Operational — Workstream Handoff
 
+## 2026-11-08 — Objective-only authoring UI (unverified candidate)
+
+Owner screenshots show obsolete global occurrence-completion controls beside
+the new per-Objective verification. The Create Advanced Activity/Event section,
+local Activity Edit, local Event Edit and recurring-series editor now show only
+`Obiettivi`, the ordered Objective editor rows and the add action. The global
+`Svolgimento dell'attività/evento` radio group and redundant combined header
+are removed from these authoring surfaces.
+
+Legacy occurrence Reality policies remain separate persisted facts, not
+rewritten by the UI removal or unrelated saves. Create continues to use its
+established default. Per-Objective `none` / `review_on_end` policies retain
+canonical persistence and recurrence inheritance. `auto_if_evidence` remains
+disabled until an authoritative observation source and evaluation contract exist.
+
+Updated relevant Create, Activity/Event Edit and browser layout assertions,
+including explicit absence checks. **UNVERIFIED on this SHA:** local formatter,
+lint, TypeScript, focused Vitest, non-auth browser geometry, authenticated
+round-trip and complete 27-group gate. No database/API/client migration.
+
+
 ## 2026-11-07 — Objective verification vertical: staged, not complete
 
 The product brief and explicit non-retroactive recurrence semantics are fixed in
