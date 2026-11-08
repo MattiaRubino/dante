@@ -508,6 +508,13 @@ test.describe('Timeline — real user Activity/Event lifecycle matrix', () => {
       await expect(page.locator('[data-timeline-event]').filter({
         hasText: changedTitle,
       })).toHaveCount(0);
+      // A later checkpoint must not propagate a local exception through the
+      // entire series or mutate another date's stored profile.
+      await openHome(page, dateAfter(day, 2));
+      await expect(page.locator('[data-timeline-event]').filter({
+        hasText: changedTitle,
+      })).toHaveCount(0);
+      await openHome(page, dateAfter(day, 1));
       const following = page.locator('[data-timeline-event]')
         .filter({ hasText: title }).first();
       await expect(following).toBeVisible();
@@ -536,7 +543,15 @@ test.describe('Timeline — real user Activity/Event lifecycle matrix', () => {
       await openHome(page, dateAfter(day, 1));
       await expect(page.locator('[data-timeline-event]').filter({
         hasText: seriesTitle,
-      }).first()).toBeVisible();
+      })).toHaveCount(1);
+      await openHome(page, day);
+      await expect(page.locator('[data-timeline-event]').filter({
+        hasText: changedTitle,
+      })).toHaveCount(1);
+      await expect(page.locator('[data-timeline-event]').filter({
+        hasText: seriesTitle,
+      })).toHaveCount(0);
+      await openHome(page, dateAfter(day, 1));
 
       const current = page.locator('[data-timeline-event]')
         .filter({ hasText: seriesTitle }).first();
@@ -560,10 +575,21 @@ test.describe('Timeline — real user Activity/Event lifecycle matrix', () => {
       );
       await inspector.getByRole('button', { name: 'Solo questa istanza' }).click();
       expect((await localDelete).status()).toBe(200);
+      await openHome(page, dateAfter(day, 1));
+      await expect(page.locator('[data-timeline-event]').filter({
+        hasText: seriesTitle,
+      })).toHaveCount(0);
       await openHome(page, dateAfter(day, 2));
       const future = page.locator('[data-timeline-event]')
         .filter({ hasText: seriesTitle }).first();
-      await expect(future).toBeVisible();
+      await expect(future).toHaveCount(1);
+      // Backtracking after materializing the next future day must never
+      // resurrect the explicitly hard-deleted single Occurrence.
+      await openHome(page, dateAfter(day, 1));
+      await expect(page.locator('[data-timeline-event]').filter({
+        hasText: seriesTitle,
+      })).toHaveCount(0);
+      await openHome(page, dateAfter(day, 2));
       await future.getByRole('button', { name: seriesTitle, exact: true }).click();
       inspector = page.locator('.timeline-event-modal[role="dialog"]');
       await inspector.getByRole('button', { name: 'Elimina' }).click();
@@ -624,6 +650,10 @@ test.describe('Timeline — real user Activity/Event lifecycle matrix', () => {
       await openHome(page, dateAfter(day, 1));
       await expect(page.locator('[data-timeline-event]')
         .filter({ hasText: localTitle })).toHaveCount(0);
+      await openHome(page, dateAfter(day, 2));
+      await expect(page.locator('[data-timeline-event]')
+        .filter({ hasText: localTitle })).toHaveCount(0);
+      await openHome(page, dateAfter(day, 1));
 
       const following = page.locator('[data-timeline-event]')
         .filter({ hasText: title }).first();
@@ -649,8 +679,14 @@ test.describe('Timeline — real user Activity/Event lifecycle matrix', () => {
 
       await openHome(page, dateAfter(day, 1));
       const current = page.locator('[data-timeline-event]')
-        .filter({ hasText: seriesTitle }).first();
-      await expect(current).toBeVisible();
+        .filter({ hasText: seriesTitle });
+      await expect(current).toHaveCount(1);
+      await openHome(page, day);
+      await expect(page.locator('[data-timeline-event]')
+        .filter({ hasText: localTitle })).toHaveCount(1);
+      await expect(page.locator('[data-timeline-event]')
+        .filter({ hasText: seriesTitle })).toHaveCount(0);
+      await openHome(page, dateAfter(day, 1));
       await current.getByRole('button', {
         name: seriesTitle, exact: true,
       }).click();
@@ -675,10 +711,17 @@ test.describe('Timeline — real user Activity/Event lifecycle matrix', () => {
         name: 'Solo questa istanza',
       }).click();
       expect((await instanceDelete).status()).toBe(200);
+      await openHome(page, dateAfter(day, 1));
+      await expect(page.locator('[data-timeline-event]')
+        .filter({ hasText: seriesTitle })).toHaveCount(0);
       await openHome(page, dateAfter(day, 2));
       const future = page.locator('[data-timeline-event]')
         .filter({ hasText: seriesTitle }).first();
-      await expect(future).toBeVisible();
+      await expect(future).toHaveCount(1);
+      await openHome(page, dateAfter(day, 1));
+      await expect(page.locator('[data-timeline-event]')
+        .filter({ hasText: seriesTitle })).toHaveCount(0);
+      await openHome(page, dateAfter(day, 2));
       await future.getByRole('button', {
         name: seriesTitle, exact: true,
       }).click();
