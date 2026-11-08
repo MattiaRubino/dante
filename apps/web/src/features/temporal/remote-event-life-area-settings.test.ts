@@ -99,7 +99,7 @@ describe('Event Life Area owner-scoped edits', () => {
       }),
     );
     const current = {
-      options: [{ ref: AREA, name: 'Lavoro' }],
+      options: [{ ref: AREA, name: 'Lavoro', colorCode: null }],
       currentRef: null,
       currentRevision: 2,
     };

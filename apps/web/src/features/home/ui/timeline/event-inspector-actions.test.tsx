@@ -626,6 +626,7 @@ describe('Event Inspector actions', () => {
       colorCode: null,
       profileRevision: 0,
     });
+    const assignedArea = '0199a222-2222-7222-8222-222222222222';
     const source = {
       sourceRef: eventRef,
       owner: 'event',
@@ -651,7 +652,7 @@ describe('Event Inspector actions', () => {
         reality_mode: 'manual',
         agenda_parts: ['Introduzione'],
         objectives: [],
-        life_area_ref: null,
+        life_area_ref: assignedArea,
       },
     };
     const structuralReview = {
@@ -675,7 +676,14 @@ describe('Event Inspector actions', () => {
         return Promise.resolve(
           headers.get('X-Dante-Client') === 'web' &&
             headers.has('X-Dante-Time-Zone')
-            ? Response.json([])
+            ? Response.json([
+                {
+                  life_area_ref: assignedArea,
+                  name: 'Studio',
+                  color_code: '#4285F4',
+                  archived: false,
+                },
+              ])
             : Response.json(
                 { detail: 'Missing client context' },
                 { status: 400 },
@@ -699,6 +707,22 @@ describe('Event Inspector actions', () => {
     fireEvent.click(
       await screen.findByRole('button', { name: 'Dalla prossima istanza' }),
     );
+    const areaInput = await screen.findByRole('textbox', {
+      name: 'Area assegnata',
+    });
+    expect(areaInput).toHaveProperty('value', 'Studio');
+    expect(screen.getByRole('img', {
+      name: 'Colore della Life Area: #4285F4',
+    })).toBeTruthy();
+    fireEvent.focus(areaInput);
+    const assignedOption = await screen.findByRole('option', {
+      name: 'Studio',
+    });
+    expect(assignedOption.getAttribute('aria-selected')).toBe('true');
+    expect(
+      (assignedOption.querySelector('.temporal-create-life-area-field__swatch') as HTMLElement)
+        .style.background,
+    ).toBe('rgb(66, 133, 244)');
     fireEvent.change(await screen.findByRole('textbox', { name: 'Titolo' }), {
       target: { value: 'Nuova conferenza' },
     });
