@@ -2082,20 +2082,23 @@ describe('Event Inspector actions', () => {
       within(sessionRow as HTMLElement).queryByRole('checkbox'),
     ).toBeNull();
     fireEvent.click(screen.getByText('Opzioni avanzate della serie'));
-    const sessionClock = screen.getByRole('checkbox', {
-      name: 'Con orario Sessione 1',
-    });
-    const sessionOptions = sessionClock.closest(
-      '.timeline-recurring-series-editor__session-options',
-    ) as HTMLElement;
-    fireEvent.click(sessionClock);
+    // Internal Sessions are named and untimed, even with advanced series
+    // options expanded. The series envelope and Activity intervals retain
+    // their independent time controls and original offsets.
     expect(
-      within(sessionOptions).getByRole('group', { name: 'Inizio' }),
-    ).toBeTruthy();
-    fireEvent.click(sessionClock);
-    expect(
-      within(sessionOptions).queryByRole('group', { name: 'Inizio' }),
+      screen.queryByRole('checkbox', { name: /Con orario Sessione/ }),
     ).toBeNull();
+    expect(
+      screen.queryByText('Regola per le sottoattività'),
+    ).toBeNull();
+    expect(
+      screen.getByRole('combobox', { name: 'Sessione dell’attività' }),
+    ).toBeTruthy();
+    expect(
+      screen.getByRole('spinbutton', {
+        name: 'Durata minima della Sessione (minuti)',
+      }),
+    ).toBeTruthy();
     expect(
       screen.getAllByRole('button', { name: /^Data inizio:/ }),
     ).toHaveLength(2);
