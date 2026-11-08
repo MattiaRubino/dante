@@ -1505,6 +1505,11 @@ export function EventInspectorActions({
                         onChoose={(option) => {
                           setAreaSelection(option.id);
                           setAreaQuery(option.label);
+                          // A Life Area's color owns its Events. Drop a stale
+                          // standalone color override on explicit assignment.
+                          setProfileDraft(
+                            (draft) => draft && { ...draft, colorCode: null },
+                          );
                           setAreaError('');
                         }}
                         onClear={() => {

@@ -33,6 +33,12 @@
   cursor: pointer;
 }
 
+/* The assigned-area indicator is informational. Its color is owned by
+   the Life Area, not a writable item-color override. */
+.temporal-create-life-area-field__color-trigger[role='img'] {
+  cursor: default;
+}
+
 .temporal-create-life-area-field__color-trigger > span {
   width: 22px;
   height: 22px;

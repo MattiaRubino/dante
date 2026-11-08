@@ -182,6 +182,51 @@ afterEach(() => {
 });
 
 describe('Event Inspector actions', () => {
+  it('shows the assigned Life Area color and colored catalog entries in Event Edit', async () => {
+    const areaRef = '0199a222-2222-7222-8222-222222222222';
+    loadArea.mockResolvedValue({
+      options: [
+        { ref: areaRef, name: 'Studio', colorCode: '#4285F4' },
+      ],
+      currentRef: areaRef,
+      currentRevision: 1,
+    });
+    loadProfile.mockResolvedValue({
+      eventRef,
+      title: 'Studio avanzato',
+      description: null,
+      location: null,
+      colorCode: null,
+      lifeAreaRef: areaRef,
+      profileRevision: 2,
+      agendaRevision: 0,
+      agendaParts: [],
+    });
+    render(
+      <EventInspectorActions
+        eventRef={eventRef}
+        placement={placement}
+        onDuplicate={() => undefined}
+      />,
+    );
+    fireEvent.click(await screen.findByRole('button', { name: 'Modifica' }));
+    const color = await screen.findByRole('img', {
+      name: 'Colore della Life Area: #4285F4',
+    });
+    expect(color.querySelector('span')?.style.background).toBe(
+      'rgb(66, 133, 244)',
+    );
+    const select = screen.getByRole('textbox', { name: 'Life Area (opzionale)' });
+    expect(select).toHaveProperty('value', 'Studio');
+    fireEvent.focus(select);
+    const option = await screen.findByRole('option', { name: 'Studio' });
+    expect(option.getAttribute('aria-selected')).toBe('true');
+    expect(
+      (option.querySelector('.temporal-create-life-area-field__swatch') as HTMLElement)
+        .style.background,
+    ).toBe('rgb(66, 133, 244)');
+  });
+
   it('stages the one-off Event lock without a mutation until atomic Save', async () => {
     const scheduleRef = '0199a333-3333-7333-8333-333333333333';
     loadProfile.mockResolvedValue({

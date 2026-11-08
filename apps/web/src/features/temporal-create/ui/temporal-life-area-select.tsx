@@ -1,5 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 
+import { TEMPORAL_DEFAULT_COLOR } from './temporal-color-control';
+
 import './temporal-create-life-area-field.css';
 
 export type TemporalLifeAreaOption = Readonly<{
@@ -18,7 +20,7 @@ export function TemporalAssignedLifeAreaSwatch({
   const color =
     typeof colorCode === 'string' && /^#[0-9A-F]{6}$/i.test(colorCode)
       ? colorCode.toUpperCase()
-      : '#F4511E';
+      : TEMPORAL_DEFAULT_COLOR;
   return (
     <div className="temporal-create-life-area-field__color-cell">
       <span
