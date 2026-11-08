@@ -290,7 +290,10 @@ async def test_open_live_activity_session_blocks_destructive_instance_deletion(
             routine_ref=routine.source_ref,
             duration_minutes=30,
             reminder_lead_minutes=None,
-            activity_template={"version": 1, "planned_slices": []},
+            activity_template={
+                "version": 1,
+                "planned_slices": [{"name": "Fase", "time_enabled": False}],
+            },
         )
         target_day = datetime.now(ZoneInfo("Europe/Rome")).date()
         await materializer.checkpoint_window(
