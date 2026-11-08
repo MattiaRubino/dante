@@ -106,25 +106,6 @@
   gap: 5px;
 }
 
-.timeline-recurring-series-editor__advanced {
-  padding: 8px 0;
-  color: var(--dante-semantic-color-home-text-secondary, #b7c0cf);
-}
-
-.timeline-recurring-series-editor__advanced > summary {
-  cursor: pointer;
-}
-
-.timeline-recurring-series-editor__advanced > label {
-  margin-top: 10px;
-}
-
-.timeline-recurring-series-editor__session-options {
-  display: grid;
-  gap: 8px;
-  margin-top: 10px;
-}
-
 .timeline-recurring-series-editor [aria-label='Life Area'] {
   display: grid;
   gap: 12px;
