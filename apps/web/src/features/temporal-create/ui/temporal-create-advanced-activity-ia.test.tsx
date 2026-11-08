@@ -171,11 +171,13 @@ describe('Temporal Create Advanced Activity IA', () => {
     fireEvent.change(repeatSelect, { target: { value: 'custom' } });
 
     const repeatDetails = document.querySelector<HTMLElement>(
-      '[data-create-recurrence-owner="routine"]',
+      '[data-recurrence-owner="activity"]',
     );
     if (!repeatDetails) throw new Error('Expected Activity repeat details.');
 
-    expect(repeatRow.nextElementSibling).toBe(repeatDetails);
+    // The canonical recurrence panel owns both its selector and details.
+    expect(repeatDetails.contains(repeatRow)).toBe(true);
+    expect(repeatDetails.dataset.recurrenceExpanded).toBe('true');
     expect(within(repeatDetails).getByText('Ripetizione')).toBeTruthy();
 
     const ending = within(repeatDetails).getByRole('radiogroup', {
