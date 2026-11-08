@@ -1864,7 +1864,7 @@
       "purpose": "Validate owner-isolated hard-delete previews/fingerprints, scoped recurring Activity/Event deletion, no regenerated skipped instances and open live-Session destructive-guard semantics.",
       "invariant": "Deleting one recurring instance must not affect future siblings or resurrect after a checkpoint; a hard delete while a live Session is open must be rejected without losing Activity, Occurrence or current Session timing facts.",
       "status": "QUALIFIED",
-      "audit_note": "Existing source tests plus a new live-Session negative regression reviewed; exact SQL enforcement not established. This candidate may intentionally expose a production defect on owner's PostgreSQL run. New assertion execution NOT RUN."
+      "audit_note": "Owner PG run reached live-session safety test but failed during execution-policy fixture CAS, before deletion. Fixture now reads existing materialized policy state; real deletion rejection pending owner rerun. New SHA NOT RUN."
     },
     {
       "path": "apps/backend/tests/integration/temporal/test_unified_planning_tray.py",
@@ -2962,7 +2962,7 @@
       "purpose": "Exercise seven real user journeys and 12 recurring Create configurations across Edit, conversion, duplication, scoped deletion and canonical reload.",
       "invariant": "Real authenticated UI/HTTP/PostgreSQL, stable one-off and first-recurring identity across day checkpoints, local edit isolation and no resurrection after scoped delete, alongside independent duplicate persistence.",
       "status": "QUALIFIED",
-      "audit_note": "First owner Chromium run on 122c6a42 RED 7/7: 5 invalid expected Create surface, 2 portaled delete-dialog selectors. Driver repaired; deeper calendar-progression assertions added; owner real-stack execution on current SHA is NOT RUN. See temporal-user-lifecycle-journey-matrix.md."
+      "audit_note": "Two owner Chromium runs on 122c6a42 and cea61d37 were RED: the latter includes multi-day Timeline viewport expectations, interval selector semantics and conversion timeout. Tests now check data-planned-date, reuse portal confirmation and allow only scoped parallel mode with --workers=2. New SHA NOT RUN."
     },
     {
       "path": "apps/web/e2e/home-structure.spec.ts",

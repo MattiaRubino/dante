@@ -1,5 +1,51 @@
 # Timeline / Temporal-Operational — Workstream Handoff
 
+## 2026-11-08 — Second Chromium RED and isolated parallel execution
+
+Owner's second real-stack Chromium run on `cea61d37` again exposed seven
+RED journeys; the stack and PostgreSQL started correctly. The newly deepened
+checks uncovered several **driver expectations that did not match product
+semantics**. The Home Timeline renders a multi-day window around the selected
+date, so a card still visible when navigating to date+1 is not proof that
+the card moved, persisted on that date, or propagated a local change. The
+journey assertions now use the canonical card `data-planned-date` (alongside
+Schedule identity) to target the actual day of each instance. This also
+prevents the test from accidentally selecting an original instance when it
+intended to edit a future one. Quick recurrence selector values are `custom`
+when the user's interval differs from one (or monthly ordinal is selected);
+the submitted canonical frequency and interval remain strictly asserted.
+
+The conversion scenario had a five-minute opaque timeout; it now has a
+bounded 120-second test deadline and 35-second response-wait limit so the
+next failure identifies an unconfirmed conversion POST instead of consuming
+the full suite. This is **diagnostic only**, not evidence of successful
+conversion.
+
+**Concurrency:** the seven journeys have distinct synthetic user identities
+and no shared fixture mutations. The lifecycle `test.describe` now opts
+into `mode: 'parallel'`; launch this suite with **`--workers=2`** to
+retain a conservative bound against the shared real-stack Auth rate capacity.
+Do **not** raise the global `playwright.auth.config.ts` worker count or
+parallelize other auth specs until their accounts and mutating database
+fixtures are audited. PostgreSQL targeted checks can remain in a single
+`pytest` invocation with shared fixture startup.
+
+**PostgreSQL RED / PASS:** the owner's Session-duration progression test
+passed. The new hard-delete safety test failed *before* the deletion under
+test: its helper passed a null expected policy state to an already-materialized
+recurring Activity. The test now reads the canonical policy and, if needed,
+performs the self-scoped CAS update. This change does not establish whether
+the backend correctly rejects deleting an Activity with an open Session;
+the expected rejection must still be executed and verified.
+
+**Quality gate:** Ruff reported unsorted `asyncio` import, a `PT017`
+exception assertion and a format issue in the new tests. These source-level
+findings were corrected without relaxing the destructive guard assertion.
+All subsequent commits are **NOT RUN** on owner WSL. Re-run the seven
+Chromium user lifecycle journeys with two workers, then Ruff check/format
+and targeted PostgreSQL tests; inspect any remaining RED at its exact step.
+
+
 ## 2026-11-08 — Real-stack lifecycle RED triage + data consistency and time progression
 
 Initial owner's Chromium run on `122c6a42`: **0/7 passed**. The real
