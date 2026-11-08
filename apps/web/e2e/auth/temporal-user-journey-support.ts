@@ -42,6 +42,8 @@ export type CreateOptions = Readonly<{
   allDay?: boolean;
   recurrence?: Cadence;
   interval?: number;
+  monthlyOrdinal?: boolean;
+  repeatCount?: number;
   objective?: string;
   plannedSession?: string;
   agenda?: string;
@@ -222,6 +224,20 @@ export async function configureCreate(
     await panel.getByRole('combobox', { name: 'Ripeti' })
       .selectOption(options.recurrence);
     await expect(panel).toHaveAttribute('data-recurrence-expanded', 'true');
+    if (options.monthlyOrdinal) {
+      if (options.recurrence !== 'monthly') {
+        throw new Error('Ordinal weekdays require a monthly recurrence.');
+      }
+      await panel.getByRole('button', { name: 'Per posizione' }).click();
+      await expect(
+        panel.getByRole('combobox', { name: 'Posizione nel mese' }),
+      ).toBeVisible();
+    }
+    if (options.repeatCount) {
+      await panel.getByRole('radio', { name: 'Dopo' }).click();
+      await panel.getByRole('spinbutton', { name: 'Numero di occorrenze' })
+        .fill(String(options.repeatCount));
+    }
     if (options.interval && options.interval !== 1) {
       await panel.getByRole('spinbutton', { name: 'Intervallo di ripetizione' })
         .fill(String(options.interval));

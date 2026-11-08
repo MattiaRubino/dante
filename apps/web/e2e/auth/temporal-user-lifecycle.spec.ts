@@ -165,19 +165,25 @@ test.describe('Timeline — real user Activity/Event lifecycle matrix', () => {
     interval: number;
     allDay?: boolean;
     complex?: boolean;
+    monthlyOrdinal?: boolean;
+    repeatCount?: number;
   }>;
 
   const activityVariants: readonly Variant[] = [
     { cadence: 'daily', interval: 1, complex: true },
     { cadence: 'weekly', interval: 2 },
     { cadence: 'monthly', interval: 1 },
+    { cadence: 'monthly', interval: 1, monthlyOrdinal: true },
     { cadence: 'yearly', interval: 1 },
+    { cadence: 'custom', interval: 3, repeatCount: 4 },
   ];
   const eventVariants: readonly Variant[] = [
     { cadence: 'daily', interval: 1, complex: true },
     { cadence: 'weekly', interval: 1 },
     { cadence: 'monthly', interval: 2, allDay: true },
+    { cadence: 'monthly', interval: 1, monthlyOrdinal: true },
     { cadence: 'yearly', interval: 1 },
+    { cadence: 'custom', interval: 2, repeatCount: 3 },
   ];
 
   for (const [slot, kind, variants] of [
@@ -200,10 +206,12 @@ test.describe('Timeline — real user Activity/Event lifecycle matrix', () => {
             title: label,
             date: day,
             clock: [
-              '08:10', '10:10', '12:10', '14:10',
+              '08:10', '10:10', '12:10', '14:10', '16:10', '18:10',
             ][index] ?? '09:10',
             recurrence: variant.cadence,
             interval: variant.interval,
+            ...(variant.monthlyOrdinal ? { monthlyOrdinal: true } : {}),
+            ...(variant.repeatCount ? { repeatCount: variant.repeatCount } : {}),
             ...(variant.allDay ? { allDay: true } : {}),
             ...(variant.complex && kind === 'activity'
               ? {
@@ -227,7 +235,7 @@ test.describe('Timeline — real user Activity/Event lifecycle matrix', () => {
             exact: true,
           });
           await expect(panel.getByRole('combobox', { name: 'Ripeti' }))
-            .toHaveValue(variant.cadence);
+            .toHaveValue(variant.monthlyOrdinal ? 'custom' : variant.cadence);
           const createdPromise = page.waitForResponse(
             (response) =>
               response.url().endsWith(
@@ -246,18 +254,26 @@ test.describe('Timeline — real user Activity/Event lifecycle matrix', () => {
           const request = response.request().postDataJSON() as {
             recurrence: Record<string, unknown>;
           };
-          const patternCode = variant.cadence === 'weekly'
-            ? 'weekly_weekdays'
-            : variant.cadence === 'monthly'
-              ? 'monthly_month_days'
-              : variant.cadence === 'yearly'
-                ? 'yearly_month_days'
-                : 'daily';
+          const patternCode = variant.monthlyOrdinal
+            ? 'monthly_ordinal_weekdays'
+            : variant.cadence === 'weekly' || variant.cadence === 'custom'
+              ? 'weekly_weekdays'
+              : variant.cadence === 'monthly'
+                ? 'monthly_month_days'
+                : variant.cadence === 'yearly'
+                  ? 'yearly_month_days'
+                  : 'daily';
           expect(request.recurrence).toMatchObject({
             pattern_code: patternCode,
             interval_count: variant.interval,
             effective_from: day,
             clock_basis_code: 'named_zone',
+            ...(variant.repeatCount
+              ? {
+                  range_kind: 'expected_count',
+                  expected_occurrence_count: variant.repeatCount,
+                }
+              : {}),
           });
           created.push(await saving);
         }
