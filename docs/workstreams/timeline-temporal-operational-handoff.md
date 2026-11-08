@@ -1,5 +1,24 @@
 # Timeline / Temporal-Operational — Workstream Handoff
 
+## 2026-11-08 — Recurrence vertical audit, code inspection checkpoint
+
+**Evidence boundary:** prior owner WSL checks on `f67bbac0` passed 52/52 Vitest, web typecheck and a structural Playwright test, with API proxy connection refused on port 8000. They do **not** exercise real conversion persistence. Changes below are newly pushed, **NOT RUN** in owner PostgreSQL or browser yet.
+
+| Layer / scenario | Inspected evidence | Status |
+| --- | --- | --- |
+| Existing Activity → Routine | `recurring_conversion._existing_activity` builds from canonical `ActivityEditSnapshot`; the same physical Activity is bound to the first generated Occurrence; owner check, CAS and replay in `test_existing_activity_recurrence.py` | Existing integration coverage, additional combinations pending |
+| Existing Event → recurring Event | `_existing_event` reuses physical first Event/Schedule and creates a separate source; first Occurrence is bound/excluded from duplicate Timeline rendering | Existing integration coverage |
+| Future Event movement protection | Previously Event conversion silently defaulted `placement_protected=false` despite the original Event lock; fixed by canonical owner-scoped lock read in SERIALIZABLE transaction and forwarded policy. Protected **and** unlocked future variants now tested | Corrected, owner PG execution pending |
+| Event start response after accepted write | Previously Save called `GET /seed` *after* successful `POST /start`, allowing a transient GET failure to present a false conversion failure. UI now consumes the accepted `source_ref` from Start response without read-after-write dependency; new transport test registered | Corrected, owner Vitest pending |
+| Atomicity | Backend conversion itself is one SERIALIZABLE transaction (source, recurrence, policy, first binding). But if the user also edits an existing item before pressing Save, frontend Edit and Start remain **two commits**, not one transaction | Open architectural gap, must not claim atomic whole Save |
+| Failure recovery | UI stores accepted Edit profile/revision for conversion retry; `operation_id` reused for retry. No integrated DB test yet proves a lost response, reload/reopen, and replay after partial successful Edit | Open coverage gap |
+| Clock/DST | Conversion checks first effective date, named zone, generated first coordinate and for Activity the DST fold. Dedicated matrix for one-off→series across missing hour, ambiguous hour and edited timing is not yet verified | Open coverage gap |
+| Intervals, named Sessions, Objectives, Life Area, Reminder | Activity conversion builds versioned template from accepted Schedule+snapshot; Event conversion copies Agenda, Objectives, Reminder, Life Area. Current conversion regression does not assert full fidelity after later checkpoint and reload across **all** these fields simultaneously | Open coverage gap |
+| Series edit scopes | `only_this`, `this_and_following`, `from_next` and protection policy live in separate reviewed-series endpoints. Must prove boundary includes selected and protects recorded/future-local exceptions after reload | Requires targeted existing suites + cross-feature test |
+
+**Next owner test checkpoint:** focus on `test_existing_activity_recurrence.py`, Event Inspector, `remote-existing-recurrence.test.ts`, web typecheck, then full PostgreSQL/temporal gate. If green, add cross-command E2E/integration tests for simultaneous schedule change + one-off conversion, protected instance/replay across reload, concurrency, and DST. Do not block on CI: owner executes local gate and reports red-to-green by exact SHA.
+
+
 ## 2026-11-08 — First vertical audit: Event conversion movement lock (candidate)
 
 A direct code audit of one-off-to-recurring conversion found a real contract discrepancy: `recurring_conversion._existing_activity` explicitly copies `placement_protected` from the accepted Activity lock into the future Routine template, but `_existing_event` previously constructed `EventAuthoringPolicy` without this field, silently defaulting to false. The accepted original Event remained locked, while newly materialized future Events were unlocked despite the owner's chosen policy. The conversion now reads the self-scoped canonical Schedule lock within its SERIALIZABLE transaction, forwards the result into the versioned Event template validation and `EventOccurrencePolicyApplication.set_in_session`. An existing PostgreSQL integration test now locks the original Event and asserts both the original and next materialized Event Schedule remain locked after conversion.

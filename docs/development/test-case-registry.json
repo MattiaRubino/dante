@@ -1221,11 +1221,11 @@
       "path": "apps/backend/tests/integration/temporal/test_existing_activity_recurrence.py",
       "suite": "temporal-postgresql-integration",
       "contract_id": "T04",
-      "candidate_behavior": "start recurrence from an existing Activity",
-      "purpose": "Verify the original Activity identity is the first generated instance and the Timeline shows one card per date.",
-      "invariant": "Atomic first binding, owner scope, replay and duplicate conversion rejection.",
-      "status": "UNREVIEWED",
-      "audit_note": "Requires execution against migrated PostgreSQL and review of generated Session template fidelity."
+      "candidate_behavior": "existing Activity/Event conversion preserves first identity and future policies",
+      "purpose": "Assert owner isolation, canonical first binding, idempotent replay, duplicate rejection, Timeline projection, Event first exclusion and movement-lock policy propagation.",
+      "invariant": "One-off Activity/Event remains the identified first instance; conversion creates a single future source and materializes next clean instances without duplication; a protected or unlocked Event propagates its lock state to future Schedules.",
+      "status": "QUALIFIED",
+      "audit_note": "Audited source, API and canonical PostgreSQL path; Event lock propagation now parameterized for protected/unlocked. Owner execution against migrated database pending on 474c276 and descendants. Compound UI Save→Start still requires separate cross-command integration tests."
     },
     {
       "path": "apps/backend/tests/integration/temporal/test_execution_structure.py",
