@@ -504,7 +504,9 @@ test.describe('Temporal Create Life Area golden gate', () => {
       await dialog.getByLabel('Life Area (opzionale)').fill(areaName);
       await expect(dialog.getByRole('listbox')).toHaveCount(0);
       await dialog.getByRole('button', { name: 'Opzioni avanzate' }).click();
-      await dialog.getByRole('combobox', { name: 'Ripeti', exact: true }).selectOption('daily');
+      await dialog
+        .getByRole('combobox', { name: 'Ripeti', exact: true })
+        .selectOption('daily');
 
       const routineResponsePromise = page.waitForResponse(
         (response) =>
@@ -589,7 +591,9 @@ test.describe('Temporal Create Life Area golden gate', () => {
       await eventArea.focus();
       await dialog.getByRole('option', { name: areaName }).click();
       await dialog.getByRole('button', { name: 'Opzioni avanzate' }).click();
-      await dialog.getByRole('combobox', { name: 'Ripeti', exact: true }).selectOption('daily');
+      await dialog
+        .getByRole('combobox', { name: 'Ripeti', exact: true })
+        .selectOption('daily');
 
       const recurringEventResponsePromise = page.waitForResponse(
         (response) =>
@@ -627,7 +631,9 @@ test.describe('Temporal Create Life Area golden gate', () => {
         .fill(noAreaRoutineTitle);
       await fillTimedWindow(dialog, '12:20', '12:50');
       await dialog.getByRole('button', { name: 'Opzioni avanzate' }).click();
-      await dialog.getByRole('combobox', { name: 'Ripeti', exact: true }).selectOption('daily');
+      await dialog
+        .getByRole('combobox', { name: 'Ripeti', exact: true })
+        .selectOption('daily');
 
       const noAreaRoutineResponsePromise = page.waitForResponse(
         (response) =>
@@ -670,7 +676,9 @@ test.describe('Temporal Create Life Area golden gate', () => {
         .fill(noAreaEventTitle);
       await fillTimedWindow(dialog, '14:20', '14:50');
       await dialog.getByRole('button', { name: 'Opzioni avanzate' }).click();
-      await dialog.getByRole('combobox', { name: 'Ripeti', exact: true }).selectOption('daily');
+      await dialog
+        .getByRole('combobox', { name: 'Ripeti', exact: true })
+        .selectOption('daily');
 
       const noAreaEventResponsePromise = page.waitForResponse(
         (response) =>
