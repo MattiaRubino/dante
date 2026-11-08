@@ -343,6 +343,7 @@ class EventOccurrenceLocalEditCommand(BaseModel):
     profile_patch: dict[str, str | None] = Field(default_factory=dict, max_length=4)
     structure: EventOccurrenceLocalStructure
     schedule: EventAtomicScheduleChange | None = None
+    placement_lock: EventAtomicPlacementLockChange | None = None
     reminder: EventAtomicReminderChange | None = None
     reality: RealityPolicyCommand | None = None
     objectives: ActivityObjectiveBatchCommand | None = None
@@ -1068,6 +1069,8 @@ async def accept_event_occurrence_local_edit(
                 if body.schedule is not None
                 else body.reminder.schedule_ref
                 if body.reminder is not None
+                else body.placement_lock.schedule_ref
+                if body.placement_lock is not None
                 else None
             )
             if target_schedule is not None:
@@ -1086,6 +1089,9 @@ async def accept_event_occurrence_local_edit(
                     body.schedule is not None
                     and body.reminder is not None
                     and body.schedule.schedule_ref != body.reminder.schedule_ref
+                ) or (
+                    body.placement_lock is not None
+                    and body.placement_lock.schedule_ref != target_schedule
                 ):
                     raise RecurringSeriesEditConflictError("Event instance Schedule changed.")
             accepted = (
@@ -1132,6 +1138,18 @@ async def accept_event_occurrence_local_edit(
 
             if body.reminder is not None and not body.reminder.enabled:
                 await configure_reminder(body.reminder)
+            if body.placement_lock is not None and not body.placement_lock.locked:
+                await session.execute(
+                    text(
+                        "SELECT * FROM dante.set_self_schedule_placement_lock("
+                        ":actor,:schedule,false,:revision)"
+                    ),
+                    {
+                        "actor": actor,
+                        "schedule": body.placement_lock.schedule_ref,
+                        "revision": body.placement_lock.expected_revision,
+                    },
+                )
             if body.schedule is not None:
                 await revise_schedule_in_session(
                     session,
@@ -1145,6 +1163,18 @@ async def accept_event_occurrence_local_edit(
                 )
             if body.reminder is not None and body.reminder.enabled:
                 await configure_reminder(body.reminder)
+            if body.placement_lock is not None and body.placement_lock.locked:
+                await session.execute(
+                    text(
+                        "SELECT * FROM dante.set_self_schedule_placement_lock("
+                        ":actor,:schedule,true,:revision)"
+                    ),
+                    {
+                        "actor": actor,
+                        "schedule": body.placement_lock.schedule_ref,
+                        "revision": body.placement_lock.expected_revision,
+                    },
+                )
             if body.reality is not None:
                 change = body.reality
                 intent = {

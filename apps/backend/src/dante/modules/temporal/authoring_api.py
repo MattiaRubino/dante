@@ -114,6 +114,7 @@ class AuthorEventRequest(AuthorItemRequest):
     """One transactional Event Quick Create command."""
 
     agenda_parts: list[str] = Field(default_factory=list, max_length=100)
+    placement_protected: bool = False
 
 
 class AcceptedDateSpanPlacementResponse(BaseModel):
@@ -483,6 +484,7 @@ async def author_event(
             placement=None
             if payload.placement is None
             else _placement_from_request(payload.placement),
+            placement_protected=payload.placement_protected,
         )
     except _Errors as exc:
         raise _problem(exc) from exc

@@ -810,6 +810,14 @@ class EventAtomicReminderChange(BaseModel):
     lead_minutes: int = Field(ge=0, le=10080)
 
 
+class EventAtomicPlacementLockChange(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    schedule_ref: UUID
+    locked: bool
+    expected_revision: int = Field(ge=0)
+
+
 class EventAtomicParticipantChange(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
@@ -828,6 +836,7 @@ class EventAtomicEditCommand(BaseModel):
     agenda: ReplaceEventAgendaRequest | None = None
     life_area: EventAtomicLifeAreaChange | None = None
     schedule: EventAtomicScheduleChange | None = None
+    placement_lock: EventAtomicPlacementLockChange | None = None
     reminder: EventAtomicReminderChange | None = None
     participants: list[EventAtomicParticipantChange] | None = Field(default=None, min_length=1)
     reality: RealityPolicyCommand | None = None
@@ -842,6 +851,7 @@ class EventAtomicEditCommand(BaseModel):
                 self.agenda,
                 self.life_area,
                 self.schedule,
+                self.placement_lock,
                 self.reminder,
                 self.participants,
                 self.reality,
@@ -1001,6 +1011,8 @@ async def apply_one_off_event_atomic_edit(
                 if body.schedule is not None
                 else body.reminder.schedule_ref
                 if body.reminder is not None
+                else body.placement_lock.schedule_ref
+                if body.placement_lock is not None
                 else None
             )
             if target_schedule is not None:
@@ -1022,6 +1034,16 @@ async def apply_one_off_event_atomic_edit(
                         title="Event Schedule changed",
                         detail="Reload the Event before changing its Schedule.",
                     )
+            if body.placement_lock is not None and (
+                target_schedule != body.placement_lock.schedule_ref
+            ):
+                raise ProblemError(
+                    status=422,
+                    code="temporal.event_edit.lock_schedule_mismatch",
+                    category="validation",
+                    title="Invalid placement lock target",
+                    detail="The placement lock must belong to the edited Event Schedule.",
+                )
             if body.reminder is not None:
                 change_reminder = body.reminder
                 if target_schedule != change_reminder.schedule_ref:
@@ -1053,6 +1075,18 @@ async def apply_one_off_event_atomic_edit(
             # the same transaction, so the complete edit remains atomic.
             if body.reminder is not None and not body.reminder.enabled:
                 await configure_reminder(body.reminder)
+            if body.placement_lock is not None and not body.placement_lock.locked:
+                await session.execute(
+                    text(
+                        "SELECT * FROM dante.set_self_schedule_placement_lock("
+                        ":actor,:schedule,false,:revision)"
+                    ),
+                    {
+                        "actor": actor,
+                        "schedule": body.placement_lock.schedule_ref,
+                        "revision": body.placement_lock.expected_revision,
+                    },
+                )
             if body.schedule is not None:
                 change_schedule = body.schedule
                 await revise_schedule_in_session(
@@ -1067,6 +1101,18 @@ async def apply_one_off_event_atomic_edit(
                 )
             if body.reminder is not None and body.reminder.enabled:
                 await configure_reminder(body.reminder)
+            if body.placement_lock is not None and body.placement_lock.locked:
+                await session.execute(
+                    text(
+                        "SELECT * FROM dante.set_self_schedule_placement_lock("
+                        ":actor,:schedule,true,:revision)"
+                    ),
+                    {
+                        "actor": actor,
+                        "schedule": body.placement_lock.schedule_ref,
+                        "revision": body.placement_lock.expected_revision,
+                    },
+                )
             if body.participants:
                 participation = ResponsibilityParticipationApplication(runtime.session_factory)
                 for index, change_participant in enumerate(body.participants):

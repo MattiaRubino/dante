@@ -606,6 +606,7 @@ class TemporalAuthoringApplication:
         agenda_parts: tuple[str, ...],
         placement: SchedulePlacement | None,
         session_capture_mode: str | None,
+        placement_protected: bool = False,
         minimum_session_duration_microseconds: int | None = None,
         child_guard_mode: str | None = None,
         planned_slices: tuple[SchedulePlacement | None, ...] = (),
@@ -619,6 +620,12 @@ class TemporalAuthoringApplication:
         normalized_description = _optional_text(description)
         normalized_location = _optional_text(location)
         normalized_item_color = _color(item_color_code)
+        if type(placement_protected) is not bool or (
+            placement_protected and (subject_kind != "event" or placement is None)
+        ):
+            raise TemporalAuthoringInputError(
+                "Event placement protection requires an accepted Schedule."
+            )
         if subject_kind not in {"activity", "event"}:
             raise TemporalAuthoringInputError("Unsupported authoring subject kind.")
         if session_capture_mode is not None and (
@@ -824,6 +831,32 @@ class TemporalAuthoringApplication:
                         raise TemporalAuthoringOperationIdReuseError(
                             "Create and Schedule replay state diverged."
                         )
+                    if subject_kind == "event":
+                        lock_row = (
+                            (
+                                await session.execute(
+                                    text(
+                                        "SELECT * FROM dante.get_self_schedule_placement_lock("
+                                        ":actor,:schedule)"
+                                    ),
+                                    {"actor": self_person_ref, "schedule": schedule.schedule_ref},
+                                )
+                            )
+                            .mappings()
+                            .one()
+                        )
+                        if replayed and bool(lock_row["locked"]) is not placement_protected:
+                            raise TemporalAuthoringOperationIdReuseError(
+                                "Event Create placement lock intent changed on replay."
+                            )
+                        if not replayed and placement_protected:
+                            await session.execute(
+                                text(
+                                    "SELECT * FROM dante.set_self_schedule_placement_lock("
+                                    ":actor,:schedule,true,0)"
+                                ),
+                                {"actor": self_person_ref, "schedule": schedule.schedule_ref},
+                            )
                     if subject_kind == "activity":
                         await _schedule_role(
                             session,
@@ -1313,6 +1346,7 @@ class TemporalAuthoringApplication:
         item_color_code: str | None = None,
         agenda_parts: tuple[str, ...] | list[str] = (),
         placement: SchedulePlacement | None = None,
+        placement_protected: bool = False,
     ) -> AuthoringResult:
         return await self._execute(
             subject_kind="event",
@@ -1326,4 +1360,5 @@ class TemporalAuthoringApplication:
             agenda_parts=_agenda(agenda_parts),
             placement=placement,
             session_capture_mode=None,
+            placement_protected=placement_protected,
         )
