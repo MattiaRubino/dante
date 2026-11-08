@@ -337,9 +337,7 @@ async def test_hard_delete_of_revised_scheduled_activity_retains_independent_dup
             SimpleNamespace(app=SimpleNamespace(state=SimpleNamespace(database_runtime=runtime))),
         )
         context = cast(DanteContext, SimpleNamespace(self_person_ref=actor))
-        impact = await get_self_activity_session_impact(
-            original_ref, context, request, Response()
-        )
+        impact = await get_self_activity_session_impact(original_ref, context, request, Response())
         deleted = await delete_self_activity_hard(
             original_ref,
             ActivityHardDeleteCommand(expected_session_fingerprint=impact.fingerprint),
