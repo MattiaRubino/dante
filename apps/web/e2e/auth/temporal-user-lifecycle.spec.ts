@@ -524,8 +524,7 @@ test.describe('Timeline — real user Activity/Event lifecycle matrix', () => {
         clock: '11:20',
       });
       await openHome(page, day);
-      const card = page.locator('[data-timeline-event]')
-        .filter({ hasText: title }).first();
+      const card = onDay(page, day, title);
       await expect(card).toBeVisible();
       await card.getByRole('button', { name: title, exact: true }).click();
       let inspector = page.locator('.timeline-event-modal[role="dialog"]');
@@ -543,23 +542,18 @@ test.describe('Timeline — real user Activity/Event lifecycle matrix', () => {
       await inspector.getByRole('button', { name: 'Salva modifiche' }).click();
 
       await openHome(page, day);
-      await expect(page.locator('[data-timeline-event]').filter({
-        hasText: changedTitle,
-      }).first()).toBeVisible();
+      await expect(onDay(page, day, changedTitle)).toHaveCount(1);
       await openHome(page, dateAfter(day, 1));
       // Local mutation must not propagate to a clean following instance.
-      await expect(page.locator('[data-timeline-event]').filter({
-        hasText: changedTitle,
-      })).toHaveCount(0);
+      await expect(onDay(page, dateAfter(day, 1), changedTitle))
+        .toHaveCount(0);
       // A later checkpoint must not propagate a local exception through the
       // entire series or mutate another date's stored profile.
       await openHome(page, dateAfter(day, 2));
-      await expect(page.locator('[data-timeline-event]').filter({
-        hasText: changedTitle,
-      })).toHaveCount(0);
+      await expect(onDay(page, dateAfter(day, 2), changedTitle))
+        .toHaveCount(0);
       await openHome(page, dateAfter(day, 1));
-      const following = page.locator('[data-timeline-event]')
-        .filter({ hasText: title }).first();
+      const following = onDay(page, dateAfter(day, 1), title);
       await expect(following).toBeVisible();
       await following.getByRole('button', { name: title, exact: true }).click();
       inspector = page.locator('.timeline-event-modal[role="dialog"]');
@@ -584,31 +578,29 @@ test.describe('Timeline — real user Activity/Event lifecycle matrix', () => {
         name: 'Conferma salvataggio',
       }).click();
       await openHome(page, dateAfter(day, 1));
-      await expect(page.locator('[data-timeline-event]').filter({
-        hasText: seriesTitle,
-      })).toHaveCount(1);
+      await expect(onDay(page, dateAfter(day, 1), seriesTitle))
+        .toHaveCount(1);
       await openHome(page, day);
-      await expect(page.locator('[data-timeline-event]').filter({
-        hasText: changedTitle,
-      })).toHaveCount(1);
-      await expect(page.locator('[data-timeline-event]').filter({
-        hasText: seriesTitle,
-      })).toHaveCount(0);
+      await expect(onDay(page, day, changedTitle)).toHaveCount(1);
+      await expect(onDay(page, day, seriesTitle)).toHaveCount(0);
       await openHome(page, dateAfter(day, 1));
 
-      const current = page.locator('[data-timeline-event]')
-        .filter({ hasText: seriesTitle }).first();
+      const current = onDay(page, dateAfter(day, 1), seriesTitle);
       await current.getByRole('button', { name: seriesTitle, exact: true }).click();
       inspector = page.locator('.timeline-event-modal[role="dialog"]');
       await inspector.getByRole('button', { name: 'Elimina' }).click();
       // Both scoped destructive choices must be explicit and cancellable.
+      const deletion = page.getByRole('alertdialog', {
+        name: 'Elimina attività',
+      });
       await expect(
-        inspector.getByRole('button', { name: 'Solo questa istanza' }),
+        deletion.getByRole('button', { name: 'Solo questa istanza' }),
       ).toBeVisible();
       await expect(
-        inspector.getByRole('button', { name: 'Tutta la serie' }),
+        deletion.getByRole('button', { name: 'Tutta la serie' }),
       ).toBeVisible();
-      await inspector.getByRole('button', { name: 'Annulla' }).click();
+      await deletion.getByRole('button', { name: 'Annulla' }).click();
+      await expect(deletion).toHaveCount(0);
 
       await inspector.getByRole('button', { name: 'Elimina' }).click();
       const localDelete = page.waitForResponse(
@@ -616,22 +608,20 @@ test.describe('Timeline — real user Activity/Event lifecycle matrix', () => {
           response.url().includes('/api/v1/temporal/hard-deletion/') &&
           response.request().method() === 'DELETE',
       );
-      await inspector.getByRole('button', { name: 'Solo questa istanza' }).click();
+      await deletion.getByRole('button', { name: 'Solo questa istanza' })
+        .click();
       expect((await localDelete).status()).toBe(200);
       await openHome(page, dateAfter(day, 1));
-      await expect(page.locator('[data-timeline-event]').filter({
-        hasText: seriesTitle,
-      })).toHaveCount(0);
+      await expect(onDay(page, dateAfter(day, 1), seriesTitle))
+        .toHaveCount(0);
       await openHome(page, dateAfter(day, 2));
-      const future = page.locator('[data-timeline-event]')
-        .filter({ hasText: seriesTitle }).first();
+      const future = onDay(page, dateAfter(day, 2), seriesTitle);
       await expect(future).toHaveCount(1);
       // Backtracking after materializing the next future day must never
       // resurrect the explicitly hard-deleted single Occurrence.
       await openHome(page, dateAfter(day, 1));
-      await expect(page.locator('[data-timeline-event]').filter({
-        hasText: seriesTitle,
-      })).toHaveCount(0);
+      await expect(onDay(page, dateAfter(day, 1), seriesTitle))
+        .toHaveCount(0);
       await openHome(page, dateAfter(day, 2));
       await future.getByRole('button', { name: seriesTitle, exact: true }).click();
       inspector = page.locator('.timeline-event-modal[role="dialog"]');
@@ -641,7 +631,8 @@ test.describe('Timeline — real user Activity/Event lifecycle matrix', () => {
           response.url().includes('/api/v1/temporal/hard-deletion/') &&
           response.request().method() === 'DELETE',
       );
-      await inspector.getByRole('button', { name: 'Tutta la serie' }).click();
+      await deletion.getByRole('button', { name: 'Tutta la serie' })
+        .click();
       expect((await seriesDelete).status()).toBe(200);
       await openHome(page, dateAfter(day, 3));
       await expect(page.locator('[data-timeline-event]')
