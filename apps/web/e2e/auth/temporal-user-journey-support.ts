@@ -120,7 +120,14 @@ export async function openHome(page: Page, date: string): Promise<void> {
       response.request().method() === 'GET',
     { timeout: REQUEST_TIMEOUT },
   );
-  await page.goto('/home?date=' + date);
+  // DOMContentLoaded is sufficient: the real Timeline GET and ready-state
+  // assertions below still prove the authenticated, materialized viewport.
+  // Waiting for the full load event occasionally stalls after deletion while
+  // unrelated assets/background requests keep the page busy.
+  await page.goto('/home?date=' + date, {
+    waitUntil: 'domcontentloaded',
+    timeout: 15_000,
+  });
   expect((await read).status()).toBe(200);
   await expect(page.locator('[data-temporal-read-state="ready"]')).toBeVisible();
 }
