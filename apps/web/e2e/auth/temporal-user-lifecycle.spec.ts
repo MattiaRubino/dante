@@ -394,14 +394,23 @@ test.describe('Timeline — real user Activity/Event lifecycle matrix', () => {
         // Independent, versioned series are visible after a fresh Timeline GET.
         for (const [index, item] of created.entries()) {
           const variant = variants[index]!;
+          // A scheduled all-day Event is displayed in the civil-date lane,
+          // not the timed grid. Both representations must still be visible.
+          const card = variant.allDay
+            ? page.locator('[data-timeline-all-day-lane="' + day + '"]')
+                .locator('[data-timeline-all-day-item]')
+                .filter({ hasText: item.title })
+                .first()
+            : page.locator('[data-timeline-event]').filter({
+                hasText: item.title,
+              }).first();
           await expect(
-            page.locator('[data-timeline-event]').filter({
-              hasText: item.title,
-            }).first(),
+            card,
             `Missing ${kind} recurrence on the materialized Timeline: ${JSON.stringify({
               title: item.title,
               cadence: variant.cadence,
               interval: variant.interval,
+              allDay: variant.allDay ?? false,
               monthlyOrdinal: variant.monthlyOrdinal ?? false,
               effectiveDate: day,
               sourceRef: item.sourceRef,
