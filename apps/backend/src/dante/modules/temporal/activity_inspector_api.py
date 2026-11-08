@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import hashlib
+import logging
 from typing import Annotated
 from uuid import UUID
 
@@ -15,6 +16,8 @@ from dante.context.contracts import DanteContext
 from dante.context.dependencies import require_dante_context, require_mutating_dante_context
 from dante.platform.database.references import NativeRef
 from dante.platform.http.problem import ProblemError
+
+logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/api/v1/temporal/activities", tags=["temporal"])
 ReadContext = Annotated[DanteContext, Depends(require_dante_context)]
@@ -441,8 +444,20 @@ async def delete_self_activity_hard(
                 title="Recurring Activity scope required",
                 detail="Questa attività appartiene a una ricorrenza. Scegli l'istanza o la serie nella modifica della ricorrenza.",
             ) from exc
+        # Keep the public 503 generic; log only safe database diagnostics.
+        # This distinguishes an unmapped constraint from permission or SQL
+        # defects without leaking SQL parameters, Activity identity or titles.
+        logger.error(
+            "activity.hard_delete.unexpected_db_error sqlstate=%s constraint=%s",
+            getattr(exc.orig, "sqlstate", None),
+            constraint,
+        )
         raise _unavailable() from exc
     except SQLAlchemyError as exc:
+        logger.error(
+            "activity.hard_delete.unexpected_sqlalchemy_error type=%s",
+            type(exc).__name__,
+        )
         raise _unavailable() from exc
     return ActivityHardDeleteResponse(activity_ref=activity_ref, deleted_rows=deleted or 0)
 
