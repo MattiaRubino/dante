@@ -1,5 +1,34 @@
 # Timeline / Temporal-Operational — Workstream Handoff
 
+## 2026-11-08 — WSL editor-parity focused gate and regression fix
+
+Owner's exact-`8784a009` local results: **ESLint PASS, TypeScript PASS,
+Playwright 6/6 PASS**, **Vitest 105/106 PASS** and **Prettier FAIL** on
+five files: Activity Edit, Event Inspector source/test, recurring series
+editor and the new shared typography stylesheet. The lone Vitest failure
+still expected `Con orario Sessione 1` **after** expanding advanced
+series options, even though the agreed untimed named-Session UI had removed
+that control. It was not a runtime defect in Activity/series editing.
+
+The focused test now asserts the absence of autonomous Session timing
+and sub-activity guard controls after advanced options are expanded,
+while still checking the Activity's timing, number of intervals, named
+Session capture controls, objective state and from-next preview.
+No legacy control is restored. CSS remains shared by Advanced Create
+and all Edit surfaces, with their respective authoring rules preserved.
+
+Two new non-auth browser regressions measure exactly the same computed
+section typography and primary button dimensions across Create Activity,
+Activity Edit, Event Edit and Series Edit; a separate live Create browser
+test asserts the empty Session group has no label until the first Session
+is inserted. These checks **have not yet been executed on this SHA**.
+
+**Next required verification:** format the five Prettier-flagged files
+plus any newly touched Playwright test with the repository's own pinned
+Prettier, then run the same-SHA format/lint/typecheck/focused Vitest/
+Playwright gate. Never infer a green result from the previous SHA.
+
+
 ## 2026-11-08 — Editor parity work checkpoint (user visual review)
 
 User approved a restrained typography increase based on Google Calendar and
