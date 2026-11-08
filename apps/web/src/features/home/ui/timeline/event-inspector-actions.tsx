@@ -60,6 +60,7 @@ import {
   type PlacementLockState,
 } from '../../../temporal/remote-placement-lock-data-source';
 import { TemporalCreatePlacementLockButton } from '../../../temporal-create/ui/temporal-create-placement-lock-button';
+import type { ExistingRecurrenceControlHandle } from './existing-recurrence-control';
 import { TemporalAuthoringTitleRow } from '../../../temporal-create/ui/temporal-authoring-title-row';
 import type { TimelineCanonicalSchedulePlacement } from './model/timeline-types';
 import { TimelineInspectorIcon } from './timeline-inspector-icon';
@@ -119,6 +120,15 @@ export function EventInspectorActions({
   );
   const [recurrenceGuard] = useState(createRemoteEventRecurrenceGuard);
   const [existingRecurrence] = useState(createRemoteExistingRecurrence);
+  const recurrenceControl = useRef<ExistingRecurrenceControlHandle>(null);
+  const recurrenceOperation = useRef<string | null>(null);
+  const recurrenceResume = useRef<{
+    eventRef: string;
+    expectedProfileRevision: number;
+    scheduleRef: string;
+    expectedPlacementStateRef: string;
+  } | null>(null);
+  const [recurrenceSelected, setRecurrenceSelected] = useState(false);
   const [existingSeed, setExistingSeed] = useState<string | null>(null);
   const [recurringSource] = useState(createRemoteRecurringProfileEdit);
   const [hardDelete] = useState(createRemoteTemporalHardDeletion);
@@ -450,7 +460,8 @@ export function EventInspectorActions({
           (areaSelection || null) !==
             (recurringContext
               ? (profile.lifeAreaRef ?? null)
-              : areaChoice.currentRef));
+              : areaChoice.currentRef)) ||
+        recurrenceSelected;
       if (changed) {
         setConfirmingDiscard(true);
         return;
@@ -639,6 +650,30 @@ export function EventInspectorActions({
     setBusy(true);
     setError('');
     try {
+      const proposedRecurrence = recurrenceControl.current?.getRule() ?? null;
+      if (
+        proposedRecurrence &&
+        (!scheduleRef || !placementMaterialStateRef ||
+          profile.profileRevision === undefined)
+      ) {
+        throw new Error('Programmazione Event non disponibile per la ripetizione.');
+      }
+      if (proposedRecurrence && recurrenceResume.current) {
+        await existingRecurrence.startEvent(
+          recurrenceResume.current,
+          proposedRecurrence,
+          (recurrenceOperation.current ??= systemTemporalIdFactory.operationId()),
+        );
+        recurrenceResume.current = null;
+        setExistingSeed(await existingRecurrence.eventSeed(eventRef));
+        setProfile(null);
+        setProfileDraft(null);
+        setEditingProfile(false);
+        setProfileNotice('Ripetizione avviata da questo Evento.');
+        return;
+      }
+      let acceptedProfile = profile;
+      let acceptedStateRef = placementMaterialStateRef;
       if (
         areaQuery.trim() &&
         !areaChoice?.options.some(
@@ -864,7 +899,8 @@ export function EventInspectorActions({
           !schedule &&
           !reminderChanged &&
           !placementLockChanged &&
-          participantChanges.length === 0
+          participantChanges.length === 0 &&
+          !proposedRecurrence
         ) {
           setProfileDraft(null);
           setEditingProfile(false);
@@ -880,7 +916,7 @@ export function EventInspectorActions({
           placementLockChanged ||
           participantChanges.length > 0
         ) {
-          await profileSource.reviseAtomic(
+          const saved = await profileSource.reviseAtomic(
             eventRef,
             profile,
             {
@@ -939,8 +975,11 @@ export function EventInspectorActions({
             },
             systemTemporalIdFactory.operationId(),
           );
-        } else {
-          await profileSource.revise(
+          acceptedProfile = saved;
+          acceptedStateRef =
+            saved.updatedPlacementStateRef ?? placementMaterialStateRef;
+        } else if (profileChanged) {
+          acceptedProfile = await profileSource.revise(
             eventRef,
             profile,
             normalized,
@@ -948,13 +987,38 @@ export function EventInspectorActions({
           );
         }
       }
+      if (proposedRecurrence && scheduleRef && acceptedStateRef) {
+        if (acceptedProfile.profileRevision === undefined) {
+          throw new Error('Revisione Event non disponibile.');
+        }
+        const basis = {
+          eventRef,
+          expectedProfileRevision: acceptedProfile.profileRevision,
+          scheduleRef,
+          expectedPlacementStateRef: acceptedStateRef,
+        };
+        recurrenceResume.current = basis;
+        await existingRecurrence.startEvent(
+          basis,
+          proposedRecurrence,
+          (recurrenceOperation.current ??= systemTemporalIdFactory.operationId()),
+        );
+        recurrenceResume.current = null;
+        setExistingSeed(await existingRecurrence.eventSeed(eventRef));
+      }
       setProfile(null);
       setProfileDraft(null);
       setEditingProfile(false);
-      setProfileNotice('Evento aggiornato.');
+      setProfileNotice(
+        recurrenceSelected ? 'Ripetizione avviata da questo Evento.' : 'Evento aggiornato.',
+      );
     } catch (reason) {
+      const message =
+        reason instanceof Error ? reason.message : 'Modifica Event rifiutata.';
       setError(
-        reason instanceof Error ? reason.message : 'Modifica Event rifiutata.',
+        recurrenceResume.current
+          ? `Modifiche salvate, ripetizione non avviata: ${message}. Premi Salva per riprovare.`
+          : message,
       );
     } finally {
       setBusy(false);
@@ -1341,6 +1405,7 @@ export function EventInspectorActions({
                   </div>
                 ) : scheduleRef && placementMaterialStateRef ? (
                   <ExistingRecurrenceControl
+                    ref={recurrenceControl}
                     kind="event"
                     date={scheduleDraft.startDate}
                     startTime={scheduleDraft.startTime}
@@ -1351,53 +1416,9 @@ export function EventInspectorActions({
                         ? 'later'
                         : 'earlier'
                     }
-                    disabled={
-                      busy ||
-                      profileDraft.title !== profile.title ||
-                      profileDraft.description !==
-                        (profile.description ?? null) ||
-                      profileDraft.location !== (profile.location ?? null) ||
-                      profileDraft.colorCode !== (profile.colorCode ?? null) ||
-                      JSON.stringify(agendaDraft) !==
-                        JSON.stringify(profile.agendaParts ?? []) ||
-                      JSON.stringify(scheduleDraft) !==
-                        JSON.stringify(scheduleInitial) ||
-                      reminderLead !== reminderInitial ||
-                      (areaSelection || null) !==
-                        (areaChoice?.currentRef ?? null) ||
-                      realityMode !== (realityPolicy?.mode ?? 'manual') ||
-                      removedObjectives.length > 0 ||
-                      objectiveRows.some(objectiveChanged) ||
-                      JSON.stringify(participantsDraft) !==
-                        JSON.stringify(participantsInitial)
-                    }
-                    onStart={async (rule) => {
-                      if (profile.profileRevision === undefined) {
-                        throw new Error('Revisione Event non disponibile.');
-                      }
-                      setBusy(true);
-                      try {
-                        await existingRecurrence.startEvent(
-                          {
-                            eventRef,
-                            expectedProfileRevision: profile.profileRevision,
-                            scheduleRef,
-                            expectedPlacementStateRef:
-                              placementMaterialStateRef,
-                          },
-                          rule,
-                          systemTemporalIdFactory.operationId(),
-                        );
-                        setExistingSeed(
-                          await existingRecurrence.eventSeed(eventRef),
-                        );
-                        setEditingProfile(false);
-                        setProfileNotice(
-                          'Ripetizione avviata da questo Evento.',
-                        );
-                      } finally {
-                        setBusy(false);
-                      }
+                    onSelectionChange={(selected) => {
+                      setRecurrenceSelected(selected);
+                      recurrenceOperation.current = null;
                     }}
                   />
                 ) : null
