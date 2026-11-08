@@ -1218,16 +1218,6 @@
       "audit_note": "Needs contract/assertion review, rejection cases, and executable evidence; filename alone is not proof."
     },
     {
-      "path": "apps/backend/tests/integration/temporal/test_existing_activity_recurrence.py",
-      "suite": "temporal-postgresql-integration",
-      "contract_id": "T04",
-      "candidate_behavior": "start recurrence from an existing Activity",
-      "purpose": "Verify the original Activity identity is the first generated instance and the Timeline shows one card per date.",
-      "invariant": "Atomic first binding, owner scope, replay and duplicate conversion rejection.",
-      "status": "UNREVIEWED",
-      "audit_note": "Requires execution against migrated PostgreSQL and review of generated Session template fidelity."
-    },
-    {
       "path": "apps/backend/tests/integration/temporal/test_execution_structure.py",
       "suite": "temporal-postgresql-integration",
       "contract_id": "P-OTHER",
@@ -1236,6 +1226,16 @@
       "invariant": "",
       "status": "UNREVIEWED",
       "audit_note": "Needs contract/assertion review, rejection cases, and executable evidence; filename alone is not proof."
+    },
+    {
+      "path": "apps/backend/tests/integration/temporal/test_existing_activity_recurrence.py",
+      "suite": "temporal-postgresql-integration",
+      "contract_id": "T04",
+      "candidate_behavior": "start recurrence from an existing Activity",
+      "purpose": "Verify the original Activity identity is the first generated instance and the Timeline shows one card per date.",
+      "invariant": "Atomic first binding, owner scope, replay and duplicate conversion rejection.",
+      "status": "UNREVIEWED",
+      "audit_note": "Requires execution against migrated PostgreSQL and review of generated Session template fidelity."
     },
     {
       "path": "apps/backend/tests/integration/temporal/test_governed_schedule_move.py",
@@ -3004,16 +3004,6 @@
       "audit_note": "Needs contract/assertion review, rejection cases, and executable evidence; filename alone is not proof."
     },
     {
-      "path": "apps/web/e2e/temporal-create.spec.ts",
-      "suite": "browser-fixture",
-      "contract_id": "P-OTHER",
-      "candidate_behavior": "temporal create",
-      "purpose": "",
-      "invariant": "",
-      "status": "UNREVIEWED",
-      "audit_note": "Needs contract/assertion review, rejection cases, and executable evidence; filename alone is not proof."
-    },
-    {
       "path": "apps/web/e2e/temporal-create-unified-ui.spec.ts",
       "suite": "browser-fixture",
       "contract_id": "T01",
@@ -3022,6 +3012,16 @@
       "invariant": "An empty-title validation error cannot stretch the Advanced title row or displace its header actions.",
       "status": "QUALIFIED",
       "audit_note": "Covers the browser geometry boundary for the unified Create/Edit authoring surface."
+    },
+    {
+      "path": "apps/web/e2e/temporal-create.spec.ts",
+      "suite": "browser-fixture",
+      "contract_id": "P-OTHER",
+      "candidate_behavior": "temporal create",
+      "purpose": "",
+      "invariant": "",
+      "status": "UNREVIEWED",
+      "audit_note": "Needs contract/assertion review, rejection cases, and executable evidence; filename alone is not proof."
     },
     {
       "path": "apps/web/e2e/timeline-controls.spec.ts",
@@ -3403,15 +3403,6 @@
       "status": "QUALIFIED"
     },
     {
-      "path": "apps/web/src/features/home/ui/timeline/timeline-event-participation.test.tsx",
-      "suite": "web-unit-component",
-      "contract_id": "T02",
-      "candidate_behavior": "event inspector expected participation readback",
-      "purpose": "Verify that the Event Inspector shows current expected participants with their requirement and refreshes after an edit invalidates Timeline data.",
-      "invariant": "Removed expected participants do not remain visible after a canonical refresh, and participation never appears as a Session.",
-      "status": "QUALIFIED"
-    },
-    {
       "path": "apps/web/src/features/home/ui/timeline/model/timeline-all-day-layout.test.ts",
       "suite": "web-unit-component",
       "contract_id": "T11",
@@ -3602,6 +3593,15 @@
       "audit_note": "Needs contract/assertion review, rejection cases, and executable evidence; filename alone is not proof."
     },
     {
+      "path": "apps/web/src/features/home/ui/timeline/timeline-event-participation.test.tsx",
+      "suite": "web-unit-component",
+      "contract_id": "T02",
+      "candidate_behavior": "event inspector expected participation readback",
+      "purpose": "Verify that the Event Inspector shows current expected participants with their requirement and refreshes after an edit invalidates Timeline data.",
+      "invariant": "Removed expected participants do not remain visible after a canonical refresh, and participation never appears as a Session.",
+      "status": "QUALIFIED"
+    },
+    {
       "path": "apps/web/src/features/home/ui/timeline/timeline-expected-occurrence-scheduling.test.ts",
       "suite": "web-unit-component",
       "contract_id": "T05",
@@ -3632,6 +3632,16 @@
       "audit_note": "Needs contract/assertion review, rejection cases, and executable evidence; filename alone is not proof."
     },
     {
+      "path": "apps/web/src/features/home/ui/timeline/timeline-placement-actions.test.tsx",
+      "suite": "web-unit-component",
+      "contract_id": "T03",
+      "candidate_behavior": "timeline Inspector hides retired unplacement",
+      "purpose": "Verify that a scheduled Activity Inspector does not offer the retired Da collocare action.",
+      "invariant": "Opening the Inspector cannot trigger canonical unscheduling through a legacy move button.",
+      "status": "UNREVIEWED",
+      "audit_note": "Needs contract/assertion review, rejection cases, and executable evidence; filename alone is not proof."
+    },
+    {
       "path": "apps/web/src/features/home/ui/timeline/timeline-runtime-detail-controls.test.tsx",
       "suite": "web-unit-component",
       "contract_id": "P-OTHER",
@@ -3658,16 +3668,6 @@
       "candidate_behavior": "timeline schedule revision",
       "purpose": "",
       "invariant": "",
-      "status": "UNREVIEWED",
-      "audit_note": "Needs contract/assertion review, rejection cases, and executable evidence; filename alone is not proof."
-    },
-    {
-      "path": "apps/web/src/features/home/ui/timeline/timeline-placement-actions.test.tsx",
-      "suite": "web-unit-component",
-      "contract_id": "T03",
-      "candidate_behavior": "timeline Inspector hides retired unplacement",
-      "purpose": "Verify that a scheduled Activity Inspector does not offer the retired Da collocare action.",
-      "invariant": "Opening the Inspector cannot trigger canonical unscheduling through a legacy move button.",
       "status": "UNREVIEWED",
       "audit_note": "Needs contract/assertion review, rejection cases, and executable evidence; filename alone is not proof."
     },
@@ -3740,6 +3740,16 @@
       "invariant": "",
       "status": "UNREVIEWED",
       "audit_note": "Needs contract/assertion review, rejection cases, and executable evidence; filename alone is not proof."
+    },
+    {
+      "path": "apps/web/src/features/temporal-create/application/remote-recurring-authoring.test.ts",
+      "suite": "web-unit-component",
+      "contract_id": "T05",
+      "candidate_behavior": "recurring Event Create placement protection remote contract",
+      "purpose": "Check authenticated Event recurring Create carries the deliberate placement-lock state for both protected and unprotected source policies.",
+      "invariant": "The Create request is a single owner-scoped POST with CSRF and client/timezone headers, and serializes exactly the requested placement_protected boolean without silently discarding it.",
+      "status": "QUALIFIED",
+      "audit_note": "Source and negative/positive lock-state assertions reviewed; execution evidence pending owner WSL focused Vitest and full gate on this SHA."
     },
     {
       "path": "apps/web/src/features/temporal-create/application/temporal-create-appearance-runtime.test.ts",

@@ -1,5 +1,12 @@
 # Timeline / Temporal-Operational — Workstream Handoff
 
+## 2026-11-08 — Event title-row and placement-lock regression inventory (candidate, owner gate pending)
+
+Commits through this handoff add meaningful tests at the owning boundaries. The Create component tests assert its Event name, integrated lock button, both draft states and event-specific draft callback. The Event Inspector tests assert the unified local-only title row and lock CAS payload as part of one Save, as well as the versioned lock template in both `this_and_following` and `from_next` structural preview scopes. A new qualified `remote-recurring-authoring.test.ts` proves the authenticated Event Create request serializes both `placement_protected=true` and `false`. PostgreSQL `test_recurring_event_create.py` now checks immutable initial policy replay, cross-owner isolation, initial automatic Schedule lock, subsequent manual unlock preserved by a materialization checkpoint, and the locked revised source policy for newly materialized future Event Occurrences. Existing legacy Event policy explicitly asserts the unlocked default.
+
+**Verification:** all newly authored tests, fresh Alembic migration `20261108_180`, OpenAPI/generated client drift, lint/format/typecheck and full browser/gate evidence remain **NOT RUN** until the owner executes the local tests at one recorded commit. Do not use the earlier 37/37 Event Inspector run as evidence for these changes. The selected Event boundary bug remains out of scope.
+
+
 ## 2026-11-08 — Event title-bar parity and recurring placement protection (candidate)
 
 All Event editor surfaces use the same name row: circular Event marker, name, separator and accessible `Blocca spostamenti` button. One-off/selected-instance Event lock changes continue to use existing atomic CAS. Structural series Edit stores the flag in the versioned Event snapshot and clean newly generated Occurrences create Schedule plus lock in one transaction. Schedule replay deliberately preserves local lock/unlock overrides instead of forcing the template again.
