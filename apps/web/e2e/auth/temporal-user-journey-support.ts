@@ -199,14 +199,14 @@ export async function configureCreate(
   }
   if (options.plannedSession) {
     await composer
-      .getByRole('group', { name: 'Aggiungi Sessione pianificata' })
+      .locator('[aria-label="Aggiungi Sessione pianificata"]')
       .getByRole('button', { name: 'Sessione' })
       .click();
     await composer.getByRole('textbox', { name: 'Nome Sessione' })
       .fill(options.plannedSession);
   }
   if (options.agenda) {
-    await composer.getByRole('button', { name: 'Aggiungi punto' }).click();
+    await composer.getByRole('button', { name: 'Aggiungi punto alla scaletta' }).click();
     await composer.getByRole('textbox', { name: 'Punto scaletta 1' })
       .fill(options.agenda);
   }
