@@ -975,9 +975,9 @@ export function EventInspectorActions({
             },
             systemTemporalIdFactory.operationId(),
           );
-          acceptedProfile = saved;
+          acceptedProfile = saved ?? profile;
           acceptedStateRef =
-            saved.updatedPlacementStateRef ?? placementMaterialStateRef;
+            saved?.updatedPlacementStateRef ?? placementMaterialStateRef;
         } else if (profileChanged) {
           acceptedProfile = await profileSource.revise(
             eventRef,
