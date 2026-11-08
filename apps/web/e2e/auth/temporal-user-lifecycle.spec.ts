@@ -23,7 +23,23 @@ import {
  * Each test owns one disposable seeded E2E account and its own created data.
  */
 test.describe('Timeline — real user Activity/Event lifecycle matrix', () => {
-  test.describe.configure({ timeout: 300_000 });
+  // Seven independent seeded users: allow this suite (and only this suite)
+  // to run concurrently when Playwright is invoked with --workers=2.
+  test.describe.configure({ mode: 'parallel', timeout: 300_000 });
+
+  // Home renders a multi-day viewport. A card visible after navigating to
+  // another day does not belong to that day. Match the source planned date.
+  function onDay(page: Page, day: string, title: string): Locator {
+    return page
+      .locator('[data-timeline-event][data-planned-date="' + day + '"]')
+      .filter({ hasText: title });
+  }
+
+  function scheduleOnDay(page: Page, day: string, scheduleRef: string): Locator {
+    return page.locator(
+      '[data-timeline-event="' + scheduleRef + '"][data-planned-date="' + day + '"]',
+    );
+  }
 
   async function titleEditor(inspector: Locator, kind: Subject): Promise<Locator> {
     await inspector.getByRole('button', { name: 'Modifica', exact: true }).click();
@@ -170,21 +186,21 @@ test.describe('Timeline — real user Activity/Event lifecycle matrix', () => {
           { headers: { 'X-Dante-Time-Zone': 'Europe/Rome' } },
         );
         expect(deletedRead.status()).toBe(404);
-        // Advancing the Timeline and checkpointing a later day must never
-        // regenerate a deleted one-off or move an unrelated duplicate.
+        // Navigating to day+1 keeps day-0 cards in the multi-day
+        // viewport; their planned date must remain day, never day+1.
         await openHome(page, dateAfter(day, 1));
         await expect(
-          page.locator('[data-timeline-event="' + original.scheduleRef + '"]'),
+          scheduleOnDay(page, dateAfter(day, 1), original.scheduleRef!),
         ).toHaveCount(0);
         await expect(
-          page.locator('[data-timeline-event="' + duplicate.scheduleRef + '"]'),
+          scheduleOnDay(page, dateAfter(day, 1), duplicate.scheduleRef!),
         ).toHaveCount(0);
         await openHome(page, day);
         await expect(
-          page.locator('[data-timeline-event="' + original.scheduleRef + '"]'),
+          scheduleOnDay(page, day, original.scheduleRef!),
         ).toHaveCount(0);
         await expect(
-          page.locator('[data-timeline-event="' + duplicate.scheduleRef + '"]'),
+          scheduleOnDay(page, day, duplicate.scheduleRef!),
         ).toHaveCount(1);
         await assertPersistedTitle(page, duplicate, copiedTitle);
       } finally {
@@ -272,8 +288,15 @@ test.describe('Timeline — real user Activity/Event lifecycle matrix', () => {
             name: 'Ripetizione',
             exact: true,
           });
+          // Non-unit intervals are accurately represented as Custom in
+          // the compact selector; the full payload must still preserve the
+          // chosen frequency and exact interval.
           await expect(panel.getByRole('combobox', { name: 'Ripeti' }))
-            .toHaveValue(variant.monthlyOrdinal ? 'custom' : variant.cadence);
+            .toHaveValue(
+              variant.monthlyOrdinal || variant.interval !== 1
+                ? 'custom'
+                : variant.cadence,
+            );
           const createdPromise = page.waitForResponse(
             (response) =>
               response.url().endsWith(
@@ -387,6 +410,9 @@ test.describe('Timeline — real user Activity/Event lifecycle matrix', () => {
   test('standalone Activity and Event: Edit → Ripeti → Save → first-identity + next day', async ({
     browser,
   }, testInfo) => {
+    // A missing conversion POST should produce a bounded failure rather
+    // than keeping this single test opaque for five minutes.
+    test.setTimeout(120_000);
     const user = await signedInPage(browser, testInfo, 5);
     try {
       const { page } = user;
@@ -419,6 +445,7 @@ test.describe('Timeline — real user Activity/Event lifecycle matrix', () => {
           (response) =>
             response.url().endsWith(startPath) &&
             response.request().method() === 'POST',
+          { timeout: 35_000 },
         );
         await inspector.getByRole('button', { name: 'Salva modifiche' }).click();
         const accepted = await conversion;
