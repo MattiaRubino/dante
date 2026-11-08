@@ -38,6 +38,79 @@ test('Advanced Create keeps its header aligned when the title is empty', async (
   expect(geometry?.inside).toBe(true);
 });
 
+test('Advanced Activity and Event share one actual title rail without displaced controls', async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await page.goto('/home');
+  await page.getByRole('button', { name: 'Aggiungi alla timeline' }).click();
+  const dialog = page.locator('[data-temporal-create="composer"]');
+  await dialog.getByRole('button', { name: /Opzioni avanzate/ }).click();
+
+  async function rail(kind: 'activity' | 'event') {
+    const row = dialog.locator(
+      `[data-authoring-title-kind="${kind}"].temporal-authoring-title-row.has-tools`,
+    );
+    await expect(row).toBeVisible();
+    return row.evaluate((element) => {
+      const marker = element.children.item(0) as HTMLElement | null;
+      const name = element.children.item(1) as HTMLElement | null;
+      const tools = element.children.item(2) as HTMLElement | null;
+      const input = name?.querySelector<HTMLInputElement>('input');
+      if (!marker || !name || !tools || !input) {
+        throw new Error('The shared title-row marker, name, or actions are missing.');
+      }
+      const outer = element.getBoundingClientRect();
+      const icon = marker.getBoundingClientRect();
+      const title = name.getBoundingClientRect();
+      const actions = tools.getBoundingClientRect();
+      const inputBox = input.getBoundingClientRect();
+      return {
+        children: element.children.length,
+        marker: marker.textContent?.trim(),
+        height: outer.height,
+        radius: getComputedStyle(element).borderRadius,
+        fontSize: getComputedStyle(input).fontSize,
+        markerWidth: icon.width,
+        iconBeforeTitle: Math.abs(icon.right - title.left) <= 2,
+        titleBeforeActions: Math.abs(title.right - actions.left) <= 2,
+        titleNotOverlaid: inputBox.left >= icon.right - 2,
+        actionsInside: actions.right <= outer.right + 1,
+        commonBaseline:
+          Math.abs(icon.top - title.top) <= 2 &&
+          Math.abs(title.top - actions.top) <= 2 &&
+          Math.abs(inputBox.top - title.top) <= 2,
+        titleWidth: title.width,
+        actionsWidth: actions.width,
+      };
+    });
+  }
+
+  const activity = await rail('activity');
+  await dialog.getByRole('button', { name: 'Evento', exact: true }).click();
+  const event = await rail('event');
+
+  for (const result of [activity, event]) {
+    expect(result.children).toBe(3);
+    expect(result.iconBeforeTitle).toBe(true);
+    expect(result.titleBeforeActions).toBe(true);
+    expect(result.titleNotOverlaid).toBe(true);
+    expect(result.actionsInside).toBe(true);
+    expect(result.commonBaseline).toBe(true);
+    expect(result.titleWidth).toBeGreaterThan(200);
+    expect(result.actionsWidth).toBeGreaterThan(40);
+    expect(result.height).toBeGreaterThanOrEqual(50);
+    expect(result.height).toBeLessThan(60);
+  }
+
+  expect(activity.marker).toBe('◇');
+  expect(event.marker).toBe('○');
+  expect(activity.height).toBeCloseTo(event.height, 0);
+  expect(activity.markerWidth).toBe(event.markerWidth);
+  expect(activity.radius).toBe(event.radius);
+  expect(activity.fontSize).toBe(event.fontSize);
+});
+
 /** Match the bare Edit arrows, not Create's obsolete bordered mini-buttons. */
 async function expectEditStyleChevrons(
   when: import('@playwright/test').Locator,
