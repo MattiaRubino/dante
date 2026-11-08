@@ -26,6 +26,7 @@ const settings: ActivityEditSettings = {
   objectives: [
     {
       objectiveRef: 'objective',
+      verificationMode: 'review_on_end',
       label: 'Finire',
       resultKind: 'quantity',
       comparatorCode: 'gte',
@@ -34,9 +35,9 @@ const settings: ActivityEditSettings = {
       targetMax: null,
       unitCode: 'pagine',
       presentationOrder: 0,
-      observationRef: null,
+      observationRef: 'old-observation',
       observedBoolean: null,
-      observedNumeric: null,
+      observedNumeric: 3,
       qualitativeCode: null,
       evaluationStateRef: null,
       assessmentCode: null,
@@ -119,7 +120,24 @@ describe('Activity duplicate draft', () => {
         plannedSlices: [{ id: 'new-session', title: 'Revisione' }],
       });
       expect(copied.advanced.objectives).toMatchObject([
-        { id: 'new-objective', label: 'Finire', targetValue: '3' },
+        {
+          id: 'new-objective',
+          label: 'Finire',
+          targetValue: '3',
+          verificationMode: 'review_on_end',
+        },
+      ]);
+      expect(copied.advanced.objectives?.[0]).not.toHaveProperty(
+        'objectiveRef',
+      );
+      expect(copied.advanced.objectives?.[0]).not.toHaveProperty(
+        'observedNumeric',
+      );
+      expect(copied.advanced.objectives?.[0]).not.toHaveProperty(
+        'observationRef',
+      );
+      expect(copied.advanced.activityStructure?.plannedSlices).toMatchObject([
+        { title: 'Revisione', timeEnabled: false },
       ]);
     } finally {
       vi.unstubAllGlobals();

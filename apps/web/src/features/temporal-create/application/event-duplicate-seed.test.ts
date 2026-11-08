@@ -58,6 +58,29 @@ describe('canonical Event duplicate seed', () => {
     expect(event.agendaParts).toEqual(['Introduzione', 'Domande']);
   });
 
+  it('prefills a configured Event reminder without creating a new Event', () => {
+    const seed = buildEventDuplicateSeed(
+      event,
+      {
+        kind: 'named-zone-local',
+        startsLocalAt: Temporal.PlainDateTime.from('2026-10-09T09:00'),
+        endsLocalAt: Temporal.PlainDateTime.from('2026-10-09T10:00'),
+        zoneId: 'Europe/Rome',
+        resolvedStartAt: Temporal.Instant.from('2026-10-09T07:00:00Z'),
+        resolvedEndAt: Temporal.Instant.from('2026-10-09T08:00:00Z'),
+      },
+      [],
+      'manual',
+      [],
+      10,
+    );
+    expect(seed.fields).toMatchObject({
+      confirmation: { reminderLeadMinutes: 10 },
+    });
+    expect(seed.fields).not.toHaveProperty('eventRef');
+    expect(seed.advanced).not.toHaveProperty('observationRef');
+  });
+
   it('preserves a date span without changing its exclusive end convention', () => {
     const result = buildEventDuplicateSeed(event, {
       kind: 'date-span',
@@ -75,6 +98,7 @@ describe('canonical Event duplicate seed', () => {
   it('copies Event objective definitions and execution policy without copying results', () => {
     const objective: ObjectiveView = {
       objectiveRef: '0199a444-4444-7444-8444-444444444444',
+      verificationMode: 'review_on_end',
       label: 'Intervento',
       resultKind: 'boolean',
       comparatorCode: null,
@@ -103,7 +127,11 @@ describe('canonical Event duplicate seed', () => {
     );
     expect(seed.advanced.realityMode).toBe('review_on_end');
     expect(seed.advanced.objectives).toMatchObject([
-      { label: 'Intervento', resultKind: 'boolean' },
+      {
+        label: 'Intervento',
+        resultKind: 'boolean',
+        verificationMode: 'review_on_end',
+      },
     ]);
     expect(seed.advanced.objectives?.[0]).not.toHaveProperty('observationRef');
     expect(seed.advanced.objectives?.[0]).not.toHaveProperty('assessmentCode');

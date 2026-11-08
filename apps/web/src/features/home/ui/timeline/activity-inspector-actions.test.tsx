@@ -2616,27 +2616,86 @@ describe('Activity Inspector', () => {
     expect(onDeleted).toHaveBeenCalledOnce();
   });
 
-  it('refuses a recurring Activity duplicate instead of silently creating a one-off', async () => {
-    loadRecurringContext.mockResolvedValueOnce({
-      occurrenceRef: '0199a222-2222-7222-8222-222222222222',
-      sourceRef: '0199a444-4444-7444-8444-444444444444',
-      editRevision: 3,
-      recurrenceStateRef: null,
+  it('prefills Advanced Create from the selected recurring Activity without copying facts', async () => {
+    const occurrenceRef = '0199a222-2222-7222-8222-222222222222';
+    get.mockResolvedValue(profile);
+    loadSettings.mockResolvedValueOnce({
+      ...currentSettings,
+      schedules: [
+        {
+          scheduleRef: 'envelope',
+          role: 'envelope',
+          name: null,
+          order: 0,
+          placementStateRef: 'version',
+          temporalForm: 'named_zone_local',
+          start: '2026-11-08T12:45:00',
+          end: '2026-11-08T13:15:00',
+          zoneId: 'Europe/Rome',
+        },
+        {
+          scheduleRef: 'named-session',
+          role: 'planned',
+          name: 'Lettura',
+          order: 1,
+          placementStateRef: null,
+          temporalForm: null,
+          start: null,
+          end: null,
+          zoneId: null,
+        },
+      ],
+      objectives: [
+        {
+          objectiveRef: 'saved-goal',
+          label: 'Terminare',
+          resultKind: 'boolean',
+          comparatorCode: null,
+          targetValue: null,
+          targetMin: null,
+          targetMax: null,
+          unitCode: null,
+          verificationMode: 'review_on_end',
+          observationRef: 'old-observation',
+          assessmentCode: 'satisfied',
+          presentationOrder: 0,
+        },
+      ],
     });
-    const onDuplicate = vi.fn();
+    const onDuplicate = vi.fn<(seed: ActivityDuplicateSeed) => void>();
     render(
       <ActivityInspectorActions
         activityRef={ref}
+        recurringOccurrenceRef={occurrenceRef}
         onEdit={() => undefined}
         onDeleted={() => undefined}
         onDuplicate={onDuplicate}
       />,
     );
+    expect(
+      screen.queryByRole('button', { name: 'Sposta in Bozze' }),
+    ).toBeNull();
     fireEvent.click(screen.getByRole('button', { name: 'Duplica' }));
-    expect((await screen.findByRole('alert')).textContent).toContain(
-      'duplicazione fedele della ricorrenza',
-    );
-    expect(onDuplicate).not.toHaveBeenCalled();
+    await waitFor(() => expect(onDuplicate).toHaveBeenCalledOnce());
+    const seed = onDuplicate.mock.calls[0]![0];
+    expect(seed.fields).toMatchObject({
+      kind: 'activity',
+      title: 'Prima',
+      date: '2026-11-08',
+      startTime: '12:45',
+      durationMinutes: 30,
+    });
+    expect(seed.advanced.activityStructure?.plannedSlices).toMatchObject([
+      { title: 'Lettura', timeEnabled: false },
+    ]);
+    expect(seed.advanced.objectives).toMatchObject([
+      { label: 'Terminare', verificationMode: 'review_on_end' },
+    ]);
+    expect(seed.advanced.objectives?.[0]).not.toHaveProperty('observationRef');
+    expect(seed.advanced.objectives?.[0]).not.toHaveProperty('assessmentCode');
+    expect(seed.advanced).not.toHaveProperty('recurrence');
+    expect(loadRecurringContext).not.toHaveBeenCalled();
+    expect(retire).not.toHaveBeenCalled();
   });
 
   it('refuses hidden Activity children even when the Timeline has no subitems', async () => {

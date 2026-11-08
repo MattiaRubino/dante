@@ -963,7 +963,7 @@ describe('Event Inspector actions', () => {
     });
   });
 
-  it('saves a changed Event execution policy with its previous state reference', async () => {
+  it('preserves the legacy Event execution policy when editing per-Objective settings', async () => {
     const current = {
       eventRef,
       title: 'Conferenza',
@@ -981,7 +981,7 @@ describe('Event Inspector actions', () => {
       currentRevision: 0,
     });
     getRealityPolicy.mockResolvedValue({
-      mode: 'manual',
+      mode: 'review_on_end',
       stateRef: 'policy-state-1',
     });
     reviseAtomic.mockResolvedValue(current);
@@ -994,13 +994,28 @@ describe('Event Inspector actions', () => {
     );
     fireEvent.click(screen.getByRole('button', { name: /^Modifica$/ }));
     fireEvent.click(
-      await screen.findByRole('radio', { name: 'Chiedi al termine' }),
+      await screen.findByRole('button', { name: '＋ Aggiungi obiettivo' }),
     );
+    fireEvent.change(screen.getByRole('textbox', { name: 'Nome obiettivo' }), {
+      target: { value: 'Partecipare' },
+    });
+    expect(
+      screen.queryByRole('radio', { name: 'Chiedi al termine' }),
+    ).toBeNull();
     fireEvent.click(screen.getByRole('button', { name: 'Salva modifiche' }));
     await waitFor(() => expect(reviseAtomic).toHaveBeenCalledOnce());
-    expect(reviseAtomic.mock.calls[0]?.[2]).toEqual({
-      reality: { mode: 'review_on_end', expectedStateRef: 'policy-state-1' },
+    expect(reviseAtomic.mock.calls[0]?.[2]).toMatchObject({
+      objectives: {
+        add: [
+          {
+            label: 'Partecipare',
+            verificationMode: 'none',
+          },
+        ],
+      },
     });
+    expect(reviseAtomic.mock.calls[0]?.[2]).not.toHaveProperty('reality');
+    expect(getRealityPolicy).toHaveBeenCalledWith('event', eventRef);
   });
 
   it('keeps the Event Schedule material revision in the same Save as metadata', async () => {
@@ -1466,10 +1481,103 @@ describe('Event Inspector actions', () => {
     );
     fireEvent.click(screen.getByRole('button', { name: 'Duplica' }));
     expect((await screen.findByRole('alert')).textContent).toContain(
-      'sorgente ricorrente',
+      'Apri un’istanza',
     );
     expect(isRecurring).toHaveBeenCalledWith(eventRef);
     expect(onDuplicate).not.toHaveBeenCalled();
+  });
+
+  it('prefills Advanced Create from the selected Event occurrence and not its source or past results', async () => {
+    const occurrenceRef = '0199a555-5555-7555-8555-555555555555';
+    const context = {
+      occurrenceRef,
+      sourceRef: eventRef,
+      editRevision: 3,
+      recurrenceStateRef: null,
+    };
+    isRecurring.mockResolvedValue(true);
+    loadOccurrenceContext.mockResolvedValue(context);
+    loadOccurrencePatch.mockResolvedValue({ title: 'Conferenza eccezione' });
+    loadOccurrenceEvent.mockResolvedValue({
+      eventRef,
+      title: 'Conferenza originale',
+      agendaRevision: 2,
+      agendaParts: ['Scaletta locale'],
+      lifeAreaRef: null,
+      description: 'Nota locale',
+      location: 'Sala locale',
+      colorCode: '#EA5C12',
+    });
+    listOccurrenceExpectedParticipation.mockResolvedValue([]);
+    listObjectives.mockResolvedValue([
+      {
+        objectiveRef: 'old-goal',
+        label: 'Partecipazione',
+        resultKind: 'boolean',
+        comparatorCode: null,
+        targetValue: null,
+        targetMin: null,
+        targetMax: null,
+        unitCode: null,
+        presentationOrder: 0,
+        verificationMode: 'review_on_end',
+        observedBoolean: true,
+        observationRef: 'old-observation',
+        assessmentCode: 'satisfied',
+      },
+    ]);
+    getReminder.mockResolvedValue({
+      enabled: true,
+      leadMinutes: 10,
+    });
+    const onDuplicate = vi.fn();
+    render(
+      <EventInspectorActions
+        eventRef={eventRef}
+        occurrenceRef={occurrenceRef}
+        scheduleRef="0199a666-6666-7666-8666-666666666666"
+        placement={placement}
+        onDuplicate={onDuplicate}
+      />,
+    );
+    expect(screen.queryByRole('button', { name: 'Copia in Bozze' })).toBeNull();
+    fireEvent.click(screen.getByRole('button', { name: 'Duplica' }));
+    await waitFor(() => expect(onDuplicate).toHaveBeenCalledOnce());
+    expect(loadOccurrenceEvent).toHaveBeenCalledWith(occurrenceRef);
+    expect(loadEvent).not.toHaveBeenCalled();
+    expect(listObjectives).toHaveBeenCalledWith('occurrence', occurrenceRef);
+    expect(getRealityPolicy).toHaveBeenCalledWith('occurrence', occurrenceRef);
+    expect(listOccurrenceExpectedParticipation).toHaveBeenCalledWith(
+      occurrenceRef,
+    );
+    expect(onDuplicate.mock.calls[0]?.[0]).toMatchObject({
+      fields: {
+        kind: 'event',
+        title: 'Conferenza eccezione',
+        notes: 'Nota locale',
+        date: '2026-10-09',
+        confirmation: { reminderLeadMinutes: 10 },
+        event: {
+          agendaParts: ['Scaletta locale'],
+          location: 'Sala locale',
+        },
+      },
+      advanced: {
+        objectives: [
+          {
+            label: 'Partecipazione',
+            verificationMode: 'review_on_end',
+          },
+        ],
+      },
+    });
+    const objectives = onDuplicate.mock.calls[0]?.[0].advanced.objectives;
+    expect(objectives?.[0]).not.toHaveProperty('observationRef');
+    expect(objectives?.[0]).not.toHaveProperty('assessmentCode');
+    expect(onDuplicate.mock.calls[0]?.[0].advanced).not.toHaveProperty(
+      'recurrence',
+    );
+    expect(loadOccurrencePatch).toHaveBeenCalledWith(context);
   });
 
   it('requires a fresh one-off Event preview and confirmation, while cancellation keeps the Event', async () => {

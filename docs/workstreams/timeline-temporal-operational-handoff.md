@@ -1,5 +1,40 @@
 # Timeline / Temporal-Operational — Workstream Handoff
 
+## 2026-11-08 — Duplicate recurring instance into Advanced Create (candidate)
+
+The Inspector's **Duplica** opens the existing Create Advanced surface with
+prepopulated values from the selected instance; it never executes a new
+Activity/Event creation merely by clicking the button. The new Create draft
+initially has **Ripeti = Mai**, and the user can cancel, edit freely or add
+recurrence manually before using the ordinary **Aggiungi** command.
+
+For a materialized recurring Activity, use its owner-scoped Activity profile,
+accepted intervals, names of configured internal Sessions, Objective
+definitions/individual verification modes and other existing Create settings,
+not the Routine source. For recurring Events, check the selected Occurrence's
+series ownership, read its occurrence-specific Event detail/agenda, Objective
+definitions and expected participants, and validate the local profile patch
+revision. Its accepted Schedule comes from the selected Timeline card.
+Do not duplicate historical Session attempts, Objective observations,
+evaluations, completed/confirmed outcomes or persisted identities.
+
+The Inspector suppresses the Bozze action on identified recurring instances.
+Unbound recurring Event sources cannot be duplicated as if one selected
+instance existed. The existing non-recurring flow remains unchanged. Individual
+Objective `verificationMode` is now copied as a **definition**, but factual
+results are never copied. Internal Session names remain untimed.
+
+The prior candidate's single red Vitest Event test still queried a removed
+global Reality radio control; replace it with a regression that verifies
+unrelated Objective edits do not implicitly mutate the persisted legacy
+occurrence-completion policy. The three previously reported Prettier failures
+remain to be rechecked alongside this candidate.
+
+**Not yet executed on the final SHA:** formatter, lint, TypeScript, focused
+Vitest, browser acceptance, PostgreSQL and full 27-group gate. The branch is a
+candidate until the user's local test evidence confirms this exact source.
+
+
 ## 2026-11-08 — Objective-only authoring UI (unverified candidate)
 
 Owner screenshots show obsolete global occurrence-completion controls beside

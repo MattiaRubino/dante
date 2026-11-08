@@ -151,8 +151,12 @@ describe('Temporal Create U2 entry', () => {
       durationMinutes: 60,
       timeSemantics: 'timed' as const,
     };
-    renderEntry([], false, '2026-10-07', {
-      id: 1,
+    const { activityRequests, eventRequests } = renderEntry(
+      [],
+      false,
+      '2026-10-07',
+      {
+        id: 1,
       date: Temporal.PlainDate.from('2026-10-07'),
       seed: fields,
       duplicate: {
@@ -173,7 +177,8 @@ describe('Temporal Create U2 entry', () => {
           ],
         },
       },
-    });
+      },
+    );
     await waitFor(() =>
       expect(
         document.querySelector('[data-temporal-create-surface="advanced"]'),
@@ -181,6 +186,8 @@ describe('Temporal Create U2 entry', () => {
     );
     expect(screen.getByDisplayValue('Copia lavoro')).toBeTruthy();
     expect(screen.getByDisplayValue('Finire')).toBeTruthy();
+    expect(activityRequests).toHaveLength(0);
+    expect(eventRequests).toHaveLength(0);
   });
   it('submits a named Session without a child clock or Sub-Activities', async () => {
     const { activityRequests } = renderEntry([], false, '2132-03-06');
