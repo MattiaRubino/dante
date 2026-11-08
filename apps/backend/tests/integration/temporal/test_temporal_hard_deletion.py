@@ -12,7 +12,6 @@ import psycopg
 import pytest
 from fastapi import Request, Response
 from sqlalchemy import text
-from tests.integration.temporal._u6_policy import enable_live_capture
 from tests.integration.temporal.test_primary_life_area_assignment import _seed_self
 from tests.integration.temporal.test_recurring_event_create import _daily_named_zone
 
@@ -273,10 +272,10 @@ async def test_recurring_activity_instance_skip_and_whole_series_no_regeneration
 
 
 @pytest.mark.asyncio
-async def test_open_live_activity_session_blocks_destructive_instance_deletion(
+async def test_confirmed_recurring_instance_deletion_removes_open_session_atomically(
     migrated_database: Any,
 ) -> None:
-    """Rejected deletion must not orphan an active Session or skip its Occurrence."""
+    """Explicitly confirmed deletion removes an active Session and its one instance."""
     actor = _seed_self(migrated_database)
     runtime = create_database_runtime(migrated_database.runtime_settings())
     materializer = RoutineOccurrenceMaterializationApplication(runtime.session_factory)
@@ -304,14 +303,17 @@ async def test_open_live_activity_session_blocks_destructive_instance_deletion(
             self_person_ref=actor,
             operation_id="hard:active-session:initial",
             start_date=target_day,
-            end_date_exclusive=target_day + timedelta(days=1),
+            end_date_exclusive=target_day + timedelta(days=2),
             effective_zone_id="Europe/Rome",
         )
         instances = _occurrences(migrated_database, routine.source_ref)
-        assert len(instances) == 1
-        occurrence = instances[0]
+        assert len(instances) == 2
+        occurrence, sibling_occurrence = instances
         activity = await _activity_for(runtime, actor, occurrence)
         assert activity is not None
+        sibling_activity = await _activity_for(runtime, actor, sibling_occurrence)
+        assert sibling_activity is not None
+        assert sibling_activity != activity
 
         # Materialization may already seed an Activity execution policy.
         # Treat the canonical state as a CAS precondition; the generic
@@ -351,49 +353,61 @@ async def test_open_live_activity_session_blocks_destructive_instance_deletion(
         )
         assert started.open
 
-        try:
-            fingerprint = await _preview(runtime, actor, activity, "activity_instance")
-        except ProblemError as denied:
-            if denied.status != 409:
-                raise
-        else:
-            with pytest.raises(ProblemError) as denied:
-                await _delete(runtime, actor, activity, "activity_instance", fingerprint)
-            assert denied.value.status == 409
-
-        # The guard is not satisfied by hiding a Timeline card. All canonical
-        # native references and open Session timing facts must remain intact.
+        # Preview is read-only. Until the person explicitly confirms, both
+        # the Activity and its running Session must be untouched.
+        fingerprint = await _preview(runtime, actor, activity, "activity_instance")
         assert await _activity_for(runtime, actor, occurrence) == activity
+        assert (
+            await sessions.get(self_person_ref=actor, session_ref=started.session_ref)
+        ).open
         assert not _exists(
             migrated_database,
             "SELECT EXISTS(SELECT 1 FROM dante.occurrence_skip WHERE occurrence_ref=%s)",
             occurrence,
         )
-        still_running = await sessions.get(
-            self_person_ref=actor,
-            session_ref=started.session_ref,
+
+        # The confirmed destructive action is allowed while the Session is
+        # still running. The same DB transaction must remove its entire owned
+        # graph, retain the technical Occurrence skip, and leave siblings alone.
+        await _delete(runtime, actor, activity, "activity_instance", fingerprint)
+        assert await _activity_for(runtime, actor, occurrence) is None
+        assert await _activity_for(runtime, actor, sibling_occurrence) == sibling_activity
+        assert _exists(
+            migrated_database,
+            "SELECT EXISTS(SELECT 1 FROM dante.occurrence_skip WHERE occurrence_ref=%s)",
+            occurrence,
         )
-        assert still_running.open
-        assert still_running.subject_native_ref == activity
-        assert still_running.timing_material_state_ref == started.timing_material_state_ref
+        for table, column in (
+            ("dante.session", "session_ref"),
+            ("dante.session_execution_subject", "session_ref"),
+            ("dante.session_timing_current_history", "session_ref"),
+            ("dante.native_address", "native_ref"),
+        ):
+            assert not _exists(
+                migrated_database,
+                f"SELECT EXISTS(SELECT 1 FROM {table} WHERE {column}=%s)",
+                started.session_ref,
+            )
+        assert not _exists(
+            migrated_database,
+            "SELECT EXISTS(SELECT 1 FROM dante.activity_intention WHERE activity_ref=%s)",
+            activity,
+        )
 
         await materializer.checkpoint_window(
             self_person_ref=actor,
             operation_id="hard:active-session:recheckpoint",
             start_date=target_day,
-            end_date_exclusive=target_day + timedelta(days=1),
+            end_date_exclusive=target_day + timedelta(days=2),
             effective_zone_id="Europe/Rome",
         )
-        assert await _activity_for(runtime, actor, occurrence) == activity
-        assert (await sessions.get(self_person_ref=actor, session_ref=started.session_ref)).open
-
-        stopped = await sessions.end(
-            self_person_ref=actor,
-            operation_id="hard:active-session:stop",
-            session_ref=started.session_ref,
-            expected_material_state_ref=started.timing_material_state_ref,
+        assert await _activity_for(runtime, actor, occurrence) is None
+        assert await _activity_for(runtime, actor, sibling_occurrence) == sibling_activity
+        assert _exists(
+            migrated_database,
+            "SELECT EXISTS(SELECT 1 FROM dante.occurrence_skip WHERE occurrence_ref=%s)",
+            occurrence,
         )
-        assert not stopped.open
     finally:
         await runtime.dispose()
 

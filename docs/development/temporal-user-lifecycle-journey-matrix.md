@@ -116,18 +116,20 @@ a live Session at the real current time, verifies its canonical active
 duration increases across elapsed time, then stops it and checks that
 duration no longer grows. This test does not mock PostgreSQL time.
 
-**New safety regression (PostgreSQL candidate):**
-`test_open_live_activity_session_blocks_destructive_instance_deletion`
-materializes a recurring Activity, starts a real live Session, attempts a
-scoped hard delete, requires rejection, and checks that the Activity,
-Occurrence, skip history and open Session survive a further checkpoint.
-The test **has not been run** and may reveal an application defect.
-Do not treat a hidden card as proof that an active Session was protected.
+**Active-Session deletion contract (clarified by user):**
+`test_confirmed_recurring_instance_deletion_removes_open_session_atomically`
+materializes two recurring Activity instances and starts a real live Session
+on one. A read-only preview leaves the Activity and running Session intact.
+After the user-confirmed destructive operation, the Activity and its open
+Session graph **must both be deleted**, the technical skip must prevent
+regeneration, and the other instance must remain untouched. Active execution
+is **not a deletion veto**. The new positive-acceptance regression is not yet
+run on PostgreSQL.
 
 **Important not-yet-proven consistency contracts:** full first/future equivalence
 for Life Area beyond the named daily Activity/Event pair, protection,
 planned Sessions, quantitative Objectives, reminders and Event Scaletta;
-an actual green active Session deletion rejection;
+a green active-Session **confirmed deletion** cascade and untouched siblings;
 survival of other recorded facts after series edits; CAS conflicts and retry
 after lost network response; DST transition with shared controllable
 browser/backend clock; skip/cancel/delete on long-running routine histories.

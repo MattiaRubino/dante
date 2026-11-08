@@ -1,5 +1,26 @@
 # Timeline / Temporal-Operational — Workstream Handoff
 
+## 2026-11-08 — Clarification: deleting an Activity with live Session is allowed after confirmation
+
+The user explicitly clarified the authoritative product contract: pressing
+Delete presents a confirmation, but after positive confirmation the Activity
+**is deleted even when its Session is active**. Cancel must not mutate anything.
+Scoped instance deletion removes only the selected Activity/Session graph
+and retains its technical skip against rematerialization; whole-series delete
+removes the series scope. It must not silently lose unrelated instances.
+
+The previously added `test_open_live_activity_session_blocks_destructive_instance_deletion`
+was a mistaken test requirement (expected 409). It has been **replaced**
+with `test_confirmed_recurring_instance_deletion_removes_open_session_atomically`
+which checks read-only preview, accepted deletion of an active Session,
+absence of orphan execution/timing/native-address rows, durability of skip,
+and preservation of an untouched sibling after a second checkpoint.
+
+**No SQL guard** prohibiting deletion during a live Session should be added.
+This contract supersedes earlier audit notes suggesting otherwise. Owner
+PostgreSQL run required to qualify this updated test.
+
+
 ## 2026-11-08 — Second Chromium RED and isolated parallel execution
 
 Owner's second real-stack Chromium run on `cea61d37` again exposed seven
@@ -68,14 +89,15 @@ checks remain; no mocks, retries or disabled product assertions added.
 The separate PostgreSQL `test_session_runtime.py` now contains a real
 wall-time progression test: running Session duration grows over elapsed
 seconds and freezes after Stop, with stable Session identity and persistence.
-This does not fake backend clock advancement. **Active Session hard deletion
-rejection is NOT yet verified:** a new PostgreSQL negative test in
-`test_temporal_hard_deletion.py` now attempts deletion while a real
-live Session is open, requiring a conflict and verifying native Activity,
-Occurrence, absence of skip, Session timing and subsequent checkpoint
-preservation. This test may be RED if the SQL mutation lacks the guard;
-do not weaken the rejection assertion to hide the defect. Deep virtual
-time across months/DST requires an explicit shared clock seam and is not
+This does not fake backend clock advancement. **Corrected deletion
+policy, per user confirmation:** an explicitly confirmed hard delete is
+allowed even while a Session is running. The PostgreSQL test now verifies
+that preview does not mutate the active Session, and confirmed deletion
+atomically removes that instance and its Session graph while preserving
+the sibling instance and durable skip receipt. The earlier negative
+requirement for a 409 was invalid; no new SQL veto was added. Real DB
+execution of the positive test remains pending. Deep virtual time
+across months/DST requires an explicit shared clock seam and is not
 part of this patch.
 
 **All new changes NOT RUN in owner WSL.** Focused Chromium user-lifecycle

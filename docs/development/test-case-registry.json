@@ -1861,10 +1861,10 @@
       "suite": "temporal-postgresql-integration",
       "contract_id": "T03",
       "candidate_behavior": "one-off Event hard delete; recurring Activity and Event single-instance/whole-series guarded deletion",
-      "purpose": "Validate owner-isolated hard-delete previews/fingerprints, scoped recurring Activity/Event deletion, no regenerated skipped instances and open live-Session destructive-guard semantics.",
-      "invariant": "Deleting one recurring instance must not affect future siblings or resurrect after a checkpoint; a hard delete while a live Session is open must be rejected without losing Activity, Occurrence or current Session timing facts.",
+      "purpose": "Validate scoped Activity/Event hard delete, canonical preview/CAS, preservation of sibling Occurrences, and explicit confirmation deleting an open Session together with its owning Activity.",
+      "invariant": "Preview does not mutate a running Session; an explicitly confirmed instance delete is allowed even when the Session is open, and atomically removes the Activity/Session graph while retaining the Occurrence skip and untouched sibling. No rematerialization.",
       "status": "QUALIFIED",
-      "audit_note": "Owner PG run reached live-session safety test but failed during execution-policy fixture CAS, before deletion. Fixture now reads existing materialized policy state; real deletion rejection pending owner rerun. New SHA NOT RUN."
+      "audit_note": "User clarified 2026-11-08 that confirmed deletion is allowed with a live Session. Previous expectation of HTTP 409 was invalid and replaced with positive atomically cascading deletion assertion. PostgreSQL rerun pending on current SHA."
     },
     {
       "path": "apps/backend/tests/integration/temporal/test_unified_planning_tray.py",
