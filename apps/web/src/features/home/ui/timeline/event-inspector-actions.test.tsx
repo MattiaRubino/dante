@@ -2430,6 +2430,20 @@ describe('Event Inspector actions', () => {
       '.timeline-activity-editor__description',
     ].map((selector) => form.querySelector(selector));
     expect(formSections.every(Boolean)).toBe(true);
+    const recurrencePanel = form.querySelector(
+      '.timeline-recurring-series-editor__repeat-panel',
+    );
+    expect(recurrencePanel?.getAttribute('data-recurrence-expanded')).toBe('true');
+    expect(within(recurrencePanel as HTMLElement).getByRole('heading', {
+      name: 'Ripetizione',
+    })).toBeTruthy();
+    expect(within(recurrencePanel as HTMLElement).getByRole('combobox', {
+      name: 'Ripeti',
+    })).toHaveProperty('value', 'daily');
+    expect(screen.queryByText('Ora di riferimento della ricorrenza')).toBeNull();
+    expect(screen.queryByText('Ora iniziale della serie')).toBeNull();
+    expect(screen.getAllByText('Intervallo 1')).toHaveLength(1);
+    expect(screen.getAllByText('Intervallo 2')).toHaveLength(1);
     expect(
       form.querySelector(':scope > .timeline-recurring-series-editor__advanced'),
     ).toBeNull();
@@ -2505,6 +2519,7 @@ describe('Event Inspector actions', () => {
     await waitFor(() => expect(reviewSeries).toHaveBeenCalled());
     const intent: unknown = reviewSeries.mock.lastCall?.[0];
     expect(intent).toMatchObject({
+      recurrence: { wall_times: ['17:15:00'] },
       structure: {
         activity_template: {
           activity_intervals: [

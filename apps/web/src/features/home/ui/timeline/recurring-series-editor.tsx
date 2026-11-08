@@ -500,6 +500,10 @@ export function RecurringSeriesEditor({
   const activeArea = asText(
     owner === 'routine' ? template.life_area_ref : structure.life_area_ref,
   );
+  // A recurrence's wall-clock anchor is an internal coordinate. Activity
+  // intervals remain the only user-facing time controls: changing their
+  // start/end updates the stored relative offsets without exposing or
+  // silently rewriting the source coordinate (which also identifies occurrences).
   const time = Array.isArray(recurrence.wall_times)
     ? asText(recurrence.wall_times[0])
     : '';
@@ -938,21 +942,6 @@ export function RecurringSeriesEditor({
                   Fuso orario · {asText(recurrence.zone_id) || 'della serie'}
                 </div>
               )}
-              {owner === 'routine' &&
-              template.placement_kind !== 'all_day' ? (
-                <div className="timeline-recurring-series-editor__start-clock">
-                  <TimeControl
-                    label="Ora iniziale della serie"
-                    value={time.slice(0, 5)}
-                    dataPath="series.anchorTime"
-                    onChange={changeTime}
-                  />
-                  <p>
-                    Da quest’ora vengono calcolati gli intervalli di ogni
-                    occorrenza.
-                  </p>
-                </div>
-              ) : null}
               {owner === 'event' &&
               structure.placement_kind === 'timed' &&
               seriesStart &&
