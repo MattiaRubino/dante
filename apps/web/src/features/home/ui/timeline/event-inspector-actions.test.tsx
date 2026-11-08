@@ -210,8 +210,21 @@ describe('Event Inspector actions', () => {
       ),
     ).toBe('true');
     expect(reviseAtomic).not.toHaveBeenCalled();
-    fireEvent.click(screen.getByRole('button', { name: 'Salva modifiche' }));
-    await waitFor(() => expect(reviseAtomic).toHaveBeenCalledOnce());
+    const save = screen.getByRole('button', {
+      name: 'Salva modifiche',
+    }) as HTMLButtonElement;
+    // The editor's data sources load asynchronously. The draft may be
+    // visible before the owning form has exited its loading/busy state.
+    await waitFor(() => expect(save.disabled).toBe(false));
+    fireEvent.click(save);
+    await waitFor(() => {
+      const errors = screen
+        .queryAllByRole('alert')
+        .map((node) => node.textContent?.trim())
+        .filter(Boolean);
+      expect(errors).toEqual([]);
+      expect(reviseAtomic).toHaveBeenCalledOnce();
+    });
     expect(reviseAtomic).toHaveBeenCalledWith(
       eventRef,
       expect.objectContaining({ title: 'Conferenza' }),
