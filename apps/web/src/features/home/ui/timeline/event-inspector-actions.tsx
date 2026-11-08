@@ -1250,61 +1250,14 @@ export function EventInspectorActions({
               </div>
               <section
                 className="temporal-create-reality-objectives timeline-activity-editor__outcome"
-                aria-label="Svolgimento e obiettivi"
+                aria-label="Configurazione obiettivi"
               >
-                <div className="temporal-create-reality-objectives__heading timeline-activity-editor__section-heading">
-                  <div>
-                    <h3>Svolgimento e obiettivi</h3>
-                    <p>
-                      Decidi se verificare lo svolgimento e quali risultati vuoi
-                      misurare.
-                    </p>
-                  </div>
-                </div>
-                <div className="temporal-create-reality-objectives__block is-reality">
-                  <div className="temporal-create-reality-objectives__block-copy">
-                    <strong>Svolgimento dell’evento</strong>
-                    <span>
-                      Come vuoi gestire la conferma dello svolgimento?
-                    </span>
-                  </div>
-                  <div
-                    className="temporal-create-reality-mode"
-                    role="radiogroup"
-                    aria-label="Verifica dello svolgimento"
-                  >
-                    {(
-                      [
-                        ['manual', 'Nessuna verifica'],
-                        ['review_on_end', 'Chiedi al termine'],
-                        ['auto_confirm_outcome', 'Conferma automatica'],
-                      ] as const
-                    ).map(([mode, label]) => (
-                      <button
-                        key={mode}
-                        type="button"
-                        role="radio"
-                        aria-checked={realityMode === mode}
-                        className={realityMode === mode ? 'is-active' : ''}
-                        disabled={busy}
-                        onClick={() => setRealityMode(mode)}
-                      >
-                        {label}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-                <div className="temporal-create-reality-objectives__divider" />
                 <section
                   className="temporal-create-reality-objectives__block is-objectives timeline-activity-editor__readback"
                   aria-label="Obiettivi attuali"
                 >
                   <div className="temporal-create-reality-objectives__block-copy">
                     <strong>Obiettivi</strong>
-                    <span>
-                      Aggiungi solo ciò che vuoi verificare o misurare
-                      separatamente.
-                    </span>
                   </div>
                   <div
                     className="timeline-activity-editor__objectives"

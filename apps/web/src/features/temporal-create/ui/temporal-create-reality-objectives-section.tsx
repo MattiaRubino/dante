@@ -1,116 +1,28 @@
 import { useTranslation } from 'react-i18next';
 
 import type { TemporalCreateFields } from '../model/temporal-create-session';
-import type { TemporalCreateRealityMode } from '../model/temporal-create-u2-authoring';
 import { TemporalCreateObjectives } from './temporal-create-objectives';
-import { useTemporalCreateU2Draft } from './temporal-create-u2-draft-context';
 
 import './temporal-create-reality-objectives-section.css';
 
 type Props = Readonly<{ fields: TemporalCreateFields }>;
 
+/**
+ * Each Objective owns its verification policy. The legacy occurrence Reality
+ * policy stays in draft persistence; this view never silently resets it.
+ */
 export function TemporalCreateRealityObjectivesSection({ fields }: Props) {
   const { i18n } = useTranslation('common');
   const italian = i18n.language.toLowerCase().startsWith('it');
-  const { draft, patch } = useTemporalCreateU2Draft();
-  const structure = draft.activityStructure;
-
-  const applyMode = (realityMode: TemporalCreateRealityMode) => {
-    const hasRequiredChild = structure.children.some(
-      (child) => child.requirementCode === 'required',
-    );
-
-    patch({
-      realityMode,
-      activityStructure: Object.freeze({
-        ...structure,
-        realityMode,
-        childGuardMode:
-          fields.kind === 'activity' &&
-          realityMode !== 'manual' &&
-          hasRequiredChild
-            ? 'confirm'
-            : 'none',
-      }),
-    });
-  };
-
-  const subjectLabel =
-    fields.kind === 'event'
-      ? italian
-        ? 'Svolgimento dell’evento'
-        : 'Event occurrence'
-      : italian
-        ? 'Svolgimento dell’attività'
-        : 'Activity completion';
-
-  const modes: readonly Readonly<{
-    value: TemporalCreateRealityMode;
-    label: string;
-  }>[] = Object.freeze([
-    Object.freeze({
-      value: 'manual',
-      label: italian ? 'Nessuna verifica' : 'No review',
-    }),
-    Object.freeze({
-      value: 'review_on_end',
-      label: italian ? 'Chiedi al termine' : 'Ask at the end',
-    }),
-    Object.freeze({
-      value: 'auto_confirm_outcome',
-      label: italian ? 'Conferma automatica' : 'Confirm automatically',
-    }),
-  ]);
 
   return (
     <section
       className="temporal-create-reality-objectives"
       aria-label={
-        italian ? 'Svolgimento e obiettivi' : 'Occurrence and objectives'
+        italian ? 'Configurazione obiettivi' : 'Objective configuration'
       }
+      data-create-objective-subject={fields.kind}
     >
-      <div className="temporal-create-reality-objectives__heading">
-        <div>
-          <h3>
-            {italian ? 'Svolgimento e obiettivi' : 'Occurrence and objectives'}
-          </h3>
-        </div>
-      </div>
-
-      <div
-        className="temporal-create-reality-objectives__block is-reality"
-        data-reality-policy={fields.kind}
-      >
-        <div className="temporal-create-reality-objectives__block-copy">
-          <strong>{subjectLabel}</strong>
-        </div>
-
-        <div
-          className="temporal-create-reality-mode"
-          role="radiogroup"
-          aria-label={
-            italian
-              ? 'Modalità ' + subjectLabel.toLowerCase()
-              : subjectLabel + ' mode'
-          }
-        >
-          {modes.map((mode) => (
-            <button
-              key={mode.value}
-              type="button"
-              role="radio"
-              aria-checked={draft.realityMode === mode.value}
-              className={draft.realityMode === mode.value ? 'is-active' : ''}
-              onClick={() => applyMode(mode.value)}
-            >
-              {mode.label}
-            </button>
-          ))}
-        </div>
-      </div>
-
-      <div className="temporal-create-reality-objectives__divider" />
-
       <div
         className="temporal-create-reality-objectives__block is-objectives"
         data-create-path="objectives"
