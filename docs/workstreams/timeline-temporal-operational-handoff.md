@@ -1,5 +1,31 @@
 # Timeline / Temporal-Operational — Workstream Handoff
 
+## 2026-11-08 — Event placement-lock QA follow-up (second owner run)
+
+On commit `9e8470d19760da263e449569bb3d1eaa7d856aee`
+the user ran:
+- **ESLint PASS** and **TypeScript PASS**;
+- **Postgres integration 15/15 PASS**, including new Event create
+  protection, replay, one-off atomic edit, CAS and unlock/move tests;
+- focused **Vitest 65/66 PASS**. The single failure is the new
+  "stages the one-off Event lock without a mutation until atomic Save"
+  test: after toggling the editor button, `reviseAtomic` was not
+  called in the test's 1-second wait. The other 36 Event Inspector
+  cases, 18 Create authoring cases, and three remote contract suites
+  passed.
+
+The focused UI test now explicitly waits for the Save button to become
+enabled following asynchronous editor hydration, and, if Save still
+fails, surfaces any `role=alert` validation errors instead of hiding
+them behind an opaque call-count timeout. **This test change is not
+yet independently verified on the new SHA**; if it still fails,
+inspect the new error rather than weakening its atomic Save assertion.
+
+Prettier still has **six previously flagged files** to format with the
+repository version after the functional check. No recurrence scope,
+selected instance or generated-series code was changed in this follow-up.
+
+
 ## 2026-11-08 — Focused Event placement-lock QA: initial CAS revision
 
 Owner's exact-`49bdf58b` local run: ESLint PASS, TypeScript PASS,
