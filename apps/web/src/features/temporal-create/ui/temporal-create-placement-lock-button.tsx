@@ -2,14 +2,13 @@ import { useTranslation } from 'react-i18next';
 
 import { useTemporalCreateU2Draft } from './temporal-create-u2-draft-context';
 
-
 export function TemporalCreatePlacementLockButton({
   locked,
   onToggle,
   kind,
   italian = true,
   disabled = false,
-  invalid = false,
+  invalid,
 }: Readonly<{
   locked: boolean;
   onToggle: () => void;
