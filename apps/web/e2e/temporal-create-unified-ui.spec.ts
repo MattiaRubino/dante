@@ -177,6 +177,28 @@ test('Activity Edit applies readable font sizes rather than inherited tiny label
     repeat: '14px',
     objective: '14px',
   });
+  const description = await page.evaluate(() => {
+    const root = document.createElement('div');
+    root.className = 'timeline-event-modal--edit';
+    root.innerHTML =
+      '<section class="timeline-activity-editor__description temporal-create-section is-wide temporal-create-description-section">' +
+      '<h3>Descrizione</h3><textarea aria-label="Descrizione"></textarea></section>';
+    document.body.appendChild(root);
+    const section = root.querySelector('section')!;
+    const heading = root.querySelector('h3')!;
+    const result = {
+      border: getComputedStyle(section).borderTopStyle,
+      padding: getComputedStyle(section).paddingTop,
+      titleSize: getComputedStyle(heading).fontSize,
+    };
+    root.remove();
+    return result;
+  });
+  expect(description).toEqual({
+    border: 'solid',
+    padding: '14px',
+    titleSize: '15px',
+  });
 });
 
 test('Event Edit keeps its form scrollable and its Save action visible in the Activity modal shell', async ({

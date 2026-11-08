@@ -73,3 +73,23 @@
     padding-inline: 10px;
   }
 }
+
+/* The same Description surface in Create and Edit: one readable title and
+ * one inner input, not a second nested panel or a different spacing scheme. */
+.timeline-event-modal--edit
+  .timeline-activity-editor__description.temporal-create-description-section {
+  display: grid;
+  gap: 12px;
+  min-width: 0;
+  padding: 14px;
+  border: 1px solid
+    var(--dante-semantic-color-home-border-subtle, rgba(255, 255, 255, 0.08));
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.014);
+}
+
+.timeline-event-modal--edit
+  .timeline-activity-editor__description.temporal-create-description-section
+  h3 {
+  margin: 0;
+}
