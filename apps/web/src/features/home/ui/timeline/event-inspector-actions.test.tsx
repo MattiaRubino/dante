@@ -1492,9 +1492,7 @@ describe('Event Inspector actions', () => {
       'Apri un’istanza',
     );
     expect(isRecurring).toHaveBeenCalledWith(eventRef);
-    expect(
-      screen.queryByRole('button', { name: 'Copia in Bozze' }),
-    ).toBeNull();
+    expect(screen.queryByRole('button', { name: 'Copia in Bozze' })).toBeNull();
     expect(onDuplicate).not.toHaveBeenCalled();
   });
 
