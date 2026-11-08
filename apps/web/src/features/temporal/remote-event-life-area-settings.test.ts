@@ -21,7 +21,14 @@ describe('Event Life Area owner-scoped edits', () => {
       const url = fetchRequestUrl(input);
       if (url === '/api/v1/temporal/life-areas')
         return Promise.resolve(
-          json([{ life_area_ref: AREA, name: 'Lavoro', archived: false }]),
+          json([
+            {
+              life_area_ref: AREA,
+              name: 'Lavoro',
+              color_code: '#4285F4',
+              archived: false,
+            },
+          ]),
         );
       if (url === '/api/v1/temporal/life-area-assignments')
         return Promise.resolve(
@@ -56,7 +63,17 @@ describe('Event Life Area owner-scoped edits', () => {
     });
     const source = createRemoteEventLifeAreaSettings(fetchFn);
     const loaded = await source.load(EVENT);
-    expect(loaded).toMatchObject({ currentRef: AREA, currentRevision: 2 });
+    expect(loaded).toMatchObject({
+      currentRef: AREA,
+      currentRevision: 2,
+      options: [
+        {
+          ref: AREA,
+          name: 'Lavoro',
+          colorCode: '#4285F4',
+        },
+      ],
+    });
     const saved = await source.assign(EVENT, loaded, null, 'm4:unassign');
     expect(saved).toMatchObject({ currentRef: null, currentRevision: 3 });
     expect(calls).toEqual([

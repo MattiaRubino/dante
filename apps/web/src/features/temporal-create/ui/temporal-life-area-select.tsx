@@ -9,6 +9,29 @@ export type TemporalLifeAreaOption = Readonly<{
   tone?: string;
 }>;
 
+/** Read-only color provenance for an assigned Life Area.
+ * Its hue belongs to the Life Area, not an editable item-color override.
+ */
+export function TemporalAssignedLifeAreaSwatch({
+  colorCode,
+}: Readonly<{ colorCode: string | null | undefined }>) {
+  const color =
+    typeof colorCode === 'string' && /^#[0-9A-F]{6}$/i.test(colorCode)
+      ? colorCode.toUpperCase()
+      : '#F4511E';
+  return (
+    <div className="temporal-create-life-area-field__color-cell">
+      <span
+        className="temporal-create-life-area-field__color-trigger"
+        role="img"
+        aria-label={`Colore della Life Area: ${color}`}
+      >
+        <span aria-hidden="true" style={{ background: color }} />
+      </span>
+    </div>
+  );
+}
+
 function normalized(value: string): string {
   return value.trim().replace(/\s+/g, ' ');
 }

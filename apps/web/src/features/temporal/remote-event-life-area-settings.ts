@@ -5,7 +5,11 @@ import {
 } from './timeline-invalidation';
 
 export type EventLifeAreaChoice = Readonly<{
-  options: readonly Readonly<{ ref: string; name: string }>[];
+  options: readonly Readonly<{
+    ref: string;
+    name: string;
+    colorCode: string | null;
+  }>[];
   currentRef: string | null;
   currentRevision: number;
 }>;
@@ -38,18 +42,6 @@ export function createRemoteEventLifeAreaSettings(
       if (!Array.isArray(areas) || !Array.isArray(assignments)) {
         throw new Error('Catalogo Life Area Event non valido.');
       }
-      const options = areas
-        .map(record)
-        .filter((r) => r.archived === false)
-        .map((r) => {
-          if (
-            typeof r.life_area_ref !== 'string' ||
-            typeof r.name !== 'string' ||
-            !r.name.trim()
-          )
-            throw new Error('Life Area Event non valida.');
-          return { ref: r.life_area_ref, name: r.name };
-        });
       const owned = assignments
         .map(record)
         .filter(
@@ -66,6 +58,36 @@ export function createRemoteEventLifeAreaSettings(
           Number(current.assignment_revision) < 1)
       )
         throw new Error('Revisione Life Area Event non valida.');
+      const assignedRef =
+        current && typeof current.life_area_ref === 'string'
+          ? current.life_area_ref
+          : null;
+      // Retain an already-assigned archived Life Area in Edit: it remains
+      // part of the item's history even if it is no longer a new choice.
+      const options = areas
+        .map(record)
+        .filter((r) => r.archived === false || r.life_area_ref === assignedRef)
+        .map((r) => {
+          if (
+            typeof r.life_area_ref !== 'string' ||
+            typeof r.name !== 'string' ||
+            !r.name.trim() ||
+            (r.color_code !== null &&
+              r.color_code !== undefined &&
+              (typeof r.color_code !== 'string' ||
+                !/^#[0-9A-F]{6}$/i.test(r.color_code)))
+          ) {
+            throw new Error('Life Area Event non valida.');
+          }
+          return {
+            ref: r.life_area_ref,
+            name: r.name,
+            colorCode:
+              typeof r.color_code === 'string'
+                ? r.color_code.toUpperCase()
+                : null,
+          };
+        });
       return {
         options,
         currentRef:

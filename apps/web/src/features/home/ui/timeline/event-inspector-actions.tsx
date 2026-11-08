@@ -49,7 +49,10 @@ import {
   TemporalColorControl,
   TEMPORAL_DEFAULT_COLOR,
 } from '../../../temporal-create/ui/temporal-color-control';
-import { TemporalLifeAreaSelect } from '../../../temporal-create/ui/temporal-life-area-select';
+import {
+  TemporalAssignedLifeAreaSwatch,
+  TemporalLifeAreaSelect,
+} from '../../../temporal-create/ui/temporal-life-area-select';
 import {
   createRemoteScheduleReminderDataSource,
   type ScheduleReminderView,
@@ -1454,15 +1457,25 @@ export function EventInspectorActions({
               ) : null}
               <div className="timeline-activity-editor__area-color">
                 <div className="temporal-create-life-area-field">
-                  <TemporalColorControl
-                    value={profileDraft.colorCode ?? TEMPORAL_DEFAULT_COLOR}
-                    label="Colore attività o evento"
-                    onChange={(colorCode) =>
-                      setProfileDraft(
-                        (draft) => draft && { ...draft, colorCode },
-                      )
-                    }
-                  />
+                  {areaSelection ? (
+                    <TemporalAssignedLifeAreaSwatch
+                      colorCode={
+                        areaChoice?.options.find(
+                          (option) => option.ref === areaSelection,
+                        )?.colorCode
+                      }
+                    />
+                  ) : (
+                    <TemporalColorControl
+                      value={profileDraft.colorCode ?? TEMPORAL_DEFAULT_COLOR}
+                      label="Colore attività o evento"
+                      onChange={(colorCode) =>
+                        setProfileDraft(
+                          (draft) => draft && { ...draft, colorCode },
+                        )
+                      }
+                    />
+                  )}
                   {areaChoice ? (
                     <div
                       className="timeline-activity-editor__area-choice"
@@ -1474,6 +1487,7 @@ export function EventInspectorActions({
                         options={areaChoice.options.map((option) => ({
                           id: option.ref,
                           label: option.name,
+                          colorCode: option.colorCode,
                         }))}
                         selectedId={areaSelection || null}
                         disabled={busy}

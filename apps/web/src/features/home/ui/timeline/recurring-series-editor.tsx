@@ -16,7 +16,10 @@ import { TimeControl } from '../../../temporal-create/ui/temporal-create-core-u2
 import { TemporalColorControl } from '../../../temporal-create/ui/temporal-color-control';
 import { TemporalCreateDatePicker } from '../../../temporal-create/ui/temporal-create-date-picker';
 import { TemporalRecurrencePanel } from '../../../temporal-create/ui/temporal-recurrence-panel';
-import { TemporalLifeAreaSelect } from '../../../temporal-create/ui/temporal-life-area-select';
+import {
+  TemporalAssignedLifeAreaSwatch,
+  TemporalLifeAreaSelect,
+} from '../../../temporal-create/ui/temporal-life-area-select';
 import { TemporalCreateEventAgenda } from '../../../temporal-create/ui/temporal-create-event-agenda';
 import { TemporalEventParticipantsFields } from '../../../temporal-create/ui/temporal-create-event-participants';
 import { TemporalTimeZoneControl } from '../../../temporal-create/ui/temporal-time-zone-control';
@@ -279,9 +282,22 @@ export function RecurringSeriesEditor({
         if (loaded.owner !== owner || !Array.isArray(catalog)) {
           throw new Error('La serie selezionata non corrisponde all’editor.');
         }
+        const template =
+          owner === 'routine'
+            ? asEntry(loaded.structure.activity_template)
+            : {};
+        const assignedArea = asText(
+          owner === 'routine'
+            ? template.life_area_ref
+            : loaded.structure.life_area_ref,
+        );
         const areaOptions = catalog
           .map(asEntry)
-          .filter((area) => area.archived === false)
+          .filter(
+            (area) =>
+              area.archived === false ||
+              asText(area.life_area_ref) === assignedArea,
+          )
           .map((area) => ({
             ref: asText(area.life_area_ref),
             name: asText(area.name),
@@ -297,15 +313,6 @@ export function RecurringSeriesEditor({
         setStructure(loaded.structure);
         setRecurrence(initialRecurrence(loaded, scope));
         setTitle(loaded.title);
-        const template =
-          owner === 'routine'
-            ? asEntry(loaded.structure.activity_template)
-            : {};
-        const assignedArea = asText(
-          owner === 'routine'
-            ? template.life_area_ref
-            : loaded.structure.life_area_ref,
-        );
         setAreaQuery(
           areaOptions.find((area) => area.ref === assignedArea)?.name ?? '',
         );
@@ -1593,13 +1600,19 @@ export function RecurringSeriesEditor({
               className="timeline-activity-editor__area-color"
               aria-label="Life Area"
             >
-              {!activeArea ? (
+              {activeArea ? (
+                <TemporalAssignedLifeAreaSwatch
+                  colorCode={
+                    areas.find((area) => area.ref === activeArea)?.colorCode
+                  }
+                />
+              ) : (
                 <TemporalColorControl
                   value={color}
                   label="Colore attività o evento"
                   onChange={(value) => updateMetadata(setColor, value)}
                 />
-              ) : null}
+              )}
               <TemporalLifeAreaSelect
                 query={areaQuery}
                 label="Area assegnata"
