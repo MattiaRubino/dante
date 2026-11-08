@@ -284,7 +284,7 @@ async def test_confirmed_recurring_instance_deletion_removes_open_session_atomic
         routine = await RecurringAuthoringApplication(runtime.session_factory).create_routine(
             self_person_ref=actor,
             operation_id="hard:active-session:routine",
-            title="Active Session must survive deletion attempt",
+            title="Confirmed deletion removes active Session",
             life_area_intent=None,
             recurrence=_daily_named_zone(),
         )
@@ -357,9 +357,10 @@ async def test_confirmed_recurring_instance_deletion_removes_open_session_atomic
         # the Activity and its running Session must be untouched.
         fingerprint = await _preview(runtime, actor, activity, "activity_instance")
         assert await _activity_for(runtime, actor, occurrence) == activity
-        assert (
-            await sessions.get(self_person_ref=actor, session_ref=started.session_ref)
-        ).open
+        running = await sessions.get(
+            self_person_ref=actor, session_ref=started.session_ref
+        )
+        assert running.open
         assert not _exists(
             migrated_database,
             "SELECT EXISTS(SELECT 1 FROM dante.occurrence_skip WHERE occurrence_ref=%s)",

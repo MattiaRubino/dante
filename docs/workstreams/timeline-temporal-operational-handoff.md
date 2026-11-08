@@ -55,13 +55,14 @@ fixtures are audited. PostgreSQL targeted checks can remain in a single
 passed. The new hard-delete safety test failed *before* the deletion under
 test: its helper passed a null expected policy state to an already-materialized
 recurring Activity. The test now reads the canonical policy and, if needed,
-performs the self-scoped CAS update. This change does not establish whether
-the backend correctly rejects deleting an Activity with an open Session;
-the expected rejection must still be executed and verified.
+performs the self-scoped CAS update. The user later confirmed that deletion **must be allowed** with an
+open Session after explicit confirmation; the rejected-deletion assertion
+has been replaced with a positive transactional cascade test.
 
 **Quality gate:** Ruff reported unsorted `asyncio` import, a `PT017`
 exception assertion and a format issue in the new tests. These source-level
-findings were corrected without relaxing the destructive guard assertion.
+findings were corrected; the subsequent user clarification replaced
+the obsolete 409 guard expectation with a positive cascade assertion.
 All subsequent commits are **NOT RUN** on owner WSL. Re-run the seven
 Chromium user lifecycle journeys with two workers, then Ruff check/format
 and targeted PostgreSQL tests; inspect any remaining RED at its exact step.
