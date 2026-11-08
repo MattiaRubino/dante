@@ -35,6 +35,9 @@ const getRealityPolicy = vi
 const getDefinition = vi.fn();
 const correctResult = vi.fn();
 const getReminder = vi.fn().mockResolvedValue(null);
+const getPlacementLock = vi.fn((ref: string) =>
+  Promise.resolve({ scheduleRef: ref, locked: false, revision: 0 }),
+);
 const isRecurring = vi.fn().mockResolvedValue(false);
 const eventSeed = vi.fn().mockResolvedValue(null);
 const eventFirstOccurrence = vi.fn().mockResolvedValue(null);
@@ -84,6 +87,11 @@ vi.mock('../../../temporal/remote-event-profile-data-source', () => ({
     load: loadProfile,
     revise: reviseProfile,
     reviseAtomic,
+  }),
+}));
+vi.mock('../../../temporal/remote-placement-lock-data-source', () => ({
+  createRemotePlacementLockDataSource: () => ({
+    get: getPlacementLock,
   }),
 }));
 vi.mock('../../../temporal/remote-schedule-reminder-data-source', () => ({
@@ -165,6 +173,58 @@ afterEach(() => {
 });
 
 describe('Event Inspector actions', () => {
+  it('stages the one-off Event lock without a mutation until atomic Save', async () => {
+    const scheduleRef = '0199a333-3333-7333-8333-333333333333';
+    loadProfile.mockResolvedValue({
+      eventRef,
+      title: 'Conferenza',
+      description: null,
+      location: null,
+      colorCode: null,
+      profileRevision: 0,
+      agendaRevision: 0,
+      agendaParts: [],
+    });
+    reviseAtomic.mockResolvedValue({});
+    render(
+      <EventInspectorActions
+        eventRef={eventRef}
+        placement={placement}
+        scheduleRef={scheduleRef}
+        onDuplicate={vi.fn()}
+      />,
+    );
+    fireEvent.click(screen.getByRole('button', { name: /^Modifica$/ }));
+    const lock = await screen.findByRole('button', {
+      name: 'Blocca spostamenti',
+    });
+    expect(lock.getAttribute('aria-pressed')).toBe('false');
+    fireEvent.click(lock);
+    expect(
+      screen.getByRole('button', { name: 'Sblocca spostamenti' }).getAttribute(
+        'aria-pressed',
+      ),
+    ).toBe('true');
+    expect(reviseAtomic).not.toHaveBeenCalled();
+    fireEvent.click(screen.getByRole('button', { name: 'Salva modifiche' }));
+    await waitFor(() => expect(reviseAtomic).toHaveBeenCalledOnce());
+    expect(reviseAtomic).toHaveBeenCalledWith(
+      eventRef,
+      expect.objectContaining({ title: 'Conferenza' }),
+      expect.objectContaining({
+        placementLock: {
+          scheduleRef,
+          locked: true,
+          expectedRevision: 0,
+        },
+      }),
+      expect.any(String),
+    );
+    expect(getPlacementLock).toHaveBeenCalledWith(scheduleRef);
+    expect(reviseProfile).not.toHaveBeenCalled();
+  });
+
+
   it('reads the selected Event occurrence for the card agenda and objective counters', async () => {
     const occurrenceRef = '0199a555-5555-7555-8555-555555555555';
     loadOccurrenceEvent.mockResolvedValue({

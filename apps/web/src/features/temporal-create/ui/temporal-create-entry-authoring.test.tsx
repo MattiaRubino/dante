@@ -142,6 +142,30 @@ function renderEntry(
 }
 
 describe('Temporal Create U2 entry', () => {
+  it('stages Event placement protection in Advanced Create and sends it with Add', async () => {
+    const { eventRequests, activityRequests } = renderEntry();
+    fireEvent.click(screen.getByRole('radio', { name: 'Evento' }));
+    fireEvent.change(screen.getByPlaceholderText('Titolo'), {
+      target: { value: 'Riunione protetta' },
+    });
+    fireEvent.click(screen.getByRole('button', { name: /Opzioni avanzate/ }));
+
+    const lock = screen.getByRole('button', { name: 'Blocca spostamenti' });
+    expect(lock.getAttribute('aria-pressed')).toBe('false');
+    fireEvent.click(lock);
+    expect(
+      screen.getByRole('button', { name: 'Sblocca spostamenti' }).getAttribute(
+        'aria-pressed',
+      ),
+    ).toBe('true');
+    expect(eventRequests).toHaveLength(0);
+    fireEvent.click(screen.getByRole('button', { name: 'Aggiungi' }));
+    await waitFor(() => expect(eventRequests).toHaveLength(1));
+    expect(eventRequests[0]?.placementProtected).toBe(true);
+    expect(activityRequests).toHaveLength(0);
+  });
+
+
   it('opens a duplicated Activity directly in Advanced with its saved draft', async () => {
     const fields = {
       kind: 'activity' as const,

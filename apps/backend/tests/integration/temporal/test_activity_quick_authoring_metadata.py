@@ -25,6 +25,63 @@ pytestmark = pytest.mark.postgres
 
 
 @pytest.mark.asyncio
+async def test_event_creation_placement_lock_is_transactional_and_replay_safe(
+    migrated_database: Any,
+) -> None:
+    actor = _seed_self(migrated_database)
+    runtime = create_database_runtime(migrated_database.runtime_settings())
+    authoring = TemporalAuthoringApplication(runtime.session_factory)
+    placement = FloatingLocalIntervalPlacement(
+        starts_local_at=datetime(2026, 11, 9, 9, 0),
+        ends_local_at=datetime(2026, 11, 9, 10, 0),
+    )
+    try:
+        first = await authoring.create_event(
+            self_person_ref=actor,
+            operation_id="event:create:locked",
+            title="Evento protetto",
+            placement=placement,
+            placement_protected=True,
+        )
+        assert first.schedule is not None
+        from dante.modules.temporal.placement_lock import PlacementLockApplication
+
+        locks = PlacementLockApplication(runtime.session_factory)
+        state = await locks.get(
+            self_person_ref=actor,
+            schedule_ref=first.schedule.schedule_ref,
+        )
+        assert state.locked and state.revision == 1
+
+        replay = await authoring.create_event(
+            self_person_ref=actor,
+            operation_id="event:create:locked",
+            title="Evento protetto",
+            placement=placement,
+            placement_protected=True,
+        )
+        assert replay.replayed
+        assert replay.schedule is not None
+        assert replay.schedule.schedule_ref == first.schedule.schedule_ref
+        with pytest.raises(TemporalAuthoringOperationIdReuseError):
+            await authoring.create_event(
+                self_person_ref=actor,
+                operation_id="event:create:locked",
+                title="Evento protetto",
+                placement=placement,
+                placement_protected=False,
+            )
+        assert (
+            await locks.get(
+                self_person_ref=actor,
+                schedule_ref=first.schedule.schedule_ref,
+            )
+        ).locked
+    finally:
+        await runtime.dispose()
+
+
+@pytest.mark.asyncio
 async def test_planned_row_without_time_is_persisted_without_placement_and_replays(
     migrated_database: Any,
 ) -> None:

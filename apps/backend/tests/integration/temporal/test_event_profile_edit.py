@@ -134,6 +134,121 @@ async def test_event_schedule_lock_is_owner_scoped_and_blocks_movement(
 
 
 @pytest.mark.asyncio
+async def test_one_off_event_lock_change_is_atomic_and_cas_guarded(
+    migrated_database: Any,
+) -> None:
+    owner = _seed_self(migrated_database)
+    event = _legacy_event(migrated_database, owner, "Blocco da modifica")
+    runtime = create_database_runtime(migrated_database.runtime_settings())
+    context = cast(
+        DanteContext,
+        SimpleNamespace(self_person_ref=owner, effective_zone_id="Europe/Rome"),
+    )
+    request = Request(
+        {"type": "http", "app": SimpleNamespace(state=SimpleNamespace(database_runtime=runtime))}
+    )
+    schedules = TemporalScheduleApplication(runtime.session_factory)
+    locks = PlacementLockApplication(runtime.session_factory)
+    try:
+        original = await schedules.establish_schedule(
+            self_person_ref=owner,
+            operation_id="event:atomic:lock:source",
+            subject_native_ref=event,
+            placement=FloatingLocalIntervalPlacement(
+                starts_local_at=datetime.fromisoformat("2026-11-09T09:00:00"),
+                ends_local_at=datetime.fromisoformat("2026-11-09T10:00:00"),
+            ),
+        )
+        locked = await apply_one_off_event_atomic_edit(
+            event,
+            EventAtomicEditCommand.model_validate(
+                {
+                    "operation_id": "event:atomic:lock:save",
+                    "placement_lock": {
+                        "schedule_ref": original.schedule_ref,
+                        "locked": True,
+                        "expected_revision": 0,
+                    },
+                    "profile": {
+                        "operation_id": "event:atomic:lock:profile",
+                        "expected_revision": 0,
+                        "title": "Evento protetto",
+                    },
+                }
+            ),
+            context,
+            request,
+            Response(),
+        )
+        assert locked.event.title == "Evento protetto"
+        assert (await locks.get(
+            self_person_ref=owner, schedule_ref=original.schedule_ref
+        )).locked
+
+        with pytest.raises(ProblemError) as stale:
+            await apply_one_off_event_atomic_edit(
+                event,
+                EventAtomicEditCommand.model_validate(
+                    {
+                        "operation_id": "event:atomic:lock:stale",
+                        "placement_lock": {
+                            "schedule_ref": original.schedule_ref,
+                            "locked": False,
+                            "expected_revision": 0,
+                        },
+                        "profile": {
+                            "operation_id": "event:atomic:lock:stale:profile",
+                            "expected_revision": 1,
+                            "title": "Modifica non autorizzata",
+                        },
+                    }
+                ),
+                context,
+                request,
+                Response(),
+            )
+        assert stale.value.status == 409
+        async with runtime.session_factory() as session, session.begin():
+            current = await _read_event_in_session(
+                session, self_person_ref=owner, event_ref=event
+            )
+        assert current is not None and current.title == "Evento protetto"
+
+        moved = await apply_one_off_event_atomic_edit(
+            event,
+            EventAtomicEditCommand.model_validate(
+                {
+                    "operation_id": "event:atomic:lock:unlock-and-move",
+                    "placement_lock": {
+                        "schedule_ref": original.schedule_ref,
+                        "locked": False,
+                        "expected_revision": 1,
+                    },
+                    "schedule": {
+                        "schedule_ref": original.schedule_ref,
+                        "expected_material_state_ref": original.material_state_ref,
+                        "placement": {
+                            "kind": "floating_local_interval",
+                            "starts_local_at": "2026-11-09T10:00:00",
+                            "ends_local_at": "2026-11-09T11:00:00",
+                        },
+                    },
+                }
+            ),
+            context,
+            request,
+            Response(),
+        )
+        assert moved.event.title == "Evento protetto"
+        final = await locks.get(
+            self_person_ref=owner, schedule_ref=original.schedule_ref
+        )
+        assert not final.locked and final.revision == 2
+    finally:
+        await runtime.dispose()
+
+
+@pytest.mark.asyncio
 async def test_one_off_event_schedule_and_profile_commit_together_with_material_cas(
     migrated_database: Any,
 ) -> None:
