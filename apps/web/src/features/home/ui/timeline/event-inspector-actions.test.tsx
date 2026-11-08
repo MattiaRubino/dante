@@ -936,16 +936,20 @@ describe('Event Inspector actions', () => {
       name: 'Dettagli ripetizione',
     });
     expect(details.classList.contains('temporal-create-repeat')).toBe(true);
-    expect(panel.querySelector('.temporal-recurrence-panel__details')?.contains(details))
-      .toBe(true);
+    expect(
+      panel
+        .querySelector('.temporal-recurrence-panel__details')
+        ?.contains(details),
+    ).toBe(true);
     expect(
       within(panel).getByRole('group', { name: 'Giorni della settimana' }),
     ).toBeTruthy();
     fireEvent.change(recurrenceSelect, { target: { value: 'none' } });
     expect(panel.getAttribute('data-recurrence-expanded')).toBe('false');
     expect(panel.querySelector('.temporal-recurrence-panel__details')).toBeNull();
-    expect(within(panel).getByRole('combobox', { name: 'Ripeti' }))
-      .toHaveProperty('value', 'none');
+    expect(
+      within(panel).getByRole('combobox', { name: 'Ripeti' }),
+    ).toHaveProperty('value', 'none');
     fireEvent.change(recurrenceSelect, { target: { value: 'daily' } });
     expect(
       screen.queryByRole('button', {
