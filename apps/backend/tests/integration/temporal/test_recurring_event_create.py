@@ -318,8 +318,12 @@ async def test_event_occurrence_local_structure_is_versioned_and_does_not_mutate
 
 
 @pytest.mark.asyncio
+@pytest.mark.parametrize(
+    "new_clock", [time(8), time(11)], ids=["earlier_selected", "later_selected"]
+)
 async def test_series_accept_replaces_one_clean_future_event_without_duplicate(
     migrated_database: Any,
+    new_clock: time,
 ) -> None:
     alice = _seed_self(migrated_database)
     runtime = create_database_runtime(migrated_database.runtime_settings())
@@ -388,7 +392,7 @@ async def test_series_accept_replaces_one_clean_future_event_without_duplicate(
         assert loaded.structure_snapshot["expected_participants"] == [
             {"person_ref": "self", "requirement_code": "required"}
         ]
-        proposed = replace(original, effective_from=date(2027, 1, 2), wall_times=(time(11),))
+        proposed = replace(original, effective_from=date(2027, 1, 2), wall_times=(new_clock,))
         structure = {
             "version": 1,
             "placement_kind": "timed",
@@ -410,7 +414,7 @@ async def test_series_accept_replaces_one_clean_future_event_without_duplicate(
             effective_zone_id="Europe/Rome",
             proposed_recurrence=proposed,
             proposed_structure=structure,
-            profile_patch=None,
+            profile_patch={"title": "Lezione della serie aggiornata"},
         )
         assert preview.scope.target_occurrence_refs == (old_items[0].occurrence_ref,)
         accepted = await series.accept(
@@ -422,7 +426,7 @@ async def test_series_accept_replaces_one_clean_future_event_without_duplicate(
             effective_zone_id="Europe/Rome",
             proposed_recurrence=proposed,
             proposed_structure=structure,
-            profile_patch=None,
+            profile_patch={"title": "Lezione della serie aggiornata"},
             expected_fingerprint=preview.fingerprint,
             operation_id="structure:accept:operation",
         )
@@ -436,7 +440,7 @@ async def test_series_accept_replaces_one_clean_future_event_without_duplicate(
             effective_zone_id="Europe/Rome",
             proposed_recurrence=proposed,
             proposed_structure=structure,
-            profile_patch=None,
+            profile_patch={"title": "Lezione della serie aggiornata"},
             expected_fingerprint=preview.fingerprint,
             operation_id="structure:accept:operation",
         )
@@ -459,8 +463,11 @@ async def test_series_accept_replaces_one_clean_future_event_without_duplicate(
         assert len(current) == 1
         assert current[0].occurrence_ref != old_items[0].occurrence_ref
         assert isinstance(current[0].placement, NamedZoneLocalIntervalPlacement)
-        assert current[0].placement.starts_local_at.time() == time(11)
-        assert current[0].placement.ends_local_at.time() == time(13)
+        assert current[0].placement.starts_local_at.time() == new_clock
+        assert current[0].placement.ends_local_at.time() == time(new_clock.hour + 2)
+        # A replaced selected Occurrence must inherit its own accepted title,
+        # even if the revised start clock moved *before* the prior anchor.
+        assert current[0].title == "Lezione della serie aggiornata"
         revised_source = await series.source(
             self_person_ref=alice, selected_occurrence_ref=current[0].occurrence_ref
         )
