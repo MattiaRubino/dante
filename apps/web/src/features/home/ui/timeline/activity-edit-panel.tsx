@@ -2227,7 +2227,9 @@ export function ActivityEditPanel({
                 aria-label="Obiettivi attuali"
               >
                 <div className="temporal-create-reality-objectives__block-copy">
-                  <strong className="temporal-editor-section-heading">Obiettivi</strong>
+                  <strong className="temporal-editor-section-heading">
+                    Obiettivi
+                  </strong>
                 </div>
                 <div
                   className="timeline-activity-editor__objectives"

@@ -866,9 +866,9 @@ describe('Event Inspector actions', () => {
       observationRef: 'new-observation',
       evaluationStateRef: 'new-evaluation-state',
     };
-    listObjectives.mockResolvedValueOnce([oldResult]).mockResolvedValueOnce([
-      newResult,
-    ]);
+    listObjectives
+      .mockResolvedValueOnce([oldResult])
+      .mockResolvedValueOnce([newResult]);
     loadProfile.mockResolvedValue({
       eventRef,
       title: 'Conferenza',
@@ -2088,9 +2088,7 @@ describe('Event Inspector actions', () => {
     expect(
       screen.queryByRole('checkbox', { name: /Con orario Sessione/ }),
     ).toBeNull();
-    expect(
-      screen.queryByText('Regola per le sottoattività'),
-    ).toBeNull();
+    expect(screen.queryByText('Regola per le sottoattività')).toBeNull();
     expect(
       screen.getByRole('combobox', { name: 'Sessione dell’attività' }),
     ).toBeTruthy();

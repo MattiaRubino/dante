@@ -1577,9 +1577,13 @@ export function EventInspectorActions({
                             >
                               <option value="satisfied">Raggiunto</option>
                               <option value="partial">Parziale</option>
-                              <option value="not_satisfied">Non raggiunto</option>
+                              <option value="not_satisfied">
+                                Non raggiunto
+                              </option>
                               <option value="unknown">Sconosciuto</option>
-                              <option value="indeterminate">Indeterminato</option>
+                              <option value="indeterminate">
+                                Indeterminato
+                              </option>
                             </select>
                           </label>
                         ) : null}

@@ -1646,7 +1646,9 @@ export function RecurringSeriesEditor({
             >
               <div className="temporal-create-reality-objectives__block is-objectives timeline-activity-editor__readback">
                 <div className="temporal-create-reality-objectives__block-copy">
-                  <strong className="temporal-editor-section-heading">Obiettivi</strong>
+                  <strong className="temporal-editor-section-heading">
+                    Obiettivi
+                  </strong>
                 </div>
                 <div className="timeline-activity-editor__objectives">
                   {objectives.map((row, index) => (

@@ -58,7 +58,8 @@
 }
 
 :is(.temporal-create-composer.is-advanced, .timeline-event-modal--edit)
-  .temporal-create-event-participants__heading span {
+  .temporal-create-event-participants__heading
+  span {
   font-size: 12px;
   line-height: 1.5;
 }
