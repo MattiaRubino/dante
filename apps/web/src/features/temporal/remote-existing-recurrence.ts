@@ -99,7 +99,7 @@ export function createRemoteExistingRecurrence(
       basis: StartEventBasis,
       recurrence: RecurringAuthoringCalendarRecurrence,
       operationId: string,
-    ): Promise<void> {
+    ): Promise<string> {
       const session = await request('/api/v1/auth/session');
       const auth: unknown = await session.json();
       if (
@@ -139,7 +139,22 @@ export function createRemoteExistingRecurrence(
             : 'Non è stato possibile avviare la ripetizione Event.';
         throw new Error(detail);
       }
+      const accepted: unknown = await response.json();
+      if (
+        !accepted ||
+        typeof accepted !== 'object' ||
+        !('owner_kind' in accepted) ||
+        accepted.owner_kind !== 'event' ||
+        !('source_ref' in accepted) ||
+        typeof accepted.source_ref !== 'string' ||
+        !/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(
+          accepted.source_ref,
+        )
+      ) {
+        throw new Error('Conferma della serie Event non valida.');
+      }
       invalidateTemporalTimelineRead();
+      return accepted.source_ref;
     },
   });
 }

@@ -49,7 +49,8 @@ const getPlacementLock = vi.hoisted(() =>
 const isRecurring = vi.fn().mockResolvedValue(false);
 const eventSeed = vi.fn().mockResolvedValue(null);
 const eventFirstOccurrence = vi.fn().mockResolvedValue(null);
-const startExistingEvent = vi.fn().mockResolvedValue(undefined);
+const convertedSourceRef = '0199a888-8888-7888-8888-888888888888';
+const startExistingEvent = vi.fn().mockResolvedValue(convertedSourceRef);
 const previewHardDeletion = vi.fn();
 const confirmHardDeletion = vi.fn();
 const eventOccurrences = vi.fn();
@@ -166,7 +167,7 @@ afterEach(() => {
   isRecurring.mockResolvedValue(false);
   eventSeed.mockResolvedValue(null);
   eventFirstOccurrence.mockResolvedValue(null);
-  startExistingEvent.mockResolvedValue(undefined);
+  startExistingEvent.mockResolvedValue(convertedSourceRef);
   getRealityPolicy.mockResolvedValue({ mode: 'manual', stateRef: null });
   getReminder.mockResolvedValue(null);
   listObjectives.mockResolvedValue([]);
@@ -959,6 +960,12 @@ describe('Event Inspector actions', () => {
     expect(startExistingEvent).not.toHaveBeenCalled();
     fireEvent.click(screen.getByRole('button', { name: 'Salva modifiche' }));
     await waitFor(() => expect(startExistingEvent).toHaveBeenCalledOnce());
+    await waitFor(() =>
+      expect(screen.getByText('Ripetizione avviata da questo Evento.')).toBeTruthy(),
+    );
+    // The accepted Start response already contains source_ref. A second
+    // fallible read cannot convert a successful write into a false failure.
+    expect(eventSeed).toHaveBeenCalledTimes(1);
     expect(startExistingEvent).toHaveBeenCalledWith(
       expect.objectContaining({ eventRef, expectedProfileRevision: 2 }),
       expect.objectContaining({

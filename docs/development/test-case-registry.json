@@ -4312,6 +4312,16 @@
       "audit_note": "Needs contract/assertion review, rejection cases, and executable evidence; filename alone is not proof."
     },
     {
+      "path": "apps/web/src/features/temporal/remote-existing-recurrence.test.ts",
+      "suite": "web-unit-component",
+      "contract_id": "T05",
+      "candidate_behavior": "accepted one-off Event conversion source identity",
+      "purpose": "Ensure the accepted Start response supplies the canonical new series identity to the editor without an extra fallible read-after-write HTTP request.",
+      "invariant": "Start response owner_kind must be event and source_ref a UUID; success returns it without refetching /seed; invalid confirmation rejects.",
+      "status": "QUALIFIED",
+      "audit_note": "Source and positive/negative response contract reviewed; owner WSL Vitest and full temporal gate pending on this SHA."
+    },
+    {
       "path": "apps/web/src/features/temporal/remote-occurrence-schedule-data-source.test.ts",
       "suite": "web-unit-component",
       "contract_id": "T05",

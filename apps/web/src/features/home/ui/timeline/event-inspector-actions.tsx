@@ -681,13 +681,13 @@ export function EventInspectorActions({
         throw new Error('Programmazione Event non disponibile per la ripetizione.');
       }
       if (proposedRecurrence && recurrenceResume.current) {
-        await existingRecurrence.startEvent(
+        const createdSourceRef = await existingRecurrence.startEvent(
           recurrenceResume.current,
           proposedRecurrence,
           (recurrenceOperation.current ??= systemTemporalIdFactory.operationId()),
         );
         recurrenceResume.current = null;
-        setExistingSeed(await existingRecurrence.eventSeed(eventRef));
+        setExistingSeed(createdSourceRef);
         setProfile(null);
         setProfileDraft(null);
         setRecurrenceSelected(false);
@@ -1024,13 +1024,13 @@ export function EventInspectorActions({
           expectedPlacementStateRef: acceptedStateRef,
         };
         if (acceptedEdit) recurrenceResume.current = basis;
-        await existingRecurrence.startEvent(
+        const createdSourceRef = await existingRecurrence.startEvent(
           basis,
           proposedRecurrence,
           (recurrenceOperation.current ??= systemTemporalIdFactory.operationId()),
         );
         recurrenceResume.current = null;
-        setExistingSeed(await existingRecurrence.eventSeed(eventRef));
+        setExistingSeed(createdSourceRef);
       }
       setProfile(null);
       setProfileDraft(null);
