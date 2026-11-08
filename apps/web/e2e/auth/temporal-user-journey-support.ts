@@ -148,7 +148,13 @@ async function setStartDate(composer: Locator, date: string): Promise<void> {
     await trigger.click();
     const picker = composer.getByRole('dialog', { name: 'Data inizio' });
     const day = picker.locator('button[data-temporal-date="' + date + '"]');
-    await expect(day).toBeVisible();
+    // A future Create date can cross a month/year boundary. Calendar
+    // neighboring-month cells may exist but be disabled.
+    for (let offset = 0; offset < 12; offset += 1) {
+      if (await day.isVisible() && await day.isEnabled()) break;
+      await picker.getByRole('button', { name: 'Mese successivo' }).click();
+    }
+    await expect(day).toBeEnabled();
     await day.click();
   }
   await expect(trigger).toHaveAttribute('data-temporal-date', date);
