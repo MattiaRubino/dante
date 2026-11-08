@@ -154,6 +154,7 @@ async def test_past_unstarted_activity_requires_explicit_reality_review_and_show
                 label="Distanza",
                 result_kind="boolean",
                 presentation_order=1,
+                verification_mode="review_on_end",
             ),
             context,
             request,
