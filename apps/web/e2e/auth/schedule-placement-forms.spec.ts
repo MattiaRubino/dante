@@ -308,14 +308,14 @@ test.describe('Timeline B02-E full-stack Schedule forms', () => {
       await inspector
         .getByRole('button', { name: 'Elimina', exact: true })
         .click();
+      const deleteDialog = page.getByRole('alertdialog', {
+        name: 'Elimina attività',
+      });
       await expect(
-        inspector.getByRole('button', {
-          name: 'Conferma eliminazione definitiva',
-        }),
+        deleteDialog.getByRole('button', { name: 'Elimina definitivamente' }),
       ).toBeVisible();
-      await inspector
-        .getByRole('button', { name: 'Annulla', exact: true })
-        .click();
+      await deleteDialog.getByRole('button', { name: 'Annulla' }).click();
+      await expect(deleteDialog).toHaveCount(0);
       expect(
         (
           await page.request.get(
@@ -336,8 +336,8 @@ test.describe('Timeline B02-E full-stack Schedule forms', () => {
           response.request().method() === 'DELETE',
         { timeout: E2E_RESPONSE_TIMEOUT_MS },
       );
-      await inspector
-        .getByRole('button', { name: 'Conferma eliminazione definitiva' })
+      await deleteDialog
+        .getByRole('button', { name: 'Elimina definitivamente' })
         .click();
       const deleted = await deleteResponse;
       expect(deleted.status()).toBe(200);

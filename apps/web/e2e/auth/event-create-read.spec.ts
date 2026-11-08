@@ -276,14 +276,14 @@ test.describe('Timeline B03-E real-stack Event closure', () => {
         }),
       ).toHaveCount(0);
       await inspector.getByRole('button', { name: 'Elimina Event' }).click();
+      const deleteDialog = page.getByRole('alertdialog', {
+        name: 'Elimina evento',
+      });
       await expect(
-        inspector.getByRole('button', {
-          name: 'Conferma eliminazione definitiva',
-        }),
+        deleteDialog.getByRole('button', { name: 'Elimina definitivamente' }),
       ).toBeVisible();
-      await inspector
-        .getByRole('button', { name: 'Annulla', exact: true })
-        .click();
+      await deleteDialog.getByRole('button', { name: 'Annulla' }).click();
+      await expect(deleteDialog).toHaveCount(0);
       await expect(card).toHaveCount(1);
 
       await inspector.getByRole('button', { name: 'Elimina Event' }).click();
@@ -295,8 +295,8 @@ test.describe('Timeline B03-E real-stack Event closure', () => {
           response.request().method() === 'DELETE',
         { timeout: E2E_RESPONSE_TIMEOUT_MS },
       );
-      await inspector
-        .getByRole('button', { name: 'Conferma eliminazione definitiva' })
+      await deleteDialog
+        .getByRole('button', { name: 'Elimina definitivamente' })
         .click();
       const deleted = await deletedResponse;
       expect(deleted.status()).toBe(200);
