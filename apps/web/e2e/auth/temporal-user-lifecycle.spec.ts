@@ -568,7 +568,7 @@ test.describe('Timeline — real user Activity/Event lifecycle matrix', () => {
       const acceptedSeries = page.waitForResponse(
         (response) =>
           response.url().includes('/api/v1/temporal/occurrences/') &&
-          response.url().endsWith('/profile-edit') &&
+          response.url().endsWith('/series-edit') &&
           response.request().method() === 'POST',
       );
       await confirmation.getByRole('button', {
@@ -577,7 +577,7 @@ test.describe('Timeline — real user Activity/Event lifecycle matrix', () => {
       const seriesResponse = await acceptedSeries;
       expect(
         seriesResponse.status(),
-        `Series profile edit rejected: ${await seriesResponse.text()}`,
+        `Series revision rejected: ${await seriesResponse.text()}`,
       ).toBe(200);
       await expect(confirmation).toHaveCount(0);
       await openHome(page, dateAfter(day, 1));
