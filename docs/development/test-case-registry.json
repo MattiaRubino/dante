@@ -1218,16 +1218,6 @@
       "audit_note": "Needs contract/assertion review, rejection cases, and executable evidence; filename alone is not proof."
     },
     {
-      "path": "apps/backend/tests/integration/temporal/test_existing_activity_recurrence.py",
-      "suite": "temporal-postgresql-integration",
-      "contract_id": "T04",
-      "candidate_behavior": "existing Activity/Event conversion preserves first identity and future policies",
-      "purpose": "Assert owner isolation, canonical first binding, idempotent replay, duplicate rejection, Timeline projection, Event first exclusion and movement-lock policy propagation.",
-      "invariant": "One-off Activity/Event remains the identified first instance; conversion creates a single future source and materializes next clean instances without duplication; a protected or unlocked Event propagates its lock state to future Schedules.",
-      "status": "QUALIFIED",
-      "audit_note": "Audited source, API and canonical PostgreSQL path; Event lock propagation now parameterized for protected/unlocked. Owner execution against migrated database pending on 474c276 and descendants. Compound UI Save→Start still requires separate cross-command integration tests."
-    },
-    {
       "path": "apps/backend/tests/integration/temporal/test_execution_structure.py",
       "suite": "temporal-postgresql-integration",
       "contract_id": "P-OTHER",
@@ -1236,6 +1226,16 @@
       "invariant": "",
       "status": "UNREVIEWED",
       "audit_note": "Needs contract/assertion review, rejection cases, and executable evidence; filename alone is not proof."
+    },
+    {
+      "path": "apps/backend/tests/integration/temporal/test_existing_activity_recurrence.py",
+      "suite": "temporal-postgresql-integration",
+      "contract_id": "T04",
+      "candidate_behavior": "existing Activity/Event conversion preserves first identity and future policies",
+      "purpose": "Assert owner isolation, canonical first binding, idempotent replay, duplicate rejection, Timeline projection, Event first exclusion and movement-lock policy propagation.",
+      "invariant": "One-off Activity/Event remains the identified first instance; conversion creates a single future source and materializes next clean instances without duplication; a protected or unlocked Event propagates its lock state to future Schedules.",
+      "status": "QUALIFIED",
+      "audit_note": "Audited source, API and canonical PostgreSQL path; Event lock propagation now parameterized for protected/unlocked. Owner execution against migrated database pending on 474c276 and descendants. Compound UI Save→Start still requires separate cross-command integration tests."
     },
     {
       "path": "apps/backend/tests/integration/temporal/test_governed_schedule_move.py",
@@ -1336,6 +1336,26 @@
       "invariant": "",
       "status": "UNREVIEWED",
       "audit_note": "Needs contract/assertion review, rejection cases, and executable evidence; filename alone is not proof."
+    },
+    {
+      "path": "apps/backend/tests/integration/temporal/test_objective_verification_recurring.py",
+      "suite": "temporal-postgresql-integration",
+      "contract_id": "T09",
+      "candidate_behavior": "Selected and following recurring Objective verification",
+      "purpose": "Exercise scoped verification change on routine Occurrences with existing materialized instances and canonical recurrence inheritance.",
+      "invariant": "Selected-and-following edits preserve historical and protected Occurrence verification facts without crossing source or instance scope.",
+      "status": "QUALIFIED",
+      "audit_note": "Assertion intent reviewed against test implementation. Green execution not claimed until a same-SHA WSL gate."
+    },
+    {
+      "path": "apps/backend/tests/integration/temporal/test_objective_verification.py",
+      "suite": "temporal-postgresql-integration",
+      "contract_id": "T09",
+      "candidate_behavior": "Versioned per-Objective verification policy and invalid mode rejection",
+      "purpose": "Validate persistent independent verification state, optimistic revision, idempotent replay and rejection of unsupported automatic verification.",
+      "invariant": "Only recognized verification modes are accepted; repeated operations do not create duplicate revisions and Objective truth remains separate from realization.",
+      "status": "QUALIFIED",
+      "audit_note": "Assertion intent reviewed against test implementation. Green execution not claimed until a same-SHA WSL gate."
     },
     {
       "path": "apps/backend/tests/integration/temporal/test_occurrence_checkpoint.py",
@@ -3015,16 +3035,6 @@
       "audit_note": "Needs contract/assertion review, rejection cases, and executable evidence; filename alone is not proof."
     },
     {
-      "path": "apps/web/e2e/temporal-create.spec.ts",
-      "suite": "browser-fixture",
-      "contract_id": "P-OTHER",
-      "candidate_behavior": "temporal create",
-      "purpose": "",
-      "invariant": "",
-      "status": "UNREVIEWED",
-      "audit_note": "Needs contract/assertion review, rejection cases, and executable evidence; filename alone is not proof."
-    },
-    {
       "path": "apps/web/e2e/temporal-create-unified-ui.spec.ts",
       "suite": "browser-fixture",
       "contract_id": "T01",
@@ -3033,6 +3043,16 @@
       "invariant": "An empty-title validation error cannot stretch the Advanced title row or displace its header actions.",
       "status": "QUALIFIED",
       "audit_note": "Covers the browser geometry boundary for the unified Create/Edit authoring surface."
+    },
+    {
+      "path": "apps/web/e2e/temporal-create.spec.ts",
+      "suite": "browser-fixture",
+      "contract_id": "P-OTHER",
+      "candidate_behavior": "temporal create",
+      "purpose": "",
+      "invariant": "",
+      "status": "UNREVIEWED",
+      "audit_note": "Needs contract/assertion review, rejection cases, and executable evidence; filename alone is not proof."
     },
     {
       "path": "apps/web/e2e/timeline-controls.spec.ts",
@@ -3424,15 +3444,6 @@
       "audit_note": "Code-level design and positive/negative assertions reviewed, execution pending owner WSL run and browser gate on exact branch SHA."
     },
     {
-      "path": "apps/web/src/features/home/ui/timeline/timeline-event-participation.test.tsx",
-      "suite": "web-unit-component",
-      "contract_id": "T02",
-      "candidate_behavior": "event inspector expected participation readback",
-      "purpose": "Verify that the Event Inspector shows current expected participants with their requirement and refreshes after an edit invalidates Timeline data.",
-      "invariant": "Removed expected participants do not remain visible after a canonical refresh, and participation never appears as a Session.",
-      "status": "QUALIFIED"
-    },
-    {
       "path": "apps/web/src/features/home/ui/timeline/model/timeline-all-day-layout.test.ts",
       "suite": "web-unit-component",
       "contract_id": "T11",
@@ -3553,6 +3564,16 @@
       "audit_note": "Needs contract/assertion review, rejection cases, and executable evidence; filename alone is not proof."
     },
     {
+      "path": "apps/web/src/features/home/ui/timeline/temporal-delete-dialog.test.tsx",
+      "suite": "web-unit-component",
+      "contract_id": "T03",
+      "candidate_behavior": "Shared destructive confirmation dialog UI",
+      "purpose": "Check Activity/Event dialog parity, Escape cancellation and disabled closing while a confirmed deletion is pending.",
+      "invariant": "Dismissal never invokes deletion; only an explicit confirmed choice starts a destructive command and pending deletion cannot be cancelled mid-flight.",
+      "status": "QUALIFIED",
+      "audit_note": "Assertion intent reviewed against test implementation. Green execution not claimed until a same-SHA WSL gate."
+    },
+    {
       "path": "apps/web/src/features/home/ui/timeline/timeline-all-day-runtime.test.ts",
       "suite": "web-unit-component",
       "contract_id": "P-OTHER",
@@ -3623,6 +3644,15 @@
       "audit_note": "Needs contract/assertion review, rejection cases, and executable evidence; filename alone is not proof."
     },
     {
+      "path": "apps/web/src/features/home/ui/timeline/timeline-event-participation.test.tsx",
+      "suite": "web-unit-component",
+      "contract_id": "T02",
+      "candidate_behavior": "event inspector expected participation readback",
+      "purpose": "Verify that the Event Inspector shows current expected participants with their requirement and refreshes after an edit invalidates Timeline data.",
+      "invariant": "Removed expected participants do not remain visible after a canonical refresh, and participation never appears as a Session.",
+      "status": "QUALIFIED"
+    },
+    {
       "path": "apps/web/src/features/home/ui/timeline/timeline-expected-occurrence-scheduling.test.ts",
       "suite": "web-unit-component",
       "contract_id": "T05",
@@ -3653,6 +3683,16 @@
       "audit_note": "Needs contract/assertion review, rejection cases, and executable evidence; filename alone is not proof."
     },
     {
+      "path": "apps/web/src/features/home/ui/timeline/timeline-placement-actions.test.tsx",
+      "suite": "web-unit-component",
+      "contract_id": "T03",
+      "candidate_behavior": "timeline Inspector hides retired unplacement",
+      "purpose": "Verify that a scheduled Activity Inspector does not offer the retired Da collocare action.",
+      "invariant": "Opening the Inspector cannot trigger canonical unscheduling through a legacy move button.",
+      "status": "UNREVIEWED",
+      "audit_note": "Needs contract/assertion review, rejection cases, and executable evidence; filename alone is not proof."
+    },
+    {
       "path": "apps/web/src/features/home/ui/timeline/timeline-runtime-detail-controls.test.tsx",
       "suite": "web-unit-component",
       "contract_id": "P-OTHER",
@@ -3679,16 +3719,6 @@
       "candidate_behavior": "timeline schedule revision",
       "purpose": "",
       "invariant": "",
-      "status": "UNREVIEWED",
-      "audit_note": "Needs contract/assertion review, rejection cases, and executable evidence; filename alone is not proof."
-    },
-    {
-      "path": "apps/web/src/features/home/ui/timeline/timeline-placement-actions.test.tsx",
-      "suite": "web-unit-component",
-      "contract_id": "T03",
-      "candidate_behavior": "timeline Inspector hides retired unplacement",
-      "purpose": "Verify that a scheduled Activity Inspector does not offer the retired Da collocare action.",
-      "invariant": "Opening the Inspector cannot trigger canonical unscheduling through a legacy move button.",
       "status": "UNREVIEWED",
       "audit_note": "Needs contract/assertion review, rejection cases, and executable evidence; filename alone is not proof."
     },

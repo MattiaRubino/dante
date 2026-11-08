@@ -1,5 +1,14 @@
 # Timeline / Temporal-Operational — Workstream Handoff
 
+## 2026-11-08 — Coherent backend baseline repair after 896f643e gate
+
+Owner's completed 27-group gate at `896f643e` had source stability PASS but 12 red groups. Backend candidate repairs reconcile the V3 recurring Event placement flag across the canonical SQLAlchemy mapping, table Dictionary and both v3 routine Dictionary entries. Dictionary current counts now track 261 routines, current Alembic tests expect `_181` rather than stale `_177`/`_178`, and the scope schema admits the already-materialized Objective-verification stage. An unstarted Activity's Objective review test now explicitly creates an Objective with `review_on_end`, preserving the normative distinction from default `none`.
+
+The Objective create model retains mandatory/default `none` verification; definition revision retains optional `None` meaning 'do not change', via a common validated fields base. The change avoids an incompatible inherited-field override. Floating Schedule tests keep naive local datetimes intentionally; destructive Session cascade checks use fixed SQL statements. Previously omitted Objective verification and shared-delete test files are registered as qualified candidates; the registration is not runtime evidence.
+
+**Not yet verified:** Ruff, MyPy, PostgreSQL, authenticated browser, generated API snapshot and complete gate must run on the new HEAD. Frontend formatting/lint, generated client drift, stale UI tests and materialization/browser functional failures from the original report are separate unresolved work, not declared fixed by this backend commit series. No prior migration, client-generated source or Domain product rule was modified.
+
+
 ## 2026-11-08 — Clarification: deleting an Activity with live Session is allowed after confirmation
 
 The user explicitly clarified the authoritative product contract: pressing
