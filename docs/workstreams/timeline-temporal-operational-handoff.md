@@ -1,5 +1,39 @@
 # Timeline / Temporal-Operational — Workstream Handoff
 
+## 2026-11-08 — Focused Event placement-lock QA: initial CAS revision
+
+Owner's exact-`49bdf58b` local run: ESLint PASS, TypeScript PASS,
+the first four Vitest files **29/29 PASS**, Event Inspector suite aborted
+before collecting tests due to a hoisted mock initialization error,
+Prettier FAIL on six TS/TSX files, and PostgreSQL **13 PASS / 2 FAIL**.
+Both PG failures were `schedule_placement_lock_stale` on the **first**
+lock write, supplied with `expected_revision=0`.
+
+Root cause: `get_self_schedule_placement_lock` returns revision **0**
+for an absent lock row, while the existing
+`set_self_schedule_placement_lock` would accept **NULL only** for the
+first write. This is a mismatch between the read and CAS write contract,
+not a user error or a stale Schedule. Never change clients to submit
+NULL in place of the read revision, as this weakens concurrent create CAS.
+
+Forward migration `20261108_179_schedule_placement_lock_zero_basis.py`
+now accepts expected 0 **only when the lock row is absent**. It retains
+the Schedule-owner FOR UPDATE serialization, rejects stale revision 0
+once a row exists, and leaves existing lock rows untouched. Existing
+one-off Event Create, atomic Event Edit and selected-Occurrence Edit
+contracts keep their numeric revision basis.
+
+The Vitest Event Inspector mock now uses `vi.hoisted`: the placement
+lock datasource is instantiated during module import by an unrelated
+Timeline component, before ordinary top-level test declarations.
+
+**Unverified on repaired SHA**: schema migration drift, the two PG tests,
+Event Inspector Vitest and the full focused gate. Existing Prettier failures
+in six TS/TSX files remain to be formatted via repository-pinned Prettier.
+The `Questa e le prossime`/first-Event-instance bug is explicitly out
+of scope and unchanged.
+
+
 ## 2026-11-08 — Event placement lock, isolated from recurrence fixes
 
 Scope explicitly narrowed by owner: implement real **Blocca spostamenti**
