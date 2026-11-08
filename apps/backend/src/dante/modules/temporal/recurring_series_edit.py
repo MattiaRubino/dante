@@ -302,6 +302,8 @@ def _validate_structure(
                 raise SeriesReconciliationError("Recurring Life Area is invalid.") from exc
     else:
         objectives(structure.get("objectives"))
+        if type(structure.get("placement_protected", False)) is not bool:
+            raise SeriesReconciliationError("Recurring Event placement policy is invalid.")
         participants = structure.get("expected_participants")
         if participants is not None:
             if not isinstance(participants, list) or len(participants) > 100:

@@ -68,6 +68,7 @@ from dante.modules.temporal.schedule import (
     SchedulePersistenceError,
     SchedulePlacement,
     TemporalScheduleApplication,
+    establish_schedule_in_session,
 )
 from dante.modules.temporal.schedule_reminder import (
     ScheduleReminderApplication,
@@ -273,16 +274,40 @@ class RoutineOccurrenceMaterializationApplication:
                 raise OccurrenceInputError(
                     "Recurring Event Create currently requires calendar Occurrences."
                 )
-            schedule = await self._schedules.establish_schedule(
-                self_person_ref=self_person_ref,
-                operation_id=f"b14:event-schedule:{occurrence.occurrence_ref}",
-                subject_native_ref=NativeRef(occurrence.occurrence_ref),
-                placement=self._event_placement(
-                    occurrence.occurrence_ref,
-                    occurrence.coordinate,
-                    policy,
-                ),
+            schedule_operation = f"b14:event-schedule:{occurrence.occurrence_ref}"
+            placement = self._event_placement(
+                occurrence.occurrence_ref,
+                occurrence.coordinate,
+                policy,
             )
+            if policy.placement_protected:
+                # Schedule and placement protection are one atomic write.
+                # On replay leave an existing user's lock/unlock untouched:
+                # a locally changed Occurrence is never forced back to the
+                # source template during a subsequent checkpoint.
+                async with self._session_factory() as schedule_session, schedule_session.begin():
+                    schedule = await establish_schedule_in_session(
+                        schedule_session,
+                        self_person_ref=self_person_ref,
+                        operation_id=schedule_operation,
+                        subject_native_ref=NativeRef(occurrence.occurrence_ref),
+                        placement=placement,
+                    )
+                    if not schedule.replayed:
+                        await schedule_session.execute(
+                            text(
+                                "SELECT * FROM dante.set_self_schedule_placement_lock("
+                                ":actor,:schedule,true,0)"
+                            ),
+                            {"actor": self_person_ref, "schedule": schedule.schedule_ref},
+                        )
+            else:
+                schedule = await self._schedules.establish_schedule(
+                    self_person_ref=self_person_ref,
+                    operation_id=schedule_operation,
+                    subject_native_ref=NativeRef(occurrence.occurrence_ref),
+                    placement=placement,
+                )
             if policy.reminder_lead_minutes is not None:
                 await self._reminders.configure(
                     self_person_ref=self_person_ref,

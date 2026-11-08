@@ -637,3 +637,36 @@ def test_structural_preview_from_next_preserves_recorded_selected() -> None:
     )
     assert scope.target_occurrence_refs == (CLEAN,)
     assert scope.protected_future_occurrence_refs == (LOCAL,)
+
+
+def test_recurring_event_placement_policy_supports_versioned_lock_inheritance() -> None:
+    from dante.modules.temporal.recurring_series_edit import _validate_structure
+
+    structure = {
+        "version": 1,
+        "placement_kind": "timed",
+        "duration_minutes": 30,
+        "duration_days": None,
+        "reminder_lead_minutes": None,
+        "reality_mode": "manual",
+        "objectives": [],
+        "agenda_parts": [],
+        "life_area_ref": None,
+        "expected_participants": [],
+        "placement_protected": True,
+    }
+    _validate_structure("event", _weekly_tuesday(), structure)
+
+    with pytest.raises(SeriesReconciliationError, match="placement policy"):
+        _validate_structure(
+            "event",
+            _weekly_tuesday(),
+            {**structure, "placement_protected": "true"},
+        )
+
+    # Old accepted snapshots remain readable and retain their unlocked default.
+    _validate_structure(
+        "event",
+        _weekly_tuesday(),
+        {key: value for key, value in structure.items() if key != "placement_protected"},
+    )

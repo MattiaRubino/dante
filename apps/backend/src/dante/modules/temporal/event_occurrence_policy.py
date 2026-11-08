@@ -42,6 +42,7 @@ class EventOccurrencePolicyView:
     reality_mode: Literal["manual", "review_on_end", "auto_confirm_outcome"]
     objectives: tuple[dict[str, Any], ...]
     created_at: datetime
+    placement_protected: bool = False
     replayed: bool = False
 
 

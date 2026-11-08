@@ -253,6 +253,7 @@ class RecurringStructurePolicyApplication:
         reminder = value.get("reminder_lead_minutes")
         mode = value.get("reality_mode")
         objectives = value.get("objectives")
+        placement_protected = value.get("placement_protected", False)
         if (
             (
                 kind == "timed"
@@ -270,6 +271,7 @@ class RecurringStructurePolicyApplication:
             or kind not in {"timed", "all_day"}
             or (reminder is not None and (type(reminder) is not int or not 0 <= reminder <= 10_080))
             or mode not in {"manual", "review_on_end", "auto_confirm_outcome"}
+            or type(placement_protected) is not bool
             or not isinstance(objectives, list)
             or len(objectives) > 100
             or any(not isinstance(item, dict) for item in objectives)
@@ -283,4 +285,5 @@ class RecurringStructurePolicyApplication:
             reality_mode=mode,
             objectives=tuple(objectives),
             created_at=accepted_at,
+            placement_protected=placement_protected,
         )

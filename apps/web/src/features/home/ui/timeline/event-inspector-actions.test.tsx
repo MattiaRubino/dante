@@ -217,7 +217,9 @@ describe('Event Inspector actions', () => {
     const unifiedTitle = lock.closest('.temporal-event-title-row');
     expect(unifiedTitle).not.toBeNull();
     expect(unifiedTitle?.querySelector('.temporal-create-title-input')).toBeTruthy();
-    expect(unifiedTitle?.querySelector('.temporal-create-title-row__tools')).toContain(lock);
+    expect(
+      unifiedTitle?.querySelector('.temporal-create-title-row__tools')?.contains(lock),
+    ).toBe(true);
     const save = screen.getByRole('button', {
       name: 'Salva modifiche',
     }) as HTMLButtonElement;
