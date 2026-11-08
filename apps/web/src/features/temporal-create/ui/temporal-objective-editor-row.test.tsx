@@ -112,7 +112,9 @@ describe('shared Objective row presentation', () => {
       });
       expect(chooser).toHaveProperty('value', 'none');
       expect(
-        within(chooser).getByRole('option', { name: 'Valutazione automatica · non disponibile' }),
+        within(chooser).getByRole('option', {
+          name: 'Valutazione automatica · non disponibile',
+        }),
       ).toHaveProperty('disabled', true);
       fireEvent.change(chooser, { target: { value: 'review_on_end' } });
       expect(control.update).toHaveBeenCalledWith('local-objective', {

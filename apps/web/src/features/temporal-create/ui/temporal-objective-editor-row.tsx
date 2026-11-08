@@ -115,176 +115,182 @@ export function TemporalObjectiveEditorRow({
           className="temporal-create-objective__definition"
           data-result-kind={objective.resultKind}
         >
-        <label>
-          <span>{italian ? 'Risultato' : 'Result'}</span>
-          <select
-            value={objective.resultKind}
-            disabled={disabled}
-            aria-label={
-              italian
-                ? variant === 'edit'
-                  ? 'Tipo obiettivo'
-                  : `Tipo risultato obiettivo ${index + 1}`
-                : `Objective ${index + 1} result type`
-            }
-            onChange={(event) =>
-              changeKind(
-                objective.id,
-                event.currentTarget.value as TemporalCreateObjectiveKind,
-              )
-            }
-          >
-            <option value="boolean">{italian ? 'Sì / No' : 'Yes / No'}</option>
-            <option value="quantity">
-              {italian ? 'Quantità' : 'Quantity'}
-            </option>
-            <option value="qualitative">
-              {italian ? 'Valutazione' : 'Assessment'}
-            </option>
-            <option value="range">{italian ? 'Intervallo' : 'Range'}</option>
-          </select>
-        </label>
+          <label>
+            <span>{italian ? 'Risultato' : 'Result'}</span>
+            <select
+              value={objective.resultKind}
+              disabled={disabled}
+              aria-label={
+                italian
+                  ? variant === 'edit'
+                    ? 'Tipo obiettivo'
+                    : `Tipo risultato obiettivo ${index + 1}`
+                  : `Objective ${index + 1} result type`
+              }
+              onChange={(event) =>
+                changeKind(
+                  objective.id,
+                  event.currentTarget.value as TemporalCreateObjectiveKind,
+                )
+              }
+            >
+              <option value="boolean">
+                {italian ? 'Sì / No' : 'Yes / No'}
+              </option>
+              <option value="quantity">
+                {italian ? 'Quantità' : 'Quantity'}
+              </option>
+              <option value="qualitative">
+                {italian ? 'Valutazione' : 'Assessment'}
+              </option>
+              <option value="range">{italian ? 'Intervallo' : 'Range'}</option>
+            </select>
+          </label>
 
-        {objective.resultKind === 'quantity' ? (
-          <>
-            <label>
-              <span>{italian ? 'Regola' : 'Rule'}</span>
-              <select
-                value={objective.comparatorCode ?? 'gte'}
-                disabled={disabled}
-                aria-label={
-                  italian ? 'Confronto obiettivo' : 'Objective comparator'
-                }
-                onChange={(event) =>
-                  update(objective.id, {
-                    comparatorCode: event.currentTarget
-                      .value as TemporalCreateObjectiveComparator,
-                  })
-                }
-              >
-                <option value="gte">≥</option>
-                <option value="lte">≤</option>
-                <option value="eq">=</option>
-              </select>
-            </label>
-            <label>
-              <span>{italian ? 'Target' : 'Target'}</span>
-              <input
-                type="number"
-                step="any"
-                value={objective.targetValue}
-                disabled={disabled}
-                aria-label={
-                  italian
-                    ? variant === 'edit'
-                      ? 'Valore obiettivo'
-                      : 'Target obiettivo'
-                    : 'Objective target'
-                }
-                onChange={(event) =>
-                  update(objective.id, {
-                    targetValue: event.currentTarget.value,
-                  })
-                }
-              />
-            </label>
-            <label>
-              <span>{italian ? 'Unità' : 'Unit'}</span>
-              <input
-                type="text"
-                maxLength={40}
-                value={objective.unitCode}
-                disabled={disabled}
-                aria-label={
-                  italian
-                    ? variant === 'edit'
-                      ? 'Unità di misura'
-                      : 'Unità obiettivo'
-                    : 'Objective unit'
-                }
-                placeholder="km, kg, €, mele…"
-                onChange={(event) =>
-                  update(objective.id, {
-                    unitCode: event.currentTarget.value,
-                  })
-                }
-              />
-            </label>
-          </>
-        ) : null}
+          {objective.resultKind === 'quantity' ? (
+            <>
+              <label>
+                <span>{italian ? 'Regola' : 'Rule'}</span>
+                <select
+                  value={objective.comparatorCode ?? 'gte'}
+                  disabled={disabled}
+                  aria-label={
+                    italian ? 'Confronto obiettivo' : 'Objective comparator'
+                  }
+                  onChange={(event) =>
+                    update(objective.id, {
+                      comparatorCode: event.currentTarget
+                        .value as TemporalCreateObjectiveComparator,
+                    })
+                  }
+                >
+                  <option value="gte">≥</option>
+                  <option value="lte">≤</option>
+                  <option value="eq">=</option>
+                </select>
+              </label>
+              <label>
+                <span>{italian ? 'Target' : 'Target'}</span>
+                <input
+                  type="number"
+                  step="any"
+                  value={objective.targetValue}
+                  disabled={disabled}
+                  aria-label={
+                    italian
+                      ? variant === 'edit'
+                        ? 'Valore obiettivo'
+                        : 'Target obiettivo'
+                      : 'Objective target'
+                  }
+                  onChange={(event) =>
+                    update(objective.id, {
+                      targetValue: event.currentTarget.value,
+                    })
+                  }
+                />
+              </label>
+              <label>
+                <span>{italian ? 'Unità' : 'Unit'}</span>
+                <input
+                  type="text"
+                  maxLength={40}
+                  value={objective.unitCode}
+                  disabled={disabled}
+                  aria-label={
+                    italian
+                      ? variant === 'edit'
+                        ? 'Unità di misura'
+                        : 'Unità obiettivo'
+                      : 'Objective unit'
+                  }
+                  placeholder="km, kg, €, mele…"
+                  onChange={(event) =>
+                    update(objective.id, {
+                      unitCode: event.currentTarget.value,
+                    })
+                  }
+                />
+              </label>
+            </>
+          ) : null}
 
-        {objective.resultKind === 'range' ? (
-          <>
-            <label>
-              <span>{italian ? 'Min' : 'Min'}</span>
-              <input
-                type="number"
-                step="any"
-                value={objective.targetMin}
-                disabled={disabled}
-                aria-label={italian ? 'Minimo obiettivo' : 'Objective minimum'}
-                onChange={(event) =>
-                  update(objective.id, {
-                    targetMin: event.currentTarget.value,
-                  })
-                }
-              />
-            </label>
-            <label>
-              <span>{italian ? 'Max' : 'Max'}</span>
-              <input
-                type="number"
-                step="any"
-                value={objective.targetMax}
-                disabled={disabled}
-                aria-label={italian ? 'Massimo obiettivo' : 'Objective maximum'}
-                onChange={(event) =>
-                  update(objective.id, {
-                    targetMax: event.currentTarget.value,
-                  })
-                }
-              />
-            </label>
-            <label>
-              <span>{italian ? 'Unità' : 'Unit'}</span>
-              <input
-                type="text"
-                maxLength={40}
-                value={objective.unitCode}
-                disabled={disabled}
-                aria-label={
-                  italian
-                    ? variant === 'edit'
-                      ? 'Unità di misura'
-                      : 'Unità obiettivo'
-                    : 'Objective unit'
-                }
-                placeholder="kg, bpm, €…"
-                onChange={(event) =>
-                  update(objective.id, {
-                    unitCode: event.currentTarget.value,
-                  })
-                }
-              />
-            </label>
-          </>
-        ) : null}
+          {objective.resultKind === 'range' ? (
+            <>
+              <label>
+                <span>{italian ? 'Min' : 'Min'}</span>
+                <input
+                  type="number"
+                  step="any"
+                  value={objective.targetMin}
+                  disabled={disabled}
+                  aria-label={
+                    italian ? 'Minimo obiettivo' : 'Objective minimum'
+                  }
+                  onChange={(event) =>
+                    update(objective.id, {
+                      targetMin: event.currentTarget.value,
+                    })
+                  }
+                />
+              </label>
+              <label>
+                <span>{italian ? 'Max' : 'Max'}</span>
+                <input
+                  type="number"
+                  step="any"
+                  value={objective.targetMax}
+                  disabled={disabled}
+                  aria-label={
+                    italian ? 'Massimo obiettivo' : 'Objective maximum'
+                  }
+                  onChange={(event) =>
+                    update(objective.id, {
+                      targetMax: event.currentTarget.value,
+                    })
+                  }
+                />
+              </label>
+              <label>
+                <span>{italian ? 'Unità' : 'Unit'}</span>
+                <input
+                  type="text"
+                  maxLength={40}
+                  value={objective.unitCode}
+                  disabled={disabled}
+                  aria-label={
+                    italian
+                      ? variant === 'edit'
+                        ? 'Unità di misura'
+                        : 'Unità obiettivo'
+                      : 'Objective unit'
+                  }
+                  placeholder="kg, bpm, €…"
+                  onChange={(event) =>
+                    update(objective.id, {
+                      unitCode: event.currentTarget.value,
+                    })
+                  }
+                />
+              </label>
+            </>
+          ) : null}
 
-        {objective.resultKind === 'boolean' ? (
-          <span className="temporal-create-objective__hint">
-            {italian
-              ? 'Alla verifica registrerai Sì oppure No.'
-              : 'At review you will record Yes or No.'}
-          </span>
-        ) : null}
+          {objective.resultKind === 'boolean' ? (
+            <span className="temporal-create-objective__hint">
+              {italian
+                ? 'Alla verifica registrerai Sì oppure No.'
+                : 'At review you will record Yes or No.'}
+            </span>
+          ) : null}
 
-        {objective.resultKind === 'qualitative' ? (
-          <span className="temporal-create-objective__hint">
-            {italian
-              ? 'Alla verifica: raggiunto, parziale, non raggiunto o non valutabile.'
-              : 'At review: reached, partial, not reached or indeterminate.'}
-          </span>
-        ) : null}
+          {objective.resultKind === 'qualitative' ? (
+            <span className="temporal-create-objective__hint">
+              {italian
+                ? 'Alla verifica: raggiunto, parziale, non raggiunto o non valutabile.'
+                : 'At review: reached, partial, not reached or indeterminate.'}
+            </span>
+          ) : null}
         </div>
         <label className="temporal-create-objective__verification">
           <span>
@@ -301,8 +307,7 @@ export function TemporalObjectiveEditorRow({
             onChange={(event) =>
               update(objective.id, {
                 verificationMode: event.currentTarget.value as
-                  | 'none'
-                  | 'review_on_end',
+                  'none' | 'review_on_end',
               })
             }
           >

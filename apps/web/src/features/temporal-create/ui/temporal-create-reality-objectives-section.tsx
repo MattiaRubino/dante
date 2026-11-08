@@ -74,7 +74,6 @@ export function TemporalCreateRealityObjectivesSection({ fields }: Props) {
           <h3>
             {italian ? 'Svolgimento e obiettivi' : 'Occurrence and objectives'}
           </h3>
-
         </div>
       </div>
 
@@ -84,7 +83,6 @@ export function TemporalCreateRealityObjectivesSection({ fields }: Props) {
       >
         <div className="temporal-create-reality-objectives__block-copy">
           <strong>{subjectLabel}</strong>
-
         </div>
 
         <div
@@ -119,7 +117,6 @@ export function TemporalCreateRealityObjectivesSection({ fields }: Props) {
       >
         <div className="temporal-create-reality-objectives__block-copy">
           <strong>{italian ? 'Obiettivi' : 'Objectives'}</strong>
-
         </div>
         <TemporalCreateObjectives />
       </div>

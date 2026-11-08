@@ -35,14 +35,15 @@ pytestmark = pytest.mark.postgres
 async def _mode(runtime: Any, owner: UUID, objective_ref: UUID) -> tuple[str, int] | None:
     async with runtime.session_factory() as session, session.begin():
         row = (
-            await session.execute(
-                text(
-                    "SELECT * FROM dante.get_self_objective_verification("
-                    ":actor,:objective)"
-                ),
-                {"actor": owner, "objective": objective_ref},
+            (
+                await session.execute(
+                    text("SELECT * FROM dante.get_self_objective_verification(:actor,:objective)"),
+                    {"actor": owner, "objective": objective_ref},
+                )
             )
-        ).mappings().one_or_none()
+            .mappings()
+            .one_or_none()
+        )
         if row is None:
             return None
         return str(row["mode_code"]), int(row["verification_revision"])
@@ -175,9 +176,7 @@ async def test_objective_verification_only_selected_and_following(
             start=today + timedelta(days=4),
             end=today + timedelta(days=5),
         )
-        new_objective = await _objective_for_occurrence(
-            runtime, alice, later_occurrence
-        )
+        new_objective = await _objective_for_occurrence(runtime, alice, later_occurrence)
         assert await _mode(runtime, alice, new_objective) == ("review_on_end", 0)
     finally:
         await runtime.dispose()

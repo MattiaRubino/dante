@@ -1301,7 +1301,11 @@ export function ActivityEditPanel({
             onSaved(saved.profile);
             return;
           }
-          if (recurringContext && editScope === 'this_and_following' && objectiveDirty) {
+          if (
+            recurringContext &&
+            editScope === 'this_and_following' &&
+            objectiveDirty
+          ) {
             if (
               removedObjectives.length > 0 ||
               objectiveRows.some((row) => !row.objectiveRef)

@@ -21,15 +21,41 @@ def upgrade() -> None:
         sa.Column("intent_fingerprint", sa.Text(), nullable=False),
         sa.Column("mode_code", sa.Text(), nullable=False),
         sa.Column("accepted_at", sa.DateTime(timezone=True), nullable=False),
-        sa.PrimaryKeyConstraint("objective_ref", "revision", name="pk_temporal_objective_verification_revision"),
-        sa.UniqueConstraint("self_person_ref", "operation_id", name="uq_temporal_objective_verification_operation"),
-        sa.ForeignKeyConstraint(["objective_ref"], ["dante.temporal_objective.objective_ref"], name="fk_temporal_objective_verification_objective", ondelete="CASCADE"),
-        sa.ForeignKeyConstraint(["self_person_ref"], ["dante.person.person_ref"], name="fk_temporal_objective_verification_person"),
-        sa.CheckConstraint("revision>=1", name=op.f("ck_temporal_objective_verification_revision_positive")),
-        sa.CheckConstraint("mode_code IN ('none','review_on_end')", name=op.f("ck_temporal_objective_verification_revision_mode")),
-        sa.CheckConstraint("intent_fingerprint ~ '^[0-9a-f]{64}$'", name=op.f("ck_temporal_objective_verification_revision_fingerprint")),
-        sa.CheckConstraint("operation_id=btrim(operation_id) AND char_length(operation_id) BETWEEN 1 AND 200", name=op.f("ck_temporal_objective_verification_revision_operation")),
-        sa.CheckConstraint("isfinite(accepted_at)", name=op.f("ck_temporal_objective_verification_revision_time")),
+        sa.PrimaryKeyConstraint(
+            "objective_ref", "revision", name="pk_temporal_objective_verification_revision"
+        ),
+        sa.UniqueConstraint(
+            "self_person_ref", "operation_id", name="uq_temporal_objective_verification_operation"
+        ),
+        sa.ForeignKeyConstraint(
+            ["objective_ref"],
+            ["dante.temporal_objective.objective_ref"],
+            name="fk_temporal_objective_verification_objective",
+            ondelete="CASCADE",
+        ),
+        sa.ForeignKeyConstraint(
+            ["self_person_ref"],
+            ["dante.person.person_ref"],
+            name="fk_temporal_objective_verification_person",
+        ),
+        sa.CheckConstraint(
+            "revision>=1", name=op.f("ck_temporal_objective_verification_revision_positive")
+        ),
+        sa.CheckConstraint(
+            "mode_code IN ('none','review_on_end')",
+            name=op.f("ck_temporal_objective_verification_revision_mode"),
+        ),
+        sa.CheckConstraint(
+            "intent_fingerprint ~ '^[0-9a-f]{64}$'",
+            name=op.f("ck_temporal_objective_verification_revision_fingerprint"),
+        ),
+        sa.CheckConstraint(
+            "operation_id=btrim(operation_id) AND char_length(operation_id) BETWEEN 1 AND 200",
+            name=op.f("ck_temporal_objective_verification_revision_operation"),
+        ),
+        sa.CheckConstraint(
+            "isfinite(accepted_at)", name=op.f("ck_temporal_objective_verification_revision_time")
+        ),
         schema="dante",
     )
     op.create_table(
@@ -44,12 +70,34 @@ def upgrade() -> None:
         sa.Column("accepted_at", sa.DateTime(timezone=True), nullable=False),
         sa.Column("include_selected", sa.Boolean(), nullable=False),
         sa.Column("mode_code", sa.Text(), nullable=False),
-        sa.PrimaryKeyConstraint("self_person_ref", "operation_id", name="pk_temporal_objective_verification_series"),
-        sa.ForeignKeyConstraint(["source_native_ref"], ["dante.native_address.native_ref"], name="fk_temporal_objective_verification_series_source", ondelete="CASCADE"),
-        sa.ForeignKeyConstraint(["selected_occurrence_ref"], ["dante.occurrence.occurrence_ref"], name="fk_temporal_objective_verification_series_occurrence", ondelete="SET NULL"),
-        sa.ForeignKeyConstraint(["self_person_ref"], ["dante.person.person_ref"], name="fk_temporal_objective_verification_series_person"),
-        sa.CheckConstraint("mode_code IN ('none','review_on_end')", name=op.f("ck_temporal_objective_verification_series_mode")),
-        sa.CheckConstraint("template_slot BETWEEN 0 AND 99 AND isfinite(anchor_at) AND isfinite(accepted_at)", name=op.f("ck_temporal_objective_verification_series_shape")),
+        sa.PrimaryKeyConstraint(
+            "self_person_ref", "operation_id", name="pk_temporal_objective_verification_series"
+        ),
+        sa.ForeignKeyConstraint(
+            ["source_native_ref"],
+            ["dante.native_address.native_ref"],
+            name="fk_temporal_objective_verification_series_source",
+            ondelete="CASCADE",
+        ),
+        sa.ForeignKeyConstraint(
+            ["selected_occurrence_ref"],
+            ["dante.occurrence.occurrence_ref"],
+            name="fk_temporal_objective_verification_series_occurrence",
+            ondelete="SET NULL",
+        ),
+        sa.ForeignKeyConstraint(
+            ["self_person_ref"],
+            ["dante.person.person_ref"],
+            name="fk_temporal_objective_verification_series_person",
+        ),
+        sa.CheckConstraint(
+            "mode_code IN ('none','review_on_end')",
+            name=op.f("ck_temporal_objective_verification_series_mode"),
+        ),
+        sa.CheckConstraint(
+            "template_slot BETWEEN 0 AND 99 AND isfinite(anchor_at) AND isfinite(accepted_at)",
+            name=op.f("ck_temporal_objective_verification_series_shape"),
+        ),
         schema="dante",
     )
     op.create_index(
@@ -59,7 +107,10 @@ def upgrade() -> None:
         schema="dante",
     )
     conn = op.get_bind()
-    for name in ("temporal_objective_verification_revision", "temporal_objective_verification_series"):
+    for name in (
+        "temporal_objective_verification_revision",
+        "temporal_objective_verification_series",
+    ):
         conn.exec_driver_sql(f"ALTER TABLE dante.{name} OWNER TO dante_owner")
         conn.exec_driver_sql(f"REVOKE ALL ON dante.{name} FROM PUBLIC,dante_runtime,dante_migrator")
     for sql in (_GET, _SET, _APPLY_SERIES):
@@ -70,7 +121,9 @@ def upgrade() -> None:
         "apply_self_objective_verification_series(uuid,uuid,text,text)",
     ):
         conn.exec_driver_sql(f"ALTER FUNCTION dante.{signature} OWNER TO dante_owner")
-        conn.exec_driver_sql(f"REVOKE ALL ON FUNCTION dante.{signature} FROM PUBLIC,dante_runtime,dante_migrator")
+        conn.exec_driver_sql(
+            f"REVOKE ALL ON FUNCTION dante.{signature} FROM PUBLIC,dante_runtime,dante_migrator"
+        )
         conn.exec_driver_sql(f"GRANT EXECUTE ON FUNCTION dante.{signature} TO dante_runtime")
 
 

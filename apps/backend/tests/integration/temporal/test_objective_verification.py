@@ -76,9 +76,7 @@ def test_objective_verification_persists_independently_and_replays(
         definition = client.get(definition_path, headers=_base_headers())
         assert definition.status_code == 200, definition.text
         assert definition.json()["verification_mode"] == initial_mode
-        assert definition.json()["verification_revision"] == (
-            0 if initial_mode == "none" else 1
-        )
+        assert definition.json()["verification_revision"] == (0 if initial_mode == "none" else 1)
         assert definition.json()["definition_revision"] == 0
 
         target = "review_on_end" if initial_mode == "none" else "none"
@@ -102,14 +100,9 @@ def test_objective_verification_persists_independently_and_replays(
         assert changed_state.json()["verification_revision"] == (
             edit["expected_verification_revision"] + 1
         )
+        assert client.put(definition_path, json=edit, headers=headers).status_code == 200
         assert (
-            client.put(definition_path, json=edit, headers=headers).status_code
-            == 200
-        )
-        assert (
-            client.get(definition_path, headers=_base_headers()).json()[
-                "verification_revision"
-            ]
+            client.get(definition_path, headers=_base_headers()).json()["verification_revision"]
             == edit["expected_verification_revision"] + 1
         )
         stale_edit = {
@@ -121,9 +114,7 @@ def test_objective_verification_persists_independently_and_replays(
         stale = client.put(definition_path, json=stale_edit, headers=headers)
         assert stale.status_code == 409, stale.text
         assert (
-            client.get(definition_path, headers=_base_headers()).json()[
-                "verification_revision"
-            ]
+            client.get(definition_path, headers=_base_headers()).json()["verification_revision"]
             == edit["expected_verification_revision"] + 1
         )
         with psycopg.connect(

@@ -36,8 +36,7 @@ export type TemporalCreateObjectiveKind =
 export type TemporalCreateObjectiveComparator =
   'eq' | 'gte' | 'lte' | 'between';
 
-export type TemporalCreateObjectiveVerificationMode =
-  'none' | 'review_on_end';
+export type TemporalCreateObjectiveVerificationMode = 'none' | 'review_on_end';
 
 export type TemporalCreateObjectiveDraft = Readonly<{
   id: string;

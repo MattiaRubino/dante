@@ -780,16 +780,19 @@ class TemporalObjectiveVerificationRevisionRow(Base):
 
     __table_args__ = (
         UniqueConstraint(
-            "self_person_ref", "operation_id",
+            "self_person_ref",
+            "operation_id",
             name="uq_temporal_objective_verification_operation",
         ),
         ForeignKeyConstraint(
-            ["objective_ref"], ["dante.temporal_objective.objective_ref"],
+            ["objective_ref"],
+            ["dante.temporal_objective.objective_ref"],
             name="fk_temporal_objective_verification_objective",
             ondelete="CASCADE",
         ),
         ForeignKeyConstraint(
-            ["self_person_ref"], ["dante.person.person_ref"],
+            ["self_person_ref"],
+            ["dante.person.person_ref"],
             name="fk_temporal_objective_verification_person",
         ),
         CheckConstraint(
@@ -831,17 +834,20 @@ class TemporalObjectiveVerificationSeriesRow(Base):
 
     __table_args__ = (
         ForeignKeyConstraint(
-            ["source_native_ref"], ["dante.native_address.native_ref"],
+            ["source_native_ref"],
+            ["dante.native_address.native_ref"],
             name="fk_temporal_objective_verification_series_source",
             ondelete="CASCADE",
         ),
         ForeignKeyConstraint(
-            ["selected_occurrence_ref"], ["dante.occurrence.occurrence_ref"],
+            ["selected_occurrence_ref"],
+            ["dante.occurrence.occurrence_ref"],
             name="fk_temporal_objective_verification_series_occurrence",
             ondelete="SET NULL",
         ),
         ForeignKeyConstraint(
-            ["self_person_ref"], ["dante.person.person_ref"],
+            ["self_person_ref"],
+            ["dante.person.person_ref"],
             name="fk_temporal_objective_verification_series_person",
         ),
         CheckConstraint(
@@ -854,6 +860,8 @@ class TemporalObjectiveVerificationSeriesRow(Base):
         ),
         Index(
             "ix_temporal_objective_verification_series_source",
-            "source_native_ref", "template_slot", "accepted_at",
+            "source_native_ref",
+            "template_slot",
+            "accepted_at",
         ),
     )

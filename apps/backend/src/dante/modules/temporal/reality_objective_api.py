@@ -659,13 +659,22 @@ async def _create_objective(
                     expected_revision=0,
                 )
             state = (
-                await session.execute(
-                    text("SELECT * FROM dante.get_self_objective_verification(:actor,:objective)"),
-                    {"actor": context.self_person_ref, "objective": row["objective_ref"]},
+                (
+                    await session.execute(
+                        text(
+                            "SELECT * FROM dante.get_self_objective_verification(:actor,:objective)"
+                        ),
+                        {"actor": context.self_person_ref, "objective": row["objective_ref"]},
+                    )
                 )
-            ).mappings().one()
-            row = {**dict(row), "verification_mode": state["mode_code"],
-                   "verification_revision": state["verification_revision"]}
+                .mappings()
+                .one()
+            )
+            row = {
+                **dict(row),
+                "verification_mode": state["mode_code"],
+                "verification_revision": state["verification_revision"],
+            }
     except DBAPIError as exc:
         raise _problem(exc, noun="objective") from exc
     except SQLAlchemyError as exc:
@@ -910,29 +919,33 @@ async def _apply_objective_edits_in_session(
                 ":unit,:ordering,:evaluation)"
             )
         accepted = (
-            await session.execute(
-            text(statement),
-            {
-                "actor": actor,
-                "objective": revision.objective_ref,
-                "operation": change.operation_id,
-                "fingerprint": _fingerprint(intent),
-                "expected": change.expected_revision,
-                "source_expected": change.expected_source_revision,
-                "recurrence_expected": change.expected_recurrence_state_ref,
-                "zone": effective_zone_id,
-                "label": change.label,
-                "kind": change.result_kind,
-                "comparator": change.comparator_code,
-                "target": change.target_value,
-                "minimum": change.target_min,
-                "maximum": change.target_max,
-                "unit": change.unit_code,
-                "ordering": change.presentation_order,
-                "evaluation": uuid7(),
-            },
+            (
+                await session.execute(
+                    text(statement),
+                    {
+                        "actor": actor,
+                        "objective": revision.objective_ref,
+                        "operation": change.operation_id,
+                        "fingerprint": _fingerprint(intent),
+                        "expected": change.expected_revision,
+                        "source_expected": change.expected_source_revision,
+                        "recurrence_expected": change.expected_recurrence_state_ref,
+                        "zone": effective_zone_id,
+                        "label": change.label,
+                        "kind": change.result_kind,
+                        "comparator": change.comparator_code,
+                        "target": change.target_value,
+                        "minimum": change.target_min,
+                        "maximum": change.target_max,
+                        "unit": change.unit_code,
+                        "ordering": change.presentation_order,
+                        "evaluation": uuid7(),
+                    },
+                )
             )
-        ).mappings().one()
+            .mappings()
+            .one()
+        )
         if change.verification_mode is not None:
             if change.scope_code == "this_and_following":
                 await _apply_series_verification_in_session(
@@ -944,18 +957,21 @@ async def _apply_objective_edits_in_session(
                 )
             else:
                 current = (
-                    await session.execute(
-                        text(
-                            "SELECT * FROM dante.get_self_objective_verification("
-                            ":actor,:objective)"
-                        ),
-                        {"actor": actor, "objective": revision.objective_ref},
+                    (
+                        await session.execute(
+                            text(
+                                "SELECT * FROM dante.get_self_objective_verification("
+                                ":actor,:objective)"
+                            ),
+                            {"actor": actor, "objective": revision.objective_ref},
+                        )
                     )
-                ).mappings().one()
+                    .mappings()
+                    .one()
+                )
                 if (
                     change.expected_verification_revision is not None
-                    and current["verification_revision"]
-                    != change.expected_verification_revision
+                    and current["verification_revision"] != change.expected_verification_revision
                     and not accepted["replayed"]
                 ):
                     raise ProblemError(
@@ -1013,33 +1029,37 @@ async def _apply_objective_edits_in_session(
                     :label,:kind,:comparator,:target,:minimum,:maximum,:unit,:ordering)
             """
         created = (
-            await session.execute(
-                text(statement),
-            {
-                "actor": actor,
-                "operation": addition.operation_id,
-                "fingerprint": _fingerprint(
+            (
+                await session.execute(
+                    text(statement),
                     {
-                        "version": 1,
+                        "actor": actor,
+                        "operation": addition.operation_id,
+                        "fingerprint": _fingerprint(
+                            {
+                                "version": 1,
+                                "subject_kind": subject_kind,
+                                "subject_native_ref": str(subject_ref),
+                                **_objective_intent(addition),
+                            }
+                        ),
+                        "objective": uuid7(),
                         "subject_kind": subject_kind,
-                        "subject_native_ref": str(subject_ref),
-                        **_objective_intent(addition),
-                    }
-                ),
-                "objective": uuid7(),
-                "subject_kind": subject_kind,
-                "subject": subject_ref,
-                "label": addition.label,
-                "kind": addition.result_kind,
-                "comparator": addition.comparator_code,
-                "target": addition.target_value,
-                "minimum": addition.target_min,
-                "maximum": addition.target_max,
-                "unit": addition.unit_code,
-                "ordering": addition.presentation_order,
-                },
+                        "subject": subject_ref,
+                        "label": addition.label,
+                        "kind": addition.result_kind,
+                        "comparator": addition.comparator_code,
+                        "target": addition.target_value,
+                        "minimum": addition.target_min,
+                        "maximum": addition.target_max,
+                        "unit": addition.unit_code,
+                        "ordering": addition.presentation_order,
+                    },
+                )
             )
-        ).mappings().one()
+            .mappings()
+            .one()
+        )
         if addition.verification_mode != "none":
             await _set_objective_verification_in_session(
                 session,
@@ -1337,14 +1357,18 @@ async def revise_objective_definition(
                     )
                 else:
                     current = (
-                        await session.execute(
-                            text(
-                                "SELECT * FROM dante.get_self_objective_verification("
-                                ":actor,:objective)"
-                            ),
-                            {"actor": context.self_person_ref, "objective": objective_ref},
+                        (
+                            await session.execute(
+                                text(
+                                    "SELECT * FROM dante.get_self_objective_verification("
+                                    ":actor,:objective)"
+                                ),
+                                {"actor": context.self_person_ref, "objective": objective_ref},
+                            )
                         )
-                    ).mappings().one()
+                        .mappings()
+                        .one()
+                    )
                     if (
                         payload.expected_verification_revision is not None
                         and current["verification_revision"]

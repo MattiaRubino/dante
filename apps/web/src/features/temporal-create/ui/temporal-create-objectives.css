@@ -158,7 +158,10 @@
 
 .temporal-create-objective__definition[data-result-kind='quantity'],
 .temporal-create-objective__definition[data-result-kind='range'] {
-  grid-template-columns: minmax(96px, 0.8fr) minmax(78px, 0.65fr) minmax(100px, 1fr) minmax(100px, 1fr);
+  grid-template-columns: minmax(96px, 0.8fr) minmax(78px, 0.65fr) minmax(
+      100px,
+      1fr
+    ) minmax(100px, 1fr);
 }
 
 .temporal-create-objective__definition label {

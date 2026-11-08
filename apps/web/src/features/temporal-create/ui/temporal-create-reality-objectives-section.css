@@ -52,7 +52,8 @@
 }
 
 .temporal-create-reality-objectives__block.is-objectives
-  .temporal-create-reality-objectives__block-copy span {
+  .temporal-create-reality-objectives__block-copy
+  span {
   display: none;
 }
 
