@@ -86,6 +86,19 @@ test('Advanced Activity and Event share one actual title rail without displaced 
     });
   }
 
+  const objectivePanel = dialog.locator('.temporal-create-reality-objectives');
+  const objectiveHeading = objectivePanel.locator(
+    '.temporal-create-reality-objectives__block-copy strong',
+  );
+  await expect(objectiveHeading).toBeVisible();
+  const activityHeadingTopGap = await objectiveHeading.evaluate((heading) => {
+    const panel = heading.closest('.temporal-create-reality-objectives');
+    if (!panel) throw new Error('Objective panel is missing.');
+    return heading.getBoundingClientRect().top - panel.getBoundingClientRect().top;
+  });
+  expect(activityHeadingTopGap).toBeGreaterThan(10);
+  expect(activityHeadingTopGap).toBeLessThan(23);
+
   const activity = await rail('activity');
   const eventChoice = dialog.getByRole('radio', {
     name: 'Evento',
@@ -95,6 +108,13 @@ test('Advanced Activity and Event share one actual title rail without displaced 
   await eventChoice.click();
   await expect(eventChoice).toHaveAttribute('aria-checked', 'true');
   const event = await rail('event');
+  const eventHeadingTopGap = await objectiveHeading.evaluate((heading) => {
+    const panel = heading.closest('.temporal-create-reality-objectives');
+    if (!panel) throw new Error('Objective panel is missing.');
+    return heading.getBoundingClientRect().top - panel.getBoundingClientRect().top;
+  });
+  expect(eventHeadingTopGap).toBeCloseTo(activityHeadingTopGap, 0);
+  expect(eventHeadingTopGap).toBeLessThan(23);
 
   for (const result of [activity, event]) {
     expect(result.children).toBe(3);

@@ -600,7 +600,7 @@
 
 .timeline-event-modal--edit .timeline-activity-editor__outcome {
   display: grid;
-  padding: 14px 16px;
+  padding: 10px 16px 14px;
   border-radius: 14px;
   background: color-mix(
     in srgb,
@@ -622,7 +622,7 @@
   align-items: start;
   min-width: 0;
   margin: 0;
-  padding: 10px 0 0;
+  padding: 6px 0 0;
   border: 0;
   background: transparent;
 }

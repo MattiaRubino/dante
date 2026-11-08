@@ -272,6 +272,11 @@ describe('TemporalCreateComposer', () => {
       />,
     );
 
+    const lifeArea = screen.getByRole('textbox', {
+      name: 'Life Area (opzionale)',
+    });
+    expect(lifeArea.getAttribute('title')).toBeNull();
+    expect(lifeArea.getAttribute('maxlength')).toBe('100');
     const eventTitleRow = document.querySelector('.temporal-event-title-row');
     expect(eventTitleRow).not.toBeNull();
     expect(eventTitleRow?.querySelector('[data-create-path="title"]')).toBeTruthy();
