@@ -7,7 +7,6 @@ from uuid import UUID
 from sqlalchemy import (
     BigInteger,
     Boolean,
-    Boolean,
     CheckConstraint,
     DateTime,
     ForeignKeyConstraint,

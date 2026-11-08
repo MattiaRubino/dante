@@ -634,6 +634,7 @@ async def test_revised_event_structure_follows_governing_recurrence_state(
     finally:
         await runtime.dispose()
 
+
 @pytest.mark.asyncio
 async def test_protected_recurring_event_create_replay_and_manual_unlock_are_preserved(
     migrated_database: Any,
@@ -738,6 +739,7 @@ async def test_protected_recurring_event_create_replay_and_manual_unlock_are_pre
         assert preserved.revision == manually_unlocked.revision
     finally:
         await runtime.dispose()
+
 
 def _daily_named_zone() -> CalendarRecurrence:
     return CalendarRecurrence(

@@ -145,6 +145,7 @@ class _ObjectiveDefinitionFields(BaseModel):
     target_max: Decimal | None = None
     unit_code: str | None = Field(default=None, max_length=40)
     presentation_order: int = Field(ge=0, le=999)
+
     @model_validator(mode="after")
     def validate_shape(self) -> Self:
         # The materializer reserves this namespace for canonical Objective
