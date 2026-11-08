@@ -1,5 +1,14 @@
 # Timeline / Temporal-Operational — Workstream Handoff
 
+## 2026-11-08 — E2E monthly false-negative analysis and Activity hard-delete diagnostics
+
+Reviewed owner `TEMPORAL_QA_054607866` browser traces. Monthly-ordinal Activity Create submitted `monthly_ordinal_weekdays` with default first Monday even though its `effective_from` was Thursday 2026-11-12. Canonical Timeline responses did eventually contain the December ordinal Occurrence: the test was incorrectly requiring the first item on the selected date without configuring the ordinal to include that date. Shared journey authoring now selects the starting civil date's ordinal and weekday explicitly (fifth occurrence uses the last weekday), checks both UI selection and the persisted API rule. The monthly Event failure was likewise a test selector error: its second-month cadence variant was all-day, shown as `data-timeline-all-day-item` in `data-timeline-all-day-lane`, not `data-timeline-event` in the timed grid. The journey now verifies that civil-day lane and its title, without weakening visibility requirements.
+
+The one-off Activity Create→Edit→Duplicate→Delete failure is a real HTTP 503 with code `temporal.activity_profile.unavailable`, not a test-selector issue; its request carried an empty-session SHA-256 fingerprint. The original DBAPI exception was mapped to a public generic 503. The hard-delete API now logs safe `sqlstate` and constraint identifiers (no SQL parameter values, titles or user identifiers) for unexpected errors. This is **diagnostics only**, not a database fix. A previously added PostgreSQL regression covers hard-deleting an edited scheduled Activity while preserving its independent duplicate; run it against the current branch and use its failure if any to diagnose the canonical SQL graph.
+
+Retain strict Create/Edit/Save/series and owner-history checks. Next owner run should use only relevant Chromium journey tests with bounded timeouts, collect the internal SQLSTATE for the 503, and keep the full seven journeys and parallel gate for after actual SQL/domain defects are repaired. No forward migration was rewritten in this checkpoint.
+
+
 ## 2026-11-08 — User-lifecycle E2E performance and bounded-failure follow-up
 
 Owner QA archive `TEMPORAL_QA_054607866.tar.gz` on `054607866`: backend 51/51 PostgreSQL, Web 117/117 Vitest, Ruff/MyPy/Dictionary/ESLint PASS; one backend formatting issue and one Web Prettier issue; authenticated Chromium user lifecycle 1 PASS / 6 FAIL, approximately 5m 18s.
