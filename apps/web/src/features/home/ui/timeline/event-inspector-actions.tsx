@@ -446,8 +446,9 @@ export function EventInspectorActions({
             current.targetMax !== original.targetMax ||
             current.unitCode !== original.unitCode ||
             current.presentationOrder !== original.presentationOrder ||
-            current.verificationMode !== (original.verificationMode ?? 'none') ||
-            current.verificationRevision !==
+            (current.verificationMode ?? 'none') !==
+              (original.verificationMode ?? 'none') ||
+            (current.verificationRevision ?? 0) !==
               (original.verificationRevision ?? 0)
           ) {
             throw new Error(

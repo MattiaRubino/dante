@@ -962,7 +962,10 @@ export function ActivityEditPanel({
     const definitions = await Promise.all(
       changed.map(async (row) => {
         if (row.revisionBasis !== null) {
-          return { definitionRevision: row.revisionBasis };
+          return {
+            definitionRevision: row.revisionBasis,
+            verificationRevision: row.original?.verificationRevision ?? 0,
+          };
         }
         const current = await objectiveSource.getDefinition(row.objectiveRef!);
         const original = row.original!;
@@ -975,8 +978,9 @@ export function ActivityEditPanel({
           current.targetMax !== original.targetMax ||
           current.unitCode !== original.unitCode ||
           current.presentationOrder !== original.presentationOrder ||
-          current.verificationMode !== (original.verificationMode ?? 'none') ||
-          current.verificationRevision !==
+          (current.verificationMode ?? 'none') !==
+            (original.verificationMode ?? 'none') ||
+          (current.verificationRevision ?? 0) !==
             (original.verificationRevision ?? 0)
         ) {
           throw new Error(

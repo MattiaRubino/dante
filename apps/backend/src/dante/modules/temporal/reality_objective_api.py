@@ -963,7 +963,7 @@ async def _apply_objective_edits_in_session(
                         code="temporal.objective.verification_stale",
                         category="conflict",
                         title="Verifica obiettivo modificata",
-                        detail="Riapri Modifica per aggiornare l’obiettivo.",
+                        detail="Riapri Modifica per aggiornare l'obiettivo.",
                     )
                 if current["mode_code"] != change.verification_mode:
                     await _set_objective_verification_in_session(
@@ -1356,7 +1356,7 @@ async def revise_objective_definition(
                             code="temporal.objective.verification_stale",
                             category="conflict",
                             title="Verifica obiettivo modificata",
-                            detail="Riapri Modifica per aggiornare l’obiettivo.",
+                            detail="Riapri Modifica per aggiornare l'obiettivo.",
                         )
                     if current["mode_code"] != payload.verification_mode:
                         await _set_objective_verification_in_session(
