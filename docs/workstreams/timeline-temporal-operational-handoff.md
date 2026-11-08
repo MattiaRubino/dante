@@ -1,5 +1,45 @@
 # Timeline / Temporal-Operational — Workstream Handoff
 
+## 2026-11-08 — Editor parity work checkpoint (user visual review)
+
+User approved a restrained typography increase based on Google Calendar and
+Notion comparison: high-contrast **15px** structural headings, approximately
+**14px** prominent controls and **36–38px** authoring button targets. The
+shared authoring stylesheet is imported by Advanced Create and Activity/Event
+Edit surfaces. It excludes Quick Create, the Timeline and tiny clock-segment
+arrows. Description in Edit now uses the same bordered panel geometry as
+Advanced Create. Playwright checks the shared heading and Description panel.
+
+The Sessioni attività and Scaletta headings remain hidden in their **empty**
+state and appear after the first item, as the user explicitly requested.
+Sessioni attività replaces the obsolete Sessioni pianificate accessible name.
+Recurring-series advanced UI no longer allows timing an individual named
+Session or editing sub-activity guard policy. Existing historical template
+fields remain persisted, not rewritten by this removal.
+
+Event Edit now offers Objective result correction through the existing
+CAS-protected `/api/v1/temporal/objectives/{ref}/correction` API with
+`expected_evaluation_state_ref`, preserving the prior observation and
+evaluation history, plus a focused regression test. The correction keeps
+recorded result state distinct from edited Objective definitions.
+
+**Not yet implemented and must not be represented as completed:**
+- Event placement lock **inside** Create, Event Edit and recurring Event
+  Series/Occurrence Edit. Backend has canonical lock read/mutation for a
+  Schedule, but the Event atomic-edit aggregate and recurring local edit
+  do not yet include lock changes. Avoid a hidden immediate mutation that
+  violates Cancel or causes partial Save.
+- Full parity of Life Area/color edits and single-vs-future occurrence scope.
+  Avoid global Life Area color writes as a by-product of a local edit.
+- Full reuse/parity of recurrence authoring UI and mapping between Create
+  rules and Series Edit inventory. Preserve the approved selected-inclusive
+  `Solo questa` / `Questa e le prossime` semantics.
+
+**Verification pending on exact HEAD:** Prettier, ESLint, TS, focused
+Vitest/Playwright, authenticated round-trip, Postgres and full parallel gate.
+Do not claim those checks as green without new owner-provided output.
+
+
 ## 2026-11-08 — Advanced Create/Edit visual parity and series cleanup
 
 **Visual decision:** 15px high-contrast sentence-case structural headings;
