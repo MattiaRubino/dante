@@ -200,7 +200,7 @@ export function TemporalCreateAdvancedActivityStructure({
           className="temporal-create-activity-tree__root-sessions"
           data-create-path="plannedSessions"
         >
-          <div className="temporal-create-activity-tree__group-label">
+          <div className="temporal-create-activity-tree__group-label temporal-editor-section-heading">
             {italian ? 'Sessioni attività' : 'Activity sessions'}
           </div>
           {structure.plannedSlices.map((slice) => {

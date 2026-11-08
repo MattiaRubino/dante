@@ -59,6 +59,7 @@ import '../../../temporal-create/ui/temporal-create-activity-polish.css';
 import '../../../temporal-create/ui/temporal-create-advanced-activity-structure.css';
 import '../../../temporal-create/ui/temporal-create-session-time-polish.css';
 import './activity-edit-panel.css';
+import '../../../temporal-create/ui/temporal-editor-section-typography.css';
 import { ExistingRecurrenceControl } from './existing-recurrence-control';
 import { SessionAttemptDeleteDialog } from './session-attempt-delete-dialog';
 import { UnsavedChangesDialog } from './unsaved-changes-dialog';
@@ -1532,7 +1533,7 @@ export function ActivityEditPanel({
                 !deletedPlanned.includes(row.scheduleRef),
             ) || newPlanned.length > 0 ? (
               <div className="temporal-create-activity-tree__root-sessions">
-                <div className="temporal-create-activity-tree__group-label">
+                <div className="temporal-create-activity-tree__group-label temporal-editor-section-heading">
                   Sessioni attività
                 </div>
                 {settings.schedules
@@ -2226,7 +2227,7 @@ export function ActivityEditPanel({
                 aria-label="Obiettivi attuali"
               >
                 <div className="temporal-create-reality-objectives__block-copy">
-                  <strong>Obiettivi</strong>
+                  <strong className="temporal-editor-section-heading">Obiettivi</strong>
                 </div>
                 <div
                   className="timeline-activity-editor__objectives"

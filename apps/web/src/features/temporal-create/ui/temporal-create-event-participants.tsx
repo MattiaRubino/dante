@@ -150,7 +150,9 @@ export function TemporalEventParticipantsFields({
       aria-label={italian ? 'Partecipanti evento' : 'Event participants'}
     >
       <div className="temporal-create-event-participants__heading">
-        <strong>{italian ? 'Partecipanti' : 'Participants'}</strong>
+        <strong className="temporal-editor-section-heading">
+          {italian ? 'Partecipanti' : 'Participants'}
+        </strong>
         <span>
           {italian
             ? 'Attesi per questo evento; non concede accesso alla tua Timeline.'

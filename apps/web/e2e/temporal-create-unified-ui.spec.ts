@@ -145,13 +145,16 @@ test('Activity Edit applies readable font sizes rather than inherited tiny label
   await page.addStyleTag({
     path: 'src/features/home/ui/timeline/activity-edit-panel.css',
   });
+  await page.addStyleTag({
+    path: 'src/features/temporal-create/ui/temporal-editor-section-typography.css',
+  });
   const fonts = await page.evaluate(() => {
     const root = document.createElement('div');
     root.className = 'timeline-event-modal--edit';
     root.innerHTML = `
       <div class="timeline-activity-editor__body">
         <div class="temporal-create-reality-objectives__block-copy">
-          <strong>Obiettivi</strong>
+          <strong class="temporal-editor-section-heading">Obiettivi</strong>
         </div>
         <div class="timeline-activity-editor__repeat">Ripeti · Mai</div>
         <div class="temporal-create-objectives__root-actions">
@@ -170,7 +173,7 @@ test('Activity Edit applies readable font sizes rather than inherited tiny label
     return result;
   });
   expect(fonts).toEqual({
-    primary: '14px',
+    primary: '15px',
     repeat: '14px',
     objective: '14px',
   });

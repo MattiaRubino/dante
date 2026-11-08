@@ -179,7 +179,7 @@ export function TemporalCreateEventAgenda({
       ) : null}
       {parts.length > 0 ? (
         <div className="temporal-create-event-agenda__list" role="list">
-          <div className="temporal-create-event-agenda__group-label">
+          <div className="temporal-create-event-agenda__group-label temporal-editor-section-heading">
             {italian ? 'Scaletta' : 'Run of show'}
           </div>
           {parts.map((part, index) => (

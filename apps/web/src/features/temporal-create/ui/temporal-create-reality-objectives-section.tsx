@@ -28,7 +28,9 @@ export function TemporalCreateRealityObjectivesSection({ fields }: Props) {
         data-create-path="objectives"
       >
         <div className="temporal-create-reality-objectives__block-copy">
-          <strong>{italian ? 'Obiettivi' : 'Objectives'}</strong>
+          <strong className="temporal-editor-section-heading">
+            {italian ? 'Obiettivi' : 'Objectives'}
+          </strong>
         </div>
         <TemporalCreateObjectives />
       </div>

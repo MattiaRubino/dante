@@ -39,6 +39,7 @@ import { createRemoteTemporalResponsibilityDataSource } from '../../../temporal/
 import { systemTemporalIdFactory } from '../../../temporal/model';
 import type { ActivityDuplicateSeed } from '../../../temporal-create/application/activity-duplicate-seed';
 import { TemporalCreateEventAgenda } from '../../../temporal-create/ui/temporal-create-event-agenda';
+import '../../../temporal-create/ui/temporal-editor-section-typography.css';
 import { TemporalEventParticipantsFields } from '../../../temporal-create/ui/temporal-create-event-participants';
 import type { TemporalCreateEventParticipantDraft } from '../../../temporal-create/model/temporal-create-u2-authoring';
 import { TemporalReminderControl } from '../../../temporal-create/ui/temporal-create-quick-reminder';
@@ -1312,7 +1313,7 @@ export function EventInspectorActions({
                   aria-label="Obiettivi attuali"
                 >
                   <div className="temporal-create-reality-objectives__block-copy">
-                    <strong>Obiettivi</strong>
+                    <strong className="temporal-editor-section-heading">Obiettivi</strong>
                   </div>
                   <div
                     className="timeline-activity-editor__objectives"

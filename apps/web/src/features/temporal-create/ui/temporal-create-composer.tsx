@@ -33,6 +33,8 @@ import { TemporalCreateU2DraftProvider } from './temporal-create-u2-draft-contex
 import { TemporalPanelCloseButton } from './temporal-panel-close-button';
 import type { TemporalCreateContextOption } from './temporal-create-ui-types';
 
+import './temporal-editor-section-typography.css';
+
 export type { TemporalCreateContextOption } from './temporal-create-ui-types';
 
 type TemporalCreateComposerProps = Readonly<{

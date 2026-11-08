@@ -27,6 +27,7 @@ import type {
 import { TemporalReminderControl } from '../../../temporal-create/ui/temporal-create-quick-reminder';
 import '../../../temporal-create/ui/temporal-create-calendar-recurrence-fields.css';
 import './activity-edit-panel.css';
+import '../../../temporal-create/ui/temporal-editor-section-typography.css';
 
 type Entry = Record<string, unknown>;
 
@@ -745,7 +746,7 @@ export function RecurringSeriesEditor({
                 />
                 {sessions.length > 0 ? (
                   <div className="temporal-create-activity-tree__root-sessions">
-                    <div className="temporal-create-activity-tree__group-label">
+                    <div className="temporal-create-activity-tree__group-label temporal-editor-section-heading">
                       Sessioni attività
                     </div>
                     {sessions.map((row, index) => (
@@ -1645,7 +1646,7 @@ export function RecurringSeriesEditor({
             >
               <div className="temporal-create-reality-objectives__block is-objectives timeline-activity-editor__readback">
                 <div className="temporal-create-reality-objectives__block-copy">
-                  <strong>Obiettivi</strong>
+                  <strong className="temporal-editor-section-heading">Obiettivi</strong>
                 </div>
                 <div className="timeline-activity-editor__objectives">
                   {objectives.map((row, index) => (
