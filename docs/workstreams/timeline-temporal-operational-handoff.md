@@ -1,5 +1,12 @@
 # Timeline / Temporal-Operational — Workstream Handoff
 
+## 2026-11-08 — First vertical audit: Event conversion movement lock (candidate)
+
+A direct code audit of one-off-to-recurring conversion found a real contract discrepancy: `recurring_conversion._existing_activity` explicitly copies `placement_protected` from the accepted Activity lock into the future Routine template, but `_existing_event` previously constructed `EventAuthoringPolicy` without this field, silently defaulting to false. The accepted original Event remained locked, while newly materialized future Events were unlocked despite the owner's chosen policy. The conversion now reads the self-scoped canonical Schedule lock within its SERIALIZABLE transaction, forwards the result into the versioned Event template validation and `EventOccurrencePolicyApplication.set_in_session`. An existing PostgreSQL integration test now locks the original Event and asserts both the original and next materialized Event Schedule remain locked after conversion.
+
+**Verification status NOT RUN on this commit:** the owner must run `test_existing_activity_recurrence.py` under PostgreSQL and the broader recurrence gate. Further audit of one-off conversion's multi-command Save semantics, idempotency, timezone and editor refresh is still open; no atomicity across the UI's two separate Save/Start backend transactions is implied.
+
+
 ## 2026-11-08 — Shared recurrence editor and interval-only Activity timing (candidate)
 
 **Scope:** recurrence *presentation* in Advanced Create, standalone Activity/Event Edit and Activity/Event structural-series Edit. The Create/standalone `TemporalCreateCalendarRecurrenceFields` now embeds inside the new shared `TemporalRecurrencePanel`: heading "Ripetizione", selector inside the same card, detailed fields revealed beneath the selector only when configured. The series editor uses that same outer component, loads the selected versioned source values, and opens its detailed controls by default, without the former `Ripeti · Serie attiva` disclosure. The broader series-specific calendar patterns remain supported and are not silently flattened to Create presets. Activity single-occurrence Edit hides the read-only recurrence banner entirely; Event selected-Occurrence Edit already omits it.

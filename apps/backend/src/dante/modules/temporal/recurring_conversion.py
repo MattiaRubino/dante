@@ -453,6 +453,15 @@ async def _existing_event(
     lead = reminder["lead_minutes"] if reminder and reminder["enabled"] else None
     if all_day and lead is not None:
         raise RecurringConversionUnsupportedError("An all-day Event cannot have a clock Reminder.")
+    # A converted Event must pass its accepted movement policy to future
+    # Occurrences. A missing lock row is not an unlocked Schedule: the
+    # owner-scoped getter supplies the canonical default explicitly.
+    placement_protected = await session.scalar(
+        text("SELECT locked FROM dante.get_self_schedule_placement_lock(:actor,:schedule)"),
+        {"actor": actor, "schedule": basis.schedule_ref},
+    )
+    if placement_protected is None:
+        raise RecurringConversionConflictError("The Event Schedule lock is unavailable.")
     policy = EventAuthoringPolicy(
         placement_kind="all_day" if all_day else "timed",
         duration_minutes=minutes,
@@ -460,6 +469,7 @@ async def _existing_event(
         reminder_lead_minutes=lead,
         reality_mode=reality or "manual",
         objectives=objectives,
+        placement_protected=placement_protected,
     )
     try:
         _validate_structure(
@@ -473,6 +483,7 @@ async def _existing_event(
                 "reminder_lead_minutes": lead,
                 "reality_mode": policy.reality_mode,
                 "objectives": list(objectives),
+                "placement_protected": policy.placement_protected,
                 "agenda_parts": list(event.agenda_parts),
                 "life_area_ref": str(event.life_area_ref) if event.life_area_ref else None,
             },
@@ -591,6 +602,7 @@ class RecurringConversionApplication:
                     reminder_lead_minutes=policy.reminder_lead_minutes,
                     reality_mode=policy.reality_mode,
                     objectives=policy.objectives,
+                    placement_protected=policy.placement_protected,
                 )
                 checkpoint = await self._occurrences.checkpoint(
                     owner="event",

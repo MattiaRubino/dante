@@ -22,6 +22,7 @@ from dante.modules.temporal.application import (
 from dante.modules.temporal.authoring import TemporalAuthoringApplication
 from dante.modules.temporal.contracts import TimelineWindowQuery
 from dante.modules.temporal.occurrence import CalendarCoordinate, OccurrenceApplication
+from dante.modules.temporal.placement_lock import PlacementLockApplication
 from dante.modules.temporal.recurrence import CalendarRecurrence
 from dante.modules.temporal.recurring_authoring import (
     EventAuthoringPolicy,
@@ -181,6 +182,14 @@ async def test_existing_event_keeps_first_event_and_excludes_duplicate_occurrenc
         original = authored.item.subject_native_ref
         assert authored.schedule is not None
         schedule = authored.schedule
+        locks = PlacementLockApplication(runtime.session_factory)
+        original_lock = await locks.set(
+            self_person_ref=actor,
+            schedule_ref=schedule.schedule_ref,
+            locked=True,
+            expected_revision=None,
+        )
+        assert original_lock.locked is True
         async with runtime.session_factory() as session, session.begin():
             profile_revision = await session.scalar(
                 text("SELECT dante.get_self_event_profile_revision(:actor,:event)"),
@@ -272,6 +281,14 @@ async def test_existing_event_keeps_first_event_and_excludes_duplicate_occurrenc
         assert originals[0].schedule_ref == schedule.schedule_ref
         assert len(following) == 1
         assert following[0].coordinate is not None
+        # Conversion preserves the original lock and extends that policy to
+        # future Event Schedules; re-materialization must not drop it.
+        assert (
+            await locks.get(self_person_ref=actor, schedule_ref=schedule.schedule_ref)
+        ).locked is True
+        assert (
+            await locks.get(self_person_ref=actor, schedule_ref=following[0].schedule_ref)
+        ).locked is True
         assert not [
             item
             for item in window.items
