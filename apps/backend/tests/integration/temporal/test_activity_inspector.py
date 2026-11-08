@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from datetime import UTC, datetime
 from types import SimpleNamespace
 from typing import Any, cast
 
@@ -26,6 +27,7 @@ from dante.modules.temporal.reality_objective_api import (
     ObjectiveCreateCommand,
     create_activity_objective,
 )
+from dante.modules.temporal.schedule import AbsoluteIntervalPlacement
 from dante.modules.temporal.session_runtime import SessionApplication
 from dante.platform.database.references import ScopedRecordRef
 from dante.platform.database.runtime import create_database_runtime
@@ -268,6 +270,111 @@ async def test_profile_revision_and_retirement_are_guarded_and_replayable(
                     {"actor": actor, "activity": activity},
                 )
             ).first() is None
+    finally:
+        await runtime.dispose()
+
+
+@pytest.mark.asyncio
+async def test_hard_delete_of_revised_scheduled_activity_retains_independent_duplicate(
+    migrated_database: Any,
+) -> None:
+    """E2E-shaped lifecycle: schedule, revise, duplicate, confirm hard delete."""
+    actor = _seed_self(migrated_database)
+    runtime = create_database_runtime(migrated_database.runtime_settings())
+    authoring = TemporalAuthoringApplication(runtime.session_factory)
+    placement = AbsoluteIntervalPlacement(
+        starts_at=datetime(2027, 5, 15, 9, 0, tzinfo=UTC),
+        ends_at=datetime(2027, 5, 15, 10, 0, tzinfo=UTC),
+    )
+    try:
+        original = await authoring.create_activity(
+            self_person_ref=actor,
+            operation_id="hard:revised:original",
+            title="Da aggiornare",
+            placement=placement,
+        )
+        duplicate = await authoring.create_activity(
+            self_person_ref=actor,
+            operation_id="hard:revised:duplicate",
+            title="Copia indipendente",
+            placement=placement,
+        )
+        original_ref = original.item.subject_native_ref
+        duplicate_ref = duplicate.item.subject_native_ref
+        assert original_ref != duplicate_ref
+        assert original.schedule is not None
+        assert duplicate.schedule is not None
+        assert original.schedule.schedule_ref != duplicate.schedule.schedule_ref
+
+        async with runtime.session_factory() as session, session.begin():
+            revision = (
+                (
+                    await session.execute(
+                        text(
+                            "SELECT * FROM dante.revise_self_activity_profile("
+                            ":actor,:activity,:operation,:expected,:title,"
+                            ":description,:location,:color)"
+                        ),
+                        {
+                            "actor": actor,
+                            "activity": original_ref,
+                            "operation": "hard:revised:edit",
+                            "expected": 0,
+                            "title": "Titolo aggiornato",
+                            "description": None,
+                            "location": None,
+                            "color": None,
+                        },
+                    )
+                )
+                .mappings()
+                .one()
+            )
+            assert revision["revision"] == 1
+
+        request = cast(
+            Request,
+            SimpleNamespace(app=SimpleNamespace(state=SimpleNamespace(database_runtime=runtime))),
+        )
+        context = cast(DanteContext, SimpleNamespace(self_person_ref=actor))
+        impact = await get_self_activity_session_impact(
+            original_ref, context, request, Response()
+        )
+        deleted = await delete_self_activity_hard(
+            original_ref,
+            ActivityHardDeleteCommand(expected_session_fingerprint=impact.fingerprint),
+            context,
+            request,
+            Response(),
+        )
+        assert deleted.deleted_rows > 0
+
+        with psycopg.connect(
+            **migrated_database.connection_kwargs(
+                "dante_migrator", migrated_database.cluster.migrator_password
+            )
+        ) as connection:
+            connection.execute("SET ROLE dante_owner")
+            assert connection.execute(
+                "SELECT count(*) FROM dante.activity WHERE activity_ref=%s",
+                (original_ref,),
+            ).fetchone() == (0,)
+            assert connection.execute(
+                "SELECT count(*) FROM dante.activity_profile_revision WHERE activity_ref=%s",
+                (original_ref,),
+            ).fetchone() == (0,)
+            assert connection.execute(
+                "SELECT count(*) FROM dante.schedule WHERE schedule_ref=%s",
+                (original.schedule.schedule_ref,),
+            ).fetchone() == (0,)
+            assert connection.execute(
+                "SELECT count(*) FROM dante.activity WHERE activity_ref=%s",
+                (duplicate_ref,),
+            ).fetchone() == (1,)
+            assert connection.execute(
+                "SELECT count(*) FROM dante.schedule WHERE schedule_ref=%s",
+                (duplicate.schedule.schedule_ref,),
+            ).fetchone() == (1,)
     finally:
         await runtime.dispose()
 
