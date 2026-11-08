@@ -62,7 +62,10 @@ import '../../../temporal-create/ui/temporal-create-advanced-activity-structure.
 import '../../../temporal-create/ui/temporal-create-session-time-polish.css';
 import './activity-edit-panel.css';
 import '../../../temporal-create/ui/temporal-editor-section-typography.css';
-import { ExistingRecurrenceControl } from './existing-recurrence-control';
+import {
+  ExistingRecurrenceControl,
+  type ExistingRecurrenceControlHandle,
+} from './existing-recurrence-control';
 import { SessionAttemptDeleteDialog } from './session-attempt-delete-dialog';
 import { UnsavedChangesDialog } from './unsaved-changes-dialog';
 import {
@@ -408,6 +411,13 @@ export function ActivityEditPanel({
   const [objectiveSource] = useState(createRemoteRealityObjectiveDataSource);
   const [recurringSource] = useState(createRemoteRecurringProfileEdit);
   const [existingRecurrence] = useState(createRemoteExistingRecurrence);
+  const recurrenceControl = useRef<ExistingRecurrenceControlHandle>(null);
+  const recurrenceOperation = useRef<string | null>(null);
+  const recurrenceResume = useRef<{
+    profile: ActivityProfile;
+    settings: ActivityEditSettings;
+  } | null>(null);
+  const [recurrenceSelected, setRecurrenceSelected] = useState(false);
   const [recurringContext, setRecurringContext] =
     useState<RecurringProfileContext | null>(null);
   const [recurringLoading, setRecurringLoading] = useState(true);
@@ -618,7 +628,8 @@ export function ActivityEditPanel({
     lockDirty ||
     areaDirty ||
     objectiveDirty ||
-    nameDirty;
+    nameDirty ||
+    recurrenceSelected;
 
   const loadSettings = useCallback(() => {
     return settingsSource
@@ -1102,6 +1113,17 @@ export function ActivityEditPanel({
         )
           return;
         if (planDirty && Object.keys(planErrors).length) return;
+        let proposedRecurrence: ReturnType<
+          ExistingRecurrenceControlHandle['getRule']
+        >;
+        try {
+          proposedRecurrence = recurrenceControl.current?.getRule() ?? null;
+        } catch (reason) {
+          setError(
+            reason instanceof Error ? reason.message : 'Ripetizione non valida.',
+          );
+          return;
+        }
         if (recurringContext && editScope !== 'only_this') {
           if (!seriesPreview || seriesPreviewError) {
             setError(
@@ -1172,6 +1194,53 @@ export function ActivityEditPanel({
         setError('');
         void (async () => {
           if (!recurringContext || editScope === 'only_this') {
+            // Do not replay an accepted atomic edit with stale CAS if the
+            // separate recurrence activation previously failed.
+            if (proposedRecurrence && recurrenceResume.current) {
+              const accepted = recurrenceResume.current;
+              const currentEnvelope = accepted.settings.schedules.find(
+                (row) => row.role === 'envelope',
+              );
+              if (!currentEnvelope?.placementStateRef) {
+                throw new Error('Programmazione Attività non disponibile.');
+              }
+              await existingRecurrence.startActivity(
+                {
+                  activityRef: accepted.profile.activityRef,
+                  expectedProfileRevision: accepted.profile.revision,
+                  envelopeScheduleRef: currentEnvelope.scheduleRef,
+                  expectedPlacementStateRef: currentEnvelope.placementStateRef,
+                },
+                proposedRecurrence,
+                (recurrenceOperation.current ??= crypto.randomUUID()),
+              );
+              recurrenceResume.current = null;
+              onSaved(accepted.profile);
+              return;
+            }
+            if (
+              proposedRecurrence &&
+              !(
+                coreDirty || planDirty || lockDirty || areaDirty ||
+                objectiveDirty || nameDirty
+              )
+            ) {
+              if (!envelope?.placementStateRef) {
+                throw new Error('Programmazione Attività non disponibile.');
+              }
+              await existingRecurrence.startActivity(
+                {
+                  activityRef: profile.activityRef,
+                  expectedProfileRevision: profile.revision,
+                  envelopeScheduleRef: envelope.scheduleRef,
+                  expectedPlacementStateRef: envelope.placementStateRef,
+                },
+                proposedRecurrence,
+                (recurrenceOperation.current ??= crypto.randomUUID()),
+              );
+              onSaved(profile);
+              return;
+            }
             const changed = {
               title: draft.title.trim(),
               description: draft.description.trim() || null,
@@ -1301,6 +1370,29 @@ export function ActivityEditPanel({
             );
             setRemovedObjectives([]);
             setPlanOperation(null);
+            if (proposedRecurrence && !recurringContext) {
+              const currentEnvelope = saved.settings.schedules.find(
+                (row) => row.role === 'envelope',
+              );
+              if (!currentEnvelope?.placementStateRef) {
+                throw new Error('Programmazione Attività non disponibile.');
+              }
+              recurrenceResume.current = {
+                profile: saved.profile,
+                settings: saved.settings,
+              };
+              await existingRecurrence.startActivity(
+                {
+                  activityRef: saved.profile.activityRef,
+                  expectedProfileRevision: saved.profile.revision,
+                  envelopeScheduleRef: currentEnvelope.scheduleRef,
+                  expectedPlacementStateRef: currentEnvelope.placementStateRef,
+                },
+                proposedRecurrence,
+                (recurrenceOperation.current ??= crypto.randomUUID()),
+              );
+              recurrenceResume.current = null;
+            }
             onSaved(saved.profile);
             return;
           }
@@ -1396,7 +1488,11 @@ export function ActivityEditPanel({
               reason instanceof Error
                 ? reason.message
                 : 'Operazione non riuscita.';
-            setError(message);
+            setError(
+              recurrenceResume.current
+                ? `Modifiche salvate, ma ripetizione non avviata: ${message}. Premi di nuovo Salva per riprovare.`
+                : message,
+            );
           })
           .finally(() => {
             setPending(false);
@@ -2069,25 +2165,16 @@ export function ActivityEditPanel({
               </div>
             ) : envelope?.start && envelope.placementStateRef ? (
               <ExistingRecurrenceControl
+                ref={recurrenceControl}
                 kind="activity"
                 date={envelope.start.slice(0, 10)}
                 startTime={envelope.start.slice(11, 16) || '09:00'}
                 allDay={envelope.temporalForm === 'date_span'}
                 zoneId={envelope.zoneId ?? timeZone ?? detectDeviceTimeZone()}
                 disambiguation="earlier"
-                disabled={dirty || recurringLoading || !!recurringError}
-                onStart={async (rule) => {
-                  await existingRecurrence.startActivity(
-                    {
-                      activityRef: profile.activityRef,
-                      expectedProfileRevision: profile.revision,
-                      envelopeScheduleRef: envelope.scheduleRef,
-                      expectedPlacementStateRef: envelope.placementStateRef!,
-                    },
-                    rule,
-                    crypto.randomUUID(),
-                  );
-                  onSaved(profile);
+                onSelectionChange={(selected) => {
+                  setRecurrenceSelected(selected);
+                  recurrenceOperation.current = null;
                 }}
               />
             ) : (
