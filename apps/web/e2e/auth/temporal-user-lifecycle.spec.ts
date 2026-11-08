@@ -5,6 +5,7 @@ import {
   type Page,
   type Response as PlaywrightResponse,
 } from '@playwright/test';
+import { Temporal } from '@dante/time';
 
 import {
   configureCreate,
@@ -365,6 +366,19 @@ test.describe('Timeline — real user Activity/Event lifecycle matrix', () => {
             interval_count: variant.interval,
             effective_from: day,
             clock_basis_code: 'named_zone',
+            ...(variant.monthlyOrdinal
+              ? {
+                  ordinal_weekdays: [
+                    {
+                      weekday_number: Temporal.PlainDate.from(day).dayOfWeek,
+                      ordinal:
+                        Math.ceil(Temporal.PlainDate.from(day).day / 7) === 5
+                          ? -1
+                          : Math.ceil(Temporal.PlainDate.from(day).day / 7),
+                    },
+                  ],
+                }
+              : {}),
             ...(variant.repeatCount
               ? {
                   range_kind: 'expected_count',
