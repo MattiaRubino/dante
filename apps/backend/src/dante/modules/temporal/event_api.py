@@ -869,6 +869,7 @@ class EventAtomicEditCommand(BaseModel):
 class EventAtomicEditResponse(BaseModel):
     event: EventResponse
     objectives: list[ObjectiveResponse]
+    placement_material_state_ref: UUID | None = None
 
 
 @router.put(
@@ -1223,7 +1224,38 @@ async def apply_one_off_event_atomic_edit(
             )
             if saved is None:
                 raise _not_found_problem()
-            return EventAtomicEditResponse(event=_event_response(saved), objectives=objectives)
+            placement_state = None
+            if body.schedule is not None:
+                placement_state = await session.scalar(
+                    text(
+                        "SELECT current_placement.material_state_ref "
+                        "FROM dante.schedule_current_placement AS current_placement "
+                        "JOIN dante.schedule AS schedule_row "
+                        "ON schedule_row.schedule_ref=current_placement.scoped_owner_ref "
+                        "JOIN dante.event_expectation AS owned "
+                        "ON owned.event_ref=schedule_row.subject_native_ref "
+                        "WHERE owned.self_person_ref=:actor "
+                        "AND owned.event_ref=:event AND schedule_row.schedule_ref=:schedule"
+                    ),
+                    {
+                        "actor": actor,
+                        "event": event_ref,
+                        "schedule": body.schedule.schedule_ref,
+                    },
+                )
+                if placement_state is None:
+                    raise ProblemError(
+                        status=409,
+                        code="temporal.event_edit.placement_revision_missing",
+                        category="conflict",
+                        title="Event Schedule changed",
+                        detail="The accepted Event Schedule has no current placement state.",
+                    )
+            return EventAtomicEditResponse(
+                event=_event_response(saved),
+                objectives=objectives,
+                placement_material_state_ref=placement_state,
+            )
     except EventAgendaRevisionConflictError as exc:
         raise ProblemError(
             status=409,

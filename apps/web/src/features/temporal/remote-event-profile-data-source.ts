@@ -89,7 +89,9 @@ export function createRemoteEventProfileDataSource(
       current: TemporalEventDetailRecord,
       changes: EventAtomicDraft,
       operationId: string,
-    ): Promise<TemporalEventDetailRecord> {
+    ): Promise<
+      TemporalEventDetailRecord & { updatedPlacementStateRef: string | null }
+    > {
       const profile = changes.profile;
       if (profile && !Number.isSafeInteger(current.profileRevision)) {
         throw new Error('Revisione del profilo Event non disponibile.');
@@ -237,9 +239,21 @@ export function createRemoteEventProfileDataSource(
       if (event.event_ref !== eventRef) {
         throw new Error('Conferma modifica Event non valida.');
       }
+      const placementState = accepted.placement_material_state_ref;
+      if (
+        changes.schedule &&
+        (typeof placementState !== 'string' || placementState.length !== 36)
+      ) {
+        throw new Error('Revisione Schedule Event non confermata.');
+      }
       invalidateTemporalPlanningRead();
       invalidateTemporalTimelineRead();
-      return eventSource.loadEvent(eventRef);
+      const updated = await eventSource.loadEvent(eventRef);
+      return {
+        ...updated,
+        updatedPlacementStateRef:
+          typeof placementState === 'string' ? placementState : null,
+      };
     },
     async revise(
       eventRef: string,
