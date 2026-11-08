@@ -303,8 +303,11 @@ export async function openInspector(
   await expect(card).toHaveCount(1);
   await card.scrollIntoViewIfNeeded();
   await card.getByRole('button', { name: item.title, exact: true }).click();
-  const inspector = page.getByRole('dialog', { name: item.title });
+  const inspector = page.locator('.timeline-event-modal[role="dialog"]');
   await expect(inspector).toBeVisible();
+  await expect(inspector.getByRole('heading', { name: item.title })).toBeVisible();
+  // The dialog's accessible name changes during Edit. Use a stable owner
+  // locator for the whole journey instead of a stale title-bound role query.
   return inspector;
 }
 
