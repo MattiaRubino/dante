@@ -568,7 +568,7 @@ test('Activity Edit keeps Create clock controls contained and the series recurre
   });
 });
 
-test('existing Activity and Event recurrence keep the Create layout without overlapping controls', async ({
+test('Activity and Event repeat selectors stay inside one shared panel in Create and Edit CSS', async ({
   page,
 }) => {
   await page.setViewportSize({ width: 1280, height: 900 });
@@ -576,37 +576,89 @@ test('existing Activity and Event recurrence keep the Create layout without over
   await page.getByRole('button', { name: 'Aggiungi alla timeline' }).click();
   const create = page.locator('[data-temporal-create="composer"]');
   await create.getByRole('button', { name: /Opzioni avanzate/ }).click();
-  await create
-    .locator('.temporal-create-u2-repeat select')
-    .selectOption('weekly');
-  const detail = create.locator('.temporal-create-repeat');
-  await expect(detail).toBeVisible();
-  const [selectMarkup, detailMarkup] = await Promise.all([
-    create
-      .locator('.temporal-create-u2-repeat')
-      .evaluate((element) => element.outerHTML),
-    detail.evaluate((element) => element.outerHTML),
-  ]);
-  await page.addStyleTag({
-    path: 'src/features/home/ui/timeline/timeline.css',
-  });
+
+  async function checkRealPanel(kind: 'activity' | 'event') {
+    const panel = create.getByRole('region', { name: 'Ripetizione' });
+    await expect(panel).toHaveAttribute('data-recurrence-owner', kind);
+    const choice = panel.getByRole('combobox', { name: 'Ripeti' });
+    await choice.selectOption('none');
+    await expect(panel).toHaveAttribute('data-recurrence-expanded', 'false');
+    await expect(panel.locator('.temporal-recurrence-panel__details')).toHaveCount(0);
+
+    await choice.selectOption('weekly');
+    await expect(panel).toHaveAttribute('data-recurrence-expanded', 'true');
+    const details = panel.locator('.temporal-recurrence-panel__details');
+    await expect(details).toBeVisible();
+    await expect(details.locator('.temporal-create-repeat')).toHaveCount(1);
+    await expect(panel.getByRole('heading', { name: 'Ripetizione' })).toHaveCount(1);
+
+    const layout = await panel.evaluate((element) => {
+      const heading = element.querySelector<HTMLElement>(
+        '.temporal-recurrence-panel__heading',
+      )!;
+      const selector = element.querySelector<HTMLElement>(
+        '.temporal-recurrence-panel__choice',
+      )!;
+      const content = element.querySelector<HTMLElement>(
+        '.temporal-recurrence-panel__details',
+      )!;
+      const end = content.querySelector<HTMLElement>(
+        '.temporal-create-repeat__end-choices',
+      )!;
+      const bounds = element.getBoundingClientRect();
+      const headingBox = heading.getBoundingClientRect();
+      const selectorBox = selector.getBoundingClientRect();
+      const contentBox = content.getBoundingClientRect();
+      const endBox = end.getBoundingClientRect();
+      return {
+        headingBeforeSelector: headingBox.bottom <= selectorBox.top + 1,
+        selectorBeforeDetails: selectorBox.bottom <= contentBox.top + 1,
+        allInsidePanel:
+          [headingBox, selectorBox, contentBox, endBox].every(
+            (box) => box.left >= bounds.left - 1 &&
+              box.right <= bounds.right + 1 &&
+              box.bottom <= bounds.bottom + 1,
+          ),
+        headingCount: element.querySelectorAll(
+          '.temporal-recurrence-panel__heading',
+        ).length,
+        detailCardCount: element.querySelectorAll(
+          '.temporal-recurrence-panel__details',
+        ).length,
+      };
+    });
+    expect(layout).toEqual({
+      headingBeforeSelector: true,
+      selectorBeforeDetails: true,
+      allInsidePanel: true,
+      headingCount: 1,
+      detailCardCount: 1,
+    });
+    return panel.evaluate((element) => element.outerHTML);
+  }
+
+  const activityMarkup = await checkRealPanel('activity');
+  await create.getByRole('radio', { name: 'Evento', exact: true }).click();
+  const eventMarkup = await checkRealPanel('event');
+
+  // The same actual component markup must also remain a single bounded rail
+  // under both Edit modal styles. No synthetic legacy action buttons.
   await page.addStyleTag({
     path: 'src/features/home/ui/timeline/activity-edit-panel.css',
   });
-
-  const outcomes = await page.evaluate(
-    ({ selectMarkup, detailMarkup }) => {
-      const original = document.querySelector<HTMLSelectElement>(
-        '[data-temporal-create="composer"] .temporal-create-u2-repeat select',
-      )!;
-      const originalStyle = getComputedStyle(original);
-      return (['activity', 'event'] as const).map((kind) => {
+  const editLayouts = await page.evaluate(
+    ({ activityMarkup, eventMarkup }) =>
+      (
+        [
+          ['activity', activityMarkup],
+          ['event', eventMarkup],
+        ] as const
+      ).map(([kind, markup]) => {
         const modal = document.createElement('div');
         modal.className = 'timeline-event-modal timeline-event-modal--edit';
         modal.style.position = 'absolute';
         modal.style.left = '-2000px';
         modal.style.width = '820px';
-        modal.style.height = '640px';
         const editorClass =
           kind === 'activity'
             ? 'timeline-activity-editor'
@@ -616,79 +668,61 @@ test('existing Activity and Event recurrence keep the Create layout without over
             ? 'timeline-activity-editor__body'
             : 'timeline-event-profile-editor__body';
         modal.innerHTML = `<div class="${editorClass}"><div class="${bodyClass}">
-          <section class="timeline-existing-recurrence">
-            ${selectMarkup}${detailMarkup}
-            <div class="timeline-existing-recurrence__actions"><button>Avvia ripetizione</button></div>
-          </section></div></div>`;
+          ${markup}
+        </div></div>`;
         document.body.append(modal);
-        const root = modal.querySelector<HTMLElement>(
-          '.timeline-existing-recurrence',
-        )!;
-        const choice = root.querySelector<HTMLSelectElement>(
-          '.temporal-create-u2-repeat select',
-        )!;
-        const panel = root.querySelector<HTMLElement>(
-          '.temporal-create-repeat',
-        )!;
-        const options = panel.querySelector<HTMLElement>(
-          '.temporal-create-repeat__end-choices',
-        )!;
-        const actions = root.querySelector<HTMLElement>(
-          '.timeline-existing-recurrence__actions',
-        )!;
-        const rootBox = root.getBoundingClientRect();
-        const choiceBox = choice.getBoundingClientRect();
-        const panelBox = panel.getBoundingClientRect();
-        const optionsBox = options.getBoundingClientRect();
-        const actionsBox = actions.getBoundingClientRect();
-        const style = getComputedStyle(choice);
-        const output = {
-          kind,
-          createSelectorParity: {
-            height: style.height === originalStyle.height,
-            borderRadius: style.borderRadius === originalStyle.borderRadius,
-            fontSize: style.fontSize === originalStyle.fontSize,
-          },
-          stacked:
-            choiceBox.bottom + 8 <= panelBox.top &&
-            panelBox.bottom + 8 <= actionsBox.top,
-          fullWidth:
-            choiceBox.width >= rootBox.width - 2 &&
-            panelBox.width >= rootBox.width - 2,
-          noOverflow:
-            optionsBox.right <= panelBox.right + 1 &&
-            optionsBox.bottom <= panelBox.bottom + 1 &&
-            actionsBox.right <= rootBox.right + 1,
-        };
-        modal.remove();
-        return output;
-      });
-    },
-    { selectMarkup, detailMarkup },
+        try {
+          const root = modal.querySelector<HTMLElement>(
+            '.temporal-recurrence-panel',
+          )!;
+          const select = root.querySelector<HTMLSelectElement>(
+            '.temporal-recurrence-panel__choice select',
+          )!;
+          const detail = root.querySelector<HTMLElement>(
+            '.temporal-recurrence-panel__details',
+          )!;
+          const end = detail.querySelector<HTMLElement>(
+            '.temporal-create-repeat__end-choices',
+          )!;
+          const box = root.getBoundingClientRect();
+          const choiceBox = select.getBoundingClientRect();
+          const detailBox = detail.getBoundingClientRect();
+          const endBox = end.getBoundingClientRect();
+          return {
+            kind,
+            hasSinglePanel: root.querySelectorAll(
+              '.temporal-recurrence-panel__heading',
+            ).length === 1,
+            noExtraMutationAction: root.querySelectorAll(
+              '.timeline-existing-recurrence__actions',
+            ).length === 0,
+            stacked: choiceBox.bottom <= detailBox.top,
+            contained:
+              choiceBox.left >= box.left - 1 &&
+              detailBox.left >= box.left - 1 &&
+              endBox.right <= box.right + 1 &&
+              endBox.bottom <= box.bottom + 1,
+          };
+        } finally {
+          modal.remove();
+        }
+      }),
+    { activityMarkup, eventMarkup },
   );
-
-  expect(outcomes).toEqual([
+  expect(editLayouts).toEqual([
     {
       kind: 'activity',
-      createSelectorParity: {
-        height: true,
-        borderRadius: true,
-        fontSize: true,
-      },
+      hasSinglePanel: true,
+      noExtraMutationAction: true,
       stacked: true,
-      fullWidth: true,
-      noOverflow: true,
+      contained: true,
     },
     {
       kind: 'event',
-      createSelectorParity: {
-        height: true,
-        borderRadius: true,
-        fontSize: true,
-      },
+      hasSinglePanel: true,
+      noExtraMutationAction: true,
       stacked: true,
-      fullWidth: true,
-      noOverflow: true,
+      contained: true,
     },
   ]);
 });
