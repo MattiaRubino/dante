@@ -15,7 +15,7 @@ pytestmark = pytest.mark.postgres
 
 # The current head is forward-only; the earlier B01/B02 downgrade guard
 # fixtures intentionally exercise the last historically reversible snapshot.
-_CURRENT_HEAD = "20261107_178"
+_CURRENT_HEAD = "20261108_181"
 _HISTORICAL_REVERSIBLE_HEAD = "20260917_29"
 _B02_REVISION_PARENT = "20260909_21"
 _B02_SCHEMA_HEAD = "20260909_20"
@@ -191,7 +191,10 @@ def test_current_repository_head_refuses_downgrade_by_design(
 
     # The current forward-only head refuses rollback; older guards are
     # exercised separately at their own historical revisions.
-    with pytest.raises(RuntimeError, match=f"{_CURRENT_HEAD} is forward-only"):
+    with pytest.raises(
+        RuntimeError,
+        match="Profile edit history and selected-boundary semantics are forward-only",
+    ):
         command.downgrade(alembic_config, "-1")
 
     assert _current_revisions(provisioned_database) == {_CURRENT_HEAD}
