@@ -52,6 +52,7 @@ export function buildEventDuplicateSeed(
   expectedParticipants: readonly TemporalCreateEventParticipantDraft[] = [],
   realityMode: RealityMode = 'manual',
   objectives: readonly ObjectiveView[] = [],
+  reminderLeadMinutes: number | null = null,
 ): ActivityDuplicateSeed {
   const advancedTruth = {
     realityMode,
@@ -64,6 +65,7 @@ export function buildEventDuplicateSeed(
       targetMin: objective.targetMin?.toString() ?? '',
       targetMax: objective.targetMax?.toString() ?? '',
       unitCode: objective.unitCode ?? '',
+      verificationMode: objective.verificationMode ?? 'none',
     })),
   };
   const shared = {
@@ -71,6 +73,9 @@ export function buildEventDuplicateSeed(
     title: event.title,
     contextId: event.lifeAreaRef ?? '',
     notes: event.description ?? '',
+    ...(reminderLeadMinutes === null
+      ? {}
+      : { confirmation: { reminderLeadMinutes } }),
     event: {
       agendaParts: [...event.agendaParts],
       location: event.location ?? '',

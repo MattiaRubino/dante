@@ -1010,6 +1010,7 @@ export function EventDetailDialog({
                 toolbarTarget={toolbarTarget}
                 activityRef={sessionSubject.ref}
                 subitemsCount={detail.subitemsCount ?? 0}
+                recurringOccurrenceRef={detail.occurrenceRef ?? null}
                 itemTitle={detail.title}
                 scheduleLabel={detailScheduleLabel(detail, locale, timeZone)}
                 onEdit={(profile, scope) => {

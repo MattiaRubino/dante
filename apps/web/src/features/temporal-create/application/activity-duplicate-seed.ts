@@ -141,6 +141,7 @@ export function buildActivityDuplicateSeed(
     targetMin: objective.targetMin?.toString() ?? '',
     targetMax: objective.targetMax?.toString() ?? '',
     unitCode: objective.unitCode ?? '',
+    verificationMode: objective.verificationMode ?? 'none',
   }));
   return {
     fields,

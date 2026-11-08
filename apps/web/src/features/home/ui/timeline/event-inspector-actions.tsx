@@ -795,20 +795,47 @@ export function EventInspectorActions({
     setBusy(true);
     setError('');
     try {
-      const [event, participants, referents, recurring, reality, objectives] =
-        await Promise.all([
-          eventSource.loadEvent(eventRef),
-          participationSource.listExpectedParticipation(eventRef),
-          participationSource.listPersonReferents(),
-          recurrenceGuard.isRecurring(eventRef),
-          objectiveSource.getRealityPolicy('event', eventRef),
-          objectiveSource.listObjectives('event', eventRef),
-        ]);
-      if (recurring) {
+      const recurring = await recurrenceGuard.isRecurring(eventRef);
+      if (recurring && (intoVault || !occurrenceRef)) {
         throw new Error(
-          'Questo evento è una sorgente ricorrente: Duplica non può trasformarla in un singolo evento.',
+          'Apri un’istanza della ricorrenza per precompilarla in Create avanzato.',
         );
       }
+      if (recurring && !eventSource.loadOccurrenceEvent) {
+        throw new Error('Dettagli della singola istanza non disponibili.');
+      }
+      // Read the selected Occurrence (including local exceptions), not the
+      // Event source. Read-only: no new Event, Schedule or factual record.
+      const context =
+        recurring && occurrenceRef
+          ? await recurringSource.loadOccurrenceContext(occurrenceRef)
+          : null;
+      if (context && context.sourceRef !== eventRef) {
+        throw new Error('L’istanza non appartiene alla serie selezionata.');
+      }
+      const subjectRef = context?.occurrenceRef ?? eventRef;
+      const subjectKind = context ? 'occurrence' : 'event';
+      const [event, participants, referents, reality, objectives, reminder] =
+        await Promise.all([
+          context && eventSource.loadOccurrenceEvent
+            ? eventSource.loadOccurrenceEvent(context.occurrenceRef)
+            : eventSource.loadEvent(eventRef),
+          context
+            ? participationSource.listOccurrenceExpectedParticipation(
+                context.occurrenceRef,
+              )
+            : participationSource.listExpectedParticipation(eventRef),
+          participationSource.listPersonReferents(),
+          objectiveSource.getRealityPolicy(subjectKind, subjectRef),
+          objectiveSource.listObjectives(subjectKind, subjectRef),
+          scheduleRef &&
+          (placement.kind === 'named-zone-local' || placement.kind === 'absolute')
+            ? reminderSource.get(scheduleRef)
+            : Promise.resolve(null),
+        ]);
+      const effectiveEvent = context
+        ? { ...event, ...(await recurringSource.loadOccurrencePatch(context)) }
+        : event;
       const labels = new Map(
         referents.map((row) => [row.personRef, row.displayLabel]),
       );
@@ -830,11 +857,12 @@ export function EventInspectorActions({
           };
         });
       const seed = buildEventDuplicateSeed(
-        event,
+        effectiveEvent,
         placement,
         expectedParticipants,
         reality.mode,
         objectives,
+        reminder?.enabled ? reminder.leadMinutes : null,
       );
       if (!intoVault) {
         onDuplicate(seed);
@@ -986,19 +1014,21 @@ export function EventInspectorActions({
           'Duplica'
         )}
       </button>
-      <button
-        type="button"
-        disabled={busy}
-        aria-label="Copia in Bozze"
-        title="Copia in Bozze"
-        onClick={() => void duplicate(true)}
-      >
-        {toolbarTarget ? (
-          <TimelineInspectorIcon name="vault" />
-        ) : (
-          'Copia in Bozze'
-        )}
-      </button>
+      {occurrenceRef === null ? (
+        <button
+          type="button"
+          disabled={busy}
+          aria-label="Copia in Bozze"
+          title="Copia in Bozze"
+          onClick={() => void duplicate(true)}
+        >
+          {toolbarTarget ? (
+            <TimelineInspectorIcon name="vault" />
+          ) : (
+            'Copia in Bozze'
+          )}
+        </button>
+      ) : null}
       <button
         type="button"
         disabled={busy}

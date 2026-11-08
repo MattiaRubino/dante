@@ -32,6 +32,7 @@ import { TemporalDeleteDialog } from './temporal-delete-dialog';
 export function ActivityInspectorActions({
   activityRef,
   subitemsCount = 0,
+  recurringOccurrenceRef = null,
   itemTitle,
   scheduleLabel,
   onEdit,
@@ -42,6 +43,7 @@ export function ActivityInspectorActions({
 }: Readonly<{
   activityRef: string;
   subitemsCount?: number;
+  recurringOccurrenceRef?: string | null;
   itemTitle?: string;
   scheduleLabel?: string;
   onEdit: (profile: ActivityProfile, scope: RecurringProfileEditScope) => void;
@@ -146,18 +148,13 @@ export function ActivityInspectorActions({
                 'Questa attività contiene sotto-attività: la duplicazione fedele della struttura non è ancora disponibile.',
               );
             }
-            const [savedProfile, settings, childCount, recurring] =
-              await Promise.all([
-                source.get(activityRef),
-                settingsSource.load(activityRef),
-                settingsSource.loadChildCount(activityRef),
-                recurringSource.loadActivityContext(activityRef),
-              ]);
-            if (recurring !== null) {
-              throw new Error(
-                'La duplicazione fedele della ricorrenza richiede di copiare la sorgente: questa azione non la trasforma in una singola attività.',
-              );
-            }
+            // activityRef is the selected materialized instance. Copy its
+            // configuration, not the Routine source or any real attempts.
+            const [savedProfile, settings, childCount] = await Promise.all([
+              source.get(activityRef),
+              settingsSource.load(activityRef),
+              settingsSource.loadChildCount(activityRef),
+            ]);
             if (childCount !== 0) {
               throw new Error(
                 'Questa attività contiene sotto-attività: la duplicazione fedele della struttura non è ancora disponibile.',
@@ -169,19 +166,21 @@ export function ActivityInspectorActions({
       >
         {toolbarTarget ? <TimelineInspectorIcon name="copy" /> : 'Duplica'}
       </button>
-      <button
-        type="button"
-        aria-label="Sposta in Bozze"
-        title="Sposta in Bozze"
-        disabled={pending}
-        onClick={() => setConfirmingVault(true)}
-      >
-        {toolbarTarget ? (
-          <TimelineInspectorIcon name="vault" />
-        ) : (
-          'Sposta in Bozze'
-        )}
-      </button>
+      {recurringOccurrenceRef === null ? (
+        <button
+          type="button"
+          aria-label="Sposta in Bozze"
+          title="Sposta in Bozze"
+          disabled={pending}
+          onClick={() => setConfirmingVault(true)}
+        >
+          {toolbarTarget ? (
+            <TimelineInspectorIcon name="vault" />
+          ) : (
+            'Sposta in Bozze'
+          )}
+        </button>
+      ) : null}
       <button
         type="button"
         aria-label="Elimina"
@@ -244,7 +243,7 @@ export function ActivityInspectorActions({
           }}
         />
       ) : null}
-      {confirmingVault ? (
+      {confirmingVault && recurringOccurrenceRef === null ? (
         <div className="timeline-activity-inspector__confirmation">
           <p>
             L'Attività verrà conservata come bozza non operativa e ritirata
