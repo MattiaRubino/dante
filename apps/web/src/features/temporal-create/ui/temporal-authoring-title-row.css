@@ -1,0 +1,190 @@
+/* A single title-row contract for Activity and Event: Create, Edit and
+   Recurring Series Edit share the same DOM grid, marker and action rail.
+   Only Quick Create retains its intentionally compact standalone input. */
+.temporal-create-backdrop.is-advanced
+  .temporal-create-title-row.temporal-authoring-title-row.has-tools,
+.timeline-event-modal--edit
+  .timeline-activity-editor__title-row.temporal-authoring-title-row,
+.timeline-recurring-series-editor
+  .timeline-activity-editor__title-row.temporal-authoring-title-row {
+  box-sizing: border-box;
+  position: relative;
+  display: grid;
+  grid-template-columns: 36px minmax(0, 1fr) auto;
+  align-items: stretch;
+  width: 100%;
+  min-width: 0;
+  min-height: 52px;
+  gap: 0;
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+  border: 1px solid var(--dante-semantic-color-home-border-subtle, rgba(255, 255, 255, 0.13));
+  border-radius: 11px;
+  background: var(--dante-semantic-color-home-surface-control, #1c292d);
+  transition: border-color 120ms ease, box-shadow 120ms ease;
+}
+
+/* Legacy pseudo markers added an extra anonymous grid item and pushed the
+   Create Event input into the action track. Markers are now real children. */
+.temporal-authoring-title-row::before {
+  display: none !important;
+  content: none !important;
+}
+
+.temporal-authoring-title-row__marker {
+  box-sizing: border-box;
+  display: grid;
+  grid-column: 1;
+  place-items: center;
+  width: 36px;
+  min-height: 50px;
+  align-self: stretch;
+  border-right: 1px solid var(--dante-semantic-color-home-border-subtle, rgba(255, 255, 255, 0.13));
+  color: var(--dante-semantic-color-home-chrome-active-text, #f0a06f);
+  font-size: 18px;
+  font-weight: 650;
+  line-height: 1;
+  pointer-events: none;
+}
+
+.temporal-authoring-title-row--event .temporal-authoring-title-row__marker {
+  color: var(--dante-semantic-color-home-chrome-active, #ea5c12);
+}
+
+.temporal-authoring-title-row.has-tools > :is(
+  .temporal-create-title-row__name,
+  .timeline-activity-editor__title
+) {
+  box-sizing: border-box;
+  display: flex;
+  grid-column: 2;
+  align-items: stretch;
+  width: 100%;
+  min-width: 0;
+  min-height: 50px;
+  height: auto;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+}
+
+.temporal-create-backdrop.is-advanced
+  .temporal-authoring-title-row.has-tools
+  input.temporal-create-title-input,
+.timeline-event-modal--edit
+  .temporal-authoring-title-row.has-tools
+  input.temporal-create-title-input,
+.timeline-recurring-series-editor
+  .temporal-authoring-title-row.has-tools
+  input.temporal-create-title-input {
+  box-sizing: border-box;
+  display: block;
+  width: 100%;
+  min-width: 0;
+  min-height: 50px !important;
+  height: 50px;
+  margin: 0;
+  padding: 0 14px;
+  border: 0 !important;
+  border-radius: 0 !important;
+  outline: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  color: var(--dante-semantic-color-home-text-primary, #edf2f8);
+  font-size: 17px !important;
+  text-align: left;
+}
+
+.temporal-authoring-title-row.has-tools > .temporal-create-title-row__tools {
+  box-sizing: border-box;
+  display: flex;
+  grid-column: 3;
+  align-items: stretch;
+  justify-content: flex-end;
+  align-self: stretch;
+  flex-wrap: nowrap;
+  gap: 0;
+  width: auto;
+  min-width: 0;
+  min-height: 50px;
+  margin: 0;
+  padding: 0;
+  border-left: 1px solid var(--dante-semantic-color-home-border-subtle, rgba(255, 255, 255, 0.13));
+  background: transparent;
+}
+
+.temporal-authoring-title-row.has-tools
+  > .temporal-create-title-row__tools
+  > :is(button, label, .temporal-create-reality-section) {
+  box-sizing: border-box;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 50px;
+  height: 100%;
+  margin: 0;
+  padding: 0 12px;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  white-space: nowrap;
+  font-size: 13px;
+}
+
+.temporal-authoring-title-row.has-tools
+  > .temporal-create-title-row__tools
+  > :is(button, label, .temporal-create-reality-section)
+  + :is(button, label, .temporal-create-reality-section) {
+  border-left: 1px solid var(--dante-semantic-color-home-border-subtle, rgba(255, 255, 255, 0.13));
+}
+
+.temporal-authoring-title-row.has-tools
+  .temporal-create-placement-lock {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 50px;
+  height: 100%;
+  gap: 8px;
+  margin: 0;
+  padding: 0 12px;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  white-space: nowrap;
+  font-size: 13px;
+}
+
+.temporal-authoring-title-row .temporal-create-placement-lock svg {
+  flex: none;
+  width: 16px;
+  height: 16px;
+  margin: 0;
+}
+
+.temporal-authoring-title-row.has-tools:focus-within {
+  border-color: color-mix(in srgb, var(--dante-semantic-color-home-chrome-active, #ea5c12) 68%, transparent);
+  box-shadow: 0 0 0 1px color-mix(in srgb, #ea5c12 13%, transparent);
+}
+
+.temporal-authoring-title-row.is-quick .temporal-authoring-title-row__marker {
+  display: none;
+}
+
+@media (max-width: 640px) {
+  .temporal-authoring-title-row.has-tools
+    .temporal-create-placement-lock span {
+    display: none;
+  }
+
+  .temporal-authoring-title-row.has-tools
+    > .temporal-create-title-row__tools
+    > .temporal-create-placement-lock {
+    min-width: 44px;
+    padding-inline: 10px;
+  }
+}

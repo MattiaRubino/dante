@@ -302,17 +302,6 @@
   );
 }
 
-.timeline-event-modal--edit .timeline-activity-editor__title-row::before {
-  display: grid;
-  min-width: 34px;
-  place-items: center;
-  border-right: 1px solid
-    var(--dante-semantic-color-home-border-subtle, rgba(255, 255, 255, 0.09));
-  color: var(--dante-semantic-color-home-chrome-active-text, #f0a06f);
-  content: '◇';
-  font-size: 16px;
-}
-
 .timeline-event-modal--edit .timeline-activity-editor__title {
   display: block;
   min-width: 0;

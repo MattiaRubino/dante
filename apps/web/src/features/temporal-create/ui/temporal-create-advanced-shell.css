@@ -115,17 +115,6 @@
   width: 100%;
 }
 
-.temporal-create-backdrop.is-advanced .temporal-create-title-row {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr);
-  align-items: start;
-  gap: 12px;
-}
-
-.temporal-create-backdrop.is-advanced .temporal-create-title-row.has-tools {
-  grid-template-columns: minmax(0, 1fr) auto;
-}
-
 .temporal-create-title-row__tools {
   display: flex;
   min-width: 0;

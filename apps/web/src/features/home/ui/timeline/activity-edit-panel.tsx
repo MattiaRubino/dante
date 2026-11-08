@@ -36,6 +36,7 @@ import {
 import { TemporalColorControl } from '../../../temporal-create/ui/temporal-color-control';
 import { TimeControl } from '../../../temporal-create/ui/temporal-create-core-u2';
 import { TemporalCreateDatePicker } from '../../../temporal-create/ui/temporal-create-date-picker';
+import { TemporalAuthoringTitleRow } from '../../../temporal-create/ui/temporal-authoring-title-row';
 import { createRemoteExistingRecurrence } from '../../../temporal/remote-existing-recurrence';
 import { TemporalLifeAreaSelect } from '../../../temporal-create/ui/temporal-life-area-select';
 import { TemporalReminderControl } from '../../../temporal-create/ui/temporal-create-quick-reminder';
@@ -1426,7 +1427,7 @@ export function ActivityEditPanel({
             </button>
           </div>
         ) : null}
-        <div className="temporal-create-title-row has-tools timeline-activity-editor__title-row">
+        <TemporalAuthoringTitleRow kind="activity" className="timeline-activity-editor__title-row">
           <label className="timeline-activity-editor__title">
             <span className="timeline-activity-editor__visually-hidden">
               Titolo
@@ -1510,7 +1511,7 @@ export function ActivityEditPanel({
               </label>
             </div>
           ) : null}
-        </div>
+        </TemporalAuthoringTitleRow>
         {lockError ? <p role="alert">{lockError}</p> : null}
         {sessionAttemptsError ? (
           <p role="alert">{sessionAttemptsError}</p>

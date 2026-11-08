@@ -60,6 +60,7 @@ import {
   type PlacementLockState,
 } from '../../../temporal/remote-placement-lock-data-source';
 import { TemporalCreatePlacementLockButton } from '../../../temporal-create/ui/temporal-create-placement-lock-button';
+import { TemporalAuthoringTitleRow } from '../../../temporal-create/ui/temporal-authoring-title-row';
 import type { TimelineCanonicalSchedulePlacement } from './model/timeline-types';
 import { TimelineInspectorIcon } from './timeline-inspector-icon';
 import { RecurringEditScopeDialog } from './recurring-edit-scope-dialog';
@@ -1276,7 +1277,7 @@ export function EventInspectorActions({
             className="timeline-event-profile-editor__body"
             inert={confirmingDiscard || undefined}
           >
-            <div className="temporal-create-title-row has-tools timeline-activity-editor__title-row timeline-event-profile-editor__title-row temporal-event-title-row">
+            <TemporalAuthoringTitleRow kind="event" className="timeline-activity-editor__title-row timeline-event-profile-editor__title-row">
               <label className="timeline-activity-editor__title">
                 <span className="timeline-activity-editor__visually-hidden">
                   Titolo Event
@@ -1305,7 +1306,7 @@ export function EventInspectorActions({
                   onToggle={() => setPlacementLockDraft((locked) => !locked)}
                 />
               </div>
-            </div>
+            </TemporalAuthoringTitleRow>
             <>
               <TemporalCreateEventAgenda
                 parts={agendaDraft}

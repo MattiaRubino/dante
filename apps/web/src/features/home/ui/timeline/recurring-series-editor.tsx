@@ -11,6 +11,7 @@ import {
 } from '../../../temporal/remote-recurring-series-edit';
 import { createRemoteRecurringProfileEdit } from '../../../temporal/remote-recurring-profile-edit';
 import { TemporalCreatePlacementLockButton } from '../../../temporal-create/ui/temporal-create-placement-lock-button';
+import { TemporalAuthoringTitleRow } from '../../../temporal-create/ui/temporal-authoring-title-row';
 import { TimeControl } from '../../../temporal-create/ui/temporal-create-core-u2';
 import { TemporalColorControl } from '../../../temporal-create/ui/temporal-color-control';
 import { TemporalCreateDatePicker } from '../../../temporal-create/ui/temporal-create-date-picker';
@@ -662,7 +663,7 @@ export function RecurringSeriesEditor({
                 resta invariata; le sue modifiche locali non sono copiate qui.
               </p>
             ) : null}
-            <div className={`temporal-create-title-row has-tools timeline-activity-editor__title-row${owner === 'event' ? ' temporal-event-title-row' : ''}`}>
+            <TemporalAuthoringTitleRow kind={owner === 'event' ? 'event' : 'activity'} className="timeline-activity-editor__title-row">
               <label className="timeline-activity-editor__title">
                 <span className="timeline-activity-editor__visually-hidden">
                   Titolo
@@ -739,7 +740,7 @@ export function RecurringSeriesEditor({
                   />
                 </div>
               )}
-            </div>
+            </TemporalAuthoringTitleRow>
             {owner === 'event' ? (
               <TemporalCreateEventAgenda
                 parts={agenda}

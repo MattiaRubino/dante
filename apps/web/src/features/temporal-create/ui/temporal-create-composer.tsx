@@ -23,6 +23,7 @@ import {
 } from './temporal-create-advanced-activity-structure';
 import { TemporalCreateEventAgenda } from './temporal-create-event-agenda';
 import { TemporalCreateAdvancedEventHeaderActions } from './temporal-create-placement-lock-button';
+import { TemporalAuthoringTitleRow } from './temporal-authoring-title-row';
 import { TemporalCreateRealityObjectivesSection } from './temporal-create-reality-objectives-section';
 import { TemporalCreateCalendarRecurrenceFields } from './temporal-create-calendar-recurrence-fields';
 import {
@@ -609,13 +610,7 @@ export function TemporalCreateComposer({
               initialDraft={u2Draft}
               onDraftChange={onU2DraftChange}
             >
-              <div
-                className={
-                  advanced
-                    ? `temporal-create-title-row has-tools${fields.kind === 'event' ? ' temporal-event-title-row' : ''}`
-                    : 'temporal-create-title-row is-quick'
-                }
-              >
+              <TemporalAuthoringTitleRow kind={fields.kind} compact={!advanced}>
                 <div className="temporal-create-title-row__name">
                   <label
                     className="temporal-create-visually-hidden"
@@ -651,7 +646,7 @@ export function TemporalCreateComposer({
                     )}
                   </div>
                 ) : null}
-              </div>
+              </TemporalAuthoringTitleRow>
               {advanced ? renderError('title') : null}
               {advanced && fields.kind === 'activity' ? (
                 <TemporalCreateAdvancedActivityStructure
