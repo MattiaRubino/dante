@@ -1,5 +1,25 @@
 # Timeline / Temporal-Operational — Workstream Handoff
 
+## 2026-11-08 — Real-stack user lifecycle matrix (candidate)
+
+Seven independent authenticated Playwright journeys have been added for
+Activity and Event: normal create/edit/duplicate/delete; 12 recurring
+cadence variants with advanced Life Area/Objective/Session/Agenda policy;
+one-off→recurring conversions through the single Save; local-only and
+this-and-following series edits; and scoped instance/series deletion.
+Tests exercise real HTTP and PostgreSQL through the existing
+WEB_BROWSER_REAL_STACK gate; 21 distinct accounts are reserved
+(81–101) without reusing the existing 1–80 seeded identities.
+
+The spec is at apps/web/e2e/auth/temporal-user-lifecycle.spec.ts and
+helper at temporal-user-journey-support.ts. Registry and full coverage
+matrix are updated. **NOT RUN** on this SHA. Owner should execute focused
+Chromium auth Playwright, then all browsers and full gate. Do not
+mislabel layout-only E2E as persistence proof. Open gaps (lost response,
+DST, concurrency, recorded facts, advanced combinations) are documented
+in docs/development/temporal-user-lifecycle-journey-matrix.md.
+
+
 ## 2026-11-08 — Recurrence vertical audit, code inspection checkpoint
 
 **Evidence boundary:** prior owner WSL checks on `f67bbac0` passed 52/52 Vitest, web typecheck and a structural Playwright test, with API proxy connection refused on port 8000. They do **not** exercise real conversion persistence. Changes below are newly pushed, **NOT RUN** in owner PostgreSQL or browser yet.

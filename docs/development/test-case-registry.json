@@ -2954,6 +2954,16 @@
       "audit_note": "Needs contract/assertion review, rejection cases, and executable evidence; filename alone is not proof."
     },
     {
+      "path": "apps/web/e2e/auth/temporal-user-lifecycle.spec.ts",
+      "suite": "web-browser-real-stack",
+      "contract_id": "T05",
+      "candidate_behavior": "authenticated Activity/Event user lifecycle matrix",
+      "purpose": "Exercise seven real user journeys and 12 recurring Create configurations across Edit, conversion, duplication, scoped deletion and canonical reload.",
+      "invariant": "Real UI and authenticated HTTP backed by PostgreSQL; no propagation of local changes, no duplicated first identity, and correctly scoped deletion.",
+      "status": "QUALIFIED",
+      "audit_note": "Source and coverage matrix inspected; 7 E2E specs parameterized over Chromium/Firefox/WebKit, pending owner WSL real-stack execution on exact SHA. See docs/development/temporal-user-lifecycle-journey-matrix.md."
+    },
+    {
       "path": "apps/web/e2e/home-structure.spec.ts",
       "suite": "browser-fixture",
       "contract_id": "P-OTHER",
