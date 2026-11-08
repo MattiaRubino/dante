@@ -511,9 +511,13 @@ class RecurringSeriesEditApplication:
                     "reminder_lead_minutes": initial_event.reminder_lead_minutes,
                     "reality_mode": initial_event.reality_mode,
                     "objectives": list(initial_event.objectives),
+                    "placement_protected": initial_event.placement_protected,
                 }
                 structure = {
                     **structure,
+                    "placement_protected": structure.get(
+                        "placement_protected", initial_event.placement_protected
+                    ),
                     "agenda_parts": structure.get("agenda_parts", list(event.agenda_parts)),
                     "life_area_ref": structure.get(
                         "life_area_ref", str(event.life_area_ref) if event.life_area_ref else None

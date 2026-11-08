@@ -77,6 +77,7 @@ class EventOccurrencePolicyApplication:
         reminder_lead_minutes: int | None,
         reality_mode: Literal["manual", "review_on_end", "auto_confirm_outcome"] = "manual",
         objectives: tuple[dict[str, Any], ...] = (),
+        placement_protected: bool = False,
     ) -> EventOccurrencePolicyView:
         if placement_kind == "timed":
             if duration_minutes is None or not 1 <= duration_minutes <= 525_600:
@@ -108,19 +109,22 @@ class EventOccurrencePolicyApplication:
             raise EventOccurrencePolicyInputError("Event Reality policy is invalid.")
         if len(objectives) > 100 or any(not isinstance(value, dict) for value in objectives):
             raise EventOccurrencePolicyInputError("Event Objectives template is invalid.")
+        if type(placement_protected) is not bool:
+            raise EventOccurrencePolicyInputError("Placement protection must be boolean.")
 
         try:
             row = (
                 (
                     await session.execute(
                         text(
-                            """SELECT * FROM dante.set_self_event_occurrence_policy_v2(
+                            """SELECT * FROM dante.set_self_event_occurrence_policy_v3(
                              :actor,:event,:kind,:minutes,:days,:reminder,
-                             :reality,CAST(:objectives AS jsonb))"""
+                             :reality,CAST(:objectives AS jsonb),:protected)"""
                         ),
                         {
                             "actor": self_person_ref,
                             "event": event_ref,
+                            "protected": placement_protected,
                             "kind": placement_kind,
                             "minutes": duration_minutes,
                             "days": duration_days,
@@ -153,6 +157,7 @@ class EventOccurrencePolicyApplication:
             reality_mode=row["reality_mode"],
             objectives=tuple(dict(value) for value in (row["objectives"] or [])),
             created_at=row["created_at"],
+            placement_protected=bool(row["placement_protected"]),
             replayed=bool(row["replayed"]),
         )
 
@@ -167,6 +172,7 @@ class EventOccurrencePolicyApplication:
         reminder_lead_minutes: int | None,
         reality_mode: Literal["manual", "review_on_end", "auto_confirm_outcome"] = "manual",
         objectives: tuple[dict[str, Any], ...] = (),
+        placement_protected: bool = False,
     ) -> EventOccurrencePolicyView:
         try:
             async with self._session_factory() as session, session.begin():
@@ -180,6 +186,7 @@ class EventOccurrencePolicyApplication:
                     reminder_lead_minutes=reminder_lead_minutes,
                     reality_mode=reality_mode,
                     objectives=objectives,
+                    placement_protected=placement_protected,
                 )
         except DBAPIError as exc:
             raise _error(exc) from exc
@@ -215,7 +222,7 @@ class EventOccurrencePolicyApplication:
                 (
                     await session.execute(
                         text(
-                            "SELECT * FROM dante.get_self_event_occurrence_policy_v2(:actor,:event)"
+                            "SELECT * FROM dante.get_self_event_occurrence_policy_v3(:actor,:event)"
                         ),
                         {"actor": self_person_ref, "event": event_ref},
                     )
@@ -241,4 +248,5 @@ class EventOccurrencePolicyApplication:
             reality_mode=row["reality_mode"],
             objectives=tuple(dict(value) for value in (row["objectives"] or [])),
             created_at=row["created_at"],
+            placement_protected=bool(row["placement_protected"]),
         )

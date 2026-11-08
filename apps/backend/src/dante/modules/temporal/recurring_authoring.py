@@ -142,6 +142,7 @@ class EventAuthoringPolicy:
     reminder_lead_minutes: int | None
     reality_mode: Literal["manual", "review_on_end", "auto_confirm_outcome"]
     objectives: tuple[dict[str, object], ...]
+    placement_protected: bool = False
 
 
 def _child_operation_id(parent: str, purpose: str) -> str:
@@ -601,6 +602,7 @@ class RecurringAuthoringApplication:
                             reminder_lead_minutes=policy.reminder_lead_minutes,
                             reality_mode=policy.reality_mode,
                             objectives=policy.objectives,
+                            placement_protected=policy.placement_protected,
                         )
                     return RecurringAuthoringResult(
                         owner_kind="event",
@@ -635,6 +637,7 @@ class RecurringAuthoringApplication:
                         reminder_lead_minutes=policy.reminder_lead_minutes,
                         reality_mode=policy.reality_mode,
                         objectives=policy.objectives,
+                        placement_protected=policy.placement_protected,
                     )
                 return RecurringAuthoringResult(
                     owner_kind="event",

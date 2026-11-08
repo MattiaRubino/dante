@@ -149,6 +149,7 @@ class CreateRecurringEventRequest(BaseModel):
     reminder_lead_minutes: int | None = Field(default=None, ge=0, le=10_080)
     reality_mode: Literal["manual", "review_on_end", "auto_confirm_outcome"] = "manual"
     objectives: list[dict[str, Any]] = Field(default_factory=list, max_length=100)
+    placement_protected: bool = False
 
 
 class StartExistingActivityRecurrenceRequest(BaseModel):
@@ -499,6 +500,7 @@ async def create_recurring_event(
                 reminder_lead_minutes=payload.reminder_lead_minutes,
                 reality_mode=payload.reality_mode,
                 objectives=tuple(payload.objectives),
+                placement_protected=payload.placement_protected,
             ),
         )
         return RecurringAuthoringResponse(**asdict(value))
