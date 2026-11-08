@@ -55,20 +55,6 @@
   font-size: 13px;
 }
 
-.timeline-recurring-series-editor__start-clock {
-  display: flex;
-  align-items: center;
-  flex-wrap: wrap;
-  gap: 8px 14px;
-  min-width: 0;
-}
-
-.timeline-recurring-series-editor__start-clock > p {
-  margin: 0;
-  color: var(--dante-semantic-color-home-text-muted, #8f9bad);
-  font-size: 11px;
-}
-
 .timeline-recurring-series-editor [aria-label='Sottoattività'] {
   display: grid;
   gap: 10px;

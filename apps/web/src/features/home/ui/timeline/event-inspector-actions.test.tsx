@@ -2308,6 +2308,11 @@ describe('Event Inspector actions', () => {
     );
 
     const title = await screen.findByRole('textbox', { name: 'Titolo' });
+    const savedRepeat = screen.getByRole('region', { name: 'Ripetizione' });
+    expect(savedRepeat.getAttribute('data-recurrence-expanded')).toBe('true');
+    expect(
+      within(savedRepeat).getByRole('combobox', { name: 'Ripeti' }),
+    ).toHaveProperty('value', 'daily');
     const row = title.closest('.temporal-event-title-row');
     expect(row).not.toBeNull();
     const lock = within(row as HTMLElement).getByRole('button', {

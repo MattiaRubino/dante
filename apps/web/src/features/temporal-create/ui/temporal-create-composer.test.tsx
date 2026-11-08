@@ -148,6 +148,80 @@ describe('TemporalCreateComposer', () => {
     ).toBe('true');
   });
 
+  it.each(['activity', 'event'] as const)(
+    'keeps the %s recurrence selector inside one expandable panel',
+    (kind) => {
+      const baseFields = createTemporalCreateFields({
+        kind,
+        date: '2026-11-08',
+        timeZoneId: 'Europe/Rome',
+        contextId: 'personale',
+      });
+      const repeatFields = {
+        ...baseFields,
+        eventRecurrence: {
+          ...baseFields.eventRecurrence,
+          owner: kind === 'event' ? ('event' as const) : ('routine' as const),
+          patternKind: 'calendar-wall-clock' as const,
+          calendarFrequency: 'daily' as const,
+        },
+      };
+      const renderWith = (fields: typeof baseFields) =>
+        render(
+          <TemporalCreateComposer
+            session={setTemporalCreateSurface(
+              createTemporalCreateSession(fields),
+              'full',
+            )}
+            contexts={context}
+            issues={[]}
+            lifecycle="idle"
+            failureMessage=""
+            postCreateRetry={false}
+            u2Draft={createTemporalCreateU2AuthoringDraft(fields)}
+            onPatch={vi.fn()}
+            onSurfaceChange={vi.fn()}
+            onRequestClose={vi.fn()}
+            onContinueEditing={vi.fn()}
+            onDiscard={vi.fn()}
+            onMoveToUnplaced={vi.fn()}
+            onSubmit={vi.fn()}
+          />,
+        );
+      const view = renderWith(baseFields);
+      let panel = screen.getByRole('region', { name: 'Ripetizione' });
+      expect(panel.getAttribute('data-recurrence-owner')).toBe(kind);
+      expect(panel.getAttribute('data-recurrence-expanded')).toBe('false');
+      expect(within(panel).getAllByRole('heading', { name: 'Ripetizione' }))
+        .toHaveLength(1);
+      expect(
+        panel.querySelector('.temporal-recurrence-panel__choice')
+          ?.contains(within(panel).getByRole('combobox', { name: 'Ripeti' })),
+      ).toBe(true);
+      expect(panel.querySelector('.temporal-recurrence-panel__details')).toBeNull();
+
+      view.unmount();
+      renderWith(repeatFields);
+      panel = screen.getByRole('region', { name: 'Ripetizione' });
+      expect(panel.getAttribute('data-recurrence-expanded')).toBe('true');
+      expect(within(panel).getAllByRole('heading', { name: 'Ripetizione' }))
+        .toHaveLength(1);
+      expect(panel.querySelector('.temporal-recurrence-panel__details')).not.toBeNull();
+      expect(
+        within(panel).getByRole('combobox', { name: 'Ripeti' }),
+      ).toHaveProperty('value', 'daily');
+      const details = panel.querySelector(
+        '.temporal-recurrence-panel__details',
+      ) as HTMLElement;
+      expect(
+        details.querySelectorAll('.temporal-create-repeat'),
+      ).toHaveLength(1);
+      expect(
+        details.querySelector('.temporal-create-repeat__end-choices'),
+      ).not.toBeNull();
+    },
+  );
+
   it('marks the affected planned Session and renders only one advanced description', () => {
     const fields = createTemporalCreateFields({
       date: '2026-10-06',
