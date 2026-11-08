@@ -1368,7 +1368,7 @@ describe('Activity Inspector', () => {
     });
     expect(save).toHaveProperty('disabled', true);
     expect(applyAtomicEdit).not.toHaveBeenCalled();
-    await act(async () => {
+    act(() => {
       completeLoad?.([]);
     });
     await waitFor(() => expect(save).toHaveProperty('disabled', false));
