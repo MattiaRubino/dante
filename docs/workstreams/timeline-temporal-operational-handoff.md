@@ -18,9 +18,13 @@ revision. Its accepted Schedule comes from the selected Timeline card.
 Do not duplicate historical Session attempts, Objective observations,
 evaluations, completed/confirmed outcomes or persisted identities.
 
-The Inspector suppresses the Bozze action on identified recurring instances.
-Unbound recurring Event sources cannot be duplicated as if one selected
-instance existed. The existing non-recurring flow remains unchanged. Individual
+The Inspector suppresses the Bozze action for recurring instances.
+For materialized Activities this is verified through the owner-scoped
+`recurrence-origin` read, not inferred only from Timeline card metadata;
+for Event sources without an occurrence identity, source recurrence is checked
+before showing the Bozze action. Unknown origin fails closed. Unbound recurring
+Event sources cannot be duplicated as if one selected instance existed.
+The existing non-recurring flow remains unchanged. Individual
 Objective `verificationMode` is now copied as a **definition**, but factual
 results are never copied. Internal Session names remain untimed.
 
