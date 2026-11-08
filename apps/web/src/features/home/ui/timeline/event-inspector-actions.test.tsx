@@ -35,8 +35,12 @@ const getRealityPolicy = vi
 const getDefinition = vi.fn();
 const correctResult = vi.fn();
 const getReminder = vi.fn().mockResolvedValue(null);
-const getPlacementLock = vi.fn((ref: string) =>
-  Promise.resolve({ scheduleRef: ref, locked: false, revision: 0 }),
+// The placement-lock datasource is constructed during module import.
+// Vitest hoists vi.mock factories ahead of ordinary top-level declarations.
+const getPlacementLock = vi.hoisted(() =>
+  vi.fn((ref: string) =>
+    Promise.resolve({ scheduleRef: ref, locked: false, revision: 0 }),
+  ),
 );
 const isRecurring = vi.fn().mockResolvedValue(false);
 const eventSeed = vi.fn().mockResolvedValue(null);
