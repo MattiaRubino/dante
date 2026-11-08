@@ -413,9 +413,7 @@ async def test_existing_event_keeps_first_event_and_excludes_duplicate_occurrenc
             expected_fingerprint=review.fingerprint,
             operation_id="existing-event-repeat:edit-first",
         )
-        revised_window = await TemporalTimelineApplication(
-            runtime.session_factory
-        ).read_window(
+        revised_window = await TemporalTimelineApplication(runtime.session_factory).read_window(
             query=TimelineWindowQuery(
                 start_date=date(2027, 1, 2),
                 end_date_exclusive=date(2027, 1, 4),

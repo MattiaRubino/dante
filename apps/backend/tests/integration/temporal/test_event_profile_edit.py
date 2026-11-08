@@ -181,9 +181,7 @@ async def test_one_off_event_lock_change_is_atomic_and_cas_guarded(
             Response(),
         )
         assert locked.event.title == "Evento protetto"
-        assert (await locks.get(
-            self_person_ref=owner, schedule_ref=original.schedule_ref
-        )).locked
+        assert (await locks.get(self_person_ref=owner, schedule_ref=original.schedule_ref)).locked
 
         with pytest.raises(ProblemError) as stale:
             await apply_one_off_event_atomic_edit(
@@ -209,9 +207,7 @@ async def test_one_off_event_lock_change_is_atomic_and_cas_guarded(
             )
         assert stale.value.status == 409
         async with runtime.session_factory() as session, session.begin():
-            current = await _read_event_in_session(
-                session, self_person_ref=owner, event_ref=event
-            )
+            current = await _read_event_in_session(session, self_person_ref=owner, event_ref=event)
         assert current is not None
         assert current.title == "Evento protetto"
 
@@ -241,9 +237,7 @@ async def test_one_off_event_lock_change_is_atomic_and_cas_guarded(
             Response(),
         )
         assert moved.event.title == "Evento protetto"
-        final = await locks.get(
-            self_person_ref=owner, schedule_ref=original.schedule_ref
-        )
+        final = await locks.get(self_person_ref=owner, schedule_ref=original.schedule_ref)
         assert not final.locked
         assert final.revision == 2
     finally:

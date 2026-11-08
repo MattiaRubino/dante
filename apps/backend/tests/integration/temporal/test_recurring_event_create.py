@@ -628,16 +628,11 @@ async def test_revised_event_structure_follows_governing_recurrence_state(
         assert isinstance(items[0].placement, NamedZoneLocalIntervalPlacement)
         assert items[0].placement.starts_local_at.time() == time(10)
         assert items[0].placement.ends_local_at.time() == time(12)
-        revised_lock = await locks.get(
-            self_person_ref=alice, schedule_ref=items[0].schedule_ref
-        )
+        revised_lock = await locks.get(self_person_ref=alice, schedule_ref=items[0].schedule_ref)
         assert revised_lock.locked is True
         assert revised_lock.revision > 0
     finally:
         await runtime.dispose()
-
-
-
 
 @pytest.mark.asyncio
 async def test_protected_recurring_event_create_replay_and_manual_unlock_are_preserved(
@@ -681,15 +676,10 @@ async def test_protected_recurring_event_create_replay_and_manual_unlock_are_pre
         assert replay.replayed is True
         assert replay.source_ref == created.source_ref
 
-        saved = await policies.get(
-            self_person_ref=alice, event_ref=created.source_ref
-        )
+        saved = await policies.get(self_person_ref=alice, event_ref=created.source_ref)
         assert saved is not None
         assert saved.placement_protected is True
-        assert (
-            await policies.get(self_person_ref=bob, event_ref=created.source_ref)
-            is None
-        )
+        assert await policies.get(self_person_ref=bob, event_ref=created.source_ref) is None
         with pytest.raises(EventOccurrencePolicyConflictError):
             await policies.set(
                 self_person_ref=alice,
@@ -723,9 +713,7 @@ async def test_protected_recurring_event_create_replay_and_manual_unlock_are_pre
         ]
         assert len(event_items) == 1
         schedule_ref = event_items[0].schedule_ref
-        initially_locked = await locks.get(
-            self_person_ref=alice, schedule_ref=schedule_ref
-        )
+        initially_locked = await locks.get(self_person_ref=alice, schedule_ref=schedule_ref)
         assert initially_locked.locked is True
         assert initially_locked.revision >= 1
         with pytest.raises(PlacementLockNotFoundError):
@@ -745,9 +733,7 @@ async def test_protected_recurring_event_create_replay_and_manual_unlock_are_pre
             end_date_exclusive=date(2027, 1, 3),
             effective_zone_id="Europe/Rome",
         )
-        preserved = await locks.get(
-            self_person_ref=alice, schedule_ref=schedule_ref
-        )
+        preserved = await locks.get(self_person_ref=alice, schedule_ref=schedule_ref)
         assert preserved.locked is False
         assert preserved.revision == manually_unlocked.revision
     finally:
