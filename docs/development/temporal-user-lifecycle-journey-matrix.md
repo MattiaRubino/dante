@@ -57,7 +57,7 @@ successive authenticated Timeline loads and backend checkpoints:
 | --- | --- |
 | Cancel one-off hard delete | The original Activity/Event is still persisted in the canonical profile endpoint, not just temporarily shown in a stale card |
 | Delete one-off, keep duplicate | Original returns HTTP 404 and is absent after day+1 checkpoint and return to day; duplicate keeps a distinct Schedule and persists unchanged |
-| Daily recurring Create | Only one matching future card is materialized; future Schedule identity differs from first when the first Schedule is available, and is stable after revisiting earlier dates |
+| Daily recurring Create | Only one matching future card is materialized; future Schedule identity differs from first when available, is stable after revisiting earlier dates, and the advanced first/future Activity/Event cards retain the same named Life Area |
 | Existing one-off → daily recurrence | Physical first Schedule identity survives; day+1/day+2 have distinct future Schedule identities; returning to earlier day does not duplicate or replace either |
 | Local edit vs following-series edit | Changed local title does not propagate to day+1/day+2; a later series revision must not retroactively rewrite that local earlier occurrence |
 | Delete one recurring instance | The deleted occurrence does not resurrect when materializing later dates and returning; following occurrences remain present until explicit whole-series deletion |
@@ -80,8 +80,9 @@ The test **has not been run** and may reveal an application defect.
 Do not treat a hidden card as proof that an active Session was protected.
 
 **Important not-yet-proven consistency contracts:** full first/future equivalence
-for Life Area, protection, planned Sessions, quantitative Objectives, reminders
-and Event Scaletta; an actual green active Session deletion rejection;
+for Life Area beyond the named daily Activity/Event pair, protection,
+planned Sessions, quantitative Objectives, reminders and Event Scaletta;
+an actual green active Session deletion rejection;
 survival of other recorded facts after series edits; CAS conflicts and retry
 after lost network response; DST transition with shared controllable
 browser/backend clock; skip/cancel/delete on long-running routine histories.
