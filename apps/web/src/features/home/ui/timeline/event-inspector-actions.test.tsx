@@ -11,6 +11,7 @@ import {
 } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
+import type { ActivityDuplicateSeed } from '../../../temporal-create/application/activity-duplicate-seed';
 import { invalidateTemporalTimelineRead } from '../../../temporal/timeline-invalidation';
 import { EventInspectorActions } from './event-inspector-actions';
 import { RecurringSeriesEditor } from './recurring-series-editor';
@@ -1206,6 +1207,11 @@ describe('Event Inspector actions', () => {
       '.timeline-event-modal__owner-actions .timeline-activity-inspector__toolbar',
     );
     expect(toolbar).toBeTruthy();
+    // The owner guard is asynchronous. Still require the complete toolbar
+    // once non-recurring ownership has been verified.
+    await within(toolbar as HTMLElement).findByRole('button', {
+      name: 'Copia in Bozze',
+    });
     expect(
       within(toolbar as HTMLElement)
         .getAllByRole('button')
@@ -1492,7 +1498,7 @@ describe('Event Inspector actions', () => {
     expect(onDuplicate).not.toHaveBeenCalled();
   });
 
-  it('prefills Advanced Create from the selected Event occurrence and not its source or past results', async () => {
+  it('prefills Event Create from an Occurrence without facts', async () => {
     const occurrenceRef = '0199a555-5555-7555-8555-555555555555';
     const context = {
       occurrenceRef,
@@ -1535,7 +1541,7 @@ describe('Event Inspector actions', () => {
       enabled: true,
       leadMinutes: 10,
     });
-    const onDuplicate = vi.fn();
+    const onDuplicate = vi.fn<(seed: ActivityDuplicateSeed) => void>();
     render(
       <EventInspectorActions
         eventRef={eventRef}
@@ -1576,12 +1582,14 @@ describe('Event Inspector actions', () => {
         ],
       },
     });
-    const objectives = onDuplicate.mock.calls[0]?.[0].advanced.objectives;
-    expect(objectives?.[0]).not.toHaveProperty('observationRef');
-    expect(objectives?.[0]).not.toHaveProperty('assessmentCode');
-    expect(onDuplicate.mock.calls[0]?.[0].advanced).not.toHaveProperty(
-      'recurrence',
+    const duplicated = onDuplicate.mock.calls[0]?.[0];
+    expect(duplicated?.advanced.objectives?.[0]).not.toHaveProperty(
+      'observationRef',
     );
+    expect(duplicated?.advanced.objectives?.[0]).not.toHaveProperty(
+      'assessmentCode',
+    );
+    expect(duplicated?.advanced).not.toHaveProperty('recurrence');
     expect(loadOccurrencePatch).toHaveBeenCalledWith(context);
   });
 

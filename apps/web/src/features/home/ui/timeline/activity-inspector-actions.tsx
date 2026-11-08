@@ -58,9 +58,18 @@ export function ActivityInspectorActions({
   const [hardDelete] = useState(createRemoteTemporalHardDeletion);
   const [draftVault] = useState(createRemoteDraftVault);
   const [profile, setProfile] = useState<ActivityProfile | null>(null);
-  const [recurringMember, setRecurringMember] = useState<boolean | null>(
-    recurringOccurrenceRef === null ? null : true,
-  );
+  const [verifiedOrigin, setVerifiedOrigin] = useState<{
+    activityRef: string;
+    profileRevision: number;
+    recurring: boolean;
+  } | null>(null);
+  const vaultEligible =
+    recurringOccurrenceRef === null &&
+    profile !== null &&
+    profile.activityRef === activityRef &&
+    verifiedOrigin?.activityRef === activityRef &&
+    verifiedOrigin.profileRevision === profile.revision &&
+    !verifiedOrigin.recurring;
   const [editChoice, setEditChoice] = useState<{
     profile: ActivityProfile;
     selectedProtection: RecurringProfileEditPreview['selectedProtection'];
@@ -96,21 +105,27 @@ export function ActivityInspectorActions({
   }, [activityRef, source]);
 
   useEffect(() => {
-    if (recurringOccurrenceRef !== null) {
-      setRecurringMember(true);
+    if (recurringOccurrenceRef !== null || profile?.activityRef !== activityRef) {
       return;
     }
-    setRecurringMember(null);
-    if (!profile || profile.activityRef !== activityRef) return;
+    const profileRevision = profile.revision;
     let active = true;
     void recurringSource
       .loadActivityContext(activityRef)
       .then((context) => {
-        if (active) setRecurringMember(context !== null);
+        if (active) {
+          setVerifiedOrigin({
+            activityRef,
+            profileRevision,
+            recurring: context !== null,
+          });
+        }
       })
       .catch(() => {
-        // An unresolved owner-scoped origin cannot authorize retirement.
-        if (active) setRecurringMember(null);
+        // Unknown ownership fails closed; a Vault action must not reappear.
+        if (active) {
+          setVerifiedOrigin({ activityRef, profileRevision, recurring: true });
+        }
       });
     return () => {
       active = false;
@@ -191,7 +206,7 @@ export function ActivityInspectorActions({
       >
         {toolbarTarget ? <TimelineInspectorIcon name="copy" /> : 'Duplica'}
       </button>
-      {recurringMember === false ? (
+      {vaultEligible ? (
         <button
           type="button"
           aria-label="Sposta in Bozze"
@@ -268,7 +283,7 @@ export function ActivityInspectorActions({
           }}
         />
       ) : null}
-      {confirmingVault && recurringMember === false ? (
+      {confirmingVault && vaultEligible ? (
         <div className="timeline-activity-inspector__confirmation">
           <p>
             L'Attività verrà conservata come bozza non operativa e ritirata

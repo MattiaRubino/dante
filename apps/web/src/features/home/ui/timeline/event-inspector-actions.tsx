@@ -175,23 +175,25 @@ export function EventInspectorActions({
   } | null>(null);
   const [editScope, setEditScope] =
     useState<RecurringProfileEditScope>('only_this');
-  const [vaultEligible, setVaultEligible] = useState<boolean | null>(
-    occurrenceRef === null ? null : false,
-  );
+  const [verifiedSource, setVerifiedSource] = useState<{
+    eventRef: string;
+    recurring: boolean;
+  } | null>(null);
+  const vaultEligible =
+    occurrenceRef === null &&
+    verifiedSource?.eventRef === eventRef &&
+    !verifiedSource.recurring;
   useEffect(() => {
-    if (occurrenceRef !== null) {
-      setVaultEligible(false);
-      return;
-    }
-    setVaultEligible(null);
+    if (occurrenceRef !== null) return;
     let active = true;
     void recurrenceGuard
       .isRecurring(eventRef)
       .then((recurring) => {
-        if (active) setVaultEligible(!recurring);
+        if (active) setVerifiedSource({ eventRef, recurring });
       })
       .catch(() => {
-        if (active) setVaultEligible(null);
+        // A failed owner lookup cannot enable a destructive Vault action.
+        if (active) setVerifiedSource({ eventRef, recurring: true });
       });
     return () => {
       active = false;
@@ -1037,7 +1039,7 @@ export function EventInspectorActions({
           'Duplica'
         )}
       </button>
-      {vaultEligible === true ? (
+      {vaultEligible ? (
         <button
           type="button"
           disabled={busy}
