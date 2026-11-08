@@ -1,5 +1,11 @@
 # Timeline / Temporal-Operational — Workstream Handoff
 
+## 2026-11-08 — Web regression contract refresh after 896f643e full gate
+
+After the canonical backend alignment, obsolete frontend assertions were updated without relaxing persistence checks: Create and revise Objective payloads now assert their explicit verification fields, the global completion-mode UI is correctly absent, and shared recurrence geometry is asserted in the shared panel. Existing Activity recurrence starts through the single Edit Save rather than the retired independent action. Authenticated one-off Activity/Event deletion tests now drive the portal `alertdialog`, retaining cancel-before-confirm, HTTP response, and post-reload absence assertions. The Life Area golden test selects the precise `Ripeti` combobox, avoiding the label/region collision.
+
+**Still RED until rerun:** no WSL results on these commits. Monthly/ordinal occurrence visibility, Activity scoped-series title after acceptance, and Edit-to-recurrence conversion need real-stack diagnosis, not weakened assertions. The prior generated OpenAPI/client drift, Prettier/ESLint failures and nonauth Objective-layout geometry were not repaired in this regression refresh. Run focused same-SHA checks before the final 27-group gate.
+
 ## 2026-11-08 — Coherent backend baseline repair after 896f643e gate
 
 Owner's completed 27-group gate at `896f643e` had source stability PASS but 12 red groups. Backend candidate repairs reconcile the V3 recurring Event placement flag across the canonical SQLAlchemy mapping, table Dictionary and both v3 routine Dictionary entries. Dictionary current counts now track 261 routines, current Alembic tests expect `_181` rather than stale `_177`/`_178`, and the scope schema admits the already-materialized Objective-verification stage. An unstarted Activity's Objective review test now explicitly creates an Objective with `review_on_end`, preserving the normative distinction from default `none`.
