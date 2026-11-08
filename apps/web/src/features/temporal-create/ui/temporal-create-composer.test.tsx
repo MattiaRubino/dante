@@ -266,7 +266,10 @@ describe('TemporalCreateComposer', () => {
     expect(
       within(eventObjectives).getByRole('button', { name: 'Aggiungi obiettivo' }),
     ).toBeTruthy();
-    expect(eventObjectives.querySelector('[data-reality-policy]')).toBeNull();
+    const obsoleteReality = eventObjectives.querySelector(
+      '[data-reality-policy]',
+    );
+    expect(obsoleteReality).toBeNull();
     expect(screen.queryByText('Svolgimento e obiettivi')).toBeNull();
     expect(screen.queryByText('Disponibilità')).toBeNull();
     expect(screen.queryByText('Visibilità')).toBeNull();

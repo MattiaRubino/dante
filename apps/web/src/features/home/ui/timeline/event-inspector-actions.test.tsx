@@ -1954,9 +1954,10 @@ describe('Event Inspector actions', () => {
       ':scope > .timeline-recurring-series-editor__advanced',
     ].map((selector) => form.querySelector(selector));
     expect(formSections.every(Boolean)).toBe(true);
-    expect(
-      form.querySelector('.temporal-create-reality-objectives__block.is-reality'),
-    ).toBeNull();
+    const obsoleteReality = form.querySelector(
+      '.temporal-create-reality-objectives__block.is-reality',
+    );
+    expect(obsoleteReality).toBeNull();
     for (let index = 1; index < formSections.length; index += 1) {
       expect(
         formSections[index - 1]?.compareDocumentPosition(formSections[index]!),

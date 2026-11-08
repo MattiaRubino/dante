@@ -151,12 +151,8 @@ describe('Temporal Create U2 entry', () => {
       durationMinutes: 60,
       timeSemantics: 'timed' as const,
     };
-    const { activityRequests, eventRequests } = renderEntry(
-      [],
-      false,
-      '2026-10-07',
-      {
-        id: 1,
+    const invocation: TemporalCreateInvocation = {
+      id: 1,
       date: Temporal.PlainDate.from('2026-10-07'),
       seed: fields,
       duplicate: {
@@ -173,11 +169,17 @@ describe('Temporal Create U2 entry', () => {
               targetMin: '',
               targetMax: '',
               unitCode: '',
+              verificationMode: 'review_on_end',
             },
           ],
         },
       },
-      },
+    };
+    const { activityRequests, eventRequests } = renderEntry(
+      [],
+      false,
+      '2026-10-07',
+      invocation,
     );
     await waitFor(() =>
       expect(
@@ -186,6 +188,9 @@ describe('Temporal Create U2 entry', () => {
     );
     expect(screen.getByDisplayValue('Copia lavoro')).toBeTruthy();
     expect(screen.getByDisplayValue('Finire')).toBeTruthy();
+    expect(
+      screen.getByRole('combobox', { name: 'Verifica obiettivo 1' }),
+    ).toHaveProperty('value', 'review_on_end');
     expect(activityRequests).toHaveLength(0);
     expect(eventRequests).toHaveLength(0);
   });

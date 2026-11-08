@@ -110,7 +110,10 @@ describe('Temporal Create Advanced Activity IA', () => {
     const objectives = screen.getByRole('region', {
       name: 'Configurazione obiettivi',
     });
-    expect(document.querySelector('[data-reality-policy="activity"]')).toBeNull();
+    const obsoleteReality = document.querySelector(
+      '[data-reality-policy="activity"]',
+    );
+    expect(obsoleteReality).toBeNull();
     expect(screen.queryByText('Svolgimento e obiettivi')).toBeNull();
     expect(
       within(objectives).getByRole('button', { name: 'Aggiungi obiettivo' }),
