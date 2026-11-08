@@ -2554,6 +2554,10 @@ export function ActivityEditPanel({
             recurringLoading ||
             !!recurringError ||
             !!settingsError ||
+            sessionAttempts === null ||
+            !!sessionAttemptsError ||
+            !captureMode ||
+            !realityMode ||
             !draft.title.trim()
           }
         >
