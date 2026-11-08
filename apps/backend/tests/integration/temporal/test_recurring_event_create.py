@@ -22,7 +22,10 @@ from dante.modules.temporal.application import (
 )
 from dante.modules.temporal.contracts import TimelineWindowQuery
 from dante.modules.temporal.event import _read_event_in_session
-from dante.modules.temporal.event_occurrence_policy import EventOccurrencePolicyApplication
+from dante.modules.temporal.event_occurrence_policy import (
+    EventOccurrencePolicyApplication,
+    EventOccurrencePolicyConflictError,
+)
 from dante.modules.temporal.occurrence_api import (
     EventOccurrenceLocalEditCommand,
     accept_event_occurrence_local_edit,
@@ -34,7 +37,10 @@ from dante.modules.temporal.placement_lock import (
     PlacementLockNotFoundError,
 )
 from dante.modules.temporal.recurrence import CalendarRecurrence, RecurrenceApplication
-from dante.modules.temporal.recurring_authoring import RecurringAuthoringApplication
+from dante.modules.temporal.recurring_authoring import (
+    EventAuthoringPolicy,
+    RecurringAuthoringApplication,
+)
 from dante.modules.temporal.recurring_series_edit import RecurringSeriesEditApplication
 from dante.modules.temporal.recurring_structure_policy import RecurringStructurePolicyApplication
 from dante.modules.temporal.responsibility_participation import (
@@ -473,6 +479,7 @@ async def test_revised_event_structure_follows_governing_recurrence_state(
     runtime = create_database_runtime(migrated_database.runtime_settings())
     authoring = RecurringAuthoringApplication(runtime.session_factory)
     policies = EventOccurrencePolicyApplication(runtime.session_factory)
+    locks = PlacementLockApplication(runtime.session_factory)
     revisions = RecurringStructurePolicyApplication(runtime.session_factory)
     recurrences = RecurrenceApplication(runtime.session_factory)
     materializer = RoutineOccurrenceMaterializationApplication(runtime.session_factory)
@@ -529,6 +536,7 @@ async def test_revised_event_structure_follows_governing_recurrence_state(
             "reminder_lead_minutes": None,
             "reality_mode": "manual",
             "objectives": [],
+            "placement_protected": True,
         }
         async with runtime.session_factory() as session, session.begin():
             changed = await recurrences.replace_in_session(
@@ -588,6 +596,7 @@ async def test_revised_event_structure_follows_governing_recurrence_state(
         )
         assert policy is not None
         assert policy.duration_minutes == 120
+        assert policy.placement_protected is True
         await materializer.checkpoint_window(
             self_person_ref=alice,
             operation_id="structure:event:window",
@@ -612,9 +621,130 @@ async def test_revised_event_structure_follows_governing_recurrence_state(
         assert isinstance(items[0].placement, NamedZoneLocalIntervalPlacement)
         assert items[0].placement.starts_local_at.time() == time(10)
         assert items[0].placement.ends_local_at.time() == time(12)
+        revised_lock = await locks.get(
+            self_person_ref=alice, schedule_ref=items[0].schedule_ref
+        )
+        assert revised_lock.locked is True
+        assert revised_lock.revision > 0
     finally:
         await runtime.dispose()
 
+
+
+
+@pytest.mark.asyncio
+async def test_protected_recurring_event_create_replay_and_manual_unlock_are_preserved(
+    migrated_database: Any,
+) -> None:
+    alice = _seed_self(migrated_database)
+    bob = _seed_self(migrated_database)
+    runtime = create_database_runtime(migrated_database.runtime_settings())
+    authoring = RecurringAuthoringApplication(runtime.session_factory)
+    policies = EventOccurrencePolicyApplication(runtime.session_factory)
+    materializer = RoutineOccurrenceMaterializationApplication(runtime.session_factory)
+    timeline = TemporalTimelineApplication(runtime.session_factory)
+    locks = PlacementLockApplication(runtime.session_factory)
+    policy = EventAuthoringPolicy(
+        placement_kind="timed",
+        duration_minutes=45,
+        duration_days=None,
+        reminder_lead_minutes=None,
+        reality_mode="manual",
+        objectives=(),
+        placement_protected=True,
+    )
+    try:
+        created = await authoring.create_event(
+            self_person_ref=alice,
+            operation_id="event:protected:create",
+            title="Evento protetto",
+            life_area_intent=None,
+            recurrence=_daily_named_zone(),
+            policy=policy,
+        )
+        assert created.replayed is False
+        replay = await authoring.create_event(
+            self_person_ref=alice,
+            operation_id="event:protected:create",
+            title="Evento protetto",
+            life_area_intent=None,
+            recurrence=_daily_named_zone(),
+            policy=policy,
+        )
+        assert replay.replayed is True
+        assert replay.source_ref == created.source_ref
+
+        saved = await policies.get(
+            self_person_ref=alice, event_ref=created.source_ref
+        )
+        assert saved is not None
+        assert saved.placement_protected is True
+        assert (
+            await policies.get(self_person_ref=bob, event_ref=created.source_ref)
+            is None
+        )
+        with pytest.raises(EventOccurrencePolicyConflictError):
+            await policies.set(
+                self_person_ref=alice,
+                event_ref=created.source_ref,
+                placement_kind="timed",
+                duration_minutes=45,
+                duration_days=None,
+                reminder_lead_minutes=None,
+                placement_protected=False,
+            )
+
+        await materializer.checkpoint_window(
+            self_person_ref=alice,
+            operation_id="event:protected:window-initial",
+            start_date=date(2027, 1, 2),
+            end_date_exclusive=date(2027, 1, 3),
+            effective_zone_id="Europe/Rome",
+        )
+        before = await timeline.read_window(
+            query=TimelineWindowQuery(
+                start_date=date(2027, 1, 2),
+                end_date_exclusive=date(2027, 1, 3),
+            ),
+            context=_context(alice),
+        )
+        event_items = [
+            item
+            for item in before.items
+            if isinstance(item, TimelineScheduledOccurrenceItem)
+            and item.source_native_ref == created.source_ref
+        ]
+        assert len(event_items) == 1
+        schedule_ref = event_items[0].schedule_ref
+        initially_locked = await locks.get(
+            self_person_ref=alice, schedule_ref=schedule_ref
+        )
+        assert initially_locked.locked is True
+        assert initially_locked.revision >= 1
+        with pytest.raises(PlacementLockNotFoundError):
+            await locks.get(self_person_ref=bob, schedule_ref=schedule_ref)
+
+        manually_unlocked = await locks.set(
+            self_person_ref=alice,
+            schedule_ref=schedule_ref,
+            locked=False,
+            expected_revision=initially_locked.revision,
+        )
+        assert manually_unlocked.locked is False
+        await materializer.checkpoint_window(
+            self_person_ref=alice,
+            operation_id="event:protected:window-recheck",
+            start_date=date(2027, 1, 2),
+            end_date_exclusive=date(2027, 1, 3),
+            effective_zone_id="Europe/Rome",
+        )
+        preserved = await locks.get(
+            self_person_ref=alice, schedule_ref=schedule_ref
+        )
+        assert preserved.locked is False
+        assert preserved.revision == manually_unlocked.revision
+    finally:
+        await runtime.dispose()
 
 def _daily_named_zone() -> CalendarRecurrence:
     return CalendarRecurrence(
