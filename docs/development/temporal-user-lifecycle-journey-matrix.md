@@ -71,14 +71,22 @@ a live Session at the real current time, verifies its canonical active
 duration increases across elapsed time, then stops it and checks that
 duration no longer grows. This test does not mock PostgreSQL time.
 
+**New safety regression (PostgreSQL candidate):**
+`test_open_live_activity_session_blocks_destructive_instance_deletion`
+materializes a recurring Activity, starts a real live Session, attempts a
+scoped hard delete, requires rejection, and checks that the Activity,
+Occurrence, skip history and open Session survive a further checkpoint.
+The test **has not been run** and may reveal an application defect.
+Do not treat a hidden card as proof that an active Session was protected.
+
 **Important not-yet-proven consistency contracts:** full first/future equivalence
 for Life Area, protection, planned Sessions, quantitative Objectives, reminders
-and Event Scaletta; active Session deletion rejection and survival of all
-recorded facts; CAS conflicts and retry after lost network response; DST
-transition with shared controllable browser/backend clock; skip/cancel/delete
-on long-running routine histories. These must be separately backed by source
-and test evidence; current suite does not prove them merely by checking title
-or Schedule identity.
+and Event Scaletta; an actual green active Session deletion rejection;
+survival of other recorded facts after series edits; CAS conflicts and retry
+after lost network response; DST transition with shared controllable
+browser/backend clock; skip/cancel/delete on long-running routine histories.
+These must be separately backed by source and test evidence; current browser
+suite does not prove them merely by checking title or Schedule identity.
 
 **Future expansion (explicitly deferred):** multiple realistic long-running
 persona simulations (professions, objectives, routines and changing user

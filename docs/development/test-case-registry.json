@@ -1861,9 +1861,10 @@
       "suite": "temporal-postgresql-integration",
       "contract_id": "T03",
       "candidate_behavior": "one-off Event hard delete; recurring Activity and Event single-instance/whole-series guarded deletion",
-      "purpose": "End-to-end PostgreSQL actor-scoped read/preview/delete proof for recurring Activity, Event Occurrence, and nonrecurring Event, including durable skip and no sibling loss.",
-      "invariant": "Only the selected owned graph or source series is removed; a skipped instance cannot be rematerialized; other owners and siblings retain all their truth.",
-      "status": "QUALIFIED"
+      "purpose": "Validate owner-isolated hard-delete previews/fingerprints, scoped recurring Activity/Event deletion, no regenerated skipped instances and open live-Session destructive-guard semantics.",
+      "invariant": "Deleting one recurring instance must not affect future siblings or resurrect after a checkpoint; a hard delete while a live Session is open must be rejected without losing Activity, Occurrence or current Session timing facts.",
+      "status": "QUALIFIED",
+      "audit_note": "Existing source tests plus a new live-Session negative regression reviewed; exact SQL enforcement not established. This candidate may intentionally expose a production defect on owner's PostgreSQL run. New assertion execution NOT RUN."
     },
     {
       "path": "apps/backend/tests/integration/temporal/test_unified_planning_tray.py",

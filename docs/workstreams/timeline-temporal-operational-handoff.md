@@ -23,11 +23,14 @@ The separate PostgreSQL `test_session_runtime.py` now contains a real
 wall-time progression test: running Session duration grows over elapsed
 seconds and freezes after Stop, with stable Session identity and persistence.
 This does not fake backend clock advancement. **Active Session hard deletion
-rejection is NOT yet verified:** check current deletion policy and add a
-transactional negative test that proves rejected deletion leaves both
-Activity and open Session intact, rather than presuming UI absence is
-enforcement. Deep virtual time across months/DST requires an explicit shared
-clock seam and is not part of this patch.
+rejection is NOT yet verified:** a new PostgreSQL negative test in
+`test_temporal_hard_deletion.py` now attempts deletion while a real
+live Session is open, requiring a conflict and verifying native Activity,
+Occurrence, absence of skip, Session timing and subsequent checkpoint
+preservation. This test may be RED if the SQL mutation lacks the guard;
+do not weaken the rejection assertion to hide the defect. Deep virtual
+time across months/DST requires an explicit shared clock seam and is not
+part of this patch.
 
 **All new changes NOT RUN in owner WSL.** Focused Chromium user-lifecycle
 journeys, PostgreSQL live Session duration, Ruff format/check and TypeScript
