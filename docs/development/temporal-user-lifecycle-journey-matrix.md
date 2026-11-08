@@ -42,6 +42,54 @@ The conversion of an already edited item into a recurring source currently
 uses two separate backend transactions (Edit, then Start). A green browser
 journey does not imply these form a single database transaction.
 
+## Data-consistency checks added after first Chromium run
+
+The first owner execution at `122c6a42` failed 7/7 journeys **before** lifecycle
+acceptance, in two shared test-driver assumptions: the actual expanded Create
+surface is `advanced` (not `full`) and hard-delete confirmation is a
+portaled `alertdialog` with the action `Elimina definitivamente`.
+These two test-driver contracts were repaired; no production feature was changed.
+
+The seven existing paths now also check the following invariants across
+successive authenticated Timeline loads and backend checkpoints:
+
+| Transition | Consistency assertion |
+| --- | --- |
+| Cancel one-off hard delete | The original Activity/Event is still persisted in the canonical profile endpoint, not just temporarily shown in a stale card |
+| Delete one-off, keep duplicate | Original returns HTTP 404 and is absent after day+1 checkpoint and return to day; duplicate keeps a distinct Schedule and persists unchanged |
+| Daily recurring Create | Only one matching future card is materialized; future Schedule identity differs from first when the first Schedule is available, and is stable after revisiting earlier dates |
+| Existing one-off → daily recurrence | Physical first Schedule identity survives; day+1/day+2 have distinct future Schedule identities; returning to earlier day does not duplicate or replace either |
+| Local edit vs following-series edit | Changed local title does not propagate to day+1/day+2; a later series revision must not retroactively rewrite that local earlier occurrence |
+| Delete one recurring instance | The deleted occurrence does not resurrect when materializing later dates and returning; following occurrences remain present until explicit whole-series deletion |
+
+**Time semantics are tested in two distinct ways.** Browser navigation through
+`dateAfter(day, 1/2/3)` triggers genuine authenticated backend Timeline reads
+and recurrence checkpoints. This models **calendar progression**, but **does
+not advance the server's actual wall clock**. The additional PostgreSQL test
+`test_live_session_time_progression_is_persisted_and_stops_after_end` starts
+a live Session at the real current time, verifies its canonical active
+duration increases across elapsed time, then stops it and checks that
+duration no longer grows. This test does not mock PostgreSQL time.
+
+**Important not-yet-proven consistency contracts:** full first/future equivalence
+for Life Area, protection, planned Sessions, quantitative Objectives, reminders
+and Event Scaletta; active Session deletion rejection and survival of all
+recorded facts; CAS conflicts and retry after lost network response; DST
+transition with shared controllable browser/backend clock; skip/cancel/delete
+on long-running routine histories. These must be separately backed by source
+and test evidence; current suite does not prove them merely by checking title
+or Schedule identity.
+
+**Future expansion (explicitly deferred):** multiple realistic long-running
+persona simulations (professions, objectives, routines and changing user
+requirements) using a single isolated deterministic clock shared between
+frontend, backend and database. Do not substitute browser-only `page.clock`
+for server time in these scenarios.
+
+**Verification:** all new checks above are candidate assertions pending WSL
+execution on their exact branch commit. The first 7/7 failures at
+`122c6a42` remain the recorded initial RED; do not label this checkpoint green.
+
 ## Important gaps to add in the next iteration
 
 | Gap | Required proof |

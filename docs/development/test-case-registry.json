@@ -1790,11 +1790,11 @@
       "path": "apps/backend/tests/integration/temporal/test_session_runtime.py",
       "suite": "temporal-postgresql-integration",
       "contract_id": "T07",
-      "candidate_behavior": "session runtime py",
-      "purpose": "",
-      "invariant": "",
-      "status": "UNREVIEWED",
-      "audit_note": "Needs contract/assertion review, rejection cases, and executable evidence; filename alone is not proof."
+      "candidate_behavior": "canonical live Session start/end with real PostgreSQL time progression",
+      "purpose": "Verify running Session identity, idempotent start/end, and measured active duration progression and freezing after Stop.",
+      "invariant": "The same live Session persists while its active_seconds increases against the actual DB clock; after Stop, current timing ref changes and active_seconds remains frozen after elapsed wall time.",
+      "status": "QUALIFIED",
+      "audit_note": "Source assertion review only; new real elapsed-time test awaits owner migrated PostgreSQL execution. Does not prove active Session deletion rejection."
     },
     {
       "path": "apps/backend/tests/integration/temporal/test_session_workflow.py",
@@ -2959,9 +2959,9 @@
       "contract_id": "T05",
       "candidate_behavior": "authenticated Activity/Event user lifecycle matrix",
       "purpose": "Exercise seven real user journeys and 12 recurring Create configurations across Edit, conversion, duplication, scoped deletion and canonical reload.",
-      "invariant": "Real UI and authenticated HTTP backed by PostgreSQL; no propagation of local changes, no duplicated first identity, and correctly scoped deletion.",
+      "invariant": "Real authenticated UI/HTTP/PostgreSQL, stable one-off and first-recurring identity across day checkpoints, local edit isolation and no resurrection after scoped delete, alongside independent duplicate persistence.",
       "status": "QUALIFIED",
-      "audit_note": "Source and coverage matrix inspected; 7 E2E specs parameterized over Chromium/Firefox/WebKit, pending owner WSL real-stack execution on exact SHA. See docs/development/temporal-user-lifecycle-journey-matrix.md."
+      "audit_note": "First owner Chromium run on 122c6a42 RED 7/7: 5 invalid expected Create surface, 2 portaled delete-dialog selectors. Driver repaired; deeper calendar-progression assertions added; owner real-stack execution on current SHA is NOT RUN. See temporal-user-lifecycle-journey-matrix.md."
     },
     {
       "path": "apps/web/e2e/home-structure.spec.ts",

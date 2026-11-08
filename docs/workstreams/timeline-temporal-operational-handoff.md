@@ -1,5 +1,41 @@
 # Timeline / Temporal-Operational — Workstream Handoff
 
+## 2026-11-08 — Real-stack lifecycle RED triage + data consistency and time progression
+
+Initial owner's Chromium run on `122c6a42`: **0/7 passed**. The real
+authenticated HTTPS stack and disposable PostgreSQL started correctly.
+Five scenarios halted on a test-driver-only mismatch expecting Create
+`data-temporal-create-surface=full` instead of actual `advanced`;
+two halted because their delete confirmation locator was incorrectly scoped
+inside the Inspector instead of the portal-mounted `alertdialog`. Neither
+failure proves application data loss or persistence success. Both driver
+assumptions are repaired using the existing real DOM contracts; the delete
+cancellation check now additionally requires canonical profile persistence.
+
+The same seven real-stack journeys gained additional calendar-checkpoint
+invariants for one-off delete/duplicate non-resurrection, stable daily
+Occurrence identities, one-off-to-series first identity and later materialization,
+local edit isolation, series boundary preservation and non-resurrection of a
+deleted instance after visiting later dates. Existing tests and negative
+checks remain; no mocks, retries or disabled product assertions added.
+
+The separate PostgreSQL `test_session_runtime.py` now contains a real
+wall-time progression test: running Session duration grows over elapsed
+seconds and freezes after Stop, with stable Session identity and persistence.
+This does not fake backend clock advancement. **Active Session hard deletion
+rejection is NOT yet verified:** check current deletion policy and add a
+transactional negative test that proves rejected deletion leaves both
+Activity and open Session intact, rather than presuming UI absence is
+enforcement. Deep virtual time across months/DST requires an explicit shared
+clock seam and is not part of this patch.
+
+**All new changes NOT RUN in owner WSL.** Focused Chromium user-lifecycle
+journeys, PostgreSQL live Session duration, Ruff format/check and TypeScript
+gate must run on the pulled SHA before accepting. See
+`docs/development/temporal-user-lifecycle-journey-matrix.md` for specific
+proofs and deferred multi-persona program.
+
+
 ## 2026-11-08 — Real-stack user lifecycle matrix (candidate)
 
 Seven independent authenticated Playwright journeys have been added for
