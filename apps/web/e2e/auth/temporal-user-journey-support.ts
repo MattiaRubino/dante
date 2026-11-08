@@ -45,6 +45,8 @@ export type CreateOptions = Readonly<{
   monthlyOrdinal?: boolean;
   repeatCount?: number;
   objective?: string;
+  objectiveQuantity?: number;
+  lifeArea?: string;
   plannedSession?: string;
   agenda?: string;
   placementProtected?: boolean;
@@ -178,6 +180,10 @@ export async function configureCreate(
   options: CreateOptions,
 ): Promise<void> {
   await composer.getByRole('textbox', { name: 'Titolo' }).fill(options.title);
+  if (options.lifeArea) {
+    await composer.getByRole('textbox', { name: 'Life Area (opzionale)' })
+      .fill(options.lifeArea);
+  }
   if (options.allDay) {
     await composer.getByRole('radio', { name: 'Tutto il giorno' }).click();
   }
@@ -186,6 +192,7 @@ export async function configureCreate(
   const advanced =
     options.recurrence !== undefined ||
     options.objective !== undefined ||
+    options.objectiveQuantity !== undefined ||
     options.plannedSession !== undefined ||
     options.agenda !== undefined ||
     options.placementProtected === true;
@@ -216,6 +223,15 @@ export async function configureCreate(
     await composer.getByRole('button', { name: 'Aggiungi obiettivo' }).click();
     await composer.getByRole('textbox', { name: 'Obiettivo 1' })
       .fill(options.objective);
+    if (options.objectiveQuantity !== undefined) {
+      await composer.getByRole('combobox', {
+        name: 'Tipo risultato obiettivo 1',
+      }).selectOption('quantity');
+      await composer.getByRole('spinbutton', { name: 'Target obiettivo' })
+        .fill(String(options.objectiveQuantity));
+      await composer.getByRole('textbox', { name: 'Unità obiettivo' })
+        .fill('ore');
+    }
   }
   if (options.recurrence && options.recurrence !== 'none') {
     const panel = composer.getByRole('region', {

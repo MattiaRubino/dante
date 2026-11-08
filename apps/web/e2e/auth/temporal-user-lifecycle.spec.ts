@@ -217,6 +217,8 @@ test.describe('Timeline — real user Activity/Event lifecycle matrix', () => {
               ? {
                   plannedSession: 'Studio approfondito',
                   objective: 'Risultato verificato',
+                  objectiveQuantity: 5,
+                  lifeArea: uniqueTitle('area studio'),
                   placementProtected: true,
                 }
               : {}),
@@ -224,6 +226,7 @@ test.describe('Timeline — real user Activity/Event lifecycle matrix', () => {
               ? {
                   agenda: 'Introduzione partecipanti',
                   objective: 'Presenza confermata',
+                  lifeArea: uniqueTitle('area eventi'),
                   placementProtected: true,
                 }
               : {}),
