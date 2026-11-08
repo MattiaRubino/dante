@@ -1276,7 +1276,7 @@ export function EventInspectorActions({
             className="timeline-event-profile-editor__body"
             inert={confirmingDiscard || undefined}
           >
-            <div className="temporal-create-title-row has-tools timeline-activity-editor__title-row timeline-event-profile-editor__title-row">
+            <div className="temporal-create-title-row has-tools timeline-activity-editor__title-row timeline-event-profile-editor__title-row temporal-event-title-row">
               <label className="timeline-activity-editor__title">
                 <span className="timeline-activity-editor__visually-hidden">
                   Titolo Event

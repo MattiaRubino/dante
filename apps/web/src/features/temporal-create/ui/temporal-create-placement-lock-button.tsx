@@ -2,6 +2,8 @@ import { useTranslation } from 'react-i18next';
 
 import { useTemporalCreateU2Draft } from './temporal-create-u2-draft-context';
 
+import './temporal-create-event-title-row.css';
+
 export function TemporalCreatePlacementLockButton({
   locked,
   onToggle,

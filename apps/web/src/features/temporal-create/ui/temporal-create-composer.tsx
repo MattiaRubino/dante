@@ -612,7 +612,7 @@ export function TemporalCreateComposer({
               <div
                 className={
                   advanced
-                    ? 'temporal-create-title-row has-tools'
+                    ? `temporal-create-title-row has-tools${fields.kind === 'event' ? ' temporal-event-title-row' : ''}`
                     : 'temporal-create-title-row is-quick'
                 }
               >
