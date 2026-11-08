@@ -294,6 +294,8 @@ async def test_one_off_event_schedule_and_profile_commit_together_with_material_
         )
         assert saved.event.title == "Moved"
         assert saved.event.profile_revision == 1
+        assert saved.placement_material_state_ref is not None
+        assert saved.placement_material_state_ref != original.material_state_ref
         with pytest.raises(ProblemError) as stale:
             await apply_one_off_event_atomic_edit(
                 event,

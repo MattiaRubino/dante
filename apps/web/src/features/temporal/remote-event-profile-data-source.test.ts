@@ -9,6 +9,7 @@ const EVENT = '0199a111-1111-7111-8111-111111111111';
 const AREA = '0199a222-2222-7222-8222-222222222222';
 const SCHEDULE = '0199a333-3333-7333-8333-333333333333';
 const MATERIAL = '0199a444-4444-7444-8444-444444444444';
+const UPDATED_MATERIAL = '0199a555-5555-7555-8555-555555555555';
 const original = {
   event_ref: EVENT,
   title: 'Conferenza',
@@ -61,7 +62,11 @@ describe('owner-scoped Event profile CAS source', () => {
         submitted.push(JSON.parse(fetchRequestBody(init?.body)) as unknown);
         saved = true;
         return Promise.resolve(
-          json({ event: { ...original }, objectives: [] }),
+          json({
+            event: { ...original },
+            objectives: [],
+            placement_material_state_ref: UPDATED_MATERIAL,
+          }),
         );
       }
       throw new Error('Unexpected Event route ' + url);
@@ -166,6 +171,7 @@ describe('owner-scoped Event profile CAS source', () => {
       },
     ]);
     expect(result.agendaParts).toEqual(['Apertura']);
+    expect(result.updatedPlacementStateRef).toBe(UPDATED_MATERIAL);
   });
   it('uses accepted revision + operation ID and refreshes canonical Event', async () => {
     const sent: unknown[] = [];
