@@ -31,23 +31,7 @@
   justify-content: center;
 }
 
-.timeline-recurring-series-editor .timeline-activity-editor__title-row {
-  grid-template-columns: minmax(0, 1fr) auto;
-}
-
-.timeline-recurring-series-editor .timeline-activity-editor__title-tools {
-  display: flex;
-  align-items: center;
-  gap: 0;
-}
-
-.timeline-recurring-series-editor
-  .timeline-activity-editor__title-tools
-  > button {
-  min-height: 40px;
-  white-space: nowrap;
-}
-
+/* The shared authoring title component now owns the series name and actions. */
 .timeline-recurring-series-editor .timeline-activity-editor__sessions {
   padding: 4px 0;
   border: 0;
@@ -289,72 +273,7 @@
   white-space: nowrap;
 }
 
-.timeline-event-modal--edit .timeline-activity-editor__title-row {
-  display: grid;
-  grid-template-columns: 34px minmax(0, 1fr) auto;
-  align-items: stretch;
-  min-height: 52px;
-  padding: 0;
-  gap: 0;
-  border-color: var(
-    --dante-semantic-color-home-border-subtle,
-    rgba(255, 255, 255, 0.09)
-  );
-}
-
-.timeline-event-modal--edit .timeline-activity-editor__title {
-  display: block;
-  min-width: 0;
-}
-
-.timeline-event-modal--edit
-  .timeline-activity-editor__title
-  input.temporal-create-title-input {
-  width: 100%;
-  min-height: 58px;
-  padding: 0 10px;
-  border: 0;
-  border-radius: 0;
-  color: var(--dante-semantic-color-home-text-primary, #edf2f8);
-  background: transparent;
-  font-size: 19px;
-  box-shadow: none;
-}
-
-.timeline-event-modal--edit .timeline-activity-editor__title-tools {
-  display: flex;
-  align-items: center;
-  justify-content: flex-end;
-  flex-wrap: nowrap;
-  gap: 0;
-}
-
-.timeline-event-modal--edit
-  .timeline-activity-editor__title-tools
-  > :is(button, label) {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  min-height: 58px;
-  padding: 0 14px;
-  border: 0;
-  border-left: 1px solid var(--dante-semantic-color-home-border-subtle);
-  border-radius: 0;
-  color: var(--dante-semantic-color-home-text-secondary, #b7c0cf);
-  background: transparent;
-  font-size: 12px;
-  white-space: nowrap;
-}
-
-.timeline-event-modal--edit
-  .timeline-activity-editor__title-tools
-  > button
-  svg {
-  width: 16px;
-  height: 16px;
-  margin-right: 7px;
-}
-
+/* The shared authoring title component now owns Edit title geometry. */
 .timeline-event-modal--edit .timeline-activity-editor__title-tools label input {
   margin-right: 8px;
   accent-color: var(--dante-semantic-color-home-chrome-active, #ea5c12);
@@ -767,12 +686,6 @@
 }
 
 @media (max-width: 720px) {
-  .timeline-event-modal--edit .timeline-activity-editor__title-row {
-    grid-template-columns: 34px minmax(0, 1fr) auto;
-  }
-  .timeline-event-modal--edit .timeline-activity-editor__title-tools {
-    justify-content: flex-start;
-  }
   .timeline-event-modal--edit .timeline-activity-editor__schedule-time {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
@@ -788,75 +701,14 @@
   }
 }
 
-/* M5 visual acceptance: one continuous Title control, not a nested second box. */
-.timeline-event-modal--edit .timeline-activity-editor__title-row {
-  padding: 0;
-  gap: 0;
-  overflow: hidden;
-  border: 1px solid
-    var(--dante-semantic-color-home-border-subtle, rgba(255, 255, 255, 0.09));
-  border-radius: 11px;
-}
-.timeline-event-modal--edit
-  .timeline-activity-editor__title-row
-  .timeline-activity-editor__title {
-  display: flex;
-  align-items: stretch;
-  min-width: 0;
-  min-height: 50px;
-  padding: 0 !important;
-  border: 0 !important;
-  border-radius: 0 !important;
-  background: transparent !important;
-  box-shadow: none !important;
-  outline: none !important;
-}
-.timeline-event-modal--edit
-  .timeline-activity-editor__title
-  input.temporal-create-title-input {
-  box-sizing: border-box;
-  display: block;
-  min-width: 0;
-  min-height: 50px !important;
-  height: 50px;
-  width: 100%;
-  padding: 0 14px;
-  border: 0 !important;
-  border-radius: 0 !important;
-  background: transparent !important;
-  box-shadow: none !important;
-  outline: none;
-}
-.timeline-event-modal--edit .timeline-activity-editor__title-row:focus-within {
-  border-color: color-mix(in srgb, #ea5c12 68%, transparent);
-  box-shadow: 0 0 0 1px color-mix(in srgb, #ea5c12 13%, transparent);
-}
-.timeline-event-modal--edit .timeline-activity-editor__title-tools {
-  min-width: max-content;
-  align-items: stretch;
-}
-.timeline-event-modal--edit
-  .timeline-activity-editor__title-tools
-  > :is(button, label) {
-  min-height: 50px;
-  border-radius: 0;
-}
-
+/* Title geometry, focus and action dividers are centralized in
+   temporal-authoring-title-row.css for Activity and Event alike. */
 /* Create and Edit use the same .temporal-create-objective renderer.
    Do not add a second, editor-specific Objective visual cascade. */
 .timeline-event-modal--edit .timeline-activity-editor__objectives {
   display: grid;
   gap: 7px;
   min-width: 0;
-}
-
-@media (max-width: 720px) {
-  .timeline-event-modal--edit .timeline-activity-editor__title-row {
-    grid-template-columns: 34px minmax(0, 1fr) auto;
-  }
-  .timeline-event-modal--edit .timeline-activity-editor__title-tools {
-    min-width: 0;
-  }
 }
 
 /* Readability parity: the Edit modal was still rendering explicit 10–12px

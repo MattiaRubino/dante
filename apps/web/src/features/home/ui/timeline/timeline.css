@@ -2265,63 +2265,8 @@ body:has(> .timeline-recurring-edit-scope-dialog__backdrop)
   );
 }
 
-.timeline-activity-editor__title-row {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(140px, 200px) minmax(
-      150px,
-      225px
-    );
-  align-items: stretch;
-  gap: 12px;
-  min-height: 60px;
-  padding: 0 10px;
-  border: 1px solid var(--dante-semantic-color-home-chrome-active, #ea5c12);
-  border-radius: 12px;
-  background: color-mix(
-    in srgb,
-    var(--dante-semantic-color-home-surface-control, #151f2e) 55%,
-    transparent
-  );
-}
-
-.timeline-activity-editor__title-row > * {
-  min-width: 0;
-}
-
-.timeline-activity-editor__title-row > fieldset {
-  min-height: 48px;
-  margin: 0;
-  padding: 7px 10px;
-  border: 1px solid var(--dante-semantic-color-home-border-subtle);
-  border-radius: 9px;
-  font-size: 11px;
-}
-
-.timeline-activity-editor__title-row > fieldset legend {
-  padding: 0 4px;
-}
-
-.timeline-activity-editor__title-row .timeline-activity-editor__checkbox {
-  font-size: 10px;
-}
-
-.timeline-activity-editor__title-row .timeline-activity-editor__capture select {
-  min-height: 36px;
-}
-
-.timeline-activity-editor__title-row .timeline-activity-editor__title input {
-  padding-left: 0;
-  border: 0;
-  outline: 0;
-  background: transparent;
-}
-
-.timeline-activity-editor__title-row
-  .timeline-activity-editor__title
-  input:focus-visible {
-  outline: 0;
-}
-
+/* Title rows are rendered and styled by TemporalAuthoringTitleRow.
+   Avoid reintroducing editor-only grids and anonymous marker tracks. */
 .timeline-activity-editor__body :is(section, fieldset, label) {
   min-width: 0;
 }
@@ -2375,11 +2320,6 @@ body:has(> .timeline-recurring-edit-scope-dialog__backdrop)
 .timeline-activity-editor__body :is(select, textarea):focus-visible {
   outline: 1px solid var(--dante-semantic-color-home-chrome-active, #ea5c12);
   outline-offset: 1px;
-}
-
-.timeline-activity-editor__title input {
-  min-height: 58px;
-  font-size: 19px;
 }
 
 .timeline-activity-editor__readback,
@@ -2562,7 +2502,6 @@ body:has(> .timeline-recurring-edit-scope-dialog__backdrop)
   .timeline-activity-editor__fields {
     grid-template-columns: 1fr;
   }
-  .timeline-activity-editor__title-row,
   .timeline-activity-editor__area-color {
     grid-template-columns: minmax(0, 1fr);
   }
