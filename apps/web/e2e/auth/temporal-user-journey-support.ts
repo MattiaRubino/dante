@@ -16,8 +16,8 @@ import {
  */
 const ACCOUNT_BASE: Readonly<Record<string, number>> = {
   chromium: 80,
-  firefox: 86,
-  webkit: 92,
+  firefox: 87,
+  webkit: 94,
 };
 const PASSWORD = 'correct horse battery staple';
 const REQUEST_TIMEOUT = 25_000;
@@ -48,7 +48,7 @@ export type CreateOptions = Readonly<{
   placementProtected?: boolean;
 }>;
 
-export function scenarioEmail(info: TestInfo, slot: 1 | 2 | 3 | 4 | 5 | 6): string {
+export function scenarioEmail(info: TestInfo, slot: 1 | 2 | 3 | 4 | 5 | 6 | 7): string {
   const base = ACCOUNT_BASE[info.project.name];
   if (base === undefined) {
     throw new Error('No isolated user for browser project ' + info.project.name);
@@ -73,7 +73,7 @@ export function uniqueTitle(label: string): string {
 export async function signedInPage(
   browser: Browser,
   info: TestInfo,
-  slot: 1 | 2 | 3 | 4 | 5 | 6,
+  slot: 1 | 2 | 3 | 4 | 5 | 6 | 7,
 ): Promise<Readonly<{ page: Page; close: () => Promise<void> }>> {
   const context = await browser.newContext({
     ignoreHTTPSErrors: true,
