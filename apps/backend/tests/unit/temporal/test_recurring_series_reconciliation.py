@@ -451,6 +451,27 @@ def test_calendar_preview_reconciles_weekly_cadence_without_touching_local_edit(
     ]
 
 
+def test_selected_day_is_retained_when_the_new_clock_moves_earlier() -> None:
+    proposal = replace(_weekly_tuesday(), wall_times=(time(9),))
+    result = preview_calendar_series_reconciliation(
+        scope=_scope(),
+        materialized=_materialized(),
+        proposed_recurrence=proposal,
+        window=WINDOW,
+        effective_zone_id="Europe/Rome",
+        authoritative_inventory=True,
+    )
+    # The first old time was 10:00, but the accepted replacement is 09:00
+    # on that same civil day. The selected date is never silently omitted.
+    assert FIRST in result.superseded_occurrence_refs
+    assert CLEAN in result.superseded_occurrence_refs
+    assert result.protected_occurrence_refs == (LOCAL,)
+    assert [
+        (coordinate.generated_date, coordinate.generated_wall_time)
+        for coordinate in result.new_coordinates
+    ] == [(date(2026, 10, 20), time(9)), (date(2026, 10, 27), time(9))]
+
+
 def test_calendar_preview_starts_after_recorded_selected_instance() -> None:
     result = preview_calendar_series_reconciliation(
         scope=_scope(recorded=True),
