@@ -24,7 +24,11 @@ const loadOccurrenceEvent = vi.fn();
 const listExpectedParticipation = vi.fn().mockResolvedValue([]);
 const listOccurrenceExpectedParticipation = vi.fn().mockResolvedValue([]);
 const listPersonReferents = vi.fn().mockResolvedValue([]);
-const loadArea = vi.fn();
+const loadArea = vi.fn().mockResolvedValue({
+  options: [],
+  currentRef: null,
+  currentRevision: 0,
+});
 const loadProfile = vi.fn();
 const reviseProfile = vi.fn();
 const reviseAtomic = vi.fn();
