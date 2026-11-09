@@ -1,5 +1,18 @@
 # Timeline / Temporal-Operational — Workstream Handoff
 
+## 2026-11-09 — Compact Objective actions and complete v2 recurring E2E boundary (GIT CANDIDATE, not validated)
+
+The user clarified shared UI text: use **`+ Obiettivo`** (not `＋ Aggiungi obiettivo`) in Create, Activity Edit and Event Edit. The button's accessible name, tests and real-browser locators have been changed together, retaining the same add operation and unsaved-draft isolation.
+
+The 2026-11-09 user WSL logs show **134/138 Vitest passed**, four failures (two stale add-button queries, recorded Objective incorrectly removable via old X/undo expectation, removed Life Area image query), **five TS compile errors**, and four newly added regression files missing from the registry. Repairs target test assumptions and strict typing, without weakening the recorded Objective immutability rule. The registered test inventory now includes the Life Area selector, recurring Life Area PostgreSQL/unit and 100-persona matrix contract.
+
+The new Playwright v2 P2 finite scenarios explicitly edit the last instance and verify absence of a sixth; first and middle edits cannot overwrite protected last/first, and all expected Schedule identities must survive. P3 verifies physical first Event/Activity after conversion, middle local exception, future structural edits and canonical anti-duplication across days. A recurring Event's date is inside `placement`, not a flat `starts_local_at`: the new helper supports both while distinguishing one Activity/N correct interval cards from genuine duplication. **No new browser PASS is claimed.** Keep older 43 successful Python tests tied to `035b28bc` only.
+
+Next: pull exact SHA and clean worktree, run registry integrity, TypeScript, targeted Vitest and matrix unit test, formatter/ESLint; then authenticated Playwright smoke (three projects), full v2 tests and full 27-group parallel gate on the same verified SHA. Discuss every functional DANTE discrepancy with the owner before touching behavior.
+
+---
+
+
 ## 2026-11-09 — Objective/Save E2E test hygiene and regression ownership (fresh gate pending)
 
 The owner requested a quality pass on the existing suite after real visual QA found no-op Save returning backend HTTP 422 and independent recorded-Objective deletion being blocked by an unfinished Objective. The functional repairs are on the same branch; this change set strengthens their proof, not the product semantics.
