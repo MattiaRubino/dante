@@ -965,12 +965,8 @@ export function ActivityEditPanel({
       pending || planPending || objectivePending || objectiveDeletePending ||
       !objective.observationRef || !objective.evaluationStateRef
     ) return;
-    if (objectiveDirty) {
-      setObjectiveError(
-        'Salva o annulla le altre modifiche agli obiettivi prima di eliminare la registrazione.',
-      );
-      return;
-    }
+    // Removing one accepted result is independent of unfinished
+    // Objective drafts or other pending edits to this form.
     setObjectiveError('');
     setDeletingObjective(objective);
   };
@@ -989,9 +985,20 @@ export function ActivityEditPanel({
       )
       .then(() => settingsSource.refreshObjectives(profile.activityRef, settings))
       .then((fresh) => {
+        const restored = fresh.objectives.find(
+          (item) => item.objectiveRef === objective.objectiveRef,
+        );
+        if (!restored || restored.observationRef || restored.evaluationStateRef) {
+          throw new Error('Registrazione eliminata, ma rilettura non coerente. Riapri Modifica.');
+        }
         setSettings(fresh);
-        setObjectiveRows(fresh.objectives.map(existingObjectiveDraft));
-        setRemovedObjectives([]);
+        // Only refresh the affected accepted Objective. Preserve other
+        // unsaved new/edited/removal drafts and their operation identities.
+        setObjectiveRows((rows) => rows.map((row) =>
+          row.objectiveRef === objective.objectiveRef
+            ? existingObjectiveDraft(restored)
+            : row,
+        ));
         setCorrectingObjective(null);
         setDeletingObjective(null);
         correctionOperation.current = null;
@@ -1004,12 +1011,6 @@ export function ActivityEditPanel({
             ? reason.message
             : 'Eliminazione registrazione non riuscita. Riapri Modifica.',
         );
-        void settingsSource.refreshObjectives(profile.activityRef, settings)
-          .then((fresh) => {
-            setSettings(fresh);
-            setObjectiveRows(fresh.objectives.map(existingObjectiveDraft));
-          })
-          .catch(() => {});
       })
       .finally(() => setObjectiveDeletePending(false));
   };
@@ -1157,6 +1158,7 @@ export function ActivityEditPanel({
           pending ||
           planPending ||
           objectivePending ||
+          objectiveDeletePending ||
           !settings ||
           loadingSettings ||
           recurringLoading ||
@@ -1579,7 +1581,7 @@ export function ActivityEditPanel({
     >
       <div
         className="timeline-activity-editor__body"
-        inert={confirmingDiscard || undefined}
+        inert={confirmingDiscard || objectiveDeletePending || undefined}
       >
         {error ? <p role="alert">{error}</p> : null}
         {recurringError ? <p role="alert">{recurringError}</p> : null}
@@ -2618,11 +2620,11 @@ export function ActivityEditPanel({
       </div>
       <div
         className="timeline-activity-editor__actions dante-temporal-panel-actions"
-        inert={confirmingDiscard || undefined}
+        inert={confirmingDiscard || objectiveDeletePending || undefined}
       >
         <button
           type="button"
-          disabled={pending || planPending || objectivePending}
+          disabled={pending || planPending || objectivePending || objectiveDeletePending}
           onClick={requestClose}
         >
           Annulla
@@ -2634,6 +2636,7 @@ export function ActivityEditPanel({
             pending ||
             planPending ||
             objectivePending ||
+            objectiveDeletePending ||
             !settings ||
             loadingSettings ||
             recurringLoading ||
