@@ -188,6 +188,85 @@ describe('Recurring Activity metadata edit remote contract', () => {
     expect(recorded[0]?.expected_recurrence_state_ref).toBe(recurrenceStateRef);
   });
 
+  // Regression 2026-11-09: the selected recurring Event instance could
+  // save an existing area but not create a new one; the new-area intent must
+  // be part of the same /event-local-edit transaction, never a separate POST.
+  // Explicit null without new_life_area means removing the inherited area.
+  it.each([
+    {
+      scenario: 'new area',
+      lifeAreaRef: null,
+      newArea: { name: 'Nuova Area Occorrenza', colorCode: '#FFD600' },
+    },
+    {
+      scenario: 'remove inherited area',
+      lifeAreaRef: null,
+      newArea: undefined,
+    },
+  ])('serializes the Event-only-this Life Area intent: $scenario', async (scenario) => {
+    const recorded: unknown[] = [];
+    const fetchFn = vi.fn(
+      (input: RequestInfo | URL, init?: RequestInit): Promise<Response> => {
+        const path =
+          typeof input === 'string'
+            ? input
+            : input instanceof URL
+              ? input.href
+              : input.url;
+        if (path.endsWith('/auth/session')) {
+          return Promise.resolve(response({ authenticated: true, csrf_token: 'csrf' }));
+        }
+        if (path.endsWith('/event-local-edit')) {
+          recorded.push(JSON.parse(fetchRequestBody(init?.body)) as unknown);
+          return Promise.resolve(response({
+            selected_occurrence_ref: occurrenceRef,
+            source_native_ref: sourceRef,
+            target_occurrence_refs: [occurrenceRef],
+            replayed: false,
+          }));
+        }
+        throw new Error('Unexpected Event local request ' + path);
+      },
+    );
+    await createRemoteRecurringProfileEdit(fetchFn).saveEventLocal(
+      {
+        occurrenceRef,
+        sourceRef,
+        editRevision: 2,
+        recurrenceStateRef,
+      },
+      {},
+      {
+        agendaParts: [],
+        lifeAreaRef: scenario.lifeAreaRef,
+        participants: [],
+        ...(scenario.newArea ? { newArea: scenario.newArea } : {}),
+      },
+      {
+        schedule: null,
+        placementLock: null,
+        reminder: null,
+        reality: null,
+        objectives: null,
+      },
+      'event:area:only-this',
+    );
+    expect(recorded).toHaveLength(1);
+    expect(recorded[0]).toMatchObject({
+      expected_revision: 2,
+      structure: {
+        life_area_ref: null,
+        ...(scenario.newArea
+          ? { new_life_area: { name: scenario.newArea.name, color_code: '#FFD600' } }
+          : {}),
+      },
+    });
+    if (!scenario.newArea) {
+      const payload = recorded[0] as { structure?: Record<string, unknown> };
+      expect(payload.structure).not.toHaveProperty('new_life_area');
+    }
+  });
+
   it('uses canonical origin/state and a single idempotent scoped POST', async () => {
     const requests: Record<string, unknown>[] = [];
     const fetchFn = vi.fn(
