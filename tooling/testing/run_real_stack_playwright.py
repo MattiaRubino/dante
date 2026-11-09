@@ -199,7 +199,7 @@ def _write_diagnostic_archive(directory: Path) -> Path:
         except (OSError, zipfile.BadZipFile, RuntimeError) as exc:
             target.unlink(missing_ok=True)
             target.with_suffix(".error.txt").write_text(
-                f"{type(exc).__name__}: {exc}\\n", encoding="utf-8",
+                f"{type(exc).__name__}: {exc}\n", encoding="utf-8",
             )
         inventory.append({
             "original": relative.as_posix(),
@@ -216,7 +216,7 @@ def _write_diagnostic_archive(directory: Path) -> Path:
             "format": "dante-e2e-compact-v1",
             "original_traces_retained_on_disk": True,
             "traces": inventory,
-        }, indent=2) + "\\n", encoding="utf-8",
+        }, indent=2) + "\n", encoding="utf-8",
     )
     names = {
         "summary.json", "diagnostic-manifest.json", "playwright.log",
@@ -282,14 +282,14 @@ def _self_test() -> None:
     )
     with tempfile.TemporaryDirectory(prefix="dante-e2e-archive-test.") as temp:
         root = Path(temp)
-        (root / "summary.json").write_text('{"exit_code": 1}\\n')
+        (root / "summary.json").write_text('{"exit_code": 1}\n')
         failure = root / "chromium" / "test-results" / "failed-test"
         failure.mkdir(parents=True)
-        (root / "chromium" / "playwright.log").write_text("FAILED\\n")
-        (failure / "error-context.md").write_text("button absent\\n")
+        (root / "chromium" / "playwright.log").write_text("FAILED\n")
+        (failure / "error-context.md").write_text("button absent\n")
         with zipfile.ZipFile(failure / "trace.zip", "w") as trace:
-            trace.writestr("0-trace.trace", "action=click\\n")
-            trace.writestr("0-trace.network", "status=200\\n")
+            trace.writestr("0-trace.trace", "action=click\n")
+            trace.writestr("0-trace.network", "status=200\n")
             trace.writestr("resources/page@100.jpeg", b"video-frame")
         archive = _write_diagnostic_archive(root)
         assert archive.exists()
