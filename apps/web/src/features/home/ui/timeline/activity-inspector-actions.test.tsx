@@ -1163,6 +1163,30 @@ describe('Objective correction in Activity Editor', () => {
     expect(saveRecurringProfile).not.toHaveBeenCalled();
   });
 
+  it('closes an unchanged Activity with recorded Objectives without an empty atomic HTTP mutation', async () => {
+    loadSettings.mockResolvedValueOnce({
+      ...currentSettings,
+      objectives: [objective],
+    });
+    const onSaved = vi.fn();
+    render(
+      <ActivityEditPanel
+        profile={profile}
+        closeRequestRef={createRef()}
+        onSaved={onSaved}
+        onCancel={() => undefined}
+      />,
+    );
+    await screen.findByRole('group', {
+      name: 'Obiettivo registrato Corsa 10 km',
+    });
+    await submitEditor();
+    await waitFor(() => expect(onSaved).toHaveBeenCalledWith(profile));
+    expect(applyAtomicEdit).not.toHaveBeenCalled();
+    expect(saveCore).not.toHaveBeenCalled();
+    expect(screen.queryByText('One or more request fields are invalid.')).toBeNull();
+  });
+
   it('locks a registered Activity Objective, confirms physical deletion and restores Edit', async () => {
     loadSettings.mockResolvedValueOnce({
       ...currentSettings,
@@ -1186,6 +1210,11 @@ describe('Objective correction in Activity Editor', () => {
     });
     expect(within(recorded).getByText('Risultato: 8 km')).toBeTruthy();
     expect(screen.queryByRole('textbox', { name: 'Nome obiettivo' })).toBeNull();
+    // A half-written new Objective is not a prerequisite for deleting an
+    // unrelated confirmed result; its draft must survive the readback.
+    fireEvent.click(screen.getByRole('button', { name: 'Aggiungi obiettivo' }));
+    const unfinished = screen.getByRole('textbox', { name: 'Nome obiettivo' });
+    expect(unfinished).toHaveProperty('value', '');
     fireEvent.click(within(recorded).getByRole('button', {
       name: 'Elimina registrazione',
     }));
@@ -1205,8 +1234,10 @@ describe('Objective correction in Activity Editor', () => {
         objective.objectiveRef,
         objective.evaluationStateRef,
       );
-      expect(screen.getByRole('textbox', { name: 'Nome obiettivo' }))
-        .toHaveProperty('value', 'Corsa 10 km');
+      expect(
+        screen.getAllByRole('textbox', { name: 'Nome obiettivo' })
+          .map((input) => (input as HTMLInputElement).value),
+      ).toEqual(['Corsa 10 km', '']);
     });
     expect(screen.queryByRole('group', {
       name: 'Obiettivo registrato Corsa 10 km',
