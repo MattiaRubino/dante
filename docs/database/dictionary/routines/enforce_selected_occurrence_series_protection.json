@@ -1,0 +1,105 @@
+{
+  "$schema": "../schema/object-v1.schema.json",
+  "dictionary_version": 1,
+  "object": {
+    "key": "routine:dante.enforce_selected_occurrence_series_protection",
+    "type": "routine",
+    "schema": "dante",
+    "name": "enforce_selected_occurrence_series_protection",
+    "ownership_class": "dante_owned"
+  },
+  "purpose": "Prevent inclusive series metadata insertion when selected Occurrence has a running, paused or ended Session, registered Objective result, local edit or other protected exception; from-next remains allowed.",
+  "classification": {
+    "persistence_role": "enforce_selected_occurrence_series_protection",
+    "canonicality": "capability_surface",
+    "family": "B14 recorded Objective and recurrence protection"
+  },
+  "semantic_traceability": {
+    "authority_sources": [
+      "docs/domain/decisions/confirmed-objective-edit-and-recurring-protection-v1.md"
+    ],
+    "domain_concepts": [
+      "Occurrence",
+      "Recurrence",
+      "Activity",
+      "Event",
+      "Session"
+    ],
+    "logical_families": [
+      "B14 Timeline Temporal Operational"
+    ],
+    "reference_families": [
+      "NativeRef",
+      "ScopedRecordRef",
+      "MaterialStateRef"
+    ],
+    "material_facets": []
+  },
+  "implementation": {
+    "introducing_stage": "B14-SELECTED-SERIES-PROTECTION",
+    "alembic_revision": "20261109_183",
+    "sqlalchemy": {
+      "mode": "none",
+      "module": null,
+      "symbol": null
+    },
+    "runtime_acl_stage": "B14-SELECTED-SERIES-PROTECTION"
+  },
+  "structure": {
+    "columns": [],
+    "primary_key": null,
+    "foreign_keys": [],
+    "unique_constraints": [],
+    "check_constraints": [],
+    "indexes": [],
+    "triggers": [],
+    "table": null,
+    "view": null,
+    "routine": {
+      "routine_kind": "function",
+      "language": "plpgsql",
+      "argument_types": [],
+      "return_type": "trigger",
+      "security": "DEFINER",
+      "volatility": "VOLATILE",
+      "parallel_safety": "UNSAFE",
+      "leakproof": false,
+      "function_search_path": [
+        "pg_catalog",
+        "dante",
+        "pg_temp"
+      ],
+      "direct_runtime_execute": false
+    }
+  },
+  "state_history": {
+    "material_state_behavior": null,
+    "current_binding": "Bound to the authoritative current Objective or selected recurring Occurrence under self ownership.",
+    "chronology": "Accepted Objective definitions survive; deleted result graphs do not remain accessible.",
+    "immutability_policy": "No incidental rewrite of another Objective, Session or protected Occurrence."
+  },
+  "lifecycle": {
+    "retention": "Retain owner capability while B14 Temporal Operational workstream is active.",
+    "redaction": null,
+    "retirement_tombstone": null,
+    "delete_behavior": "Objective facts are deleted only by explicit confirmed owner request."
+  },
+  "security": {
+    "owner_role": "dante_owner",
+    "default_deny_non_owner": true,
+    "expected_grants": []
+  },
+  "proof": {
+    "obligations": [
+      "Inclusive selected protected Occurrence write rejected atomically",
+      "From-next skips selected and all protected future",
+      "No direct runtime table DML"
+    ],
+    "test_refs": [
+      "apps/backend/tests/integration/temporal/test_objective_definition_result_correction.py",
+      "apps/backend/tests/integration/temporal/test_recurring_profile_scoped_edit.py",
+      "apps/backend/tests/integration/database/test_database_current_catalog.py"
+    ],
+    "staged_evidence": []
+  }
+}
