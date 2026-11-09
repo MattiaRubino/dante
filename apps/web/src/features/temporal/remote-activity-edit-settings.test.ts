@@ -14,6 +14,61 @@ const response = (body: unknown, status = 200) =>
   });
 
 describe('Activity editor settings remote contract', () => {
+  it('refuses empty writes before even requesting CSRF or touching the API', async () => {
+    const fetchFn = vi.fn() as unknown as typeof fetch;
+    const source = createRemoteActivityEditSettings(fetchFn);
+    await expect(source.applyAtomicEdit(
+      {
+        activityRef: ref, title: 'Studio', description: null,
+        location: null, colorCode: null, revision: 1,
+      },
+      {
+        capture: { mode: 'disabled', stateRef: null },
+        reality: { mode: 'manual', stateRef: null },
+        schedules: [], objectives: [], lifeAreaRef: null,
+        placementProtected: false, placementLockScheduleRef: null,
+        placementLockRevision: null, reminderLeadMinutes: null,
+        reminderScheduleRef: null, reminderStateRef: null,
+        childGuardMode: 'none',
+      },
+      {},
+      'no-op',
+    )).rejects.toThrow('Nessuna modifica da salvare.');
+    expect(fetchFn).not.toHaveBeenCalled();
+  });
+
+  it('does not show raw Pydantic 422 messages in the Activity Editor', async () => {
+    const fetchFn = vi.fn((input: RequestInfo | URL) => {
+      if (fetchRequestUrl(input).endsWith('/auth/session')) {
+        return Promise.resolve(
+          response({ authenticated: true, csrf_token: 'token' }),
+        );
+      }
+      return Promise.resolve(
+        response({ detail: 'One or more request fields are invalid.' }, 422),
+      );
+    }) as unknown as typeof fetch;
+    const source = createRemoteActivityEditSettings(fetchFn);
+    await expect(source.applyAtomicEdit(
+      {
+        activityRef: ref, title: 'Studio', description: null,
+        location: null, colorCode: null, revision: 1,
+      },
+      {
+        capture: { mode: 'disabled', stateRef: null },
+        reality: { mode: 'manual', stateRef: null },
+        schedules: [], objectives: [], lifeAreaRef: null,
+        placementProtected: false, placementLockScheduleRef: null,
+        placementLockRevision: null, reminderLeadMinutes: null,
+        reminderScheduleRef: null, childGuardMode: 'none',
+      },
+      { objectives: { add: [], revise: [], retire: [] } },
+      'invalid-request',
+    )).rejects.toThrow(
+      'Modifica non salvata: alcuni dati non sono validi.',
+    );
+  });
+
   it('sends selected occurrence metadata and the other instance fields in one request', async () => {
     const requests: Record<string, unknown>[] = [];
     const fetchFn = vi.fn((input: RequestInfo | URL, init?: RequestInit) => {
