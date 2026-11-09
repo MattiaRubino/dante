@@ -12,6 +12,7 @@ from dante.modules.temporal.occurrence import CalendarCoordinate, OccurrenceView
 from dante.modules.temporal.occurrence_api import _series_source_recurrence, _series_spec
 from dante.modules.temporal.occurrence_edit_inventory import OccurrenceEditInventory
 from dante.modules.temporal.occurrence_edit_scope import (
+    EditScopeInputError,
     RecurrenceEditCandidate,
     RecurrenceEditScopePlan,
     select_recurrence_edit_scope,
@@ -658,6 +659,55 @@ def test_structural_preview_from_next_preserves_recorded_selected() -> None:
     )
     assert scope.target_occurrence_refs == (CLEAN,)
     assert scope.protected_future_occurrence_refs == (LOCAL,)
+
+
+@pytest.mark.parametrize(
+    "selected_reason", ["registration", "local_change", "skipped", "legacy_unknown"]
+)
+def test_inclusive_series_edit_refuses_any_protected_selected(
+    selected_reason: str,
+) -> None:
+    """A paused/running/finished Session maps to 'registration' in SQL.
+
+    Locally edited and skipped selected instances require from-next too.
+    """
+    protected = {
+        FIRST: selected_reason,
+        LOCAL: None,
+        CLEAN: None,
+    }
+    with pytest.raises(EditScopeInputError, match="from-next"):
+        structural_scope(
+            inventory=_structural_inventory(),
+            protections=protected,
+            scope_code="this_and_following",
+            effective_zone_id="Europe/Rome",
+        )
+    scope, _ = structural_scope(
+        inventory=_structural_inventory(),
+        protections=protected,
+        scope_code="from_next",
+        effective_zone_id="Europe/Rome",
+    )
+    assert FIRST not in scope.target_occurrence_refs
+    assert scope.target_occurrence_refs == (LOCAL, CLEAN)
+
+
+@pytest.mark.parametrize(
+    "future_reason", ["registration", "local_change", "skipped", "legacy_unknown"]
+)
+def test_inclusive_series_edits_preserve_every_protected_future(
+    future_reason: str,
+) -> None:
+    scope, _ = structural_scope(
+        inventory=_structural_inventory(),
+        protections={FIRST: None, LOCAL: future_reason, CLEAN: None},
+        scope_code="this_and_following",
+        effective_zone_id="Europe/Rome",
+    )
+    assert scope.target_occurrence_refs == (FIRST, CLEAN)
+    assert scope.protected_future_occurrence_refs == (LOCAL,)
+    assert scope.protected_future_reasons == ((LOCAL, future_reason),)
 
 
 def test_recurring_event_placement_policy_supports_versioned_lock_inheritance() -> None:
