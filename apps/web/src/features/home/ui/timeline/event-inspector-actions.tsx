@@ -1734,7 +1734,7 @@ export function EventInspectorActions({
                           ])
                         }
                       >
-                        ＋ Aggiungi obiettivo
+                        + Obiettivo
                       </button>
                     </div>
                     {correctingObjective ? (
