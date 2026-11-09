@@ -1,5 +1,16 @@
 # Timeline / Temporal-Operational — Workstream Handoff
 
+## 2026-11-09 — E2E docker/volume lifecycle and Chromium-only smoke
+
+User warned about Docker disk volume accumulation, and requested a one-browser rapid smoke option. Inspected `tooling/serve-access-auth-stack.py`: disposable PostgreSQL 18 ran via `docker run` and both cleanup branches used `docker rm --force`, which can leave PostgreSQL image-declared anonymous Docker volumes after container removal. Launch now includes `--rm` and both cleanup paths include `docker rm --force --volumes` targeting only the E2E's unique container name. Do not run a global Docker prune and do not automatically delete preexisting dangling volumes; they may belong to unrelated projects. `tooling/testing/run_real_stack_playwright.py --self-test` now statically checks run/finally/startup failure cleanup flags so this safety policy cannot silently regress.
+
+The Playwright real-stack wrapper now accepts **`--project chromium`** for a single-browser smoke; with `--v2-workers auto` it may safely run 1–2 distinct self-scoped V2 cases concurrently in that one disposable stack. It reports **actual** project count and retains the automatic uploadable `E2E_DIAGNOSTICS.tar.gz`. No `--project` still means three independent Chromium/Firefox/WebKit projects and required full inventory parity. The `--self-test` explicitly ensures a single-browser subset cannot masquerade as three-browser acceptance.
+
+The previously launched 3-browser V2 smoke is a separate in-progress run; new changes apply only after next `git pull --ff-only`. Need fresh WSL `--self-test`, typecheck, selected Chromium smoke, then optional cross-browser gate once the scenario behavior is green; no PASS claim for this change.
+
+---
+
+
 ## 2026-11-09 — Six-scenario E2E RED and guarded parallel V2 mode
 
 The owner uploaded the automatic smoke archive for `V2-(P1-A01|P2-E04|P2-A04|P3-E01|P3-A01|RT-02)`: all 18 tests collected on Chromium/Firefox/WebKit in **716.48 seconds**, **0 PASS, 9 FAIL, 9 ERROR**. Two cases per browser repeatedly hit five-minute test timeouts because the recurring-series editor still displayed the legacy **`＋ Aggiungi obiettivo`** control although approved Create/Event/Activity Edit use **`+ Obiettivo`**. A precise UI-label fix is staged, with 15-second V2-only action timeout protection; no E2E result is green until re-run.
