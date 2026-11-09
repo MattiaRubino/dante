@@ -1,3 +1,15 @@
+## 2026-11-09 — Recorded Objective Edit and converted-first identity candidate (NOT RUN)
+
+**Normative decision:** [confirmed-objective-edit-and-recurring-protection-v1.md](../domain/decisions/confirmed-objective-edit-and-recurring-protection-v1.md). Owner-approved: recorded Objective rows are immutable/read-only in ordinary and local Edit until explicit, confirmed, permanent deletion of the result (not the Objective). Pending state and ordinary Create remain editable. Corrections remain a separate action. Running, paused and finished Sessions, recorded Objective facts and locally edited occurrences protect future-series scope.
+
+**Implementation candidate (GitHub only, no new local gate):** forward-only migrations `20261109_182` and `20261109_183`; authenticated Objective deletion API and Objective-definition write guard; common recorded Objective row/dialog wired through Activity and Event Edit; explicit selected-instance protection in pure scope selection plus PostgreSQL admission; removal of old editable recorded row and duplicate result footer.
+
+**Regressions added/updated:** PostgreSQL self-owner, other-owner, stale CAS, recorded definition lock, corrected result (two observations), irreversible removal and clean re-edit; UI component cancellation, confirmation and unlock in Activity and Event; v2 RT-01 Event real UI→API→reload; pure recurrence selected/future protected reasons and PostgreSQL direct inclusive refusal; P3 real UI local edit of the **physical first converted instance**, physical first Schedule identity preservation and canonical duplicate scans on initial/middle/future dates. Multiple interval Schedule/card rows for a single Activity remain expected, not duplicates. Existing unrelated scenarios are not skipped or weakened.
+
+**Pre-acceptance requirements:** Run Ruff/format/pytest targeted PostgreSQL, Vitest/TypeScript/ESLint, OpenAPI/client generation and Dictionary/schema drift, followed by browser P1/P2/P3/RT and 27-group full gate on the same SHA. The candidate is **NOT GREEN**, and product defects found during real tests still require owner discussion; do not edit unrelated product behavior to satisfy the suite. Some legacy tests may still expect an editable recorded Objective and require a semantic review, never a silent weakening.
+
+---
+
 ## 2026-11-08 — Second Chromium RED and isolated parallel execution
 
 Owner's second real-stack Chromium run on `cea61d37` again exposed seven
