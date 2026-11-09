@@ -38,6 +38,7 @@ const getRealityPolicy = vi
   .mockResolvedValue({ mode: 'manual', stateRef: null });
 const getDefinition = vi.fn();
 const correctResult = vi.fn();
+const deleteRecordedResult = vi.fn();
 const getReminder = vi.fn().mockResolvedValue(null);
 // The placement-lock datasource is constructed during module import.
 // Vitest hoists vi.mock factories ahead of ordinary top-level declarations.
@@ -120,6 +121,7 @@ vi.mock(
         getDefinition,
         getRealityPolicy,
         correctResult,
+        deleteRecordedResult,
       }),
     };
   },
@@ -1393,6 +1395,83 @@ describe('Event Inspector actions', () => {
     });
     expect(reviseAtomic).not.toHaveBeenCalled();
     expect(listObjectives).toHaveBeenCalledTimes(2);
+  });
+
+  it('shows a registered Event Objective as read-only and deletes only its result', async () => {
+    const stored = {
+      objectiveRef: '0199a999-9999-7999-8999-999999999999',
+      label: 'Presenza',
+      resultKind: 'boolean',
+      comparatorCode: null,
+      targetValue: null,
+      targetMin: null,
+      targetMax: null,
+      unitCode: null,
+      presentationOrder: 0,
+      verificationMode: 'none',
+      observedBoolean: true,
+      observedNumeric: null,
+      qualitativeCode: null,
+      assessmentCode: 'satisfied',
+      observationRef: 'old-accepted-observation',
+      evaluationStateRef: 'old-evaluation-state',
+    };
+    listObjectives
+      .mockResolvedValueOnce([stored])
+      .mockResolvedValueOnce([{
+        ...stored,
+        observationRef: null,
+        evaluationStateRef: null,
+        observedBoolean: null,
+        assessmentCode: null,
+      }]);
+    loadProfile.mockResolvedValue({
+      eventRef,
+      title: 'Conferenza',
+      description: null,
+      location: null,
+      colorCode: null,
+      profileRevision: 1,
+      agendaRevision: 0,
+      agendaParts: [],
+    });
+    deleteRecordedResult.mockResolvedValueOnce(1);
+    render(
+      <EventInspectorActions
+        eventRef={eventRef}
+        placement={placement}
+        onDuplicate={vi.fn()}
+      />,
+    );
+    fireEvent.click(screen.getByRole('button', { name: /^Modifica$/ }));
+    const recorded = await screen.findByRole('group', {
+      name: 'Obiettivo registrato Presenza',
+    });
+    expect(within(recorded).getByText('Risultato: Sì')).toBeTruthy();
+    expect(screen.queryByRole('textbox', { name: 'Nome obiettivo' })).toBeNull();
+    fireEvent.click(within(recorded).getByRole('button', {
+      name: 'Elimina registrazione',
+    }));
+    const dialog = await screen.findByRole('alertdialog', {
+      name: 'Eliminare la registrazione?',
+    });
+    fireEvent.click(within(dialog).getByRole('button', { name: 'Annulla' }));
+    expect(deleteRecordedResult).not.toHaveBeenCalled();
+    fireEvent.click(within(recorded).getByRole('button', {
+      name: 'Elimina registrazione',
+    }));
+    fireEvent.click(within(screen.getByRole('alertdialog', {
+      name: 'Eliminare la registrazione?',
+    })).getByRole('button', { name: 'Sì, elimina' }));
+    await waitFor(() => {
+      expect(deleteRecordedResult).toHaveBeenCalledWith(
+        stored.objectiveRef,
+        stored.evaluationStateRef,
+      );
+      expect(screen.getByRole('textbox', { name: 'Nome obiettivo' }))
+        .toHaveProperty('value', 'Presenza');
+    });
+    expect(reviseAtomic).not.toHaveBeenCalled();
   });
 
   it('saves Event metadata, Scaletta and Life Area in one aggregate request', async () => {
