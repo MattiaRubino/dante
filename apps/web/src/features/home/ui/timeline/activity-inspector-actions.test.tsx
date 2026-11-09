@@ -1249,7 +1249,7 @@ describe('Objective correction in Activity Editor', () => {
     expect(screen.queryByRole('textbox', { name: 'Nome obiettivo' })).toBeNull();
     // A half-written new Objective is not a prerequisite for deleting an
     // unrelated confirmed result; its draft must survive the readback.
-    fireEvent.click(screen.getByRole('button', { name: 'Aggiungi obiettivo' }));
+    fireEvent.click(screen.getByRole('button', { name: /Aggiungi obiettivo$/ }));
     const unfinished = screen.getByRole('textbox', { name: 'Nome obiettivo' });
     expect(unfinished).toHaveProperty('value', '');
     fireEvent.click(within(recorded).getByRole('button', {
@@ -1677,10 +1677,17 @@ describe('Activity Inspector', () => {
     );
   });
 
-  it('allows undo of a pending removal before saving', async () => {
+  it('allows undo of a pending unrecorded Objective retirement before saving', async () => {
+    const unrecorded = {
+      ...objective,
+      observationRef: null,
+      evaluationStateRef: null,
+      observedNumeric: null,
+      assessmentCode: null,
+    };
     loadSettings.mockResolvedValueOnce({
       ...currentSettings,
-      objectives: [objective],
+      objectives: [unrecorded],
     });
     render(
       <ActivityEditPanel
