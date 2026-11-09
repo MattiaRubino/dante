@@ -5606,41 +5606,41 @@
       "path": "apps/backend/tests/integration/temporal/test_recurring_series_life_area.py",
       "suite": "backend-postgres-integration",
       "contract_id": "T05",
-      "candidate_behavior": "Recurring Event/Activity Life Area structural series edits, transaction and readback",
-      "purpose": "Prove recurring edits preserve selected/future identity, catalog color and owner scoped Life Area placement with CAS and real materialization.",
-      "invariant": "Life Area create/replace/recolor in a recurring series does not lose identity, misassign color or partially commit on rejected change.",
-      "status": "UNREVIEWED",
-      "audit_note": "Registered from source and visual QA drift report 2026-11-09. Fresh PostgreSQL evidence and full test audit pending."
+      "candidate_behavior": "Recurring Event Life Area transactional series edits and canonical readback",
+      "purpose": "Run a PostgreSQL-backed recurring Event Life Area scenario: preview without side effects, accept one new area, replay the same intent, read materialized occurrence and Life Area, then recolor and force a rollback.",
+      "invariant": "Preview creates no area; accepted/replayed edit creates exactly one area with stable reference, persists selected series assignment and recoloring, and injected policy failure leaves no orphan area or partial write.",
+      "status": "QUALIFIED",
+      "audit_note": "QUALIFIED after source-level semantic review 2026-11-09: positive acceptance, replay, occurrence readback, catalog persistence, new/recolor and injected rollback assertions checked; targeted PostgreSQL execution remains NOT_RUN on this SHA; no result claims."
     },
     {
       "path": "apps/backend/tests/unit/temporal/test_recurring_series_life_area_intent.py",
       "suite": "backend-unit",
       "contract_id": "T05",
-      "candidate_behavior": "Authoritative recurring Life Area create/reuse/color intent validation",
-      "purpose": "Ensure Event and Routine structural edits reject malformed or ambiguous Life Area source intents.",
-      "invariant": "Valid new Life Area intents pass; invalid names/color codes and incompatible color intents fail before any write.",
-      "status": "UNREVIEWED",
-      "audit_note": "Registered from source 2026-11-09. Targeted pytest and full-file audit pending."
+      "candidate_behavior": "Recurring Life Area intent validation for Event and Routine",
+      "purpose": "Parameterize Event and Routine series structure intents and verify valid new Life Area creation is accepted while empty or noncanonical labels, invalid/lowercase colors, and simultaneous conflicting color intents are rejected.",
+      "invariant": "Series authoring validates the canonical Life Area shape for both owner kinds before persistence; invalid names, colors and contradictory color-update requests never pass the pure validation gate.",
+      "status": "QUALIFIED",
+      "audit_note": "QUALIFIED after source-level review 2026-11-09: two owner variants, valid intent, malformed name/color and conflicting edit refusal checked; focused unit execution remains NOT_RUN."
     },
     {
       "path": "apps/web/src/features/temporal-create/ui/temporal-life-area-select.test.tsx",
       "suite": "web-unit-component",
       "contract_id": "T02",
-      "candidate_behavior": "Existing Life Area catalog remains selectable in Event/Activity editor",
-      "purpose": "Verify focusing a selected Life Area shows all catalog options while typed queries still filter correctly.",
-      "invariant": "Already-selected Life Area must not hide alternative existing areas nor break user search.",
-      "status": "UNREVIEWED",
-      "audit_note": "Registered from source after Visual QA; fresh Vitest and full test case audit pending."
+      "candidate_behavior": "Existing Life Area catalog remains selectable during Activity and Event Edit",
+      "purpose": "With an already selected Life Area, test keyboard focus to reveal all three catalog options and select another; with a different typed query verify only the matching option appears.",
+      "invariant": "An existing selected Life Area cannot trap the chooser by hiding other valid entries, but an actual newly typed search still filters; selecting another candidate sends the precise area object to the caller.",
+      "status": "QUALIFIED",
+      "audit_note": "QUALIFIED after source-level review 2026-11-09: selected query/focus, full-menu alternate choice and typed-filter branch checked in jsdom; focused Vitest remains NOT_RUN."
     },
     {
       "path": "apps/web/src/features/temporal/stateful-case-matrix.test.ts",
       "suite": "web-unit",
       "contract_id": "T05",
-      "candidate_behavior": "100 user-journey persona and rich recurrence case-matrix contract",
-      "purpose": "Prove 20 Event +20 Activity scenarios, all supported objective kinds, policy/area variants, recurrence cadences, finite count and non-overlapping accounts.",
-      "invariant": "Every P1/P2/P3 persona index is stable and uniquely seeded; no case silently disappears or loses feature-density.",
-      "status": "UNREVIEWED",
-      "audit_note": "Registered from source; matrix self-test and full Vitest evidence pending."
+      "candidate_behavior": "Rich stateful E2E persona population and finite recurrence coverage contract",
+      "purpose": "Guard the 40 Event/Activity persona configurations, identity/account isolation across 100 journeys and three browser projects, Objective kinds, Area modes, recurrence families and finite first/middle/last scenarios.",
+      "invariant": "No persona silently disappears or duplicates an identity; bounded series retain five occurrences and final-instance coverage; browser account partitions remain disjoint; multi-interval Activities remain defined as one logical Activity with multiple valid physical Schedule cards.",
+      "status": "QUALIFIED",
+      "audit_note": "QUALIFIED after source-level review 2026-11-09: persona counts/IDs, scenario density, categorical coverage, finite-boundary distribution and disjoint account computation checked; Vitest and real E2E execution remain NOT_RUN."
     }
   ]
 }
