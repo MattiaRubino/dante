@@ -500,6 +500,19 @@ test.describe('Timeline — real user Activity/Event lifecycle matrix', () => {
             await panel.getByRole('combobox', { name: 'Ripeti' })
               .selectOption('daily');
             await expect(panel).toHaveAttribute('data-recurrence-expanded', 'true');
+            if (kind === 'activity') {
+              // Before conversion this physical Activity has no Occurrence.
+              const initial = (await serverRead(
+                page,
+                '/api/v1/temporal/activities/' +
+                  original.sourceRef +
+                  '/recurrence-origin',
+              )) as { activity_ref: string; occurrence_ref: string | null };
+              expect(initial).toMatchObject({
+                activity_ref: original.sourceRef,
+                occurrence_ref: null,
+              });
+            }
             const startPath =
               '/api/v1/temporal/recurring/' +
               (kind === 'event' ? 'events/' : 'activities/') +
@@ -513,12 +526,31 @@ test.describe('Timeline — real user Activity/Event lifecycle matrix', () => {
             await inspector.getByRole('button', { name: 'Salva modifiche' }).click();
             const accepted = await conversion;
             expect(accepted.status()).toBe(200);
-            const body = await boundedJsonResponse(accepted);
-            expect(body).toMatchObject({
-              owner_kind: kind === 'event' ? 'event' : 'routine',
-              replayed: false,
-            });
-            expect(body.source_ref).toEqual(expect.stringMatching(/^[\da-f-]{36}$/i));
+            if (kind === 'event') {
+              // Event production client consumes the accepted JSON.
+              const body = await boundedJsonResponse(accepted);
+              expect(body).toMatchObject({ owner_kind: 'event', replayed: false });
+              expect(body.source_ref).toEqual(
+                expect.stringMatching(/^[\da-f-]{36}$/i),
+              );
+            } else {
+              // Activity production client intentionally does not consume
+              // response.json(). Chrome can discard the response body after
+              // the component closes even though the HTTP command succeeds.
+              // Prove the canonical persisted Occurrence association instead.
+              await expect
+                .poll(async () => {
+                  const origin = (await serverRead(
+                    page,
+                    '/api/v1/temporal/activities/' +
+                      original.sourceRef +
+                      '/recurrence-origin',
+                  )) as { activity_ref: string; occurrence_ref: string | null };
+                  expect(origin.activity_ref).toBe(original.sourceRef);
+                  return origin.occurrence_ref;
+                }, { timeout: 12_000 })
+                .toMatch(/^[\da-f-]{36}$/i);
+            }
             const intent = accepted.request().postDataJSON() as Record<string, unknown>;
             expect(intent.recurrence).toMatchObject({
               pattern_code: 'daily',
