@@ -1,3 +1,13 @@
+## 2026-11-09 — Visual QA: unchanged Save and independent recorded-result deletion (UNVERIFIED)
+
+The user reproduced two real UX faults in Activity Edit: **unchanged Save** transmitted a structurally empty atomic request and displayed an English backend 422 string; **Elimina registrazione** was blocked by a separately staged Objective addition and its canonical refresh would have erased that unsaved draft. Fix is narrow: no-op Activity Edit closes without network mutation; the atomic API client rejects empty edits locally and maps HTTP 422 to user-facing Italian text; recorded Objective deletion performs the confirmed backend action independently and merges only the affected Objective's canonical row. All other unsaved fields, new Objectives and staged removals survive; Event Edit follows the same independent-delete behavior.
+
+**Regression coverage added (not yet executed):** jsdom Activity no-op with all four accepted Objective kinds, Event no-op with mixed accepted kinds; Activity/Event deletion-confirm flow while one newly added Objective has an empty name, preserving that draft; atomic client sends zero requests for empty edit and never exposes raw 422 text. Existing PostgreSQL and WSL tests from `035b28bc` remain historical **36 unit + 7 PostgreSQL PASS**, not a new green verdict for these changes. This candidate needs the focused web gate and real-app visual recheck before proceeding to parallel E2E.
+
+**Error presentation rule:** technical backend validation details, raw stack traces, SQL diagnostics, and framework messages must not be shown as end-user text. Domain validation belongs next to the relevant field where that field can be identified; concurrency conflicts should offer a clear recovery action, and unexpected failures a short local-language message. Keep structured diagnostics in developer observability, without leaking sensitive input values. The Activity atomic 422 mapping is a local first repair, not proof that all DANTE error surfaces have been audited.
+
+---
+
 ## 2026-11-09 — Recorded Objective Edit and converted-first identity candidate (NOT RUN)
 
 **Normative decision:** [confirmed-objective-edit-and-recurring-protection-v1.md](../domain/decisions/confirmed-objective-edit-and-recurring-protection-v1.md). Owner-approved: recorded Objective rows are immutable/read-only in ordinary and local Edit until explicit, confirmed, permanent deletion of the result (not the Objective). Pending state and ordinary Create remain editable. Corrections remain a separate action. Running, paused and finished Sessions, recorded Objective facts and locally edited occurrences protect future-series scope.
