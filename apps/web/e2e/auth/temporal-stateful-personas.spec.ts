@@ -101,9 +101,15 @@ async function editOneOff(
   const { item, truth } = authored;
   const editor = await openEdit(page, day, truth.title);
   const newTitle = truth.title + ' revisionato';
+  const newDescription =
+    truth.description === null
+      ? newTitle + ' descrizione aggiunta'
+      : truth.description + ' modificata';
   await editor.getByRole('textbox', {
     name: item.kind === 'event' ? 'Titolo Event' : 'Titolo',
   }).fill(newTitle);
+  await editor.getByRole('textbox', { name: 'Descrizione' })
+    .fill(newDescription);
   const goals = [...truth.objectives];
   const firstGoal = goals[0]!;
   const renamedGoal = {
@@ -113,6 +119,26 @@ async function editOneOff(
     .getByRole('textbox', { name: 'Nome obiettivo' })
     .fill(renamedGoal.label);
   goals[0] = renamedGoal;
+  // Modify, REMOVE and ADD in one transaction; the removed ID must not
+  // survive as a ghost, and all untouched Objective definitions must remain.
+  const removedGoal = goals.pop()!;
+  await editor.locator('[data-create-objective]').last()
+    .getByRole('button', {
+      name: 'Rimuovi obiettivo ' + (
+        truth.objectives.length === 1 ? renamedGoal.label : removedGoal.label
+      ),
+    }).click();
+  await editor.getByRole('button', { name: 'Aggiungi obiettivo' }).click();
+  const replacementGoal = {
+    label: newTitle + ' obiettivo aggiunto',
+    kind: 'boolean' as const,
+    target: null, minimum: null, maximum: null,
+    verification: 'none' as const,
+  };
+  await editor.locator('[data-create-objective]').last()
+    .getByRole('textbox', { name: 'Nome obiettivo' })
+    .fill(replacementGoal.label);
+  goals.push(replacementGoal);
 
   let agenda = [...truth.agenda];
   let sessions = [...truth.sessions];
@@ -152,13 +178,56 @@ async function editOneOff(
     ...authored,
     item: { ...item, title: newTitle },
     truth: {
-      ...truth, title: newTitle,
+      ...truth, title: newTitle, description: newDescription,
       objectives: goals,
       agenda, sessions,
     } satisfies PersonaTruth,
   } satisfies AuthoredPersona;
   await assertCard(page, day, newTitle);
   await assertOneOffTruth(page, updated);
+  return updated;
+}
+
+async function reassignAreaAndCancel(
+  page: Page, day: string, authored: AuthoredPersona,
+): Promise<AuthoredPersona> {
+  const { item, truth } = authored;
+  const editor = await openEdit(page, day, truth.title);
+  const nextArea = uniqueTitle('nuova area dopo modifica');
+  await editor.getByRole('textbox', {
+    name: item.kind === 'event' ? 'Life Area (opzionale)' : 'Area assegnata',
+  }).fill(nextArea);
+  await editor.getByRole('button', {
+    name: item.kind === 'event' ? 'Colore nuova Life Area' : 'Colore Life Area',
+  }).click();
+  await page.getByRole('dialog', { name: 'Scegli colore' })
+    .getByRole('button', { name: 'Prugna', exact: true }).click();
+  await editor.getByRole('button', { name: 'Salva modifiche' }).click();
+  const catalog = await serverRead(page, '/api/v1/temporal/life-areas')
+    as readonly Record<string, unknown>[];
+  const matches = catalog.filter((row) => row.name === nextArea);
+  expect(matches, 'exactly one new Life Area after reassign').toHaveLength(1);
+  expect(matches[0]!.color_code).toBe('#8E24AA');
+  const updated: AuthoredPersona = {
+    ...authored,
+    truth: {
+      ...truth,
+      areaName: nextArea,
+      areaRef: String(matches[0]!.life_area_ref),
+    },
+    areaColor: '#8E24AA',
+  };
+  await openHome(page, day);
+  await assertOneOffTruth(page, updated);
+
+  const cancelEditor = await openEdit(page, day, truth.title);
+  await cancelEditor.getByRole('textbox', {
+    name: item.kind === 'event' ? 'Titolo Event' : 'Titolo',
+  }).fill(truth.title + ' NON SALVATO');
+  await cancelEditor.getByRole('button', { name: 'Annulla' }).click();
+  await openHome(page, day);
+  await assertOneOffTruth(page, updated);
+  await expect(onDay(page, day, truth.title + ' NON SALVATO')).toHaveCount(0);
   return updated;
 }
 
@@ -427,16 +496,20 @@ test.describe('Temporal v2 — real stateful user personas', () => {
           persona.id + '/4 Edit, remove and add nested data', async () =>
             editOneOff(page, day, authored, persona),
         );
-        const copy = await test.step(
-          persona.id + '/5 Duplicate the FINAL state, not initial', async () =>
-            duplicateAndCompare(page, day, updated),
+        const reassigned = await test.step(
+          persona.id + '/5 Reassign area, reload, cancel an unsaved edit',
+          async () => reassignAreaAndCancel(page, day, updated),
         );
-        await test.step(persona.id + '/6 Delete original; duplicate survives', async () => {
-          await deleteOneOff(page, day, updated.item);
+        const copy = await test.step(
+          persona.id + '/6 Duplicate the FINAL state, not initial', async () =>
+            duplicateAndCompare(page, day, reassigned),
+        );
+        await test.step(persona.id + '/7 Delete original; duplicate survives', async () => {
+          await deleteOneOff(page, day, reassigned.item);
           await assertOneOffTruth(page, {
-            ...updated,
+            ...reassigned,
             item: copy,
-            truth: { ...updated.truth, title: copy.title },
+            truth: { ...reassigned.truth, title: copy.title },
           });
         });
       } finally {
