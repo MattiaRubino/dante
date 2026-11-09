@@ -200,6 +200,77 @@ async def create_life_area_in_session(
     return area_ref
 
 
+async def change_life_area_color_in_session(
+    session: AsyncSession,
+    *,
+    actor: UUID,
+    operation_id: str,
+    life_area_ref: UUID,
+    expected_revision: int,
+    color_code: str,
+) -> None:
+    """Change the existing area's global appearance in a parent transaction.
+
+    Preserves its icon, checks the owner's current revision and rolls back with
+    the parent operation if the recurring-series update is rejected.
+    """
+    normalized_color = color_code.strip().upper()
+    if expected_revision < 1 or (
+        len(normalized_color) != 7
+        or normalized_color[0] != "#"
+        or any(ch not in "0123456789ABCDEF" for ch in normalized_color[1:])
+    ):
+        raise LifeAreaInputError("Invalid Life Area appearance change.")
+    row = (
+        (
+            await session.execute(
+                text(
+                    "SELECT revision,archived,icon_code,color_code "
+                    "FROM dante.list_self_life_areas(:actor) "
+                    "WHERE life_area_ref=:area"
+                ),
+                {"actor": actor, "area": life_area_ref},
+            )
+        )
+        .mappings()
+        .one_or_none()
+    )
+    if row is None or bool(row["archived"]):
+        raise LifeAreaNotFoundError("Life Area is unavailable.")
+    if int(row["revision"]) != expected_revision:
+        raise LifeAreaStateConflictError("Life Area appearance changed.")
+    if row["color_code"] == normalized_color:
+        raise LifeAreaStateConflictError("Life Area color is unchanged.")
+    icon = row["icon_code"]
+    await session.execute(
+        text(
+            "SELECT accepted_revision,replayed FROM dante.mutate_self_life_area("
+            ":actor,:operation,:fingerprint,:area_ref,:revision,"
+            "'appearance',NULL,NULL,:icon,:color)"
+        ),
+        {
+            "actor": actor,
+            "operation": _operation(operation_id),
+            "fingerprint": _fingerprint(
+                {
+                    "version": 1,
+                    "kind": "appearance",
+                    "area": str(life_area_ref),
+                    "expected_revision": expected_revision,
+                    "payload": {
+                        "icon_code": icon,
+                        "color_code": normalized_color,
+                    },
+                }
+            ),
+            "area_ref": life_area_ref,
+            "revision": expected_revision,
+            "icon": icon,
+            "color": normalized_color,
+        },
+    )
+
+
 class LifeAreaApplication:
     """All writes use bounded database routines in one transaction each."""
 

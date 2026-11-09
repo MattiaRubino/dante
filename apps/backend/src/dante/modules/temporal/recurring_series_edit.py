@@ -8,6 +8,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+from copy import deepcopy
 from dataclasses import asdict, dataclass
 from datetime import date, datetime, timedelta
 from itertools import pairwise
@@ -20,6 +21,10 @@ from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 
 from dante.modules.temporal.event import _read_event_in_session
 from dante.modules.temporal.event_occurrence_policy import EventOccurrencePolicyApplication
+from dante.modules.temporal.life_area import (
+    change_life_area_color_in_session,
+    create_life_area_in_session,
+)
 from dante.modules.temporal.occurrence import CalendarCoordinate, OccurrenceApplication, _occurrence
 from dante.modules.temporal.occurrence_edit_inventory import OccurrenceEditInventoryApplication
 from dante.modules.temporal.occurrence_edit_scope import RecurrenceEditScopePlan
@@ -126,6 +131,63 @@ def _request_hash(
     ).hexdigest()
 
 
+def _validate_series_area_intent(owner: SeriesOwner, structure: dict[str, object]) -> None:
+    """Validate the explicit, mutually exclusive Life Area write intents.
+
+    The preview fingerprint includes these immutable draft values. No area is
+    created or recolored until the matching preview is accepted atomically.
+    """
+    template = structure.get("activity_template") if owner == "routine" else structure
+    if not isinstance(template, dict):
+        raise SeriesReconciliationError("Recurring Life Area template is invalid.")
+    assigned = template.get("life_area_ref")
+    created = structure.get("new_life_area")
+    appearance = structure.get("area_color_change")
+    if created is not None and appearance is not None:
+        raise SeriesReconciliationError("Choose one Life Area change.")
+    if created is not None:
+        if not isinstance(created, dict) or set(created) != {"name", "color_code"}:
+            raise SeriesReconciliationError("New recurring Life Area is invalid.")
+        name = created.get("name")
+        color = created.get("color_code")
+        if (
+            assigned is not None
+            or not isinstance(name, str)
+            or not name.strip()
+            or len(name) > 100
+            or name != name.strip()
+            or not isinstance(color, str)
+            or len(color) != 7
+            or color[0] != "#"
+            or any(ch not in "0123456789ABCDEF" for ch in color[1:])
+        ):
+            raise SeriesReconciliationError("New recurring Life Area is invalid.")
+    if appearance is not None:
+        if (
+            not isinstance(appearance, dict)
+            or set(appearance) != {"life_area_ref", "expected_revision", "color_code"}
+        ):
+            raise SeriesReconciliationError("Recurring Life Area appearance is invalid.")
+        ref = appearance.get("life_area_ref")
+        revision = appearance.get("expected_revision")
+        color = appearance.get("color_code")
+        try:
+            canonical = str(UUID(str(ref)))
+        except (TypeError, ValueError, AttributeError) as exc:
+            raise SeriesReconciliationError("Recurring Life Area reference is invalid.") from exc
+        if (
+            canonical != ref
+            or ref != assigned
+            or type(revision) is not int
+            or revision < 1
+            or not isinstance(color, str)
+            or len(color) != 7
+            or color[0] != "#"
+            or any(ch not in "0123456789ABCDEF" for ch in color[1:])
+        ):
+            raise SeriesReconciliationError("Recurring Life Area appearance is invalid.")
+
+
 def _validate_structure(
     owner: SeriesOwner,
     recurrence: CalendarRecurrence,
@@ -133,6 +195,7 @@ def _validate_structure(
 ) -> None:
     if structure.get("version") != 1:
         raise SeriesReconciliationError("Unsupported series structure version.")
+    _validate_series_area_intent(owner, structure)
     duration_minutes = structure.get("duration_minutes")
     duration_days = structure.get("duration_days")
     reminder = structure.get("reminder_lead_minutes")
@@ -669,6 +732,35 @@ class RecurringSeriesEditApplication:
                     raise RecurringSeriesEditConflictError(
                         "Series preview changed before acceptance."
                     )
+                # The preview and operation hash cover the original area intent.
+                # Resolve that intent only after CAS admission, then persist the
+                # normalized structure (never the authoring-only intent fields).
+                persisted_structure = deepcopy(proposed_structure)
+                new_area = persisted_structure.pop("new_life_area", None)
+                color_change = persisted_structure.pop("area_color_change", None)
+                if isinstance(new_area, dict):
+                    area_ref = await create_life_area_in_session(
+                        session,
+                        actor=self_person_ref,
+                        operation_id=_child_operation(operation_id, "life-area"),
+                        name=cast(str, new_area["name"]),
+                        color_code=cast(str, new_area["color_code"]),
+                    )
+                    if prepared.owner == "routine":
+                        template = cast(dict[str, object], persisted_structure["activity_template"])
+                        template["life_area_ref"] = str(area_ref)
+                        template["item_color_code"] = None
+                    else:
+                        persisted_structure["life_area_ref"] = str(area_ref)
+                elif isinstance(color_change, dict):
+                    await change_life_area_color_in_session(
+                        session,
+                        actor=self_person_ref,
+                        operation_id=_child_operation(operation_id, "life-area-color"),
+                        life_area_ref=UUID(cast(str, color_change["life_area_ref"])),
+                        expected_revision=cast(int, color_change["expected_revision"]),
+                        color_code=cast(str, color_change["color_code"]),
+                    )
                 if profile_patch:
                     await session.execute(
                         text(
@@ -728,7 +820,7 @@ class RecurringSeriesEditApplication:
                     previous_state_ref=expected_state_ref,
                     recurrence_state_ref=new_state,
                     operation_id=operation_id,
-                    structure_snapshot=proposed_structure,
+                    structure_snapshot=persisted_structure,
                     request_hash=request_hash,
                     preview_fingerprint=expected_fingerprint,
                     superseded_count=len(prepared.scope.target_occurrence_refs),
@@ -789,6 +881,38 @@ class RecurringSeriesEditApplication:
         )
         owner: SeriesOwner = "routine" if routine_owned else "event"
         _validate_structure(owner, proposed_recurrence, proposed_structure)
+        # An assigned area is always self-owned. An appearance edit also
+        # performs a preview-time CAS against its current revision.
+        template_area = (
+            cast(dict[str, object], proposed_structure["activity_template"])
+            if owner == "routine"
+            else proposed_structure
+        )
+        assigned_area = template_area.get("life_area_ref")
+        if assigned_area is not None:
+            area_row = (
+                (
+                    await session.execute(
+                        text(
+                            "SELECT revision,archived FROM dante.list_self_life_areas(:actor) "
+                            "WHERE life_area_ref=:area"
+                        ),
+                        {"actor": self_person_ref, "area": UUID(str(assigned_area))},
+                    )
+                )
+                .mappings()
+                .one_or_none()
+            )
+            if area_row is None:
+                raise SeriesReconciliationError("Recurring Life Area is unavailable.")
+            appearance = proposed_structure.get("area_color_change")
+            if isinstance(appearance, dict) and (
+                int(area_row["revision"]) != appearance["expected_revision"]
+                or bool(area_row["archived"])
+            ):
+                raise RecurringSeriesEditConflictError(
+                    "Life Area changed before series preview."
+                )
         if owner == "event" and "expected_participants" in proposed_structure:
             owned_people = {
                 str(row[0])
