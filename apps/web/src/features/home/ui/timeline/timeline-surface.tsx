@@ -83,6 +83,7 @@ import { TimelineHeader } from './timeline-header';
 import { RecurringEditScopeDialog } from './recurring-edit-scope-dialog';
 import {
   canonicalOrganizationGroups,
+  canonicalItemLifeAreaGroup,
   LEGACY_UNASSIGNED_GROUP,
   TimelineOrganizationPanel,
   useTimelineOrganization,
@@ -283,13 +284,34 @@ export function TimelineSurface({
     // completed so group/color projection cannot race ahead of canonical truth.
     refreshOrganization();
   }, [refreshOrganization, prototypeMode, readyRuntimeWindow]);
-  const canonicalGroups = useMemo(
-    () =>
-      organization.snapshot === null
-        ? null
-        : canonicalOrganizationGroups(organization.snapshot),
-    [organization.snapshot],
-  );
+  const canonicalGroups = useMemo(() => {
+    if (organization.snapshot === null) return null;
+    const groups = canonicalOrganizationGroups(organization.snapshot);
+    // An individual Event instance may remove the inherited Life Area even
+    // while every source object remains assigned. Keep an unassigned group
+    // available for that explicitly detached occurrence.
+    const localUnassigned =
+      readyRuntimeWindow?.kind === 'window' &&
+      readyRuntimeWindow.items.some(
+        (item) =>
+          (item.kind === 'scheduled_occurrence' ||
+            item.kind === 'expected_occurrence') &&
+          item.sourceKind === 'event' &&
+          item.lifeAreaOverridePresent === true &&
+          item.lifeAreaOverrideRef === null,
+      );
+    return localUnassigned &&
+      !groups.some((group) => group.id === LEGACY_UNASSIGNED_GROUP)
+      ? [
+          ...groups,
+          {
+            id: LEGACY_UNASSIGNED_GROUP,
+            label: 'Senza Life Area',
+            tone: 'personal' as const,
+          },
+        ]
+      : groups;
+  }, [organization.snapshot, readyRuntimeWindow]);
   const creationEnabled = prototypeMode || organization.snapshot !== null;
   useEffect(() => {
     if (canonicalGroups !== null) {
@@ -317,9 +339,8 @@ export function TimelineSurface({
   );
   const resolveGroupId = useCallback(
     (item: import('../../../temporal/timeline-read').TemporalTimelineItem) =>
-      assignmentBySubject.get(organizationKeyForItem(item)) ??
-      LEGACY_UNASSIGNED_GROUP,
-    [assignmentBySubject, organizationKeyForItem],
+      canonicalItemLifeAreaGroup(item, assignmentBySubject),
+    [assignmentBySubject],
   );
   const resolveAppearanceColorCode = useCallback(
     (item: import('../../../temporal/timeline-read').TemporalTimelineItem) => {
@@ -329,6 +350,15 @@ export function TimelineSurface({
       );
       if (!group) return null;
       if (groupId === LEGACY_UNASSIGNED_GROUP) {
+        if (
+          (item.kind === 'scheduled_occurrence' ||
+            item.kind === 'expected_occurrence') &&
+          item.sourceKind === 'event' &&
+          item.lifeAreaOverridePresent &&
+          item.lifeAreaOverrideRef === null
+        ) {
+          return null; // never reuse the removed source area's color
+        }
         return group.itemColorCodes?.[organizationKeyForItem(item)] ?? null;
       }
       return group.colorCode ?? null;

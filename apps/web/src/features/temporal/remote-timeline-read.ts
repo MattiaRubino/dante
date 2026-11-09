@@ -646,6 +646,32 @@ function parseScheduledItem(payload: unknown): TemporalTimelineScheduledItem {
   }
 }
 
+function parseLifeAreaOverride(
+  payload: Record<string, unknown>,
+): Readonly<{ lifeAreaOverridePresent: boolean; lifeAreaOverrideRef: string | null }> {
+  if (!('life_area_override_present' in payload)) {
+    return Object.freeze({ lifeAreaOverridePresent: false, lifeAreaOverrideRef: null });
+  }
+  const present = payload.life_area_override_present;
+  const area = payload.life_area_override_ref;
+  if (
+    typeof present !== 'boolean' ||
+    !('life_area_override_ref' in payload) ||
+    (area !== null && typeof area !== 'string') ||
+    (!present && area !== null)
+  ) {
+    throw new TemporalTimelineRemoteError(
+      'protocol',
+      'Timeline Occurrence local Life Area provenance is invalid.',
+    );
+  }
+  return Object.freeze({
+    lifeAreaOverridePresent: present,
+    lifeAreaOverrideRef:
+      area === null ? null : parseUuidV7(area, 'life_area_override_ref'),
+  });
+}
+
 function parseScheduledOccurrence(
   payload: Record<string, unknown>,
 ): TemporalTimelineScheduledOccurrenceItem {
@@ -661,6 +687,10 @@ function parseScheduledOccurrence(
       'schedule_ref',
       'placement_material_state_ref',
       'placement',
+      ...('life_area_override_present' in payload ||
+      'life_area_override_ref' in payload
+        ? ['life_area_override_present', 'life_area_override_ref']
+        : []),
     ],
     'Scheduled Timeline Occurrence',
   );
@@ -696,6 +726,7 @@ function parseScheduledOccurrence(
       payload.coordinate === null
         ? null
         : parseOccurrenceCoordinate(payload.coordinate),
+    ...parseLifeAreaOverride(payload),
     scheduleRef: parseUuidV7(payload.schedule_ref, 'schedule_ref'),
     placementMaterialStateRef: parseUuidV7(
       payload.placement_material_state_ref,
@@ -891,6 +922,10 @@ function parseExpectedOccurrence(
       'source_native_ref',
       'title',
       'coordinate',
+      ...('life_area_override_present' in payload ||
+      'life_area_override_ref' in payload
+        ? ['life_area_override_present', 'life_area_override_ref']
+        : []),
     ],
     'Expected Timeline Occurrence',
   );
@@ -916,6 +951,7 @@ function parseExpectedOccurrence(
     ),
     title: payload.title,
     coordinate: parseOccurrenceCoordinate(payload.coordinate),
+    ...parseLifeAreaOverride(payload),
   });
 }
 

@@ -156,6 +156,9 @@ type TemporalTimelineScheduledOccurrenceBase = Readonly<{
   placementMaterialStateRef: string;
   title: string;
   coordinate: TemporalTimelineOccurrenceCoordinate | null;
+  /** True includes an explicit null (instance detached from the source area). */
+  lifeAreaOverridePresent?: boolean;
+  lifeAreaOverrideRef?: string | null;
 }>;
 
 export type TemporalTimelineScheduledOccurrenceItem =
@@ -175,6 +178,8 @@ export type TemporalTimelineExpectedOccurrenceItem = Readonly<{
   sourceNativeRef: string;
   title: string;
   coordinate: TemporalTimelineOccurrenceCoordinate;
+  lifeAreaOverridePresent?: boolean;
+  lifeAreaOverrideRef?: string | null;
   temporalForm?: never;
 }>;
 

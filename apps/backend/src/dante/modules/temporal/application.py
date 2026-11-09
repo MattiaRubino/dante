@@ -181,6 +181,10 @@ class _TimelineOccurrenceBase:
     source_native_ref: NativeRef
     title: str
     coordinate: OccurrenceCoordinate | None
+    # Explicit, local Event Life Area choice; None with present=True means
+    # "unassigned", while present=False means inherited from source.
+    life_area_override_present: bool = field(default=False, kw_only=True)
+    life_area_override_ref: UUID | None = field(default=None, kw_only=True)
 
 
 @dataclass(frozen=True, slots=True)
@@ -333,6 +337,8 @@ def _expected_occurrence_from_row(row: RowMapping) -> TimelineExpectedOccurrence
         source_native_ref=NativeRef(UUID(str(row["source_native_ref"]))),
         title=str(row["title"]),
         coordinate=coordinate,
+        life_area_override_present=bool(row["life_area_override_present"]),
+        life_area_override_ref=row["life_area_override_ref"],
     )
 
 
@@ -381,6 +387,8 @@ def _item_from_row(
             source_native_ref=NativeRef(UUID(str(row["source_native_ref"]))),
             title=str(row["title"]),
             coordinate=_occurrence_coordinate(row),
+            life_area_override_present=bool(row["life_area_override_present"]),
+            life_area_override_ref=row["life_area_override_ref"],
             schedule_ref=identity["schedule_ref"],
             placement_material_state_ref=identity["placement_material_state_ref"],
             placement=placement,
@@ -567,7 +575,9 @@ class TemporalTimelineApplication:
                        COALESCE(profile_edit.patch->>'title',intention.title) AS title,
                        NULL::text AS source_kind,
                        NULL::uuid AS source_native_ref,
-                       NULL::uuid AS occurrence_ref
+                       NULL::uuid AS occurrence_ref,
+                       false AS life_area_override_present,
+                       NULL::uuid AS life_area_override_ref
                   FROM dante.activity_intention AS intention
              LEFT JOIN LATERAL (
                  SELECT CASE
@@ -596,7 +606,9 @@ class TemporalTimelineApplication:
                        COALESCE(first_edit.patch->>'title', expectation.title) AS title,
                        NULL::text AS source_kind,
                        NULL::uuid AS source_native_ref,
-                       NULL::uuid AS occurrence_ref
+                       NULL::uuid AS occurrence_ref,
+                       false AS life_area_override_present,
+                       NULL::uuid AS life_area_override_ref
                   FROM dante.event_expectation AS expectation
              LEFT JOIN LATERAL (
                  -- A converted Event keeps its physical first Schedule.
@@ -619,7 +631,17 @@ class TemporalTimelineApplication:
                        COALESCE(profile_edit.patch->>'title',source.title) AS title,
                        source.source_kind,
                        source.source_native_ref,
-                       occurrence.occurrence_ref
+                       occurrence.occurrence_ref,
+                       (
+                           source.source_kind='event' AND
+                           COALESCE(profile_edit.patch->'event_local' ? 'life_area_ref',false)
+                       ) AS life_area_override_present,
+                       CASE WHEN source.source_kind='event'
+                           THEN NULLIF(
+                               profile_edit.patch->'event_local'->>'life_area_ref',''
+                           )::uuid
+                           ELSE NULL::uuid
+                       END AS life_area_override_ref
                   FROM scheduled_occurrence AS occurrence
                   JOIN self_source AS source
                     ON source.source_native_ref=occurrence.source_native_ref
@@ -635,6 +657,8 @@ class TemporalTimelineApplication:
                    subject.source_kind,
                    subject.source_native_ref,
                    subject.occurrence_ref,
+                   subject.life_area_override_present,
+                   subject.life_area_override_ref,
                    schedule.schedule_ref,
                    COALESCE(user_lock.locked,false) AS placement_locked,
                    current.material_state_ref,
@@ -795,6 +819,14 @@ class TemporalTimelineApplication:
                    occurrence.source_native_ref,
                    source.source_kind,
                    COALESCE(profile_edit.patch->>'title',source.title) AS title,
+                   (
+                       source.source_kind='event' AND
+                       COALESCE(profile_edit.patch->'event_local' ? 'life_area_ref',false)
+                   ) AS life_area_override_present,
+                   CASE WHEN source.source_kind='event'
+                       THEN NULLIF(profile_edit.patch->'event_local'->>'life_area_ref','')::uuid
+                       ELSE NULL::uuid
+                   END AS life_area_override_ref,
                    occurrence.family_code,
                    occurrence.generated_date,
                    occurrence.generated_wall_time,

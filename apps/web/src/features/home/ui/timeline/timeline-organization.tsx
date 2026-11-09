@@ -6,9 +6,34 @@ import {
   type OrganizationSnapshot,
 } from '../../../temporal/remote-organization';
 import { subscribeTemporalTimelineInvalidation } from '../../../temporal/timeline-invalidation';
+import type { TemporalTimelineItem } from '../../../temporal/timeline-read';
 import type { TimelineGroup } from './model/timeline-types';
 
 export const LEGACY_UNASSIGNED_GROUP = 'legacy-unassigned';
+
+/** An Event Occurrence's explicit local area beats the source assignment.
+ * A local null is not absence: it removes the inherited Life Area.
+ */
+export function canonicalItemLifeAreaGroup(
+  item: TemporalTimelineItem,
+  assignments: ReadonlyMap<string, string | null>,
+): string {
+  if (
+    (item.kind === 'scheduled_occurrence' ||
+      item.kind === 'expected_occurrence') &&
+    item.sourceKind === 'event' &&
+    item.lifeAreaOverridePresent
+  ) {
+    return item.lifeAreaOverrideRef ?? LEGACY_UNASSIGNED_GROUP;
+  }
+  const key =
+    item.kind === 'scheduled_activity'
+      ? `activity:${item.activityRef}`
+      : item.kind === 'scheduled_event'
+        ? `event:${item.eventRef}`
+        : `${item.sourceKind}:${item.sourceNativeRef}`;
+  return assignments.get(key) ?? LEGACY_UNASSIGNED_GROUP;
+}
 
 export function canonicalOrganizationGroups(
   snapshot: OrganizationSnapshot,

@@ -407,6 +407,8 @@ class TimelineScheduledOccurrenceResponse(BaseModel):
     source_native_ref: UUID
     title: str
     coordinate: TimelineOccurrenceCoordinateResponse | None
+    life_area_override_present: bool = False
+    life_area_override_ref: UUID | None = None
     schedule_ref: UUID
     placement_material_state_ref: UUID
     placement: TimelineOccurrencePlacementResponse
@@ -421,6 +423,8 @@ class TimelineExpectedOccurrenceResponse(BaseModel):
     source_native_ref: UUID
     title: str
     coordinate: TimelineOccurrenceCoordinateResponse
+    life_area_override_present: bool = False
+    life_area_override_ref: UUID | None = None
 
 
 TimelineItemResponse = (
@@ -1051,6 +1055,8 @@ def _timeline_item_response(item: TimelineItem) -> TimelineItemResponse:
             source_native_ref=item.source_native_ref,
             title=item.title,
             coordinate=_timeline_occurrence_coordinate_response(item.coordinate),
+            life_area_override_present=item.life_area_override_present,
+            life_area_override_ref=item.life_area_override_ref,
         )
     if isinstance(item, TimelineScheduledOccurrenceItem):
         return TimelineScheduledOccurrenceResponse(
@@ -1058,6 +1064,8 @@ def _timeline_item_response(item: TimelineItem) -> TimelineItemResponse:
             source_kind=item.source_kind,
             source_native_ref=item.source_native_ref,
             title=item.title,
+            life_area_override_present=item.life_area_override_present,
+            life_area_override_ref=item.life_area_override_ref,
             coordinate=(
                 _timeline_occurrence_coordinate_response(item.coordinate)
                 if item.coordinate is not None
