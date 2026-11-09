@@ -43,6 +43,7 @@ export type EventAtomicDraft = Readonly<{
   lifeArea?: Readonly<{
     ref: string | null;
     expectedRevision: number;
+    newArea?: Readonly<{ name: string; colorCode: string | null }>;
   }>;
   objectives?: ActivityObjectiveBatch;
   reality?: Readonly<{ mode: RealityMode; expectedStateRef: string | null }>;
@@ -166,6 +167,14 @@ export function createRemoteEventProfileDataSource(
                     life_area_ref: changes.lifeArea.ref,
                     expected_assignment_revision:
                       changes.lifeArea.expectedRevision,
+                    ...(changes.lifeArea.newArea
+                      ? {
+                          new_life_area: {
+                            name: changes.lifeArea.newArea.name,
+                            color_code: changes.lifeArea.newArea.colorCode,
+                          },
+                        }
+                      : {}),
                   },
                 }
               : {}),
