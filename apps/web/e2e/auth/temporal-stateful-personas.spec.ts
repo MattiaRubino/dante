@@ -225,6 +225,17 @@ async function reassignAreaAndCancel(
     name: item.kind === 'event' ? 'Titolo Event' : 'Titolo',
   }).fill(truth.title + ' NON SALVATO');
   await cancelEditor.getByRole('button', { name: 'Annulla' }).click();
+  const discard = page.getByRole('alertdialog', {
+    name: 'Modifiche non salvate',
+  });
+  await expect(discard).toBeVisible();
+  await discard.getByRole('button', { name: 'Continua a modificare' }).click();
+  await expect(cancelEditor.getByRole('textbox', {
+    name: item.kind === 'event' ? 'Titolo Event' : 'Titolo',
+  })).toHaveValue(truth.title + ' NON SALVATO');
+  await cancelEditor.getByRole('button', { name: 'Annulla' }).click();
+  await discard.getByRole('button', { name: 'Scarta modifiche' }).click();
+  await expect(discard).toHaveCount(0);
   await openHome(page, day);
   await assertOneOffTruth(page, updated);
   await expect(onDay(page, day, truth.title + ' NON SALVATO')).toHaveCount(0);
