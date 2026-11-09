@@ -814,6 +814,33 @@ test.describe('Timeline — real user Activity/Event lifecycle matrix', () => {
         .getByRole('button', { name: seriesTitle, exact: true })
         .click();
       inspector = page.locator('.timeline-event-modal[role="dialog"]');
+      // Regression: a series Activity with an assigned Life Area must have
+      // an operable color picker, not a read-only color swatch.
+      await inspector.getByRole('button', { name: 'Modifica' }).click();
+      await page
+        .getByRole('dialog', { name: 'Modifica ricorrenza' })
+        .getByRole('button', { name: 'Questa e le successive' })
+        .click();
+      await inspector.getByRole('button', { name: 'Colore Life Area' }).click();
+      const colorPicker = page.getByRole('dialog', { name: 'Scegli colore' });
+      await expect(colorPicker).toBeVisible();
+      await colorPicker.getByRole('button', { name: 'Giallo', exact: true }).click();
+      await expect(
+        inspector.getByText(/Modificare il colore della Life Area aggiorna/),
+      ).toBeVisible();
+      await inspector.getByRole('button', { name: 'Annulla' }).click();
+      await expect(inspector.getByRole('button', { name: 'Elimina' })).toBeVisible();
+      const afterCancel = await page.request.get('/api/v1/temporal/life-areas', {
+        headers: { 'X-Dante-Time-Zone': 'Europe/Rome' },
+      });
+      expect(afterCancel.status()).toBe(200);
+      const unchangedAreas = (await afterCancel.json()) as readonly Record<
+        string,
+        unknown
+      >[];
+      expect(
+        unchangedAreas.find((area) => area.name === futureArea)?.color_code,
+      ).toBe('#4285F4');
       await inspector.getByRole('button', { name: 'Elimina' }).click();
       // Both scoped destructive choices must be explicit and cancellable.
       const deletion = page.getByRole('alertdialog', {
