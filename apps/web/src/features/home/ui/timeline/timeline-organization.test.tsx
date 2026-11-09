@@ -1,8 +1,12 @@
+import { Temporal } from '@dante/time';
 import { describe, expect, it } from 'vitest';
+
+import type { TemporalTimelineItem } from '../../../temporal/timeline-read';
 
 import type { OrganizationSnapshot } from '../../../temporal/remote-organization';
 import {
   canonicalOrganizationGroups,
+  canonicalItemLifeAreaGroup,
   LEGACY_UNASSIGNED_GROUP,
 } from './timeline-organization';
 
@@ -53,6 +57,69 @@ describe('Timeline organization groups', () => {
         archived: false,
       },
     ]);
+  });
+
+  // Regression 2026-11-09: "Solo questa istanza" was saved correctly in
+  // the Event occurrence but its card still used the recurring source's
+  // assigned Life Area (and therefore its old color). These three variants
+  // distinguish inheritance, replacement, and explicit removal.
+  it('projects an Event occurrence local Life Area instead of the source assignment', () => {
+    const eventRef = '0199a8c0-6e72-7bc0-8ad0-a2f403f5617d';
+    const areaNew = '0199a8c0-6e74-7bc0-8ad0-a2f403f5617d';
+    const assignments = new Map([[`event:${eventRef}`, AREA_REF]]);
+    const item = {
+      kind: 'scheduled_occurrence',
+      occurrenceRef: '0199a8c0-6e75-7bc0-8ad0-a2f403f5617d',
+      sourceKind: 'event',
+      sourceNativeRef: eventRef,
+      title: 'Event solo questa',
+      coordinate: null,
+      scheduleRef: '0199a8c0-6e76-7bc0-8ad0-a2f403f5617d',
+      placementMaterialStateRef: '0199a8c0-6e77-7bc0-8ad0-a2f403f5617d',
+      temporalForm: 'date-span',
+      startDate: Temporal.PlainDate.from('2026-11-10'),
+      endDateExclusive: Temporal.PlainDate.from('2026-11-11'),
+    } as const satisfies TemporalTimelineItem;
+
+    expect(canonicalItemLifeAreaGroup(item, assignments)).toBe(AREA_REF);
+    expect(
+      canonicalItemLifeAreaGroup(
+        { ...item, lifeAreaOverridePresent: true, lifeAreaOverrideRef: areaNew },
+        assignments,
+      ),
+    ).toBe(areaNew);
+    expect(
+      canonicalItemLifeAreaGroup(
+        { ...item, lifeAreaOverridePresent: true, lifeAreaOverrideRef: null },
+        assignments,
+      ),
+    ).toBe(LEGACY_UNASSIGNED_GROUP);
+  });
+
+  // Regression 2026-11-09: the converted Event's first physical Schedule
+  // is represented as "scheduled_event", not "scheduled_occurrence".
+  // It must obey the identical local override when "Solo questa" edits it.
+  it('projects the converted recurring Event physical-first Schedule override', () => {
+    const eventRef = '0199a8c0-6e72-7bc0-8ad0-a2f403f5617d';
+    const assignments = new Map([[`event:${eventRef}`, AREA_REF]]);
+    const item = {
+      kind: 'scheduled_event',
+      eventRef,
+      scheduleRef: '0199a8c0-6e76-7bc0-8ad0-a2f403f5617d',
+      placementMaterialStateRef: '0199a8c0-6e77-7bc0-8ad0-a2f403f5617d',
+      title: 'Event prima istanza',
+      temporalForm: 'date-span',
+      startDate: Temporal.PlainDate.from('2026-11-10'),
+      endDateExclusive: Temporal.PlainDate.from('2026-11-11'),
+    } as const satisfies TemporalTimelineItem;
+
+    expect(canonicalItemLifeAreaGroup(item, assignments)).toBe(AREA_REF);
+    expect(
+      canonicalItemLifeAreaGroup(
+        { ...item, lifeAreaOverridePresent: true, lifeAreaOverrideRef: null },
+        assignments,
+      ),
+    ).toBe(LEGACY_UNASSIGNED_GROUP);
   });
 
   it('keeps unassigned grouping neutral while retaining each item color', () => {
