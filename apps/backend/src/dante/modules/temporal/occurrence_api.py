@@ -9,7 +9,7 @@ from typing import Annotated, Literal
 from uuid import UUID, uuid7
 
 from fastapi import APIRouter, Depends, Request, Response
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel, ConfigDict, Field, model_validator
 from sqlalchemy import text
 from sqlalchemy.exc import DBAPIError, SQLAlchemyError
 
@@ -21,6 +21,7 @@ from dante.modules.temporal.api import (
     _placement_from_request,
 )
 from dante.modules.temporal.event import _read_event_in_session
+from dante.modules.temporal.life_area import _fingerprint as life_area_fingerprint
 from dante.modules.temporal.event_api import (
     EventAtomicPlacementLockChange,
     EventAtomicReminderChange,
@@ -327,12 +328,32 @@ class EventOccurrenceParticipant(BaseModel):
     requirement_code: Literal["required", "optional"]
 
 
+class EventOccurrenceNewLifeArea(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    name: str = Field(min_length=1, max_length=100)
+    color_code: str | None = Field(default=None, pattern=r"^#[0-9A-F]{6}$")
+
+    @model_validator(mode="after")
+    def valid_name(self) -> EventOccurrenceNewLifeArea:
+        if self.name != self.name.strip() or not self.name.strip():
+            raise ValueError("Life Area name must be nonempty and trimmed.")
+        return self
+
+
 class EventOccurrenceLocalStructure(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
     agenda_parts: list[str] = Field(max_length=100)
     life_area_ref: UUID | None
     expected_participants: list[EventOccurrenceParticipant] = Field(max_length=100)
+    new_life_area: EventOccurrenceNewLifeArea | None = None
+
+    @model_validator(mode="after")
+    def distinct_area_intent(self) -> EventOccurrenceLocalStructure:
+        if self.new_life_area is not None and self.life_area_ref is not None:
+            raise ValueError("Select an existing Life Area or create a new one, not both.")
+        return self
 
 
 class EventOccurrenceLocalEditCommand(BaseModel):
@@ -1066,7 +1087,61 @@ async def accept_event_occurrence_local_edit(
                 )
                 if area is None:
                     raise RecurringSeriesEditConflictError("Event Life Area is unavailable.")
-            local = body.structure.model_dump(mode="json")
+            # The new Life Area and its local Occurrence assignment must
+            # commit or roll back together. No orphan profile on a rejected
+            # recurrence revision, protected instance or invalid Schedule.
+            local = body.structure.model_dump(mode="json", exclude={"new_life_area"})
+            if body.structure.new_life_area is not None:
+                new_area = body.structure.new_life_area
+                created = (
+                    (
+                        await session.execute(
+                            text(
+                                "SELECT life_area_ref,replayed FROM dante.create_self_life_area("
+                                ":actor,:operation,:fingerprint,:area_ref,:name)"
+                            ),
+                            {
+                                "actor": actor,
+                                "operation": f"{body.operation_id}:area-create",
+                                "fingerprint": life_area_fingerprint(
+                                    {"version": 1, "name": new_area.name}
+                                ),
+                                "area_ref": uuid7(),
+                                "name": new_area.name,
+                            },
+                        )
+                    )
+                    .mappings()
+                    .one()
+                )
+                area_ref = created["life_area_ref"]
+                if new_area.color_code is not None:
+                    await session.execute(
+                        text(
+                            "SELECT accepted_revision,replayed FROM dante.mutate_self_life_area("
+                            ":actor,:operation,:fingerprint,:area_ref,1,"
+                            "'appearance',NULL,NULL,NULL,:color)"
+                        ),
+                        {
+                            "actor": actor,
+                            "operation": f"{body.operation_id}:area-appearance",
+                            "fingerprint": life_area_fingerprint(
+                                {
+                                    "version": 1,
+                                    "kind": "appearance",
+                                    "area": str(area_ref),
+                                    "expected_revision": 1,
+                                    "payload": {
+                                        "icon_code": None,
+                                        "color_code": new_area.color_code,
+                                    },
+                                }
+                            ),
+                            "area_ref": area_ref,
+                            "color": new_area.color_code,
+                        },
+                    )
+                local["life_area_ref"] = str(area_ref)
             target_schedule = (
                 body.schedule.schedule_ref
                 if body.schedule is not None

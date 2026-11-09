@@ -202,6 +202,7 @@ export function EventInspectorActions({
   const [areaSelection, setAreaSelection] = useState('');
   const [areaQuery, setAreaQuery] = useState('');
   const [areaError, setAreaError] = useState('');
+  const [newAreaColor, setNewAreaColor] = useState(TEMPORAL_DEFAULT_COLOR);
   const [editingProfile, setEditingProfile] = useState(false);
   const [confirmingDiscard, setConfirmingDiscard] = useState(false);
   const [editChoice, setEditChoice] = useState<{
@@ -362,6 +363,7 @@ export function EventInspectorActions({
         )?.name ?? '',
       );
       setAreaError('');
+      setNewAreaColor(TEMPORAL_DEFAULT_COLOR);
       setRecurrenceSelected(false);
       recurrenceOperation.current = null;
       recurrenceResume.current = null;
@@ -707,17 +709,22 @@ export function EventInspectorActions({
       let acceptedProfile = profile;
       let acceptedStateRef = placementMaterialStateRef;
       let acceptedEdit = false;
+      const areaName = areaQuery.trim().replace(/\s+/g, ' ');
+      const selectedArea = areaChoice?.options.find(
+        (option) => option.ref === areaSelection,
+      );
+      const creatingLocalArea = areaName !== '' && !selectedArea;
       if (
-        areaQuery.trim() &&
-        !areaChoice?.options.some(
-          (option) =>
-            option.ref === areaSelection &&
-            option.name.toLocaleLowerCase() ===
-              areaQuery.trim().toLocaleLowerCase(),
-        )
+        (selectedArea &&
+          selectedArea.name.toLocaleLowerCase() !== areaName.toLocaleLowerCase()) ||
+        (creatingLocalArea &&
+          (!recurringContext || areaName.length > 100 || !areaChoice))
       ) {
-        setAreaError('Scegli una Life Area dall’elenco.');
-        throw new Error('Scegli una Life Area dall’elenco.');
+        const message = recurringContext
+          ? 'Nome Life Area non valido.'
+          : 'Per creare una Life Area dall’editor Event usa «Solo questa istanza».';
+        setAreaError(message);
+        throw new Error(message);
       }
       const normalized: EventProfileDraft = {
         title: profileDraft.title.trim(),
@@ -742,6 +749,7 @@ export function EventInspectorActions({
           JSON.stringify(agendaDraft) !==
             JSON.stringify(profile.agendaParts ?? []) ||
           (areaSelection || null) !== (profile.lifeAreaRef ?? null) ||
+          creatingLocalArea ||
           JSON.stringify(
             participantsDraft.map(({ personRef, requirementCode }) => ({
               personRef,
@@ -805,6 +813,9 @@ export function EventInspectorActions({
             agendaParts: agendaDraft,
             lifeAreaRef: areaSelection || null,
             participants: participantsDraft,
+            ...(creatingLocalArea
+              ? { newArea: { name: areaName, colorCode: newAreaColor } }
+              : {}),
           },
           {
             placementLock:
@@ -1478,13 +1489,25 @@ export function EventInspectorActions({
                     />
                   ) : (
                     <TemporalColorControl
-                      value={profileDraft.colorCode ?? TEMPORAL_DEFAULT_COLOR}
-                      label="Colore attività o evento"
-                      onChange={(colorCode) =>
-                        setProfileDraft(
-                          (draft) => draft && { ...draft, colorCode },
-                        )
+                      value={
+                        areaQuery.trim() && !areaSelection
+                          ? newAreaColor
+                          : (profileDraft.colorCode ?? TEMPORAL_DEFAULT_COLOR)
                       }
+                      label={
+                        areaQuery.trim() && !areaSelection
+                          ? 'Colore nuova Life Area'
+                          : 'Colore attività o evento'
+                      }
+                      onChange={(colorCode) => {
+                        if (areaQuery.trim() && !areaSelection) {
+                          setNewAreaColor(colorCode);
+                        } else {
+                          setProfileDraft(
+                            (draft) => draft && { ...draft, colorCode },
+                          );
+                        }
+                      }}
                     />
                   )}
                   {areaChoice ? (
@@ -1529,6 +1552,11 @@ export function EventInspectorActions({
                           setAreaError('');
                         }}
                       />
+                      {recurringContext && areaQuery.trim() && !areaSelection ? (
+                        <small role="status">
+                          La nuova Life Area sarà creata insieme alla modifica di questa istanza.
+                        </small>
+                      ) : null}
                       {areaError ? (
                         <small
                           className="temporal-create-field-error"

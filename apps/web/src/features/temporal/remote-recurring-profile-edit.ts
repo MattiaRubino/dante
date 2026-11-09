@@ -173,6 +173,7 @@ export function createRemoteRecurringProfileEdit(
         agendaParts: readonly string[];
         lifeAreaRef: string | null;
         participants: readonly TemporalCreateEventParticipantDraft[];
+        newArea?: Readonly<{ name: string; colorCode: string | null }>;
       }>,
       extras: Readonly<{
         schedule: {
@@ -220,6 +221,14 @@ export function createRemoteRecurringProfileEdit(
             structure: {
               agenda_parts: structure.agendaParts,
               life_area_ref: structure.lifeAreaRef,
+              ...(structure.newArea
+                ? {
+                    new_life_area: {
+                      name: structure.newArea.name,
+                      color_code: structure.newArea.colorCode,
+                    },
+                  }
+                : {}),
               expected_participants: structure.participants.map(
                 (participant) => ({
                   person_ref: participant.personRef,

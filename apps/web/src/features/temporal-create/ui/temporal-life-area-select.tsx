@@ -63,12 +63,18 @@ export function TemporalLifeAreaSelect({
   const rootRef = useRef<HTMLDivElement | null>(null);
   const filtered = useMemo(() => {
     const needle = normalized(query).toLocaleLowerCase();
+    // Focusing an already-assigned Life Area must show the entire catalog,
+    // not just its own label. Once the user types, normal filtering resumes.
+    const selected = options.find((option) => option.id === selectedId);
+    if (selected && normalized(selected.label).toLocaleLowerCase() === needle) {
+      return options;
+    }
     return needle
       ? options.filter((option) =>
           option.label.toLocaleLowerCase().includes(needle),
         )
       : options;
-  }, [options, query]);
+  }, [options, query, selectedId]);
 
   useEffect(() => {
     if (!open) return;
