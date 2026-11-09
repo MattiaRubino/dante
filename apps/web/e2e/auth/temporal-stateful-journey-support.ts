@@ -50,6 +50,7 @@ export type PersonaTruth = Readonly<{
   objectives: readonly ObjectiveTruth[];
   sessions: readonly string[];
   explicitExtraIntervals: number;
+  expectedIntervalCount: number;
 }>;
 export type AuthoredPersona = Readonly<{
   item: CreatedItem;
@@ -199,6 +200,8 @@ function truthFor(
       persona.kind === 'activity' && !persona.allDay
         ? persona.intervalCount - 1
         : 0,
+    expectedIntervalCount: persona.kind === 'activity'
+      ? persona.intervalCount : 0,
   });
 }
 
@@ -420,10 +423,8 @@ export async function assertOneOffTruth(
     const intervalCount = schedules.filter(
       (schedule) => schedule.role_code === 'interval',
     ).length;
-    expect(intervalCount, 'all persisted Activity intervals').toBe(
-      truth.explicitExtraIntervals +
-        (intervalCount > 0 ? 1 : 0),
-    );
+    expect(intervalCount, 'all persisted Activity intervals')
+      .toBe(truth.expectedIntervalCount);
     expect(new Set(schedules.map((row) => row.schedule_ref)).size)
       .toBe(schedules.length);
   }
