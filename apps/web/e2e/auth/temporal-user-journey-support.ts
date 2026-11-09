@@ -120,12 +120,12 @@ export async function openHome(page: Page, date: string): Promise<void> {
       response.request().method() === 'GET',
     { timeout: REQUEST_TIMEOUT },
   );
-  // DOMContentLoaded is sufficient: the real Timeline GET and ready-state
-  // assertions below still prove the authenticated, materialized viewport.
-  // Waiting for the full load event occasionally stalls after deletion while
-  // unrelated assets/background requests keep the page busy.
+  // The network trace proves that HTML, scripts and Timeline APIs may have
+  // completed while Playwright still waits indefinitely for DOMContentLoaded.
+  // Navigation commit is the appropriate browser boundary for this SPA;
+  // the canonical Timeline GET and "ready" assertion below remain mandatory.
   await page.goto('/home?date=' + date, {
-    waitUntil: 'domcontentloaded',
+    waitUntil: 'commit',
     timeout: 15_000,
   });
   expect((await read).status()).toBe(200);
