@@ -1163,6 +1163,23 @@ describe('Objective correction in Activity Editor', () => {
     expect(saveRecurringProfile).not.toHaveBeenCalled();
   });
 
+  it('closes an unchanged Activity with no Objective without touching the atomic API', async () => {
+    loadSettings.mockResolvedValueOnce(currentSettings);
+    const onSaved = vi.fn();
+    render(
+      <ActivityEditPanel
+        profile={profile}
+        closeRequestRef={createRef()}
+        onSaved={onSaved}
+        onCancel={() => undefined}
+      />,
+    );
+    await submitEditor();
+    await waitFor(() => expect(onSaved).toHaveBeenCalledWith(profile));
+    expect(applyAtomicEdit).not.toHaveBeenCalled();
+    expect(saveCore).not.toHaveBeenCalled();
+  });
+
   it('closes an unchanged Activity with all four recorded Objective types without HTTP mutation', async () => {
     loadSettings.mockResolvedValueOnce({
       ...currentSettings,
