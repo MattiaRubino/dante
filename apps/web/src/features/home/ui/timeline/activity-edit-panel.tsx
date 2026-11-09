@@ -965,9 +965,9 @@ export function ActivityEditPanel({
       pending || planPending || objectivePending || objectiveDeletePending ||
       !objective.observationRef || !objective.evaluationStateRef
     ) return;
-    if (dirty) {
+    if (objectiveDirty) {
       setObjectiveError(
-        'Salva o annulla le modifiche prima di eliminare la registrazione.',
+        'Salva o annulla le altre modifiche agli obiettivi prima di eliminare la registrazione.',
       );
       return;
     }
