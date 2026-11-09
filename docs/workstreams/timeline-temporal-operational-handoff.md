@@ -5113,3 +5113,32 @@ remain NOT_RUN on the repaired candidate; no global PASS is claimed.
 ### 2026-11-09 — Real-stack benchmark follow-up
 
 Measured on `9fa62b1a8`: three isolated browser stacks recorded all 117 tests in 366.2s, versus the prior 774.8s serial baseline, but the run was not green (109 passed, 4 failed, 4 expected skips). All three browser failures in recurring Event Life Area verification came from a new E2E `page.request.get('/api/v1/temporal/life-areas')` missing the mandatory `X-Dante-Time-Zone: Europe/Rome` header (trace `context.device_timezone_required`). The separate WebKit Event duplication failure showed the Inspector closing without Create opening. Root cause addressed in `TemporalCreateEntry`: its external request must be acknowledged only after the scheduled animation frame runs, not before, because React may cancel the frame when Life Area contexts refresh. A targeted Vitest simulates that cancellation and requires the duplicate composer to open. No end-to-end proof of these repairs is claimed until owner reruns the focused E2E tests on the new commit.
+
+
+## 2026-11-09 — Recurring Life Area editor defect and realism gate
+
+The owner reproduced two visible failures not covered by the formerly green unit tests: (1) Event → Edit → **Questa e le successive** rejected a newly typed Life Area name with a global `Scegli una Life Area dall’elenco.` alert, without supporting new-area creation; (2) Activity with an assigned Life Area offered a **non-interactive color indicator**, making changes impossible. An upstream isolated-Occurrence test was green but did **not** exercise the separate recurring-series editor.
+
+**Implemented vertical:** `RecurringSeriesEditor` now offers the existing Life Area catalog, a typed new-area authoring path, and color controls. New area creation and the optional existing-area global color mutation are preview-fingerprinted and performed in the recurring acceptance PostgreSQL transaction, with CAS and canonical rollback. The write-only `new_life_area` / `area_color_change` intents are removed from persisted structure snapshots; the accepted snapshot contains the actual area UUID. Recoloring an existing area is *global*, including past linked items: the UI explicitly warns, rather than suggesting an isolated following-scope color effect. Newly created areas are scoped through the recurring source policy, not by recoloring a shared area.
+
+**Tests now authored (require owner execution before claiming green):**
+- PostgreSQL `test_recurring_series_life_area.py`: strict owner-typed intent validation; complete real Event series preview/accept/replay; assigned-area/canonical readback; separate global color CAS; forced failure after Life Area creation requiring total rollback and zero orphan areas.
+- Playwright `temporal-user-lifecycle.spec.ts`: both Activity and Event selected-and-following editors create a real Life Area of a known distinctive color; verify server catalog, selected/future Timeline cards after reload, and preservation of the earlier single-instance exception. Activity also opens the previously disabled assigned-area color picker and checks that cancelling leaves the authoritative color unchanged.
+- The original seven lifecycle journeys, standard creation/deletion, multi-frequency recurrence matrix and all earlier test assertions remain in place. **No test was disabled, weakened or skipped to mask failures.** Prior four WebKit skips are independent pre-existing gaps.
+
+### Stateful user consistency test matrix (incremental quality gate)
+
+| User flow | Minimum persisted evidence | Coverage status |
+| --- | --- | --- |
+| One-off Activity/Event creation → title edit → duplicate → delete → reload | Independent source/schedule UUIDs, accepted profile, surviving duplicate, 404 for deleted source | Existing real-user E2E |
+| Daily/weekly/monthly/ordinal/yearly/custom recurrence, variable counts and all-day | Accepted recurrence specification, correct first/future placement and stable identities | Existing six-variant-per-kind E2E |
+| Rich creation (goal, quantity, planned Session, agenda, protection and initial Life Area) | POST payload plus canonical current/future day readback | Existing daily rich E2E |
+| Single recurrence instance edit without leaking to clean sibling | Changed title and local Life Area only on selected occurrence | Existing E2E, now extended |
+| Selected-and-following Activity/Event with *new* Life Area and selected color | One atomic area, selected and later cards use it, earlier exception unchanged | New E2E + PostgreSQL test |
+| Assigned area recolor versus private item color | Color affordance, explicit global side effect, revision CAS, cancellation no write | New E2E affordance + PostgreSQL acceptance |
+| Preview rejected, stale revision, replay and forced transaction rollback | No orphan area, no half-written series, no second area on replay | New PostgreSQL integration |
+| One-off → recurrence via Edit and first identity retained | First item unchanged, subsequent instances newly materialized and persisted | Existing E2E |
+| Advanced *Edit* addition/removal/reordering of multiple intervals, Sessions, goals, agenda, reminders, locks, participation followed by faithful duplication | Before/after snapshot diff for every field, no extra rows, replay idempotence, reload verification | **Further matrix expansion required** |
+| Multiple overlapping edits on the same series, protected exceptions, cross-day/year/DST | Exact selected boundary, historic exceptions preserved, never retroactive | Existing focused integrations; further realistic E2E needed |
+
+**Next gate:** owner runs Ruff formatting and checks, frontend formatting/lint/typecheck, the new PostgreSQL integration, and focused 3-browser recurring Activity/Event E2E. Diagnose any actual failures and add reproduction before rerunning the 27-group parallel gate. No performance conclusions from an incomplete green gate.
