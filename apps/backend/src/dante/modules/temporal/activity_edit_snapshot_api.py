@@ -200,9 +200,15 @@ SELECT jsonb_build_object(
                     CASE p.role_code WHEN 'envelope' THEN 0 WHEN 'interval' THEN 1
                          WHEN 'planned' THEN 2 ELSE 3 END,
                     p.presentation_order,p.schedule_ref),'[]'::jsonb) FROM placements AS p),
-    'objectives',(SELECT COALESCE(jsonb_agg(to_jsonb(o) ORDER BY o.presentation_order,o.objective_ref),
+    'objectives',(SELECT COALESCE(jsonb_agg(
+                         to_jsonb(o) || jsonb_build_object(
+                             'verification_mode', verification.mode_code,
+                             'verification_revision', verification.verification_revision)
+                         ORDER BY o.presentation_order,o.objective_ref),
                          '[]'::jsonb)
-                    FROM dante.list_self_temporal_objectives(:actor,'activity',:activity) AS o),
+                    FROM dante.list_self_temporal_objectives(:actor,'activity',:activity) AS o
+                    CROSS JOIN LATERAL dante.get_self_objective_verification(
+                        :actor,o.objective_ref) AS verification),
     'placement_lock',(SELECT to_jsonb(l) FROM primary_schedule AS p
                        CROSS JOIN LATERAL dante.get_self_schedule_placement_lock(:actor,p.schedule_ref) AS l),
     'reminder',(SELECT to_jsonb(r) FROM primary_schedule AS p
