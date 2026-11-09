@@ -134,10 +134,27 @@ export async function openHome(page: Page, date: string): Promise<void> {
     waitUntil: 'commit',
     timeout: 15_000,
   });
-  expect((await read).status()).toBe(200);
-  await expect(
-    page.locator('[data-temporal-read-state="ready"]'),
-  ).toBeVisible();
+  const response = await read;
+  expect(response.status(), 'canonical Timeline GET HTTP status').toBe(200);
+  try {
+    await expect(
+      page.locator('[data-temporal-read-state="ready"]'),
+    ).toBeVisible();
+  } catch (reason) {
+    // A 200 on the window request is not proof that the SPA successfully
+    // rendered it. Distinguish an unavailable Timeline from a slow/absent
+    // selector while retaining the original real-stack failure.
+    const readState = await page.locator('[data-temporal-read-state]')
+      .first().getAttribute('data-temporal-read-state').catch(() => null);
+    const alerts = await page.getByRole('alert')
+      .allTextContents().catch(() => []);
+    throw new Error(
+      'Timeline did not become ready after HTTP ' + response.status() +
+      ' for ' + date + '; readState=' + String(readState) +
+      '; alerts=' + JSON.stringify(alerts),
+      { cause: reason },
+    );
+  }
 }
 
 export async function reloadHome(page: Page, date: string): Promise<void> {
