@@ -72,6 +72,7 @@ import { RecurringSeriesEditor } from './recurring-series-editor';
 import { ExistingRecurrenceControl } from './existing-recurrence-control';
 import { UnsavedChangesDialog } from './unsaved-changes-dialog';
 import { TemporalDeleteDialog } from './temporal-delete-dialog';
+import { ObjectiveRecordingDeleteDialog } from './objective-recording-delete-dialog';
 import {
   EventScheduleEditor,
   eventScheduleDraftFromPlacement,
@@ -182,6 +183,8 @@ export function EventInspectorActions({
   >([]);
   const [correctingObjective, setCorrectingObjective] =
     useState<ObjectiveView | null>(null);
+  const [deletingObjective, setDeletingObjective] = useState<ObjectiveView | null>(null);
+  const [objectiveDeletePending, setObjectiveDeletePending] = useState(false);
   const [correctedValue, setCorrectedValue] = useState('');
   const [correctedBoolean, setCorrectedBoolean] = useState('true');
   const [correctedAssessment, setCorrectedAssessment] =
@@ -194,8 +197,6 @@ export function EventInspectorActions({
   const [realityMode, setRealityMode] = useState<RealityMode>('manual');
   const [removedObjectives, setRemovedObjectives] = useState<string[]>([]);
   const [objectiveError, setObjectiveError] = useState('');
-  const [inspectingObjective, setInspectingObjective] =
-    useState<ActivityObjectiveDraft | null>(null);
   const [areaChoice, setAreaChoice] = useState<EventLifeAreaChoice | null>(
     null,
   );
@@ -351,7 +352,6 @@ export function EventInspectorActions({
       setRealityMode(reality?.mode ?? 'manual');
       setRemovedObjectives([]);
       setObjectiveError('');
-      setInspectingObjective(null);
       setAreaChoice(area);
       setAreaSelection(
         context ? (effective.lifeAreaRef ?? '') : (area?.currentRef ?? ''),
@@ -482,7 +482,6 @@ export function EventInspectorActions({
     recurrenceOperation.current = null;
     recurrenceResume.current = null;
     setPlacementLockInitial(null);
-    setInspectingObjective(null);
     setCorrectingObjective(null);
     correctionOperation.current = null;
     setEditingProfile(false);
@@ -581,6 +580,63 @@ export function EventInspectorActions({
         );
       })
       .finally(() => setBusy(false));
+  };
+
+  const requestRecordedObjectiveDeletion = (objective: ObjectiveView) => {
+    if (busy || objectiveDeletePending || !objective.evaluationStateRef ||
+        !objective.observationRef) return;
+    if (
+      removedObjectives.length > 0 ||
+      objectiveRows.some((row) => objectiveChanged(row))
+    ) {
+      setObjectiveError(
+        'Salva o annulla le altre modifiche agli obiettivi prima di eliminare la registrazione.',
+      );
+      return;
+    }
+    setObjectiveError('');
+    setDeletingObjective(objective);
+  };
+
+  const confirmRecordedObjectiveDeletion = () => {
+    if (!deletingObjective?.evaluationStateRef || objectiveDeletePending) return;
+    const objective = deletingObjective;
+    const kind = recurringContext ? 'occurrence' : 'event';
+    const subjectRef = recurringContext?.occurrenceRef ?? eventRef;
+    setObjectiveDeletePending(true);
+    setBusy(true);
+    setObjectiveError('');
+    void objectiveSource
+      .deleteRecordedResult(
+        objective.objectiveRef, objective.evaluationStateRef!,
+      )
+      .then(() => objectiveSource.listObjectives(kind, subjectRef))
+      .then((fresh) => {
+        setRecordedObjectives(fresh);
+        setObjectiveRows(fresh.map(existingObjectiveDraft));
+        setRemovedObjectives([]);
+        setCorrectingObjective(null);
+        setDeletingObjective(null);
+        correctionOperation.current = null;
+      })
+      .catch((reason: unknown) => {
+        setDeletingObjective(null);
+        setObjectiveError(
+          reason instanceof Error
+            ? reason.message
+            : 'Impossibile eliminare la registrazione. Riapri Modifica.',
+        );
+        void objectiveSource.listObjectives(kind, subjectRef)
+          .then((fresh) => {
+            setRecordedObjectives(fresh);
+            setObjectiveRows(fresh.map(existingObjectiveDraft));
+          })
+          .catch(() => {});
+      })
+      .finally(() => {
+        setBusy(false);
+        setObjectiveDeletePending(false);
+      });
   };
 
   const prepareObjectives =
@@ -1608,8 +1664,13 @@ export function EventInspectorActions({
                           row={row}
                           index={index}
                           total={visible.length}
-                          disabled={busy}
-                          onInspect={() => setInspectingObjective(row)}
+                          disabled={busy || objectiveDeletePending}
+                          onCorrectRecorded={() => {
+                            if (row.original) beginResultCorrection(row.original);
+                          }}
+                          onDeleteRecorded={() => {
+                            if (row.original) requestRecordedObjectiveDeletion(row.original);
+                          }}
                           onChange={(patch) => {
                             setObjectiveRows((rows) =>
                               rows.map((item) =>
@@ -1664,14 +1725,6 @@ export function EventInspectorActions({
                           }}
                         />
                       ))}
-                    {inspectingObjective ? (
-                      <p role="status">
-                        {inspectingObjective.label}:{' '}
-                        {inspectingObjective.original?.observationRef
-                          ? 'risultato registrato; lo storico resta conservato.'
-                          : 'nessun risultato registrato.'}
-                      </p>
-                    ) : null}
                     <div className="temporal-create-objectives__root-actions">
                       <button
                         type="button"
@@ -1692,20 +1745,6 @@ export function EventInspectorActions({
                         ＋ Aggiungi obiettivo
                       </button>
                     </div>
-                    {recordedObjectives
-                      .filter((objective) => objective.observationRef)
-                      .map((objective) => (
-                        <div key={objective.objectiveRef}>
-                          <span>{objective.label} · risultato registrato</span>
-                          <button
-                            type="button"
-                            disabled={busy}
-                            onClick={() => beginResultCorrection(objective)}
-                          >
-                            Correggi risultato
-                          </button>
-                        </div>
-                      ))}
                     {correctingObjective ? (
                       <fieldset disabled={busy}>
                         <legend>
@@ -1873,7 +1912,6 @@ export function EventInspectorActions({
                 setRecurrenceSelected(false);
                 recurrenceOperation.current = null;
                 recurrenceResume.current = null;
-                setInspectingObjective(null);
                 setEditingProfile(false);
               }}
               onContinue={() => setConfirmingDiscard(false)}
@@ -1917,6 +1955,14 @@ export function EventInspectorActions({
             setDeletePreviews(null);
             setError('');
           }}
+        />
+      ) : null}
+      {deletingObjective ? (
+        <ObjectiveRecordingDeleteDialog
+          objectiveLabel={deletingObjective.label}
+          busy={objectiveDeletePending}
+          onConfirm={confirmRecordedObjectiveDeletion}
+          onCancel={() => setDeletingObjective(null)}
         />
       ) : null}
       {error && !deletePreviews ? <p role="alert">{error}</p> : null}
