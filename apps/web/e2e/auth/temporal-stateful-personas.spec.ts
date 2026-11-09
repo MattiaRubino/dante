@@ -400,8 +400,17 @@ async function deleteOneOff(
   await expect(confirm).toBeVisible();
   await confirm.getByRole('button', { name: 'Annulla' }).click();
   await expect(confirm).toHaveCount(0);
-  await assertCard(page, day, item.title);
-  await inspector.getByRole('button', { name: action, exact: true }).click();
+  // assertCard performs full Home navigation, which unmounts the inspector
+  // that owned the first (cancelled) delete. Open a NEW inspector before
+  // attempting the second, destructive confirmation.
+  const retained = await assertCard(page, day, item.title);
+  await clickCard(retained, item.title);
+  await expect(inspector).toBeVisible({ timeout: 10_000 });
+  const secondDelete = inspector.getByRole('button', {
+    name: action, exact: true,
+  });
+  await expect(secondDelete).toBeVisible({ timeout: 10_000 });
+  await secondDelete.click({ timeout: 10_000 });
   const removed = page.waitForResponse((response) =>
     response.request().method() === 'DELETE' &&
     response.url().includes(item.sourceRef),
