@@ -167,7 +167,11 @@ async function setStartDate(composer: Locator, date: string): Promise<void> {
   await expect(trigger).toHaveAttribute('data-temporal-date', date);
 }
 
-async function setClock(composer: Locator, value: string): Promise<void> {
+async function setClock(
+  composer: Locator,
+  value: string,
+  startDate: string,
+): Promise<void> {
   const trigger = composer.getByRole('button', { name: /^Fuso orario:/ });
   if (!(await trigger.getAttribute('aria-label'))?.includes('Europe/Rome')) {
     await trigger.click();
@@ -190,11 +194,11 @@ async function setClock(composer: Locator, value: string): Promise<void> {
   // while their hours/minutes are entered separately. The journey requests
   // a 40-minute intraday placement: author its end *date* explicitly.
   const endDate = composer.getByRole('button', { name: /^Data fine:/ });
-  if ((await endDate.getAttribute('data-temporal-date')) !== options.date) {
+  if ((await endDate.getAttribute('data-temporal-date')) !== startDate) {
     await endDate.click();
     const picker = composer.getByRole('dialog', { name: 'Data fine' });
     const day = picker.locator(
-      'button[data-temporal-date="' + options.date + '"]',
+      'button[data-temporal-date="' + startDate + '"]',
     );
     for (let offset = 0; offset < 12; offset += 1) {
       if (await day.isVisible() && await day.isEnabled()) break;
@@ -203,7 +207,14 @@ async function setClock(composer: Locator, value: string): Promise<void> {
     await expect(day).toBeEnabled();
     await day.click();
   }
-  await expect(endDate).toHaveAttribute('data-temporal-date', options.date);
+  await expect(endDate).toHaveAttribute('data-temporal-date', startDate);
+  await expect(
+    composer.getByRole('textbox', { name: 'Fine: ore' }),
+  ).toHaveValue(String(end.hour).padStart(2, '0'));
+  await expect(
+    composer.getByRole('textbox', { name: 'Fine: minuti' }),
+  ).toHaveValue(String(end.minute).padStart(2, '0'));
+
 }
 
 export async function configureCreate(
@@ -219,7 +230,9 @@ export async function configureCreate(
     await composer.getByRole('radio', { name: 'Tutto il giorno' }).click();
   }
   await setStartDate(composer, options.date);
-  if (!options.allDay) await setClock(composer, options.clock ?? '09:10');
+  if (!options.allDay) {
+    await setClock(composer, options.clock ?? '09:10', options.date);
+  }
   const advanced =
     options.recurrence !== undefined ||
     options.objective !== undefined ||
