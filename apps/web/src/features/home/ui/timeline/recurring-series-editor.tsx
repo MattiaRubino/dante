@@ -1790,7 +1790,7 @@ export function RecurringSeriesEditor({
                         ])
                       }
                     >
-                      ＋ Aggiungi obiettivo
+                      + Obiettivo
                     </button>
                   </div>
                 </div>
