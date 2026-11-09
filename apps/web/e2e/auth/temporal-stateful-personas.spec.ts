@@ -118,13 +118,33 @@ async function saveOneOffEditor(
   const endpoint = '/api/v1/temporal/' +
     (item.kind === 'event' ? 'events/' : 'activities/') +
     item.sourceRef + '/atomic-edit';
-  const [accepted] = await Promise.all([
-    page.waitForResponse((response) =>
-      response.request().method() === 'PUT' &&
-      response.url().endsWith(endpoint),
-    { timeout: 30_000 }),
-    editor.getByRole('button', { name: 'Salva modifiche' }).click(),
-  ]);
+  let accepted: Awaited<ReturnType<Page['waitForResponse']>>;
+  try {
+    [accepted] = await Promise.all([
+      page.waitForResponse((response) =>
+        response.request().method() === 'PUT' &&
+        response.url().endsWith(endpoint),
+      { timeout: 15_000 }),
+      editor.getByRole('button', { name: 'Salva modifiche' }).click(),
+    ]);
+  } catch (reason) {
+    // A rejected client-side edit never sends PUT. Report the real field
+    // errors rather than hiding them behind a generic 30-second wait.
+    const alerts = await editor.locator('[role="alert"]')
+      .allTextContents().catch(() => []);
+    const invalidFields = await editor.locator('[aria-invalid="true"]')
+      .evaluateAll((elements) => elements.map((node) =>
+        node.getAttribute('aria-label') ??
+        node.getAttribute('name') ??
+        node.getAttribute('placeholder') ?? 'unknown',
+      )).catch(() => []);
+    throw new Error(
+      'Atomic Edit did not complete for ' + item.kind +
+      ' ' + item.sourceRef + '; alerts=' + JSON.stringify(alerts) +
+      '; invalidFields=' + JSON.stringify(invalidFields),
+      { cause: reason },
+    );
+  }
   expect(accepted.status(), 'atomic Edit must succeed before canonical read: ' +
     endpoint + ' — ' + await accepted.text()).toBe(200);
   if (item.kind === 'event') {
