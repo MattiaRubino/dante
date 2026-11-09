@@ -276,6 +276,90 @@ test.describe('Timeline — real user Activity/Event lifecycle matrix', () => {
             scheduleOnDay(page, day, duplicate.scheduleRef!),
           ).toHaveCount(1);
           await assertPersistedTitle(page, duplicate, copiedTitle);
+
+          // A second, richer one-off on the same real account: changes to
+          // the title must not discard the initial Life Area, objective,
+          // planned Session / Event agenda before or after duplication.
+          const richTitle = uniqueTitle(kind + ' avanzato');
+          const richArea = uniqueTitle(kind + ' area');
+          const goal = uniqueTitle('obiettivo conservato');
+          const sessionName = uniqueTitle('sessione conservata');
+          const agendaName = uniqueTitle('scaletta conservata');
+          const rich = await create(page, {
+            kind,
+            title: richTitle,
+            date: day,
+            clock: kind === 'event' ? '12:15' : '13:10',
+            lifeArea: richArea,
+            objective: goal,
+            ...(kind === 'activity'
+              ? { plannedSession: sessionName, objectiveQuantity: 4 }
+              : { agenda: agendaName }),
+          });
+          await openHome(page, day);
+          const richInspector = await openInspector(page, rich);
+          const revisedRichTitle = richTitle + ' revisionato';
+          await (await titleEditor(richInspector, kind)).fill(revisedRichTitle);
+          await richInspector
+            .getByRole('button', { name: 'Salva modifiche' })
+            .click();
+          await assertPersistedTitle(page, rich, revisedRichTitle);
+          await openHome(page, day);
+
+          const richEdited = { ...rich, title: revisedRichTitle };
+          const richCopiedTitle = uniqueTitle(kind + ' copia avanzata');
+          const richCopy = await duplicateFromInspector(
+            page,
+            richEdited,
+            richCopiedTitle,
+          );
+          await openHome(page, day);
+          await assertPersistedTitle(page, richCopy, richCopiedTitle);
+          const readRich = async (item: CreatedItem) =>
+            (await serverRead(
+              page,
+              kind === 'activity'
+                ? '/api/v1/temporal/activities/' +
+                    item.sourceRef +
+                    '/edit-snapshot'
+                : '/api/v1/temporal/events/' + item.sourceRef,
+            )) as Record<string, unknown>;
+          const richBefore = await readRich(richEdited);
+          const richAfter = await readRich(richCopy);
+          expect(richBefore.life_area_ref).toEqual(
+            expect.stringMatching(/^[\da-f-]{36}$/i),
+          );
+          expect(richAfter.life_area_ref).toBe(richBefore.life_area_ref);
+          if (kind === 'event') {
+            expect(richBefore.agenda_parts).toContain(agendaName);
+            expect(richAfter.agenda_parts).toEqual(richBefore.agenda_parts);
+          } else {
+            const goals = (row: Record<string, unknown>) =>
+              ((row.objectives ?? []) as Record<string, unknown>[]).map(
+                (item) => [item.label, item.result_kind, item.target_value],
+              );
+            const planned = (row: Record<string, unknown>) =>
+              ((row.schedules ?? []) as Record<string, unknown>[])
+                .filter((schedule) => schedule.role_code === 'planned')
+                .map((schedule) => schedule.name);
+            expect(goals(richBefore)).toContainEqual(
+              expect.arrayContaining([goal, 'quantity']),
+            );
+            expect(goals(richAfter)).toEqual(goals(richBefore));
+            expect(planned(richBefore)).toContain(sessionName);
+            expect(planned(richAfter)).toEqual(planned(richBefore));
+          }
+          await deleteOneOff(page, richEdited);
+          await openHome(page, day);
+          await expect(
+            page.locator('[data-timeline-event="' + rich.scheduleRef + '"]'),
+          ).toHaveCount(0);
+          await expect(
+            page.locator('[data-timeline-event="' + richCopy.scheduleRef + '"]'),
+          ).toHaveCount(1);
+          expect((await readRich(richCopy)).life_area_ref).toBe(
+            richBefore.life_area_ref,
+          );
         } finally {
           await user.close();
         }
