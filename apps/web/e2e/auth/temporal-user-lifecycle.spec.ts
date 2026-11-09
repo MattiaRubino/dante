@@ -924,11 +924,23 @@ test.describe('Timeline — real user Activity/Event lifecycle matrix', () => {
       await openHome(page, dateAfter(day, 1));
       await expect(onDay(page, dateAfter(day, 1), localTitle)).toHaveCount(0);
       // The sibling inherits the original source state, not the local area.
+      // An unassigned sibling has no .timeline-event-card__meta element:
+      // assert against the existing card, not an optional child locator.
+      const untouchedSibling = onDay(page, dateAfter(day, 1), title);
+      await expect(untouchedSibling).toHaveCount(1);
       await expect(
-        onDay(page, dateAfter(day, 1), title).locator(
-          '.timeline-event-card__meta',
-        ),
-      ).not.toContainText(localAreaName);
+        untouchedSibling.getByRole('button', { name: title, exact: true }),
+      ).toBeVisible();
+      await expect(untouchedSibling).not.toContainText(localAreaName);
+      await expect
+        .poll(() =>
+          untouchedSibling.evaluate((node) =>
+            (node as HTMLElement).style.getPropertyValue(
+              '--timeline-group-color',
+            ),
+          ),
+        )
+        .not.toBe('#FFD600');
       await openHome(page, dateAfter(day, 2));
       await expect(onDay(page, dateAfter(day, 2), localTitle)).toHaveCount(0);
       await openHome(page, dateAfter(day, 1));
