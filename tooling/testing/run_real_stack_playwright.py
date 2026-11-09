@@ -16,8 +16,10 @@ import re
 import socket
 import subprocess
 import sys
+import tarfile
 import tempfile
 import time
+import zipfile
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from dataclasses import asdict, dataclass
 from pathlib import Path
@@ -164,6 +166,80 @@ def _run_project(
     )
 
 
+def _write_diagnostic_archive(directory: Path) -> Path:
+    """Package the actual Playwright evidence automatically and compactly.
+
+    Keep each original trace.zip untouched for the local trace viewer.
+    Diagnostic copies omit only repetitive JPEG screencast frames; action
+    history, network requests and snapshots remain for failure analysis.
+    """
+    reduced = directory / "diagnostic-traces"
+    inventory: list[dict[str, object]] = []
+    for source in sorted(directory.glob("*/test-results/**/trace.zip")):
+        relative = source.relative_to(directory)
+        target = reduced / relative.with_name("trace-diagnostic.zip")
+        target.parent.mkdir(parents=True, exist_ok=True)
+        skipped = 0
+        bytes_skipped = 0
+        try:
+            with zipfile.ZipFile(source) as raw, zipfile.ZipFile(
+                target, "w", compression=zipfile.ZIP_DEFLATED, compresslevel=1,
+            ) as slim:
+                for entry in raw.infolist():
+                    if entry.is_dir():
+                        continue
+                    if (
+                        entry.filename.startswith("resources/page@")
+                        and entry.filename.endswith((".jpeg", ".jpg"))
+                    ):
+                        skipped += 1
+                        bytes_skipped += entry.file_size
+                        continue
+                    slim.writestr(entry, raw.read(entry))
+        except (OSError, zipfile.BadZipFile, RuntimeError) as exc:
+            target.unlink(missing_ok=True)
+            target.with_suffix(".error.txt").write_text(
+                f"{type(exc).__name__}: {exc}\\n", encoding="utf-8",
+            )
+        inventory.append({
+            "original": relative.as_posix(),
+            "original_bytes": source.stat().st_size,
+            "diagnostic": (
+                target.relative_to(directory).as_posix()
+                if target.exists() else None
+            ),
+            "omitted_screencast_frames": skipped,
+            "omitted_screencast_bytes": bytes_skipped,
+        })
+    (directory / "diagnostic-manifest.json").write_text(
+        json.dumps({
+            "format": "dante-e2e-compact-v1",
+            "original_traces_retained_on_disk": True,
+            "traces": inventory,
+        }, indent=2) + "\\n", encoding="utf-8",
+    )
+    names = {
+        "summary.json", "diagnostic-manifest.json", "playwright.log",
+        "junit.xml", "web-build.log", "orchestrator-error.txt",
+        "report-error.txt", "error-context.md", ".last-run.json",
+        "trace-diagnostic.zip", "trace-diagnostic.error.txt",
+    }
+    files = sorted(
+        p for p in directory.rglob("*")
+        if p.is_file() and (
+            p.name in names or p.name.endswith(".inventory.log")
+        )
+    )
+    archive = directory / "E2E_DIAGNOSTICS.tar.gz"
+    with tarfile.open(archive, "w:gz", compresslevel=1) as output:
+        for file in files:
+            output.add(
+                file, arcname=file.relative_to(directory).as_posix(),
+                recursive=False,
+            )
+    return archive
+
+
 def _self_test() -> None:
     import io
 
@@ -204,7 +280,35 @@ def _self_test() -> None:
     assert _selector(r"V2-P3-(E01|A01)") == (
         "--grep", r"V2-P3-(E01|A01)",
     )
-    print("PASS: browser shard partition, inventory parity and skip guard")
+    with tempfile.TemporaryDirectory(prefix="dante-e2e-archive-test.") as temp:
+        root = Path(temp)
+        (root / "summary.json").write_text('{"exit_code": 1}\\n')
+        failure = root / "chromium" / "test-results" / "failed-test"
+        failure.mkdir(parents=True)
+        (root / "chromium" / "playwright.log").write_text("FAILED\\n")
+        (failure / "error-context.md").write_text("button absent\\n")
+        with zipfile.ZipFile(failure / "trace.zip", "w") as trace:
+            trace.writestr("0-trace.trace", "action=click\\n")
+            trace.writestr("0-trace.network", "status=200\\n")
+            trace.writestr("resources/page@100.jpeg", b"video-frame")
+        archive = _write_diagnostic_archive(root)
+        assert archive.exists()
+        with tarfile.open(archive, "r:gz") as bundle:
+            member_names = set(bundle.getnames())
+            reduced_name = (
+                "diagnostic-traces/chromium/test-results/"
+                "failed-test/trace-diagnostic.zip"
+            )
+            assert {"summary.json", "chromium/playwright.log", reduced_name} <= member_names
+            assert "chromium/test-results/failed-test/error-context.md" in member_names
+            member = bundle.extractfile(reduced_name)
+            assert member is not None
+            with zipfile.ZipFile(io.BytesIO(member.read())) as reduced_zip:
+                assert "0-trace.trace" in reduced_zip.namelist()
+                assert "0-trace.network" in reduced_zip.namelist()
+                assert "resources/page@100.jpeg" not in reduced_zip.namelist()
+        assert (failure / "trace.zip").exists()
+    print("PASS: browser sharding, coverage, and auto-packaged E2E diagnostics")
 
 
 def main() -> int:
@@ -316,6 +420,17 @@ def main() -> int:
         )
         print(f"REALSTACK ERROR: {exc}", file=sys.stderr, flush=True)
         return 2
+    finally:
+        # Guaranteed diagnostics on success, assertion failures or startup
+        # errors. Full-size original traces stay in project directories.
+        try:
+            archive = _write_diagnostic_archive(directory)
+            print(f"REALSTACK_DIAGNOSTICS={archive}", flush=True)
+        except (OSError, RuntimeError, zipfile.BadZipFile) as exc:
+            print(
+                f"REALSTACK DIAGNOSTICS FAILED: {exc}",
+                file=sys.stderr, flush=True,
+            )
 
 
 if __name__ == "__main__":
