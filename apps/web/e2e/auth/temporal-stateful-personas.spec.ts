@@ -98,6 +98,21 @@ async function editOneOff(
   page: Page, day: string, authored: AuthoredPersona,
 ): Promise<AuthoredPersona> {
   const { item, truth } = authored;
+  const goalEndpoint =
+    '/api/v1/temporal/' +
+    (item.kind === 'event' ? 'events/' : 'activities/') +
+    item.sourceRef + '/objectives';
+  const originalGoals = await serverRead(page, goalEndpoint) as
+    readonly Record<string, unknown>[];
+  expect(originalGoals).toHaveLength(truth.objectives.length);
+  const beforePlanned = item.kind === 'activity'
+    ? ((await serverRead(
+        page, '/api/v1/temporal/activities/' + item.sourceRef + '/edit-snapshot',
+      )) as Record<string, unknown>).schedules as Record<string, unknown>[]
+    : [];
+  const originalPlannedRefs = beforePlanned.filter((row) =>
+    row.role_code === 'planned',
+  ).map((row) => String(row.schedule_ref));
   const editor = await openEdit(page, day, truth.title);
   const newTitle = truth.title + ' revisionato';
   const newDescription =
@@ -184,6 +199,39 @@ async function editOneOff(
   } satisfies AuthoredPersona;
   await assertCard(page, day, newTitle);
   await assertOneOffTruth(page, updated);
+  const afterGoals = await serverRead(page, goalEndpoint) as
+    readonly Record<string, unknown>[];
+  const afterRefs = afterGoals.map((row) => String(row.objective_ref));
+  const oldRefs = originalGoals.map((row) => String(row.objective_ref));
+  for (const survived of oldRefs.slice(0, -1)) {
+    expect(afterRefs, 'untouched Objective identity survives Edit')
+      .toContain(survived);
+  }
+  expect(afterRefs, 'removed Objective never resurrects')
+    .not.toContain(oldRefs.at(-1));
+  expect(
+    afterRefs.filter((ref) => !oldRefs.includes(ref)),
+    'only one genuinely new Objective identity',
+  ).toHaveLength(1);
+  if (item.kind === 'activity') {
+    const afterSnapshot = await serverRead(
+      page, '/api/v1/temporal/activities/' + item.sourceRef + '/edit-snapshot',
+    ) as Record<string, unknown>;
+    const afterSchedules = afterSnapshot.schedules as Record<string, unknown>[];
+    const afterPlannedRefs = afterSchedules.filter((row) =>
+      row.role_code === 'planned',
+    ).map((row) => String(row.schedule_ref));
+    for (const survived of originalPlannedRefs.slice(0, -1)) {
+      expect(afterPlannedRefs, 'unchanged planned Session identity')
+        .toContain(survived);
+    }
+    expect(afterPlannedRefs, 'removed planned Session stays deleted')
+      .not.toContain(originalPlannedRefs.at(-1));
+    expect(
+      afterPlannedRefs.filter((ref) => !originalPlannedRefs.includes(ref)),
+      'only one replacement planned Session identity',
+    ).toHaveLength(1);
+  }
   return updated;
 }
 
