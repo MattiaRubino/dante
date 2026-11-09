@@ -1123,7 +1123,8 @@ test.describe('Temporal v2 — real stateful user personas', () => {
             await assertConvertedDayHasNoDuplicatePlacements(
               page, day, title, firstTitle, persona,
             );
-            await expect(onDay(page, day, title)).toHaveCount(0);
+            // A substring DOM selector would also match firstTitle;
+            // the canonical exact-title assertion above is authoritative.
             await assertCard(page, dateAfter(day, 1), title);
             await assertConvertedDayHasNoDuplicatePlacements(
               page, dateAfter(day, 1), title, title, persona,
