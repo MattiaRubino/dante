@@ -954,7 +954,10 @@ test.describe('Temporal v2 — real stateful user personas', () => {
         const finalDay = recurrence.repeatCount === null
           ? null
           : Array.from({ length: recurrence.repeatCount - 1 })
-            .reduce((date) => nextOccurrence(date, recurrence), day);
+            .reduce<string>(
+              (date) => nextOccurrence(date, recurrence),
+              day,
+            );
         const finalTitle = title + ' ultima istanza';
         if (finalDay) {
           await test.step(persona.id + '/2B Final occurrence is editable and bounded', async () => {
