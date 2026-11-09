@@ -305,8 +305,14 @@ test.describe('Timeline B03-E real-stack Event closure', () => {
         expected_fingerprint: expect.stringMatching(/^[a-f0-9]{64}$/),
       });
       await expect(inspector).toHaveCount(0);
+      // Firefox may abort a reload immediately after the destructive
+      // Inspector transition (NS_ERROR_FAILURE). A committed navigation
+      // plus the canonical HTTP read still proves reload persistence.
       const persistedRead = waitForTimelineRead(page);
-      await page.reload();
+      await page.goto(`/home?date=${day}`, {
+        waitUntil: 'commit',
+        timeout: 15_000,
+      });
       const window = (await (await persistedRead).json()) as
         | { kind: 'empty' }
         | { kind: 'window'; items: Array<{ schedule_ref?: string }> };
@@ -316,6 +322,9 @@ test.describe('Timeline B03-E real-stack Event closure', () => {
           window.items.some((item) => item.schedule_ref === scheduleRef),
         ).toBe(false);
       }
+      await expect(
+        page.locator('[data-temporal-read-state="ready"]'),
+      ).toBeVisible();
       await expect(card).toHaveCount(0);
     } finally {
       await context.close();

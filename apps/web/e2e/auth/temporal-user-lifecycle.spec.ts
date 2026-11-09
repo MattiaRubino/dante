@@ -901,9 +901,22 @@ test.describe('Timeline — real user Activity/Event lifecycle matrix', () => {
         name: 'Controlla prima di salvare',
       });
       await expect(review).toBeVisible();
+      // WebKit can cancel an in-flight series revision if the journey
+      // navigates immediately after confirmation. A visible review alone
+      // does not prove the authoritative write was accepted.
+      const acceptedSeries = page.waitForResponse(
+        (response) =>
+          response.url().includes('/api/v1/temporal/occurrences/') &&
+          response.url().endsWith('/series-edit') &&
+          response.request().method() === 'POST',
+        { timeout: 25_000 },
+      );
       await review
         .getByRole('button', { name: 'Conferma salvataggio' })
         .click();
+      const seriesResponse = await acceptedSeries;
+      expect(seriesResponse.status(), 'Event series revision HTTP status').toBe(200);
+      await expect(review).toHaveCount(0);
 
       await openHome(page, dateAfter(day, 1));
       const current = onDay(page, dateAfter(day, 1), seriesTitle);

@@ -65,7 +65,14 @@ describe('Existing Event recurrence Start response', () => {
     expect(init?.method).toBe('POST');
     expect(init?.credentials).toBe('same-origin');
     expect(new Headers(init?.headers).get('X-Dante-CSRF')).toBe('csrf-test');
-    const body = JSON.parse(String(init?.body)) as Record<string, unknown>;
+    // BodyInit also permits Blob/FormData; never silently stringify one
+    // into "[object Object]" when asserting the authored JSON command.
+    const requestBody: unknown = init?.body;
+    expect(typeof requestBody).toBe('string');
+    if (typeof requestBody !== 'string') {
+      throw new Error('The recurrence command must send a JSON string body.');
+    }
+    const body: unknown = JSON.parse(requestBody);
     expect(body).toMatchObject({
       operation_id: 'conversion:operation:1',
       expected_profile_revision: 3,

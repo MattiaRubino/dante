@@ -199,7 +199,7 @@ test('Activity Edit keeps quantity fields on one row at desktop width', async ({
     const root = document.createElement('div');
     root.style.width = '680px';
     root.innerHTML = `<div class="temporal-create-objective is-edit">
-      <div class="temporal-create-objective__definition">
+      <div class="temporal-create-objective__definition" data-result-kind="quantity">
         <label><span>Risultato</span><select><option>Quantità</option></select></label>
         <label><span>Regola</span><select><option>≥</option></select></label>
         <label><span>Target</span><input type="number" /></label>

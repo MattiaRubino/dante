@@ -271,7 +271,7 @@ describe('Event Inspector actions', () => {
     ).toBe(true);
     const save = screen.getByRole('button', {
       name: 'Salva modifiche',
-    }) as HTMLButtonElement;
+    });
     // The editor's data sources load asynchronously. The draft may be
     // visible before the owning form has exited its loading/busy state.
     await waitFor(() => expect(save.disabled).toBe(false));
@@ -780,16 +780,16 @@ describe('Event Inspector actions', () => {
       new Headers(areaRequest?.[1]?.headers).has('X-Dante-Time-Zone'),
     ).toBe(true);
     fireEvent.click(screen.getByRole('button', { name: 'Salva modifiche' }));
-    await waitFor(() =>
-      expect(reviewSeries).toHaveBeenCalledWith(
-        expect.objectContaining({
-          selectedRef: occurrenceRef,
-          scope: 'from_next',
-          profilePatch: { title: 'Nuova conferenza' },
-          structure: expect.objectContaining({ placement_protected: true }),
-        }),
-      ),
-    );
+    await waitFor(() => {
+      expect(reviewSeries).toHaveBeenCalled();
+      const submitted: unknown = reviewSeries.mock.calls.at(-1)?.[0];
+      expect(submitted).toMatchObject({
+        selectedRef: occurrenceRef,
+        scope: 'from_next',
+        profilePatch: { title: 'Nuova conferenza' },
+        structure: { placement_protected: true },
+      });
+    });
     fireEvent.click(
       await screen.findByRole('button', { name: 'Conferma salvataggio' }),
     );
@@ -2423,15 +2423,15 @@ describe('Event Inspector actions', () => {
     expect(acceptSeries).not.toHaveBeenCalled();
 
     fireEvent.click(screen.getByRole('button', { name: 'Salva modifiche' }));
-    await waitFor(() =>
-      expect(reviewSeries).toHaveBeenCalledWith(
-        expect.objectContaining({
-          selectedRef: occurrenceRef,
-          scope: 'this_and_following',
-          structure: expect.objectContaining({ placement_protected: true }),
-        }),
-      ),
-    );
+    await waitFor(() => {
+      expect(reviewSeries).toHaveBeenCalled();
+      const submitted: unknown = reviewSeries.mock.calls.at(-1)?.[0];
+      expect(submitted).toMatchObject({
+        selectedRef: occurrenceRef,
+        scope: 'this_and_following',
+        structure: { placement_protected: true },
+      });
+    });
     const confirmation = await screen.findByRole('dialog', {
       name: 'Controlla prima di salvare',
     });
