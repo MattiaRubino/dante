@@ -620,6 +620,29 @@ export function createRemoteRealityObjectiveDataSource(
       }
     },
 
+    async deleteRecordedResult(
+      objectiveRef: string,
+      expectedEvaluationStateRef: string,
+    ): Promise<number> {
+      const row = record(
+        await send(
+          `/api/v1/temporal/objectives/${encodeURIComponent(objectiveRef)}/delete-recording`,
+          'POST',
+          { expected_evaluation_state_ref: expectedEvaluationStateRef },
+        ),
+      );
+      if (
+        row.objective_ref !== objectiveRef ||
+        typeof row.removed_observations !== 'number' ||
+        !Number.isSafeInteger(row.removed_observations) ||
+        row.removed_observations < 1
+      ) {
+        throw new Error('Eliminazione registrazione non coerente.');
+      }
+      invalidateTemporalTimelineRead();
+      return row.removed_observations;
+    },
+
     async correctResult(
       objectiveRef: string,
       command: Readonly<{
