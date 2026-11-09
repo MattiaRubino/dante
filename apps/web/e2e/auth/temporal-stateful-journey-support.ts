@@ -132,7 +132,7 @@ export async function seedExistingArea(
   const area = await created.json() as {
     life_area_ref: string; revision: number;
   };
-  const appearance = await page.request.patch(
+  const appearance = await page.request.put(
     '/api/v1/temporal/life-areas/' + area.life_area_ref + '/appearance',
     {
       headers: { ...TZ, 'X-Dante-CSRF': csrf },
