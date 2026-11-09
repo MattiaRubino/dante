@@ -11,7 +11,7 @@ import {
 } from '@playwright/test';
 
 import {
-  create, dateAfter, openHome, scenarioDate, serverRead, submitCreate,
+  dateAfter, openHome, scenarioDate, serverRead, submitCreate,
   uniqueTitle, type CreatedItem,
 } from './temporal-user-journey-support';
 import {
@@ -249,17 +249,94 @@ async function occurrence(
   return matching[0]!;
 }
 
+async function assertRecurringTruth(
+  page: Page, day: string, sourceRef: string,
+  truth: PersonaTruth, persona: PersonaCase,
+): Promise<void> {
+  const current = await occurrence(page, day, sourceRef);
+  const ref = String(current.occurrence_ref);
+  const loaded = await serverRead(
+    page,
+    '/api/v1/temporal/occurrences/' + ref + '/series-edit-source',
+  ) as Record<string, unknown>;
+  expect(loaded.source_native_ref).toBe(sourceRef);
+  const structure = loaded.structure_snapshot as Record<string, unknown>;
+  const template = persona.kind === 'activity'
+    ? structure.activity_template as Record<string, unknown>
+    : structure;
+  const objectives = template.objectives as Record<string, unknown>[];
+  expect(objectives.map((item) => item.label),
+    'persisted recurring Objective order for ' + persona.id)
+    .toEqual(truth.objectives.map((item) => item.label));
+  if (persona.kind === 'event') {
+    expect(structure.agenda_parts, 'persisted recurring Event agenda')
+      .toEqual(truth.agenda);
+    expect(structure.life_area_ref ?? null, 'persisted recurring Event Life Area')
+      .toBe(truth.areaRef);
+  } else {
+    const planned = template.planned_slices as Record<string, unknown>[];
+    expect(planned.map((item) => item.name),
+      'persisted recurring planned Sessions').toEqual(truth.sessions);
+    expect(template.life_area_ref ?? null,
+      'persisted recurring Activity Life Area').toBe(truth.areaRef);
+  }
+}
+
 async function seriesRevision(
   page: Page,
   day: string,
   originalTitle: string,
   nextTitle: string,
-): Promise<void> {
+  persona: PersonaCase,
+  originalTruth: PersonaTruth,
+): Promise<PersonaTruth> {
   const inspector = await openEdit(page, day, originalTitle);
   const scope = page.getByRole('dialog', { name: 'Modifica ricorrenza' });
   await scope.getByRole('button', { name: 'Questa e le successive' })
     .click();
   await inspector.getByRole('textbox', { name: 'Titolo' }).fill(nextTitle);
+  const changedGoals = [...originalTruth.objectives];
+  const revisedGoal = {
+    ...changedGoals[0]!,
+    label: changedGoals[0]!.label + ' serie',
+  };
+  await inspector.locator('[data-create-objective]').first()
+    .getByRole('textbox', { name: 'Obiettivo 1' })
+    .fill(revisedGoal.label);
+  changedGoals[0] = revisedGoal;
+  let agenda = [...originalTruth.agenda];
+  let sessions = [...originalTruth.sessions];
+  if (persona.kind === 'event') {
+    const revised = agenda[0]! + ' serie';
+    await inspector.getByRole('textbox', { name: 'Punto scaletta 1' })
+      .fill(revised);
+    agenda[0] = revised;
+    await inspector.getByRole('button', { name: 'Aggiungi punto alla scaletta' })
+      .click();
+    const appended = nextTitle + ' scaletta nuova';
+    await inspector.getByRole('textbox', {
+      name: 'Punto scaletta ' + (agenda.length + 1),
+    }).fill(appended);
+    agenda.push(appended);
+  } else {
+    const revised = sessions[0]! + ' serie';
+    await inspector.getByRole('textbox', { name: 'Nome Sessione 1' })
+      .fill(revised);
+    sessions[0] = revised;
+    await inspector.locator('.temporal-create-activity-tree__root-actions')
+      .getByRole('button', { name: 'Sessione', exact: true }).click();
+    const appended = nextTitle + ' Sessione nuova';
+    await inspector.getByRole('textbox', {
+      name: 'Nome Sessione ' + (sessions.length + 1),
+    }).fill(appended);
+    sessions.push(appended);
+  }
+  const areaName = nextTitle + ' nuova area';
+  await inspector.getByRole('textbox', { name: 'Area assegnata' })
+    .fill(areaName);
+  await expect(inspector.getByText(
+    'La nuova Life Area sarà creata insieme al salvataggio della serie.',
+  )).toBeVisible();
   await inspector.getByRole('button', { name: 'Salva modifiche' }).click();
   const confirmation = page.getByRole('dialog', {
     name: 'Controlla prima di salvare',
@@ -274,6 +351,20 @@ async function seriesRevision(
   const response = await accepted;
   expect(response.status(), await response.text()).toBe(200);
   await expect(confirmation).toHaveCount(0);
+  const areas = await serverRead(page, '/api/v1/temporal/life-areas')
+    as readonly Record<string, unknown>[];
+  const matching = areas.filter((area) => area.name === areaName);
+  expect(matching, 'exactly one transactional recurring Life Area')
+    .toHaveLength(1);
+  return {
+    ...originalTruth,
+    title: nextTitle,
+    areaName,
+    areaRef: String(matching[0]!.life_area_ref),
+    objectives: changedGoals,
+    agenda,
+    sessions,
+  };
 }
 
 async function localRevision(
@@ -370,9 +461,13 @@ test.describe('Temporal v2 — real stateful user personas', () => {
         );
         await test.step(persona.id + '/2 Initial and future readback', async () => {
           await assertCard(page, day, title);
-          await occurrence(page, day, authored.item.sourceRef);
+          await assertRecurringTruth(
+            page, day, authored.item.sourceRef, authored.truth, persona,
+          );
           await assertCard(page, future, title);
-          await occurrence(page, future, authored.item.sourceRef);
+          await assertRecurringTruth(
+            page, future, authored.item.sourceRef, authored.truth, persona,
+          );
         });
         const localTitle = title + ' solo questa';
         await test.step(persona.id + '/3 Local exception on initial instance', async () => {
@@ -382,11 +477,25 @@ test.describe('Temporal v2 — real stateful user personas', () => {
         });
         const revisedTitle = title + ' questa e successive';
         await test.step(persona.id + '/4 Following-series revision', async () => {
-          await seriesRevision(page, future, title, revisedTitle);
+          const revisedTruth = await seriesRevision(
+            page, future, title, revisedTitle, persona, authored.truth,
+          );
           await assertCard(page, future, revisedTitle);
-          await occurrence(page, future, authored.item.sourceRef);
+          await assertRecurringTruth(
+            page, future, authored.item.sourceRef, revisedTruth, persona,
+          );
+          const later = nextOccurrence(future, recurrence);
+          await assertCard(page, later, revisedTitle);
+          await assertRecurringTruth(
+            page, later, authored.item.sourceRef, revisedTruth, persona,
+          );
           await assertCard(page, day, localTitle);
           await expect(onDay(page, day, revisedTitle)).toHaveCount(0);
+          const earlier = await occurrence(
+            page, day, authored.item.sourceRef,
+          );
+          expect(earlier.title, 'local exception must be protected')
+            .toBe(localTitle);
         });
       } finally {
         await user.close();
@@ -450,10 +559,16 @@ test.describe('Temporal v2 — real stateful user personas', () => {
           await assertCard(page, dateAfter(day, 2), title);
         });
         await test.step(persona.id + '/5 Future revision preserves original', async () => {
-          await seriesRevision(
+          const updatedTruth = await seriesRevision(
             page, dateAfter(day, 2), title, title + ' futuro',
+            persona, authored.truth,
           );
           await assertCard(page, dateAfter(day, 2), title + ' futuro');
+          await assertRecurringTruth(
+            page, dateAfter(day, 2), authored.item.sourceRef,
+            updatedTruth, persona,
+          );
+          await assertCard(page, dateAfter(day, 3), title + ' futuro');
           await assertCard(page, dateAfter(day, 1), title + ' locale');
           const first = await assertCard(page, day, title);
           expect(await first.getAttribute('data-timeline-event'))
