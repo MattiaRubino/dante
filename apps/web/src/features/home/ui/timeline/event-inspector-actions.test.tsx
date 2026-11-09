@@ -1340,15 +1340,8 @@ describe('Event Inspector actions', () => {
         target: { value: 'Discussione' },
       },
     );
-    fireEvent.change(
-      screen.getByRole('textbox', { name: 'Life Area (opzionale)' }),
-      { target: { value: 'Area inesistente' } },
-    );
-    fireEvent.click(screen.getByRole('button', { name: 'Salva modifiche' }));
-    expect(
-      (await screen.findAllByText('Scegli una Life Area dall’elenco.')).length,
-    ).toBeGreaterThan(0);
-    expect(reviseAtomic).not.toHaveBeenCalled();
+    // Regression guard: an existing Life Area is selected, not created,
+    // and remains part of the same Event atomic Save as title and Agenda.
     fireEvent.change(
       screen.getByRole('textbox', { name: 'Life Area (opzionale)' }),
       { target: { value: 'Lavoro' } },
@@ -1372,6 +1365,71 @@ describe('Event Inspector actions', () => {
       ),
     );
     expect(reviseProfile).not.toHaveBeenCalled();
+  });
+
+  // Regression 2026-11-09: normal Event Edit rejected a typed new Life
+  // Area with "choose an existing area". It must stage the new name/color
+  // inside the single atomic Event Save, never fire a separate area create.
+  it('creates a new Life Area together with an ordinary Event atomic edit', async () => {
+    const current = {
+      eventRef,
+      title: 'Conferenza',
+      description: null,
+      location: null,
+      colorCode: null,
+      profileRevision: 1,
+      agendaRevision: 0,
+      agendaParts: [],
+      lifeAreaRef: 'area-old',
+    };
+    loadProfile.mockResolvedValue(current);
+    loadArea.mockResolvedValue({
+      options: [{ ref: 'area-old', name: 'Studio', colorCode: '#4285F4' }],
+      currentRef: 'area-old',
+      currentRevision: 3,
+    });
+    reviseAtomic.mockResolvedValue({ ...current, lifeAreaRef: 'area-created' });
+
+    render(
+      <EventInspectorActions
+        eventRef={eventRef}
+        placement={placement}
+        onDuplicate={vi.fn()}
+      />,
+    );
+    fireEvent.click(screen.getByRole('button', { name: 'Modifica' }));
+    const input = await screen.findByRole('textbox', {
+      name: 'Life Area (opzionale)',
+    });
+    expect(input).toHaveProperty('value', 'Studio');
+    fireEvent.change(input, { target: { value: 'Nuova area Event' } });
+    expect(
+      screen.getByText(
+        'La nuova Life Area sarà creata insieme al salvataggio dell’Evento.',
+      ),
+    ).toBeTruthy();
+    expect(reviseAtomic).not.toHaveBeenCalled();
+
+    fireEvent.click(screen.getByRole('button', { name: 'Salva modifiche' }));
+    await waitFor(() =>
+      expect(reviseAtomic).toHaveBeenCalledWith(
+        eventRef,
+        current,
+        {
+          lifeArea: {
+            ref: null,
+            expectedRevision: 3,
+            newArea: {
+              name: 'Nuova area Event',
+              colorCode: expect.stringMatching(/^#[0-9A-F]{6}$/),
+            },
+          },
+        },
+        expect.any(String),
+      ),
+    );
+    expect(reviseProfile).not.toHaveBeenCalled();
+    expect(saveRecurringEvent).not.toHaveBeenCalled();
   });
 
   it('uses the Activity objective row and includes a new Event objective in Save', async () => {
