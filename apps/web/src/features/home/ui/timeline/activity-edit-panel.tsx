@@ -2455,7 +2455,7 @@ export function ActivityEditPanel({
                         setObjectiveError('');
                       }}
                     >
-                      ＋ Aggiungi obiettivo
+                      + Obiettivo
                     </button>
                   </div>
                   {objectiveError ? (
