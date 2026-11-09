@@ -264,7 +264,7 @@ def _v2_selection_isolated(grep: str | None) -> bool:
     """
     return grep is not None and (
         re.fullmatch(r"V2-[A-Z0-9-]*", grep) is not None
-        or re.fullmatch(r"V2-\\([A-Z0-9|\\-]+\\)", grep) is not None
+        or re.fullmatch(r"V2-\([A-Z0-9|\-]+\)", grep) is not None
     )
 
 
@@ -286,7 +286,7 @@ def _v2_worker_budget(setting: str, grep: str | None) -> int:
     try:
         memory = Path("/proc/meminfo").read_text(encoding="utf-8")
         available_kib = int(re.search(
-            r"^MemAvailable:\\s*(\\d+) kB", memory, re.M,
+            r"^MemAvailable:\s*(\d+) kB", memory, re.M,
         ).group(1))
     except (OSError, AttributeError, ValueError):
         available_kib = 0
