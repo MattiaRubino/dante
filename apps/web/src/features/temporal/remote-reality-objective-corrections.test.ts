@@ -282,8 +282,11 @@ describe('M2 Objective corrections', () => {
           '/api/v1/temporal/objectives/' + ref + '/delete-recording',
         );
         expect(init?.method).toBe('POST');
+        if (!init) throw new Error('Missing destructive HTTP request init.');
         expect(new Headers(init.headers).get('X-Dante-CSRF')).toBe('csrf');
-        requests.push(JSON.parse(fetchRequestBody(init.body)) as Record<string, unknown>);
+        requests.push(
+          JSON.parse(fetchRequestBody(init.body)) as Record<string, unknown>,
+        );
         return Promise.resolve(
           accepted ?
             response({ objective_ref: ref, removed_observations: 2 }) :
