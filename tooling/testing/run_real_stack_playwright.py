@@ -179,7 +179,7 @@ def _write_diagnostic_archive(directory: Path) -> Path:
     omitted_origins: list[str] = []
     traces_per_project: dict[str, int] = {}
     # Full matrices may have hundreds of failures. Cap upload-oriented trace
-    # reduction to the first three per browser; retain every raw trace on disk.
+    # reduction to the first six per browser; retain every raw trace on disk.
     sources = sorted(
         directory.glob("*/test-results/**/trace.zip"),
         key=lambda source: (source.parent.parent.parent.name, source.stat().st_mtime),
@@ -188,7 +188,7 @@ def _write_diagnostic_archive(directory: Path) -> Path:
         relative = source.relative_to(directory)
         project = relative.parts[0]
         count = traces_per_project.get(project, 0)
-        if count >= 3:
+        if count >= 6:
             omitted_origins.append(relative.as_posix())
             continue
         traces_per_project[project] = count + 1
@@ -380,18 +380,18 @@ def _self_test() -> None:
                 assert "0-trace.network" in reduced_zip.namelist()
                 assert "resources/page@100.jpeg" not in reduced_zip.namelist()
         assert (failure / "trace.zip").exists()
-        # Even a broad RED matrix may only add three reduced traces per browser
+        # Even a broad RED matrix may only add six reduced traces per browser
         # to the upload, without deleting any original browser evidence.
-        for i in range(3):
+        for i in range(6):
             extra = root / "chromium" / "test-results" / f"extra-{i}"
             extra.mkdir(parents=True)
             with zipfile.ZipFile(extra / "trace.zip", "w") as trace:
                 trace.writestr("0-trace.trace", "additional failing action")
         _write_diagnostic_archive(root)
         index = json.loads((root / "diagnostic-manifest.json").read_text())
-        assert len(index["traces"]) == 3
+        assert len(index["traces"]) == 6
         assert len(index["raw_traces_not_in_compact_archive"]) == 1
-        for i in range(3):
+        for i in range(6):
             assert (root / "chromium" / "test-results" / f"extra-{i}" /
                     "trace.zip").exists()
     print("PASS: browser sharding, coverage, and auto-packaged E2E diagnostics")
