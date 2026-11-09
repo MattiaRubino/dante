@@ -66,13 +66,23 @@ function nextOccurrence(
   }
 }
 
+// Per-test browser Pages have an immutable expected number of physical
+// placements. An Activity with 2 intervals has 2 real cards but 1 logical
+// Activity. Counting a single card would produce a false duplicate failure.
+const placementExpectations = new WeakMap<Page, number>();
+function registerPersona(page: Page, persona: PersonaCase): void {
+  placementExpectations.set(
+    page, persona.kind === 'activity' ? Math.max(1, persona.intervalCount) : 1,
+  );
+}
 async function assertCard(
   page: Page, day: string, title: string,
 ): Promise<Locator> {
   await openHome(page, day);
   const card = onDay(page, day, title);
-  await expect(card, 'exactly one materialized card on ' + day).toHaveCount(1);
-  return card;
+  const expected = placementExpectations.get(page) ?? 1;
+  await expect(card, 'exact physical placements on ' + day).toHaveCount(expected);
+  return card.first();
 }
 
 async function clickCard(card: Locator, title: string): Promise<void> {
@@ -739,6 +749,7 @@ test.describe('Temporal v2 — real stateful user personas', () => {
     ) => {
       const user = await signedInPersona(browser, info, ordinal);
       const { page } = user;
+      registerPersona(page, persona);
       const day = scenarioDate(5);
       const title = uniqueTitle('v2 ' + persona.id);
       await info.attach('scenario', {
@@ -800,6 +811,7 @@ test.describe('Temporal v2 — real stateful user personas', () => {
     ) => {
       const user = await signedInPersona(browser, info, 40 + index);
       const { page } = user;
+      registerPersona(page, persona);
       const day = scenarioDate(5);
       const recurrence = recurrenceFor(persona);
       const future = nextOccurrence(day, recurrence);
@@ -926,6 +938,7 @@ test.describe('Temporal v2 — real stateful user personas', () => {
     ) => {
       const user = await signedInPersona(browser, info, 80 + index);
       const { page } = user;
+      registerPersona(page, persona);
       const day = scenarioDate(5);
       const title = uniqueTitle('v2 conversione ' + persona.id);
       await info.attach('scenario', {

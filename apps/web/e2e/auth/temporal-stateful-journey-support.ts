@@ -415,10 +415,15 @@ export async function assertOneOffTruth(
     const sessions = schedules.filter((schedule) => schedule.role_code === 'planned');
     expect(sessions.map((session) => session.display_name), 'planned Session order')
       .toEqual(truth.sessions);
-    expect(
-      schedules.filter((schedule) => schedule.role_code === 'interval').length,
-      'explicit extra Activity intervals',
-    ).toBe(truth.explicitExtraIntervals);
+    // The API enumerates all Activity intervals, including the initial
+    // interval authored by Create; the composer adds only the extra ones.
+    const intervalCount = schedules.filter(
+      (schedule) => schedule.role_code === 'interval',
+    ).length;
+    expect(intervalCount, 'all persisted Activity intervals').toBe(
+      truth.explicitExtraIntervals +
+        (intervalCount > 0 ? 1 : 0),
+    );
     expect(new Set(schedules.map((row) => row.schedule_ref)).size)
       .toBe(schedules.length);
   }
