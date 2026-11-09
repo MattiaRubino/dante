@@ -736,6 +736,20 @@ test.describe('Timeline — real user Activity/Event lifecycle matrix', () => {
       await inspector
         .getByRole('textbox', { name: 'Titolo' })
         .fill(seriesTitle);
+      // Real recurring editor: create a new Life Area and choose its color.
+      // Previously the color swatch was read-only and creation was absent.
+      const futureArea = uniqueTitle('area serie attività');
+      await inspector.getByRole('textbox', { name: 'Area assegnata' }).fill(futureArea);
+      await inspector
+        .getByRole('button', { name: 'Colore nuova Life Area' })
+        .click();
+      await page
+        .getByRole('dialog', { name: 'Scegli colore' })
+        .getByRole('button', { name: 'Blu', exact: true })
+        .click();
+      await expect(
+        inspector.getByText('La nuova Life Area sarà creata insieme al salvataggio della serie.'),
+      ).toBeVisible();
       await inspector.getByRole('button', { name: 'Salva modifiche' }).click();
       const confirmation = page.getByRole('dialog', {
         name: 'Controlla prima di salvare',
@@ -761,9 +775,37 @@ test.describe('Timeline — real user Activity/Event lifecycle matrix', () => {
       ).toBe(200);
       await expect(confirmation).toHaveCount(0);
       await openHome(page, dateAfter(day, 1));
-      await expect(onDay(page, dateAfter(day, 1), seriesTitle)).toHaveCount(1);
+      const firstUpdated = onDay(page, dateAfter(day, 1), seriesTitle);
+      await expect(firstUpdated).toHaveCount(1);
+      await expect(firstUpdated.locator('.timeline-event-card__meta')).toContainText(
+        futureArea,
+      );
+      await expect
+        .poll(() =>
+          firstUpdated.evaluate((node) =>
+            (node as HTMLElement).style.getPropertyValue('--timeline-group-color'),
+          ),
+        )
+        .toBe('#4285F4');
+      const catalogResponse = await page.request.get('/api/v1/temporal/life-areas', {
+        headers: { 'X-Dante-Time-Zone': 'Europe/Rome' },
+      });
+      expect(catalogResponse.status()).toBe(200);
+      const catalog = (await catalogResponse.json()) as readonly Record<
+        string,
+        unknown
+      >[];
+      expect(catalog.filter((area) => area.name === futureArea)).toHaveLength(1);
+      expect(catalog.find((area) => area.name === futureArea)?.color_code).toBe(
+        '#4285F4',
+      );
+      await openHome(page, dateAfter(day, 2));
+      await expect(
+        onDay(page, dateAfter(day, 2), seriesTitle).locator('.timeline-event-card__meta'),
+      ).toContainText(futureArea);
       await openHome(page, day);
       await expect(onDay(page, day, changedTitle)).toHaveCount(1);
+      await expect(onDay(page, day, changedTitle)).not.toContainText(futureArea);
       await expect(onDay(page, day, seriesTitle)).toHaveCount(0);
       await openHome(page, dateAfter(day, 1));
 
@@ -963,6 +1005,16 @@ test.describe('Timeline — real user Activity/Event lifecycle matrix', () => {
       await inspector
         .getByRole('textbox', { name: 'Titolo' })
         .fill(seriesTitle);
+      const futureArea = uniqueTitle('area serie eventi');
+      await inspector.getByRole('textbox', { name: 'Area assegnata' }).fill(futureArea);
+      await inspector
+        .getByRole('button', { name: 'Colore nuova Life Area' })
+        .click();
+      await page
+        .getByRole('dialog', { name: 'Scegli colore' })
+        .getByRole('button', { name: 'Verde menta', exact: true })
+        .click();
+      await expect(inspector.getByText('Scegli una Life Area dall’elenco.')).toHaveCount(0);
       await inspector.getByRole('button', { name: 'Salva modifiche' }).click();
       const review = page.getByRole('dialog', {
         name: 'Controlla prima di salvare',
@@ -990,8 +1042,35 @@ test.describe('Timeline — real user Activity/Event lifecycle matrix', () => {
       await openHome(page, dateAfter(day, 1));
       const current = onDay(page, dateAfter(day, 1), seriesTitle);
       await expect(current).toHaveCount(1);
+      await expect(current.locator('.timeline-event-card__meta')).toContainText(
+        futureArea,
+      );
+      await expect
+        .poll(() =>
+          current.evaluate((node) =>
+            (node as HTMLElement).style.getPropertyValue('--timeline-group-color'),
+          ),
+        )
+        .toBe('#33B679');
+      const catalogResponse = await page.request.get('/api/v1/temporal/life-areas', {
+        headers: { 'X-Dante-Time-Zone': 'Europe/Rome' },
+      });
+      expect(catalogResponse.status()).toBe(200);
+      const catalog = (await catalogResponse.json()) as readonly Record<
+        string,
+        unknown
+      >[];
+      expect(catalog.filter((area) => area.name === futureArea)).toHaveLength(1);
+      expect(catalog.find((area) => area.name === futureArea)?.color_code).toBe(
+        '#33B679',
+      );
+      await openHome(page, dateAfter(day, 2));
+      await expect(
+        onDay(page, dateAfter(day, 2), seriesTitle).locator('.timeline-event-card__meta'),
+      ).toContainText(futureArea);
       await openHome(page, day);
       await expect(onDay(page, day, localTitle)).toHaveCount(1);
+      await expect(onDay(page, day, localTitle)).not.toContainText(futureArea);
       await expect(onDay(page, day, seriesTitle)).toHaveCount(0);
       await openHome(page, dateAfter(day, 1));
       await current
