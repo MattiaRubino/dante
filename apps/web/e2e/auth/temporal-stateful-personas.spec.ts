@@ -104,6 +104,38 @@ async function openEdit(
   return inspector;
 }
 
+/**
+ * A Save click only submits intent. Before reading canonical state or
+ * navigating, prove the exact self-scoped mutation has committed.
+ *
+ * The 2026-11-09 Chromium/Firefox/WebKit traces prove that a GET issued
+ * immediately after click can overtake the PUT, producing a false missing
+ * Life Area and cancelling the request during test teardown.
+ */
+async function saveOneOffEditor(
+  page: Page, editor: Locator, item: CreatedItem,
+): Promise<void> {
+  const endpoint = '/api/v1/temporal/' +
+    (item.kind === 'event' ? 'events/' : 'activities/') +
+    item.sourceRef + '/atomic-edit';
+  const [accepted] = await Promise.all([
+    page.waitForResponse((response) =>
+      response.request().method() === 'PUT' &&
+      response.url().endsWith(endpoint),
+    { timeout: 30_000 }),
+    editor.getByRole('button', { name: 'Salva modifiche' }).click(),
+  ]);
+  expect(accepted.status(), 'atomic Edit must succeed before canonical read: ' +
+    endpoint + ' — ' + await accepted.text()).toBe(200);
+  if (item.kind === 'event') {
+    await expect(editor.getByText('Evento aggiornato.')).toBeVisible();
+  } else {
+    await expect(
+      editor.getByRole('button', { name: 'Salva modifiche' }),
+    ).toHaveCount(0);
+  }
+}
+
 async function editOneOff(
   page: Page, day: string, authored: AuthoredPersona,
 ): Promise<AuthoredPersona> {
@@ -197,16 +229,7 @@ async function editOneOff(
       .getByRole('textbox', { name: 'Nome Sessione' }).fill(appended);
     sessions.push(appended);
   }
-  await editor.getByRole('button', { name: 'Salva modifiche' }).click();
-  // Event Edit saves asynchronously; do not navigate before persistence.
-  // Otherwise the test itself can cancel the in-flight mutation.
-  if (item.kind === 'event') {
-    await expect(editor.getByText('Evento aggiornato.')).toBeVisible();
-  } else {
-    await expect(
-      editor.getByRole('button', { name: 'Salva modifiche' }),
-    ).toHaveCount(0);
-  }
+  await saveOneOffEditor(page, editor, item);
   const updated = {
     ...authored,
     item: { ...item, title: newTitle },
@@ -268,7 +291,9 @@ async function reassignAreaAndCancel(
   }).click();
   await page.getByRole('dialog', { name: 'Scegli colore' })
     .getByRole('button', { name: 'Prugna', exact: true }).click();
-  await editor.getByRole('button', { name: 'Salva modifiche' }).click();
+  // This new-area Save is asynchronous: never allow a catalog GET to
+  // overtake its atomic PUT. No retry/sleep or weaker cardinality check.
+  await saveOneOffEditor(page, editor, item);
   const catalog = (await serverRead(page, '/api/v1/temporal/life-areas')) as
     readonly Record<string, unknown>[];
   const matches = catalog.filter((row) => row.name === nextArea);
