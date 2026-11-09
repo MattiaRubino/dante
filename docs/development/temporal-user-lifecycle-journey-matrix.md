@@ -304,3 +304,45 @@ The matrix must be **materialized into actual executable, named test cases**; ch
 Run local small tests and targeted PostgreSQL first, then targeted real-stack flows, then the entire 27-group gate on the **same commit**; record exact PASS/FAIL/SKIP, total inventory and elapsed time. Four previously known WebKit skips are **open inherited coverage gaps**: do not mistake them for the four formerly failing tests or claim 0 SKIP until genuinely exercised.
 
 **Acceptance rule:** each entry in the matrix must have a linked executable scenario, concrete UI/API/DB assertions and a green run on the exact candidate commit. Missing or unrun cells stay OPEN. Future feature additions may extend the matrix without weakening or deleting existing assertions.
+
+
+## 2026-11-09 — Stateful v2 executable candidate checkpoint (RED allowed, NOT RUN)
+
+**Evidence caution:** The approved matrix above is the requirement, not a green test report. This checkpoint added executable Playwright cases to the existing suite but has **not run typecheck, Prettier, Vitest or real-stack Playwright at this SHA**. A run that has failures is a RED baseline to repair, never evidence of a green product. Do not disable, skip, mark \`test.fail\`, or narrow assertions just because an existing bug is expected.
+
+### Files and current implementation
+
+| Source | Concrete coverage |
+| --- | --- |
+| \`apps/web/e2e/auth/temporal-stateful-case-matrix.ts\` | Typed 20 Event + 20 Activity initial configurations with multi-feature variation and recurrence families |
+| \`apps/web/e2e/auth/temporal-stateful-case-matrix.test.ts\` | Unit guard that population, goal kinds, recurrence families and synthetic user-account partitions cannot silently shrink |
+| \`apps/web/e2e/auth/temporal-stateful-journey-support.ts\` | Real UI Create through advanced composer; independent expected-state builders; authenticated Life Area fixture creation; canonical Objectives, Event agenda and Activity plan readback |
+| \`apps/web/e2e/auth/temporal-stateful-personas.spec.ts\` | 100 distinct tests per browser: P1 40 rich one-offs, P2 40 rich native series, P3 20 conversions. They chain CREATE, reload, nested edits/add/delete, Life Area, local/following/from-next scoped edits, exception boundaries, duplication and deletion. A subset also covers Draft Vault (Event copy versus Activity move) |
+| \`apps/web/e2e/auth/temporal-stateful-runtime.spec.ts\` | Two further tests per browser for confirmed Objective evidence in Edit and a real live Session with Pause/Resume/End and Edit guard |
+| \`tooling/run-access-auth-stack.py\` | Increases E2E seeded accounts 101→407: 1–101 untouched, 102–401 reserved for 100 personas × 3 browsers, 402–407 two runtime guards × 3. Never share a mutable account across parallel cases |
+
+The E2E inventory adds **102 tests to each browser project** (306 browser slots). Previously existing test cases are retained. Total discovered slot counts and skip behavior must be verified using \`playwright test --list\` at the exact candidate SHA; the registry count is not a substitute for actual discovery.
+
+### Known RED / diagnosis linking
+
+- **\`V2-RT-01\`**: the user observed a confirmed Objective still presented as a mutable target in Event Edit; the test confirms an actual objective via the Work panel, then requires the original observation to remain and the ordinary Edit name input to be disabled. If the product is still broken, the latter assertion must be RED, with captured screenshot/trace. The same contract must later be generalized to Activity and recurrence outcomes.
+- **\`V2-P2-E*\` and \`V2-P2-A*\`**: a native series's following editor must allow writing a new Life Area with color and changing the appearance of a preexisting shared area. UI → acceptance → catalog and future instances are checked. A known broken picker is a real test failure, not an exception.
+- **\`V2-P1-*\`**: nested goals/agenda/planned Sessions are added, updated, removed and replaced across real Edit transactions; exact ordered readback, surviving identities, eliminated ghosts and faithful duplication are required. Some rows may be RED due domain gaps or inaccurate test drivers; classify with step-specific browser evidence.
+- **\`V2-P2-*\`**: tests must prove selected-and-following includes the selection; locally protected instance must stay unchanged; \`from_next\` excludes its selected boundary. They recheck the canonical source snapshot, neighboring cards and original exception.
+- **\`V2-RT-02\`**: timed near-current Activity with live capture must honor Session state/recorded facts, plan guard and Pause/Resume/End history. Do not simulate time progression with a mocked browser clock while the backend uses real time.
+
+The Playwright \`test.step\` path combines **phase + persona ID + operation index**, e.g. \`V2-P1-A13 / 4 Edit, remove and add nested data\`. A RED fix requires the exact SHA, scenario ID, step name, browser, expectation mismatch, canonical HTTP result and trace, and a corresponding focused regression proof. \`testInfo.attach('scenario')\` provides the initial scenario JSON. Do not derive independent expected truth from observed API state: it is derived from the declared actions and updated on each accepted transition.
+
+### Still OPEN and not to be misrepresented as complete
+
+- Full cross-product of **twenty normal-source conversions per kind** (current P3 10 per kind) and different conversion frequencies (candidate P3 uses daily).
+- Fully varied **multiple independently verified edits to every one of the 40 entities**. P1 currently has a dense initial create and one substantial mixed edit plus Life Area, cancel, duplication and deletion; the user-approved requirement explicitly calls for more repeated sequences, removals and reorderings per item.
+- Recursive variation of **interval resizing and removal**, timed planned Sessions and their clock setting, verification mode mutation, multi-objective recorded history on both subject kinds, physical drag/move protection, full Draft Vault edit/re-authoring and result correction.
+- **True concurrent browser writers with stale revision**, mid-write rollback injections (except previously authored specific PostgreSQL integration), lost network reply and replay, full DST/fold/gap/window matrix, protected recorded future instances, late materialization across months/years and all-day edge cases.
+- Conversion+local+following target mapping and structural validation on both Event and Activity need real browser execution; the test code is not the proof.
+
+### Local qualification order
+
+First confirm checkout and a clean worktree; then format/lint/typecheck and the small inventory test. Next run one case from every phase plus the two runtime guards with one browser on isolated real-stack, keeping all failures and traces. Repair **test driver only if it mismatches the documented production UI contract**, and repair product code when real UI→API→DB fails; both require a new regression. Repeat focused tests, then the full v2 suite in Chromium/Firefox/WebKit with isolated stacks, then the complete gate on one SHA. No merging until the user has the all-green full gate and visual walkthrough, and no claiming GREEN for unexecuted test steps.
+
+**Do not enable v2-only skips** to keep the older gate green. Every test in \`*.spec.ts\` is included in the normal real-stack Playwright inventory. The extra cost is intentional; schedule/batch with bounded parallelism while isolating backend and PostgreSQL stacks. Keep all reports, durations and original assertions.
