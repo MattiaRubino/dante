@@ -372,6 +372,122 @@ describe('remote temporal Timeline data source', () => {
     });
   });
 
+  // Regression 2026-11-09: a selected Event Occurrence could persist a
+  // new/removed Life Area while its Timeline card inherited the source
+  // color. Preserve the explicit nullable override through the strict
+  // API parser for both the physical-first Event and later occurrences.
+  it('parses Event local Life Area provenance for first, scheduled and expected instances', async () => {
+    const area = '01991f2a-4567-7def-8abc-4567890abcde';
+    const source = createRemoteTemporalTimelineDataSource(
+      vi.fn<typeof globalThis.fetch>(() =>
+        Promise.resolve(
+          jsonResponse(
+            populated([
+              {
+                kind: 'scheduled_event',
+                event_ref: '01991f2a-2345-7bcd-9efa-234567890abc',
+                schedule_ref: '01991f2a-3456-7cde-8fab-34567890abcd',
+                placement_material_state_ref:
+                  '01991f2a-6789-7fab-8cde-67890abcdef1',
+                title: 'Prima istanza fisica',
+                temporal_form: 'date_span',
+                start_date: '2026-09-07',
+                end_date_exclusive: '2026-09-08',
+                life_area_override_present: true,
+                life_area_override_ref: area,
+              },
+              {
+                kind: 'scheduled_occurrence',
+                occurrence_ref: '01991f2a-89ab-7bcd-8efa-890abcdef123',
+                source_kind: 'event',
+                source_native_ref: '01991f2a-2345-7bcd-9efa-234567890abc',
+                title: 'Istanza senza area',
+                coordinate: null,
+                schedule_ref: '01991f2a-9abc-7cde-9fab-90abcdef1234',
+                placement_material_state_ref:
+                  '01991f2a-789a-7abc-9def-7890abcdef12',
+                placement: {
+                  temporal_form: 'date_span',
+                  start_date: '2026-09-08',
+                  end_date_exclusive: '2026-09-09',
+                },
+                life_area_override_present: true,
+                life_area_override_ref: null,
+              },
+              {
+                kind: 'expected_occurrence',
+                occurrence_ref: '01991f2a-5678-7efa-9bcd-567890abcdef',
+                source_kind: 'event',
+                source_native_ref: '01991f2a-2345-7bcd-9efa-234567890abc',
+                title: 'Istanza futura',
+                coordinate: {
+                  family_code: 'calendar_wall_clock',
+                  generated_date: '2026-09-09',
+                  generated_wall_time: '08:00:00',
+                  clock_basis_code: 'floating_local',
+                  zone_id: null,
+                  resolved_at: null,
+                },
+                life_area_override_present: false,
+                life_area_override_ref: null,
+              },
+            ]),
+          ),
+        ),
+      ),
+      () => 'Europe/Rome',
+    );
+    const window = await source.loadWindow(WINDOW_REQUEST);
+    if (window.kind !== 'window') throw new Error('Expected populated window');
+    expect(window.items.map((item) => ({
+      kind: item.kind,
+      present: item.kind === 'scheduled_activity'
+        ? undefined
+        : item.lifeAreaOverridePresent,
+      ref: item.kind === 'scheduled_activity'
+        ? undefined
+        : item.lifeAreaOverrideRef,
+    }))).toEqual([
+      { kind: 'scheduled_event', present: true, ref: area },
+      { kind: 'scheduled_occurrence', present: true, ref: null },
+      { kind: 'expected_occurrence', present: false, ref: null },
+    ]);
+  });
+
+  // A detached area must not be accepted if the server falsely claims an
+  // inherited state (present=false with a non-null area), or the UI could
+  // present a stale swatch under a contradictory canonical response.
+  it('rejects contradictory Event local Life Area provenance', async () => {
+    const source = createRemoteTemporalTimelineDataSource(
+      vi.fn<typeof globalThis.fetch>(() =>
+        Promise.resolve(
+          jsonResponse(
+            populated([
+              {
+                kind: 'scheduled_event',
+                event_ref: '01991f2a-2345-7bcd-9efa-234567890abc',
+                schedule_ref: '01991f2a-3456-7cde-8fab-34567890abcd',
+                placement_material_state_ref:
+                  '01991f2a-6789-7fab-8cde-67890abcdef1',
+                title: 'Stato incoerente',
+                temporal_form: 'date_span',
+                start_date: '2026-09-07',
+                end_date_exclusive: '2026-09-08',
+                life_area_override_present: false,
+                life_area_override_ref:
+                  '01991f2a-4567-7def-8abc-4567890abcde',
+              },
+            ]),
+          ),
+        ),
+      ),
+      () => 'Europe/Rome',
+    );
+    await expect(source.loadWindow(WINDOW_REQUEST)).rejects.toBeInstanceOf(
+      TemporalTimelineRemoteError,
+    );
+  });
+
   it('does not replace backend failure with an empty success', async () => {
     const source = createRemoteTemporalTimelineDataSource(
       vi.fn<typeof globalThis.fetch>(() =>
