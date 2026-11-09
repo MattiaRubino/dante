@@ -18,6 +18,7 @@ from tests.integration.temporal.test_schedule_place import _context
 
 from dante.modules.temporal.application import (
     TemporalTimelineApplication,
+    TimelineExpectedOccurrenceItem,
     TimelineScheduledOccurrenceItem,
 )
 from dante.modules.temporal.contracts import TimelineWindowQuery
@@ -25,8 +26,11 @@ from dante.modules.temporal.event import TemporalEventApplication
 from dante.modules.temporal.life_area import LifeAreaApplication
 from dante.modules.temporal.occurrence import OccurrenceApplication
 from dante.modules.temporal.occurrence_api import (
+    EventOccurrenceLocalEditCommand,
     ScopedProfileEditCommand,
+    accept_event_occurrence_local_edit,
     accept_occurrence_profile_edit,
+    get_recurring_event_occurrence_detail,
     get_occurrence_profile_edit_preview,
     get_occurrence_profile_edit_state,
 )
@@ -248,6 +252,190 @@ async def test_selected_past_and_only_later_future_become_effective(
             ).one()
             assert privileges.call_allowed is True
             assert privileges.direct_insert is False
+    finally:
+        await runtime.dispose()
+
+
+# Regression 2026-11-09: Event "Solo questa istanza" previously accepted
+# a Life Area change but the Timeline inherited the series source color.
+# Also protect explicit null (remove), existing reassignment, new-area
+# creation and rollback after stale CAS; no other Occurrence may be altered.
+@pytest.mark.asyncio
+async def test_event_local_life_area_is_consistent_in_canonical_timeline(
+    migrated_database: Any,
+) -> None:
+    actor = _seed_self(migrated_database)
+    runtime = create_database_runtime(migrated_database.runtime_settings())
+    today = datetime.now(ZoneInfo(ZONE)).date()
+    areas = LifeAreaApplication(runtime.session_factory)
+    events = TemporalEventApplication(runtime.session_factory)
+    recurrences = RecurrenceApplication(runtime.session_factory)
+    occurrences = OccurrenceApplication(runtime.session_factory)
+    context = _context(actor)
+    request = cast(
+        Request,
+        SimpleNamespace(app=SimpleNamespace(state=SimpleNamespace(database_runtime=runtime))),
+    )
+    try:
+        inherited = (
+            await areas.create(
+                self_person_ref=actor, operation_id="event:local:source-area", name="Studio serie"
+            )
+        ).area
+        event = (
+            await events.create_event(
+                self_person_ref=actor,
+                operation_id="event:local:source",
+                title="Event ricorrente",
+                life_area_ref=inherited.life_area_ref,
+            )
+        ).event
+        await recurrences.replace(
+            owner="event",
+            self_person_ref=actor,
+            owner_ref=event.event_ref,
+            operation_id="event:local:recurrence",
+            expected_material_state_ref=None,
+            recurrence=_daily(today - timedelta(days=2)),
+        )
+        generated = await occurrences.checkpoint(
+            owner="event",
+            self_person_ref=actor,
+            source_ref=event.event_ref,
+            operation_id="event:local:checkpoint",
+            start_date=today - timedelta(days=2),
+            end_date_exclusive=today + timedelta(days=4),
+            effective_zone_id=ZONE,
+        )
+        selected = generated.occurrences[1].occurrence_ref
+        sibling = generated.occurrences[2].occurrence_ref
+
+        async def save_local(
+            operation: str,
+            *,
+            expected_revision: int,
+            area_ref: UUID | None,
+            new_area: dict[str, str | None] | None = None,
+        ) -> None:
+            current_state = await get_occurrence_profile_edit_state(
+                selected, context, request, Response()
+            )
+            await accept_event_occurrence_local_edit(
+                selected,
+                EventOccurrenceLocalEditCommand.model_validate(
+                    {
+                        "operation_id": operation,
+                        "expected_revision": expected_revision,
+                        "expected_recurrence_state_ref":
+                            current_state.recurrence_state_ref,
+                        "structure": {
+                            "agenda_parts": [],
+                            "life_area_ref": area_ref,
+                            "expected_participants": [],
+                            **({"new_life_area": new_area} if new_area else {}),
+                        },
+                    }
+                ),
+                context,
+                request,
+                Response(),
+            )
+
+        # Creating a brand-new area must use the selected Occurrence only.
+        await save_local(
+            "event:local:new",
+            expected_revision=0,
+            area_ref=None,
+            new_area={"name": "Solo istanza", "color_code": "#FFD600"},
+        )
+        selected_view = await get_recurring_event_occurrence_detail(
+            selected, context, request, Response()
+        )
+        sibling_view = await get_recurring_event_occurrence_detail(
+            sibling, context, request, Response()
+        )
+        created_ref = selected_view.life_area_ref
+        assert created_ref is not None
+        assert sibling_view.life_area_ref == inherited.life_area_ref
+
+        async with runtime.session_factory() as session, session.begin():
+            created = (
+                (
+                    await session.execute(
+                        text(
+                            "SELECT life_area_ref,color_code FROM dante.list_self_life_areas(:actor) "
+                            "WHERE name='Solo istanza'"
+                        ),
+                        {"actor": actor},
+                    )
+                )
+                .mappings()
+                .one()
+            )
+        assert created["life_area_ref"] == created_ref
+        assert created["color_code"] == "#FFD600"
+
+        window = await TemporalTimelineApplication(runtime.session_factory).read_window(
+            query=TimelineWindowQuery(
+                start_date=today - timedelta(days=2),
+                end_date_exclusive=today + timedelta(days=4),
+            ),
+            context=context,
+        )
+        projected = [
+            item
+            for item in window.items
+            if isinstance(item, TimelineExpectedOccurrenceItem)
+            and item.occurrence_ref == selected
+        ]
+        assert len(projected) == 1
+        assert projected[0].life_area_override_present is True
+        assert projected[0].life_area_override_ref == created_ref
+
+        # A stale profile revision is rejected after attempting area creation:
+        # both the new Life Area and the rejected instance edit roll back.
+        with pytest.raises(ProblemError) as stale:
+            await save_local(
+                "event:local:stale",
+                expected_revision=0,
+                area_ref=None,
+                new_area={"name": "Orfana vietata", "color_code": "#4285F4"},
+            )
+        assert stale.value.status == 409
+        async with runtime.session_factory() as session, session.begin():
+            rejected = await session.scalar(
+                text(
+                    "SELECT count(*) FROM dante.list_self_life_areas(:actor) "
+                    "WHERE name='Orfana vietata'"
+                ),
+                {"actor": actor},
+            )
+        assert rejected == 0
+
+        # Explicit null is not inheritance. The Timeline must not fall back
+        # to the source blue/yellow swatch when the instance removes its area.
+        await save_local("event:local:remove", expected_revision=1, area_ref=None)
+        without_area = await get_recurring_event_occurrence_detail(
+            selected, context, request, Response()
+        )
+        assert without_area.life_area_ref is None
+        cleared = await TemporalTimelineApplication(runtime.session_factory).read_window(
+            query=TimelineWindowQuery(
+                start_date=today - timedelta(days=2),
+                end_date_exclusive=today + timedelta(days=4),
+            ),
+            context=context,
+        )
+        assert any(
+            isinstance(item, TimelineExpectedOccurrenceItem)
+            and item.occurrence_ref == selected
+            and item.life_area_override_present
+            and item.life_area_override_ref is None
+            for item in cleared.items
+        )
+        assert (
+            await get_recurring_event_occurrence_detail(sibling, context, request, Response())
+        ).life_area_ref == inherited.life_area_ref
     finally:
         await runtime.dispose()
 
