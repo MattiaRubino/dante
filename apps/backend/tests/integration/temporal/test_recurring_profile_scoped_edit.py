@@ -625,3 +625,97 @@ async def test_event_parity_and_protected_future_override(
         }
     finally:
         await runtime.dispose()
+
+
+@pytest.mark.asyncio
+async def test_selected_local_edit_is_protected_from_inclusive_series_sql(
+    migrated_database: Any,
+) -> None:
+    """The database refuses inclusive updates even if a caller bypasses UI preview."""
+    actor = _seed_self(migrated_database)
+    runtime = create_database_runtime(migrated_database.runtime_settings())
+    day = datetime.now(ZoneInfo(ZONE)).date() + timedelta(days=2)
+    try:
+        routines = RoutineApplication(runtime.session_factory)
+        recurrences = RecurrenceApplication(runtime.session_factory)
+        occurrences = OccurrenceApplication(runtime.session_factory)
+        source = await routines.create(
+            self_person_ref=actor,
+            operation_id="protected:source",
+            title="Studio",
+            life_area_ref=None,
+            starts_on=day,
+            wall_time=time(9),
+        )
+        state = await recurrences.get(
+            owner="routine",
+            self_person_ref=actor,
+            owner_ref=source.routine_ref,
+        )
+        assert state is not None
+        checkpoint = await occurrences.checkpoint(
+            owner="routine",
+            self_person_ref=actor,
+            source_ref=source.routine_ref,
+            operation_id="protected:checkpoint",
+            start_date=day,
+            end_date_exclusive=day + timedelta(days=3),
+            effective_zone_id=ZONE,
+        )
+        first, second, third = [
+            item.occurrence_ref for item in checkpoint.occurrences
+        ]
+        edited = await _edit(
+            runtime,
+            actor,
+            first,
+            state.material_state_ref,
+            "only_this",
+            {"title": "Studio personale"},
+            "protected:local",
+        )
+        assert edited["revision"] == 1
+        async with runtime.session_factory() as session, session.begin():
+            reason = await session.scalar(
+                text(
+                    "SELECT dante.get_self_occurrence_edit_protection("
+                    ":actor,:selected)"
+                ),
+                {"actor": actor, "selected": first},
+            )
+        assert reason == "local_change"
+        with pytest.raises(DBAPIError):
+            await _edit(
+                runtime,
+                actor,
+                first,
+                state.material_state_ref,
+                "this_and_following",
+                {"title": "Non deve passare"},
+                "protected:rejected",
+                expected=1,
+            )
+        assert await _patch(runtime, actor, first) == {
+            "title": "Studio personale"
+        }
+        assert await _patch(runtime, actor, second) == {}
+        accepted = await _edit(
+            runtime,
+            actor,
+            first,
+            state.material_state_ref,
+            "from_next",
+            {"title": "Studio futuro"},
+            "protected:from-next",
+            expected=1,
+        )
+        assert first not in accepted["target_occurrence_refs"]
+        assert {second, third}.issubset(set(accepted["target_occurrence_refs"]))
+        assert await _patch(runtime, actor, first) == {
+            "title": "Studio personale"
+        }
+        assert await _patch(runtime, actor, second) == {
+            "title": "Studio futuro"
+        }
+    finally:
+        await runtime.dispose()
