@@ -188,3 +188,119 @@ auth Playwright specs. No second runner, no CI dependency.
 **Verification: NOT RUN** at this new SHA. Keep Playwright traces and the
 exact HEAD for fixing red scenarios; older green UI-only tests are not
 evidence for these user journeys.
+
+
+---
+
+## 2026-11-09 — Approved stateful user-journey v2 contract (OPEN IMPLEMENTATION)
+
+**Status:** user-approved design, **NOT YET IMPLEMENTED/EXECUTED** as an 80-source E2E suite. The seven prior browser journeys and their later incremental extensions do **not** satisfy this expanded contract. A green current gate cannot be interpreted as v2 coverage. Keep this section as the admission/coverage source of truth; additional fields and edge scenarios may be appended without removing earlier assertions.
+
+### A. Test population and controlled scope
+
+- **Phase 1:** create **20 independent one-off Events and 20 independent one-off Activities**, then perform many sequential mutations on **each**, finishing with faithful duplication, deletion and Draft Vault flows where applicable.
+- **Phase 2:** independently create **20 native recurring Events and 20 native recurring Activities**, reusing the diversified phase-1 combinations and adding frequency, range and occurrence-specific changes. Do not replace the creation matrix with a single-feature-per-object series.
+- **Phase 3:** take one-off Events/Activities (or equivalent rich new one-offs), activate a recurrence through **Edit**, then reuse phase-2 local/following/exception/duplication/deletion logic. Minimum ten converted sources per kind; expand to the full twenty when the reusable journey engine is proven.
+- For each kind, scenarios **01–10 are varied multi-feature** and **11–20 are high-density**, with *several* settings per item. The numbers below indicate starting configuration, not the number of operations or final counts.
+- Presently **exclude** incomplete **location**, **reminders** and **participants** from mandatory v2 acceptance. When those verticals are complete, append explicit validated scenarios; never introduce hidden skips to make a feature appear covered.
+- Subject terminology: **Event** has agenda parts, not Activity intervals/Activity Sessions; **Activity** has intervals, planned Sessions (timed/untimed), live/recorded sessions and goals. Avoid impossible cross-subject fixture fields.
+- Life Area color belongs to the shared Life Area and changing an existing area's color is **global**, including previously linked items. Changing an assignment for selected-and-following occurrences is a different operation from globally recoloring an area.
+
+### B. Deterministic creation inventory
+
+Legend: \`L\` = Life Area (none / existing / new); \`G\` = number of Objectives; \`A\` = number of Event agenda parts; \`I\` = number of Activity intervals; \`S\` = number of planned Sessions (timed + untimed); \`D\` = description; \`P\` = placement protection; \`T\` = timed / all-day. Goals mix boolean/quantity/range and verification settings where supported. Every nonempty set receives stable, unique labels, distinct values and a recorded creation order. The actual composer must author all represented fields via UI; test fixtures **must not bypass the UI with database inserts**.
+
+| Event ID | T | A | G | L | D | P | Additional contrast |
+| --- | --- | ---: | ---: | --- | --- | --- | --- |
+| E01 | timed | 2 | 1 | existing | yes | no | distinct color |
+| E02 | timed | 3 | 2 | new | no | yes | quantitative goal |
+| E03 | all-day | 4 | 2 | existing | yes | no | range goal |
+| E04 | timed | 1 | 3 | none | yes | yes | three goal kinds |
+| E05 | timed | 5 | 1 | new | yes | no | alternate area color |
+| E06 | all-day | 2 | 3 | new | yes | yes | varied goal verification |
+| E07 | timed | 3 | 2 | existing | no | yes | different time zone |
+| E08 | timed | 4 | 3 | none | yes | no | cross-day schedule |
+| E09 | all-day | 5 | 2 | existing | yes | yes | multi-day range |
+| E10 | timed | 2 | 4 | new | yes | yes | mixed target values |
+| E11 | timed | 6 | 4 | existing | yes | yes | high-density baseline |
+| E12 | all-day | 7 | 5 | new | yes | yes | high-density date span |
+| E13 | timed | 8 | 4 | new | yes | yes | reorder agenda |
+| E14 | timed | 5 | 5 | existing | yes | yes | change several goals |
+| E15 | timed | 9 | 3 | new | yes | yes | delete middle agenda |
+| E16 | all-day | 6 | 4 | existing | yes | yes | remove/reassign area |
+| E17 | timed | 7 | 5 | existing | yes | yes | conflicting edit |
+| E18 | timed | 8 | 5 | new | yes | yes | repeated save/reopen |
+| E19 | all-day | 9 | 5 | new | yes | yes | rejection and retry |
+| E20 | timed | 10 | 5 | existing | yes | yes | maximal editable mix |
+
+| Activity ID | T | I | S timed + untimed | G | L | D | P |
+| --- | --- | ---: | --- | ---: | --- | --- | --- |
+| A01 | timed | 2 | 1 + 1 | 2 | existing | yes | no |
+| A02 | timed | 3 | 2 + 0 | 2 | new | no | yes |
+| A03 | timed | 2 | 1 + 2 | 3 | existing | yes | yes |
+| A04 | timed | 0 | 2 + 1 | 2 | none | yes | no |
+| A05 | timed | 4 | 1 + 0 | 3 | new | yes | yes |
+| A06 | all-day | 0 | 0 + 2 | 3 | existing | yes | yes |
+| A07 | timed | 3 | 3 + 1 | 2 | none | yes | yes |
+| A08 | timed | 2 | 0 + 3 | 4 | new | yes | no |
+| A09 | timed | 4 | 2 + 2 | 3 | existing | no | yes |
+| A10 | timed | 3 | 3 + 2 | 4 | new | yes | yes |
+| A11 | timed | 5 | 4 + 2 | 4 | existing | yes | yes |
+| A12 | timed | 5 | 3 + 3 | 5 | new | yes | yes |
+| A13 | timed | 6 | 4 + 3 | 5 | existing | yes | yes |
+| A14 | timed | 4 | 5 + 2 | 5 | new | yes | yes |
+| A15 | timed | 6 | 5 + 3 | 4 | existing | yes | yes |
+| A16 | all-day | 0 | 0 + 4 | 5 | new | yes | yes |
+| A17 | timed | 5 | 4 + 4 | 5 | existing | yes | yes |
+| A18 | timed | 6 | 6 + 2 | 5 | new | yes | yes |
+| A19 | timed | 7 | 5 + 4 | 5 | existing | yes | yes |
+| A20 | timed | 7 | 6 + 4 | 5 | new | yes | yes |
+
+**Fixture validity gate:** Before encoding the numbers as executable tests, verify the actual Create authoring constraints for interval length, session placement/overlap, all-day untimed sessions, goal types and maximum counts. A table entry is a **required scenario to implement or explicitly resolve**, not proof that its proposed configuration is accepted by today's domain. If an entry conflicts with documented invariants, replace it with an equally complex *valid* configuration and record the reason here; never skip it silently.
+
+### C. Mandatory multi-step mutation journey for EACH source
+
+1. Persist creation via real user UI. Read canonical complete snapshot (one-off) or source + selected/neighboring occurrence snapshots (recurring). Compare **exact ordered arrays, values, identities and types** against the independently declared scenario state, not against the POST echo.
+2. **ADD:** several new objectives / Event agenda parts / Activity intervals / Activity planned Sessions where applicable, with changing quantities, time values and Life Area assignment. Save; read again.
+3. **UPDATE:** change multiple existing values (title, description, amount, objective type/verification, agenda wording, interval bounds, session name/timing, Life Area selection/color, event/activity times, timezone when valid). Save; verify *changed and unchanged* properties.
+4. **REMOVE:** delete first/middle/last entries, then add replacements, then change another surviving entry. Verify exact count, order, persistent IDs of surviving entities and the **absence** of every removed element after complete reload.
+5. **REORDER:** where supported, move goals/agenda/intervals/Sessions, and check exact saved and rerendered order; no phantom rows or stale duplicate references.
+6. **CANCEL:** modify multiple controls then X/Annulla; exercise the discard decision, cancel and confirm paths. No changed authoritative values or hidden unintended writes.
+7. **EXECUTE/RECORD:** start/pause/resume/stop Activity Sessions, include registered sessions, inspect blocked replan/drag while active and post-stop edit policy. Confirm Objective outcomes and validate persisted evidence; **a confirmed objective must not reappear as an unrestricted editable target**.
+8. **DUPLICATE:** reopen the *final edited* source. Composer is prefilled with exact duplicate-eligible values, not initial values. Persist new source with distinct native/Schedule/objective/session identities. Never duplicate live execution, observations or historical confirmations.
+9. **DRAFT / DELETE:** move to Draft Vault where supported; verify non-executable state. Cancel and confirm deletion, prove canonical 404/deletion and that surviving duplicates remain unchanged.
+10. Repeat complete assertions after reloading Home, reopening the Inspector/Edit, and returning to the same date after navigating away. **Every mutation updates an independent expected-state model and is checked immediately**, not only at journey end.
+
+The operations above are a **coverage contract**, not a directive to force unavailable edit commands. If policy forbids a mutation (recorded session, protected exception), the required test proves the explicit refusal and zero persisted changes; after permitted resolution, it retries the originally requested mutation and checks success. Some journeys reorder operations (REMOVE→ADD→UPDATE, UPDATE→CANCEL→UPDATE, etc.) so the engine cannot pass by always exercising the same happy path.
+
+### D. Native series (40) and conversion series (at least 20)
+
+- Reuse **all 20 per-subject creation configurations** with a recurrence matrix spanning daily, weekly (multiple weekdays and steps), monthly by day and ordinal weekday, yearly, bounded count, end date and custom intervals. Assert the canonical requested cadence/range and materialization over a bounded but representative series window, including first, middle and later dates.
+- For **each** series, exercise local instance changes and a selected-and-following revision. The exact selected occurrence **is included**, earlier clean occurrences remain unchanged, and protected local exceptions stay intact. When the selected instance is already an exception, prove the correct **from-next** boundary rather than silently rewriting it.
+- Distribute independent local changes across **first / middle / last** materialized occurrences; combine local exceptions before and after whole/following revisions. Confirm the preview enumerates protected exceptions and stable references. Preserve recorded facts, confirmations and Session policy across lawful changes.
+- Test repeated scoped revisions, addition/modification/removal of structural fields, duplicate from clean and locally modified instances, delete one instance, delete multiple at different times, delete whole source. Check that a later checkpoint **does not resurrect hard-deleted or explicitly skipped instances**.
+- Convert at least **ten one-off Events + ten one-off Activities** through Edit into distinct recurrence modes; rerun the same scoped/local/deletion/duplication proofs. Original physical identity must survive; no duplicate source/first placement.
+- For an existing Life Area, a color change propagates **globally** (including past linked items). For a new area scoped to the future, previous unmodified/exception instances must not inherit that *new assignment*. Distinguish these operations in expected state.
+
+### E. Cross-cutting consistency / fault contracts
+
+| ID | Required independent evidence |
+| --- | --- |
+| INV-01 | Every command is fully atomic; failure after intermediate DB write rolls back all changed fields, linked rows and newly created Life Areas |
+| INV-02 | Exact list equality for named nested elements, counts, order and stable identities of untouched items; no duplicates or deleted ghosts |
+| INV-03 | Compare UI + canonical API + relevant PostgreSQL persisted facts, using a separate expected-state model driven by explicit actions |
+| INV-04 | No unintended retroactive series propagation; selected boundary inclusive; from-next exclusive; protected exceptions not overwritten |
+| INV-05 | Execution and outcome history cannot be copied by Duplicate or silently deleted/changed by an unrelated Edit |
+| INV-06 | Different browser sessions editing stale revisions produce a conflict, not last-writer-wins loss; replay of same operation ID is idempotent |
+| INV-07 | Clock boundaries include midnight, month/year rollovers, February and DST ambiguous/nonexistent local hours with supported zone semantics |
+| INV-08 | An error response or network interruption cannot hide partial writes or permit duplicate resources on retry |
+| INV-09 | Move/drag and changes during live/paused/recorded sessions follow the actual documented Edit guard and confirmation contract |
+| INV-10 | No disabled, skipped, weakened or conditional-only assertions to turn known product bugs green; preserve original suites in addition to v2 |
+
+### F. Execution strategy and evidence
+
+The matrix must be **materialized into actual executable, named test cases**; checking that a fixture list contains 40 rows does not establish behavior. Split into isolated per-scenario journeys, not one monolithic fail-fast test. Each step logs scenario ID, operation number, seed, prior accepted state and exact expected/actual field diff. Separate browser test data/users and PostgreSQL lifecycle; no shared mutable database across parallel browser workers. Prefer deterministic pairwise coverage plus bounded reproducible adversarial sequences (recorded seed), never an unrepeatable random walk.
+
+Run local small tests and targeted PostgreSQL first, then targeted real-stack flows, then the entire 27-group gate on the **same commit**; record exact PASS/FAIL/SKIP, total inventory and elapsed time. Four previously known WebKit skips are **open inherited coverage gaps**: do not mistake them for the four formerly failing tests or claim 0 SKIP until genuinely exercised.
+
+**Acceptance rule:** each entry in the matrix must have a linked executable scenario, concrete UI/API/DB assertions and a green run on the exact candidate commit. Missing or unrun cells stay OPEN. Future feature additions may extend the matrix without weakening or deleting existing assertions.
