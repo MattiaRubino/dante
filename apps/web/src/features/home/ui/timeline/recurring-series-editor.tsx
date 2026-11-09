@@ -16,10 +16,7 @@ import { TimeControl } from '../../../temporal-create/ui/temporal-create-core-u2
 import { TemporalColorControl } from '../../../temporal-create/ui/temporal-color-control';
 import { TemporalCreateDatePicker } from '../../../temporal-create/ui/temporal-create-date-picker';
 import { TemporalRecurrencePanel } from '../../../temporal-create/ui/temporal-recurrence-panel';
-import {
-  TemporalAssignedLifeAreaSwatch,
-  TemporalLifeAreaSelect,
-} from '../../../temporal-create/ui/temporal-life-area-select';
+import { TemporalLifeAreaSelect } from '../../../temporal-create/ui/temporal-life-area-select';
 import { TemporalCreateEventAgenda } from '../../../temporal-create/ui/temporal-create-event-agenda';
 import { TemporalEventParticipantsFields } from '../../../temporal-create/ui/temporal-create-event-participants';
 import { TemporalTimeZoneControl } from '../../../temporal-create/ui/temporal-time-zone-control';
@@ -249,9 +246,17 @@ export function RecurringSeriesEditor({
   const [location, setLocation] = useState('');
   const [color, setColor] = useState('');
   const [areas, setAreas] = useState<
-    readonly { ref: string; name: string; colorCode: string | null }[]
+    readonly {
+      ref: string;
+      name: string;
+      colorCode: string | null;
+      revision: number;
+    }[]
   >([]);
   const [areaQuery, setAreaQuery] = useState('');
+  const [newAreaColor, setNewAreaColor] = useState('#EA5C12');
+  const [areaColorOverride, setAreaColorOverride] = useState<string | null>(null);
+  const [areaError, setAreaError] = useState('');
   const [participantLabels, setParticipantLabels] = useState<
     Record<string, string>
   >({});
@@ -302,6 +307,7 @@ export function RecurringSeriesEditor({
             ref: asText(area.life_area_ref),
             name: asText(area.name),
             colorCode: asText(area.color_code) || null,
+            revision: asNumber(area.revision),
           }));
         setAreas(areaOptions);
         const labels: Record<string, string> = { self: 'Io' };
@@ -316,6 +322,9 @@ export function RecurringSeriesEditor({
         setAreaQuery(
           areaOptions.find((area) => area.ref === assignedArea)?.name ?? '',
         );
+        setNewAreaColor('#EA5C12');
+        setAreaColorOverride(null);
+        setAreaError('');
         setDescription(loaded.description ?? asText(template.description));
         setLocation(loaded.location ?? asText(template.location));
         setColor(loaded.colorCode ?? asText(template.item_color_code));
@@ -507,6 +516,20 @@ export function RecurringSeriesEditor({
   const activeArea = asText(
     owner === 'routine' ? template.life_area_ref : structure.life_area_ref,
   );
+  const activeAreaOption = areas.find((area) => area.ref === activeArea);
+  const normalizedAreaName = areaQuery.trim().replace(/\s+/g, ' ');
+  const creatingArea =
+    !!normalizedAreaName &&
+    !activeArea &&
+    !areas.some(
+      (area) =>
+        area.name.toLocaleLowerCase() === normalizedAreaName.toLocaleLowerCase(),
+    );
+  const changingAreaColor =
+    !!activeAreaOption &&
+    areaColorOverride !== null &&
+    areaColorOverride.toUpperCase() !==
+      (activeAreaOption.colorCode ?? '').toUpperCase();
   // A recurrence's wall-clock anchor is an internal coordinate. Activity
   // intervals remain the only user-facing time controls: changing their
   // start/end updates the stored relative offsets without exposing or
@@ -580,15 +603,13 @@ export function RecurringSeriesEditor({
   const prepare = async () => {
     if (!source || busy) return;
     setError('');
+    setAreaError('');
     if (!title.trim()) {
       setError('Inserisci un titolo.');
       return;
     }
-    if (
-      areaQuery.trim() !==
-      (areas.find((area) => area.ref === activeArea)?.name ?? '')
-    ) {
-      setError('Scegli una Life Area dall’elenco.');
+    if (normalizedAreaName && !activeArea && !creatingArea) {
+      setAreaError('Scegli la Life Area già esistente dall’elenco.');
       return;
     }
     if (
@@ -616,6 +637,22 @@ export function RecurringSeriesEditor({
               },
             }
           : structure;
+      const areaIntent = creatingArea
+        ? {
+            new_life_area: {
+              name: normalizedAreaName,
+              color_code: newAreaColor.toUpperCase(),
+            },
+          }
+        : changingAreaColor && activeAreaOption
+          ? {
+              area_color_change: {
+                life_area_ref: activeAreaOption.ref,
+                expected_revision: activeAreaOption.revision,
+                color_code: areaColorOverride!.toUpperCase(),
+              },
+            }
+          : {};
       const patch: Record<string, string | null> = {};
       if (title.trim() !== source.title) patch.title = title.trim();
       if (description.trim() !== (source.description ?? ''))
@@ -629,7 +666,7 @@ export function RecurringSeriesEditor({
         source,
         scope,
         recurrence,
-        structure: completeStructure,
+        structure: { ...completeStructure, ...areaIntent },
         profilePatch: Object.keys(patch).length ? patch : null,
         operationId: operation.current,
       };
@@ -1604,19 +1641,36 @@ export function RecurringSeriesEditor({
               className="timeline-activity-editor__area-color"
               aria-label="Life Area"
             >
-              {activeArea ? (
-                <TemporalAssignedLifeAreaSwatch
-                  colorCode={
-                    areas.find((area) => area.ref === activeArea)?.colorCode
+              <TemporalColorControl
+                value={
+                  activeAreaOption
+                    ? (areaColorOverride ??
+                      activeAreaOption.colorCode ??
+                      '#EA5C12')
+                    : creatingArea
+                      ? newAreaColor
+                      : color || '#EA5C12'
+                }
+                label={
+                  activeAreaOption
+                    ? 'Colore Life Area'
+                    : creatingArea
+                      ? 'Colore nuova Life Area'
+                      : 'Colore attività o evento'
+                }
+                onChange={(value) => {
+                  if (activeAreaOption) {
+                    setAreaColorOverride(value);
+                    setReview(null);
+                  } else if (creatingArea) {
+                    setNewAreaColor(value);
+                    setReview(null);
+                  } else {
+                    updateMetadata(setColor, value);
                   }
-                />
-              ) : (
-                <TemporalColorControl
-                  value={color}
-                  label="Colore attività o evento"
-                  onChange={(value) => updateMetadata(setColor, value)}
-                />
-              )}
+                  setAreaError('');
+                }}
+              />
               <TemporalLifeAreaSelect
                 query={areaQuery}
                 label="Area assegnata"
@@ -1628,10 +1682,20 @@ export function RecurringSeriesEditor({
                 selectedId={activeArea || null}
                 onQueryChange={(value) => {
                   setAreaQuery(value);
+                  setAreaColorOverride(null);
+                  setAreaError('');
                   setReview(null);
+                  if (value.trim() !== activeAreaOption?.name) {
+                    if (owner === 'routine')
+                      updateTemplate({ life_area_ref: null });
+                    else
+                      changeStructure({ ...structure, life_area_ref: null });
+                  }
                 }}
                 onChoose={(area) => {
                   setAreaQuery(area.label);
+                  setAreaColorOverride(null);
+                  setAreaError('');
                   updateMetadata(setColor, '');
                   if (owner === 'routine')
                     updateTemplate({ life_area_ref: area.id });
@@ -1640,11 +1704,29 @@ export function RecurringSeriesEditor({
                 }}
                 onClear={() => {
                   setAreaQuery('');
+                  setAreaColorOverride(null);
+                  setAreaError('');
                   if (owner === 'routine')
                     updateTemplate({ life_area_ref: null });
                   else changeStructure({ ...structure, life_area_ref: null });
                 }}
               />
+              {creatingArea ? (
+                <small role="status">
+                  La nuova Life Area sarà creata insieme al salvataggio della serie.
+                </small>
+              ) : null}
+              {changingAreaColor ? (
+                <small role="status">
+                  Modificare il colore della Life Area aggiorna anche gli altri
+                  elementi associati, comprese le istanze precedenti.
+                </small>
+              ) : null}
+              {areaError ? (
+                <small className="temporal-create-field-error" role="alert">
+                  {areaError}
+                </small>
+              ) : null}
             </section>
             <section
               className="temporal-create-reality-objectives timeline-activity-editor__outcome"
