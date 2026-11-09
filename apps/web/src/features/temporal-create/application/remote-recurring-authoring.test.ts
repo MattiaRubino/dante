@@ -82,9 +82,9 @@ describe('Recurring Event Create placement-lock contract', () => {
         duration_minutes: 30,
         placement_protected: locked,
       });
-      expect(Object.keys(body).filter((key) => key === 'placement_protected')).toEqual([
-        'placement_protected',
-      ]);
+      expect(
+        Object.keys(body).filter((key) => key === 'placement_protected'),
+      ).toEqual(['placement_protected']);
     },
   );
 });

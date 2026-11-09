@@ -27,6 +27,7 @@ export const temporalAuthorEventBodyPlacementOneThreeZoneIdMax = 200;
 
 export const temporalAuthorEventBodyPlacementOneFourKindDefault = `absolute_interval`;
 export const temporalAuthorEventBodyPlacementOneFiveKindDefault = `coarse_local_period`;
+export const temporalAuthorEventBodyPlacementProtectedDefault = false;
 export const temporalAuthorEventBodyTitleMax = 300;
 
 export const TemporalAuthorEventBody = /*#__PURE__*/ zod
@@ -186,6 +187,10 @@ export const TemporalAuthorEventBody = /*#__PURE__*/ zod
         ]),
         /*#__PURE__*/ zod.null(),
       ]),
+    ),
+    placement_protected: /*#__PURE__*/ zod._default(
+      /*#__PURE__*/ zod.boolean(),
+      temporalAuthorEventBodyPlacementProtectedDefault,
     ),
     title: /*#__PURE__*/ zod
       .string()

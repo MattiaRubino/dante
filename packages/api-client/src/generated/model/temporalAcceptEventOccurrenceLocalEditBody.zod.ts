@@ -23,6 +23,7 @@ export const temporalAcceptEventOccurrenceLocalEditBodyObjectivesOneAddItemTarge
   new RegExp('^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$');
 export const temporalAcceptEventOccurrenceLocalEditBodyObjectivesOneAddItemUnitCodeOneMax = 40;
 
+export const temporalAcceptEventOccurrenceLocalEditBodyObjectivesOneAddItemVerificationModeDefault = `none`;
 export const temporalAcceptEventOccurrenceLocalEditBodyObjectivesOneAddMax = 100;
 
 export const temporalAcceptEventOccurrenceLocalEditBodyObjectivesOneRetireItemExpectedRevisionMin = 0;
@@ -34,6 +35,8 @@ export const temporalAcceptEventOccurrenceLocalEditBodyObjectivesOneRetireMax = 
 export const temporalAcceptEventOccurrenceLocalEditBodyObjectivesOneReviseItemChangeExpectedRevisionMin = 0;
 
 export const temporalAcceptEventOccurrenceLocalEditBodyObjectivesOneReviseItemChangeExpectedSourceRevisionOneMin = 0;
+
+export const temporalAcceptEventOccurrenceLocalEditBodyObjectivesOneReviseItemChangeExpectedVerificationRevisionOneMin = 0;
 
 export const temporalAcceptEventOccurrenceLocalEditBodyObjectivesOneReviseItemChangeLabelMax = 300;
 
@@ -54,6 +57,8 @@ export const temporalAcceptEventOccurrenceLocalEditBodyObjectivesOneReviseItemCh
 export const temporalAcceptEventOccurrenceLocalEditBodyObjectivesOneReviseMax = 100;
 
 export const temporalAcceptEventOccurrenceLocalEditBodyOperationIdMax = 140;
+
+export const temporalAcceptEventOccurrenceLocalEditBodyPlacementLockOneExpectedRevisionMin = 0;
 
 export const temporalAcceptEventOccurrenceLocalEditBodyRealityOneOperationIdMax = 200;
 
@@ -92,99 +97,114 @@ export const TemporalAcceptEventOccurrenceLocalEditBody =
             add: /*#__PURE__*/ zod.optional(
               /*#__PURE__*/ zod
                 .array(
-                  /*#__PURE__*/ zod.object({
-                    comparator_code: /*#__PURE__*/ zod.optional(
-                      /*#__PURE__*/ zod.union([
-                        /*#__PURE__*/ zod.enum(['eq', 'gte', 'lte', 'between']),
-                        /*#__PURE__*/ zod.null(),
-                      ]),
-                    ),
-                    label: /*#__PURE__*/ zod
-                      .string()
-                      .check(/*#__PURE__*/ zod.minLength(1))
-                      .check(
-                        /*#__PURE__*/ zod.maxLength(
-                          temporalAcceptEventOccurrenceLocalEditBodyObjectivesOneAddItemLabelMax,
-                        ),
+                  /*#__PURE__*/ zod
+                    .object({
+                      comparator_code: /*#__PURE__*/ zod.optional(
+                        /*#__PURE__*/ zod.union([
+                          /*#__PURE__*/ zod.enum([
+                            'eq',
+                            'gte',
+                            'lte',
+                            'between',
+                          ]),
+                          /*#__PURE__*/ zod.null(),
+                        ]),
                       ),
-                    operation_id: /*#__PURE__*/ zod
-                      .string()
-                      .check(/*#__PURE__*/ zod.minLength(1))
-                      .check(
-                        /*#__PURE__*/ zod.maxLength(
-                          temporalAcceptEventOccurrenceLocalEditBodyObjectivesOneAddItemOperationIdMax,
+                      label: /*#__PURE__*/ zod
+                        .string()
+                        .check(/*#__PURE__*/ zod.minLength(1))
+                        .check(
+                          /*#__PURE__*/ zod.maxLength(
+                            temporalAcceptEventOccurrenceLocalEditBodyObjectivesOneAddItemLabelMax,
+                          ),
                         ),
+                      operation_id: /*#__PURE__*/ zod
+                        .string()
+                        .check(/*#__PURE__*/ zod.minLength(1))
+                        .check(
+                          /*#__PURE__*/ zod.maxLength(
+                            temporalAcceptEventOccurrenceLocalEditBodyObjectivesOneAddItemOperationIdMax,
+                          ),
+                        ),
+                      presentation_order: /*#__PURE__*/ zod
+                        .int()
+                        .check(
+                          /*#__PURE__*/ zod.gte(
+                            temporalAcceptEventOccurrenceLocalEditBodyObjectivesOneAddItemPresentationOrderMin,
+                          ),
+                        )
+                        .check(
+                          /*#__PURE__*/ zod.lte(
+                            temporalAcceptEventOccurrenceLocalEditBodyObjectivesOneAddItemPresentationOrderMax,
+                          ),
+                        ),
+                      result_kind: /*#__PURE__*/ zod.enum([
+                        'boolean',
+                        'quantity',
+                        'qualitative',
+                        'range',
+                      ]),
+                      target_max: /*#__PURE__*/ zod.optional(
+                        /*#__PURE__*/ zod.union([
+                          /*#__PURE__*/ zod.number(),
+                          /*#__PURE__*/ zod
+                            .string()
+                            .check(
+                              /*#__PURE__*/ zod.regex(
+                                temporalAcceptEventOccurrenceLocalEditBodyObjectivesOneAddItemTargetMaxTwoRegExp,
+                              ),
+                            ),
+                          /*#__PURE__*/ zod.null(),
+                        ]),
                       ),
-                    presentation_order: /*#__PURE__*/ zod
-                      .int()
-                      .check(
-                        /*#__PURE__*/ zod.gte(
-                          temporalAcceptEventOccurrenceLocalEditBodyObjectivesOneAddItemPresentationOrderMin,
-                        ),
-                      )
-                      .check(
-                        /*#__PURE__*/ zod.lte(
-                          temporalAcceptEventOccurrenceLocalEditBodyObjectivesOneAddItemPresentationOrderMax,
-                        ),
+                      target_min: /*#__PURE__*/ zod.optional(
+                        /*#__PURE__*/ zod.union([
+                          /*#__PURE__*/ zod.number(),
+                          /*#__PURE__*/ zod
+                            .string()
+                            .check(
+                              /*#__PURE__*/ zod.regex(
+                                temporalAcceptEventOccurrenceLocalEditBodyObjectivesOneAddItemTargetMinTwoRegExp,
+                              ),
+                            ),
+                          /*#__PURE__*/ zod.null(),
+                        ]),
                       ),
-                    result_kind: /*#__PURE__*/ zod.enum([
-                      'boolean',
-                      'quantity',
-                      'qualitative',
-                      'range',
-                    ]),
-                    target_max: /*#__PURE__*/ zod.optional(
-                      /*#__PURE__*/ zod.union([
-                        /*#__PURE__*/ zod.number(),
-                        /*#__PURE__*/ zod
-                          .string()
-                          .check(
-                            /*#__PURE__*/ zod.regex(
-                              temporalAcceptEventOccurrenceLocalEditBodyObjectivesOneAddItemTargetMaxTwoRegExp,
+                      target_value: /*#__PURE__*/ zod.optional(
+                        /*#__PURE__*/ zod.union([
+                          /*#__PURE__*/ zod.number(),
+                          /*#__PURE__*/ zod
+                            .string()
+                            .check(
+                              /*#__PURE__*/ zod.regex(
+                                temporalAcceptEventOccurrenceLocalEditBodyObjectivesOneAddItemTargetValueTwoRegExp,
+                              ),
                             ),
-                          ),
-                        /*#__PURE__*/ zod.null(),
-                      ]),
-                    ),
-                    target_min: /*#__PURE__*/ zod.optional(
-                      /*#__PURE__*/ zod.union([
-                        /*#__PURE__*/ zod.number(),
-                        /*#__PURE__*/ zod
-                          .string()
-                          .check(
-                            /*#__PURE__*/ zod.regex(
-                              temporalAcceptEventOccurrenceLocalEditBodyObjectivesOneAddItemTargetMinTwoRegExp,
+                          /*#__PURE__*/ zod.null(),
+                        ]),
+                      ),
+                      unit_code: /*#__PURE__*/ zod.optional(
+                        /*#__PURE__*/ zod.union([
+                          /*#__PURE__*/ zod
+                            .string()
+                            .check(
+                              /*#__PURE__*/ zod.maxLength(
+                                temporalAcceptEventOccurrenceLocalEditBodyObjectivesOneAddItemUnitCodeOneMax,
+                              ),
                             ),
-                          ),
-                        /*#__PURE__*/ zod.null(),
-                      ]),
+                          /*#__PURE__*/ zod.null(),
+                        ]),
+                      ),
+                      verification_mode: /*#__PURE__*/ zod._default(
+                        /*#__PURE__*/ zod.enum(['none', 'review_on_end']),
+                        temporalAcceptEventOccurrenceLocalEditBodyObjectivesOneAddItemVerificationModeDefault,
+                      ),
+                    })
+                    .check(
+                      /*#__PURE__*/ zod.describe(
+                        'Creation defaults to no user-facing review; revised definitions may omit a change.',
+                      ),
                     ),
-                    target_value: /*#__PURE__*/ zod.optional(
-                      /*#__PURE__*/ zod.union([
-                        /*#__PURE__*/ zod.number(),
-                        /*#__PURE__*/ zod
-                          .string()
-                          .check(
-                            /*#__PURE__*/ zod.regex(
-                              temporalAcceptEventOccurrenceLocalEditBodyObjectivesOneAddItemTargetValueTwoRegExp,
-                            ),
-                          ),
-                        /*#__PURE__*/ zod.null(),
-                      ]),
-                    ),
-                    unit_code: /*#__PURE__*/ zod.optional(
-                      /*#__PURE__*/ zod.union([
-                        /*#__PURE__*/ zod
-                          .string()
-                          .check(
-                            /*#__PURE__*/ zod.maxLength(
-                              temporalAcceptEventOccurrenceLocalEditBodyObjectivesOneAddItemUnitCodeOneMax,
-                            ),
-                          ),
-                        /*#__PURE__*/ zod.null(),
-                      ]),
-                    ),
-                  }),
                 )
                 .check(
                   /*#__PURE__*/ zod.maxLength(
@@ -261,6 +281,19 @@ export const TemporalAcceptEventOccurrenceLocalEditBody =
                           /*#__PURE__*/ zod.null(),
                         ]),
                       ),
+                      expected_verification_revision:
+                        /*#__PURE__*/ zod.optional(
+                          /*#__PURE__*/ zod.union([
+                            /*#__PURE__*/ zod
+                              .int()
+                              .check(
+                                /*#__PURE__*/ zod.gte(
+                                  temporalAcceptEventOccurrenceLocalEditBodyObjectivesOneReviseItemChangeExpectedVerificationRevisionOneMin,
+                                ),
+                              ),
+                            /*#__PURE__*/ zod.null(),
+                          ]),
+                        ),
                       label: /*#__PURE__*/ zod
                         .string()
                         .check(/*#__PURE__*/ zod.minLength(1))
@@ -353,6 +386,12 @@ export const TemporalAcceptEventOccurrenceLocalEditBody =
                           /*#__PURE__*/ zod.null(),
                         ]),
                       ),
+                      verification_mode: /*#__PURE__*/ zod.optional(
+                        /*#__PURE__*/ zod.union([
+                          /*#__PURE__*/ zod.enum(['none', 'review_on_end']),
+                          /*#__PURE__*/ zod.null(),
+                        ]),
+                      ),
                     }),
                     objective_ref: /*#__PURE__*/ zod.uuid(),
                   }),
@@ -380,6 +419,22 @@ export const TemporalAcceptEventOccurrenceLocalEditBody =
           temporalAcceptEventOccurrenceLocalEditBodyOperationIdMax,
         ),
       ),
+    placement_lock: /*#__PURE__*/ zod.optional(
+      /*#__PURE__*/ zod.union([
+        /*#__PURE__*/ zod.object({
+          expected_revision: /*#__PURE__*/ zod
+            .int()
+            .check(
+              /*#__PURE__*/ zod.gte(
+                temporalAcceptEventOccurrenceLocalEditBodyPlacementLockOneExpectedRevisionMin,
+              ),
+            ),
+          locked: /*#__PURE__*/ zod.boolean(),
+          schedule_ref: /*#__PURE__*/ zod.uuid(),
+        }),
+        /*#__PURE__*/ zod.null(),
+      ]),
+    ),
     profile_patch: /*#__PURE__*/ zod.optional(
       /*#__PURE__*/ zod.record(
         /*#__PURE__*/ zod.string(),

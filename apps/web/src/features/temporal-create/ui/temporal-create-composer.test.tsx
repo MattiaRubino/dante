@@ -116,20 +116,26 @@ describe('TemporalCreateComposer', () => {
     const titleRow = document.querySelector(
       '.temporal-authoring-title-row--activity',
     );
-    expect(titleRow?.getAttribute('data-authoring-title-kind')).toBe('activity');
+    expect(titleRow?.getAttribute('data-authoring-title-kind')).toBe(
+      'activity',
+    );
     expect(titleRow?.firstElementChild?.textContent).toBe('◇');
     expect(titleRow?.children).toHaveLength(3);
-    expect(titleRow?.children[1]?.classList.contains('temporal-create-title-row__name')).toBe(
-      true,
-    );
     expect(
-      titleRow?.children[2]?.classList.contains('temporal-create-title-row__tools'),
+      titleRow?.children[1]?.classList.contains(
+        'temporal-create-title-row__name',
+      ),
+    ).toBe(true);
+    expect(
+      titleRow?.children[2]?.classList.contains(
+        'temporal-create-title-row__tools',
+      ),
     ).toBe(true);
     const activityActions = titleRow?.children[2];
     expect(activityActions?.children).toHaveLength(2);
-    expect(activityActions?.children[0]?.getAttribute('data-placement-protection')).toBe(
-      'activity',
-    );
+    expect(
+      activityActions?.children[0]?.getAttribute('data-placement-protection'),
+    ).toBe('activity');
     expect(
       activityActions?.children[1]?.getAttribute('data-session-capability'),
     ).toBe('activity');
@@ -192,30 +198,37 @@ describe('TemporalCreateComposer', () => {
       let panel = screen.getByRole('region', { name: 'Ripetizione' });
       expect(panel.getAttribute('data-recurrence-owner')).toBe(kind);
       expect(panel.getAttribute('data-recurrence-expanded')).toBe('false');
-      expect(within(panel).getAllByRole('heading', { name: 'Ripetizione' }))
-        .toHaveLength(1);
       expect(
-        panel.querySelector('.temporal-recurrence-panel__choice')
+        within(panel).getAllByRole('heading', { name: 'Ripetizione' }),
+      ).toHaveLength(1);
+      expect(
+        panel
+          .querySelector('.temporal-recurrence-panel__choice')
           ?.contains(within(panel).getByRole('combobox', { name: 'Ripeti' })),
       ).toBe(true);
-      expect(panel.querySelector('.temporal-recurrence-panel__details')).toBeNull();
+      expect(
+        panel.querySelector('.temporal-recurrence-panel__details'),
+      ).toBeNull();
 
       view.unmount();
       renderWith(repeatFields);
       panel = screen.getByRole('region', { name: 'Ripetizione' });
       expect(panel.getAttribute('data-recurrence-expanded')).toBe('true');
-      expect(within(panel).getAllByRole('heading', { name: 'Ripetizione' }))
-        .toHaveLength(1);
-      expect(panel.querySelector('.temporal-recurrence-panel__details')).not.toBeNull();
+      expect(
+        within(panel).getAllByRole('heading', { name: 'Ripetizione' }),
+      ).toHaveLength(1);
+      expect(
+        panel.querySelector('.temporal-recurrence-panel__details'),
+      ).not.toBeNull();
       expect(
         within(panel).getByRole('combobox', { name: 'Ripeti' }),
       ).toHaveProperty('value', 'daily');
       const details = panel.querySelector(
         '.temporal-recurrence-panel__details',
       ) as HTMLElement;
-      expect(
-        details.querySelectorAll('.temporal-create-repeat'),
-      ).toHaveLength(1);
+      expect(details.querySelectorAll('.temporal-create-repeat')).toHaveLength(
+        1,
+      );
       expect(
         details.querySelector('.temporal-create-repeat__end-choices'),
       ).not.toBeNull();
@@ -353,8 +366,12 @@ describe('TemporalCreateComposer', () => {
     expect(lifeArea.getAttribute('maxlength')).toBe('100');
     const eventTitleRow = document.querySelector('.temporal-event-title-row');
     expect(eventTitleRow).not.toBeNull();
-    expect(eventTitleRow?.querySelector('[data-create-path="title"]')).toBeTruthy();
-    expect(eventTitleRow?.getAttribute('data-authoring-title-kind')).toBe('event');
+    expect(
+      eventTitleRow?.querySelector('[data-create-path="title"]'),
+    ).toBeTruthy();
+    expect(eventTitleRow?.getAttribute('data-authoring-title-kind')).toBe(
+      'event',
+    );
     expect(
       [...(eventTitleRow?.children ?? [])].map((child) =>
         child.classList.contains('temporal-authoring-title-row__marker')
@@ -367,20 +384,25 @@ describe('TemporalCreateComposer', () => {
       ),
     ).toEqual(['marker', 'name', 'actions']);
     expect(eventTitleRow?.firstElementChild?.textContent).toBe('○');
-    const eventLock = screen.getByRole('button', { name: 'Blocca spostamenti' });
+    const eventLock = screen.getByRole('button', {
+      name: 'Blocca spostamenti',
+    });
     expect(eventTitleRow?.contains(eventLock)).toBe(true);
     expect(eventLock.getAttribute('data-placement-protection')).toBe('event');
     expect(eventLock.getAttribute('aria-pressed')).toBe('false');
     fireEvent.click(eventLock);
     expect(
-      screen.getByRole('button', { name: 'Sblocca spostamenti' })
+      screen
+        .getByRole('button', { name: 'Sblocca spostamenti' })
         .getAttribute('aria-pressed'),
     ).toBe('true');
     expect(onU2DraftChange).toHaveBeenCalledWith(
       expect.objectContaining({ eventPlacementProtected: true }),
       'user',
     );
-    fireEvent.click(screen.getByRole('button', { name: 'Sblocca spostamenti' }));
+    fireEvent.click(
+      screen.getByRole('button', { name: 'Sblocca spostamenti' }),
+    );
     expect(eventLock.getAttribute('aria-pressed')).toBe('false');
     expect(onU2DraftChange).toHaveBeenCalledWith(
       expect.objectContaining({ eventPlacementProtected: false }),

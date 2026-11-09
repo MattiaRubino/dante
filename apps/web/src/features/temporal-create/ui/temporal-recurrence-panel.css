@@ -7,10 +7,8 @@
   width: 100%;
   min-width: 0;
   padding: 10px 16px 14px;
-  border: 1px solid var(
-    --dante-semantic-color-home-border-subtle,
-    rgba(255, 255, 255, 0.13)
-  );
+  border: 1px solid
+    var(--dante-semantic-color-home-border-subtle, rgba(255, 255, 255, 0.13));
   border-radius: 12px;
   background: var(
     --dante-semantic-color-home-surface-control,
@@ -47,10 +45,8 @@
   min-width: 0;
   width: 100%;
   padding-top: 12px;
-  border-top: 1px solid var(
-    --dante-semantic-color-home-border-subtle,
-    rgba(255, 255, 255, 0.09)
-  );
+  border-top: 1px solid
+    var(--dante-semantic-color-home-border-subtle, rgba(255, 255, 255, 0.09));
 }
 
 .temporal-recurrence-panel__details
@@ -68,8 +64,7 @@
   box-shadow: none;
 }
 
-.temporal-recurrence-panel__details
-  .temporal-create-repeat__end-row {
+.temporal-recurrence-panel__details .temporal-create-repeat__end-row {
   margin-top: 0;
 }
 
@@ -86,10 +81,8 @@
   width: 100%;
   min-height: 44px;
   padding: 0 12px;
-  border: 1px solid var(
-    --dante-semantic-color-home-border-subtle,
-    rgba(255, 255, 255, 0.13)
-  );
+  border: 1px solid
+    var(--dante-semantic-color-home-border-subtle, rgba(255, 255, 255, 0.13));
   border-radius: 10px;
   background: var(--dante-semantic-color-home-surface-control, #1c292d);
   color: var(--dante-semantic-color-home-text-primary, #edf2f8);
@@ -98,10 +91,7 @@
 }
 
 .temporal-recurrence-panel__frequency select:focus-visible {
-  outline: 2px solid var(
-    --dante-semantic-color-home-chrome-active,
-    #ea5c12
-  );
+  outline: 2px solid var(--dante-semantic-color-home-chrome-active, #ea5c12);
   outline-offset: 1px;
 }
 
@@ -112,7 +102,8 @@
 }
 
 /* Series may use richer calendar families, but not a second wrapper style. */
-.timeline-recurring-series-editor .temporal-recurrence-panel__details
+.timeline-recurring-series-editor
+  .temporal-recurrence-panel__details
   > .timeline-recurring-series-editor__recurrence {
   border: 0;
   padding: 0;

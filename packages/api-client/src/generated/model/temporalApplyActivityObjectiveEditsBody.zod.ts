@@ -21,6 +21,7 @@ export const temporalApplyActivityObjectiveEditsBodyAddItemTargetValueTwoRegExp 
   new RegExp('^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$');
 export const temporalApplyActivityObjectiveEditsBodyAddItemUnitCodeOneMax = 40;
 
+export const temporalApplyActivityObjectiveEditsBodyAddItemVerificationModeDefault = `none`;
 export const temporalApplyActivityObjectiveEditsBodyAddMax = 100;
 
 export const temporalApplyActivityObjectiveEditsBodyRetireItemExpectedRevisionMin = 0;
@@ -32,6 +33,8 @@ export const temporalApplyActivityObjectiveEditsBodyRetireMax = 100;
 export const temporalApplyActivityObjectiveEditsBodyReviseItemChangeExpectedRevisionMin = 0;
 
 export const temporalApplyActivityObjectiveEditsBodyReviseItemChangeExpectedSourceRevisionOneMin = 0;
+
+export const temporalApplyActivityObjectiveEditsBodyReviseItemChangeExpectedVerificationRevisionOneMin = 0;
 
 export const temporalApplyActivityObjectiveEditsBodyReviseItemChangeLabelMax = 300;
 
@@ -56,99 +59,109 @@ export const TemporalApplyActivityObjectiveEditsBody = /*#__PURE__*/ zod
     add: /*#__PURE__*/ zod.optional(
       /*#__PURE__*/ zod
         .array(
-          /*#__PURE__*/ zod.object({
-            comparator_code: /*#__PURE__*/ zod.optional(
-              /*#__PURE__*/ zod.union([
-                /*#__PURE__*/ zod.enum(['eq', 'gte', 'lte', 'between']),
-                /*#__PURE__*/ zod.null(),
-              ]),
-            ),
-            label: /*#__PURE__*/ zod
-              .string()
-              .check(/*#__PURE__*/ zod.minLength(1))
-              .check(
-                /*#__PURE__*/ zod.maxLength(
-                  temporalApplyActivityObjectiveEditsBodyAddItemLabelMax,
-                ),
+          /*#__PURE__*/ zod
+            .object({
+              comparator_code: /*#__PURE__*/ zod.optional(
+                /*#__PURE__*/ zod.union([
+                  /*#__PURE__*/ zod.enum(['eq', 'gte', 'lte', 'between']),
+                  /*#__PURE__*/ zod.null(),
+                ]),
               ),
-            operation_id: /*#__PURE__*/ zod
-              .string()
-              .check(/*#__PURE__*/ zod.minLength(1))
-              .check(
-                /*#__PURE__*/ zod.maxLength(
-                  temporalApplyActivityObjectiveEditsBodyAddItemOperationIdMax,
+              label: /*#__PURE__*/ zod
+                .string()
+                .check(/*#__PURE__*/ zod.minLength(1))
+                .check(
+                  /*#__PURE__*/ zod.maxLength(
+                    temporalApplyActivityObjectiveEditsBodyAddItemLabelMax,
+                  ),
                 ),
+              operation_id: /*#__PURE__*/ zod
+                .string()
+                .check(/*#__PURE__*/ zod.minLength(1))
+                .check(
+                  /*#__PURE__*/ zod.maxLength(
+                    temporalApplyActivityObjectiveEditsBodyAddItemOperationIdMax,
+                  ),
+                ),
+              presentation_order: /*#__PURE__*/ zod
+                .int()
+                .check(
+                  /*#__PURE__*/ zod.gte(
+                    temporalApplyActivityObjectiveEditsBodyAddItemPresentationOrderMin,
+                  ),
+                )
+                .check(
+                  /*#__PURE__*/ zod.lte(
+                    temporalApplyActivityObjectiveEditsBodyAddItemPresentationOrderMax,
+                  ),
+                ),
+              result_kind: /*#__PURE__*/ zod.enum([
+                'boolean',
+                'quantity',
+                'qualitative',
+                'range',
+              ]),
+              target_max: /*#__PURE__*/ zod.optional(
+                /*#__PURE__*/ zod.union([
+                  /*#__PURE__*/ zod.number(),
+                  /*#__PURE__*/ zod
+                    .string()
+                    .check(
+                      /*#__PURE__*/ zod.regex(
+                        temporalApplyActivityObjectiveEditsBodyAddItemTargetMaxTwoRegExp,
+                      ),
+                    ),
+                  /*#__PURE__*/ zod.null(),
+                ]),
               ),
-            presentation_order: /*#__PURE__*/ zod
-              .int()
-              .check(
-                /*#__PURE__*/ zod.gte(
-                  temporalApplyActivityObjectiveEditsBodyAddItemPresentationOrderMin,
-                ),
-              )
-              .check(
-                /*#__PURE__*/ zod.lte(
-                  temporalApplyActivityObjectiveEditsBodyAddItemPresentationOrderMax,
-                ),
+              target_min: /*#__PURE__*/ zod.optional(
+                /*#__PURE__*/ zod.union([
+                  /*#__PURE__*/ zod.number(),
+                  /*#__PURE__*/ zod
+                    .string()
+                    .check(
+                      /*#__PURE__*/ zod.regex(
+                        temporalApplyActivityObjectiveEditsBodyAddItemTargetMinTwoRegExp,
+                      ),
+                    ),
+                  /*#__PURE__*/ zod.null(),
+                ]),
               ),
-            result_kind: /*#__PURE__*/ zod.enum([
-              'boolean',
-              'quantity',
-              'qualitative',
-              'range',
-            ]),
-            target_max: /*#__PURE__*/ zod.optional(
-              /*#__PURE__*/ zod.union([
-                /*#__PURE__*/ zod.number(),
-                /*#__PURE__*/ zod
-                  .string()
-                  .check(
-                    /*#__PURE__*/ zod.regex(
-                      temporalApplyActivityObjectiveEditsBodyAddItemTargetMaxTwoRegExp,
+              target_value: /*#__PURE__*/ zod.optional(
+                /*#__PURE__*/ zod.union([
+                  /*#__PURE__*/ zod.number(),
+                  /*#__PURE__*/ zod
+                    .string()
+                    .check(
+                      /*#__PURE__*/ zod.regex(
+                        temporalApplyActivityObjectiveEditsBodyAddItemTargetValueTwoRegExp,
+                      ),
                     ),
-                  ),
-                /*#__PURE__*/ zod.null(),
-              ]),
-            ),
-            target_min: /*#__PURE__*/ zod.optional(
-              /*#__PURE__*/ zod.union([
-                /*#__PURE__*/ zod.number(),
-                /*#__PURE__*/ zod
-                  .string()
-                  .check(
-                    /*#__PURE__*/ zod.regex(
-                      temporalApplyActivityObjectiveEditsBodyAddItemTargetMinTwoRegExp,
+                  /*#__PURE__*/ zod.null(),
+                ]),
+              ),
+              unit_code: /*#__PURE__*/ zod.optional(
+                /*#__PURE__*/ zod.union([
+                  /*#__PURE__*/ zod
+                    .string()
+                    .check(
+                      /*#__PURE__*/ zod.maxLength(
+                        temporalApplyActivityObjectiveEditsBodyAddItemUnitCodeOneMax,
+                      ),
                     ),
-                  ),
-                /*#__PURE__*/ zod.null(),
-              ]),
+                  /*#__PURE__*/ zod.null(),
+                ]),
+              ),
+              verification_mode: /*#__PURE__*/ zod._default(
+                /*#__PURE__*/ zod.enum(['none', 'review_on_end']),
+                temporalApplyActivityObjectiveEditsBodyAddItemVerificationModeDefault,
+              ),
+            })
+            .check(
+              /*#__PURE__*/ zod.describe(
+                'Creation defaults to no user-facing review; revised definitions may omit a change.',
+              ),
             ),
-            target_value: /*#__PURE__*/ zod.optional(
-              /*#__PURE__*/ zod.union([
-                /*#__PURE__*/ zod.number(),
-                /*#__PURE__*/ zod
-                  .string()
-                  .check(
-                    /*#__PURE__*/ zod.regex(
-                      temporalApplyActivityObjectiveEditsBodyAddItemTargetValueTwoRegExp,
-                    ),
-                  ),
-                /*#__PURE__*/ zod.null(),
-              ]),
-            ),
-            unit_code: /*#__PURE__*/ zod.optional(
-              /*#__PURE__*/ zod.union([
-                /*#__PURE__*/ zod
-                  .string()
-                  .check(
-                    /*#__PURE__*/ zod.maxLength(
-                      temporalApplyActivityObjectiveEditsBodyAddItemUnitCodeOneMax,
-                    ),
-                  ),
-                /*#__PURE__*/ zod.null(),
-              ]),
-            ),
-          }),
         )
         .check(
           /*#__PURE__*/ zod.maxLength(
@@ -215,6 +228,18 @@ export const TemporalApplyActivityObjectiveEditsBody = /*#__PURE__*/ zod
                     .check(
                       /*#__PURE__*/ zod.gte(
                         temporalApplyActivityObjectiveEditsBodyReviseItemChangeExpectedSourceRevisionOneMin,
+                      ),
+                    ),
+                  /*#__PURE__*/ zod.null(),
+                ]),
+              ),
+              expected_verification_revision: /*#__PURE__*/ zod.optional(
+                /*#__PURE__*/ zod.union([
+                  /*#__PURE__*/ zod
+                    .int()
+                    .check(
+                      /*#__PURE__*/ zod.gte(
+                        temporalApplyActivityObjectiveEditsBodyReviseItemChangeExpectedVerificationRevisionOneMin,
                       ),
                     ),
                   /*#__PURE__*/ zod.null(),
@@ -306,6 +331,12 @@ export const TemporalApplyActivityObjectiveEditsBody = /*#__PURE__*/ zod
                         temporalApplyActivityObjectiveEditsBodyReviseItemChangeUnitCodeOneMax,
                       ),
                     ),
+                  /*#__PURE__*/ zod.null(),
+                ]),
+              ),
+              verification_mode: /*#__PURE__*/ zod.optional(
+                /*#__PURE__*/ zod.union([
+                  /*#__PURE__*/ zod.enum(['none', 'review_on_end']),
                   /*#__PURE__*/ zod.null(),
                 ]),
               ),

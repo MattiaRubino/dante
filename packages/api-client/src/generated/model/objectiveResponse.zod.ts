@@ -19,7 +19,8 @@ export const objectiveResponseTargetMinOneRegExp = new RegExp(
 export const objectiveResponseTargetValueOneRegExp = new RegExp(
   '^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$',
 );
-
+export const objectiveResponseVerificationModeDefault = `none`;
+export const objectiveResponseVerificationRevisionDefault = 0;
 export const ObjectiveResponse = /*#__PURE__*/ zod.object({
   assessment_code: /*#__PURE__*/ zod.optional(
     /*#__PURE__*/ zod.union([
@@ -106,6 +107,14 @@ export const ObjectiveResponse = /*#__PURE__*/ zod.object({
     /*#__PURE__*/ zod.string(),
     /*#__PURE__*/ zod.null(),
   ]),
+  verification_mode: /*#__PURE__*/ zod._default(
+    /*#__PURE__*/ zod.enum(['none', 'review_on_end']),
+    objectiveResponseVerificationModeDefault,
+  ),
+  verification_revision: /*#__PURE__*/ zod._default(
+    /*#__PURE__*/ zod.int(),
+    objectiveResponseVerificationRevisionDefault,
+  ),
 });
 
 export type ObjectiveResponse = zod.input<typeof ObjectiveResponse>;

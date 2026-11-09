@@ -21,7 +21,8 @@ export const eventAtomicEditResponseObjectivesItemTargetMinOneRegExp =
   new RegExp('^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$');
 export const eventAtomicEditResponseObjectivesItemTargetValueOneRegExp =
   new RegExp('^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$');
-
+export const eventAtomicEditResponseObjectivesItemVerificationModeDefault = `none`;
+export const eventAtomicEditResponseObjectivesItemVerificationRevisionDefault = 0;
 export const EventAtomicEditResponse = /*#__PURE__*/ zod.object({
   event: /*#__PURE__*/ zod.object({
     agenda_parts: /*#__PURE__*/ zod.array(/*#__PURE__*/ zod.string()),
@@ -177,7 +178,21 @@ export const EventAtomicEditResponse = /*#__PURE__*/ zod.object({
         /*#__PURE__*/ zod.string(),
         /*#__PURE__*/ zod.null(),
       ]),
+      verification_mode: /*#__PURE__*/ zod._default(
+        /*#__PURE__*/ zod.enum(['none', 'review_on_end']),
+        eventAtomicEditResponseObjectivesItemVerificationModeDefault,
+      ),
+      verification_revision: /*#__PURE__*/ zod._default(
+        /*#__PURE__*/ zod.int(),
+        eventAtomicEditResponseObjectivesItemVerificationRevisionDefault,
+      ),
     }),
+  ),
+  placement_material_state_ref: /*#__PURE__*/ zod.optional(
+    /*#__PURE__*/ zod.union([
+      /*#__PURE__*/ zod.uuid(),
+      /*#__PURE__*/ zod.null(),
+    ]),
   ),
 });
 

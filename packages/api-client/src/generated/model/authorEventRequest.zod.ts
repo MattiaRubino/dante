@@ -27,6 +27,7 @@ export const authorEventRequestPlacementOneThreeZoneIdMax = 200;
 
 export const authorEventRequestPlacementOneFourKindDefault = `absolute_interval`;
 export const authorEventRequestPlacementOneFiveKindDefault = `coarse_local_period`;
+export const authorEventRequestPlacementProtectedDefault = false;
 export const authorEventRequestTitleMax = 300;
 
 export const AuthorEventRequest = /*#__PURE__*/ zod
@@ -180,6 +181,10 @@ export const AuthorEventRequest = /*#__PURE__*/ zod
         ]),
         /*#__PURE__*/ zod.null(),
       ]),
+    ),
+    placement_protected: /*#__PURE__*/ zod._default(
+      /*#__PURE__*/ zod.boolean(),
+      authorEventRequestPlacementProtectedDefault,
     ),
     title: /*#__PURE__*/ zod
       .string()

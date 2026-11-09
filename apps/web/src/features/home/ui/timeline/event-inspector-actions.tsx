@@ -296,7 +296,9 @@ export function EventInspectorActions({
         context
           ? Promise.resolve(null)
           : existingRecurrence.eventSeed(eventRef),
-        scheduleRef ? placementLockSource.get(scheduleRef) : Promise.resolve(null),
+        scheduleRef
+          ? placementLockSource.get(scheduleRef)
+          : Promise.resolve(null),
       ]);
       if (
         scheduleRef !== null &&
@@ -678,16 +680,20 @@ export function EventInspectorActions({
       }
       if (
         proposedRecurrence &&
-        (!scheduleRef || !placementMaterialStateRef ||
+        (!scheduleRef ||
+          !placementMaterialStateRef ||
           profile.profileRevision === undefined)
       ) {
-        throw new Error('Programmazione Event non disponibile per la ripetizione.');
+        throw new Error(
+          'Programmazione Event non disponibile per la ripetizione.',
+        );
       }
       if (proposedRecurrence && recurrenceResume.current) {
         const createdSourceRef = await existingRecurrence.startEvent(
           recurrenceResume.current,
           proposedRecurrence,
-          (recurrenceOperation.current ??= systemTemporalIdFactory.operationId()),
+          (recurrenceOperation.current ??=
+            systemTemporalIdFactory.operationId()),
         );
         recurrenceResume.current = null;
         setExistingSeed(createdSourceRef);
@@ -1030,7 +1036,8 @@ export function EventInspectorActions({
         const createdSourceRef = await existingRecurrence.startEvent(
           basis,
           proposedRecurrence,
-          (recurrenceOperation.current ??= systemTemporalIdFactory.operationId()),
+          (recurrenceOperation.current ??=
+            systemTemporalIdFactory.operationId()),
         );
         recurrenceResume.current = null;
         setExistingSeed(createdSourceRef);
@@ -1373,7 +1380,10 @@ export function EventInspectorActions({
             className="timeline-event-profile-editor__body"
             inert={confirmingDiscard || undefined}
           >
-            <TemporalAuthoringTitleRow kind="event" className="timeline-activity-editor__title-row timeline-event-profile-editor__title-row">
+            <TemporalAuthoringTitleRow
+              kind="event"
+              className="timeline-activity-editor__title-row timeline-event-profile-editor__title-row"
+            >
               <label className="timeline-activity-editor__title">
                 <span className="timeline-activity-editor__visually-hidden">
                   Titolo Event
@@ -1397,7 +1407,8 @@ export function EventInspectorActions({
                   disabled={
                     busy ||
                     !scheduleRef ||
-                    placementLockInitial?.scheduleRef !== scheduleRef.toLowerCase()
+                    placementLockInitial?.scheduleRef !==
+                      scheduleRef.toLowerCase()
                   }
                   onToggle={() => setPlacementLockDraft((locked) => !locked)}
                 />

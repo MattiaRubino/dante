@@ -23,6 +23,7 @@ export const eventOccurrenceLocalEditCommandObjectivesOneAddItemTargetValueTwoRe
   new RegExp('^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$');
 export const eventOccurrenceLocalEditCommandObjectivesOneAddItemUnitCodeOneMax = 40;
 
+export const eventOccurrenceLocalEditCommandObjectivesOneAddItemVerificationModeDefault = `none`;
 export const eventOccurrenceLocalEditCommandObjectivesOneAddMax = 100;
 
 export const eventOccurrenceLocalEditCommandObjectivesOneRetireItemExpectedRevisionMin = 0;
@@ -34,6 +35,8 @@ export const eventOccurrenceLocalEditCommandObjectivesOneRetireMax = 100;
 export const eventOccurrenceLocalEditCommandObjectivesOneReviseItemChangeExpectedRevisionMin = 0;
 
 export const eventOccurrenceLocalEditCommandObjectivesOneReviseItemChangeExpectedSourceRevisionOneMin = 0;
+
+export const eventOccurrenceLocalEditCommandObjectivesOneReviseItemChangeExpectedVerificationRevisionOneMin = 0;
 
 export const eventOccurrenceLocalEditCommandObjectivesOneReviseItemChangeLabelMax = 300;
 
@@ -54,6 +57,8 @@ export const eventOccurrenceLocalEditCommandObjectivesOneReviseItemChangeUnitCod
 export const eventOccurrenceLocalEditCommandObjectivesOneReviseMax = 100;
 
 export const eventOccurrenceLocalEditCommandOperationIdMax = 140;
+
+export const eventOccurrenceLocalEditCommandPlacementLockOneExpectedRevisionMin = 0;
 
 export const eventOccurrenceLocalEditCommandRealityOneOperationIdMax = 200;
 
@@ -89,99 +94,109 @@ export const EventOccurrenceLocalEditCommand = /*#__PURE__*/ zod.object({
           add: /*#__PURE__*/ zod.optional(
             /*#__PURE__*/ zod
               .array(
-                /*#__PURE__*/ zod.object({
-                  comparator_code: /*#__PURE__*/ zod.optional(
-                    /*#__PURE__*/ zod.union([
-                      /*#__PURE__*/ zod.enum(['eq', 'gte', 'lte', 'between']),
-                      /*#__PURE__*/ zod.null(),
-                    ]),
-                  ),
-                  label: /*#__PURE__*/ zod
-                    .string()
-                    .check(/*#__PURE__*/ zod.minLength(1))
-                    .check(
-                      /*#__PURE__*/ zod.maxLength(
-                        eventOccurrenceLocalEditCommandObjectivesOneAddItemLabelMax,
-                      ),
+                /*#__PURE__*/ zod
+                  .object({
+                    comparator_code: /*#__PURE__*/ zod.optional(
+                      /*#__PURE__*/ zod.union([
+                        /*#__PURE__*/ zod.enum(['eq', 'gte', 'lte', 'between']),
+                        /*#__PURE__*/ zod.null(),
+                      ]),
                     ),
-                  operation_id: /*#__PURE__*/ zod
-                    .string()
-                    .check(/*#__PURE__*/ zod.minLength(1))
-                    .check(
-                      /*#__PURE__*/ zod.maxLength(
-                        eventOccurrenceLocalEditCommandObjectivesOneAddItemOperationIdMax,
+                    label: /*#__PURE__*/ zod
+                      .string()
+                      .check(/*#__PURE__*/ zod.minLength(1))
+                      .check(
+                        /*#__PURE__*/ zod.maxLength(
+                          eventOccurrenceLocalEditCommandObjectivesOneAddItemLabelMax,
+                        ),
                       ),
+                    operation_id: /*#__PURE__*/ zod
+                      .string()
+                      .check(/*#__PURE__*/ zod.minLength(1))
+                      .check(
+                        /*#__PURE__*/ zod.maxLength(
+                          eventOccurrenceLocalEditCommandObjectivesOneAddItemOperationIdMax,
+                        ),
+                      ),
+                    presentation_order: /*#__PURE__*/ zod
+                      .int()
+                      .check(
+                        /*#__PURE__*/ zod.gte(
+                          eventOccurrenceLocalEditCommandObjectivesOneAddItemPresentationOrderMin,
+                        ),
+                      )
+                      .check(
+                        /*#__PURE__*/ zod.lte(
+                          eventOccurrenceLocalEditCommandObjectivesOneAddItemPresentationOrderMax,
+                        ),
+                      ),
+                    result_kind: /*#__PURE__*/ zod.enum([
+                      'boolean',
+                      'quantity',
+                      'qualitative',
+                      'range',
+                    ]),
+                    target_max: /*#__PURE__*/ zod.optional(
+                      /*#__PURE__*/ zod.union([
+                        /*#__PURE__*/ zod.number(),
+                        /*#__PURE__*/ zod
+                          .string()
+                          .check(
+                            /*#__PURE__*/ zod.regex(
+                              eventOccurrenceLocalEditCommandObjectivesOneAddItemTargetMaxTwoRegExp,
+                            ),
+                          ),
+                        /*#__PURE__*/ zod.null(),
+                      ]),
                     ),
-                  presentation_order: /*#__PURE__*/ zod
-                    .int()
-                    .check(
-                      /*#__PURE__*/ zod.gte(
-                        eventOccurrenceLocalEditCommandObjectivesOneAddItemPresentationOrderMin,
-                      ),
-                    )
-                    .check(
-                      /*#__PURE__*/ zod.lte(
-                        eventOccurrenceLocalEditCommandObjectivesOneAddItemPresentationOrderMax,
-                      ),
+                    target_min: /*#__PURE__*/ zod.optional(
+                      /*#__PURE__*/ zod.union([
+                        /*#__PURE__*/ zod.number(),
+                        /*#__PURE__*/ zod
+                          .string()
+                          .check(
+                            /*#__PURE__*/ zod.regex(
+                              eventOccurrenceLocalEditCommandObjectivesOneAddItemTargetMinTwoRegExp,
+                            ),
+                          ),
+                        /*#__PURE__*/ zod.null(),
+                      ]),
                     ),
-                  result_kind: /*#__PURE__*/ zod.enum([
-                    'boolean',
-                    'quantity',
-                    'qualitative',
-                    'range',
-                  ]),
-                  target_max: /*#__PURE__*/ zod.optional(
-                    /*#__PURE__*/ zod.union([
-                      /*#__PURE__*/ zod.number(),
-                      /*#__PURE__*/ zod
-                        .string()
-                        .check(
-                          /*#__PURE__*/ zod.regex(
-                            eventOccurrenceLocalEditCommandObjectivesOneAddItemTargetMaxTwoRegExp,
+                    target_value: /*#__PURE__*/ zod.optional(
+                      /*#__PURE__*/ zod.union([
+                        /*#__PURE__*/ zod.number(),
+                        /*#__PURE__*/ zod
+                          .string()
+                          .check(
+                            /*#__PURE__*/ zod.regex(
+                              eventOccurrenceLocalEditCommandObjectivesOneAddItemTargetValueTwoRegExp,
+                            ),
                           ),
-                        ),
-                      /*#__PURE__*/ zod.null(),
-                    ]),
-                  ),
-                  target_min: /*#__PURE__*/ zod.optional(
-                    /*#__PURE__*/ zod.union([
-                      /*#__PURE__*/ zod.number(),
-                      /*#__PURE__*/ zod
-                        .string()
-                        .check(
-                          /*#__PURE__*/ zod.regex(
-                            eventOccurrenceLocalEditCommandObjectivesOneAddItemTargetMinTwoRegExp,
+                        /*#__PURE__*/ zod.null(),
+                      ]),
+                    ),
+                    unit_code: /*#__PURE__*/ zod.optional(
+                      /*#__PURE__*/ zod.union([
+                        /*#__PURE__*/ zod
+                          .string()
+                          .check(
+                            /*#__PURE__*/ zod.maxLength(
+                              eventOccurrenceLocalEditCommandObjectivesOneAddItemUnitCodeOneMax,
+                            ),
                           ),
-                        ),
-                      /*#__PURE__*/ zod.null(),
-                    ]),
+                        /*#__PURE__*/ zod.null(),
+                      ]),
+                    ),
+                    verification_mode: /*#__PURE__*/ zod._default(
+                      /*#__PURE__*/ zod.enum(['none', 'review_on_end']),
+                      eventOccurrenceLocalEditCommandObjectivesOneAddItemVerificationModeDefault,
+                    ),
+                  })
+                  .check(
+                    /*#__PURE__*/ zod.describe(
+                      'Creation defaults to no user-facing review; revised definitions may omit a change.',
+                    ),
                   ),
-                  target_value: /*#__PURE__*/ zod.optional(
-                    /*#__PURE__*/ zod.union([
-                      /*#__PURE__*/ zod.number(),
-                      /*#__PURE__*/ zod
-                        .string()
-                        .check(
-                          /*#__PURE__*/ zod.regex(
-                            eventOccurrenceLocalEditCommandObjectivesOneAddItemTargetValueTwoRegExp,
-                          ),
-                        ),
-                      /*#__PURE__*/ zod.null(),
-                    ]),
-                  ),
-                  unit_code: /*#__PURE__*/ zod.optional(
-                    /*#__PURE__*/ zod.union([
-                      /*#__PURE__*/ zod
-                        .string()
-                        .check(
-                          /*#__PURE__*/ zod.maxLength(
-                            eventOccurrenceLocalEditCommandObjectivesOneAddItemUnitCodeOneMax,
-                          ),
-                        ),
-                      /*#__PURE__*/ zod.null(),
-                    ]),
-                  ),
-                }),
               )
               .check(
                 /*#__PURE__*/ zod.maxLength(
@@ -248,6 +263,18 @@ export const EventOccurrenceLocalEditCommand = /*#__PURE__*/ zod.object({
                           .check(
                             /*#__PURE__*/ zod.gte(
                               eventOccurrenceLocalEditCommandObjectivesOneReviseItemChangeExpectedSourceRevisionOneMin,
+                            ),
+                          ),
+                        /*#__PURE__*/ zod.null(),
+                      ]),
+                    ),
+                    expected_verification_revision: /*#__PURE__*/ zod.optional(
+                      /*#__PURE__*/ zod.union([
+                        /*#__PURE__*/ zod
+                          .int()
+                          .check(
+                            /*#__PURE__*/ zod.gte(
+                              eventOccurrenceLocalEditCommandObjectivesOneReviseItemChangeExpectedVerificationRevisionOneMin,
                             ),
                           ),
                         /*#__PURE__*/ zod.null(),
@@ -345,6 +372,12 @@ export const EventOccurrenceLocalEditCommand = /*#__PURE__*/ zod.object({
                         /*#__PURE__*/ zod.null(),
                       ]),
                     ),
+                    verification_mode: /*#__PURE__*/ zod.optional(
+                      /*#__PURE__*/ zod.union([
+                        /*#__PURE__*/ zod.enum(['none', 'review_on_end']),
+                        /*#__PURE__*/ zod.null(),
+                      ]),
+                    ),
                   }),
                   objective_ref: /*#__PURE__*/ zod.uuid(),
                 }),
@@ -372,6 +405,22 @@ export const EventOccurrenceLocalEditCommand = /*#__PURE__*/ zod.object({
         eventOccurrenceLocalEditCommandOperationIdMax,
       ),
     ),
+  placement_lock: /*#__PURE__*/ zod.optional(
+    /*#__PURE__*/ zod.union([
+      /*#__PURE__*/ zod.object({
+        expected_revision: /*#__PURE__*/ zod
+          .int()
+          .check(
+            /*#__PURE__*/ zod.gte(
+              eventOccurrenceLocalEditCommandPlacementLockOneExpectedRevisionMin,
+            ),
+          ),
+        locked: /*#__PURE__*/ zod.boolean(),
+        schedule_ref: /*#__PURE__*/ zod.uuid(),
+      }),
+      /*#__PURE__*/ zod.null(),
+    ]),
+  ),
   profile_patch: /*#__PURE__*/ zod.optional(
     /*#__PURE__*/ zod.record(
       /*#__PURE__*/ zod.string(),

@@ -328,7 +328,9 @@ describe('Activity Inspector actions', () => {
     fireEvent.change(recurrenceSelect, { target: { value: 'weekly' } });
     const details = screen.getByRole('region', { name: 'Ripetizione' });
     expect(details.classList.contains('temporal-recurrence-panel')).toBe(true);
-    expect(details.classList.contains('timeline-existing-recurrence')).toBe(true);
+    expect(details.classList.contains('timeline-existing-recurrence')).toBe(
+      true,
+    );
     expect(details.contains(recurrenceSelect)).toBe(true);
     expect(
       screen.getByRole('group', { name: 'Giorni della settimana' }),

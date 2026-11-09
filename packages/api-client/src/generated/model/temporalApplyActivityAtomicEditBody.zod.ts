@@ -44,6 +44,7 @@ export const temporalApplyActivityAtomicEditBodyObjectivesOneAddItemTargetValueT
   new RegExp('^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$');
 export const temporalApplyActivityAtomicEditBodyObjectivesOneAddItemUnitCodeOneMax = 40;
 
+export const temporalApplyActivityAtomicEditBodyObjectivesOneAddItemVerificationModeDefault = `none`;
 export const temporalApplyActivityAtomicEditBodyObjectivesOneAddMax = 100;
 
 export const temporalApplyActivityAtomicEditBodyObjectivesOneRetireItemExpectedRevisionMin = 0;
@@ -55,6 +56,8 @@ export const temporalApplyActivityAtomicEditBodyObjectivesOneRetireMax = 100;
 export const temporalApplyActivityAtomicEditBodyObjectivesOneReviseItemChangeExpectedRevisionMin = 0;
 
 export const temporalApplyActivityAtomicEditBodyObjectivesOneReviseItemChangeExpectedSourceRevisionOneMin = 0;
+
+export const temporalApplyActivityAtomicEditBodyObjectivesOneReviseItemChangeExpectedVerificationRevisionOneMin = 0;
 
 export const temporalApplyActivityAtomicEditBodyObjectivesOneReviseItemChangeLabelMax = 300;
 
@@ -315,99 +318,114 @@ export const TemporalApplyActivityAtomicEditBody = /*#__PURE__*/ zod
             add: /*#__PURE__*/ zod.optional(
               /*#__PURE__*/ zod
                 .array(
-                  /*#__PURE__*/ zod.object({
-                    comparator_code: /*#__PURE__*/ zod.optional(
-                      /*#__PURE__*/ zod.union([
-                        /*#__PURE__*/ zod.enum(['eq', 'gte', 'lte', 'between']),
-                        /*#__PURE__*/ zod.null(),
-                      ]),
-                    ),
-                    label: /*#__PURE__*/ zod
-                      .string()
-                      .check(/*#__PURE__*/ zod.minLength(1))
-                      .check(
-                        /*#__PURE__*/ zod.maxLength(
-                          temporalApplyActivityAtomicEditBodyObjectivesOneAddItemLabelMax,
-                        ),
+                  /*#__PURE__*/ zod
+                    .object({
+                      comparator_code: /*#__PURE__*/ zod.optional(
+                        /*#__PURE__*/ zod.union([
+                          /*#__PURE__*/ zod.enum([
+                            'eq',
+                            'gte',
+                            'lte',
+                            'between',
+                          ]),
+                          /*#__PURE__*/ zod.null(),
+                        ]),
                       ),
-                    operation_id: /*#__PURE__*/ zod
-                      .string()
-                      .check(/*#__PURE__*/ zod.minLength(1))
-                      .check(
-                        /*#__PURE__*/ zod.maxLength(
-                          temporalApplyActivityAtomicEditBodyObjectivesOneAddItemOperationIdMax,
+                      label: /*#__PURE__*/ zod
+                        .string()
+                        .check(/*#__PURE__*/ zod.minLength(1))
+                        .check(
+                          /*#__PURE__*/ zod.maxLength(
+                            temporalApplyActivityAtomicEditBodyObjectivesOneAddItemLabelMax,
+                          ),
                         ),
+                      operation_id: /*#__PURE__*/ zod
+                        .string()
+                        .check(/*#__PURE__*/ zod.minLength(1))
+                        .check(
+                          /*#__PURE__*/ zod.maxLength(
+                            temporalApplyActivityAtomicEditBodyObjectivesOneAddItemOperationIdMax,
+                          ),
+                        ),
+                      presentation_order: /*#__PURE__*/ zod
+                        .int()
+                        .check(
+                          /*#__PURE__*/ zod.gte(
+                            temporalApplyActivityAtomicEditBodyObjectivesOneAddItemPresentationOrderMin,
+                          ),
+                        )
+                        .check(
+                          /*#__PURE__*/ zod.lte(
+                            temporalApplyActivityAtomicEditBodyObjectivesOneAddItemPresentationOrderMax,
+                          ),
+                        ),
+                      result_kind: /*#__PURE__*/ zod.enum([
+                        'boolean',
+                        'quantity',
+                        'qualitative',
+                        'range',
+                      ]),
+                      target_max: /*#__PURE__*/ zod.optional(
+                        /*#__PURE__*/ zod.union([
+                          /*#__PURE__*/ zod.number(),
+                          /*#__PURE__*/ zod
+                            .string()
+                            .check(
+                              /*#__PURE__*/ zod.regex(
+                                temporalApplyActivityAtomicEditBodyObjectivesOneAddItemTargetMaxTwoRegExp,
+                              ),
+                            ),
+                          /*#__PURE__*/ zod.null(),
+                        ]),
                       ),
-                    presentation_order: /*#__PURE__*/ zod
-                      .int()
-                      .check(
-                        /*#__PURE__*/ zod.gte(
-                          temporalApplyActivityAtomicEditBodyObjectivesOneAddItemPresentationOrderMin,
-                        ),
-                      )
-                      .check(
-                        /*#__PURE__*/ zod.lte(
-                          temporalApplyActivityAtomicEditBodyObjectivesOneAddItemPresentationOrderMax,
-                        ),
+                      target_min: /*#__PURE__*/ zod.optional(
+                        /*#__PURE__*/ zod.union([
+                          /*#__PURE__*/ zod.number(),
+                          /*#__PURE__*/ zod
+                            .string()
+                            .check(
+                              /*#__PURE__*/ zod.regex(
+                                temporalApplyActivityAtomicEditBodyObjectivesOneAddItemTargetMinTwoRegExp,
+                              ),
+                            ),
+                          /*#__PURE__*/ zod.null(),
+                        ]),
                       ),
-                    result_kind: /*#__PURE__*/ zod.enum([
-                      'boolean',
-                      'quantity',
-                      'qualitative',
-                      'range',
-                    ]),
-                    target_max: /*#__PURE__*/ zod.optional(
-                      /*#__PURE__*/ zod.union([
-                        /*#__PURE__*/ zod.number(),
-                        /*#__PURE__*/ zod
-                          .string()
-                          .check(
-                            /*#__PURE__*/ zod.regex(
-                              temporalApplyActivityAtomicEditBodyObjectivesOneAddItemTargetMaxTwoRegExp,
+                      target_value: /*#__PURE__*/ zod.optional(
+                        /*#__PURE__*/ zod.union([
+                          /*#__PURE__*/ zod.number(),
+                          /*#__PURE__*/ zod
+                            .string()
+                            .check(
+                              /*#__PURE__*/ zod.regex(
+                                temporalApplyActivityAtomicEditBodyObjectivesOneAddItemTargetValueTwoRegExp,
+                              ),
                             ),
-                          ),
-                        /*#__PURE__*/ zod.null(),
-                      ]),
-                    ),
-                    target_min: /*#__PURE__*/ zod.optional(
-                      /*#__PURE__*/ zod.union([
-                        /*#__PURE__*/ zod.number(),
-                        /*#__PURE__*/ zod
-                          .string()
-                          .check(
-                            /*#__PURE__*/ zod.regex(
-                              temporalApplyActivityAtomicEditBodyObjectivesOneAddItemTargetMinTwoRegExp,
+                          /*#__PURE__*/ zod.null(),
+                        ]),
+                      ),
+                      unit_code: /*#__PURE__*/ zod.optional(
+                        /*#__PURE__*/ zod.union([
+                          /*#__PURE__*/ zod
+                            .string()
+                            .check(
+                              /*#__PURE__*/ zod.maxLength(
+                                temporalApplyActivityAtomicEditBodyObjectivesOneAddItemUnitCodeOneMax,
+                              ),
                             ),
-                          ),
-                        /*#__PURE__*/ zod.null(),
-                      ]),
+                          /*#__PURE__*/ zod.null(),
+                        ]),
+                      ),
+                      verification_mode: /*#__PURE__*/ zod._default(
+                        /*#__PURE__*/ zod.enum(['none', 'review_on_end']),
+                        temporalApplyActivityAtomicEditBodyObjectivesOneAddItemVerificationModeDefault,
+                      ),
+                    })
+                    .check(
+                      /*#__PURE__*/ zod.describe(
+                        'Creation defaults to no user-facing review; revised definitions may omit a change.',
+                      ),
                     ),
-                    target_value: /*#__PURE__*/ zod.optional(
-                      /*#__PURE__*/ zod.union([
-                        /*#__PURE__*/ zod.number(),
-                        /*#__PURE__*/ zod
-                          .string()
-                          .check(
-                            /*#__PURE__*/ zod.regex(
-                              temporalApplyActivityAtomicEditBodyObjectivesOneAddItemTargetValueTwoRegExp,
-                            ),
-                          ),
-                        /*#__PURE__*/ zod.null(),
-                      ]),
-                    ),
-                    unit_code: /*#__PURE__*/ zod.optional(
-                      /*#__PURE__*/ zod.union([
-                        /*#__PURE__*/ zod
-                          .string()
-                          .check(
-                            /*#__PURE__*/ zod.maxLength(
-                              temporalApplyActivityAtomicEditBodyObjectivesOneAddItemUnitCodeOneMax,
-                            ),
-                          ),
-                        /*#__PURE__*/ zod.null(),
-                      ]),
-                    ),
-                  }),
                 )
                 .check(
                   /*#__PURE__*/ zod.maxLength(
@@ -484,6 +502,19 @@ export const TemporalApplyActivityAtomicEditBody = /*#__PURE__*/ zod
                           /*#__PURE__*/ zod.null(),
                         ]),
                       ),
+                      expected_verification_revision:
+                        /*#__PURE__*/ zod.optional(
+                          /*#__PURE__*/ zod.union([
+                            /*#__PURE__*/ zod
+                              .int()
+                              .check(
+                                /*#__PURE__*/ zod.gte(
+                                  temporalApplyActivityAtomicEditBodyObjectivesOneReviseItemChangeExpectedVerificationRevisionOneMin,
+                                ),
+                              ),
+                            /*#__PURE__*/ zod.null(),
+                          ]),
+                        ),
                       label: /*#__PURE__*/ zod
                         .string()
                         .check(/*#__PURE__*/ zod.minLength(1))
@@ -573,6 +604,12 @@ export const TemporalApplyActivityAtomicEditBody = /*#__PURE__*/ zod
                                 temporalApplyActivityAtomicEditBodyObjectivesOneReviseItemChangeUnitCodeOneMax,
                               ),
                             ),
+                          /*#__PURE__*/ zod.null(),
+                        ]),
+                      ),
+                      verification_mode: /*#__PURE__*/ zod.optional(
+                        /*#__PURE__*/ zod.union([
+                          /*#__PURE__*/ zod.enum(['none', 'review_on_end']),
                           /*#__PURE__*/ zod.null(),
                         ]),
                       ),

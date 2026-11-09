@@ -17,6 +17,8 @@ export const activityEditSnapshotObjectivesItemTargetMinOneRegExp = new RegExp(
 );
 export const activityEditSnapshotObjectivesItemTargetValueOneRegExp =
   new RegExp('^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$');
+export const activityEditSnapshotObjectivesItemVerificationModeDefault = `none`;
+export const activityEditSnapshotObjectivesItemVerificationRevisionDefault = 0;
 export const activityEditSnapshotRealityPolicyReplayedDefault = false;
 export const ActivityEditSnapshot = /*#__PURE__*/ zod.object({
   activity_ref: /*#__PURE__*/ zod.uuid(),
@@ -134,6 +136,14 @@ export const ActivityEditSnapshot = /*#__PURE__*/ zod.object({
         /*#__PURE__*/ zod.string(),
         /*#__PURE__*/ zod.null(),
       ]),
+      verification_mode: /*#__PURE__*/ zod._default(
+        /*#__PURE__*/ zod.enum(['none', 'review_on_end']),
+        activityEditSnapshotObjectivesItemVerificationModeDefault,
+      ),
+      verification_revision: /*#__PURE__*/ zod._default(
+        /*#__PURE__*/ zod.int(),
+        activityEditSnapshotObjectivesItemVerificationRevisionDefault,
+      ),
     }),
   ),
   placement_lock: /*#__PURE__*/ zod.union([

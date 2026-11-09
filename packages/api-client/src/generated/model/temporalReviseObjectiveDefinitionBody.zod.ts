@@ -10,6 +10,8 @@ export const temporalReviseObjectiveDefinitionBodyExpectedRevisionMin = 0;
 
 export const temporalReviseObjectiveDefinitionBodyExpectedSourceRevisionOneMin = 0;
 
+export const temporalReviseObjectiveDefinitionBodyExpectedVerificationRevisionOneMin = 0;
+
 export const temporalReviseObjectiveDefinitionBodyLabelMax = 300;
 
 export const temporalReviseObjectiveDefinitionBodyOperationIdMax = 200;
@@ -53,6 +55,18 @@ export const TemporalReviseObjectiveDefinitionBody = /*#__PURE__*/ zod.object({
         .check(
           /*#__PURE__*/ zod.gte(
             temporalReviseObjectiveDefinitionBodyExpectedSourceRevisionOneMin,
+          ),
+        ),
+      /*#__PURE__*/ zod.null(),
+    ]),
+  ),
+  expected_verification_revision: /*#__PURE__*/ zod.optional(
+    /*#__PURE__*/ zod.union([
+      /*#__PURE__*/ zod
+        .int()
+        .check(
+          /*#__PURE__*/ zod.gte(
+            temporalReviseObjectiveDefinitionBodyExpectedVerificationRevisionOneMin,
           ),
         ),
       /*#__PURE__*/ zod.null(),
@@ -144,6 +158,12 @@ export const TemporalReviseObjectiveDefinitionBody = /*#__PURE__*/ zod.object({
             temporalReviseObjectiveDefinitionBodyUnitCodeOneMax,
           ),
         ),
+      /*#__PURE__*/ zod.null(),
+    ]),
+  ),
+  verification_mode: /*#__PURE__*/ zod.optional(
+    /*#__PURE__*/ zod.union([
+      /*#__PURE__*/ zod.enum(['none', 'review_on_end']),
       /*#__PURE__*/ zod.null(),
     ]),
   ),

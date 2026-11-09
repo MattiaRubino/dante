@@ -185,11 +185,8 @@ describe('Recurring Activity metadata edit remote contract', () => {
       expected_revision: 0,
     });
     expect(recorded[0]?.expected_revision).toBe(2);
-    expect(recorded[0]?.expected_recurrence_state_ref).toBe(
-      recurrenceStateRef,
-    );
+    expect(recorded[0]?.expected_recurrence_state_ref).toBe(recurrenceStateRef);
   });
-
 
   it('uses canonical origin/state and a single idempotent scoped POST', async () => {
     const requests: Record<string, unknown>[] = [];

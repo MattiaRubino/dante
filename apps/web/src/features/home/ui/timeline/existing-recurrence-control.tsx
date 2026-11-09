@@ -54,15 +54,7 @@ export const ExistingRecurrenceControl = forwardRef<
     onSelectionChange: (selected: boolean) => void;
   }>
 >(function ExistingRecurrenceControl(
-  {
-    kind,
-    date,
-    startTime,
-    allDay,
-    zoneId,
-    disambiguation,
-    onSelectionChange,
-  },
+  { kind, date, startTime, allDay, zoneId, disambiguation, onSelectionChange },
   ref,
 ) {
   const [intent, setIntent] = useState<RecurrenceIntent | null>(null);

@@ -21,6 +21,7 @@ export const temporalCreateRecurringEventBodyObjectivesMax = 100;
 
 export const temporalCreateRecurringEventBodyOperationIdMax = 200;
 
+export const temporalCreateRecurringEventBodyPlacementProtectedDefault = false;
 export const temporalCreateRecurringEventBodyRealityModeDefault = `manual`;
 export const temporalCreateRecurringEventBodyRecurrenceOneFamilyCodeDefault = `calendar_wall_clock`;
 export const temporalCreateRecurringEventBodyRecurrenceOneIntervalCountMax = 10000;
@@ -203,6 +204,10 @@ export const TemporalCreateRecurringEventBody = /*#__PURE__*/ zod.object({
       ),
     ),
   placement_kind: /*#__PURE__*/ zod.enum(['timed', 'all_day']),
+  placement_protected: /*#__PURE__*/ zod._default(
+    /*#__PURE__*/ zod.boolean(),
+    temporalCreateRecurringEventBodyPlacementProtectedDefault,
+  ),
   reality_mode: /*#__PURE__*/ zod._default(
     /*#__PURE__*/ zod.enum(['manual', 'review_on_end', 'auto_confirm_outcome']),
     temporalCreateRecurringEventBodyRealityModeDefault,

@@ -953,8 +953,11 @@ export function TemporalCreateEntry({
       );
       return;
     }
-    if (!useU2Quick && fields.kind === 'event' &&
-        u2DraftRef.current.eventPlacementProtected === true) {
+    if (
+      !useU2Quick &&
+      fields.kind === 'event' &&
+      u2DraftRef.current.eventPlacementProtected === true
+    ) {
       setLifecycle('failed');
       setFailureMessage(
         'Questa configurazione Event non supporta ancora il blocco della collocazione. Nessuna modifica è stata salvata.',

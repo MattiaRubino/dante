@@ -58,7 +58,9 @@ test('Advanced Activity and Event share one actual title rail without displaced 
       const tools = element.children.item(2) as HTMLElement | null;
       const input = name?.querySelector<HTMLInputElement>('input');
       if (!marker || !name || !tools || !input) {
-        throw new Error('The shared title-row marker, name, or actions are missing.');
+        throw new Error(
+          'The shared title-row marker, name, or actions are missing.',
+        );
       }
       const outer = element.getBoundingClientRect();
       const icon = marker.getBoundingClientRect();
@@ -94,7 +96,9 @@ test('Advanced Activity and Event share one actual title rail without displaced 
   const activityHeadingTopGap = await objectiveHeading.evaluate((heading) => {
     const panel = heading.closest('.temporal-create-reality-objectives');
     if (!panel) throw new Error('Objective panel is missing.');
-    return heading.getBoundingClientRect().top - panel.getBoundingClientRect().top;
+    return (
+      heading.getBoundingClientRect().top - panel.getBoundingClientRect().top
+    );
   });
   expect(activityHeadingTopGap).toBeGreaterThan(10);
   expect(activityHeadingTopGap).toBeLessThan(23);
@@ -111,7 +115,9 @@ test('Advanced Activity and Event share one actual title rail without displaced 
   const eventHeadingTopGap = await objectiveHeading.evaluate((heading) => {
     const panel = heading.closest('.temporal-create-reality-objectives');
     if (!panel) throw new Error('Objective panel is missing.');
-    return heading.getBoundingClientRect().top - panel.getBoundingClientRect().top;
+    return (
+      heading.getBoundingClientRect().top - panel.getBoundingClientRect().top
+    );
   });
   expect(eventHeadingTopGap).toBeCloseTo(activityHeadingTopGap, 0);
   expect(eventHeadingTopGap).toBeLessThan(23);
@@ -586,14 +592,18 @@ test('Activity and Event repeat selectors stay inside one shared panel in Create
     const choice = panel.getByRole('combobox', { name: 'Ripeti' });
     await choice.selectOption('none');
     await expect(panel).toHaveAttribute('data-recurrence-expanded', 'false');
-    await expect(panel.locator('.temporal-recurrence-panel__details')).toHaveCount(0);
+    await expect(
+      panel.locator('.temporal-recurrence-panel__details'),
+    ).toHaveCount(0);
 
     await choice.selectOption('weekly');
     await expect(panel).toHaveAttribute('data-recurrence-expanded', 'true');
     const details = panel.locator('.temporal-recurrence-panel__details');
     await expect(details).toBeVisible();
     await expect(details.locator('.temporal-create-repeat')).toHaveCount(1);
-    await expect(panel.getByRole('heading', { name: 'Ripetizione' })).toHaveCount(1);
+    await expect(
+      panel.getByRole('heading', { name: 'Ripetizione' }),
+    ).toHaveCount(1);
 
     const layout = await panel.evaluate((element) => {
       const heading = element.querySelector<HTMLElement>(
@@ -616,12 +626,12 @@ test('Activity and Event repeat selectors stay inside one shared panel in Create
       return {
         headingBeforeSelector: headingBox.bottom <= selectorBox.top + 1,
         selectorBeforeDetails: selectorBox.bottom <= contentBox.top + 1,
-        allInsidePanel:
-          [headingBox, selectorBox, contentBox, endBox].every(
-            (box) => box.left >= bounds.left - 1 &&
-              box.right <= bounds.right + 1 &&
-              box.bottom <= bounds.bottom + 1,
-          ),
+        allInsidePanel: [headingBox, selectorBox, contentBox, endBox].every(
+          (box) =>
+            box.left >= bounds.left - 1 &&
+            box.right <= bounds.right + 1 &&
+            box.bottom <= bounds.bottom + 1,
+        ),
         headingCount: element.querySelectorAll(
           '.temporal-recurrence-panel__heading',
         ).length,
@@ -693,12 +703,12 @@ test('Activity and Event repeat selectors stay inside one shared panel in Create
           const endBox = end.getBoundingClientRect();
           return {
             kind,
-            hasSinglePanel: root.querySelectorAll(
-              '.temporal-recurrence-panel__heading',
-            ).length === 1,
-            noExtraMutationAction: root.querySelectorAll(
-              '.timeline-existing-recurrence__actions',
-            ).length === 0,
+            hasSinglePanel:
+              root.querySelectorAll('.temporal-recurrence-panel__heading')
+                .length === 1,
+            noExtraMutationAction:
+              root.querySelectorAll('.timeline-existing-recurrence__actions')
+                .length === 0,
             stacked: choiceBox.bottom <= detailBox.top,
             contained:
               choiceBox.left >= box.left - 1 &&

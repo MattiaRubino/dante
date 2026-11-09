@@ -15,7 +15,8 @@ export const objectiveDefinitionStateResponseTargetMinOneRegExp = new RegExp(
 export const objectiveDefinitionStateResponseTargetValueOneRegExp = new RegExp(
   '^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$',
 );
-
+export const objectiveDefinitionStateResponseVerificationModeDefault = `none`;
+export const objectiveDefinitionStateResponseVerificationRevisionDefault = 0;
 export const ObjectiveDefinitionStateResponse = /*#__PURE__*/ zod
   .object({
     comparator_code: /*#__PURE__*/ zod.union([
@@ -70,6 +71,14 @@ export const ObjectiveDefinitionStateResponse = /*#__PURE__*/ zod
       /*#__PURE__*/ zod.string(),
       /*#__PURE__*/ zod.null(),
     ]),
+    verification_mode: /*#__PURE__*/ zod._default(
+      /*#__PURE__*/ zod.enum(['none', 'review_on_end']),
+      objectiveDefinitionStateResponseVerificationModeDefault,
+    ),
+    verification_revision: /*#__PURE__*/ zod._default(
+      /*#__PURE__*/ zod.int(),
+      objectiveDefinitionStateResponseVerificationRevisionDefault,
+    ),
   })
   .check(
     /*#__PURE__*/ zod.describe(

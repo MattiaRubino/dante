@@ -915,7 +915,9 @@ test.describe('Timeline — real user Activity/Event lifecycle matrix', () => {
         .getByRole('button', { name: 'Conferma salvataggio' })
         .click();
       const seriesResponse = await acceptedSeries;
-      expect(seriesResponse.status(), 'Event series revision HTTP status').toBe(200);
+      expect(seriesResponse.status(), 'Event series revision HTTP status').toBe(
+        200,
+      );
       await expect(review).toHaveCount(0);
 
       await openHome(page, dateAfter(day, 1));

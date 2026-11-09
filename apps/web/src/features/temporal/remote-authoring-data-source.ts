@@ -661,8 +661,7 @@ function requestBody(
   if ('agendaParts' in request) {
     result.agenda_parts = [...request.agendaParts];
     result.placement_protected = request.placementProtected === true;
-  }
-  else {
+  } else {
     if (request.sessionCaptureMode !== undefined) {
       result.session_capture_mode = request.sessionCaptureMode;
     }

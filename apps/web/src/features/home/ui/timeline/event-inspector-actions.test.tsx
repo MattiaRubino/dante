@@ -185,9 +185,7 @@ describe('Event Inspector actions', () => {
   it('shows the assigned Life Area color and colored catalog entries in Event Edit', async () => {
     const areaRef = '0199a222-2222-7222-8222-222222222222';
     loadArea.mockResolvedValue({
-      options: [
-        { ref: areaRef, name: 'Studio', colorCode: '#4285F4' },
-      ],
+      options: [{ ref: areaRef, name: 'Studio', colorCode: '#4285F4' }],
       currentRef: areaRef,
       currentRevision: 1,
     });
@@ -216,14 +214,19 @@ describe('Event Inspector actions', () => {
     expect(color.querySelector('span')?.style.background).toBe(
       'rgb(66, 133, 244)',
     );
-    const select = screen.getByRole('textbox', { name: 'Life Area (opzionale)' });
+    const select = screen.getByRole('textbox', {
+      name: 'Life Area (opzionale)',
+    });
     expect(select).toHaveProperty('value', 'Studio');
     fireEvent.focus(select);
     const option = await screen.findByRole('option', { name: 'Studio' });
     expect(option.getAttribute('aria-selected')).toBe('true');
     expect(
-      (option.querySelector('.temporal-create-life-area-field__swatch') as HTMLElement)
-        .style.background,
+      (
+        option.querySelector(
+          '.temporal-create-life-area-field__swatch',
+        ) as HTMLElement
+      ).style.background,
     ).toBe('rgb(66, 133, 244)');
   });
 
@@ -255,26 +258,32 @@ describe('Event Inspector actions', () => {
     expect(lock.getAttribute('aria-pressed')).toBe('false');
     fireEvent.click(lock);
     expect(
-      screen.getByRole('button', { name: 'Sblocca spostamenti' }).getAttribute(
-        'aria-pressed',
-      ),
+      screen
+        .getByRole('button', { name: 'Sblocca spostamenti' })
+        .getAttribute('aria-pressed'),
     ).toBe('true');
     expect(reviseAtomic).not.toHaveBeenCalled();
     const unifiedTitle = lock.closest('.temporal-event-title-row');
     expect(unifiedTitle).not.toBeNull();
-    expect(unifiedTitle?.getAttribute('data-authoring-title-kind')).toBe('event');
+    expect(unifiedTitle?.getAttribute('data-authoring-title-kind')).toBe(
+      'event',
+    );
     expect(unifiedTitle?.firstElementChild?.textContent).toBe('○');
     expect(unifiedTitle?.children).toHaveLength(3);
-    expect(unifiedTitle?.querySelector('.temporal-create-title-input')).toBeTruthy();
     expect(
-      unifiedTitle?.querySelector('.temporal-create-title-row__tools')?.contains(lock),
+      unifiedTitle?.querySelector('.temporal-create-title-input'),
+    ).toBeTruthy();
+    expect(
+      unifiedTitle
+        ?.querySelector('.temporal-create-title-row__tools')
+        ?.contains(lock),
     ).toBe(true);
     const save = screen.getByRole('button', {
       name: 'Salva modifiche',
     });
     // The editor's data sources load asynchronously. The draft may be
     // visible before the owning form has exited its loading/busy state.
-    await waitFor(() => expect(save.disabled).toBe(false));
+    await waitFor(() => expect(save).toHaveProperty('disabled', false));
     fireEvent.click(save);
     await waitFor(() => {
       const errors = screen
@@ -299,7 +308,6 @@ describe('Event Inspector actions', () => {
     expect(getPlacementLock).toHaveBeenCalledWith(scheduleRef);
     expect(reviseProfile).not.toHaveBeenCalled();
   });
-
 
   it('discards a staged Event placement lock without mutating its Schedule', async () => {
     const scheduleRef = '0199a333-3333-7333-8333-333333333333';
@@ -490,12 +498,15 @@ describe('Event Inspector actions', () => {
     expect(title).toHaveProperty('value', 'Conferenza locale');
     const localRow = title.closest('.temporal-event-title-row');
     expect(localRow).not.toBeNull();
-    const localLock = screen.getByRole('button', { name: 'Blocca spostamenti' });
+    const localLock = screen.getByRole('button', {
+      name: 'Blocca spostamenti',
+    });
     expect(localRow?.contains(localLock)).toBe(true);
     expect(localLock.getAttribute('aria-pressed')).toBe('false');
     fireEvent.click(localLock);
     expect(
-      screen.getByRole('button', { name: 'Sblocca spostamenti' })
+      screen
+        .getByRole('button', { name: 'Sblocca spostamenti' })
         .getAttribute('aria-pressed'),
     ).toBe('true');
     expect(saveRecurringEvent).not.toHaveBeenCalled();
@@ -711,17 +722,22 @@ describe('Event Inspector actions', () => {
       name: 'Area assegnata',
     });
     expect(areaInput).toHaveProperty('value', 'Studio');
-    expect(screen.getByRole('img', {
-      name: 'Colore della Life Area: #4285F4',
-    })).toBeTruthy();
+    expect(
+      screen.getByRole('img', {
+        name: 'Colore della Life Area: #4285F4',
+      }),
+    ).toBeTruthy();
     fireEvent.focus(areaInput);
     const assignedOption = await screen.findByRole('option', {
       name: 'Studio',
     });
     expect(assignedOption.getAttribute('aria-selected')).toBe('true');
     expect(
-      (assignedOption.querySelector('.temporal-create-life-area-field__swatch') as HTMLElement)
-        .style.background,
+      (
+        assignedOption.querySelector(
+          '.temporal-create-life-area-field__swatch',
+        ) as HTMLElement
+      ).style.background,
     ).toBe('rgb(66, 133, 244)');
     fireEvent.change(await screen.findByRole('textbox', { name: 'Titolo' }), {
       target: { value: 'Nuova conferenza' },
@@ -741,7 +757,8 @@ describe('Event Inspector actions', () => {
     expect(seriesLock.getAttribute('aria-pressed')).toBe('false');
     fireEvent.click(seriesLock);
     expect(
-      screen.getByRole('button', { name: 'Sblocca spostamenti' })
+      screen
+        .getByRole('button', { name: 'Sblocca spostamenti' })
         .getAttribute('aria-pressed'),
     ).toBe('true');
     expect(acceptSeries).not.toHaveBeenCalled();
@@ -1016,7 +1033,9 @@ describe('Event Inspector actions', () => {
     ).toBeTruthy();
     fireEvent.change(recurrenceSelect, { target: { value: 'none' } });
     expect(panel.getAttribute('data-recurrence-expanded')).toBe('false');
-    expect(panel.querySelector('.temporal-recurrence-panel__details')).toBeNull();
+    expect(
+      panel.querySelector('.temporal-recurrence-panel__details'),
+    ).toBeNull();
     expect(
       within(panel).getByRole('combobox', { name: 'Ripeti' }),
     ).toHaveProperty('value', 'none');
@@ -1030,7 +1049,9 @@ describe('Event Inspector actions', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Salva modifiche' }));
     await waitFor(() => expect(startExistingEvent).toHaveBeenCalledOnce());
     await waitFor(() =>
-      expect(screen.getByText('Ripetizione avviata da questo Evento.')).toBeTruthy(),
+      expect(
+        screen.getByText('Ripetizione avviata da questo Evento.'),
+      ).toBeTruthy(),
     );
     // The accepted Start response already contains source_ref. A second
     // fallible read cannot convert a successful write into a false failure.
@@ -1059,7 +1080,11 @@ describe('Event Inspector actions', () => {
       agendaParts: [],
     };
     loadProfile.mockResolvedValue(original);
-    reviseProfile.mockResolvedValue({ ...original, title: 'Visita medica', profileRevision: 3 });
+    reviseProfile.mockResolvedValue({
+      ...original,
+      title: 'Visita medica',
+      profileRevision: 3,
+    });
     render(
       <EventInspectorActions
         eventRef={eventRef}
@@ -1070,9 +1095,12 @@ describe('Event Inspector actions', () => {
       />,
     );
     fireEvent.click(screen.getByRole('button', { name: /^Modifica$/ }));
-    fireEvent.change(await screen.findByRole('textbox', { name: 'Titolo Event' }), {
-      target: { value: 'Visita medica' },
-    });
+    fireEvent.change(
+      await screen.findByRole('textbox', { name: 'Titolo Event' }),
+      {
+        target: { value: 'Visita medica' },
+      },
+    );
     const recurrence = screen.getByRole('combobox', { name: 'Ripeti' });
     fireEvent.change(recurrence, { target: { value: 'daily' } });
     fireEvent.click(screen.getByRole('button', { name: 'Salva modifiche' }));
@@ -1102,8 +1130,14 @@ describe('Event Inspector actions', () => {
       agendaParts: [],
     };
     loadProfile.mockResolvedValue(original);
-    reviseProfile.mockResolvedValue({ ...original, title: 'Nuovo titolo', profileRevision: 3 });
-    startExistingEvent.mockRejectedValueOnce(new Error('Conversione temporaneamente non disponibile'));
+    reviseProfile.mockResolvedValue({
+      ...original,
+      title: 'Nuovo titolo',
+      profileRevision: 3,
+    });
+    startExistingEvent.mockRejectedValueOnce(
+      new Error('Conversione temporaneamente non disponibile'),
+    );
     render(
       <EventInspectorActions
         eventRef={eventRef}
@@ -1114,9 +1148,12 @@ describe('Event Inspector actions', () => {
       />,
     );
     fireEvent.click(screen.getByRole('button', { name: /^Modifica$/ }));
-    fireEvent.change(await screen.findByRole('textbox', { name: 'Titolo Event' }), {
-      target: { value: 'Nuovo titolo' },
-    });
+    fireEvent.change(
+      await screen.findByRole('textbox', { name: 'Titolo Event' }),
+      {
+        target: { value: 'Nuovo titolo' },
+      },
+    );
     fireEvent.change(screen.getByRole('combobox', { name: 'Ripeti' }), {
       target: { value: 'daily' },
     });
@@ -1128,7 +1165,9 @@ describe('Event Inspector actions', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Salva modifiche' }));
     await waitFor(() => expect(startExistingEvent).toHaveBeenCalledTimes(2));
     expect(reviseProfile).toHaveBeenCalledOnce();
-    expect(startExistingEvent.mock.calls[0]?.[2]).toBe(startExistingEvent.mock.calls[1]?.[2]);
+    expect(startExistingEvent.mock.calls[0]?.[2]).toBe(
+      startExistingEvent.mock.calls[1]?.[2],
+    );
   });
 
   it('edits current Event metadata with canonical CAS and leaves the existing identity intact', async () => {
@@ -1536,7 +1575,9 @@ describe('Event Inspector actions', () => {
     await waitFor(() => expect(startExistingEvent).toHaveBeenCalledOnce());
     expect(reviseAtomic).toHaveBeenCalledOnce();
     expect(reviseAtomic.mock.calls[0]?.[2]).toMatchObject({
-      schedule: { expectedMaterialStateRef: '0199a444-4444-7444-8444-444444444444' },
+      schedule: {
+        expectedMaterialStateRef: '0199a444-4444-7444-8444-444444444444',
+      },
     });
     expect(startExistingEvent).toHaveBeenCalledWith(
       expect.objectContaining({
@@ -2345,7 +2386,6 @@ describe('Event Inspector actions', () => {
     expect(onDeleted).toHaveBeenCalledOnce();
   });
 
-
   it('edits this Event and following instances with a versioned protected Schedule template', async () => {
     const occurrenceRef = '0199a555-5555-7555-8555-555555555555';
     const recurrenceStateRef = '0199a666-6666-7666-8666-666666666666';
@@ -2532,22 +2572,34 @@ describe('Event Inspector actions', () => {
     const recurrencePanel = form.querySelector(
       '.timeline-recurring-series-editor__repeat-panel',
     );
-    expect(recurrencePanel?.getAttribute('data-recurrence-expanded')).toBe('true');
-    expect(within(recurrencePanel as HTMLElement).getByRole('heading', {
-      name: 'Ripetizione',
-    })).toBeTruthy();
-    expect(within(recurrencePanel as HTMLElement).getByRole('combobox', {
-      name: 'Ripeti',
-    })).toHaveProperty('value', 'daily');
-    expect(screen.queryByText('Ora di riferimento della ricorrenza')).toBeNull();
+    expect(recurrencePanel?.getAttribute('data-recurrence-expanded')).toBe(
+      'true',
+    );
+    expect(
+      within(recurrencePanel as HTMLElement).getByRole('heading', {
+        name: 'Ripetizione',
+      }),
+    ).toBeTruthy();
+    expect(
+      within(recurrencePanel as HTMLElement).getByRole('combobox', {
+        name: 'Ripeti',
+      }),
+    ).toHaveProperty('value', 'daily');
+    expect(
+      screen.queryByText('Ora di riferimento della ricorrenza'),
+    ).toBeNull();
     expect(screen.queryByText('Ora iniziale della serie')).toBeNull();
     expect(screen.getAllByText('Intervallo 1')).toHaveLength(1);
     expect(screen.getAllByText('Intervallo 2')).toHaveLength(1);
     expect(
-      form.querySelector(':scope > .timeline-recurring-series-editor__advanced'),
+      form.querySelector(
+        ':scope > .timeline-recurring-series-editor__advanced',
+      ),
     ).toBeNull();
     const routineTitleRow = form.querySelector('.temporal-authoring-title-row');
-    expect(routineTitleRow?.getAttribute('data-authoring-title-kind')).toBe('activity');
+    expect(routineTitleRow?.getAttribute('data-authoring-title-kind')).toBe(
+      'activity',
+    );
     expect(routineTitleRow?.firstElementChild?.textContent).toBe('◇');
     expect(routineTitleRow?.children).toHaveLength(3);
     const obsoleteReality = form.querySelector(
@@ -2593,15 +2645,23 @@ describe('Event Inspector actions', () => {
     // Sessione is already managed in the common title rail. The old
     // advanced series controls must never resurface below the description.
     expect(screen.queryByText('Opzioni avanzate della serie')).toBeNull();
-    expect(screen.queryByRole('combobox', { name: 'Sessione dell’attività' })).toBeNull();
+    expect(
+      screen.queryByRole('combobox', { name: 'Sessione dell’attività' }),
+    ).toBeNull();
     expect(
       screen.queryByRole('spinbutton', {
         name: 'Durata minima della Sessione (minuti)',
       }),
     ).toBeNull();
     expect(screen.queryByText('Regola per le sottoattività')).toBeNull();
-    const routineActions = routineTitleRow?.querySelector('.temporal-create-title-row__tools');
-    expect(routineActions?.querySelector('.temporal-create-structure-session-toggle')).toBeTruthy();
+    const routineActions = routineTitleRow?.querySelector(
+      '.temporal-create-title-row__tools',
+    );
+    expect(
+      routineActions?.querySelector(
+        '.temporal-create-structure-session-toggle',
+      ),
+    ).toBeTruthy();
     // The canonical Session capture mode and minimum remain in the versioned
     // template, even though the duplicate controls are removed from the UI.
     expect(

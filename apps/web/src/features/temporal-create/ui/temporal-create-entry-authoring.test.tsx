@@ -154,9 +154,9 @@ describe('Temporal Create U2 entry', () => {
     expect(lock.getAttribute('aria-pressed')).toBe('false');
     fireEvent.click(lock);
     expect(
-      screen.getByRole('button', { name: 'Sblocca spostamenti' }).getAttribute(
-        'aria-pressed',
-      ),
+      screen
+        .getByRole('button', { name: 'Sblocca spostamenti' })
+        .getAttribute('aria-pressed'),
     ).toBe('true');
     expect(eventRequests).toHaveLength(0);
     fireEvent.click(screen.getByRole('button', { name: 'Aggiungi' }));
@@ -164,7 +164,6 @@ describe('Temporal Create U2 entry', () => {
     expect(eventRequests[0]?.placementProtected).toBe(true);
     expect(activityRequests).toHaveLength(0);
   });
-
 
   it('opens a duplicated Activity directly in Advanced with its saved draft', async () => {
     const fields = {

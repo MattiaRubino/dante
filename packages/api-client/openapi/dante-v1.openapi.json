@@ -3762,6 +3762,11 @@
             ],
             "title": "Placement"
           },
+          "placement_protected": {
+            "default": false,
+            "title": "Placement Protected",
+            "type": "boolean"
+          },
           "title": {
             "maxLength": 300,
             "minLength": 1,
@@ -5430,6 +5435,11 @@
             "title": "Placement Kind",
             "type": "string"
           },
+          "placement_protected": {
+            "default": false,
+            "title": "Placement Protected",
+            "type": "boolean"
+          },
           "reality_mode": {
             "default": "manual",
             "enum": ["manual", "review_on_end", "auto_confirm_outcome"],
@@ -7008,6 +7018,16 @@
             ],
             "title": "Participants"
           },
+          "placement_lock": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/EventAtomicPlacementLockChange"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
           "profile": {
             "anyOf": [
               {
@@ -7064,6 +7084,18 @@
             },
             "title": "Objectives",
             "type": "array"
+          },
+          "placement_material_state_ref": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Placement Material State Ref"
           }
         },
         "required": ["event", "objectives"],
@@ -7142,6 +7174,28 @@
           "expected_requirement_code"
         ],
         "title": "EventAtomicParticipantChange",
+        "type": "object"
+      },
+      "EventAtomicPlacementLockChange": {
+        "additionalProperties": false,
+        "properties": {
+          "expected_revision": {
+            "minimum": 0.0,
+            "title": "Expected Revision",
+            "type": "integer"
+          },
+          "locked": {
+            "title": "Locked",
+            "type": "boolean"
+          },
+          "schedule_ref": {
+            "format": "uuid",
+            "title": "Schedule Ref",
+            "type": "string"
+          }
+        },
+        "required": ["schedule_ref", "locked", "expected_revision"],
+        "title": "EventAtomicPlacementLockChange",
         "type": "object"
       },
       "EventAtomicReminderChange": {
@@ -7403,6 +7457,16 @@
             "minLength": 1,
             "title": "Operation Id",
             "type": "string"
+          },
+          "placement_lock": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/EventAtomicPlacementLockChange"
+              },
+              {
+                "type": "null"
+              }
+            ]
           },
           "profile_patch": {
             "additionalProperties": {
@@ -8403,6 +8467,7 @@
       },
       "ObjectiveCreateCommand": {
         "additionalProperties": false,
+        "description": "Creation defaults to no user-facing review; revised definitions may omit a change.",
         "properties": {
           "comparator_code": {
             "anyOf": [
@@ -8495,6 +8560,12 @@
               }
             ],
             "title": "Unit Code"
+          },
+          "verification_mode": {
+            "default": "none",
+            "enum": ["none", "review_on_end"],
+            "title": "Verification Mode",
+            "type": "string"
           }
         },
         "required": [
@@ -8549,6 +8620,18 @@
               }
             ],
             "title": "Expected Source Revision"
+          },
+          "expected_verification_revision": {
+            "anyOf": [
+              {
+                "minimum": 0.0,
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Expected Verification Revision"
           },
           "label": {
             "maxLength": 300,
@@ -8635,6 +8718,18 @@
               }
             ],
             "title": "Unit Code"
+          },
+          "verification_mode": {
+            "anyOf": [
+              {
+                "enum": ["none", "review_on_end"],
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Verification Mode"
           }
         },
         "required": [
@@ -8811,6 +8906,17 @@
               }
             ],
             "title": "Unit Code"
+          },
+          "verification_mode": {
+            "default": "none",
+            "enum": ["none", "review_on_end"],
+            "title": "Verification Mode",
+            "type": "string"
+          },
+          "verification_revision": {
+            "default": 0,
+            "title": "Verification Revision",
+            "type": "integer"
           }
         },
         "required": [
@@ -9203,6 +9309,17 @@
               }
             ],
             "title": "Unit Code"
+          },
+          "verification_mode": {
+            "default": "none",
+            "enum": ["none", "review_on_end"],
+            "title": "Verification Mode",
+            "type": "string"
+          },
+          "verification_revision": {
+            "default": 0,
+            "title": "Verification Revision",
+            "type": "integer"
           }
         },
         "required": [

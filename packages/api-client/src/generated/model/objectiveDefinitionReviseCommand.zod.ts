@@ -10,6 +10,8 @@ export const objectiveDefinitionReviseCommandExpectedRevisionMin = 0;
 
 export const objectiveDefinitionReviseCommandExpectedSourceRevisionOneMin = 0;
 
+export const objectiveDefinitionReviseCommandExpectedVerificationRevisionOneMin = 0;
+
 export const objectiveDefinitionReviseCommandLabelMax = 300;
 
 export const objectiveDefinitionReviseCommandOperationIdMax = 200;
@@ -56,6 +58,18 @@ export const ObjectiveDefinitionReviseCommand = /*#__PURE__*/ zod.object({
         .check(
           /*#__PURE__*/ zod.gte(
             objectiveDefinitionReviseCommandExpectedSourceRevisionOneMin,
+          ),
+        ),
+      /*#__PURE__*/ zod.null(),
+    ]),
+  ),
+  expected_verification_revision: /*#__PURE__*/ zod.optional(
+    /*#__PURE__*/ zod.union([
+      /*#__PURE__*/ zod
+        .int()
+        .check(
+          /*#__PURE__*/ zod.gte(
+            objectiveDefinitionReviseCommandExpectedVerificationRevisionOneMin,
           ),
         ),
       /*#__PURE__*/ zod.null(),
@@ -145,6 +159,12 @@ export const ObjectiveDefinitionReviseCommand = /*#__PURE__*/ zod.object({
             objectiveDefinitionReviseCommandUnitCodeOneMax,
           ),
         ),
+      /*#__PURE__*/ zod.null(),
+    ]),
+  ),
+  verification_mode: /*#__PURE__*/ zod.optional(
+    /*#__PURE__*/ zod.union([
+      /*#__PURE__*/ zod.enum(['none', 'review_on_end']),
       /*#__PURE__*/ zod.null(),
     ]),
   ),

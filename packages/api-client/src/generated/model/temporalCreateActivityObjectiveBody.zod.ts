@@ -23,97 +23,110 @@ export const temporalCreateActivityObjectiveBodyTargetValueTwoRegExp =
   new RegExp('^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$');
 export const temporalCreateActivityObjectiveBodyUnitCodeOneMax = 40;
 
-export const TemporalCreateActivityObjectiveBody = /*#__PURE__*/ zod.object({
-  comparator_code: /*#__PURE__*/ zod.optional(
-    /*#__PURE__*/ zod.union([
-      /*#__PURE__*/ zod.enum(['eq', 'gte', 'lte', 'between']),
-      /*#__PURE__*/ zod.null(),
-    ]),
-  ),
-  label: /*#__PURE__*/ zod
-    .string()
-    .check(/*#__PURE__*/ zod.minLength(1))
-    .check(
-      /*#__PURE__*/ zod.maxLength(temporalCreateActivityObjectiveBodyLabelMax),
+export const temporalCreateActivityObjectiveBodyVerificationModeDefault = `none`;
+export const TemporalCreateActivityObjectiveBody = /*#__PURE__*/ zod
+  .object({
+    comparator_code: /*#__PURE__*/ zod.optional(
+      /*#__PURE__*/ zod.union([
+        /*#__PURE__*/ zod.enum(['eq', 'gte', 'lte', 'between']),
+        /*#__PURE__*/ zod.null(),
+      ]),
     ),
-  operation_id: /*#__PURE__*/ zod
-    .string()
-    .check(/*#__PURE__*/ zod.minLength(1))
-    .check(
-      /*#__PURE__*/ zod.maxLength(
-        temporalCreateActivityObjectiveBodyOperationIdMax,
+    label: /*#__PURE__*/ zod
+      .string()
+      .check(/*#__PURE__*/ zod.minLength(1))
+      .check(
+        /*#__PURE__*/ zod.maxLength(
+          temporalCreateActivityObjectiveBodyLabelMax,
+        ),
       ),
+    operation_id: /*#__PURE__*/ zod
+      .string()
+      .check(/*#__PURE__*/ zod.minLength(1))
+      .check(
+        /*#__PURE__*/ zod.maxLength(
+          temporalCreateActivityObjectiveBodyOperationIdMax,
+        ),
+      ),
+    presentation_order: /*#__PURE__*/ zod
+      .int()
+      .check(
+        /*#__PURE__*/ zod.gte(
+          temporalCreateActivityObjectiveBodyPresentationOrderMin,
+        ),
+      )
+      .check(
+        /*#__PURE__*/ zod.lte(
+          temporalCreateActivityObjectiveBodyPresentationOrderMax,
+        ),
+      ),
+    result_kind: /*#__PURE__*/ zod.enum([
+      'boolean',
+      'quantity',
+      'qualitative',
+      'range',
+    ]),
+    target_max: /*#__PURE__*/ zod.optional(
+      /*#__PURE__*/ zod.union([
+        /*#__PURE__*/ zod.number(),
+        /*#__PURE__*/ zod
+          .string()
+          .check(
+            /*#__PURE__*/ zod.regex(
+              temporalCreateActivityObjectiveBodyTargetMaxTwoRegExp,
+            ),
+          ),
+        /*#__PURE__*/ zod.null(),
+      ]),
     ),
-  presentation_order: /*#__PURE__*/ zod
-    .int()
-    .check(
-      /*#__PURE__*/ zod.gte(
-        temporalCreateActivityObjectiveBodyPresentationOrderMin,
-      ),
-    )
-    .check(
-      /*#__PURE__*/ zod.lte(
-        temporalCreateActivityObjectiveBodyPresentationOrderMax,
-      ),
+    target_min: /*#__PURE__*/ zod.optional(
+      /*#__PURE__*/ zod.union([
+        /*#__PURE__*/ zod.number(),
+        /*#__PURE__*/ zod
+          .string()
+          .check(
+            /*#__PURE__*/ zod.regex(
+              temporalCreateActivityObjectiveBodyTargetMinTwoRegExp,
+            ),
+          ),
+        /*#__PURE__*/ zod.null(),
+      ]),
     ),
-  result_kind: /*#__PURE__*/ zod.enum([
-    'boolean',
-    'quantity',
-    'qualitative',
-    'range',
-  ]),
-  target_max: /*#__PURE__*/ zod.optional(
-    /*#__PURE__*/ zod.union([
-      /*#__PURE__*/ zod.number(),
-      /*#__PURE__*/ zod
-        .string()
-        .check(
-          /*#__PURE__*/ zod.regex(
-            temporalCreateActivityObjectiveBodyTargetMaxTwoRegExp,
+    target_value: /*#__PURE__*/ zod.optional(
+      /*#__PURE__*/ zod.union([
+        /*#__PURE__*/ zod.number(),
+        /*#__PURE__*/ zod
+          .string()
+          .check(
+            /*#__PURE__*/ zod.regex(
+              temporalCreateActivityObjectiveBodyTargetValueTwoRegExp,
+            ),
           ),
-        ),
-      /*#__PURE__*/ zod.null(),
-    ]),
-  ),
-  target_min: /*#__PURE__*/ zod.optional(
-    /*#__PURE__*/ zod.union([
-      /*#__PURE__*/ zod.number(),
-      /*#__PURE__*/ zod
-        .string()
-        .check(
-          /*#__PURE__*/ zod.regex(
-            temporalCreateActivityObjectiveBodyTargetMinTwoRegExp,
+        /*#__PURE__*/ zod.null(),
+      ]),
+    ),
+    unit_code: /*#__PURE__*/ zod.optional(
+      /*#__PURE__*/ zod.union([
+        /*#__PURE__*/ zod
+          .string()
+          .check(
+            /*#__PURE__*/ zod.maxLength(
+              temporalCreateActivityObjectiveBodyUnitCodeOneMax,
+            ),
           ),
-        ),
-      /*#__PURE__*/ zod.null(),
-    ]),
-  ),
-  target_value: /*#__PURE__*/ zod.optional(
-    /*#__PURE__*/ zod.union([
-      /*#__PURE__*/ zod.number(),
-      /*#__PURE__*/ zod
-        .string()
-        .check(
-          /*#__PURE__*/ zod.regex(
-            temporalCreateActivityObjectiveBodyTargetValueTwoRegExp,
-          ),
-        ),
-      /*#__PURE__*/ zod.null(),
-    ]),
-  ),
-  unit_code: /*#__PURE__*/ zod.optional(
-    /*#__PURE__*/ zod.union([
-      /*#__PURE__*/ zod
-        .string()
-        .check(
-          /*#__PURE__*/ zod.maxLength(
-            temporalCreateActivityObjectiveBodyUnitCodeOneMax,
-          ),
-        ),
-      /*#__PURE__*/ zod.null(),
-    ]),
-  ),
-});
+        /*#__PURE__*/ zod.null(),
+      ]),
+    ),
+    verification_mode: /*#__PURE__*/ zod._default(
+      /*#__PURE__*/ zod.enum(['none', 'review_on_end']),
+      temporalCreateActivityObjectiveBodyVerificationModeDefault,
+    ),
+  })
+  .check(
+    /*#__PURE__*/ zod.describe(
+      'Creation defaults to no user-facing review; revised definitions may omit a change.',
+    ),
+  );
 
 export type TemporalCreateActivityObjectiveBody = zod.input<
   typeof TemporalCreateActivityObjectiveBody

@@ -675,7 +675,10 @@ export function RecurringSeriesEditor({
                 resta invariata; le sue modifiche locali non sono copiate qui.
               </p>
             ) : null}
-            <TemporalAuthoringTitleRow kind={owner === 'event' ? 'event' : 'activity'} className="timeline-activity-editor__title-row">
+            <TemporalAuthoringTitleRow
+              kind={owner === 'event' ? 'event' : 'activity'}
+              className="timeline-activity-editor__title-row"
+            >
               <label className="timeline-activity-editor__title">
                 <span className="timeline-activity-editor__visually-hidden">
                   Titolo
@@ -725,7 +728,8 @@ export function RecurringSeriesEditor({
                     onToggle={() =>
                       changeStructure({
                         ...structure,
-                        placement_protected: structure.placement_protected !== true,
+                        placement_protected:
+                          structure.placement_protected !== true,
                       })
                     }
                   />

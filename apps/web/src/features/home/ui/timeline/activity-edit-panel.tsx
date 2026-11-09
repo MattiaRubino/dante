@@ -1120,7 +1120,9 @@ export function ActivityEditPanel({
           proposedRecurrence = recurrenceControl.current?.getRule() ?? null;
         } catch (reason) {
           setError(
-            reason instanceof Error ? reason.message : 'Ripetizione non valida.',
+            reason instanceof Error
+              ? reason.message
+              : 'Ripetizione non valida.',
           );
           return;
         }
@@ -1235,8 +1237,12 @@ export function ActivityEditPanel({
             if (
               proposedRecurrence &&
               !(
-                coreDirty || planDirty || lockDirty || areaDirty ||
-                objectiveDirty || nameDirty
+                coreDirty ||
+                planDirty ||
+                lockDirty ||
+                areaDirty ||
+                objectiveDirty ||
+                nameDirty
               )
             ) {
               if (!envelope?.placementStateRef) {
@@ -1538,7 +1544,10 @@ export function ActivityEditPanel({
             </button>
           </div>
         ) : null}
-        <TemporalAuthoringTitleRow kind="activity" className="timeline-activity-editor__title-row">
+        <TemporalAuthoringTitleRow
+          kind="activity"
+          className="timeline-activity-editor__title-row"
+        >
           <label className="timeline-activity-editor__title">
             <span className="timeline-activity-editor__visually-hidden">
               Titolo
@@ -2169,25 +2178,24 @@ export function ActivityEditPanel({
                 </div>
               ) : null}
             </section>
-            {recurringContext ? null : envelope?.start && envelope.placementStateRef ? (
+            {recurringContext ? null : envelope?.start &&
+              envelope.placementStateRef ? (
               <ExistingRecurrenceControl
                 ref={recurrenceControl}
                 kind="activity"
                 date={
                   allDay
                     ? dateSpanDraft.start
-                    : (planDraft[envelope.scheduleRef]?.start ?? envelope.start).slice(
-                        0,
-                        10,
-                      )
+                    : (
+                        planDraft[envelope.scheduleRef]?.start ?? envelope.start
+                      ).slice(0, 10)
                 }
                 startTime={
                   allDay
                     ? '00:00'
-                    : (planDraft[envelope.scheduleRef]?.start ?? envelope.start).slice(
-                        11,
-                        16,
-                      ) || '09:00'
+                    : (
+                        planDraft[envelope.scheduleRef]?.start ?? envelope.start
+                      ).slice(11, 16) || '09:00'
                 }
                 allDay={allDay}
                 zoneId={envelope.zoneId ?? timeZone ?? detectDeviceTimeZone()}

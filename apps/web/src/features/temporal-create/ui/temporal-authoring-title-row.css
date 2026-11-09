@@ -23,7 +23,9 @@
     var(--dante-semantic-color-home-border-subtle, rgba(255, 255, 255, 0.13));
   border-radius: 11px;
   background: var(--dante-semantic-color-home-surface-control, #1c292d);
-  transition: border-color 120ms ease, box-shadow 120ms ease;
+  transition:
+    border-color 120ms ease,
+    box-shadow 120ms ease;
 }
 
 /* Legacy pseudo markers added an extra anonymous grid item and pushed the
@@ -54,10 +56,8 @@
   color: var(--dante-semantic-color-home-chrome-active, #ea5c12);
 }
 
-.temporal-authoring-title-row.has-tools > :is(
-  .temporal-create-title-row__name,
-  .timeline-activity-editor__title
-) {
+.temporal-authoring-title-row.has-tools
+  > :is(.temporal-create-title-row__name, .timeline-activity-editor__title) {
   box-sizing: border-box;
   display: flex;
   grid-column: 2;
@@ -147,8 +147,7 @@
     var(--dante-semantic-color-home-border-subtle, rgba(255, 255, 255, 0.13));
 }
 
-.temporal-authoring-title-row.has-tools
-  .temporal-create-placement-lock {
+.temporal-authoring-title-row.has-tools .temporal-create-placement-lock {
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -192,8 +191,7 @@
 }
 
 @media (max-width: 640px) {
-  .temporal-authoring-title-row.has-tools
-    .temporal-create-placement-lock span {
+  .temporal-authoring-title-row.has-tools .temporal-create-placement-lock span {
     display: none;
   }
 

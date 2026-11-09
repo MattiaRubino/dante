@@ -72,15 +72,15 @@ describe('Existing Event recurrence Start response', () => {
     if (typeof requestBody !== 'string') {
       throw new Error('The recurrence command must send a JSON string body.');
     }
-    const body: unknown = JSON.parse(requestBody);
+    const body = JSON.parse(requestBody) as unknown;
     expect(body).toMatchObject({
       operation_id: 'conversion:operation:1',
       expected_profile_revision: 3,
       schedule_ref: SCHEDULE,
       expected_placement_state_ref: MATERIAL,
-      recurrence: expect.objectContaining({
+      recurrence: {
         family_code: 'calendar_wall_clock',
-      }),
+      },
     });
   });
 

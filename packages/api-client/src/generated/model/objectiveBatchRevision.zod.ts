@@ -10,6 +10,8 @@ export const objectiveBatchRevisionChangeExpectedRevisionMin = 0;
 
 export const objectiveBatchRevisionChangeExpectedSourceRevisionOneMin = 0;
 
+export const objectiveBatchRevisionChangeExpectedVerificationRevisionOneMin = 0;
+
 export const objectiveBatchRevisionChangeLabelMax = 300;
 
 export const objectiveBatchRevisionChangeOperationIdMax = 200;
@@ -55,6 +57,18 @@ export const ObjectiveBatchRevision = /*#__PURE__*/ zod.object({
           .check(
             /*#__PURE__*/ zod.gte(
               objectiveBatchRevisionChangeExpectedSourceRevisionOneMin,
+            ),
+          ),
+        /*#__PURE__*/ zod.null(),
+      ]),
+    ),
+    expected_verification_revision: /*#__PURE__*/ zod.optional(
+      /*#__PURE__*/ zod.union([
+        /*#__PURE__*/ zod
+          .int()
+          .check(
+            /*#__PURE__*/ zod.gte(
+              objectiveBatchRevisionChangeExpectedVerificationRevisionOneMin,
             ),
           ),
         /*#__PURE__*/ zod.null(),
@@ -136,6 +150,12 @@ export const ObjectiveBatchRevision = /*#__PURE__*/ zod.object({
               objectiveBatchRevisionChangeUnitCodeOneMax,
             ),
           ),
+        /*#__PURE__*/ zod.null(),
+      ]),
+    ),
+    verification_mode: /*#__PURE__*/ zod.optional(
+      /*#__PURE__*/ zod.union([
+        /*#__PURE__*/ zod.enum(['none', 'review_on_end']),
         /*#__PURE__*/ zod.null(),
       ]),
     ),

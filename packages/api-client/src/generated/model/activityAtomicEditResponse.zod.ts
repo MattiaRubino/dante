@@ -16,6 +16,8 @@ export const activityAtomicEditResponseObjectivesItemTargetMinOneRegExp =
   new RegExp('^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$');
 export const activityAtomicEditResponseObjectivesItemTargetValueOneRegExp =
   new RegExp('^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$');
+export const activityAtomicEditResponseObjectivesItemVerificationModeDefault = `none`;
+export const activityAtomicEditResponseObjectivesItemVerificationRevisionDefault = 0;
 export const activityAtomicEditResponseSnapshotObjectivesItemObservedNumericOneRegExp =
   new RegExp('^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$');
 export const activityAtomicEditResponseSnapshotObjectivesItemReplayedDefault = false;
@@ -25,6 +27,8 @@ export const activityAtomicEditResponseSnapshotObjectivesItemTargetMinOneRegExp 
   new RegExp('^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$');
 export const activityAtomicEditResponseSnapshotObjectivesItemTargetValueOneRegExp =
   new RegExp('^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$');
+export const activityAtomicEditResponseSnapshotObjectivesItemVerificationModeDefault = `none`;
+export const activityAtomicEditResponseSnapshotObjectivesItemVerificationRevisionDefault = 0;
 export const activityAtomicEditResponseSnapshotRealityPolicyReplayedDefault = false;
 export const ActivityAtomicEditResponse = /*#__PURE__*/ zod.object({
   core: /*#__PURE__*/ zod.optional(
@@ -190,6 +194,14 @@ export const ActivityAtomicEditResponse = /*#__PURE__*/ zod.object({
         /*#__PURE__*/ zod.string(),
         /*#__PURE__*/ zod.null(),
       ]),
+      verification_mode: /*#__PURE__*/ zod._default(
+        /*#__PURE__*/ zod.enum(['none', 'review_on_end']),
+        activityAtomicEditResponseObjectivesItemVerificationModeDefault,
+      ),
+      verification_revision: /*#__PURE__*/ zod._default(
+        /*#__PURE__*/ zod.int(),
+        activityAtomicEditResponseObjectivesItemVerificationRevisionDefault,
+      ),
     }),
   ),
   snapshot: /*#__PURE__*/ zod.object({
@@ -308,6 +320,14 @@ export const ActivityAtomicEditResponse = /*#__PURE__*/ zod.object({
           /*#__PURE__*/ zod.string(),
           /*#__PURE__*/ zod.null(),
         ]),
+        verification_mode: /*#__PURE__*/ zod._default(
+          /*#__PURE__*/ zod.enum(['none', 'review_on_end']),
+          activityAtomicEditResponseSnapshotObjectivesItemVerificationModeDefault,
+        ),
+        verification_revision: /*#__PURE__*/ zod._default(
+          /*#__PURE__*/ zod.int(),
+          activityAtomicEditResponseSnapshotObjectivesItemVerificationRevisionDefault,
+        ),
       }),
     ),
     placement_lock: /*#__PURE__*/ zod.union([
