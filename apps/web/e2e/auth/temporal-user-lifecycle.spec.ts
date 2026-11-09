@@ -171,6 +171,9 @@ test.describe('Timeline — real user Activity/Event lifecycle matrix', () => {
       accepted.status(),
       `${item.kind} destructive command: ${await accepted.text()}`,
     ).toBe(200);
+    // Finish the UI's onDeleted transition before a new page navigation.
+    await expect(deletion).toHaveCount(0);
+    await expect(inspector).toHaveCount(0);
   }
 
   for (const [slot, kind] of [
@@ -716,6 +719,8 @@ test.describe('Timeline — real user Activity/Event lifecycle matrix', () => {
       await deletion.getByRole('button', { name: 'Solo questa istanza' })
         .click();
       expect((await localDelete).status()).toBe(200);
+      await expect(deletion).toHaveCount(0);
+      await expect(inspector).toHaveCount(0);
       await openHome(page, dateAfter(day, 1));
       await expect(onDay(page, dateAfter(day, 1), seriesTitle))
         .toHaveCount(0);
@@ -739,6 +744,8 @@ test.describe('Timeline — real user Activity/Event lifecycle matrix', () => {
       await deletion.getByRole('button', { name: 'Tutta la serie' })
         .click();
       expect((await seriesDelete).status()).toBe(200);
+      await expect(deletion).toHaveCount(0);
+      await expect(inspector).toHaveCount(0);
       await openHome(page, dateAfter(day, 3));
       await expect(page.locator('[data-timeline-event]')
         .filter({ hasText: seriesTitle })).toHaveCount(0);
@@ -848,6 +855,8 @@ test.describe('Timeline — real user Activity/Event lifecycle matrix', () => {
         name: 'Solo questa istanza',
       }).click();
       expect((await instanceDelete).status()).toBe(200);
+      await expect(deletion).toHaveCount(0);
+      await expect(inspector).toHaveCount(0);
       await openHome(page, dateAfter(day, 1));
       await expect(onDay(page, dateAfter(day, 1), seriesTitle))
         .toHaveCount(0);
@@ -871,6 +880,8 @@ test.describe('Timeline — real user Activity/Event lifecycle matrix', () => {
       await deletion.getByRole('button', { name: 'Tutta la serie' })
         .click();
       expect((await seriesDelete).status()).toBe(200);
+      await expect(deletion).toHaveCount(0);
+      await expect(inspector).toHaveCount(0);
       await openHome(page, dateAfter(day, 3));
       await expect(page.locator('[data-timeline-event]')
         .filter({ hasText: seriesTitle })).toHaveCount(0);
