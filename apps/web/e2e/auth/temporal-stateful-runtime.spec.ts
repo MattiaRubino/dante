@@ -183,8 +183,22 @@ test.describe('Temporal v2 — recorded facts survive Edit', () => {
         page, ACTIVITY_CASES[0]!, title, day, undefined, true, clock,
       );
       await openHome(page, day);
-      const card = cardOn(page, day, title);
-      await expect(card).toHaveCount(1);
+      const cards = cardOn(page, day, title);
+      // This persona has TWO legitimate physical interval cards for ONE
+      // Activity. A second card is not a duplicate logical Activity.
+      await expect(cards).toHaveCount(ACTIVITY_CASES[0]!.intervalCount);
+      const scheduleRefs = await cards.evaluateAll((elements) =>
+        elements.map((element) =>
+          element.getAttribute('data-timeline-event'),
+        ),
+      );
+      expect(scheduleRefs.every((ref) => typeof ref === 'string'))
+        .toBe(true);
+      expect(new Set(scheduleRefs).size,
+        'two distinct physical Schedule cards').toBe(
+          ACTIVITY_CASES[0]!.intervalCount,
+        );
+      const card = cards.first();
       const controls = card.locator(
         '[data-timeline-session-subject="' + authored.item.sourceRef + '"]',
       );
