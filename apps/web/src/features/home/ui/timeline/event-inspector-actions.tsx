@@ -178,9 +178,6 @@ export function EventInspectorActions({
   const [objectiveRows, setObjectiveRows] = useState<ActivityObjectiveDraft[]>(
     [],
   );
-  const [recordedObjectives, setRecordedObjectives] = useState<
-    readonly ObjectiveView[]
-  >([]);
   const [correctingObjective, setCorrectingObjective] =
     useState<ObjectiveView | null>(null);
   const [deletingObjective, setDeletingObjective] = useState<ObjectiveView | null>(null);
@@ -345,7 +342,6 @@ export function EventInspectorActions({
       setParticipantsInitial(expectedParticipants);
       setParticipantsDraft(expectedParticipants);
       setObjectiveRows(objectives.map(existingObjectiveDraft));
-      setRecordedObjectives(objectives);
       setCorrectingObjective(null);
       correctionOperation.current = null;
       setRealityPolicy(reality);
@@ -567,7 +563,6 @@ export function EventInspectorActions({
       })
       .then(() => objectiveSource.listObjectives(kind, subjectRef))
       .then((fresh) => {
-        setRecordedObjectives(fresh);
         setObjectiveRows(fresh.map(existingObjectiveDraft));
         setCorrectingObjective(null);
         correctionOperation.current = null;
@@ -612,7 +607,6 @@ export function EventInspectorActions({
       )
       .then(() => objectiveSource.listObjectives(kind, subjectRef))
       .then((fresh) => {
-        setRecordedObjectives(fresh);
         setObjectiveRows(fresh.map(existingObjectiveDraft));
         setRemovedObjectives([]);
         setCorrectingObjective(null);
@@ -628,7 +622,6 @@ export function EventInspectorActions({
         );
         void objectiveSource.listObjectives(kind, subjectRef)
           .then((fresh) => {
-            setRecordedObjectives(fresh);
             setObjectiveRows(fresh.map(existingObjectiveDraft));
           })
           .catch(() => {});
