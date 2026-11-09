@@ -127,7 +127,7 @@ def _validate_coverage(planned: dict[str, int], results: list[ShardResult]) -> N
 
 def _run_project(
     project: str, port: int, discovered: int, directory: Path,
-    grep: str | None = None,
+    grep: str | None = None, v2_workers: int = 1,
 ) -> ShardResult:
     shard = directory / project
     shard.mkdir(parents=True, exist_ok=False)
@@ -140,9 +140,10 @@ def _run_project(
     }
     command = (
         "pnpm", "exec", "playwright", "test", "--config",
-        "playwright.auth.config.ts", "--project", project, "--workers=1",
-        "--retries=0", "--reporter=line,junit", "--output",
-        str(shard / "test-results"),
+        "playwright.auth.config.ts", "--project", project,
+        f"--workers={v2_workers}", "--retries=0", "--reporter=line,junit",
+        "--output", str(shard / "test-results"),
+        *(("--fully-parallel",) if v2_workers > 1 else ()),
         *_selector(grep),
     )
     started = time.monotonic()
@@ -255,6 +256,43 @@ def _write_diagnostic_archive(directory: Path) -> Path:
     return archive
 
 
+def _v2_selection_isolated(grep: str | None) -> bool:
+    """Only known V2 title prefixes may opt into same-stack parallel tests.
+
+    Unlike legacy authentication/browser tests, each V2 case uses its own
+    synthetic account and never stops the disposable PostgreSQL service.
+    """
+    return grep is not None and (
+        re.fullmatch(r"V2-[A-Z0-9-]*", grep) is not None
+        or re.fullmatch(r"V2-\\([A-Z0-9|\\-]+\\)", grep) is not None
+    )
+
+
+def _v2_worker_budget(setting: str, grep: str | None) -> int:
+    if setting == "1":
+        return 1
+    if not _v2_selection_isolated(grep):
+        raise ValueError(
+            "Parallel tests on one stack require an exclusively V2- "
+            "title selection; legacy tests may restart PostgreSQL."
+        )
+    if setting == "2":
+        return 2
+    if setting != "auto":
+        raise ValueError("v2-workers must be auto, 1 or 2")
+    # Evaluate available (not total) WSL memory at launch. Cap the extra
+    # worker to two per stack because signin capacity is two per stack.
+    cores = os.cpu_count() or 1
+    try:
+        memory = Path("/proc/meminfo").read_text(encoding="utf-8")
+        available_kib = int(re.search(
+            r"^MemAvailable:\\s*(\\d+) kB", memory, re.M,
+        ).group(1))
+    except (OSError, AttributeError, ValueError):
+        available_kib = 0
+    return 2 if cores >= 6 and available_kib >= 8 * 1024 * 1024 else 1
+
+
 def _self_test() -> None:
     import io
 
@@ -290,7 +328,20 @@ def _self_test() -> None:
     # A filtered inventory must be compared to the same filtered execution,
     # never the original full-suite count.
     assert _plan.__defaults__ == (None,)
-    assert _run_project.__defaults__ == (None,)
+    assert _run_project.__defaults__ == (None, 1)
+    assert _v2_selection_isolated("V2-")
+    assert _v2_selection_isolated("V2-P1-E01")
+    assert _v2_selection_isolated("V2-(P1-A01|P2-E04|RT-02)")
+    for unsafe in (None, "auth", "V2-P1|other", "V2-.*", "V2-(P1)|Auth"):
+        assert not _v2_selection_isolated(unsafe)
+        try:
+            _v2_worker_budget("2", unsafe)
+        except ValueError:
+            pass
+        else:
+            raise AssertionError("Non-V2 tests must never share one stack concurrently")
+    assert _v2_worker_budget("1", None) == 1
+    assert _v2_worker_budget("2", "V2-P1-A01") == 2
     assert _selector(None) == ()
     assert _selector(r"V2-P3-(E01|A01)") == (
         "--grep", r"V2-P3-(E01|A01)",
@@ -353,6 +404,11 @@ def main() -> int:
         default=int(os.environ.get("DANTE_E2E_REAL_STACK_WORKERS", "3")),
         help="Independent browser stacks (1-3; 1 retains the reference runner)",
     )
+    parser.add_argument(
+        "--v2-workers", choices=("1", "2", "auto"), default="1",
+        help="Per-browser workers only for isolated V2 titles; auto chooses "
+             "1 or 2 using WSL CPU/free RAM. Default 1 preserves full-gate isolation.",
+    )
     parser.add_argument("--self-test", action="store_true")
     parser.add_argument(
         "--grep", default=None,
@@ -365,6 +421,17 @@ def main() -> int:
         return 0
     if not 1 <= args.workers <= len(PROJECTS):
         parser.error("--workers must be between 1 and 3")
+    try:
+        per_project = _v2_worker_budget(args.v2_workers, args.grep)
+    except ValueError as exc:
+        parser.error(str(exc))
+    if args.workers == 1 and per_project > 1:
+        parser.error("--v2-workers requires independent project stacks (--workers 2 or 3)")
+    print(
+        f"REALSTACK_CONCURRENCY=stacks:{args.workers} "
+        f"per_stack:{per_project} maximum_browsers:{args.workers * per_project}",
+        flush=True,
+    )
     if args.workers == 1:
         # Bit-for-bit equivalent selection and startup behavior to the
         # last all-green gate; no new sharding assumptions in fallback.
@@ -416,7 +483,8 @@ def main() -> int:
         with ThreadPoolExecutor(max_workers=args.workers) as pool:
             futures = {
                 pool.submit(
-                    _run_project, p, ports[p], planned[p], directory, args.grep,
+                    _run_project, p, ports[p], planned[p], directory,
+                    args.grep, per_project,
                 ): p
                 for p in PROJECTS
             }
@@ -437,6 +505,8 @@ def main() -> int:
         report.write_text(
             json.dumps({
                 "workers": args.workers,
+                "v2_workers_per_project": per_project,
+                "maximum_concurrent_browsers": args.workers * per_project,
                 "grep": args.grep,
                 "elapsed_seconds": round(time.monotonic() - started, 2),
                 "discovered": sum(planned.values()),
