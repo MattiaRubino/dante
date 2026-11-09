@@ -628,10 +628,20 @@ async function assertRecurringTruth(
     expect(schedules.filter((row) => row.role_code === 'planned')
       .map((row) => row.display_name), 'recurring planned Sessions')
       .toEqual(truth.sessions);
-    expect(schedules.filter((row) => row.role_code === 'interval'),
-      'exact recurring Activity interval count').toHaveLength(
-        truth.expectedIntervalCount,
-      );
+    // The first ordinary placement can be represented by the envelope
+    // rather than an explicit role_code=interval. Compare physical Schedule
+    // identities across the Timeline and the edit snapshot instead of
+    // falsely requiring every visible card to carry the "interval" role.
+    const placedRefs = rows.map((row) => String(row.schedule_ref));
+    const persistedPlacements = schedules.filter((row) =>
+      placedRefs.includes(String(row.schedule_ref)) &&
+      (row.role_code === 'envelope' || row.role_code === 'interval'),
+    );
+    expect(persistedPlacements.map((row) => String(row.schedule_ref)).sort(),
+      'every displayed recurring Activity Schedule has its own canonical snapshot row')
+      .toEqual([...placedRefs].sort());
+    expect(persistedPlacements, 'exact physical interval identity mapping')
+      .toHaveLength(truth.expectedIntervalCount);
     expect(snapshot.life_area_ref ?? null, 'recurring Activity Life Area')
       .toBe(truth.areaRef);
     return;
