@@ -411,6 +411,24 @@ async function draftAndVerify(
   }
 }
 
+async function assertOriginalScheduleIdentity(
+  page: Page, day: string, scheduleRef: string | null,
+): Promise<void> {
+  expect(scheduleRef, 'source must retain a physical Schedule')
+    .toEqual(expect.stringMatching(UUID));
+  const read = await serverRead(
+    page,
+    '/api/v1/temporal/timeline/window?start_date=' + day +
+      '&end_date_exclusive=' + dateAfter(day, 1),
+  ) as Record<string, unknown>;
+  expect(read.kind).toBe('window');
+  const items = read.items as readonly Record<string, unknown>[];
+  expect(
+    items.filter((row) => row.schedule_ref === scheduleRef),
+    'original physical Schedule identity must survive conversion',
+  ).toHaveLength(1);
+}
+
 async function occurrence(
   page: Page, day: string, sourceRef: string,
 ): Promise<Record<string, unknown>> {
@@ -922,11 +940,10 @@ test.describe('Temporal v2 — real stateful user personas', () => {
             .click();
           expect((await conversion).status()).toBe(200);
           const originalCard = await assertCard(page, day, title);
-          expect(await originalCard.getAttribute(
-            persona.allDay
-              ? 'data-timeline-all-day-item'
-              : 'data-timeline-event',
-          )).toBe(authored.item.scheduleRef);
+          await expect(originalCard).toBeVisible();
+          await assertOriginalScheduleIdentity(
+            page, day, authored.item.scheduleRef,
+          );
           await assertCard(page, dateAfter(day, 1), title);
         });
         await test.step(persona.id + '/4 Local change on generated instance', async () => {
@@ -949,11 +966,10 @@ test.describe('Temporal v2 — real stateful user personas', () => {
           await assertCard(page, dateAfter(day, 3), title + ' futuro');
           await assertCard(page, dateAfter(day, 1), title + ' locale');
           const first = await assertCard(page, day, title);
-          expect(await first.getAttribute(
-            persona.allDay
-              ? 'data-timeline-all-day-item'
-              : 'data-timeline-event',
-          )).toBe(authored.item.scheduleRef);
+          await expect(first).toBeVisible();
+          await assertOriginalScheduleIdentity(
+            page, day, authored.item.scheduleRef,
+          );
         });
         await test.step(
           persona.id + '/6 Delete generated instance and converted series',
