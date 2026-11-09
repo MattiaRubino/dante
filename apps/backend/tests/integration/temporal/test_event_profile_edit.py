@@ -61,6 +61,100 @@ _RETIRE_OBJECTIVE = text("""
 """)
 
 
+# Regression 2026-11-09: ordinary Event Edit rejected a new typed Life Area.
+# The new profile, appearance and Event assignment must share one SERIALIZABLE
+# transaction, including rollback if the Event assignment CAS is stale.
+@pytest.mark.asyncio
+async def test_one_off_event_creates_life_area_atomically_and_rolls_back_stale_assignment(
+    migrated_database: Any,
+) -> None:
+    owner = _seed_self(migrated_database)
+    event = _legacy_event(migrated_database, owner, "Normal Event with new Life Area")
+    runtime = create_database_runtime(migrated_database.runtime_settings())
+    context = cast(
+        DanteContext,
+        SimpleNamespace(self_person_ref=owner, effective_zone_id="Europe/Rome"),
+    )
+    request = Request(
+        {"type": "http", "app": SimpleNamespace(state=SimpleNamespace(database_runtime=runtime))}
+    )
+    try:
+        saved = await apply_one_off_event_atomic_edit(
+            event,
+            EventAtomicEditCommand.model_validate(
+                {
+                    "operation_id": "event:area:create:accepted",
+                    "life_area": {
+                        "expected_assignment_revision": 0,
+                        "life_area_ref": None,
+                        "new_life_area": {"name": "Nuova Life Area Event", "color_code": "#FFD600"},
+                    },
+                }
+            ),
+            context,
+            request,
+            Response(),
+        )
+        area_ref = saved.event.life_area_ref
+        assert area_ref is not None
+        async with runtime.session_factory() as session, session.begin():
+            row = (
+                (
+                    await session.execute(
+                        text(
+                            "SELECT life_area_ref,color_code FROM dante.list_self_life_areas(:actor) "
+                            "WHERE name=:name"
+                        ),
+                        {"actor": owner, "name": "Nuova Life Area Event"},
+                    )
+                )
+                .mappings()
+                .one()
+            )
+        assert row["life_area_ref"] == area_ref
+        assert row["color_code"] == "#FFD600"
+
+        # Stale CAS after area creation must roll back the new catalog row,
+        # not leave an orphan that appears in later Event/Activity dropdowns.
+        with pytest.raises(ProblemError) as failure:
+            await apply_one_off_event_atomic_edit(
+                event,
+                EventAtomicEditCommand.model_validate(
+                    {
+                        "operation_id": "event:area:create:stale",
+                        "life_area": {
+                            "expected_assignment_revision": 0,
+                            "life_area_ref": None,
+                            "new_life_area": {
+                                "name": "Life Area non confermata",
+                                "color_code": "#4285F4",
+                            },
+                        },
+                    }
+                ),
+                context,
+                request,
+                Response(),
+            )
+        assert failure.value.status == 409
+        async with runtime.session_factory() as session, session.begin():
+            rejected = await session.scalar(
+                text(
+                    "SELECT count(*) FROM dante.list_self_life_areas(:actor) "
+                    "WHERE name=:name"
+                ),
+                {"actor": owner, "name": "Life Area non confermata"},
+            )
+            canonical = await _read_event_in_session(
+                session, self_person_ref=owner, event_ref=event
+            )
+        assert rejected == 0
+        assert canonical is not None
+        assert canonical.life_area_ref == area_ref
+    finally:
+        await runtime.dispose()
+
+
 @pytest.mark.asyncio
 async def test_event_schedule_lock_is_owner_scoped_and_blocks_movement(
     migrated_database: Any,
