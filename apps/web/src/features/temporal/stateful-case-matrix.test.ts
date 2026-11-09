@@ -3,7 +3,7 @@ import { describe, expect, it } from 'vitest';
 import {
   ACTIVITY_CASES, EVENT_CASES, PERSONA_CASES,
   recurrenceFor, validatePersonaMatrix,
-} from './temporal-stateful-case-matrix';
+} from '../../../e2e/auth/temporal-stateful-case-matrix';
 
 describe('Temporal v2 mandatory multi-feature population', () => {
   it('keeps exactly 20 unique Events and 20 unique Activities', () => {
