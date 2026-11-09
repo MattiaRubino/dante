@@ -247,7 +247,7 @@ export function ActivityObjectiveRow({
       variant="edit"
       italian
       disabled={disabled}
-      onInspect={onInspect}
+      {...(onInspect ? { onInspect } : {})}
       update={(_id, patch) => onChange(patch)}
       changeKind={(_id, kind) =>
         onChange({
