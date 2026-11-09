@@ -29,6 +29,7 @@ from dante.modules.temporal.event import (
     TemporalEventApplication,
     _read_event_in_session,
 )
+from dante.modules.temporal.life_area import create_life_area_in_session
 from dante.modules.temporal.life_area_assignment import (
     _fingerprint as assignment_fingerprint,
 )
@@ -786,11 +787,31 @@ class RevisedEventProfileResponse(BaseModel):
     replayed: bool
 
 
+class EventAtomicNewLifeArea(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    name: str = Field(min_length=1, max_length=100)
+    color_code: str | None = Field(default=None, pattern=r"^#[0-9A-F]{6}$")
+
+    @model_validator(mode="after")
+    def valid_name(self) -> EventAtomicNewLifeArea:
+        if self.name != self.name.strip() or not self.name.strip():
+            raise ValueError("Life Area name must be trimmed and nonempty.")
+        return self
+
+
 class EventAtomicLifeAreaChange(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
     expected_assignment_revision: int = Field(ge=0)
     life_area_ref: UUID | None
+    new_life_area: EventAtomicNewLifeArea | None = None
+
+    @model_validator(mode="after")
+    def distinct_area_intent(self) -> EventAtomicLifeAreaChange:
+        if self.new_life_area is not None and self.life_area_ref is not None:
+            raise ValueError("Select an existing Life Area or create a new one.")
+        return self
 
 
 class EventAtomicScheduleChange(BaseModel):
@@ -1161,6 +1182,16 @@ async def apply_one_off_event_atomic_edit(
                 )
             if body.life_area is not None:
                 change_area = body.life_area
+                selected_area = change_area.life_area_ref
+                if change_area.new_life_area is not None:
+                    new_area = change_area.new_life_area
+                    selected_area = await create_life_area_in_session(
+                        session,
+                        actor=actor,
+                        operation_id=body.operation_id,
+                        name=new_area.name,
+                        color_code=new_area.color_code,
+                    )
                 await session.execute(
                     text("""
                         SELECT * FROM dante.assign_self_event_life_area(
@@ -1172,11 +1203,11 @@ async def apply_one_off_event_atomic_edit(
                         "fingerprint": assignment_fingerprint(
                             kind="event",
                             subject_ref=native_event,
-                            life_area_ref=change_area.life_area_ref,
+                            life_area_ref=selected_area,
                             expected=change_area.expected_assignment_revision,
                         ),
                         "event": native_event,
-                        "area": change_area.life_area_ref,
+                        "area": selected_area,
                         "expected": change_area.expected_assignment_revision,
                     },
                 )
