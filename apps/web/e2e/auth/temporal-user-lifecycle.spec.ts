@@ -868,12 +868,57 @@ test.describe('Timeline — real user Activity/Event lifecycle matrix', () => {
       await inspector
         .getByRole('textbox', { name: 'Titolo Event' })
         .fill(localTitle);
+
+      // Regression 2026-11-09: a new Life Area on "Solo questa istanza"
+      // previously failed validation, or was saved only in the inspector
+      // while the Timeline card still painted the series source color.
+      // Drive the real UI and assert DB-backed area name and card color.
+      const localAreaName = uniqueTitle('area solo istanza');
+      await inspector
+        .getByRole('textbox', { name: 'Life Area (opzionale)' })
+        .fill(localAreaName);
+      await inspector
+        .getByRole('button', { name: 'Colore nuova Life Area' })
+        .click();
+      await page
+        .getByRole('dialog', { name: 'Scegli colore' })
+        .getByRole('button', { name: 'Giallo', exact: true })
+        .click();
+      const localEditWrite = page.waitForResponse(
+        (response) =>
+          response.url().endsWith('/event-local-edit') &&
+          response.request().method() === 'POST',
+      );
       await inspector.getByRole('button', { name: 'Salva modifiche' }).click();
+      expect((await localEditWrite).status()).toBe(200);
+
+      const areaResponse = await page.request.get('/api/v1/temporal/life-areas');
+      expect(areaResponse.status()).toBe(200);
+      const areaList = (await areaResponse.json()) as readonly Record<string, unknown>[];
+      const persistedArea = areaList.find((area) => area.name === localAreaName);
+      expect(persistedArea?.color_code).toBe('#FFD600');
 
       await openHome(page, day);
-      await expect(onDay(page, day, localTitle)).toHaveCount(1);
+      const localCard = onDay(page, day, localTitle);
+      await expect(localCard).toHaveCount(1);
+      await expect(localCard.locator('.timeline-event-card__meta')).toContainText(
+        localAreaName,
+      );
+      await expect
+        .poll(() =>
+          localCard.evaluate((node) =>
+            (node as HTMLElement).style.getPropertyValue('--timeline-group-color'),
+          ),
+        )
+        .toBe('#FFD600');
       await openHome(page, dateAfter(day, 1));
       await expect(onDay(page, dateAfter(day, 1), localTitle)).toHaveCount(0);
+      // The sibling inherits the original source state, not the local area.
+      await expect(
+        onDay(page, dateAfter(day, 1), title).locator(
+          '.timeline-event-card__meta',
+        ),
+      ).not.toContainText(localAreaName);
       await openHome(page, dateAfter(day, 2));
       await expect(onDay(page, dateAfter(day, 2), localTitle)).toHaveCount(0);
       await openHome(page, dateAfter(day, 1));
