@@ -442,10 +442,26 @@ async function draftAndVerify(
 }
 
 async function assertOriginalScheduleIdentity(
-  page: Page, day: string, scheduleRef: string | null,
+  page: Page, day: string, item: CreatedItem,
 ): Promise<void> {
-  expect(scheduleRef, 'source must retain a physical Schedule')
+  expect(item.scheduleRef, 'source must retain a physical Schedule')
     .toEqual(expect.stringMatching(UUID));
+  if (item.kind === 'activity') {
+    // A multi-interval Activity renders interval Schedules in the timeline;
+    // its original envelope Schedule is retained in the edit snapshot.
+    const snapshot = await serverRead(
+      page,
+      '/api/v1/temporal/activities/' + item.sourceRef + '/edit-snapshot',
+    ) as Record<string, unknown>;
+    const schedules = snapshot.schedules as Record<string, unknown>[];
+    expect(
+      schedules.filter((row) =>
+        row.schedule_ref === item.scheduleRef && row.role_code === 'envelope',
+      ),
+      'converted original Activity envelope identity',
+    ).toHaveLength(1);
+    return;
+  }
   const read = await serverRead(
     page,
     '/api/v1/temporal/timeline/window?start_date=' + day +
@@ -453,10 +469,8 @@ async function assertOriginalScheduleIdentity(
   ) as Record<string, unknown>;
   expect(read.kind).toBe('window');
   const items = read.items as readonly Record<string, unknown>[];
-  expect(
-    items.filter((row) => row.schedule_ref === scheduleRef),
-    'original physical Schedule identity must survive conversion',
-  ).toHaveLength(1);
+  expect(items.filter((row) => row.schedule_ref === item.scheduleRef),
+    'converted original Event Schedule identity').toHaveLength(1);
 }
 
 async function readActivityPlacements(
@@ -470,7 +484,7 @@ async function readActivityPlacements(
   expect(window.kind).toBe('window');
   const rows = (window.items as Record<string, unknown>[]).filter((row) =>
     row.kind === 'scheduled_activity' && row.title === expectedTitle &&
-    String(row.starts_local_at).startsWith(day),
+    String(row.starts_local_at ?? row.start_date).startsWith(day),
   );
   expect(rows, 'physical interval placements for ' + expectedTitle)
     .toHaveLength(expectedCount);
@@ -1052,7 +1066,7 @@ test.describe('Temporal v2 — real stateful user personas', () => {
           const originalCard = await assertCard(page, day, title);
           await expect(originalCard).toBeVisible();
           await assertOriginalScheduleIdentity(
-            page, day, authored.item.scheduleRef,
+            page, day, authored.item,
           );
           await assertCard(page, dateAfter(day, 1), title);
         });
@@ -1078,7 +1092,7 @@ test.describe('Temporal v2 — real stateful user personas', () => {
           const first = await assertCard(page, day, title);
           await expect(first).toBeVisible();
           await assertOriginalScheduleIdentity(
-            page, day, authored.item.scheduleRef,
+            page, day, authored.item,
           );
         });
         await test.step(
