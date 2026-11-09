@@ -3409,20 +3409,20 @@
       "suite": "web-unit-component",
       "contract_id": "T02",
       "candidate_behavior": "activity inspector actions",
-      "purpose": "",
-      "invariant": "",
+      "purpose": "Activity Edit committed-Objective regression and independent draft isolation",
+      "invariant": "Prove no-op Activity Save sends no atomic edit, registered boolean/quantity/qualitative/range rows are not editable, and deleting one recorded result preserves an incomplete new Objective draft while retaining cancel semantics.",
       "status": "UNREVIEWED",
-      "audit_note": "Needs contract/assertion review, rejection cases, and executable evidence; filename alone is not proof."
+      "audit_note": "Behavior and assertions reviewed against 2026-11-09 recorded-Objective contract; new fixes await focused Vitest/real-stack proof. Retains UNREVIEWED until execution and whole-file semantic qualification."
     },
     {
       "path": "apps/web/src/features/home/ui/timeline/event-inspector-actions.test.tsx",
       "suite": "web-unit-component",
       "contract_id": "T02",
       "candidate_behavior": "event inspector actions",
-      "purpose": "",
-      "invariant": "",
+      "purpose": "Event Edit recorded Objective regression and independent draft isolation",
+      "invariant": "Prove unchanged Event Edit has no mutation, registered Objective deletion requires confirmation, and newly drafted Objective edits are not discarded during canonical result refresh.",
       "status": "UNREVIEWED",
-      "audit_note": "Needs contract/assertion review, rejection cases, and executable evidence; filename alone is not proof."
+      "audit_note": "Behavior and assertions reviewed against 2026-11-09 recorded-Objective contract; new fixes await focused Vitest/real-stack proof. Retains UNREVIEWED until execution and whole-file semantic qualification."
     },
     {
       "path": "apps/web/src/features/home/ui/timeline/event-schedule-editor.test.ts",
@@ -4277,10 +4277,10 @@
       "suite": "web-unit-component",
       "contract_id": "T02",
       "candidate_behavior": "remote activity edit settings",
-      "purpose": "",
-      "invariant": "",
+      "purpose": "Activity atomic Edit HTTP transport and user-visible error shaping",
+      "invariant": "Prove empty no-op payload does not reach auth/backend, genuine edits serialize canonical CAS intent, and HTTP 422 does not leak backend framework English into Edit.",
       "status": "UNREVIEWED",
-      "audit_note": "Needs contract/assertion review, rejection cases, and executable evidence; filename alone is not proof."
+      "audit_note": "Behavior and assertions reviewed against 2026-11-09 recorded-Objective contract; new fixes await focused Vitest/real-stack proof. Retains UNREVIEWED until execution and whole-file semantic qualification."
     },
     {
       "path": "apps/web/src/features/temporal/remote-activity-inspector.test.ts",
@@ -4417,10 +4417,10 @@
       "suite": "web-unit-component",
       "contract_id": "T09",
       "candidate_behavior": "remote reality objective corrections",
-      "purpose": "",
-      "invariant": "",
+      "purpose": "Objective definition-before-result, factual correction and permanent deletion API contract",
+      "invariant": "Prove legal definition→record→correction order, result delete CAS stale refusal and successful timeline invalidation, and malformed successful deletions are never misreported as accepted.",
       "status": "UNREVIEWED",
-      "audit_note": "Needs contract/assertion review, rejection cases, and executable evidence; filename alone is not proof."
+      "audit_note": "Behavior and assertions reviewed against 2026-11-09 recorded-Objective contract; new fixes await focused Vitest/real-stack proof. Retains UNREVIEWED until execution and whole-file semantic qualification."
     },
     {
       "path": "apps/web/src/features/temporal/remote-recurring-profile-edit.test.ts",
@@ -5571,6 +5571,36 @@
       "invariant": "",
       "status": "UNREVIEWED",
       "audit_note": "Needs contract/assertion review, rejection cases, and executable evidence; filename alone is not proof."
+    },
+    {
+      "path": "apps/web/e2e/auth/temporal-stateful-personas.spec.ts",
+      "suite": "web-browser-real-stack",
+      "contract_id": "T05",
+      "candidate_behavior": "stateful Activity/Event ordinary, recurring and one-off-conversion journeys",
+      "purpose": "Exercise 100 source-driven P1/P2/P3 authenticated user paths with stepwise Create/Edit/duplicate/delete/reload and independently asserted API, Schedule and card identity.",
+      "invariant": "Edits never generate extra canonical Occurrence/Schedule identities; converted first source identity survives, multi-interval Activity cards share one Activity but have unique Schedules, and protected instances retain independent truth.",
+      "status": "QUALIFIED",
+      "audit_note": "Intent and case structure reviewed 2026-11-09; first-physical-instance duplicate checks added. Registered before fresh local 3-browser evidence; no PASS claimed."
+    },
+    {
+      "path": "apps/web/e2e/auth/temporal-stateful-runtime.spec.ts",
+      "suite": "web-browser-real-stack",
+      "contract_id": "T09",
+      "candidate_behavior": "recorded Objective and factual Session lifecycle through real UI",
+      "purpose": "Exercise RT-01 registered Event Objective read-only Edit, correction/deletion confirmation, CAS readback and reload, plus RT-02 Activity live Session Pause/Stop and replan protection.",
+      "invariant": "A recorded Objective cannot be modified as a normal definition, must survive cancel, and can be permanently removed only via explicit confirmation; Session factual truth protects temporal edits and persists through reload.",
+      "status": "QUALIFIED",
+      "audit_note": "Scenario assertions and API/readback reviewed 2026-11-09; new deletion flow and session scenario require fresh local browser evidence; no PASS claimed."
+    },
+    {
+      "path": "apps/web/src/features/home/ui/timeline/objective-recording-delete-dialog.test.tsx",
+      "suite": "web-unit-component",
+      "contract_id": "T09",
+      "candidate_behavior": "irreversible accepted Objective result deletion confirmation dialog",
+      "purpose": "Verify portal isolation, accessible destructive confirmation, cancel/Escape, Tab focus trap/restore and disabled controls while the accepted deletion is in flight.",
+      "invariant": "No destructive callback occurs from cancel/Escape or while busy; explicit confirmation is distinct from deleting the Objective itself; keyboard focus stays within the modal and returns to its origin.",
+      "status": "QUALIFIED",
+      "audit_note": "New focused jsdom positive/refusal/busy/keyboard cases reviewed 2026-11-09; Vitest execution evidence pending; not yet marked PASS."
     }
   ]
 }
