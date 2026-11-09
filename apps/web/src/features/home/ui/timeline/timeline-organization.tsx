@@ -19,10 +19,11 @@ export function canonicalItemLifeAreaGroup(
   assignments: ReadonlyMap<string, string | null>,
 ): string {
   if (
-    (item.kind === 'scheduled_occurrence' ||
+    ((item.kind === 'scheduled_occurrence' ||
       item.kind === 'expected_occurrence') &&
-    item.sourceKind === 'event' &&
-    item.lifeAreaOverridePresent
+      item.sourceKind === 'event' &&
+      item.lifeAreaOverridePresent) ||
+    (item.kind === 'scheduled_event' && item.lifeAreaOverridePresent)
   ) {
     return item.lifeAreaOverrideRef ?? LEGACY_UNASSIGNED_GROUP;
   }

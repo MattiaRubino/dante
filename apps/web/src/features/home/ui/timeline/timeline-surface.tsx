@@ -294,9 +294,10 @@ export function TimelineSurface({
       readyRuntimeWindow?.kind === 'window' &&
       readyRuntimeWindow.items.some(
         (item) =>
-          (item.kind === 'scheduled_occurrence' ||
+          ((item.kind === 'scheduled_occurrence' ||
             item.kind === 'expected_occurrence') &&
-          item.sourceKind === 'event' &&
+            item.sourceKind === 'event' ||
+            item.kind === 'scheduled_event') &&
           item.lifeAreaOverridePresent === true &&
           item.lifeAreaOverrideRef === null,
       );
@@ -351,9 +352,10 @@ export function TimelineSurface({
       if (!group) return null;
       if (groupId === LEGACY_UNASSIGNED_GROUP) {
         if (
-          (item.kind === 'scheduled_occurrence' ||
+          (((item.kind === 'scheduled_occurrence' ||
             item.kind === 'expected_occurrence') &&
-          item.sourceKind === 'event' &&
+            item.sourceKind === 'event') ||
+            item.kind === 'scheduled_event') &&
           item.lifeAreaOverridePresent &&
           item.lifeAreaOverrideRef === null
         ) {

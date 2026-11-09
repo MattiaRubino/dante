@@ -214,6 +214,8 @@ class TimelineScheduledEventResponse(BaseModel):
     schedule_ref: UUID
     placement_material_state_ref: UUID
     title: str
+    life_area_override_present: bool = False
+    life_area_override_ref: UUID | None = None
     temporal_form: Literal["floating_local"] = "floating_local"
     starts_local_at: LocalDateTimeText
     ends_local_at: LocalDateTimeText
@@ -229,6 +231,8 @@ class TimelineDateSpanEventResponse(BaseModel):
     schedule_ref: UUID
     placement_material_state_ref: UUID
     title: str
+    life_area_override_present: bool = False
+    life_area_override_ref: UUID | None = None
     temporal_form: Literal["date_span"] = "date_span"
     start_date: date
     end_date_exclusive: date
@@ -244,6 +248,8 @@ class TimelineNamedZoneLocalEventResponse(BaseModel):
     schedule_ref: UUID
     placement_material_state_ref: UUID
     title: str
+    life_area_override_present: bool = False
+    life_area_override_ref: UUID | None = None
     temporal_form: Literal["named_zone_local"] = "named_zone_local"
     starts_local_at: LocalDateTimeText
     ends_local_at: LocalDateTimeText
@@ -264,6 +270,8 @@ class TimelineAbsoluteEventResponse(BaseModel):
     schedule_ref: UUID
     placement_material_state_ref: UUID
     title: str
+    life_area_override_present: bool = False
+    life_area_override_ref: UUID | None = None
     temporal_form: Literal["absolute"] = "absolute"
     starts_at: datetime
     ends_at: datetime
@@ -281,6 +289,8 @@ class TimelineCoarseLocalPeriodEventResponse(BaseModel):
     schedule_ref: UUID
     placement_material_state_ref: UUID
     title: str
+    life_area_override_present: bool = False
+    life_area_override_ref: UUID | None = None
     temporal_form: Literal["coarse_local_period"] = "coarse_local_period"
     local_date: date
     period: Literal["morning", "afternoon", "evening"]
@@ -934,6 +944,8 @@ def _timeline_event_item_response(
         "schedule_ref": item.schedule_ref,
         "placement_material_state_ref": item.placement_material_state_ref,
         "title": item.title,
+        "life_area_override_present": item.life_area_override_present,
+        "life_area_override_ref": item.life_area_override_ref,
     }
     if isinstance(item, TimelineFloatingLocalEventItem):
         return TimelineScheduledEventResponse(

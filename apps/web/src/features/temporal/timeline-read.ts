@@ -42,6 +42,8 @@ type TemporalTimelineScheduledEventBase = Readonly<{
   scheduleRef: string;
   placementMaterialStateRef: string;
   title: string;
+  lifeAreaOverridePresent?: boolean;
+  lifeAreaOverrideRef?: string | null;
 }>;
 
 type TemporalTimelineDateSpanFields = Readonly<{

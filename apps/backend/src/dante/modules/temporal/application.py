@@ -57,6 +57,10 @@ class _TimelineScheduledEventBase:
     schedule_ref: ScopedRecordRef
     placement_material_state_ref: MaterialStateRef
     title: str
+    # Physical first Schedule of a converted recurring Event may carry an
+    # explicit first-Occurrence structure patch, just like later Occurrences.
+    life_area_override_present: bool = field(default=False, kw_only=True)
+    life_area_override_ref: UUID | None = field(default=None, kw_only=True)
 
 
 @dataclass(frozen=True, slots=True)
@@ -456,6 +460,8 @@ def _item_from_row(
         raise ValueError("Timeline Activity placement form is outside the activated projection")
 
     if owner_kind == "event":
+        identity["life_area_override_present"] = bool(row["life_area_override_present"])
+        identity["life_area_override_ref"] = row["life_area_override_ref"]
         if temporal_form == "date_span":
             return TimelineDateSpanEventItem(
                 event_ref=subject_ref,
@@ -607,8 +613,10 @@ class TemporalTimelineApplication:
                        NULL::text AS source_kind,
                        NULL::uuid AS source_native_ref,
                        NULL::uuid AS occurrence_ref,
-                       false AS life_area_override_present,
-                       NULL::uuid AS life_area_override_ref
+                       COALESCE(first_edit.patch->'event_local' ? 'life_area_ref',false)
+                           AS life_area_override_present,
+                       NULLIF(first_edit.patch->'event_local'->>'life_area_ref','')::uuid
+                           AS life_area_override_ref
                   FROM dante.event_expectation AS expectation
              LEFT JOIN LATERAL (
                  -- A converted Event keeps its physical first Schedule.

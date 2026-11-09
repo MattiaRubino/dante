@@ -421,6 +421,7 @@ function parseOwnerIdentity(
       kind: 'scheduled_event' as const,
       eventRef: parseUuidV7(payload.event_ref, 'event_ref'),
       ...shared,
+      ...parseLifeAreaOverride(payload),
       wireRefKey: 'event_ref' as const,
     });
   }
@@ -462,6 +463,11 @@ function parseScheduledItem(payload: unknown): TemporalTimelineScheduledItem {
     ...(owner.kind === 'scheduled_activity' &&
     payload.placement_locked !== undefined
       ? (['placement_locked'] as const)
+      : []),
+    ...(owner.kind === 'scheduled_event' &&
+    ('life_area_override_present' in payload ||
+      'life_area_override_ref' in payload)
+      ? (['life_area_override_present', 'life_area_override_ref'] as const)
       : []),
   ] as const;
 
