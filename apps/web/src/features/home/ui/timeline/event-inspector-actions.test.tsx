@@ -2110,6 +2110,57 @@ describe('Event Inspector actions', () => {
     expect(onClose).not.toHaveBeenCalled();
   });
 
+  it('does not write when an Event has multiple unchanged recorded Objective kinds', async () => {
+    const baseline = {
+      objectiveRef: 'b1',
+      label: 'Presenza',
+      resultKind: 'boolean',
+      comparatorCode: null,
+      targetValue: null,
+      targetMin: null,
+      targetMax: null,
+      unitCode: null,
+      presentationOrder: 0,
+      verificationMode: 'none',
+      observedBoolean: true,
+      observedNumeric: null,
+      qualitativeCode: null,
+      assessmentCode: 'satisfied',
+      observationRef: 'recorded',
+      evaluationStateRef: 'accepted',
+    };
+    listObjectives.mockResolvedValueOnce([
+      baseline,
+      { ...baseline, objectiveRef: 'q1', label: 'Quantità', resultKind: 'quantity',
+        comparatorCode: 'gte', targetValue: 12, observedNumeric: 123,
+        observedBoolean: null, presentationOrder: 1 },
+      { ...baseline, objectiveRef: 'v1', label: 'Valutazione',
+        resultKind: 'qualitative', observedBoolean: null, qualitativeCode: 'good',
+        presentationOrder: 2 },
+      { ...baseline, objectiveRef: 'r1', label: 'Intervallo',
+        resultKind: 'range', comparatorCode: 'between', targetMin: 12,
+        targetMax: 123, observedNumeric: 132, observedBoolean: null,
+        presentationOrder: 3 },
+    ]);
+    loadProfile.mockResolvedValue({
+      eventRef, title: 'Conferenza', description: null, location: null,
+      colorCode: null, profileRevision: 1, agendaParts: [],
+    });
+    render(
+      <EventInspectorActions
+        eventRef={eventRef} placement={placement} onDuplicate={vi.fn()}
+      />,
+    );
+    fireEvent.click(screen.getByRole('button', { name: 'Modifica' }));
+    await screen.findByRole('group', { name: 'Obiettivo registrato Presenza' });
+    fireEvent.click(screen.getByRole('button', { name: 'Salva modifiche' }));
+    await waitFor(() =>
+      expect(screen.queryByRole('textbox', { name: 'Titolo Event' })).toBeNull(),
+    );
+    expect(reviseAtomic).not.toHaveBeenCalled();
+    expect(reviseProfile).not.toHaveBeenCalled();
+  });
+
   it('closes an unchanged Event editor without a mutation or error', async () => {
     loadProfile.mockResolvedValue({
       eventRef,
