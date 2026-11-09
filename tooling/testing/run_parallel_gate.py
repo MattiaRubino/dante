@@ -402,6 +402,11 @@ def self_test_scheduler() -> None:
     assert _is_disposable_test_volume("dante-pytest-volume-2d6cf2b2c696")
     assert not _is_disposable_test_volume("dante-local_postgres-data")
     assert not _is_disposable_test_volume("dante-pytest-volume-TOO-SHORT")
+    subprocess.run(
+        [sys.executable, str(ROOT / "tooling/testing/run_real_stack_playwright.py"),
+         "--self-test"],
+        cwd=ROOT, check=True,
+    )
     print("PASS: dynamic scheduler and infrastructure-only retries preserve coverage")
 
 
@@ -635,6 +640,10 @@ def main() -> int:
         "--nonauth-workers", type=int, default=3,
         help="Parallel non-auth Chromium browser files (1-6; default 3)",
     )
+    parser.add_argument(
+        "--realstack-workers", type=int, default=3,
+        help="Isolated real-stack browser projects (1-3; 1 is legacy fallback)",
+    )
     parser.add_argument("--dry-run", action="store_true")
     parser.add_argument("--self-test", action="store_true")
     args = parser.parse_args()
@@ -646,6 +655,8 @@ def main() -> int:
         parser.error("--postgres-jobs-per-worker must be between 2 and 8")
     if not 1 <= args.nonauth_workers <= 6:
         parser.error("--nonauth-workers must be between 1 and 6")
+    if not 1 <= args.realstack_workers <= 3:
+        parser.error("--realstack-workers must be between 1 and 3")
     if args.postgres_workers >= 8:
         print(
             "WARNING: 8-10 PostgreSQL workers run 8-10 real PostGIS "
@@ -670,7 +681,10 @@ def main() -> int:
             for name in names:
                 print(f"  {name}: {' '.join(tasks[name].command)}")
         print(f"NONAUTH_BROWSER_WORKERS={args.nonauth_workers}")
-        print("REAL_STACK_BROWSER_WORKERS=1 (destructive PostgreSQL outage tests)")
+        print(
+            f"REAL_STACK_BROWSER_WORKERS={args.realstack_workers} "
+            "(independent disposable PostgreSQL per browser)"
+        )
         print(f"TOTAL={len(tasks)}; original sequential gate untouched")
         return 0
 
@@ -740,7 +754,16 @@ def main() -> int:
             # One real-stack webServer and one Playwright worker remain
             # isolated from PostgreSQL jobs and the other browser gates.
             name = "WEB_BROWSER_REAL_STACK"
-            result = execute(tasks[name], folder)
+            result = execute(
+                tasks[name],
+                folder,
+                environment={
+                    "DANTE_E2E_REAL_STACK_WORKERS": str(args.realstack_workers),
+                    "DANTE_E2E_REAL_STACK_ARTIFACTS_DIR": str(
+                        folder / "WEB_BROWSER_REAL_STACK_SHARDS"
+                    ),
+                },
+            )
             outcomes.append(result)
             print(
                 f"{'PASS' if result.code == 0 else 'FAIL'} "

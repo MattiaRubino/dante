@@ -1,5 +1,14 @@
 # Timeline / Temporal-Operational — Workstream Handoff
 
+## 2026-11-09 — Real-stack browser sharding (performance-only infrastructure)
+
+Baseline green full gate on `8cd45cb627bf`: `WEB_BROWSER_REAL_STACK` completed in 774.8s with three 39-test browser projects (113 passed, four intentional skips). The original Playwright config is serial because destructive PostgreSQL stop/restart tests must not share a stack. Do **not** set `playwright.auth.config.ts` to workers=3 on the same webServer.
+
+The governed parallel runner now runs one Playwright worker **per isolated stack**, across Chromium/Firefox/WebKit, with independent HTTPS web ports, disposable PostgreSQL containers, SMTP captures, E2E control IDs, and per-browser result directories. It compiles the web frontend once with the same Apple/passkey E2E build flags, then uses `DANTE_E2E_PREBUILT_WEB=1` to prevent concurrent dist writes. It collects the complete Playwright inventory per project, requires an exactly matching count of recorded JUnit testcases, and fails if the pre-existing four skipped tests increase. Failure logs and traces are kept inside the gate archive under `WEB_BROWSER_REAL_STACK_SHARDS/`; no product logic or test selection was changed.
+
+Parallel gate CLI: `--realstack-workers 3` (default), `--realstack-workers 2` (bounded), `--realstack-workers 1` (original serial fallback). The runner's `--self-test` validates missing/duplicate shards and missing reported testcases; the parallel gate `--self-test` invokes it. **Performance is not yet measured on owner WSL**: run the real-stack group against an unchanged SHA, compare wall-clock and complete test counts with the baseline before treating the optimization as validated. Never suppress failures or retries for performance.
+
+
 ## 2026-11-09 — Life Area local-occurrence/ordinary Event Edit regression repair (verification pending)
 
 Observed manually in real DANTE UI: editing **only one recurring Event** failed when typing a new Life Area; removal was accepted in the Inspector but its Timeline card retained the source series area; choosing an existing different area changed the detail label but not the card color; the **Activity** edit selector initially only exposed the assigned area. A separate user finding confirms normal, nonrecurring Event Edit also rejected new Life Area authoring.

@@ -392,6 +392,13 @@ def _generate_tls_material(directory: Path) -> tuple[Path, Path]:
 
 
 def _build_web() -> None:
+    if os.environ.get("DANTE_E2E_PREBUILT_WEB") == "1":
+        # The browser-shard orchestrator builds exactly once before starting
+        # any HTTPS stack. Rebuilding here would race on the shared dist tree.
+        if not (_REPO_ROOT / "apps/web/dist/index.html").is_file():
+            raise RuntimeError("Prebuilt E2E frontend is missing: apps/web/dist/index.html")
+        print("DANTE E2E: shared prebuilt frontend; skipping duplicate build.", flush=True)
+        return
     build = _run(["pnpm", "--filter", "@dante/web", "build"], cwd=_REPO_ROOT)
     if build.stdout:
         print(build.stdout, end="")
