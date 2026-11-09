@@ -824,11 +824,12 @@ describe('Event Inspector actions', () => {
       name: 'Area assegnata',
     });
     expect(areaInput).toHaveProperty('value', 'Studio');
+    // The color is now an accessible trigger button, not a decorative img.
+    const colorTrigger = screen.getByRole('button', { name: 'Colore Life Area' });
     expect(
-      screen.getByRole('img', {
-        name: 'Colore della Life Area: #4285F4',
-      }),
-    ).toBeTruthy();
+      (colorTrigger.querySelector('span[aria-hidden="true"]') as HTMLElement)
+        .style.background,
+    ).toBe('rgb(66, 133, 244)');
     fireEvent.focus(areaInput);
     const assignedOption = await screen.findByRole('option', {
       name: 'Studio',
@@ -1451,7 +1452,7 @@ describe('Event Inspector actions', () => {
     });
     expect(within(recorded).getByText('Risultato: Sì')).toBeTruthy();
     expect(screen.queryByRole('textbox', { name: 'Nome obiettivo' })).toBeNull();
-    fireEvent.click(screen.getByRole('button', { name: 'Aggiungi obiettivo' }));
+    fireEvent.click(screen.getByRole('button', { name: /Aggiungi obiettivo$/ }));
     expect(screen.getByRole('textbox', { name: 'Nome obiettivo' }))
       .toHaveProperty('value', '');
     fireEvent.click(within(recorded).getByRole('button', {
