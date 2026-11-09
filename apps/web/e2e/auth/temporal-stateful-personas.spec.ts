@@ -459,6 +459,28 @@ async function assertOriginalScheduleIdentity(
   ).toHaveLength(1);
 }
 
+async function readActivityPlacements(
+  page: Page, day: string, expectedTitle: string, expectedCount: number,
+): Promise<readonly Record<string, unknown>[]> {
+  const window = await serverRead(
+    page,
+    '/api/v1/temporal/timeline/window?start_date=' + day +
+      '&end_date_exclusive=' + dateAfter(day, 1),
+  ) as Record<string, unknown>;
+  expect(window.kind).toBe('window');
+  const rows = (window.items as Record<string, unknown>[]).filter((row) =>
+    row.kind === 'scheduled_activity' && row.title === expectedTitle &&
+    String(row.starts_local_at).startsWith(day),
+  );
+  expect(rows, 'physical interval placements for ' + expectedTitle)
+    .toHaveLength(expectedCount);
+  expect(new Set(rows.map((row) => row.activity_ref)).size,
+    'one logical Activity despite multiple intervals').toBe(1);
+  expect(new Set(rows.map((row) => row.schedule_ref)).size,
+    'distinct canonical Schedule for each interval').toBe(expectedCount);
+  return rows;
+}
+
 async function occurrence(
   page: Page, day: string, sourceRef: string,
 ): Promise<Record<string, unknown>> {
@@ -483,6 +505,35 @@ async function assertRecurringTruth(
   page: Page, day: string, sourceRef: string,
   truth: PersonaTruth, persona: PersonaCase,
 ): Promise<void> {
+  if (persona.kind === 'activity') {
+    // Routine occurrences materialize ordinary Activities with multiple
+    // physical interval Schedules, NOT scheduled_occurrence timeline rows.
+    const rows = await readActivityPlacements(
+      page, day, truth.title, Math.max(1, persona.intervalCount),
+    );
+    const materializedActivityRef = String(rows[0]!.activity_ref);
+    expect(materializedActivityRef).toEqual(expect.stringMatching(UUID));
+    const snapshot = await serverRead(
+      page,
+      '/api/v1/temporal/activities/' + materializedActivityRef +
+        '/edit-snapshot',
+    ) as Record<string, unknown>;
+    const objectives = snapshot.objectives as Record<string, unknown>[];
+    expect(objectives.map((item) => item.label),
+      'persisted recurring Activity Objective order for ' + persona.id)
+      .toEqual(truth.objectives.map((item) => item.label));
+    const schedules = snapshot.schedules as Record<string, unknown>[];
+    expect(schedules.filter((row) => row.role_code === 'planned')
+      .map((row) => row.display_name), 'recurring planned Sessions')
+      .toEqual(truth.sessions);
+    expect(schedules.filter((row) => row.role_code === 'interval'),
+      'exact recurring Activity interval count').toHaveLength(
+        truth.expectedIntervalCount,
+      );
+    expect(snapshot.life_area_ref ?? null, 'recurring Activity Life Area')
+      .toBe(truth.areaRef);
+    return;
+  }
   const current = await occurrence(page, day, sourceRef);
   const ref = String(current.occurrence_ref);
   const loaded = await serverRead(
@@ -875,11 +926,17 @@ test.describe('Temporal v2 — real stateful user personas', () => {
           );
           await assertCard(page, day, localTitle);
           await expect(onDay(page, day, revisedTitle)).toHaveCount(0);
-          const earlier = await occurrence(
-            page, day, authored.item.sourceRef,
-          );
-          expect(earlier.title, 'local exception must be protected')
-            .toBe(localTitle);
+          if (persona.kind === 'activity') {
+            await readActivityPlacements(
+              page, day, localTitle, Math.max(1, persona.intervalCount),
+            );
+          } else {
+            const earlier = await occurrence(
+              page, day, authored.item.sourceRef,
+            );
+            expect(earlier.title, 'local exception must be protected')
+              .toBe(localTitle);
+          }
           return revisedTruth;
         });
         const middle = nextOccurrence(future, recurrence);
@@ -892,10 +949,17 @@ test.describe('Temporal v2 — real stateful user personas', () => {
               page, middle, revisedTitle, persona.kind, anotherLocal,
             );
             await assertCard(page, future, revisedTitle);
-            const current = await occurrence(
-              page, middle, authored.item.sourceRef,
-            );
-            expect(current.title).toBe(anotherLocal);
+            if (persona.kind === 'activity') {
+              await readActivityPlacements(
+                page, middle, anotherLocal,
+                Math.max(1, persona.intervalCount),
+              );
+            } else {
+              const current = await occurrence(
+                page, middle, authored.item.sourceRef,
+              );
+              expect(current.title).toBe(anotherLocal);
+            }
             // This is the previously modified selected instance: choosing
             // "Dalla prossima istanza" must EXCLUDE the selected boundary.
             const fromNextTitle = revisedTitle + ' dalla prossima';
