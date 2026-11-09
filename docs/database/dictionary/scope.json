@@ -103,16 +103,18 @@
       "B14-EXISTING-EVENT-REPAIR-PERF",
       "B14-FIRST-EVENT-DELETION-LIFECYCLE",
       "B14-EXISTING-EVENT-LEGACY-CHECK-NAME",
-      "B14-OBJECTIVE-VERIFICATION"
+      "B14-OBJECTIVE-VERIFICATION",
+      "B14-RECORDED-OBJECTIVE-DELETE",
+      "B14-SELECTED-SERIES-PROTECTION"
     ],
     "standalone_entries": {
       "tables": 243,
       "views": 5,
-      "routines": 261,
-      "total": 509
+      "routines": 264,
+      "total": 512
     },
     "embedded_objects": {
-      "triggers": 104,
+      "triggers": 105,
       "physical_indexes": 500
     },
     "constraints": {
