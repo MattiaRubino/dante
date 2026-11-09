@@ -424,7 +424,7 @@ describe('TemporalCreateComposer', () => {
     });
     expect(
       within(eventObjectives).getByRole('button', {
-        name: 'Aggiungi obiettivo',
+        name: '+ Obiettivo',
       }),
     ).toBeTruthy();
     expect(eventObjectives.querySelector('[data-reality-policy]')).toBeNull();
