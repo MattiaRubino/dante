@@ -456,18 +456,32 @@ async function assertDayHasNoDuplicatePlacements(
       '&end_date_exclusive=' + dateAfter(day, 1),
   ) as Record<string, unknown>;
   expect(window.kind).toBe('window');
-  const rows = (window.items as Record<string, unknown>[]).filter((row) =>
-    typeof row.title === 'string' &&
-    row.title.startsWith(originalTitle) &&
-    String(row.starts_local_at ?? row.start_date ?? '').startsWith(day),
-  );
+  const rows = (window.items as Record<string, unknown>[]).filter((row) => {
+    if (
+      typeof row.title !== 'string' ||
+      !row.title.startsWith(originalTitle) ||
+      typeof row.schedule_ref !== 'string'
+    ) return false;
+    // Materialized recurring Events carry time within their nested
+    // SchedulePlacement. Ordinary Events and Activities use flat fields.
+    // Both shape families are legitimate in the same canonical Timeline.
+    const placement = row.placement &&
+      typeof row.placement === 'object'
+      ? row.placement as Record<string, unknown>
+      : null;
+    const start = row.display_starts_local_at ?? row.starts_local_at ??
+      row.start_date ?? row.local_date ??
+      placement?.display_starts_local_at ?? placement?.starts_local_at ??
+      placement?.start_date ?? placement?.local_date;
+    return String(start ?? '').startsWith(day);
+  });
   const required = persona.kind === 'activity'
     ? Math.max(1, persona.intervalCount)
     : 1;
-  expect(rows, 'exact physical placement count after conversion/' + day)
+  expect(rows, 'exact physical placement count for this series or conversion/' + day)
     .toHaveLength(required);
   expect(rows.map((row) => String(row.title)),
-    'only the expected title after local conversion Edit',
+    'only expected title for this scoped Edit',
   ).toEqual(Array.from({ length: required }, () => currentTitle));
   expect(
     new Set(rows.map((row) => String(row.schedule_ref))).size,
