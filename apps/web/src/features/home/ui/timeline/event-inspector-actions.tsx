@@ -580,15 +580,8 @@ export function EventInspectorActions({
   const requestRecordedObjectiveDeletion = (objective: ObjectiveView) => {
     if (busy || objectiveDeletePending || !objective.evaluationStateRef ||
         !objective.observationRef) return;
-    if (
-      removedObjectives.length > 0 ||
-      objectiveRows.some((row) => objectiveChanged(row))
-    ) {
-      setObjectiveError(
-        'Salva o annulla le altre modifiche agli obiettivi prima di eliminare la registrazione.',
-      );
-      return;
-    }
+    // Recorded-result removal must not destroy or block unrelated
+    // unfinished Objective drafts in this Edit form.
     setObjectiveError('');
     setDeletingObjective(objective);
   };
@@ -607,8 +600,19 @@ export function EventInspectorActions({
       )
       .then(() => objectiveSource.listObjectives(kind, subjectRef))
       .then((fresh) => {
-        setObjectiveRows(fresh.map(existingObjectiveDraft));
-        setRemovedObjectives([]);
+        const restored = fresh.find(
+          (item) => item.objectiveRef === objective.objectiveRef,
+        );
+        if (!restored || restored.observationRef || restored.evaluationStateRef) {
+          throw new Error('Registrazione eliminata, ma rilettura non coerente. Riapri Modifica.');
+        }
+        // Merge the accepted readback into the single affected row only.
+        // Existing draft edits, unfinished new Objectives and removals survive.
+        setObjectiveRows((rows) => rows.map((row) =>
+          row.objectiveRef === objective.objectiveRef
+            ? existingObjectiveDraft(restored)
+            : row,
+        ));
         setCorrectingObjective(null);
         setDeletingObjective(null);
         correctionOperation.current = null;
@@ -620,11 +624,6 @@ export function EventInspectorActions({
             ? reason.message
             : 'Impossibile eliminare la registrazione. Riapri Modifica.',
         );
-        void objectiveSource.listObjectives(kind, subjectRef)
-          .then((fresh) => {
-            setObjectiveRows(fresh.map(existingObjectiveDraft));
-          })
-          .catch(() => {});
       })
       .finally(() => {
         setBusy(false);
