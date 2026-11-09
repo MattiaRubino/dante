@@ -323,6 +323,20 @@ def _self_test() -> None:
                 assert "0-trace.network" in reduced_zip.namelist()
                 assert "resources/page@100.jpeg" not in reduced_zip.namelist()
         assert (failure / "trace.zip").exists()
+        # Even a broad RED matrix may only add three reduced traces per browser
+        # to the upload, without deleting any original browser evidence.
+        for i in range(3):
+            extra = root / "chromium" / "test-results" / f"extra-{i}"
+            extra.mkdir(parents=True)
+            with zipfile.ZipFile(extra / "trace.zip", "w") as trace:
+                trace.writestr("0-trace.trace", "additional failing action")
+        _write_diagnostic_archive(root)
+        index = json.loads((root / "diagnostic-manifest.json").read_text())
+        assert len(index["traces"]) == 3
+        assert len(index["raw_traces_not_in_compact_archive"]) == 1
+        for i in range(3):
+            assert (root / "chromium" / "test-results" / f"extra-{i}" /
+                    "trace.zip").exists()
     print("PASS: browser sharding, coverage, and auto-packaged E2E diagnostics")
 
 
