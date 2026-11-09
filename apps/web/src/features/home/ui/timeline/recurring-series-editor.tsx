@@ -649,7 +649,7 @@ export function RecurringSeriesEditor({
               area_color_change: {
                 life_area_ref: activeAreaOption.ref,
                 expected_revision: activeAreaOption.revision,
-                color_code: areaColorOverride!.toUpperCase(),
+                color_code: (areaColorOverride ?? '#EA5C12').toUpperCase(),
               },
             }
           : {};
