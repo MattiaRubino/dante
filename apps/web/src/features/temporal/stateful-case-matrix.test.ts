@@ -36,7 +36,7 @@ describe('Temporal v2 mandatory multi-feature population', () => {
   it('covers all supported goal types, area modes, time semantics and policies', () => {
     const kinds = new Set(PERSONA_CASES.flatMap((entry) => entry.goalKinds));
     expect([...kinds].sort()).toEqual(
-      ['boolean', 'quantity', 'qualitative', 'range'],
+      ['boolean', 'qualitative', 'quantity', 'range'],
     );
     for (const group of [EVENT_CASES, ACTIVITY_CASES]) {
       expect(new Set(group.map((entry) => entry.area))).toEqual(

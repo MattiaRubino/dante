@@ -250,8 +250,8 @@ async function reassignAreaAndCancel(
   await page.getByRole('dialog', { name: 'Scegli colore' })
     .getByRole('button', { name: 'Prugna', exact: true }).click();
   await editor.getByRole('button', { name: 'Salva modifiche' }).click();
-  const catalog = await serverRead(page, '/api/v1/temporal/life-areas')
-    as readonly Record<string, unknown>[];
+  const catalog = (await serverRead(page, '/api/v1/temporal/life-areas')) as
+    readonly Record<string, unknown>[];
   const matches = catalog.filter((row) => row.name === nextArea);
   expect(matches, 'exactly one new Life Area after reassign').toHaveLength(1);
   expect(matches[0]!.color_code).toBe('#8E24AA');
@@ -574,8 +574,8 @@ async function seriesRevision(
   const response = await accepted;
   expect(response.status(), await response.text()).toBe(200);
   await expect(confirmation).toHaveCount(0);
-  const areas = await serverRead(page, '/api/v1/temporal/life-areas')
-    as readonly Record<string, unknown>[];
+  const areas = (await serverRead(page, '/api/v1/temporal/life-areas')) as
+    readonly Record<string, unknown>[];
   const matching = areas.filter((area) => area.name === areaName);
   expect(matching, 'exactly one transactional recurring Life Area')
     .toHaveLength(1);
@@ -624,8 +624,8 @@ async function recolorExistingSeriesArea(
     .click();
   const response = await accepted;
   expect(response.status(), await response.text()).toBe(200);
-  const catalog = await serverRead(page, '/api/v1/temporal/life-areas')
-    as readonly Record<string, unknown>[];
+  const catalog = (await serverRead(page, '/api/v1/temporal/life-areas')) as
+    readonly Record<string, unknown>[];
   const persisted = catalog.filter((area) =>
     area.life_area_ref === truth.areaRef,
   );
