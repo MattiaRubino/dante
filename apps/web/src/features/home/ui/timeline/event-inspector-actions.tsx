@@ -717,12 +717,9 @@ export function EventInspectorActions({
       if (
         (selectedArea &&
           selectedArea.name.toLocaleLowerCase() !== areaName.toLocaleLowerCase()) ||
-        (creatingLocalArea &&
-          (!recurringContext || areaName.length > 100 || !areaChoice))
+        (creatingLocalArea && (areaName.length > 100 || !areaChoice))
       ) {
-        const message = recurringContext
-          ? 'Nome Life Area non valido.'
-          : 'Per creare una Life Area dall’editor Event usa «Solo questa istanza».';
+        const message = 'Nome Life Area non valido.';
         setAreaError(message);
         throw new Error(message);
       }
@@ -931,7 +928,8 @@ export function EventInspectorActions({
           );
         const areaChanged =
           areaChoice !== null &&
-          (areaSelection || null) !== areaChoice.currentRef;
+          ((areaSelection || null) !== areaChoice.currentRef ||
+            creatingLocalArea);
         const realityChanged =
           realityPolicy !== null && realityMode !== realityPolicy.mode;
         if (
@@ -971,6 +969,9 @@ export function EventInspectorActions({
                     lifeArea: {
                       ref: areaSelection || null,
                       expectedRevision: areaChoice.currentRevision,
+                      ...(creatingLocalArea
+                        ? { newArea: { name: areaName, colorCode: newAreaColor } }
+                        : {}),
                     },
                   }
                 : {}),
@@ -1527,13 +1528,19 @@ export function EventInspectorActions({
                         disabled={busy}
                         onQueryChange={(query) => {
                           setAreaQuery(query);
-                          setAreaSelection(
-                            areaChoice.options.find(
-                              (option) =>
-                                option.name.toLocaleLowerCase() ===
-                                query.trim().toLocaleLowerCase(),
-                            )?.ref ?? '',
+                          const matched = areaChoice.options.find(
+                            (option) =>
+                              option.name.toLocaleLowerCase() ===
+                              query.trim().toLocaleLowerCase(),
                           );
+                          setAreaSelection(matched?.ref ?? '');
+                          if (query.trim() && !matched) {
+                            // A Life Area owns its appearance: do not retain
+                            // the standalone Event item color when creating one.
+                            setProfileDraft(
+                              (draft) => draft && { ...draft, colorCode: null },
+                            );
+                          }
                           setAreaError('');
                         }}
                         onChoose={(option) => {
@@ -1552,9 +1559,9 @@ export function EventInspectorActions({
                           setAreaError('');
                         }}
                       />
-                      {recurringContext && areaQuery.trim() && !areaSelection ? (
+                      {areaQuery.trim() && !areaSelection ? (
                         <small role="status">
-                          La nuova Life Area sarà creata insieme alla modifica di questa istanza.
+                          La nuova Life Area sarà creata insieme al salvataggio dell’Evento.
                         </small>
                       ) : null}
                       {areaError ? (
