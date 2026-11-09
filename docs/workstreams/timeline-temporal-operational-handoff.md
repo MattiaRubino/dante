@@ -1,5 +1,21 @@
 # Timeline / Temporal-Operational — Workstream Handoff
 
+## 2026-11-09 — Life Area local-occurrence/ordinary Event Edit regression repair (verification pending)
+
+Observed manually in real DANTE UI: editing **only one recurring Event** failed when typing a new Life Area; removal was accepted in the Inspector but its Timeline card retained the source series area; choosing an existing different area changed the detail label but not the card color; the **Activity** edit selector initially only exposed the assigned area. A separate user finding confirms normal, nonrecurring Event Edit also rejected new Life Area authoring.
+
+Code-level cause: the Event-local edit stores its accepted `event_local.life_area_ref` in the selected Occurrence profile patch, while Timeline grouping/color previously resolved every scheduled/expected Event Occurrence from `event:<source_native_ref>` in the global organization snapshot. This discarded the local override in presentation. The converted Event's physical first Schedule is a distinct `scheduled_event` branch and needs the same override. The selection component filtered the entire catalog by its prefilled selected label. Event atomic and occurrence-local edit commands formerly accepted only existing area IDs, not a new profile with color.
+
+Repairs on feature/timeline-temporal-operational:
+- Canonical `TemporalTimelineApplication.read_window` projects **explicit local Life Area provenance** (presence flag + nullable area UUID) for scheduled, expected and physical-first Event projections. Type/JSON parser, strict response contract, Timeline grouping/color resolve the instance override before the source assignment. **Present + null means "remove area"; absent means "inherit from series".** A neutral unassigned group is created if an explicitly detached occurrence is present, even when every source is assigned.
+- `TemporalLifeAreaSelect` opens the entire canonical area catalog when focused with the already-selected label. Typing another string still filters.
+- Ordinary Event Edit and selected-Event `only_this` accept new typed Life Area names/colors. The catalog creation, appearance, Event assignment or occurrence-local patch, and other changes execute in a **single caller-managed SERIALIZABLE transaction** using `create_life_area_in_session`. No independent pre-save API POST; a stale CAS must roll back the catalog row. Existing select and explicit removal are unchanged.
+- Backend/Frontend contracts changed and require canonical `pnpm api:generate` plus formatted generated Zod models and OpenAPI snapshot before the full gate.
+- New test cases each carry an explicit regression comment: selector initial-open catalog vs filter; Event Inspector normal-area creation; selected occurrence replace/clear/create; remote atomic JSON for both routes; Timeline group inheritance/override/explicit null and converted first; PostgreSQL normal Event creation and rollback; PostgreSQL Event-occurrence local create/clear, sibling isolation, authoritative Timeline read, stale operation rollback.
+
+**Status:** changes and tests are committed to GitHub. No local test execution is available through the GitHub-only environment, so do **not** claim this checkpoint green until owner's targeted Ruff, Pytest PostgreSQL, Vitest, ESLint, TypeScript, generated contracts and Playwright runs pass. This work is separate from the prior completely green 27/27 gate on `8cd45cb627bf`, which is now the baseline, not proof of these new changes. New area IDs/colors must not be inferred from stale UI state.
+
+
 ## 2026-11-09 — Full gate on e06467c9f; diagnosis of seven red groups
 
 The owner's `FULL_GATE_LOGS.tar.gz` and manifest prove 27/27 groups executed with source stability PASS, 20 PASS and seven FAIL in 1114s. Full PostgreSQL 371.5s PASS; Web Vitest PASS, repo typecheck/build PASS. The failing groups: REPO_FORMAT (16 mismatched prettier files), REPO_ESLINT (five test-source typing errors), GENERATED_DRIFT (committed OpenAPI and 24 regenerated API Zod/index outputs), BACKEND_NON_POSTGRES (680 PASS, one schema snapshot test FAIL), WEB_BROWSER_NONAUTH (145/146 PASS), WEB_BROWSER_REAL_STACK (111/113 PASS).
