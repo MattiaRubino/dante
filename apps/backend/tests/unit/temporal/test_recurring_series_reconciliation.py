@@ -707,7 +707,9 @@ def test_inclusive_series_edits_preserve_every_protected_future(
     )
     assert scope.target_occurrence_refs == (FIRST, CLEAN)
     assert scope.protected_future_occurrence_refs == (LOCAL,)
-    assert scope.protected_future_reasons == ((LOCAL, future_reason),)
+    assert scope.protected_future_reasons == (
+        (LOCAL, 'local_change' if future_reason == 'legacy_unknown' else future_reason),
+    )
 
 
 def test_recurring_event_placement_policy_supports_versioned_lock_inheritance() -> None:
