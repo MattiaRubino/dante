@@ -295,6 +295,18 @@ export async function authorPersona(
       'label[data-session-capability="activity"] input[type="checkbox"]',
     ).check();
   }
+  if (areaName && persona.area === 'existing') {
+    // The remote Life Area catalog can finish loading after the initial
+    // textbox fill. Selecting the actual catalog option is required: plain
+    // text could otherwise stage a duplicate "new" area with the same name.
+    await dialog.getByRole('textbox', { name: 'Life Area (opzionale)' })
+      .click();
+    const option = dialog.getByRole('option', {
+      name: areaName, exact: true,
+    });
+    await expect(option).toBeVisible();
+    await option.click();
+  }
   if (truth.description) {
     await dialog.getByRole('textbox', { name: 'Descrizione avanzata' })
       .fill(truth.description);
