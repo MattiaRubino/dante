@@ -532,8 +532,8 @@ async function seriesRevision(
     .fill(newObjective.label);
   changedGoals.push(newObjective);
   expect(removedObjective.label).not.toBe(newObjective.label);
-  let agenda = [...originalTruth.agenda];
-  let sessions = [...originalTruth.sessions];
+  const agenda = [...originalTruth.agenda];
+  const sessions = [...originalTruth.sessions];
   if (persona.kind === 'event') {
     const revised = agenda[0]! + ' serie';
     await inspector.getByRole('textbox', { name: 'Punto scaletta 1' })
