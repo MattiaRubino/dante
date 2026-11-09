@@ -64,10 +64,11 @@ def _unique_ports() -> dict[str, int]:
     return ports
 
 
-def _plan(project: str, directory: Path) -> int:
+def _plan(project: str, directory: Path, grep: str | None = None) -> int:
     command = (
         "pnpm", "exec", "playwright", "test", "--config",
         "playwright.auth.config.ts", "--project", project, "--list",
+        *((("--grep", grep)) if grep is not None else ()),
     )
     result = subprocess.run(
         command, cwd=WEB, text=True, capture_output=True, check=False,
@@ -119,6 +120,7 @@ def _validate_coverage(planned: dict[str, int], results: list[ShardResult]) -> N
 
 def _run_project(
     project: str, port: int, discovered: int, directory: Path,
+    grep: str | None = None,
 ) -> ShardResult:
     shard = directory / project
     shard.mkdir(parents=True, exist_ok=False)
@@ -134,6 +136,7 @@ def _run_project(
         "playwright.auth.config.ts", "--project", project, "--workers=1",
         "--retries=0", "--reporter=line,junit", "--output",
         str(shard / "test-results"),
+        *((("--grep", grep)) if grep is not None else ()),
     )
     started = time.monotonic()
     with (shard / "playwright.log").open("w", encoding="utf-8") as log:
@@ -188,6 +191,10 @@ def _self_test() -> None:
     else:
         raise AssertionError("Missing JUnit test must fail")
     assert COLLECTED_TESTS.findall("Total: 39 tests in 10 files\n") == ["39"]
+    # A filtered inventory must be compared to the same filtered execution,
+    # never the original full-suite count.
+    assert _plan.__defaults__ == (None,)
+    assert _run_project.__defaults__ == (None,)
     print("PASS: browser shard partition, inventory parity and skip guard")
 
 
@@ -199,6 +206,11 @@ def main() -> int:
         help="Independent browser stacks (1-3; 1 retains the reference runner)",
     )
     parser.add_argument("--self-test", action="store_true")
+    parser.add_argument(
+        "--grep", default=None,
+        help="Playwright test-title regex (also filters --list inventory); "
+             "default runs the full unfiltered suite",
+    )
     args = parser.parse_args()
     if args.self_test:
         _self_test()
@@ -215,6 +227,7 @@ def main() -> int:
             [
                 "pnpm", "exec", "playwright", "test", "--config",
                 "playwright.auth.config.ts",
+                *((("--grep", args.grep)) if args.grep is not None else ()),
             ],
             cwd=WEB, env=env, check=False,
         ).returncode
@@ -230,7 +243,10 @@ def main() -> int:
     started = time.monotonic()
     report = directory / "summary.json"
     try:
-        planned = {project: _plan(project, directory) for project in PROJECTS}
+        planned = {
+            project: _plan(project, directory, args.grep)
+            for project in PROJECTS
+        }
         print(f"REALSTACK: discovered {planned}, total={sum(planned.values())}", flush=True)
         # The production wrapper normally configures these Vite feature flags
         # before building. Preserve exactly the same build contract here.
@@ -251,7 +267,9 @@ def main() -> int:
         completed: dict[str, ShardResult] = {}
         with ThreadPoolExecutor(max_workers=args.workers) as pool:
             futures = {
-                pool.submit(_run_project, p, ports[p], planned[p], directory): p
+                pool.submit(
+                    _run_project, p, ports[p], planned[p], directory, args.grep,
+                ): p
                 for p in PROJECTS
             }
             for future in as_completed(futures):
@@ -271,6 +289,7 @@ def main() -> int:
         report.write_text(
             json.dumps({
                 "workers": args.workers,
+                "grep": args.grep,
                 "elapsed_seconds": round(time.monotonic() - started, 2),
                 "discovered": sum(planned.values()),
                 "recorded": sum(r.recorded for r in results),
