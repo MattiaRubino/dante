@@ -10,6 +10,7 @@ intentionally stop PostgreSQL to assert truthful outage/recovery behavior.
 from __future__ import annotations
 
 import argparse
+import ast
 import json
 import os
 import re
@@ -306,6 +307,38 @@ def _v2_worker_budget(setting: str, grep: str | None) -> int:
     return 2 if cores >= 6 and available_kib >= 8 * 1024 * 1024 else 1
 
 
+def _assert_disposable_postgres_removal_contract() -> None:
+    """Guard disposable E2E PostgreSQL against anonymous-volume leaks."""
+    source = ROOT / "tooling" / "serve-access-auth-stack.py"
+    tree = ast.parse(source.read_text(encoding="utf-8"), filename=str(source))
+    docker_calls = [
+        call for call in ast.walk(tree)
+        if isinstance(call, ast.Call) and
+        isinstance(call.func, ast.Name) and call.func.id == "_docker"
+    ]
+    commands: list[tuple[str, ...]] = []
+    for call in docker_calls:
+        tokens = tuple(
+            arg.value for arg in call.args
+            if isinstance(arg, ast.Constant) and isinstance(arg.value, str)
+        )
+        if tokens and tokens[0] in {"run", "rm"}:
+            commands.append(tokens)
+    started = [tokens for tokens in commands if tokens[0] == "run"]
+    removals = [tokens for tokens in commands if tokens[0] == "rm"]
+    if not (
+        len(started) == 1 and
+        "--rm" in started[0] and
+        len(removals) == 2 and
+        all({"--force", "--volumes"} <= set(tokens) for tokens in removals)
+    ):
+        raise AssertionError(
+            "Disposable E2E PostgreSQL must use docker run --rm and "
+            "both startup-failure and final cleanup docker rm --volumes; "
+            "never leave anonymous Postgres data volumes."
+        )
+
+
 def _self_test() -> None:
     import io
 
@@ -358,6 +391,7 @@ def _self_test() -> None:
     else:
         raise AssertionError("Missing JUnit test must fail")
     assert COLLECTED_TESTS.findall("Total: 39 tests in 10 files\n") == ["39"]
+    _assert_disposable_postgres_removal_contract()
     # A filtered inventory must be compared to the same filtered execution,
     # never the original full-suite count.
     assert _plan.__defaults__ == (None,)
