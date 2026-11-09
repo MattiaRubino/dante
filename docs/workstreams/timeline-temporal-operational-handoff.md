@@ -1,5 +1,20 @@
 # Timeline / Temporal-Operational — Workstream Handoff
 
+## 2026-11-09 — Objective/Save E2E test hygiene and regression ownership (fresh gate pending)
+
+The owner requested a quality pass on the existing suite after real visual QA found no-op Save returning backend HTTP 422 and independent recorded-Objective deletion being blocked by an unfinished Objective. The functional repairs are on the same branch; this change set strengthens their proof, not the product semantics.
+
+- Replaced two **obsolete test assumptions**, preserving their boundary coverage: a client mock formerly allowed editing the Objective definition *after* a result existed, and an Objective batch refresh mock treated an empty edit as successful. The accepted contract is now **unrecorded definition revision → first result recording → explicit result correction** and a meaningful retirement batch. No valid tests were deleted, disabled, skipped or weakened.
+- Added a dedicated jsdom test file for the irreversible result dialog (portal, accessible labels, keyboard/Tab, cancel, busy double-submit protection and focus restoration). Added remote Objective CAS-delete tests for stale state (no Timeline invalidation), success and malformed 200 response. Activity/Event component tests now explicitly simulate **new empty draft + backend conflict + repeat confirmed deletion**, requiring the draft to survive both.
+- Extended **real-stack RT-01** to reproduce an unsaved empty Objective in Event Edit and verify it is still present after deletion of a different registered result, while canonical server listing remains exactly one surviving Objective without the deleted Observation. The P3 first-physical-instance and anti-duplicate checks remain in place.
+- Registered `temporal-stateful-personas.spec.ts`, `temporal-stateful-runtime.spec.ts` and `objective-recording-delete-dialog.test.tsx` in `docs/development/test-case-registry.json` with explicit intent/invariant. Updated existing records without falsely claiming a full-file qualification. See `docs/development/temporal-regression-testing.md` for detailed T02/T05/T09 matrix and classification.
+- **Test status**: code and static registry audit completed by remote GitHub reading; **not executed** for the latest SHA. Last user execution, on earlier `035b28bc`, was 36 unit + 7 PostgreSQL PASS. Do not reuse those PASS labels for the new web test cases.
+
+**Next checks:** remote branch/worktree SHA, test integrity, focused jsdom Vitest for Activity/Event/objective dialog/remote Objective & Activity settings, then repo Prettier/ESLint/TypeScript. Fix harness defects only with evidence and accepted contract. Run targeted real-stack Chromium/Firefox/WebKit P1/P2/P3/RT on the same SHA after static gates; only then expand to the 27-group parallel gate. Keep any new functional DANTE defect separate pending owner approval.
+
+---
+
+
 ## 2026-11-09 — Recorded Objective hard delete + protected recurring Edit (GitHub candidate, WSL gate pending)
 
 The owner approved an explicit read-only recorded Objective row, a confirmation-before-permanent-result-deletion action (Objective identity and definition retained), and mandatory omission of selected/future recurring instances with **active, paused or ended Session attempts**, registered Objective outcomes or local overrides. Selected protected => **Dalla prossima istanza**; selected clean => **Questa e le successive**, excluding protected future instances.
