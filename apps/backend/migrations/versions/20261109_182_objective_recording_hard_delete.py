@@ -96,16 +96,50 @@ $function$;
 """
 
 
+_UNRECORDED = r"""
+CREATE FUNCTION dante.assert_self_temporal_objective_unrecorded(
+    actor uuid, requested_objective uuid
+) RETURNS void
+LANGUAGE plpgsql SECURITY DEFINER VOLATILE PARALLEL UNSAFE
+SET search_path=pg_catalog,dante,pg_temp AS $function$
+BEGIN
+    PERFORM 1 FROM dante.temporal_objective o
+     WHERE o.objective_ref=requested_objective AND o.self_person_ref=actor
+       AND dante._actual_subject_owned_as(
+           actor,o.subject_kind,o.subject_native_ref
+       )
+     FOR UPDATE;
+    IF NOT FOUND THEN
+        RAISE EXCEPTION 'Objective unavailable'
+          USING ERRCODE='23503',CONSTRAINT='temporal_objective_unavailable';
+    END IF;
+    IF EXISTS (
+        SELECT 1 FROM dante.temporal_objective_observation o
+         WHERE o.objective_ref=requested_objective
+    ) THEN
+        RAISE EXCEPTION 'Recorded Objective definition is locked'
+          USING ERRCODE='23505',
+                CONSTRAINT='temporal_objective_recording_locked';
+    END IF;
+END;
+$function$;
+"""
+
+
 def upgrade() -> None:
     bind = op.get_bind()
-    bind.exec_driver_sql(_FUNCTION)
-    signature = "dante.delete_self_temporal_objective_recording(uuid,uuid,uuid)"
-    bind.exec_driver_sql(f"ALTER FUNCTION {signature} OWNER TO dante_owner")
-    bind.exec_driver_sql(
-        f"REVOKE ALL ON FUNCTION {signature} FROM "
-        "PUBLIC,dante_runtime,dante_migrator"
-    )
-    bind.exec_driver_sql(f"GRANT EXECUTE ON FUNCTION {signature} TO dante_runtime")
+    for sql in (_FUNCTION, _UNRECORDED):
+        bind.exec_driver_sql(sql)
+    for signature in (
+        "dante.delete_self_temporal_objective_recording(uuid,uuid,uuid)",
+        "dante.assert_self_temporal_objective_unrecorded(uuid,uuid)",
+    ):
+        bind.exec_driver_sql(f"ALTER FUNCTION {signature} OWNER TO dante_owner")
+        bind.exec_driver_sql(
+            f"REVOKE ALL ON FUNCTION {signature} "
+            "FROM PUBLIC,dante_runtime,dante_migrator"
+        )
+        bind.exec_driver_sql(f"GRANT EXECUTE ON FUNCTION {signature} TO dante_runtime")
 
 
 def downgrade() -> None:
