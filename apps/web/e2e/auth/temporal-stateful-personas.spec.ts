@@ -308,6 +308,51 @@ async function deleteOneOff(
   expect(detail.status()).toBe(404);
 }
 
+async function draftAndVerify(
+  page: Page, day: string, item: CreatedItem,
+  truth: PersonaTruth,
+): Promise<void> {
+  const card = await assertCard(page, day, item.title);
+  await clickCard(card, item.title);
+  const inspector = page.locator('.timeline-event-modal[role="dialog"]');
+  const vault = page.waitForResponse((response) =>
+    response.request().method() === 'PUT' &&
+    response.url().includes('/api/v1/temporal/drafts/'),
+  );
+  if (item.kind === 'activity') {
+    await inspector.getByRole('button', { name: 'Sposta in Bozze' }).click();
+    await inspector.getByRole('button', {
+      name: 'Conferma spostamento in Bozze',
+    }).click();
+  } else {
+    await inspector.getByRole('button', { name: 'Copia in Bozze' }).click();
+  }
+  expect((await vault).ok(), 'draft snapshot accepted').toBe(true);
+  const drafts = await serverRead(
+    page, '/api/v1/temporal/drafts',
+  ) as readonly Record<string, unknown>[];
+  const matching = drafts.filter((draft) =>
+    draft.title === item.title && draft.subject_kind === item.kind,
+  );
+  expect(matching, 'exactly one independent Draft Vault snapshot')
+    .toHaveLength(1);
+  const payload = matching[0]!.payload as Record<string, unknown>;
+  const fields = payload.fields as Record<string, unknown>;
+  expect(fields.title).toBe(truth.title);
+  expect(fields.kind).toBe(item.kind);
+  expect(fields.contextId, 'draft must retain accepted Life Area reference')
+    .toBe(truth.areaRef ?? '');
+  expect(matching[0]!.draft_ref).toEqual(expect.stringMatching(UUID));
+  await openHome(page, day);
+  if (item.kind === 'activity') {
+    // Move removes the operational Activity, not its independent draft.
+    await expect(onDay(page, day, item.title)).toHaveCount(0);
+  } else {
+    // Event offers Copy to Drafts: the source Event stays operational.
+    await expect(onDay(page, day, item.title)).toHaveCount(1);
+  }
+}
+
 async function occurrence(
   page: Page, day: string, sourceRef: string,
 ): Promise<Record<string, unknown>> {
@@ -613,6 +658,15 @@ test.describe('Temporal v2 — real stateful user personas', () => {
             truth: { ...reassigned.truth, title: copy.title },
           });
         });
+        if (ordinal % 4 === 0) {
+          await test.step(
+            persona.id + '/8 Save to Draft Vault without copied runtime facts',
+            async () => draftAndVerify(
+              page, day, copy,
+              { ...reassigned.truth, title: copy.title },
+            ),
+          );
+        }
       } finally {
         await user.close();
       }
