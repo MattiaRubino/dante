@@ -157,6 +157,7 @@ const getSeriesState = vi.fn().mockResolvedValue(null);
 const reviseDefinition = vi.fn();
 const applyActivityEdits = vi.fn<(...args: unknown[]) => Promise<unknown>>();
 const correctResult = vi.fn();
+const deleteRecordedResult = vi.fn();
 const previewHardDeletion = vi.fn();
 const confirmHardDeletion = vi.fn();
 
@@ -174,6 +175,7 @@ vi.mock('../../../temporal/remote-reality-objective-data-source', () => ({
     reviseDefinition,
     applyActivityEdits,
     correctResult,
+    deleteRecordedResult,
   }),
 }));
 const loadRecurringContext = vi.fn().mockResolvedValue(null);
@@ -961,18 +963,26 @@ const objective = {
   assessmentCode: 'not_satisfied',
 } as const;
 
+const unrecordedObjective = {
+  ...objective,
+  observationRef: null,
+  observedNumeric: null,
+  evaluationStateRef: null,
+  assessmentCode: null,
+} as const;
+
 describe('Objective correction in Activity Editor', () => {
   it('modifies an expanded Objective directly with one final Save', async () => {
     loadSettings.mockResolvedValueOnce({
       ...currentSettings,
-      objectives: [objective],
+      objectives: [unrecordedObjective],
     });
     getDefinition.mockResolvedValueOnce({
-      ...objective,
+      ...unrecordedObjective,
       definitionRevision: 0,
     });
     applyActivityEdits.mockResolvedValueOnce([
-      { ...objective, label: 'Corsa 7 km' },
+      { ...unrecordedObjective, label: 'Corsa 7 km' },
     ]);
     const onSaved = vi.fn();
     render(
@@ -1024,11 +1034,11 @@ describe('Objective correction in Activity Editor', () => {
   it('keeps following-series scope only for authoritative generated lineage', async () => {
     loadSettings.mockResolvedValueOnce({
       ...currentSettings,
-      objectives: [objective],
+      objectives: [unrecordedObjective],
     });
     loadRecurringContext.mockResolvedValueOnce({ active: true });
     getDefinition.mockResolvedValueOnce({
-      ...objective,
+      ...unrecordedObjective,
       definitionRevision: 1,
     });
     const seriesState = {
@@ -1040,7 +1050,7 @@ describe('Objective correction in Activity Editor', () => {
     };
     getSeriesState.mockResolvedValueOnce(seriesState);
     applyActivityEdits.mockResolvedValueOnce([
-      { ...objective, label: 'Corsa 7 km' },
+      { ...unrecordedObjective, label: 'Corsa 7 km' },
     ]);
     render(
       <ActivityEditPanel
@@ -1101,10 +1111,10 @@ describe('Objective correction in Activity Editor', () => {
     });
     loadSettings.mockResolvedValueOnce({
       ...currentSettings,
-      objectives: [objective],
+      objectives: [unrecordedObjective],
     });
     getDefinition.mockResolvedValueOnce({
-      ...objective,
+      ...unrecordedObjective,
       definitionRevision: 0,
       verificationMode: 'none',
       verificationRevision: 0,
