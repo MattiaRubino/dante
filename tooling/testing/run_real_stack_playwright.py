@@ -56,9 +56,9 @@ def _free_port() -> int:
         return int(probe.getsockname()[1])
 
 
-def _unique_ports() -> dict[str, int]:
+def _unique_ports(projects: tuple[str, ...] = PROJECTS) -> dict[str, int]:
     ports: dict[str, int] = {}
-    for project in PROJECTS:
+    for project in projects:
         port = _free_port()
         while port in ports.values():
             port = _free_port()
@@ -107,11 +107,24 @@ def _junit_counts(report: Path) -> tuple[int, int, int, int]:
     return recorded, skipped, failed, errors
 
 
-def _validate_coverage(planned: dict[str, int], results: list[ShardResult]) -> None:
-    if set(planned) != set(PROJECTS) or set(planned) != {r.project for r in results}:
-        raise RuntimeError("Browser inventory differs from the three required projects")
-    if len(results) != len(PROJECTS):
-        raise RuntimeError("Browser sharding dropped or duplicated a project")
+def _validate_coverage(
+    planned: dict[str, int],
+    results: list[ShardResult],
+    projects: tuple[str, ...] = PROJECTS,
+) -> None:
+    # The full gate always requires all three projects. An explicit
+    # --project chromium local smoke still checks exact inventory parity,
+    # but intentionally does not claim cross-browser acceptance.
+    expected = set(projects)
+    if (
+        not expected or len(expected) != len(projects) or
+        not expected.issubset(PROJECTS) or
+        set(planned) != expected or
+        set(r.project for r in results) != expected
+    ):
+        raise RuntimeError("Browser inventory differs from the explicitly selected projects")
+    if len(results) != len(projects):
+        raise RuntimeError("Browser sharding dropped or duplicated a selected project")
     for result in results:
         if result.recorded != planned[result.project]:
             raise RuntimeError(
@@ -310,6 +323,26 @@ def _self_test() -> None:
         for i, project in enumerate(PROJECTS)
     ]
     _validate_coverage(planned, valid)
+    # Single-browser developer smoke must be isolated and accounted for:
+    # one selected project, one exact JUnit inventory, no implied coverage
+    # of Firefox/WebKit. The three-browser gate must still reject it.
+    _validate_coverage(
+        {"chromium": 2}, valid[:1], ("chromium",),
+    )
+    try:
+        _validate_coverage({"chromium": 2}, valid[:1])
+    except RuntimeError:
+        pass
+    else:
+        raise AssertionError("Full browser gate must never pass on one project")
+    try:
+        _validate_coverage(
+            {"chromium": 2}, valid[:1], ("chromium", "chromium"),
+        )
+    except RuntimeError:
+        pass
+    else:
+        raise AssertionError("A browser cannot appear twice in the selection")
     for invalid in (valid[:-1], [*valid[:2], valid[1]]):
         try:
             _validate_coverage(planned, invalid)
@@ -405,6 +438,11 @@ def main() -> int:
         help="Independent browser stacks (1-3; 1 retains the reference runner)",
     )
     parser.add_argument(
+        "--project", choices=PROJECTS, default=None,
+        help="Run only this browser for developer smoke; default retains "
+             "all three required browser projects for acceptance.",
+    )
+    parser.add_argument(
         "--v2-workers", choices=("1", "2", "auto"), default="1",
         help="Per-browser workers only for isolated V2 titles; auto chooses "
              "1 or 2 using WSL CPU/free RAM. Default 1 preserves full-gate isolation.",
@@ -425,14 +463,19 @@ def main() -> int:
         per_project = _v2_worker_budget(args.v2_workers, args.grep)
     except ValueError as exc:
         parser.error(str(exc))
-    if args.workers == 1 and per_project > 1:
-        parser.error("--v2-workers requires independent project stacks (--workers 2 or 3)")
+    selected_projects = (args.project,) if args.project is not None else PROJECTS
+    stack_count = min(args.workers, len(selected_projects))
+    if args.workers == 1 and per_project > 1 and args.project is None:
+        parser.error(
+            "--v2-workers >1 with --workers 1 requires an explicit "
+            "--project chromium/firefox/webkit smoke selection"
+        )
     print(
-        f"REALSTACK_CONCURRENCY=stacks:{args.workers} "
-        f"per_stack:{per_project} maximum_browsers:{args.workers * per_project}",
+        f"REALSTACK_CONCURRENCY=stacks:{stack_count} "
+        f"per_stack:{per_project} maximum_browsers:{stack_count * per_project}",
         flush=True,
     )
-    if args.workers == 1:
+    if args.workers == 1 and args.project is None:
         # Bit-for-bit equivalent selection and startup behavior to the
         # last all-green gate; no new sharding assumptions in fallback.
         port = _free_port()
@@ -460,7 +503,7 @@ def main() -> int:
     try:
         planned = {
             project: _plan(project, directory, args.grep)
-            for project in PROJECTS
+            for project in selected_projects
         }
         print(f"REALSTACK: discovered {planned}, total={sum(planned.values())}", flush=True)
         # The production wrapper normally configures these Vite feature flags
@@ -478,15 +521,15 @@ def main() -> int:
             )
         if build.returncode:
             raise RuntimeError(f"Shared frontend build failed ({build.returncode})")
-        ports = _unique_ports()
+        ports = _unique_ports(selected_projects)
         completed: dict[str, ShardResult] = {}
-        with ThreadPoolExecutor(max_workers=args.workers) as pool:
+        with ThreadPoolExecutor(max_workers=stack_count) as pool:
             futures = {
                 pool.submit(
                     _run_project, p, ports[p], planned[p], directory,
                     args.grep, per_project,
                 ): p
-                for p in PROJECTS
+                for p in selected_projects
             }
             for future in as_completed(futures):
                 project = futures[future]
@@ -499,14 +542,15 @@ def main() -> int:
                     f"failed={result.failed} errors={result.errors} "
                     f"seconds={result.seconds}", flush=True,
                 )
-        results = [completed[p] for p in PROJECTS]
-        _validate_coverage(planned, results)
+        results = [completed[p] for p in selected_projects]
+        _validate_coverage(planned, results, selected_projects)
         success = all(r.exit_code == 0 and r.failed == 0 and r.errors == 0 for r in results)
         report.write_text(
             json.dumps({
-                "workers": args.workers,
+                "workers": stack_count,
+                "selected_projects": list(selected_projects),
                 "v2_workers_per_project": per_project,
-                "maximum_concurrent_browsers": args.workers * per_project,
+                "maximum_concurrent_browsers": stack_count * per_project,
                 "grep": args.grep,
                 "elapsed_seconds": round(time.monotonic() - started, 2),
                 "discovered": sum(planned.values()),
