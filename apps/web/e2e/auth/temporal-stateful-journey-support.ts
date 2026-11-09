@@ -212,7 +212,12 @@ async function setObjective(
 ): Promise<void> {
   const nth = index + 1;
   if (index > 0) {
-    await composer.getByRole('button', { name: 'Aggiungi obiettivo' }).click();
+    const addObjective = composer.getByRole('button', {
+      name: '+ Obiettivo',
+      exact: true,
+    });
+    await expect(addObjective).toBeVisible({ timeout: 10_000 });
+    await addObjective.click();
     await composer.getByRole('textbox', { name: 'Obiettivo ' + nth })
       .fill(objective.label);
   }
