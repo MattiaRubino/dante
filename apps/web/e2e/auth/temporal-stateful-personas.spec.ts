@@ -506,6 +506,64 @@ async function localRevision(
   await assertCard(page, day, changedTitle);
 }
 
+async function deleteRecurringAndProveNoResurrection(
+  page: Page,
+  selectedDay: string,
+  laterDay: string,
+  earlierDay: string,
+  originalTitle: string,
+  currentTitle: string,
+  kind: PersonaCase['kind'],
+): Promise<void> {
+  const card = await assertCard(page, selectedDay, currentTitle);
+  await clickCard(card, currentTitle);
+  const inspector = page.locator('.timeline-event-modal[role="dialog"]');
+  const deletionButton = kind === 'event' ? 'Elimina Event' : 'Elimina';
+  await inspector.getByRole('button', { name: deletionButton, exact: true })
+    .click();
+  const dialog = page.getByRole('alertdialog', {
+    name: kind === 'event' ? 'Elimina evento' : 'Elimina attività',
+  });
+  await expect(dialog.getByRole('button', { name: 'Solo questa istanza' }))
+    .toBeVisible();
+  await expect(dialog.getByRole('button', { name: 'Tutta la serie' }))
+    .toBeVisible();
+  await dialog.getByRole('button', { name: 'Annulla' }).click();
+  await expect(dialog).toHaveCount(0);
+  await inspector.getByRole('button', { name: deletionButton, exact: true })
+    .click();
+  const removed = page.waitForResponse((response) =>
+    response.request().method() === 'DELETE' &&
+    response.url().includes('/api/v1/temporal/hard-deletion/'),
+  );
+  await dialog.getByRole('button', { name: 'Solo questa istanza' }).click();
+  expect((await removed).status()).toBe(200);
+  await expect(dialog).toHaveCount(0);
+  await openHome(page, selectedDay);
+  await expect(onDay(page, selectedDay, currentTitle)).toHaveCount(0);
+  await assertCard(page, laterDay, currentTitle);
+  await openHome(page, selectedDay);
+  await expect(onDay(page, selectedDay, currentTitle)).toHaveCount(0);
+
+  const future = await assertCard(page, laterDay, currentTitle);
+  await clickCard(future, currentTitle);
+  await inspector.getByRole('button', { name: deletionButton, exact: true })
+    .click();
+  const removedSeries = page.waitForResponse((response) =>
+    response.request().method() === 'DELETE' &&
+    response.url().includes('/api/v1/temporal/hard-deletion/'),
+  );
+  await dialog.getByRole('button', { name: 'Tutta la serie' }).click();
+  expect((await removedSeries).status()).toBe(200);
+  await expect(dialog).toHaveCount(0);
+  await openHome(page, laterDay);
+  await expect(onDay(page, laterDay, currentTitle)).toHaveCount(0);
+  await openHome(page, selectedDay);
+  await expect(onDay(page, selectedDay, currentTitle)).toHaveCount(0);
+  await openHome(page, earlierDay);
+  await expect(onDay(page, earlierDay, originalTitle)).toHaveCount(0);
+}
+
 test.describe('Temporal v2 — real stateful user personas', () => {
   test.describe.configure({ timeout: 300_000 });
 
@@ -637,6 +695,15 @@ test.describe('Temporal v2 — real stateful user personas', () => {
           expect(earlier.title, 'local exception must be protected')
             .toBe(localTitle);
         });
+        await test.step(
+          persona.id + '/6 Delete single → checkpoint → whole series',
+          async () => {
+            await deleteRecurringAndProveNoResurrection(
+              page, future, nextOccurrence(future, recurrence),
+              day, localTitle, revisedTitle, persona.kind,
+            );
+          },
+        );
       } finally {
         await user.close();
       }
@@ -720,6 +787,15 @@ test.describe('Temporal v2 — real stateful user personas', () => {
               : 'data-timeline-event',
           )).toBe(authored.item.scheduleRef);
         });
+        await test.step(
+          persona.id + '/6 Delete generated instance and converted series',
+          async () => {
+            await deleteRecurringAndProveNoResurrection(
+              page, dateAfter(day, 2), dateAfter(day, 3),
+              day, title, title + ' futuro', persona.kind,
+            );
+          },
+        );
       } finally {
         await user.close();
       }
