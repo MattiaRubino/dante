@@ -5130,14 +5130,14 @@ The owner reproduced two visible failures not covered by the formerly green unit
 
 | User flow | Minimum persisted evidence | Coverage status |
 | --- | --- | --- |
-| One-off Activity/Event creation → title edit → duplicate → delete → reload | Independent source/schedule UUIDs, accepted profile, surviving duplicate, 404 for deleted source | Existing real-user E2E |
+| One-off Activity/Event basic and rich creation → edit → faithful duplicate → delete → reload | Separate source/schedule UUIDs, 404 after deletion, original versus duplicate Life Area, Event agenda, Activity goal and planned-Session snapshot equality | Existing E2E, now strengthened with advanced persistence assertions |
 | Daily/weekly/monthly/ordinal/yearly/custom recurrence, variable counts and all-day | Accepted recurrence specification, correct first/future placement and stable identities | Existing six-variant-per-kind E2E |
 | Rich creation (goal, quantity, planned Session, agenda, protection and initial Life Area) | POST payload plus canonical current/future day readback | Existing daily rich E2E |
 | Single recurrence instance edit without leaking to clean sibling | Changed title and local Life Area only on selected occurrence | Existing E2E, now extended |
 | Selected-and-following Activity/Event with *new* Life Area and selected color | One atomic area, selected and later cards use it, earlier exception unchanged | New E2E + PostgreSQL test |
 | Assigned area recolor versus private item color | Color affordance, explicit global side effect, revision CAS, cancellation no write | New E2E affordance + PostgreSQL acceptance |
 | Preview rejected, stale revision, replay and forced transaction rollback | No orphan area, no half-written series, no second area on replay | New PostgreSQL integration |
-| One-off → recurrence via Edit and first identity retained | First item unchanged, subsequent instances newly materialized and persisted | Existing E2E |
+| One-off → recurrence via Edit → single-instance edit → selected-and-following edit | Original physical identity retained; local change never leaks; selected and later following instances inherit only the intended future title | Existing E2E, now extended across both Activity and Event |
 | Advanced *Edit* addition/removal/reordering of multiple intervals, Sessions, goals, agenda, reminders, locks, participation followed by faithful duplication | Before/after snapshot diff for every field, no extra rows, replay idempotence, reload verification | **Further matrix expansion required** |
 | Multiple overlapping edits on the same series, protected exceptions, cross-day/year/DST | Exact selected boundary, historic exceptions preserved, never retroactive | Existing focused integrations; further realistic E2E needed |
 
