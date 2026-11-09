@@ -441,6 +441,46 @@ async function draftAndVerify(
   }
 }
 
+async function assertConvertedDayHasNoDuplicatePlacements(
+  page: Page,
+  day: string,
+  originalTitle: string,
+  currentTitle: string,
+  persona: PersonaCase,
+): Promise<void> {
+  // This is a canonical server read, not a DOM count. Physical Activity
+  // intervals are distinct Schedule identities of ONE Activity.
+  const window = await serverRead(
+    page,
+    '/api/v1/temporal/timeline/window?start_date=' + day +
+      '&end_date_exclusive=' + dateAfter(day, 1),
+  ) as Record<string, unknown>;
+  expect(window.kind).toBe('window');
+  const rows = (window.items as Record<string, unknown>[]).filter((row) =>
+    typeof row.title === 'string' &&
+    row.title.startsWith(originalTitle) &&
+    String(row.starts_local_at ?? row.start_date ?? '').startsWith(day),
+  );
+  const required = persona.kind === 'activity'
+    ? Math.max(1, persona.intervalCount)
+    : 1;
+  expect(rows, 'exact physical placement count after conversion/' + day)
+    .toHaveLength(required);
+  expect(rows.map((row) => String(row.title)),
+    'only the expected title after local conversion Edit',
+  ).toEqual(Array.from({ length: required }, () => currentTitle));
+  expect(
+    new Set(rows.map((row) => String(row.schedule_ref))).size,
+    'no duplicate physical Schedule identity',
+  ).toBe(required);
+  if (persona.kind === 'activity') {
+    expect(
+      new Set(rows.map((row) => String(row.activity_ref))).size,
+      'interval cards belong to a single logical Activity',
+    ).toBe(1);
+  }
+}
+
 async function assertOriginalScheduleIdentity(
   page: Page, day: string, item: CreatedItem,
 ): Promise<void> {
@@ -1070,14 +1110,43 @@ test.describe('Temporal v2 — real stateful user personas', () => {
           );
           await assertCard(page, dateAfter(day, 1), title);
         });
-        await test.step(persona.id + '/4 Local change on generated instance', async () => {
-          await localRevision(
-            page, dateAfter(day, 1), title, persona.kind, title + ' locale',
-          );
-          await assertCard(page, day, title);
-          await assertCard(page, dateAfter(day, 2), title);
-        });
-        await test.step(persona.id + '/5 Future revision preserves original', async () => {
+        const firstTitle = title + ' prima istanza';
+        await test.step(
+          persona.id + '/4 Edit ORIGINAL physical first instance after conversion',
+          async () => {
+            // This was the formerly untested user trigger. A duplicate
+            // generated card and/or a replaced original Schedule must RED.
+            await localRevision(
+              page, day, title, persona.kind, firstTitle,
+            );
+            await assertOriginalScheduleIdentity(page, day, authored.item);
+            await assertConvertedDayHasNoDuplicatePlacements(
+              page, day, title, firstTitle, persona,
+            );
+            await expect(onDay(page, day, title)).toHaveCount(0);
+            await assertCard(page, dateAfter(day, 1), title);
+            await assertConvertedDayHasNoDuplicatePlacements(
+              page, dateAfter(day, 1), title, title, persona,
+            );
+          },
+        );
+        await test.step(
+          persona.id + '/5 Edit generated future instance independently',
+          async () => {
+            await localRevision(
+              page, dateAfter(day, 1), title, persona.kind, title + ' locale',
+            );
+            await assertCard(page, day, firstTitle);
+            await assertConvertedDayHasNoDuplicatePlacements(
+              page, day, title, firstTitle, persona,
+            );
+            await assertConvertedDayHasNoDuplicatePlacements(
+              page, dateAfter(day, 1), title, title + ' locale', persona,
+            );
+            await assertCard(page, dateAfter(day, 2), title);
+          },
+        );
+        await test.step(persona.id + '/6 Future revision preserves physical first and local exception', async () => {
           const updatedTruth = await seriesRevision(
             page, dateAfter(day, 2), title, title + ' futuro',
             persona, authored.truth,
@@ -1089,18 +1158,28 @@ test.describe('Temporal v2 — real stateful user personas', () => {
           );
           await assertCard(page, dateAfter(day, 3), title + ' futuro');
           await assertCard(page, dateAfter(day, 1), title + ' locale');
-          const first = await assertCard(page, day, title);
+          const first = await assertCard(page, day, firstTitle);
           await expect(first).toBeVisible();
           await assertOriginalScheduleIdentity(
             page, day, authored.item,
           );
+          for (const [checkedDay, checkedTitle] of [
+            [day, firstTitle],
+            [dateAfter(day, 1), title + ' locale'],
+            [dateAfter(day, 2), title + ' futuro'],
+            [dateAfter(day, 3), title + ' futuro'],
+          ] as const) {
+            await assertConvertedDayHasNoDuplicatePlacements(
+              page, checkedDay, title, checkedTitle, persona,
+            );
+          }
         });
         await test.step(
-          persona.id + '/6 Delete generated instance and converted series',
+          persona.id + '/7 Delete generated instance and converted series',
           async () => {
             await deleteRecurringAndProveNoResurrection(
               page, dateAfter(day, 2), dateAfter(day, 3),
-              day, title, title + ' futuro', persona.kind,
+              day, firstTitle, title + ' futuro', persona.kind,
             );
           },
         );
