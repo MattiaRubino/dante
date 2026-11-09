@@ -427,7 +427,7 @@ async function seriesRevision(
     label: changedGoals[0]!.label + ' serie',
   };
   await inspector.locator('[data-create-objective]').first()
-    .getByRole('textbox', { name: 'Obiettivo 1' })
+    .getByRole('textbox', { name: 'Nome obiettivo' })
     .fill(revisedGoal.label);
   changedGoals[0] = revisedGoal;
   let agenda = [...originalTruth.agenda];
