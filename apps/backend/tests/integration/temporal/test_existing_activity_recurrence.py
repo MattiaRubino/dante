@@ -161,6 +161,149 @@ async def test_existing_activity_starts_series_with_same_first_identity_and_one_
 
 
 @pytest.mark.asyncio
+async def test_converted_activity_with_two_intervals_materializes_next_day(
+    migrated_database: Any,
+) -> None:
+    """Regression: converted rich Activity must checkpoint its future materialization.
+
+    One original Activity with two physical intervals and two planned Sessions
+    must not produce a successful conversion POST followed by an HTTP 503 from
+    the first routine occurrence checkpoint.
+    """
+    actor = _seed_self(migrated_database)
+    runtime = create_database_runtime(migrated_database.runtime_settings())
+    day = date(2027, 1, 2)
+
+    def placement(hour: int, minute: int, end_hour: int, end_minute: int):
+        return NamedZoneLocalIntervalPlacement(
+            starts_local_at=datetime(2027, 1, 2, hour, minute),  # noqa: DTZ001
+            ends_local_at=datetime(2027, 1, 2, end_hour, end_minute),  # noqa: DTZ001
+            zone_id="Europe/Rome",
+            disambiguation="earlier",
+        )
+
+    try:
+        authored = await TemporalAuthoringApplication(
+            runtime.session_factory
+        ).create_activity(
+            self_person_ref=actor,
+            operation_id="conversion:rich-two-intervals:create",
+            title="Studio multiintervallo",
+            placement=placement(9, 10, 11, 20),
+            activity_intervals=(
+                placement(9, 10, 9, 50),
+                placement(10, 20, 11, 20),
+            ),
+            planned_slices=(placement(9, 20, 9, 30), None),
+            planned_slice_names=("Studio iniziale", "Studio libero"),
+        )
+        activity_ref = authored.item.subject_native_ref
+        async with runtime.session_factory() as session, session.begin():
+            snapshot = ActivityEditSnapshot.model_validate(
+                await session.scalar(
+                    _SNAPSHOT, {"actor": actor, "activity": activity_ref},
+                )
+            )
+            revision = await session.scalar(
+                text("SELECT revision FROM dante.get_self_activity_profile(:actor,:activity)"),
+                {"actor": actor, "activity": activity_ref},
+            )
+        envelope = next(
+            row for row in snapshot.schedules if row.role_code == "envelope"
+        )
+        assert envelope.placement_material_state_ref is not None
+        assert len([
+            row for row in snapshot.schedules if row.role_code == "interval"
+        ]) == 2
+        assert len([
+            row for row in snapshot.schedules if row.role_code == "planned"
+        ]) == 2
+
+        recurrence = CalendarRecurrence(
+            family_code="calendar_wall_clock",
+            range_kind="open",
+            expected_occurrence_count=None,
+            effective_from=day,
+            effective_until=None,
+            pattern_code="daily",
+            interval_count=1,
+            clock_basis_code="named_zone",
+            zone_id="Europe/Rome",
+            pattern_anchor_date=None,
+            wall_times=(time(9, 10),),
+            weekdays=(),
+            month_days=(),
+            ordinal_weekdays=(),
+            year_month_days=(),
+            nonexistent_local_time_policy="skip_civil_candidate",
+            ambiguous_local_time_policy="earlier",
+            step_unit_code=None,
+        )
+        converted = await RecurringConversionApplication(
+            runtime.session_factory
+        ).activity(
+            self_person_ref=actor,
+            operation_id="conversion:rich-two-intervals:start",
+            basis=ExistingActivityBasis(
+                activity_ref=activity_ref,
+                expected_profile_revision=revision,
+                envelope_schedule_ref=envelope.schedule_ref,
+                expected_placement_state_ref=envelope.placement_material_state_ref,
+            ),
+            recurrence=recurrence,
+        )
+        assert converted.source_ref != activity_ref
+
+        await RoutineOccurrenceMaterializationApplication(
+            runtime.session_factory
+        ).checkpoint_window(
+            self_person_ref=actor,
+            operation_id="conversion:rich-two-intervals:checkpoint",
+            start_date=day,
+            end_date_exclusive=date(2027, 1, 4),
+            effective_zone_id="Europe/Rome",
+        )
+        timeline = await TemporalTimelineApplication(
+            runtime.session_factory
+        ).read_window(
+            query=TimelineWindowQuery(
+                start_date=day,
+                end_date_exclusive=date(2027, 1, 4),
+            ),
+            context=_context(actor),
+        )
+        future = [
+            row for row in timeline.items
+            if isinstance(row, TimelineNamedZoneLocalActivityItem)
+            and row.title == "Studio multiintervallo"
+            and row.starts_local_at.date() == date(2027, 1, 3)
+        ]
+        assert len(future) == 2
+        assert len({row.schedule_ref for row in future}) == 2
+        activity_refs = {row.activity_ref for row in future}
+        assert len(activity_refs) == 1
+        generated_ref = next(iter(activity_refs))
+        assert generated_ref != activity_ref
+
+        async with runtime.session_factory() as session, session.begin():
+            generated_snapshot = ActivityEditSnapshot.model_validate(
+                await session.scalar(
+                    _SNAPSHOT, {"actor": actor, "activity": generated_ref},
+                )
+            )
+        assert len([
+            row for row in generated_snapshot.schedules
+            if row.role_code == "interval"
+        ]) == 2
+        assert [
+            row.display_name for row in generated_snapshot.schedules
+            if row.role_code == "planned"
+        ] == ["Studio iniziale", "Studio libero"]
+    finally:
+        await runtime.dispose()
+
+
+@pytest.mark.asyncio
 @pytest.mark.parametrize("locked", [False, True], ids=["unlocked", "protected"])
 async def test_existing_event_keeps_first_event_and_excludes_duplicate_occurrence(
     migrated_database: Any,
