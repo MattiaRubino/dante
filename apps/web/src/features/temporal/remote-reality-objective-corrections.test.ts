@@ -259,6 +259,65 @@ describe('M2 Objective corrections', () => {
     ]);
   });
 
+  it('deletes exactly one accepted result using CAS and invalidates Timeline only on success', async () => {
+    const requests: Record<string, unknown>[] = [];
+    let accepted = false;
+    const refresh = vi.fn();
+    const unsubscribe = subscribeTemporalTimelineInvalidation(refresh);
+    const fetchFn = vi.fn(
+      (input: RequestInfo | URL, init?: RequestInit): Promise<Response> => {
+        const uri =
+          typeof input === 'string' ? input :
+            input instanceof URL ? input.href : input.url;
+        if (uri.endsWith('/auth/session')) {
+          return Promise.resolve(
+            response({ authenticated: true, csrf_token: 'csrf' }),
+          );
+        }
+        expect(uri).toBe(
+          '/api/v1/temporal/objectives/' + ref + '/delete-recording',
+        );
+        expect(init?.method).toBe('POST');
+        expect(new Headers(init.headers).get('X-Dante-CSRF')).toBe('csrf');
+        requests.push(JSON.parse(fetchRequestBody(init.body)) as Record<string, unknown>);
+        return Promise.resolve(
+          accepted ?
+            response({ objective_ref: ref, removed_observations: 2 }) :
+            response({ detail: 'La valutazione corrente è cambiata.' }, 409),
+        );
+      },
+    );
+    const source = createRemoteRealityObjectiveDataSource(fetchFn);
+    try {
+      await expect(source.deleteRecordedResult(ref, 'stale-state'))
+        .rejects.toThrow('La valutazione corrente è cambiata.');
+      expect(refresh).not.toHaveBeenCalled();
+      accepted = true;
+      expect(await source.deleteRecordedResult(ref, 'current-state')).toBe(2);
+      expect(requests).toEqual([
+        { expected_evaluation_state_ref: 'stale-state' },
+        { expected_evaluation_state_ref: 'current-state' },
+      ]);
+      expect(refresh).toHaveBeenCalledTimes(1);
+    } finally {
+      unsubscribe();
+    }
+  });
+
+  it('refuses a malformed success body instead of claiming a result was deleted', async () => {
+    const fetchFn = vi.fn((input: RequestInfo | URL): Promise<Response> => {
+      const uri = typeof input === 'string' ? input :
+        input instanceof URL ? input.href : input.url;
+      if (uri.endsWith('/auth/session')) {
+        return Promise.resolve(response({ authenticated: true, csrf_token: 'csrf' }));
+      }
+      return Promise.resolve(response({ objective_ref: 'wrong', removed_observations: 0 }));
+    });
+    const source = createRemoteRealityObjectiveDataSource(fetchFn);
+    await expect(source.deleteRecordedResult(ref, 'current-state'))
+      .rejects.toThrow('Eliminazione registrazione non coerente.');
+  });
+
   it('does not convert a correction conflict into a false success', async () => {
     const fetchFn = vi.fn((input: RequestInfo | URL): Promise<Response> => {
       const uri =
