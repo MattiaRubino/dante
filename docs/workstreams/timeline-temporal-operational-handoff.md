@@ -1,5 +1,16 @@
 # Timeline / Temporal-Operational — Workstream Handoff
 
+## 2026-11-09 — Precise RED causes from RECHECK_05b49a0bf
+
+Owner's focused Playwright Chromium run on `05b49a0` failed two cases. The one-off Event delete actually returned HTTP 200. The test's interpolation of `await accepted.text()` ran **even when the assertion was green**, but Chromium had released the body during the application's post-delete navigation. The corrected assertion checks HTTP status without a discarded body; the existing page reload, deleted profile 404, and independent duplicate survival checks remain mandatory.
+
+The conversion test's original Event was persisted and returned by the canonical Timeline GET (`event_ref` and `schedule_ref` matched exactly), but its authored placement ran from 2026-11-13 15:20 through 2026-11-14 16:00. DANTE correctly represented this 24-hour-40-minute interval as a multi-day card with `data-timeline-all-day-item`, so the timed `[data-timeline-event]` locator did not find it. Trace review exposed that the test's `setClock()` filled the start/end *clock* separately but failed to enforce its requested 40-minute *civil date*. The helper now sets `Data fine` to the requested same day (using the actual date picker), then asserts that date before submitting. This retains the test's original short timed-Event contract. Do not weaken the intended first Schedule identity and following instance checks.
+
+This also flags a possible separate authoring usability concern: editing a clock incrementally can temporarily roll `Data fine` to tomorrow. The product has an explicit rollback mechanism (`autoRolledEndDateRef`), but its behavior under multiple field edits should be verified by a dedicated component test before claiming a product regression or changing default overnight semantics.
+
+These are bounded test fixes only. Current source changes require the owner to run the repository-pinned `pnpm exec prettier --write` on exactly the affected E2E files and push the resulting style-only diff, then execute the two focused real-stack browser journeys. No full-suite green is claimed from this evidence.
+
+
 ## 2026-11-09 — Evidence-driven lifecycle trace closure candidate
 
 Owner's `TEMPORAL_REMAINING_d2902f4d6.tar.gz` contains four selected real-stack Chromium scenarios; with `--max-failures=2`, two failed and one was interrupted while another never started. The one-off Event DELETE succeeded (HTTP 200, 75ms); HTML/assets/Timeline API responses also completed, but Playwright's post-delete `page.goto` waited for `DOMContentLoaded` despite rendered UI. `openHome` now waits for browser navigation `commit`, **followed by the same canonical Timeline GET HTTP 200 and `data-temporal-read-state=ready` checks**. All destructive journeys now await dismissal of the shared deletion portal and Inspector after the confirmed HTTP write before initiating another navigation, preventing overlap with onDeleted UI state transitions.
