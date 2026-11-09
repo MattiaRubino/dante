@@ -76,6 +76,8 @@ def _problem(exc: DBAPIError, *, noun: str) -> ProblemError:
         "temporal_objective_series_future_conflict",
         "temporal_objective_retirement_stale",
         "temporal_objective_retirement_recorded",
+        "temporal_objective_recording_stale",
+        "temporal_objective_recording_locked",
     }:
         return ProblemError(
             status=409,
@@ -96,6 +98,7 @@ def _problem(exc: DBAPIError, *, noun: str) -> ProblemError:
         "temporal_objective_result_correction_requires_fact",
         "temporal_objective_retirement_invalid",
         "temporal_objective_retirement_source_unsupported",
+        "temporal_objective_recording_invalid",
     }:
         return ProblemError(
             status=422,
@@ -897,6 +900,12 @@ async def _apply_objective_edits_in_session(
                 title="Obiettivo cambiato",
                 detail="Un obiettivo è stato modificato. Riapri Modifica e riprova.",
             )
+        # The privileged capability takes the same Objective row lock used
+        # by result recording; a concurrent confirmation cannot sneak in.
+        await session.execute(
+            text("SELECT dante.assert_self_temporal_objective_unrecorded(:actor,:objective)"),
+            {"actor": actor, "objective": revision.objective_ref},
+        )
         change = revision.change
         intent = {
             "version": 1,
@@ -1303,6 +1312,10 @@ async def revise_objective_definition(
     }
     try:
         async with request.app.state.database_runtime.session_factory() as session, session.begin():
+            await session.execute(
+                text("SELECT dante.assert_self_temporal_objective_unrecorded(:actor,:objective)"),
+                {"actor": context.self_person_ref, "objective": objective_ref},
+            )
             if payload.scope_code == "this_and_following":
                 if payload.expected_source_revision is None:
                     raise ProblemError(
@@ -1798,6 +1811,71 @@ async def confirm_objective_input_draft(
             detail="Conferma non riuscita. Il valore provvisorio rimane salvato.",
             retryable=True,
         ) from exc
+
+
+class ObjectiveRecordedResultDeletionCommand(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    expected_evaluation_state_ref: UUID
+
+
+class ObjectiveRecordedResultDeletionResponse(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    objective_ref: UUID
+    removed_observations: int
+
+
+@router.post(
+    "/objectives/{objective_ref}/delete-recording",
+    response_model=ObjectiveRecordedResultDeletionResponse,
+    operation_id="temporal_delete_recorded_objective_result",
+)
+async def delete_recorded_objective_result(
+    objective_ref: UUID,
+    payload: ObjectiveRecordedResultDeletionCommand,
+    context: MutatingContext,
+    request: Request,
+    response: Response,
+) -> ObjectiveRecordedResultDeletionResponse:
+    """Physically remove this Objective's accepted Observation/Evaluation graph.
+
+    Explicit destructive action, independent of editor Save. The Objective
+    and its definition survive. CAS rejects any concurrent correction.
+    """
+    try:
+        async with request.app.state.database_runtime.session_factory() as session, session.begin():
+            await session.execute(text("SET TRANSACTION ISOLATION LEVEL SERIALIZABLE"))
+            row = (
+                (
+                    await session.execute(
+                        text(
+                            "SELECT * FROM dante.delete_self_temporal_objective_recording("
+                            ":actor,:objective,:expected)"
+                        ),
+                        {
+                            "actor": context.self_person_ref,
+                            "objective": objective_ref,
+                            "expected": payload.expected_evaluation_state_ref,
+                        },
+                    )
+                )
+                .mappings()
+                .one()
+            )
+    except DBAPIError as exc:
+        raise _problem(exc, noun="objective_recording") from exc
+    except SQLAlchemyError as exc:
+        raise ProblemError(
+            status=503,
+            code="temporal.objective_recording.delete_unavailable",
+            category="service",
+            title="Objective recording deletion unavailable",
+            detail="La registrazione non è stata eliminata. Riprova.",
+            retryable=True,
+        ) from exc
+    response.headers["Cache-Control"] = "no-store"
+    return ObjectiveRecordedResultDeletionResponse(**dict(row))
 
 
 # B14 hard deletion is a distinct authority from ordinary Objective edits.
