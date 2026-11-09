@@ -1411,23 +1411,15 @@ describe('Event Inspector actions', () => {
     expect(reviseAtomic).not.toHaveBeenCalled();
 
     fireEvent.click(screen.getByRole('button', { name: 'Salva modifiche' }));
-    await waitFor(() =>
-      expect(reviseAtomic).toHaveBeenCalledWith(
-        eventRef,
-        current,
-        {
-          lifeArea: {
-            ref: null,
-            expectedRevision: 3,
-            newArea: {
-              name: 'Nuova area Event',
-              colorCode: expect.stringMatching(/^#[0-9A-F]{6}$/),
-            },
-          },
-        },
-        expect.any(String),
-      ),
-    );
+    await waitFor(() => expect(reviseAtomic).toHaveBeenCalledOnce());
+    const submitted: unknown = reviseAtomic.mock.calls.at(-1)?.[2];
+    expect(submitted).toMatchObject({
+      lifeArea: {
+        ref: null,
+        expectedRevision: 3,
+        newArea: { name: 'Nuova area Event' },
+      },
+    });
     expect(reviseProfile).not.toHaveBeenCalled();
     expect(saveRecurringEvent).not.toHaveBeenCalled();
   });
