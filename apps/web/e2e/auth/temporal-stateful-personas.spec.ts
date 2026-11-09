@@ -441,7 +441,7 @@ async function draftAndVerify(
   }
 }
 
-async function assertConvertedDayHasNoDuplicatePlacements(
+async function assertDayHasNoDuplicatePlacements(
   page: Page,
   day: string,
   originalTitle: string,
@@ -934,11 +934,47 @@ test.describe('Temporal v2 — real stateful user personas', () => {
             page, future, authored.item.sourceRef, authored.truth, persona,
           );
         });
+        // Finite series have a real final boundary. Exercise it before any
+        // scope split, then prove it stays a protected exception after edits
+        // from first, middle and the following segment.
+        const finalDay = recurrence.repeatCount === null
+          ? null
+          : Array.from({ length: recurrence.repeatCount - 1 })
+            .reduce((date) => nextOccurrence(date, recurrence), day);
+        const finalTitle = title + ' ultima istanza';
+        if (finalDay) {
+          await test.step(persona.id + '/2B Final occurrence is editable and bounded', async () => {
+            await assertCard(page, finalDay, title);
+            await assertDayHasNoDuplicatePlacements(
+              page, finalDay, title, title, persona,
+            );
+            await localRevision(
+              page, finalDay, title, persona.kind, finalTitle,
+            );
+            await assertCard(page, finalDay, finalTitle);
+            await assertDayHasNoDuplicatePlacements(
+              page, finalDay, title, finalTitle, persona,
+            );
+            const beyondLast = nextOccurrence(finalDay, recurrence);
+            await openHome(page, beyondLast);
+            await expect(onDay(page, beyondLast, title),
+              'bounded recurrence must not create a sixth instance')
+              .toHaveCount(0);
+          });
+        }
         const localTitle = title + ' solo questa';
         await test.step(persona.id + '/3 Local exception on initial instance', async () => {
           await localRevision(page, day, title, persona.kind, localTitle);
           await assertCard(page, future, title);
           await assertCard(page, day, localTitle);
+          await assertDayHasNoDuplicatePlacements(
+            page, day, title, localTitle, persona,
+          );
+          if (finalDay) {
+            await assertDayHasNoDuplicatePlacements(
+              page, finalDay, title, finalTitle, persona,
+            );
+          }
         });
         if (persona.area === 'existing') {
           await test.step(
@@ -971,6 +1007,14 @@ test.describe('Temporal v2 — real stateful user personas', () => {
           );
           await assertCard(page, day, localTitle);
           await expect(onDay(page, day, revisedTitle)).toHaveCount(0);
+          await assertDayHasNoDuplicatePlacements(
+            page, future, title, revisedTitle, persona,
+          );
+          if (finalDay) {
+            await assertDayHasNoDuplicatePlacements(
+              page, finalDay, title, finalTitle, persona,
+            );
+          }
           if (persona.kind === 'activity') {
             await readActivityPlacements(
               page, day, localTitle, Math.max(1, persona.intervalCount),
@@ -987,6 +1031,7 @@ test.describe('Temporal v2 — real stateful user personas', () => {
         const middle = nextOccurrence(future, recurrence);
         const later = nextOccurrence(middle, recurrence);
         const anotherLocal = revisedTitle + ' eccezione intermedia';
+        const fromNextTitle = revisedTitle + ' dalla prossima';
         await test.step(
           persona.id + '/6 Another local exception, then FROM NEXT',
           async () => {
@@ -1007,7 +1052,6 @@ test.describe('Temporal v2 — real stateful user personas', () => {
             }
             // This is the previously modified selected instance: choosing
             // "Dalla prossima istanza" must EXCLUDE the selected boundary.
-            const fromNextTitle = revisedTitle + ' dalla prossima';
             const nextTruth = await seriesRevision(
               page, middle, anotherLocal, fromNextTitle,
               persona, followingTruth, true,
@@ -1022,8 +1066,28 @@ test.describe('Temporal v2 — real stateful user personas', () => {
             await assertCard(page, day, localTitle);
           },
         );
+        if (finalDay) {
+          await test.step(
+            persona.id + '/7 Final exception survives edits of first and middle',
+            async () => {
+              await assertCard(page, finalDay, finalTitle);
+              await assertDayHasNoDuplicatePlacements(
+                page, finalDay, title, finalTitle, persona,
+              );
+              await assertDayHasNoDuplicatePlacements(
+                page, later, title, fromNextTitle, persona,
+              );
+              await assertDayHasNoDuplicatePlacements(
+                page, middle, title, anotherLocal, persona,
+              );
+              await assertDayHasNoDuplicatePlacements(
+                page, day, title, localTitle, persona,
+              );
+            },
+          );
+        }
         await test.step(
-          persona.id + '/7 Delete single → checkpoint → whole series',
+          persona.id + '/8 Delete single → checkpoint → whole series',
           async () => {
             await deleteRecurringAndProveNoResurrection(
               page, later, nextOccurrence(later, recurrence),
@@ -1111,13 +1175,13 @@ test.describe('Temporal v2 — real stateful user personas', () => {
               page, day, title, persona.kind, firstTitle,
             );
             await assertOriginalScheduleIdentity(page, day, authored.item);
-            await assertConvertedDayHasNoDuplicatePlacements(
+            await assertDayHasNoDuplicatePlacements(
               page, day, title, firstTitle, persona,
             );
             // A substring DOM selector would also match firstTitle;
             // the canonical exact-title assertion above is authoritative.
             await assertCard(page, dateAfter(day, 1), title);
-            await assertConvertedDayHasNoDuplicatePlacements(
+            await assertDayHasNoDuplicatePlacements(
               page, dateAfter(day, 1), title, title, persona,
             );
           },
@@ -1129,10 +1193,10 @@ test.describe('Temporal v2 — real stateful user personas', () => {
               page, dateAfter(day, 1), title, persona.kind, title + ' locale',
             );
             await assertCard(page, day, firstTitle);
-            await assertConvertedDayHasNoDuplicatePlacements(
+            await assertDayHasNoDuplicatePlacements(
               page, day, title, firstTitle, persona,
             );
-            await assertConvertedDayHasNoDuplicatePlacements(
+            await assertDayHasNoDuplicatePlacements(
               page, dateAfter(day, 1), title, title + ' locale', persona,
             );
             await assertCard(page, dateAfter(day, 2), title);
@@ -1160,8 +1224,9 @@ test.describe('Temporal v2 — real stateful user personas', () => {
             [dateAfter(day, 1), title + ' locale'],
             [dateAfter(day, 2), title + ' futuro'],
             [dateAfter(day, 3), title + ' futuro'],
+            [dateAfter(day, 4), title + ' futuro'],
           ] as const) {
-            await assertConvertedDayHasNoDuplicatePlacements(
+            await assertDayHasNoDuplicatePlacements(
               page, checkedDay, title, checkedTitle, persona,
             );
           }
