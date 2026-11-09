@@ -96,7 +96,6 @@ async function openEdit(
 
 async function editOneOff(
   page: Page, day: string, authored: AuthoredPersona,
-  persona: PersonaCase,
 ): Promise<AuthoredPersona> {
   const { item, truth } = authored;
   const editor = await openEdit(page, day, truth.title);
@@ -653,7 +652,7 @@ test.describe('Temporal v2 — real stateful user personas', () => {
         });
         const updated = await test.step(
           persona.id + '/4 Edit, remove and add nested data', async () =>
-            editOneOff(page, day, authored, persona),
+            editOneOff(page, day, authored),
         );
         const reassigned = await test.step(
           persona.id + '/5 Reassign area, reload, cancel an unsaved edit',
