@@ -79,17 +79,65 @@ test.describe('Temporal v2 — recorded facts survive Edit', () => {
       await card.getByRole('button', { name: title, exact: true }).click();
       const inspector = page.locator('.timeline-event-modal[role="dialog"]');
       await inspector.getByRole('button', { name: 'Modifica' }).click();
-      await expect(inspector.getByText(goal.label + ' · risultato registrato'))
-        .toBeVisible();
-      await expect(inspector.getByRole('button', { name: 'Correggi risultato' }))
-        .toBeVisible();
-      // Known observed defect: the Edit form still exposes confirmed
-      // Objective targets as ordinary editable inputs. It must be READ ONLY
-      // or show the registered value; never silently mutate evidence.
+      const recorded = inspector.getByRole('group', {
+        name: 'Obiettivo registrato ' + goal.label,
+      });
+      await expect(recorded).toBeVisible();
+      await expect(recorded.getByText('Risultato: Sì')).toBeVisible();
+      await expect(recorded.getByRole('button', {
+        name: 'Correggi risultato',
+      })).toBeVisible();
+      // The confirmed Objective is not a disabled editable form.
+      // It is an independent read-only row with an explicit deletion path.
+      await expect(recorded.getByRole('textbox', {
+        name: 'Nome obiettivo',
+      })).toHaveCount(0);
+      await recorded.getByRole('button', {
+        name: 'Elimina registrazione',
+      }).click();
+      const confirmation = page.getByRole('alertdialog', {
+        name: 'Eliminare la registrazione?',
+      });
+      await expect(confirmation).toBeVisible();
+      await confirmation.getByRole('button', { name: 'Annulla' }).click();
+      await expect(confirmation).toHaveCount(0);
+      const stillRecorded = await serverRead(
+        page,
+        '/api/v1/temporal/events/' + authored.item.sourceRef + '/objectives',
+      ) as Record<string, unknown>[];
+      expect(stillRecorded[0]!.observation_ref).toBe(after[0]!.observation_ref);
+      await recorded.getByRole('button', {
+        name: 'Elimina registrazione',
+      }).click();
+      const deleted = page.waitForResponse((response) =>
+        response.request().method() === 'POST' &&
+        response.url().endsWith(
+          '/api/v1/temporal/objectives/' + after[0]!.objective_ref +
+            '/delete-recording',
+        ),
+      );
+      await confirmation.getByRole('button', { name: 'Sì, elimina' }).click();
+      expect((await deleted).status()).toBe(200);
+      await expect(confirmation).toHaveCount(0);
+      const restored = await serverRead(
+        page,
+        '/api/v1/temporal/events/' + authored.item.sourceRef + '/objectives',
+      ) as Record<string, unknown>[];
+      expect(restored).toHaveLength(1);
+      expect(restored[0]!.objective_ref).toBe(before[0]!.objective_ref);
+      expect(restored[0]!.observation_ref).toBeNull();
+      expect(restored[0]!.evaluation_state_ref).toBeNull();
+      await expect(recorded).toHaveCount(0);
       await expect(
         inspector.locator('[data-create-objective]').first()
           .getByRole('textbox', { name: 'Nome obiettivo' }),
-      ).toBeDisabled();
+      ).toHaveValue(goal.label);
+      await openHome(page, day);
+      const persisted = await serverRead(
+        page,
+        '/api/v1/temporal/events/' + authored.item.sourceRef + '/objectives',
+      ) as Record<string, unknown>[];
+      expect(persisted[0]!.observation_ref).toBeNull();
     } finally {
       await user.close();
     }
