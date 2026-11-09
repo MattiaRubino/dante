@@ -188,6 +188,15 @@ async function editOneOff(
     sessions.push(appended);
   }
   await editor.getByRole('button', { name: 'Salva modifiche' }).click();
+  // Event Edit saves asynchronously; do not navigate before persistence.
+  // Otherwise the test itself can cancel the in-flight mutation.
+  if (item.kind === 'event') {
+    await expect(editor.getByText('Evento aggiornato.')).toBeVisible();
+  } else {
+    await expect(
+      editor.getByRole('button', { name: 'Salva modifiche' }),
+    ).toHaveCount(0);
+  }
   const updated = {
     ...authored,
     item: { ...item, title: newTitle },

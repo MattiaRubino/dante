@@ -289,7 +289,7 @@ export async function authorPersona(
       throw new Error('Live Sessions are Activity-only.');
     }
     await dialog.locator(
-      'label[data-session-capability="activity"] input[type="checkbox"',
+      'label[data-session-capability="activity"] input[type="checkbox"]',
     ).check();
   }
   if (truth.description) {
@@ -413,7 +413,7 @@ export async function assertOneOffTruth(
       .toBe(truth.areaRef);
     const schedules = snapshot.schedules as Record<string, unknown>[];
     const sessions = schedules.filter((schedule) => schedule.role_code === 'planned');
-    expect(sessions.map((session) => session.name), 'planned Session order')
+    expect(sessions.map((session) => session.display_name), 'planned Session order')
       .toEqual(truth.sessions);
     expect(
       schedules.filter((schedule) => schedule.role_code === 'interval').length,
