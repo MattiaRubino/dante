@@ -116,7 +116,7 @@ describe('Temporal Create Advanced Activity IA', () => {
     expect(obsoleteReality).toBeNull();
     expect(screen.queryByText('Svolgimento e obiettivi')).toBeNull();
     expect(
-      within(objectives).getByRole('button', { name: 'Aggiungi obiettivo' }),
+      within(objectives).getByRole('button', { name: '+ Obiettivo' }),
     ).toBeTruthy();
 
     const tree = document.querySelector<HTMLElement>(
