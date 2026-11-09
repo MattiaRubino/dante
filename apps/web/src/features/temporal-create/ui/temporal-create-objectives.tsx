@@ -96,11 +96,10 @@ export function TemporalCreateObjectives() {
         <button
           className="temporal-create-objectives__add"
           type="button"
-          aria-label={italian ? 'Aggiungi obiettivo' : 'Add objective'}
+          aria-label={italian ? '+ Obiettivo' : '+ Objective'}
           onClick={() => publish([...draft.objectives, newObjective()])}
         >
-          <span aria-hidden="true">＋</span>
-          {italian ? 'Aggiungi obiettivo' : 'Add objective'}
+          {italian ? '+ Obiettivo' : '+ Objective'}
         </button>
       </div>
     </section>
