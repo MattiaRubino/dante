@@ -92,6 +92,15 @@ test.describe('Temporal v2 — recorded facts survive Edit', () => {
       await expect(recorded.getByRole('textbox', {
         name: 'Nome obiettivo',
       })).toHaveCount(0);
+      // Independent unsaved draft: reproduces the real visual-test report.
+      // Deleting a different accepted result must neither demand Save nor
+      // erase the incomplete Objective, even after canonical readback.
+      await inspector.getByRole('button', {
+        name: /Aggiungi obiettivo/,
+      }).click();
+      await expect(inspector.getByRole('textbox', {
+        name: 'Nome obiettivo',
+      })).toHaveValue('');
       await recorded.getByRole('button', {
         name: 'Elimina registrazione',
       }).click();
@@ -129,9 +138,21 @@ test.describe('Temporal v2 — recorded facts survive Edit', () => {
       expect(restored[0]!.evaluation_state_ref).toBeNull();
       await expect(recorded).toHaveCount(0);
       await expect(
-        inspector.locator('[data-create-objective]').first()
-          .getByRole('textbox', { name: 'Nome obiettivo' }),
+        inspector.getByRole('textbox', { name: 'Nome obiettivo' }),
+      ).toHaveCount(2);
+      await expect(
+        inspector.getByRole('textbox', { name: 'Nome obiettivo' }).nth(0),
       ).toHaveValue(goal.label);
+      await expect(
+        inspector.getByRole('textbox', { name: 'Nome obiettivo' }).nth(1),
+      ).toHaveValue('');
+      // The incomplete draft exists only in the editor and has not
+      // accidentally been persisted by the independent result deletion.
+      const noUnexpectedObjective = await serverRead(
+        page,
+        '/api/v1/temporal/events/' + authored.item.sourceRef + '/objectives',
+      ) as Record<string, unknown>[];
+      expect(noUnexpectedObjective).toHaveLength(1);
       await openHome(page, day);
       const persisted = await serverRead(
         page,
