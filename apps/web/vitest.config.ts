@@ -6,6 +6,9 @@ export default defineConfig({
   plugins: [dayRibbonBackdropPlugin()],
   test: {
     environment: 'jsdom',
-    include: ['src/**/*.test.{ts,tsx}'],
+    include: [
+      'src/**/*.test.{ts,tsx}',
+      'e2e/auth/temporal-stateful-case-matrix.test.ts',
+    ],
   },
 });
