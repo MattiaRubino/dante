@@ -5109,3 +5109,7 @@ preview; the cross-day keyboard assertion checks the changed date. The
 real-stack recurrence test retains both checkpoint requirements and allows
 30 seconds under concurrent gate load. Browser and PostgreSQL acceptance
 remain NOT_RUN on the repaired candidate; no global PASS is claimed.
+
+### 2026-11-09 — Real-stack benchmark follow-up
+
+Measured on `9fa62b1a8`: three isolated browser stacks recorded all 117 tests in 366.2s, versus the prior 774.8s serial baseline, but the run was not green (109 passed, 4 failed, 4 expected skips). All three browser failures in recurring Event Life Area verification came from a new E2E `page.request.get('/api/v1/temporal/life-areas')` missing the mandatory `X-Dante-Time-Zone: Europe/Rome` header (trace `context.device_timezone_required`). The separate WebKit Event duplication failure showed the Inspector closing without Create opening. Root cause addressed in `TemporalCreateEntry`: its external request must be acknowledged only after the scheduled animation frame runs, not before, because React may cancel the frame when Life Area contexts refresh. A targeted Vitest simulates that cancellation and requires the duplicate composer to open. No end-to-end proof of these repairs is claimed until owner reruns the focused E2E tests on the new commit.

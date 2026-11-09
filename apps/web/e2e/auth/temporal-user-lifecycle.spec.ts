@@ -894,6 +894,7 @@ test.describe('Timeline — real user Activity/Event lifecycle matrix', () => {
 
       const areaResponse = await page.request.get(
         '/api/v1/temporal/life-areas',
+        { headers: { 'X-Dante-Time-Zone': 'Europe/Rome' } },
       );
       expect(areaResponse.status()).toBe(200);
       const areaList = (await areaResponse.json()) as readonly Record<

@@ -324,8 +324,10 @@ export function TemporalCreateEntry({
 
   useEffect(() => {
     if (!request || requestSeenRef.current === request.id || open) return;
-    requestSeenRef.current = request.id;
     const frame = requestAnimationFrame(() => {
+      // A context refresh can change openComposer and cancel a pending frame.
+      // A cancelled request must remain eligible for the next effect; only
+      // acknowledge it once the composer has actually been opened.
       openComposer(
         request.date,
         request.startMinute,
@@ -335,6 +337,7 @@ export function TemporalCreateEntry({
         request.anchor,
         document.querySelector<HTMLElement>('.timeline-grid'),
       );
+      requestSeenRef.current = request.id;
     });
     return () => cancelAnimationFrame(frame);
   }, [open, openComposer, request]);

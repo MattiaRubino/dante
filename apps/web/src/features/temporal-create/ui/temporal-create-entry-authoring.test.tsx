@@ -5,6 +5,7 @@ import { fetchRequestUrl } from '../../../test-support/fetch-request';
 
 import { Temporal } from '@dante/time';
 import {
+  act,
   cleanup,
   fireEvent,
   render,
@@ -217,6 +218,77 @@ describe('Temporal Create U2 entry', () => {
     expect(activityRequests).toHaveLength(0);
     expect(eventRequests).toHaveLength(0);
   });
+  it('retries an Inspector duplicate invocation when a context update cancels its pending animation frame', () => {
+    const scheduled = new Map<number, FrameRequestCallback>();
+    let nextHandle = 0;
+    vi.stubGlobal(
+      'requestAnimationFrame',
+      vi.fn((callback: FrameRequestCallback): number => {
+        const handle = ++nextHandle;
+        scheduled.set(handle, callback);
+        return handle;
+      }),
+    );
+    vi.stubGlobal(
+      'cancelAnimationFrame',
+      vi.fn((handle: number) => {
+        scheduled.delete(handle);
+      }),
+    );
+
+    const date = Temporal.PlainDate.from('2026-10-07');
+    const fields = {
+      kind: 'event' as const,
+      title: 'Event duplicato',
+      date: date.toString(),
+      startTime: '10:20',
+      durationMinutes: 60,
+      timeSemantics: 'timed' as const,
+    };
+    const invocation: TemporalCreateInvocation = {
+      id: 73,
+      date,
+      seed: fields,
+      duplicate: { fields, advanced: {} },
+    };
+    const onPreview = vi.fn();
+    const onApplied = vi.fn(() => false);
+    const view = render(
+      <TemporalCreateEntry
+        defaultDate={date}
+        contexts={[]}
+        request={invocation}
+        onPreview={onPreview}
+        onApplied={onApplied}
+        creationEnabled={false}
+      />,
+    );
+
+    // Simulate a fresh Life Area catalogue before the scheduled open runs.
+    // The old effect cancelled its animation frame but had already marked
+    // the duplicate as consumed, so no composer could ever open.
+    view.rerender(
+      <TemporalCreateEntry
+        defaultDate={date}
+        contexts={[{ id: 'updated-area', label: 'Area aggiornata', tone: 'personal' }]}
+        request={invocation}
+        onPreview={onPreview}
+        onApplied={onApplied}
+        creationEnabled={false}
+      />,
+    );
+    act(() => {
+      for (const [handle, callback] of [...scheduled]) {
+        scheduled.delete(handle);
+        callback(0);
+      }
+    });
+    expect(
+      document.querySelector('[data-temporal-create="composer"]'),
+    ).not.toBeNull();
+    expect(screen.getByDisplayValue('Event duplicato')).toBeTruthy();
+  });
+
   it('submits a named Session without a child clock or Sub-Activities', async () => {
     const { activityRequests } = renderEntry([], false, '2132-03-06');
     fireEvent.change(screen.getByPlaceholderText('Titolo'), {
