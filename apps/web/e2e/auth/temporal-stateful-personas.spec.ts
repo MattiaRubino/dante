@@ -152,7 +152,7 @@ async function editOneOff(
         truth.objectives.length === 1 ? renamedGoal.label : removedGoal.label
       ),
     }).click();
-  await editor.getByRole('button', { name: 'Aggiungi obiettivo' }).click();
+  await editor.getByRole('button', { name: '+ Obiettivo' }).click();
   const replacementGoal = {
     label: newTitle + ' obiettivo aggiunto',
     kind: 'boolean' as const,
@@ -635,7 +635,7 @@ async function seriesRevision(
   const removedObjective = changedGoals.pop()!;
   await inspector.locator('[data-create-objective]').last()
     .getByRole('button', { name: 'Rimuovi obiettivo' }).click();
-  await inspector.getByRole('button', { name: 'Aggiungi obiettivo' }).click();
+  await inspector.getByRole('button', { name: '+ Obiettivo' }).click();
   const newObjective = {
     label: nextTitle + ' obiettivo nuovo',
     kind: 'boolean' as const,
