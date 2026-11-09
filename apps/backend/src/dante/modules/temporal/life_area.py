@@ -128,6 +128,78 @@ _LIST_SQL = text("""
 """)
 
 
+async def create_life_area_in_session(
+    session: AsyncSession,
+    *,
+    actor: UUID,
+    operation_id: str,
+    name: str,
+    color_code: str | None,
+) -> UUID:
+    """Create an area and its appearance in the caller's transaction.
+
+    Event and selected-Occurrence edits share this routine so any later CAS
+    conflict rolls back the area, assignment, and all other edits together.
+    """
+    normalized_name = _name(name)
+    normalized_operation = _operation(operation_id)
+    normalized_color = color_code.upper() if color_code is not None else None
+    if normalized_color is not None and (
+        len(normalized_color) != 7
+        or normalized_color[0] != "#"
+        or any(ch not in "0123456789ABCDEF" for ch in normalized_color[1:])
+    ):
+        raise LifeAreaInputError("Invalid Life Area color.")
+
+    created = (
+        (
+            await session.execute(
+                text(
+                    "SELECT life_area_ref,replayed FROM dante.create_self_life_area("
+                    ":actor,:operation,:fingerprint,:area_ref,:name)"
+                ),
+                {
+                    "actor": actor,
+                    "operation": f"{normalized_operation}:area-create",
+                    "fingerprint": _fingerprint({"version": 1, "name": normalized_name}),
+                    "area_ref": uuid7(),
+                    "name": normalized_name,
+                },
+            )
+        )
+        .mappings()
+        .one()
+    )
+    area_ref = UUID(str(created["life_area_ref"]))
+    if normalized_color is not None:
+        await session.execute(
+            text(
+                "SELECT accepted_revision,replayed FROM dante.mutate_self_life_area("
+                ":actor,:operation,:fingerprint,:area_ref,1,"
+                "'appearance',NULL,NULL,NULL,:color)"
+            ),
+            {
+                "actor": actor,
+                "operation": f"{normalized_operation}:area-appearance",
+                "fingerprint": _fingerprint(
+                    {
+                        "version": 1,
+                        "kind": "appearance",
+                        "area": str(area_ref),
+                        "expected_revision": 1,
+                        "payload": {
+                            "icon_code": None,
+                            "color_code": normalized_color,
+                        },
+                    }
+                ),
+                "area_ref": area_ref,
+                "color": normalized_color,
+            },
+        )
+    return area_ref
+
+
 class LifeAreaApplication:
     """All writes use bounded database routines in one transaction each."""
 
