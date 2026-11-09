@@ -954,6 +954,7 @@ test.describe('Temporal v2 — real stateful user personas', () => {
         await test.step(persona.id + '/2 Read full source state', async () => {
           await assertOneOffTruth(page, authored);
         });
+        let seriesSourceRef = authored.item.sourceRef;
         await test.step(persona.id + '/3 Convert through real Edit', async () => {
           const editor = await openEdit(page, day, title);
           const recurrence = editor.getByRole('region', {
@@ -972,6 +973,18 @@ test.describe('Temporal v2 — real stateful user personas', () => {
           await editor.getByRole('button', { name: 'Salva modifiche' })
             .click();
           expect((await conversion).status()).toBe(200);
+          if (persona.kind === 'event') {
+            // Conversion preserves the physical first Event but creates a
+            // distinct canonical recurring Event source. The original
+            // one-off Event ref is NOT its future occurrence source ref.
+            const seed = await serverRead(
+              page, '/api/v1/temporal/recurring/events/' +
+                authored.item.sourceRef + '/seed',
+            );
+            expect(seed).toEqual(expect.stringMatching(UUID));
+            seriesSourceRef = String(seed);
+            expect(seriesSourceRef).not.toBe(authored.item.sourceRef);
+          }
           const originalCard = await assertCard(page, day, title);
           await expect(originalCard).toBeVisible();
           await assertOriginalScheduleIdentity(
@@ -993,7 +1006,7 @@ test.describe('Temporal v2 — real stateful user personas', () => {
           );
           await assertCard(page, dateAfter(day, 2), title + ' futuro');
           await assertRecurringTruth(
-            page, dateAfter(day, 2), authored.item.sourceRef,
+            page, dateAfter(day, 2), seriesSourceRef,
             updatedTruth, persona,
           );
           await assertCard(page, dateAfter(day, 3), title + ' futuro');
