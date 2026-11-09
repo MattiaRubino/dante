@@ -1,3 +1,13 @@
+## 2026-11-09 — E2E throughput and stale shared Create selector (SMOKE PENDING)
+
+**Observed real-stack failure:** the user ran 306 slots directly under a **single disposable PostgreSQL / HTTP server** with `--workers=2`; both concurrent first cases `V2-P1-E01` and `V2-RT-01` timed out at 300,000 ms. The browserContext.close secondary exception is teardown after a timed-out test, **not an identified root cause**. Browser traces under `apps/web/test-results/**/trace.zip` and `error-context.md` are required for definitive attribution. The test source has `test.describe.configure({ timeout: 300_000 })` so the shared stack should not be subjected to all 306 slots before a smoke passes. No PASS is claimed for this run.
+
+**Concrete test-driver defect found by source inspection:** after the product copy changed to **`+ Obiettivo`**, two source-owned browser helpers still targeted `Aggiungi obiettivo`: the *first* Objective in `temporal-user-journey-support.ts / configureCreate`, and every *additional* Objective in `temporal-stateful-journey-support.ts / setObjective`. Both are used by the timed-out v2 Create scenarios. The selectors now match the real accessible name exactly and assert button visibility within 10 seconds, without weakening the Objective creation or server-truth assertions. These commits are **candidate repairs** pending real browser proof.
+
+**Correct run strategy:** `python3 tooling/testing/run_real_stack_playwright.py --workers 3 --grep 'V2-(P1-E01|RT-01)'` creates three **independent** frontend/API/PostgreSQL stacks (one per browser). On PASS, use `--grep 'V2-'` for all 102 v2 cases per browser, retaining isolated accounts, one frontend build and separate JUnit, logs and traces. Never use two `playwright.auth.config.ts` workers on the same stack as a substitute for isolated parallelism; the existing runner owns the safe topology. The full gate must later run on one pinned clean SHA. If the smoke still fails, inspect its actual trace before altering any product semantics or increasing timeouts.
+
+---
+
 ## 2026-11-09 — Statefulness: first, middle, finite last and interval identity (NOT RUN)
 
 **Context:** two user-provided WSL runs at `7c2886e0` and `46a8f3d4` returned four component Vitest failures each (the later run: 134 PASS, 4 FAIL), 5 TypeScript compiler errors, and 4 unregistered test files. These results are historical: none of the new code is marked green without a fresh run on its exact SHA.
