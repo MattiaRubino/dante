@@ -21,7 +21,7 @@ from dante.modules.temporal.api import (
     _placement_from_request,
 )
 from dante.modules.temporal.event import _read_event_in_session
-from dante.modules.temporal.life_area import _fingerprint as life_area_fingerprint
+from dante.modules.temporal.life_area import create_life_area_in_session
 from dante.modules.temporal.event_api import (
     EventAtomicPlacementLockChange,
     EventAtomicReminderChange,
@@ -1087,60 +1087,18 @@ async def accept_event_occurrence_local_edit(
                 )
                 if area is None:
                     raise RecurringSeriesEditConflictError("Event Life Area is unavailable.")
-            # The new Life Area and its local Occurrence assignment must
-            # commit or roll back together. No orphan profile on a rejected
-            # recurrence revision, protected instance or invalid Schedule.
+            # Event-local assignment and new area must commit or roll back
+            # together with the Occurrence profile, schedule and objectives.
             local = body.structure.model_dump(mode="json", exclude={"new_life_area"})
             if body.structure.new_life_area is not None:
                 new_area = body.structure.new_life_area
-                created = (
-                    (
-                        await session.execute(
-                            text(
-                                "SELECT life_area_ref,replayed FROM dante.create_self_life_area("
-                                ":actor,:operation,:fingerprint,:area_ref,:name)"
-                            ),
-                            {
-                                "actor": actor,
-                                "operation": f"{body.operation_id}:area-create",
-                                "fingerprint": life_area_fingerprint(
-                                    {"version": 1, "name": new_area.name}
-                                ),
-                                "area_ref": uuid7(),
-                                "name": new_area.name,
-                            },
-                        )
-                    )
-                    .mappings()
-                    .one()
+                area_ref = await create_life_area_in_session(
+                    session,
+                    actor=actor,
+                    operation_id=body.operation_id,
+                    name=new_area.name,
+                    color_code=new_area.color_code,
                 )
-                area_ref = created["life_area_ref"]
-                if new_area.color_code is not None:
-                    await session.execute(
-                        text(
-                            "SELECT accepted_revision,replayed FROM dante.mutate_self_life_area("
-                            ":actor,:operation,:fingerprint,:area_ref,1,"
-                            "'appearance',NULL,NULL,NULL,:color)"
-                        ),
-                        {
-                            "actor": actor,
-                            "operation": f"{body.operation_id}:area-appearance",
-                            "fingerprint": life_area_fingerprint(
-                                {
-                                    "version": 1,
-                                    "kind": "appearance",
-                                    "area": str(area_ref),
-                                    "expected_revision": 1,
-                                    "payload": {
-                                        "icon_code": None,
-                                        "color_code": new_area.color_code,
-                                    },
-                                }
-                            ),
-                            "area_ref": area_ref,
-                            "color": new_area.color_code,
-                        },
-                    )
                 local["life_area_ref"] = str(area_ref)
             target_schedule = (
                 body.schedule.schedule_ref
