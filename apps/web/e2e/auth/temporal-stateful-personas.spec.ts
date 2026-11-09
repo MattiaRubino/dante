@@ -549,6 +549,36 @@ async function assertDayHasNoDuplicatePlacements(
   }
 }
 
+async function assertNoOccurrenceBeyondFiniteEnd(
+  page: Page,
+  lastDay: string,
+  recurrence: ReturnType<typeof recurrenceFor>,
+  uniqueSourceTitle: string,
+): Promise<void> {
+  // "This and following" and "From next" may split a bounded source,
+  // but can never revive a sixth/seventh occurrence after its finite end.
+  // Read the real canonical window: DOM title and visibility alone are
+  // insufficient to prove the source did not regenerate a hidden item.
+  let next = lastDay;
+  for (let i = 0; i < 2; i += 1) {
+    next = nextOccurrence(next, recurrence);
+    const window = await serverRead(
+      page,
+      '/api/v1/temporal/timeline/window?start_date=' + next +
+        '&end_date_exclusive=' + dateAfter(next, 1),
+    ) as Record<string, unknown>;
+    expect(window.kind).toBe('window');
+    const unauthorized = (window.items as Record<string, unknown>[])
+      .filter((row) =>
+        typeof row.title === 'string' &&
+        row.title.startsWith(uniqueSourceTitle),
+      );
+    expect(unauthorized,
+      'bounded recurrence must not generate occurrence beyond final ' +
+        lastDay + ' on ' + next).toHaveLength(0);
+  }
+}
+
 async function assertOriginalScheduleIdentity(
   page: Page, day: string, item: CreatedItem,
 ): Promise<void> {
@@ -875,6 +905,7 @@ async function deleteRecurringAndProveNoResurrection(
   originalTitle: string,
   currentTitle: string,
   kind: PersonaCase['kind'],
+  laterTitle = currentTitle,
 ): Promise<void> {
   const card = await assertCard(page, selectedDay, currentTitle);
   await clickCard(card, currentTitle);
@@ -902,12 +933,12 @@ async function deleteRecurringAndProveNoResurrection(
   await expect(dialog).toHaveCount(0);
   await openHome(page, selectedDay);
   await expect(onDay(page, selectedDay, currentTitle)).toHaveCount(0);
-  await assertCard(page, laterDay, currentTitle);
+  await assertCard(page, laterDay, laterTitle);
   await openHome(page, selectedDay);
   await expect(onDay(page, selectedDay, currentTitle)).toHaveCount(0);
 
-  const future = await assertCard(page, laterDay, currentTitle);
-  await clickCard(future, currentTitle);
+  const future = await assertCard(page, laterDay, laterTitle);
+  await clickCard(future, laterTitle);
   await inspector.getByRole('button', { name: deletionButton, exact: true })
     .click();
   const removedSeries = page.waitForResponse((response) =>
@@ -918,6 +949,7 @@ async function deleteRecurringAndProveNoResurrection(
   expect((await removedSeries).status()).toBe(200);
   await expect(dialog).toHaveCount(0);
   await openHome(page, laterDay);
+  await expect(onDay(page, laterDay, laterTitle)).toHaveCount(0);
   await expect(onDay(page, laterDay, currentTitle)).toHaveCount(0);
   await openHome(page, selectedDay);
   await expect(onDay(page, selectedDay, currentTitle)).toHaveCount(0);
@@ -1181,6 +1213,9 @@ test.describe('Temporal v2 — real stateful user personas', () => {
               await assertDayHasNoDuplicatePlacements(
                 page, day, title, localTitle, persona,
               );
+              await assertNoOccurrenceBeyondFiniteEnd(
+                page, finalDay, recurrence, title,
+              );
             },
           );
         }
@@ -1188,8 +1223,9 @@ test.describe('Temporal v2 — real stateful user personas', () => {
           persona.id + '/8 Delete single → checkpoint → whole series',
           async () => {
             await deleteRecurringAndProveNoResurrection(
-              page, later, nextOccurrence(later, recurrence),
+              page, later, finalDay ?? nextOccurrence(later, recurrence),
               day, localTitle, revisedTitle + ' dalla prossima', persona.kind,
+              finalDay ? finalTitle : revisedTitle + ' dalla prossima',
             );
           },
         );
