@@ -1163,10 +1163,25 @@ describe('Objective correction in Activity Editor', () => {
     expect(saveRecurringProfile).not.toHaveBeenCalled();
   });
 
-  it('closes an unchanged Activity with recorded Objectives without an empty atomic HTTP mutation', async () => {
+  it('closes an unchanged Activity with all four recorded Objective types without HTTP mutation', async () => {
     loadSettings.mockResolvedValueOnce({
       ...currentSettings,
-      objectives: [objective],
+      objectives: [
+        { ...objective, objectiveRef: 'b1', label: 'Sì o no', resultKind: 'boolean',
+          comparatorCode: null, targetValue: null, targetMin: null, targetMax: null,
+          unitCode: null, observedBoolean: true, observedNumeric: null,
+          presentationOrder: 0 },
+        { ...objective, objectiveRef: 'q1', label: 'Mele', targetValue: 12,
+          observedNumeric: 123, unitCode: null, presentationOrder: 1 },
+        { ...objective, objectiveRef: 'v1', label: 'Valutazione',
+          resultKind: 'qualitative', comparatorCode: null, targetValue: null,
+          targetMin: null, targetMax: null, unitCode: null, observedNumeric: null,
+          qualitativeCode: 'satisfied', presentationOrder: 2 },
+        { ...objective, objectiveRef: 'r1', label: 'Intervallo',
+          resultKind: 'range', comparatorCode: 'between', targetValue: null,
+          targetMin: 12, targetMax: 123, observedNumeric: 1333, unitCode: null,
+          presentationOrder: 3 },
+      ],
     });
     const onSaved = vi.fn();
     render(
@@ -1178,8 +1193,11 @@ describe('Objective correction in Activity Editor', () => {
       />,
     );
     await screen.findByRole('group', {
-      name: 'Obiettivo registrato Corsa 10 km',
+      name: 'Obiettivo registrato Sì o no',
     });
+    expect(screen.getAllByRole('group', {
+      name: /^Obiettivo registrato /,
+    })).toHaveLength(4);
     await submitEditor();
     await waitFor(() => expect(onSaved).toHaveBeenCalledWith(profile));
     expect(applyAtomicEdit).not.toHaveBeenCalled();
