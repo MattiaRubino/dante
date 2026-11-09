@@ -1449,6 +1449,9 @@ describe('Event Inspector actions', () => {
     });
     expect(within(recorded).getByText('Risultato: Sì')).toBeTruthy();
     expect(screen.queryByRole('textbox', { name: 'Nome obiettivo' })).toBeNull();
+    fireEvent.click(screen.getByRole('button', { name: 'Aggiungi obiettivo' }));
+    expect(screen.getByRole('textbox', { name: 'Nome obiettivo' }))
+      .toHaveProperty('value', '');
     fireEvent.click(within(recorded).getByRole('button', {
       name: 'Elimina registrazione',
     }));
@@ -1468,8 +1471,10 @@ describe('Event Inspector actions', () => {
         stored.objectiveRef,
         stored.evaluationStateRef,
       );
-      expect(screen.getByRole('textbox', { name: 'Nome obiettivo' }))
-        .toHaveProperty('value', 'Presenza');
+      expect(
+        screen.getAllByRole('textbox', { name: 'Nome obiettivo' })
+          .map((input) => (input as HTMLInputElement).value),
+      ).toEqual(['Presenza', '']);
     });
     expect(reviseAtomic).not.toHaveBeenCalled();
   });
