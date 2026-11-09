@@ -64,11 +64,16 @@ def _unique_ports() -> dict[str, int]:
     return ports
 
 
+def _selector(grep: str | None) -> tuple[str, ...]:
+    """Identical filtered inventory and Playwright execution arguments."""
+    return ("--grep", grep) if grep is not None else ()
+
+
 def _plan(project: str, directory: Path, grep: str | None = None) -> int:
     command = (
         "pnpm", "exec", "playwright", "test", "--config",
         "playwright.auth.config.ts", "--project", project, "--list",
-        *((("--grep", grep)) if grep is not None else ()),
+        *_selector(grep),
     )
     result = subprocess.run(
         command, cwd=WEB, text=True, capture_output=True, check=False,
@@ -136,7 +141,7 @@ def _run_project(
         "playwright.auth.config.ts", "--project", project, "--workers=1",
         "--retries=0", "--reporter=line,junit", "--output",
         str(shard / "test-results"),
-        *((("--grep", grep)) if grep is not None else ()),
+        *_selector(grep),
     )
     started = time.monotonic()
     with (shard / "playwright.log").open("w", encoding="utf-8") as log:
@@ -195,6 +200,10 @@ def _self_test() -> None:
     # never the original full-suite count.
     assert _plan.__defaults__ == (None,)
     assert _run_project.__defaults__ == (None,)
+    assert _selector(None) == ()
+    assert _selector(r"V2-P3-(E01|A01)") == (
+        "--grep", r"V2-P3-(E01|A01)",
+    )
     print("PASS: browser shard partition, inventory parity and skip guard")
 
 
@@ -227,7 +236,7 @@ def main() -> int:
             [
                 "pnpm", "exec", "playwright", "test", "--config",
                 "playwright.auth.config.ts",
-                *((("--grep", args.grep)) if args.grep is not None else ()),
+                *_selector(args.grep),
             ],
             cwd=WEB, env=env, check=False,
         ).returncode
