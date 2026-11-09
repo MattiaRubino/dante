@@ -186,6 +186,24 @@ async function setClock(composer: Locator, value: string): Promise<void> {
   await composer.getByRole('textbox', { name: 'Fine: minuti' }).fill(
     String(end.minute).padStart(2, '0'),
   );
+  // Time controls may roll an intermediate end clock into the next day
+  // while their hours/minutes are entered separately. The journey requests
+  // a 40-minute intraday placement: author its end *date* explicitly.
+  const endDate = composer.getByRole('button', { name: /^Data fine:/ });
+  if ((await endDate.getAttribute('data-temporal-date')) !== options.date) {
+    await endDate.click();
+    const picker = composer.getByRole('dialog', { name: 'Data fine' });
+    const day = picker.locator(
+      'button[data-temporal-date="' + options.date + '"]',
+    );
+    for (let offset = 0; offset < 12; offset += 1) {
+      if (await day.isVisible() && await day.isEnabled()) break;
+      await picker.getByRole('button', { name: 'Mese precedente' }).click();
+    }
+    await expect(day).toBeEnabled();
+    await day.click();
+  }
+  await expect(endDate).toHaveAttribute('data-temporal-date', options.date);
 }
 
 export async function configureCreate(

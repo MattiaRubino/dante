@@ -167,10 +167,10 @@ test.describe('Timeline — real user Activity/Event lifecycle matrix', () => {
       name: 'Elimina definitivamente',
     }).click();
     const accepted = await responsePromise;
-    expect(
-      accepted.status(),
-      `${item.kind} destructive command: ${await accepted.text()}`,
-    ).toBe(200);
+    // The UI can navigate immediately after deletion, which makes the
+    // response body unavailable in Playwright even after a successful 200.
+    // Assert status here and verify persistence through the fresh read below.
+    expect(accepted.status(), `${item.kind} destructive command`).toBe(200);
     // Finish the UI's onDeleted transition before a new page navigation.
     await expect(deletion).toHaveCount(0);
     await expect(inspector).toHaveCount(0);
