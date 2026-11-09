@@ -192,7 +192,7 @@ export function ActivityObjectiveRow({
   index: number;
   total: number;
   disabled: boolean;
-  onInspect: () => void;
+  onInspect?: () => void;
   onChange: (patch: Partial<ActivityObjectiveDraft>) => void;
   onRemove: () => void;
   onMove: (direction: -1 | 1) => void;
