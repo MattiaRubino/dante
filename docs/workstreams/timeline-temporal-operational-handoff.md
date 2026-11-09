@@ -1,5 +1,16 @@
 # Timeline / Temporal-Operational — Workstream Handoff
 
+## 2026-11-09 — E2E workflow: no manual diagnostics tar, exact Inspector delete reentry
+
+User's second isolated `V2-(P1-E01|RT-01)` smoke: 6 collected / **3 RT-01 PASS / 3 P1-E01 ERROR**, 342.37 sec wall clock. Trace/JUnit/screenshots prove P1-E01 reaches E01/7 with original Event and its copy intact. The old `deleteOneOff` helper checked cancelled deletion by `assertCard()`, which invokes a fresh `openHome()` and unmounts the active Inspector; the next click waited on a closed modal for the remainder of 300 seconds. The driver now **reopens the Inspector and bounds missing-control visibility to 10 seconds** before performing the second confirmed deletion. It retains strong canonical DELETE/404/reload and copy-survival assertions; no change to the DANTE product is justified by these traces.
+
+The user explicitly required **automatic diagnostic bundling with no second command**. The 3-stack `run_real_stack_playwright.py` runner now prints `REALSTACK_DIAGNOSTICS=<absolute file>` at the end (success or failure) and leaves the **`E2E_DIAGNOSTICS.tar.gz` uploadable within the run directory**. The archive captures JUnit, per-browser Playwright logs and error-context plus compact action/network trace copies; omits repeated JPEG screencast frames and limits uploads to the first three traces per browser. All full-size originals remain on disk, never deleted or modified. `--self-test` includes simulated failure packaging, trace contents and cap/retention assertions. No extra WSL `tar` is required for future iterations.
+
+Candidate must still pass owner `--self-test`, TypeScript and a targeted **P1-E01 (three-browser) smoke**. RT-01 has already passed 3/3 on the last two smokes. Preserve prior failed evidence; do not rerun 306 until P1/P2/P3/RT smoke proofs are green. See `docs/development/temporal-user-lifecycle-journey-matrix.md` for the precise failure and test ownership.
+
+---
+
+
 ## 2026-11-09 — 3-browser trace diagnosis and atomic Save E2E synchronization
 
 Owner provided the `e2e-v2-smoke-20261109-214115` artifacts: **3/3 RT-01 PASS, 0/3 P1-E01 PASS** over six reported browser tests, ~50 seconds with three independent disposable stacks. All P1-E01 failures were the same test-driver sequencing fault at E01/5 new Life Area after Edit, not a proven product defect. Each trace shows the catalog GET returned the old area before the second Event atomic PUT was issued (its response was missing after test failure/teardown). The PUT contained valid new-area name and `#8E24AA` intent; cannot infer backend outcome when request was cancelled.
