@@ -523,7 +523,7 @@ test.describe('Timeline — real user Activity/Event lifecycle matrix', () => {
   }, testInfo) => {
     // A missing conversion POST should produce a bounded failure rather
     // than keeping this single test opaque for five minutes.
-    test.setTimeout(120_000);
+    test.setTimeout(300_000);
     const user = await signedInPage(browser, testInfo, 5);
     try {
       const { page } = user;
@@ -661,6 +661,73 @@ test.describe('Timeline — real user Activity/Event lifecycle matrix', () => {
             'data-timeline-event',
             firstFutureSchedule!,
           );
+
+          // The converted one-off must behave like a natively authored
+          // recurring source: local edit, then a selected-and-following edit.
+          const selected = onDay(page, dateAfter(day, 1), title);
+          await selected.getByRole('button', { name: title, exact: true }).click();
+          let seriesInspector = page.locator('.timeline-event-modal[role="dialog"]');
+          await seriesInspector.getByRole('button', { name: 'Modifica' }).click();
+          await page
+            .getByRole('dialog', { name: 'Modifica ricorrenza' })
+            .getByRole('button', { name: 'Solo questa istanza' })
+            .click();
+          const localTitle = title + ' conversione locale';
+          await seriesInspector
+            .getByRole('textbox', {
+              name: kind === 'event' ? 'Titolo Event' : 'Titolo',
+            })
+            .fill(localTitle);
+          await seriesInspector
+            .getByRole('button', { name: 'Salva modifiche' })
+            .click();
+          await openHome(page, dateAfter(day, 1));
+          await expect(onDay(page, dateAfter(day, 1), localTitle)).toHaveCount(1);
+          await openHome(page, dateAfter(day, 2));
+          await expect(onDay(page, dateAfter(day, 2), localTitle)).toHaveCount(0);
+          await expect(onDay(page, dateAfter(day, 2), title)).toHaveCount(1);
+
+          const following = onDay(page, dateAfter(day, 2), title);
+          await following.getByRole('button', { name: title, exact: true }).click();
+          seriesInspector = page.locator('.timeline-event-modal[role="dialog"]');
+          await seriesInspector.getByRole('button', { name: 'Modifica' }).click();
+          await page
+            .getByRole('dialog', { name: 'Modifica ricorrenza' })
+            .getByRole('button', { name: 'Questa e le successive' })
+            .click();
+          const futureTitle = title + ' conversione futura';
+          await seriesInspector
+            .getByRole('textbox', { name: 'Titolo' })
+            .fill(futureTitle);
+          await seriesInspector
+            .getByRole('button', { name: 'Salva modifiche' })
+            .click();
+          const review = page.getByRole('dialog', {
+            name: 'Controlla prima di salvare',
+          });
+          await expect(review).toBeVisible();
+          const acceptedRevision = page.waitForResponse(
+            (response) =>
+              response.url().endsWith('/series-edit') &&
+              response.request().method() === 'POST',
+          );
+          await review.getByRole('button', { name: 'Conferma salvataggio' }).click();
+          expect((await acceptedRevision).status()).toBe(200);
+          await expect(review).toHaveCount(0);
+
+          await openHome(page, dateAfter(day, 2));
+          await expect(onDay(page, dateAfter(day, 2), futureTitle)).toHaveCount(1);
+          await openHome(page, dateAfter(day, 3));
+          await expect(onDay(page, dateAfter(day, 3), futureTitle)).toHaveCount(1);
+          await openHome(page, dateAfter(day, 1));
+          await expect(onDay(page, dateAfter(day, 1), localTitle)).toHaveCount(1);
+          await expect(onDay(page, dateAfter(day, 1), futureTitle)).toHaveCount(0);
+          await openHome(page, day);
+          await expect(onDay(page, day, title)).toHaveAttribute(
+            'data-timeline-event',
+            original.scheduleRef!,
+          );
+          await expect(onDay(page, day, futureTitle)).toHaveCount(0);
         });
       }
     } finally {
