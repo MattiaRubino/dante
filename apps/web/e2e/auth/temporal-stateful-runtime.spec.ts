@@ -96,7 +96,7 @@ test.describe('Temporal v2 — recorded facts survive Edit', () => {
       // Deleting a different accepted result must neither demand Save nor
       // erase the incomplete Objective, even after canonical readback.
       await inspector.getByRole('button', {
-        name: /Aggiungi obiettivo/,
+        name: '+ Obiettivo',
       }).click();
       await expect(inspector.getByRole('textbox', {
         name: 'Nome obiettivo',
