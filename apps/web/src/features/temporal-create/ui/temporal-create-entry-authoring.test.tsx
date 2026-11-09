@@ -270,7 +270,9 @@ describe('Temporal Create U2 entry', () => {
     view.rerender(
       <TemporalCreateEntry
         defaultDate={date}
-        contexts={[{ id: 'updated-area', label: 'Area aggiornata', tone: 'personal' }]}
+        contexts={[
+          { id: 'updated-area', label: 'Area aggiornata', tone: 'personal' },
+        ]}
         request={invocation}
         onPreview={onPreview}
         onApplied={onApplied}
