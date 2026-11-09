@@ -63,11 +63,13 @@ function accountIndex(info: TestInfo, ordinal: number): number {
   };
   const project = projects[info.project.name];
   if (project === undefined || !Number.isInteger(ordinal) ||
-      ordinal < 0 || ordinal >= 100) {
+      ordinal < 0 || ordinal >= 102) {
     throw new Error('Stateful E2E account partition is invalid');
   }
-  // Dedicated isolation: 1..101 existing E2E, 102..401 v2.
-  return 102 + project * 100 + ordinal;
+  // 1..101 existing; 102..401 matrix; 402..407 runtime-guard personas.
+  return ordinal < 100
+    ? 102 + project * 100 + ordinal
+    : 402 + project * 2 + ordinal - 100;
 }
 
 export async function signedInPersona(
@@ -245,6 +247,7 @@ export async function authorPersona(
     monthlyOrdinal: boolean;
     repeatCount: number | null;
   }>,
+  enableLiveSession = false,
 ): Promise<AuthoredPersona> {
   const colorIndex = Number(persona.id.slice(1)) - 1;
   const color = HEX_COLORS[colorIndex % HEX_COLORS.length]!;
@@ -280,6 +283,14 @@ export async function authorPersona(
       : { plannedSession: truth.sessions[0]! }),
   });
 
+  if (enableLiveSession) {
+    if (persona.kind !== 'activity') {
+      throw new Error('Live Sessions are Activity-only.');
+    }
+    await dialog.locator(
+      'label[data-session-capability="activity"] input[type="checkbox"',
+    ).check();
+  }
   if (truth.description) {
     await dialog.getByRole('textbox', { name: 'Descrizione avanzata' })
       .fill(truth.description);

@@ -79,5 +79,8 @@ describe('Temporal v2 mandatory multi-feature population', () => {
     ];
     expect(new Set(accounts).size).toBe(300);
     expect(Math.max(...accounts)).toBe(401);
+    const runtime = [402, 403, 404, 405, 406, 407];
+    expect(runtime.filter((ref) => accounts.includes(ref))).toEqual([]);
+    expect(new Set([...accounts, ...runtime]).size).toBe(306);
   });
 });
