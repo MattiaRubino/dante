@@ -1,5 +1,18 @@
 # Timeline / Temporal-Operational — Workstream Handoff
 
+## 2026-11-09 — Recorded Objective hard delete + protected recurring Edit (GitHub candidate, WSL gate pending)
+
+The owner approved an explicit read-only recorded Objective row, a confirmation-before-permanent-result-deletion action (Objective identity and definition retained), and mandatory omission of selected/future recurring instances with **active, paused or ended Session attempts**, registered Objective outcomes or local overrides. Selected protected => **Dalla prossima istanza**; selected clean => **Questa e le successive**, excluding protected future instances.
+
+Normative decision: `docs/domain/decisions/confirmed-objective-edit-and-recurring-protection-v1.md`. Implementation: `20261109_182` objective hard delete + definition guard; `20261109_183` selected-instance DB trigger; authenticated Objective deletion API; shared Activity/Event recorded row and confirmation dialog; direct preview/write guard; Database Dictionary objects and expected topology updated. No old recorded Objective editable row or duplicate result list remains in either Edit. Activity interval card plurality continues to be valid (multiple physical Schedule refs for one Activity).
+
+Added/updated tests: PostgreSQL Objective owner/CAS/corrected history/deletion and selected local exception SQL scope; pure structural scope protection; Event and Activity jsdom deletion flows; real-stack RT-01; P3 explicit physical-first local edit after conversion and cross-date canonical duplicate checks. These source changes are **NOT RUN** at their current SHA. Do not conflate design, committed candidate and a green local test.
+
+**Next exact gates:** Alembic fresh/current and Dictionary catalog, Ruff/check format and focused PostgreSQL tests, frontend formatter/ESLint/Vitest/TypeScript, `pnpm api:generate` for the newly added endpoint (generated client/OpenAPI artifacts must be committed, not hand-edited), then isolated authenticated browser smoke and full 27-group gate from one clean SHA. No local PostgreSQL/Playwright was available to the GitHub-only author. Keep failures/trace, do not skip or weaken assertions. Any further DANTE functional defect must be reviewed with owner before changing behavior.
+
+---
+
+
 ## 2026-11-09 — Real-stack browser sharding (performance-only infrastructure)
 
 Baseline green full gate on `8cd45cb627bf`: `WEB_BROWSER_REAL_STACK` completed in 774.8s with three 39-test browser projects (113 passed, four intentional skips). The original Playwright config is serial because destructive PostgreSQL stop/restart tests must not share a stack. Do **not** set `playwright.auth.config.ts` to workers=3 on the same webServer.
