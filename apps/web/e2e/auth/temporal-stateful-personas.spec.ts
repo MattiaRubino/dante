@@ -289,6 +289,11 @@ async function reassignAreaAndCancel(
   return updated;
 }
 
+async function inputValues(fields: Locator): Promise<string[]> {
+  const inputs = await fields.all();
+  return Promise.all(inputs.map((input) => input.inputValue()));
+}
+
 async function duplicateAndCompare(
   page: Page, day: string, authored: AuthoredPersona,
 ): Promise<CreatedItem> {
@@ -303,18 +308,24 @@ async function duplicateAndCompare(
     .toHaveValue(truth.title);
   await expect(composer.locator('[data-create-objective]'))
     .toHaveCount(truth.objectives.length);
-  const labels = await composer.locator('[data-create-objective]')
-    .getByRole('textbox', { name: /^Obiettivo \d+$/ }).allInputValues();
+  const labels = await inputValues(
+    composer.locator('[data-create-objective]')
+      .getByRole('textbox', { name: /^Obiettivo \d+$/ }),
+  );
   expect(labels).toEqual(truth.objectives.map((objective) => objective.label));
   if (item.kind === 'event') {
     await expect(composer.locator('[data-temporal-create-agenda-part]'))
       .toHaveCount(truth.agenda.length);
-    expect(await composer.locator('[data-temporal-create-agenda-input]')
-      .allInputValues()).toEqual(truth.agenda);
+    expect(
+      await inputValues(composer.locator('[data-temporal-create-agenda-input]')),
+    ).toEqual(truth.agenda);
   } else {
-    expect(await composer.locator('[data-create-planned-session]')
-      .getByRole('textbox', { name: 'Nome Sessione' }).allInputValues())
-      .toEqual(truth.sessions);
+    expect(
+      await inputValues(
+        composer.locator('[data-create-planned-session]')
+          .getByRole('textbox', { name: 'Nome Sessione' }),
+      ),
+    ).toEqual(truth.sessions);
   }
   const duplicateTitle = uniqueTitle('v2 copia ' + item.kind);
   await composer.getByRole('textbox', { name: 'Titolo' }).fill(duplicateTitle);
