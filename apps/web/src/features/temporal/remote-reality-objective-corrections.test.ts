@@ -50,7 +50,7 @@ describe('M2 Objective corrections', () => {
     }
   });
 
-  it('loads current version, revises the same Objective and corrects one Observation', async () => {
+  it('revises an unrecorded Objective, then records and corrects its accepted result', async () => {
     const posts: unknown[] = [];
     const fetchFn = vi.fn(
       (input: RequestInfo | URL, init?: RequestInit): Promise<Response> => {
@@ -80,7 +80,7 @@ describe('M2 Objective corrections', () => {
               target_max: null,
               unit_code: 'km',
               presentation_order: 0,
-              evaluation_state_ref: 'state1',
+              evaluation_state_ref: null,
             }),
           );
         }
@@ -91,10 +91,22 @@ describe('M2 Objective corrections', () => {
             response({
               objective_ref: ref,
               definition_revision: 3,
-              evaluation_state_ref: 'state2',
-              assessment_code: 'satisfied',
+              evaluation_state_ref: null,
+              assessment_code: null,
               replayed: false,
             }),
+          );
+        }
+        if (uri.endsWith('/result') && init?.method === 'POST') {
+          posts.push(JSON.parse(fetchRequestBody(init.body)) as unknown);
+          return Promise.resolve(
+            response({
+              objective_ref: ref,
+              observation_ref: 'observation1',
+              evaluation_state_ref: 'state1',
+              assessment_code: 'satisfied',
+              replayed: false,
+            }, 201),
           );
         }
         if (uri.endsWith('/correction') && init?.method === 'POST') {
@@ -128,9 +140,13 @@ describe('M2 Objective corrections', () => {
       unitCode: 'km',
       presentationOrder: 0,
     });
+    await source.recordResult(ref, {
+      operationId: 'result:initial',
+      observedNumeric: 8,
+    });
     await source.correctResult(ref, {
       operationId: 'result:correct',
-      expectedEvaluationStateRef: 'state2',
+      expectedEvaluationStateRef: 'state1',
       observedBoolean: null,
       observedNumeric: 5,
       qualitativeCode: null,
@@ -155,8 +171,15 @@ describe('M2 Objective corrections', () => {
         presentation_order: 0,
       },
       {
+        operation_id: 'result:initial',
+        observed_boolean: null,
+        observed_numeric: 8,
+        qualitative_code: null,
+        assessment_code: null,
+      },
+      {
         operation_id: 'result:correct',
-        expected_evaluation_state_ref: 'state2',
+        expected_evaluation_state_ref: 'state1',
         observed_boolean: null,
         observed_numeric: 5,
         qualitative_code: null,
