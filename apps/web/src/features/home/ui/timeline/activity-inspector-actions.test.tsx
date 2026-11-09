@@ -1163,6 +1163,57 @@ describe('Objective correction in Activity Editor', () => {
     expect(saveRecurringProfile).not.toHaveBeenCalled();
   });
 
+  it('locks a registered Activity Objective, confirms physical deletion and restores Edit', async () => {
+    loadSettings.mockResolvedValueOnce({
+      ...currentSettings,
+      objectives: [objective],
+    });
+    deleteRecordedResult.mockResolvedValueOnce(1);
+    refreshObjectives.mockResolvedValueOnce({
+      ...currentSettings,
+      objectives: [unrecordedObjective],
+    });
+    render(
+      <ActivityEditPanel
+        profile={profile}
+        closeRequestRef={createRef()}
+        onSaved={() => undefined}
+        onCancel={() => undefined}
+      />,
+    );
+    const recorded = await screen.findByRole('group', {
+      name: 'Obiettivo registrato Corsa 10 km',
+    });
+    expect(within(recorded).getByText('Risultato: 8 km')).toBeTruthy();
+    expect(screen.queryByRole('textbox', { name: 'Nome obiettivo' })).toBeNull();
+    fireEvent.click(within(recorded).getByRole('button', {
+      name: 'Elimina registrazione',
+    }));
+    const dialog = await screen.findByRole('alertdialog', {
+      name: 'Eliminare la registrazione?',
+    });
+    fireEvent.click(within(dialog).getByRole('button', { name: 'Annulla' }));
+    expect(deleteRecordedResult).not.toHaveBeenCalled();
+    fireEvent.click(within(recorded).getByRole('button', {
+      name: 'Elimina registrazione',
+    }));
+    fireEvent.click(within(screen.getByRole('alertdialog', {
+      name: 'Eliminare la registrazione?',
+    })).getByRole('button', { name: 'Sì, elimina' }));
+    await waitFor(() => {
+      expect(deleteRecordedResult).toHaveBeenCalledWith(
+        objective.objectiveRef,
+        objective.evaluationStateRef,
+      );
+      expect(screen.getByRole('textbox', { name: 'Nome obiettivo' }))
+        .toHaveProperty('value', 'Corsa 10 km');
+    });
+    expect(screen.queryByRole('group', {
+      name: 'Obiettivo registrato Corsa 10 km',
+    })).toBeNull();
+    expect(reviseDefinition).not.toHaveBeenCalled();
+  });
+
   it('corrects a measured result while keeping the same Objective identity', async () => {
     loadSettings.mockResolvedValueOnce({
       ...currentSettings,
