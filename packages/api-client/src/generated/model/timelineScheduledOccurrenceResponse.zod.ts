@@ -13,6 +13,7 @@ export const timelineScheduledOccurrenceResponseCoordinateOneFourFamilyCodeDefau
 export const timelineScheduledOccurrenceResponseCoordinateOneFourPositionIndexMin = 0;
 
 export const timelineScheduledOccurrenceResponseKindDefault = `scheduled_occurrence`;
+export const timelineScheduledOccurrenceResponseLifeAreaOverridePresentDefault = false;
 export const timelineScheduledOccurrenceResponsePlacementOneTemporalFormDefault = `date_span`;
 export const timelineScheduledOccurrenceResponsePlacementTwoEndsLocalAtRegExp =
   new RegExp('^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d{1,6})?$');
@@ -116,6 +117,16 @@ export const TimelineScheduledOccurrenceResponse = /*#__PURE__*/ zod.object({
       timelineScheduledOccurrenceResponseKindDefault,
     )
     .check(/*#__PURE__*/ zod.meta({ title: 'Kind' })),
+  life_area_override_present: /*#__PURE__*/ zod._default(
+    /*#__PURE__*/ zod.boolean(),
+    timelineScheduledOccurrenceResponseLifeAreaOverridePresentDefault,
+  ),
+  life_area_override_ref: /*#__PURE__*/ zod.optional(
+    /*#__PURE__*/ zod.union([
+      /*#__PURE__*/ zod.uuid(),
+      /*#__PURE__*/ zod.null(),
+    ]),
+  ),
   occurrence_ref: /*#__PURE__*/ zod.uuid(),
   placement: /*#__PURE__*/ zod.union([
     /*#__PURE__*/ zod.object({

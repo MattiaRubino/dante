@@ -13,6 +13,7 @@ export const timelineExpectedOccurrenceResponseCoordinateFourFamilyCodeDefault =
 export const timelineExpectedOccurrenceResponseCoordinateFourPositionIndexMin = 0;
 
 export const timelineExpectedOccurrenceResponseKindDefault = `expected_occurrence`;
+export const timelineExpectedOccurrenceResponseLifeAreaOverridePresentDefault = false;
 export const TimelineExpectedOccurrenceResponse = /*#__PURE__*/ zod.object({
   coordinate: /*#__PURE__*/ zod.union([
     /*#__PURE__*/ zod.object({
@@ -92,6 +93,16 @@ export const TimelineExpectedOccurrenceResponse = /*#__PURE__*/ zod.object({
       timelineExpectedOccurrenceResponseKindDefault,
     )
     .check(/*#__PURE__*/ zod.meta({ title: 'Kind' })),
+  life_area_override_present: /*#__PURE__*/ zod._default(
+    /*#__PURE__*/ zod.boolean(),
+    timelineExpectedOccurrenceResponseLifeAreaOverridePresentDefault,
+  ),
+  life_area_override_ref: /*#__PURE__*/ zod.optional(
+    /*#__PURE__*/ zod.union([
+      /*#__PURE__*/ zod.uuid(),
+      /*#__PURE__*/ zod.null(),
+    ]),
+  ),
   occurrence_ref: /*#__PURE__*/ zod.uuid(),
   source_kind: /*#__PURE__*/ zod.enum(['routine', 'event']),
   source_native_ref: /*#__PURE__*/ zod.uuid(),

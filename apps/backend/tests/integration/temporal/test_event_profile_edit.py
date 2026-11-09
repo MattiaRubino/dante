@@ -139,10 +139,7 @@ async def test_one_off_event_creates_life_area_atomically_and_rolls_back_stale_a
         assert failure.value.status == 409
         async with runtime.session_factory() as session, session.begin():
             rejected = await session.scalar(
-                text(
-                    "SELECT count(*) FROM dante.list_self_life_areas(:actor) "
-                    "WHERE name=:name"
-                ),
+                text("SELECT count(*) FROM dante.list_self_life_areas(:actor) WHERE name=:name"),
                 {"actor": owner, "name": "Life Area non confermata"},
             )
             canonical = await _read_event_in_session(

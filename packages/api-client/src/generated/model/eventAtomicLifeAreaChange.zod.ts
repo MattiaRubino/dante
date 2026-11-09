@@ -8,6 +8,10 @@ import * as zod from 'zod/mini';
 
 export const eventAtomicLifeAreaChangeExpectedAssignmentRevisionMin = 0;
 
+export const eventAtomicLifeAreaChangeNewLifeAreaOneColorCodeOneRegExp =
+  new RegExp('^#[0-9A-F]{6}$');
+export const eventAtomicLifeAreaChangeNewLifeAreaOneNameMax = 100;
+
 export const EventAtomicLifeAreaChange = /*#__PURE__*/ zod.object({
   expected_assignment_revision: /*#__PURE__*/ zod
     .int()
@@ -20,6 +24,33 @@ export const EventAtomicLifeAreaChange = /*#__PURE__*/ zod.object({
     /*#__PURE__*/ zod.uuid(),
     /*#__PURE__*/ zod.null(),
   ]),
+  new_life_area: /*#__PURE__*/ zod.optional(
+    /*#__PURE__*/ zod.union([
+      /*#__PURE__*/ zod.object({
+        color_code: /*#__PURE__*/ zod.optional(
+          /*#__PURE__*/ zod.union([
+            /*#__PURE__*/ zod
+              .string()
+              .check(
+                /*#__PURE__*/ zod.regex(
+                  eventAtomicLifeAreaChangeNewLifeAreaOneColorCodeOneRegExp,
+                ),
+              ),
+            /*#__PURE__*/ zod.null(),
+          ]),
+        ),
+        name: /*#__PURE__*/ zod
+          .string()
+          .check(/*#__PURE__*/ zod.minLength(1))
+          .check(
+            /*#__PURE__*/ zod.maxLength(
+              eventAtomicLifeAreaChangeNewLifeAreaOneNameMax,
+            ),
+          ),
+      }),
+      /*#__PURE__*/ zod.null(),
+    ]),
+  ),
 });
 
 export type EventAtomicLifeAreaChange = zod.input<

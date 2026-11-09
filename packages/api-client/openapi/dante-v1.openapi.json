@@ -7121,10 +7121,46 @@
               }
             ],
             "title": "Life Area Ref"
+          },
+          "new_life_area": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/EventAtomicNewLifeArea"
+              },
+              {
+                "type": "null"
+              }
+            ]
           }
         },
         "required": ["expected_assignment_revision", "life_area_ref"],
         "title": "EventAtomicLifeAreaChange",
+        "type": "object"
+      },
+      "EventAtomicNewLifeArea": {
+        "additionalProperties": false,
+        "properties": {
+          "color_code": {
+            "anyOf": [
+              {
+                "pattern": "^#[0-9A-F]{6}$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Color Code"
+          },
+          "name": {
+            "maxLength": 100,
+            "minLength": 1,
+            "title": "Name",
+            "type": "string"
+          }
+        },
+        "required": ["name"],
+        "title": "EventAtomicNewLifeArea",
         "type": "object"
       },
       "EventAtomicParticipantChange": {
@@ -7556,10 +7592,46 @@
               }
             ],
             "title": "Life Area Ref"
+          },
+          "new_life_area": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/EventOccurrenceNewLifeArea"
+              },
+              {
+                "type": "null"
+              }
+            ]
           }
         },
         "required": ["agenda_parts", "life_area_ref", "expected_participants"],
         "title": "EventOccurrenceLocalStructure",
+        "type": "object"
+      },
+      "EventOccurrenceNewLifeArea": {
+        "additionalProperties": false,
+        "properties": {
+          "color_code": {
+            "anyOf": [
+              {
+                "pattern": "^#[0-9A-F]{6}$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Color Code"
+          },
+          "name": {
+            "maxLength": 100,
+            "minLength": 1,
+            "title": "Name",
+            "type": "string"
+          }
+        },
+        "required": ["name"],
+        "title": "EventOccurrenceNewLifeArea",
         "type": "object"
       },
       "EventOccurrenceParticipant": {
@@ -18375,6 +18447,23 @@
             "title": "Kind",
             "type": "string"
           },
+          "life_area_override_present": {
+            "default": false,
+            "title": "Life Area Override Present",
+            "type": "boolean"
+          },
+          "life_area_override_ref": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Life Area Override Ref"
+          },
           "placement_material_state_ref": {
             "format": "uuid",
             "title": "Placement Material State Ref",
@@ -18597,6 +18686,23 @@
             "title": "Kind",
             "type": "string"
           },
+          "life_area_override_present": {
+            "default": false,
+            "title": "Life Area Override Present",
+            "type": "boolean"
+          },
+          "life_area_override_ref": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Life Area Override Ref"
+          },
           "local_date": {
             "format": "date",
             "title": "Local Date",
@@ -18769,6 +18875,23 @@
             "title": "Kind",
             "type": "string"
           },
+          "life_area_override_present": {
+            "default": false,
+            "title": "Life Area Override Present",
+            "type": "boolean"
+          },
+          "life_area_override_ref": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Life Area Override Ref"
+          },
           "placement_material_state_ref": {
             "format": "uuid",
             "title": "Placement Material State Ref",
@@ -18883,6 +19006,23 @@
             "default": "expected_occurrence",
             "title": "Kind",
             "type": "string"
+          },
+          "life_area_override_present": {
+            "default": false,
+            "title": "Life Area Override Present",
+            "type": "boolean"
+          },
+          "life_area_override_ref": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Life Area Override Ref"
           },
           "occurrence_ref": {
             "format": "uuid",
@@ -19067,6 +19207,23 @@
             "default": "scheduled_event",
             "title": "Kind",
             "type": "string"
+          },
+          "life_area_override_present": {
+            "default": false,
+            "title": "Life Area Override Present",
+            "type": "boolean"
+          },
+          "life_area_override_ref": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Life Area Override Ref"
           },
           "placement_material_state_ref": {
             "format": "uuid",
@@ -19315,6 +19472,23 @@
             "title": "Kind",
             "type": "string"
           },
+          "life_area_override_present": {
+            "default": false,
+            "title": "Life Area Override Present",
+            "type": "boolean"
+          },
+          "life_area_override_ref": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Life Area Override Ref"
+          },
           "placement_material_state_ref": {
             "format": "uuid",
             "title": "Placement Material State Ref",
@@ -19394,6 +19568,23 @@
             "default": "scheduled_occurrence",
             "title": "Kind",
             "type": "string"
+          },
+          "life_area_override_present": {
+            "default": false,
+            "title": "Life Area Override Present",
+            "type": "boolean"
+          },
+          "life_area_override_ref": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Life Area Override Ref"
           },
           "occurrence_ref": {
             "format": "uuid",

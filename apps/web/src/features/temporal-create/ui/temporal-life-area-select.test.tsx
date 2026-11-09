@@ -32,7 +32,9 @@ describe('Life Area selector in Event and Activity Edit', () => {
       />,
     );
 
-    fireEvent.focus(screen.getByRole('textbox', { name: 'Life Area (opzionale)' }));
+    fireEvent.focus(
+      screen.getByRole('textbox', { name: 'Life Area (opzionale)' }),
+    );
     expect(screen.getAllByRole('option')).toHaveLength(3);
     fireEvent.click(screen.getByRole('option', { name: 'Progetti' }));
     expect(choose).toHaveBeenCalledWith(areas[1]);
@@ -52,7 +54,9 @@ describe('Life Area selector in Event and Activity Edit', () => {
       />,
     );
 
-    fireEvent.focus(screen.getByRole('textbox', { name: 'Life Area (opzionale)' }));
+    fireEvent.focus(
+      screen.getByRole('textbox', { name: 'Life Area (opzionale)' }),
+    );
     expect(screen.getAllByRole('option')).toHaveLength(1);
     expect(screen.getByRole('option', { name: 'Progetti' })).toBeTruthy();
   });

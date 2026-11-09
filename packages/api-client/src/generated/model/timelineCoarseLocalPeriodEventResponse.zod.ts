@@ -7,6 +7,7 @@
 import * as zod from 'zod/mini';
 
 export const timelineCoarseLocalPeriodEventResponseKindDefault = `scheduled_event`;
+export const timelineCoarseLocalPeriodEventResponseLifeAreaOverridePresentDefault = false;
 export const timelineCoarseLocalPeriodEventResponseTemporalFormDefault = `coarse_local_period`;
 export const TimelineCoarseLocalPeriodEventResponse = /*#__PURE__*/ zod
   .object({
@@ -17,6 +18,16 @@ export const TimelineCoarseLocalPeriodEventResponse = /*#__PURE__*/ zod
         timelineCoarseLocalPeriodEventResponseKindDefault,
       )
       .check(/*#__PURE__*/ zod.meta({ title: 'Kind' })),
+    life_area_override_present: /*#__PURE__*/ zod._default(
+      /*#__PURE__*/ zod.boolean(),
+      timelineCoarseLocalPeriodEventResponseLifeAreaOverridePresentDefault,
+    ),
+    life_area_override_ref: /*#__PURE__*/ zod.optional(
+      /*#__PURE__*/ zod.union([
+        /*#__PURE__*/ zod.uuid(),
+        /*#__PURE__*/ zod.null(),
+      ]),
+    ),
     local_date: /*#__PURE__*/ zod.iso.date(),
     period: /*#__PURE__*/ zod.enum(['morning', 'afternoon', 'evening']),
     placement_material_state_ref: /*#__PURE__*/ zod.uuid(),

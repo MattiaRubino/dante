@@ -21,7 +21,6 @@ from dante.modules.temporal.api import (
     _placement_from_request,
 )
 from dante.modules.temporal.event import _read_event_in_session
-from dante.modules.temporal.life_area import create_life_area_in_session
 from dante.modules.temporal.event_api import (
     EventAtomicPlacementLockChange,
     EventAtomicReminderChange,
@@ -31,6 +30,7 @@ from dante.modules.temporal.event_api import (
 from dante.modules.temporal.event_api import (
     _placement_from_request as _event_placement_from_request,
 )
+from dante.modules.temporal.life_area import create_life_area_in_session
 from dante.modules.temporal.occurrence import (
     CalendarCoordinate,
     CyclicCoordinate,

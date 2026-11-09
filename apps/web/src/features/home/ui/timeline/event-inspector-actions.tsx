@@ -716,7 +716,8 @@ export function EventInspectorActions({
       const creatingLocalArea = areaName !== '' && !selectedArea;
       if (
         (selectedArea &&
-          selectedArea.name.toLocaleLowerCase() !== areaName.toLocaleLowerCase()) ||
+          selectedArea.name.toLocaleLowerCase() !==
+            areaName.toLocaleLowerCase()) ||
         (creatingLocalArea && (areaName.length > 100 || !areaChoice))
       ) {
         const message = 'Nome Life Area non valido.';
@@ -970,7 +971,12 @@ export function EventInspectorActions({
                       ref: areaSelection || null,
                       expectedRevision: areaChoice.currentRevision,
                       ...(creatingLocalArea
-                        ? { newArea: { name: areaName, colorCode: newAreaColor } }
+                        ? {
+                            newArea: {
+                              name: areaName,
+                              colorCode: newAreaColor,
+                            },
+                          }
                         : {}),
                     },
                   }
@@ -1561,7 +1567,8 @@ export function EventInspectorActions({
                       />
                       {areaQuery.trim() && !areaSelection ? (
                         <small role="status">
-                          La nuova Life Area sarà creata insieme al salvataggio dell’Evento.
+                          La nuova Life Area sarà creata insieme al salvataggio
+                          dell’Evento.
                         </small>
                       ) : null}
                       {areaError ? (

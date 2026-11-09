@@ -16,6 +16,10 @@ export const temporalApplyOneOffEventAtomicEditBodyAgendaOneOperationIdMax = 200
 
 export const temporalApplyOneOffEventAtomicEditBodyLifeAreaOneExpectedAssignmentRevisionMin = 0;
 
+export const temporalApplyOneOffEventAtomicEditBodyLifeAreaOneNewLifeAreaOneColorCodeOneRegExp =
+  new RegExp('^#[0-9A-F]{6}$');
+export const temporalApplyOneOffEventAtomicEditBodyLifeAreaOneNewLifeAreaOneNameMax = 100;
+
 export const temporalApplyOneOffEventAtomicEditBodyObjectivesOneAddItemLabelMax = 300;
 
 export const temporalApplyOneOffEventAtomicEditBodyObjectivesOneAddItemOperationIdMax = 200;
@@ -147,6 +151,33 @@ export const TemporalApplyOneOffEventAtomicEditBody = /*#__PURE__*/ zod
             /*#__PURE__*/ zod.uuid(),
             /*#__PURE__*/ zod.null(),
           ]),
+          new_life_area: /*#__PURE__*/ zod.optional(
+            /*#__PURE__*/ zod.union([
+              /*#__PURE__*/ zod.object({
+                color_code: /*#__PURE__*/ zod.optional(
+                  /*#__PURE__*/ zod.union([
+                    /*#__PURE__*/ zod
+                      .string()
+                      .check(
+                        /*#__PURE__*/ zod.regex(
+                          temporalApplyOneOffEventAtomicEditBodyLifeAreaOneNewLifeAreaOneColorCodeOneRegExp,
+                        ),
+                      ),
+                    /*#__PURE__*/ zod.null(),
+                  ]),
+                ),
+                name: /*#__PURE__*/ zod
+                  .string()
+                  .check(/*#__PURE__*/ zod.minLength(1))
+                  .check(
+                    /*#__PURE__*/ zod.maxLength(
+                      temporalApplyOneOffEventAtomicEditBodyLifeAreaOneNewLifeAreaOneNameMax,
+                    ),
+                  ),
+              }),
+              /*#__PURE__*/ zod.null(),
+            ]),
+          ),
         }),
         /*#__PURE__*/ zod.null(),
       ]),

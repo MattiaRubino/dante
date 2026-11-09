@@ -652,11 +652,15 @@ function parseScheduledItem(payload: unknown): TemporalTimelineScheduledItem {
   }
 }
 
-function parseLifeAreaOverride(
-  payload: Record<string, unknown>,
-): Readonly<{ lifeAreaOverridePresent: boolean; lifeAreaOverrideRef: string | null }> {
+function parseLifeAreaOverride(payload: Record<string, unknown>): Readonly<{
+  lifeAreaOverridePresent: boolean;
+  lifeAreaOverrideRef: string | null;
+}> {
   if (!('life_area_override_present' in payload)) {
-    return Object.freeze({ lifeAreaOverridePresent: false, lifeAreaOverrideRef: null });
+    return Object.freeze({
+      lifeAreaOverridePresent: false,
+      lifeAreaOverrideRef: null,
+    });
   }
   const present = payload.life_area_override_present;
   const area = payload.life_area_override_ref;

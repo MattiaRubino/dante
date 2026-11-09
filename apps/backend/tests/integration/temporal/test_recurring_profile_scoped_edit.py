@@ -326,8 +326,7 @@ async def test_event_local_life_area_is_consistent_in_canonical_timeline(
                     {
                         "operation_id": operation,
                         "expected_revision": expected_revision,
-                        "expected_recurrence_state_ref":
-                            current_state.recurrence_state_ref,
+                        "expected_recurrence_state_ref": current_state.recurrence_state_ref,
                         "structure": {
                             "agenda_parts": [],
                             "life_area_ref": area_ref,
@@ -385,8 +384,7 @@ async def test_event_local_life_area_is_consistent_in_canonical_timeline(
         projected = [
             item
             for item in window.items
-            if isinstance(item, TimelineExpectedOccurrenceItem)
-            and item.occurrence_ref == selected
+            if isinstance(item, TimelineExpectedOccurrenceItem) and item.occurrence_ref == selected
         ]
         assert len(projected) == 1
         assert projected[0].life_area_override_present is True

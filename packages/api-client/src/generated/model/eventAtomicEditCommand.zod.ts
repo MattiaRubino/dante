@@ -16,6 +16,10 @@ export const eventAtomicEditCommandAgendaOneOperationIdMax = 200;
 
 export const eventAtomicEditCommandLifeAreaOneExpectedAssignmentRevisionMin = 0;
 
+export const eventAtomicEditCommandLifeAreaOneNewLifeAreaOneColorCodeOneRegExp =
+  new RegExp('^#[0-9A-F]{6}$');
+export const eventAtomicEditCommandLifeAreaOneNewLifeAreaOneNameMax = 100;
+
 export const eventAtomicEditCommandObjectivesOneAddItemLabelMax = 300;
 
 export const eventAtomicEditCommandObjectivesOneAddItemOperationIdMax = 200;
@@ -147,6 +151,33 @@ export const EventAtomicEditCommand = /*#__PURE__*/ zod
             /*#__PURE__*/ zod.uuid(),
             /*#__PURE__*/ zod.null(),
           ]),
+          new_life_area: /*#__PURE__*/ zod.optional(
+            /*#__PURE__*/ zod.union([
+              /*#__PURE__*/ zod.object({
+                color_code: /*#__PURE__*/ zod.optional(
+                  /*#__PURE__*/ zod.union([
+                    /*#__PURE__*/ zod
+                      .string()
+                      .check(
+                        /*#__PURE__*/ zod.regex(
+                          eventAtomicEditCommandLifeAreaOneNewLifeAreaOneColorCodeOneRegExp,
+                        ),
+                      ),
+                    /*#__PURE__*/ zod.null(),
+                  ]),
+                ),
+                name: /*#__PURE__*/ zod
+                  .string()
+                  .check(/*#__PURE__*/ zod.minLength(1))
+                  .check(
+                    /*#__PURE__*/ zod.maxLength(
+                      eventAtomicEditCommandLifeAreaOneNewLifeAreaOneNameMax,
+                    ),
+                  ),
+              }),
+              /*#__PURE__*/ zod.null(),
+            ]),
+          ),
         }),
         /*#__PURE__*/ zod.null(),
       ]),

@@ -183,7 +183,9 @@ describe('owner-scoped Event profile CAS source', () => {
     const fetchFn = vi.fn<typeof globalThis.fetch>((input, init) => {
       const url = fetchRequestUrl(input);
       if (url === '/api/v1/auth/session')
-        return Promise.resolve(json({ authenticated: true, csrf_token: 'csrf' }));
+        return Promise.resolve(
+          json({ authenticated: true, csrf_token: 'csrf' }),
+        );
       if (url === '/api/v1/temporal/events/' + EVENT) {
         return Promise.resolve(
           json({
@@ -196,11 +198,13 @@ describe('owner-scoped Event profile CAS source', () => {
       if (url === '/api/v1/temporal/events/' + EVENT + '/atomic-edit') {
         requests.push(JSON.parse(fetchRequestBody(init?.body)) as unknown);
         saved = true;
-        return Promise.resolve(json({
-          event: { ...original, life_area_ref: createdAreaRef },
-          objectives: [],
-          placement_material_state_ref: null,
-        }));
+        return Promise.resolve(
+          json({
+            event: { ...original, life_area_ref: createdAreaRef },
+            objectives: [],
+            placement_material_state_ref: null,
+          }),
+        );
       }
       throw new Error('Unexpected Event URL ' + url);
     });

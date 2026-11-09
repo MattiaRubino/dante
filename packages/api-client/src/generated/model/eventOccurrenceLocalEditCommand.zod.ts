@@ -77,6 +77,10 @@ export const eventOccurrenceLocalEditCommandStructureAgendaPartsMax = 100;
 
 export const eventOccurrenceLocalEditCommandStructureExpectedParticipantsMax = 100;
 
+export const eventOccurrenceLocalEditCommandStructureNewLifeAreaOneColorCodeOneRegExp =
+  new RegExp('^#[0-9A-F]{6}$');
+export const eventOccurrenceLocalEditCommandStructureNewLifeAreaOneNameMax = 100;
+
 export const EventOccurrenceLocalEditCommand = /*#__PURE__*/ zod.object({
   expected_recurrence_state_ref: /*#__PURE__*/ zod.union([
     /*#__PURE__*/ zod.uuid(),
@@ -583,6 +587,33 @@ export const EventOccurrenceLocalEditCommand = /*#__PURE__*/ zod.object({
       /*#__PURE__*/ zod.uuid(),
       /*#__PURE__*/ zod.null(),
     ]),
+    new_life_area: /*#__PURE__*/ zod.optional(
+      /*#__PURE__*/ zod.union([
+        /*#__PURE__*/ zod.object({
+          color_code: /*#__PURE__*/ zod.optional(
+            /*#__PURE__*/ zod.union([
+              /*#__PURE__*/ zod
+                .string()
+                .check(
+                  /*#__PURE__*/ zod.regex(
+                    eventOccurrenceLocalEditCommandStructureNewLifeAreaOneColorCodeOneRegExp,
+                  ),
+                ),
+              /*#__PURE__*/ zod.null(),
+            ]),
+          ),
+          name: /*#__PURE__*/ zod
+            .string()
+            .check(/*#__PURE__*/ zod.minLength(1))
+            .check(
+              /*#__PURE__*/ zod.maxLength(
+                eventOccurrenceLocalEditCommandStructureNewLifeAreaOneNameMax,
+              ),
+            ),
+        }),
+        /*#__PURE__*/ zod.null(),
+      ]),
+    ),
   }),
 });
 

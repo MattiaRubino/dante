@@ -12,6 +12,7 @@ export const timelineAbsoluteEventResponseDisplayEndsLocalAtRegExp = new RegExp(
 export const timelineAbsoluteEventResponseDisplayStartsLocalAtRegExp =
   new RegExp('^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d{1,6})?$');
 export const timelineAbsoluteEventResponseKindDefault = `scheduled_event`;
+export const timelineAbsoluteEventResponseLifeAreaOverridePresentDefault = false;
 export const timelineAbsoluteEventResponseTemporalFormDefault = `absolute`;
 export const TimelineAbsoluteEventResponse = /*#__PURE__*/ zod
   .object({
@@ -37,6 +38,16 @@ export const TimelineAbsoluteEventResponse = /*#__PURE__*/ zod
         timelineAbsoluteEventResponseKindDefault,
       )
       .check(/*#__PURE__*/ zod.meta({ title: 'Kind' })),
+    life_area_override_present: /*#__PURE__*/ zod._default(
+      /*#__PURE__*/ zod.boolean(),
+      timelineAbsoluteEventResponseLifeAreaOverridePresentDefault,
+    ),
+    life_area_override_ref: /*#__PURE__*/ zod.optional(
+      /*#__PURE__*/ zod.union([
+        /*#__PURE__*/ zod.uuid(),
+        /*#__PURE__*/ zod.null(),
+      ]),
+    ),
     placement_material_state_ref: /*#__PURE__*/ zod.uuid(),
     schedule_ref: /*#__PURE__*/ zod.uuid(),
     starts_at: /*#__PURE__*/ zod.iso.datetime({ offset: true }),

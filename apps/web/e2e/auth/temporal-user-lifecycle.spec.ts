@@ -892,22 +892,31 @@ test.describe('Timeline — real user Activity/Event lifecycle matrix', () => {
       await inspector.getByRole('button', { name: 'Salva modifiche' }).click();
       expect((await localEditWrite).status()).toBe(200);
 
-      const areaResponse = await page.request.get('/api/v1/temporal/life-areas');
+      const areaResponse = await page.request.get(
+        '/api/v1/temporal/life-areas',
+      );
       expect(areaResponse.status()).toBe(200);
-      const areaList = (await areaResponse.json()) as readonly Record<string, unknown>[];
-      const persistedArea = areaList.find((area) => area.name === localAreaName);
+      const areaList = (await areaResponse.json()) as readonly Record<
+        string,
+        unknown
+      >[];
+      const persistedArea = areaList.find(
+        (area) => area.name === localAreaName,
+      );
       expect(persistedArea?.color_code).toBe('#FFD600');
 
       await openHome(page, day);
       const localCard = onDay(page, day, localTitle);
       await expect(localCard).toHaveCount(1);
-      await expect(localCard.locator('.timeline-event-card__meta')).toContainText(
-        localAreaName,
-      );
+      await expect(
+        localCard.locator('.timeline-event-card__meta'),
+      ).toContainText(localAreaName);
       await expect
         .poll(() =>
           localCard.evaluate((node) =>
-            (node as HTMLElement).style.getPropertyValue('--timeline-group-color'),
+            (node as HTMLElement).style.getPropertyValue(
+              '--timeline-group-color',
+            ),
           ),
         )
         .toBe('#FFD600');

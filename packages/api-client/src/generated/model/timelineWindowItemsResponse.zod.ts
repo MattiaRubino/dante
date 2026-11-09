@@ -40,10 +40,12 @@ export const timelineWindowItemsResponseItemsItemOneFiveTemporalFormDefault = `c
 export const timelineWindowItemsResponseItemsItemTwoOneEndsLocalAtRegExp =
   new RegExp('^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d{1,6})?$');
 export const timelineWindowItemsResponseItemsItemTwoOneKindDefault = `scheduled_event`;
+export const timelineWindowItemsResponseItemsItemTwoOneLifeAreaOverridePresentDefault = false;
 export const timelineWindowItemsResponseItemsItemTwoOneStartsLocalAtRegExp =
   new RegExp('^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d{1,6})?$');
 export const timelineWindowItemsResponseItemsItemTwoOneTemporalFormDefault = `floating_local`;
 export const timelineWindowItemsResponseItemsItemTwoTwoKindDefault = `scheduled_event`;
+export const timelineWindowItemsResponseItemsItemTwoTwoLifeAreaOverridePresentDefault = false;
 export const timelineWindowItemsResponseItemsItemTwoTwoTemporalFormDefault = `date_span`;
 export const timelineWindowItemsResponseItemsItemTwoThreeDisplayEndsLocalAtRegExp =
   new RegExp('^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d{1,6})?$');
@@ -52,6 +54,7 @@ export const timelineWindowItemsResponseItemsItemTwoThreeDisplayStartsLocalAtReg
 export const timelineWindowItemsResponseItemsItemTwoThreeEndsLocalAtRegExp =
   new RegExp('^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d{1,6})?$');
 export const timelineWindowItemsResponseItemsItemTwoThreeKindDefault = `scheduled_event`;
+export const timelineWindowItemsResponseItemsItemTwoThreeLifeAreaOverridePresentDefault = false;
 export const timelineWindowItemsResponseItemsItemTwoThreeStartsLocalAtRegExp =
   new RegExp('^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d{1,6})?$');
 export const timelineWindowItemsResponseItemsItemTwoThreeTemporalFormDefault = `named_zone_local`;
@@ -60,8 +63,10 @@ export const timelineWindowItemsResponseItemsItemTwoFourDisplayEndsLocalAtRegExp
 export const timelineWindowItemsResponseItemsItemTwoFourDisplayStartsLocalAtRegExp =
   new RegExp('^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d{1,6})?$');
 export const timelineWindowItemsResponseItemsItemTwoFourKindDefault = `scheduled_event`;
+export const timelineWindowItemsResponseItemsItemTwoFourLifeAreaOverridePresentDefault = false;
 export const timelineWindowItemsResponseItemsItemTwoFourTemporalFormDefault = `absolute`;
 export const timelineWindowItemsResponseItemsItemTwoFiveKindDefault = `scheduled_event`;
+export const timelineWindowItemsResponseItemsItemTwoFiveLifeAreaOverridePresentDefault = false;
 export const timelineWindowItemsResponseItemsItemTwoFiveTemporalFormDefault = `coarse_local_period`;
 export const timelineWindowItemsResponseItemsItemThreeCoordinateOneOneFamilyCodeDefault = `calendar_wall_clock`;
 export const timelineWindowItemsResponseItemsItemThreeCoordinateOneTwoFamilyCodeDefault = `elapsed_interval`;
@@ -70,6 +75,7 @@ export const timelineWindowItemsResponseItemsItemThreeCoordinateOneFourFamilyCod
 export const timelineWindowItemsResponseItemsItemThreeCoordinateOneFourPositionIndexMin = 0;
 
 export const timelineWindowItemsResponseItemsItemThreeKindDefault = `scheduled_occurrence`;
+export const timelineWindowItemsResponseItemsItemThreeLifeAreaOverridePresentDefault = false;
 export const timelineWindowItemsResponseItemsItemThreePlacementOneTemporalFormDefault = `date_span`;
 export const timelineWindowItemsResponseItemsItemThreePlacementTwoEndsLocalAtRegExp =
   new RegExp('^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d{1,6})?$');
@@ -98,6 +104,7 @@ export const timelineWindowItemsResponseItemsItemFourCoordinateFourFamilyCodeDef
 export const timelineWindowItemsResponseItemsItemFourCoordinateFourPositionIndexMin = 0;
 
 export const timelineWindowItemsResponseItemsItemFourKindDefault = `expected_occurrence`;
+export const timelineWindowItemsResponseItemsItemFourLifeAreaOverridePresentDefault = false;
 export const timelineWindowItemsResponseKindDefault = `window`;
 export const TimelineWindowItemsResponse = /*#__PURE__*/ zod
   .object({
@@ -335,6 +342,16 @@ export const TimelineWindowItemsResponse = /*#__PURE__*/ zod
                   timelineWindowItemsResponseItemsItemTwoOneKindDefault,
                 )
                 .check(/*#__PURE__*/ zod.meta({ title: 'Kind' })),
+              life_area_override_present: /*#__PURE__*/ zod._default(
+                /*#__PURE__*/ zod.boolean(),
+                timelineWindowItemsResponseItemsItemTwoOneLifeAreaOverridePresentDefault,
+              ),
+              life_area_override_ref: /*#__PURE__*/ zod.optional(
+                /*#__PURE__*/ zod.union([
+                  /*#__PURE__*/ zod.uuid(),
+                  /*#__PURE__*/ zod.null(),
+                ]),
+              ),
               placement_material_state_ref: /*#__PURE__*/ zod.uuid(),
               schedule_ref: /*#__PURE__*/ zod.uuid(),
               starts_local_at: /*#__PURE__*/ zod
@@ -367,6 +384,16 @@ export const TimelineWindowItemsResponse = /*#__PURE__*/ zod
                   timelineWindowItemsResponseItemsItemTwoTwoKindDefault,
                 )
                 .check(/*#__PURE__*/ zod.meta({ title: 'Kind' })),
+              life_area_override_present: /*#__PURE__*/ zod._default(
+                /*#__PURE__*/ zod.boolean(),
+                timelineWindowItemsResponseItemsItemTwoTwoLifeAreaOverridePresentDefault,
+              ),
+              life_area_override_ref: /*#__PURE__*/ zod.optional(
+                /*#__PURE__*/ zod.union([
+                  /*#__PURE__*/ zod.uuid(),
+                  /*#__PURE__*/ zod.null(),
+                ]),
+              ),
               placement_material_state_ref: /*#__PURE__*/ zod.uuid(),
               schedule_ref: /*#__PURE__*/ zod.uuid(),
               start_date: /*#__PURE__*/ zod.iso.date(),
@@ -413,6 +440,16 @@ export const TimelineWindowItemsResponse = /*#__PURE__*/ zod
                   timelineWindowItemsResponseItemsItemTwoThreeKindDefault,
                 )
                 .check(/*#__PURE__*/ zod.meta({ title: 'Kind' })),
+              life_area_override_present: /*#__PURE__*/ zod._default(
+                /*#__PURE__*/ zod.boolean(),
+                timelineWindowItemsResponseItemsItemTwoThreeLifeAreaOverridePresentDefault,
+              ),
+              life_area_override_ref: /*#__PURE__*/ zod.optional(
+                /*#__PURE__*/ zod.union([
+                  /*#__PURE__*/ zod.uuid(),
+                  /*#__PURE__*/ zod.null(),
+                ]),
+              ),
               placement_material_state_ref: /*#__PURE__*/ zod.uuid(),
               resolved_end_at: /*#__PURE__*/ zod.iso.datetime({ offset: true }),
               resolved_start_at: /*#__PURE__*/ zod.iso.datetime({
@@ -464,6 +501,16 @@ export const TimelineWindowItemsResponse = /*#__PURE__*/ zod
                   timelineWindowItemsResponseItemsItemTwoFourKindDefault,
                 )
                 .check(/*#__PURE__*/ zod.meta({ title: 'Kind' })),
+              life_area_override_present: /*#__PURE__*/ zod._default(
+                /*#__PURE__*/ zod.boolean(),
+                timelineWindowItemsResponseItemsItemTwoFourLifeAreaOverridePresentDefault,
+              ),
+              life_area_override_ref: /*#__PURE__*/ zod.optional(
+                /*#__PURE__*/ zod.union([
+                  /*#__PURE__*/ zod.uuid(),
+                  /*#__PURE__*/ zod.null(),
+                ]),
+              ),
               placement_material_state_ref: /*#__PURE__*/ zod.uuid(),
               schedule_ref: /*#__PURE__*/ zod.uuid(),
               starts_at: /*#__PURE__*/ zod.iso.datetime({ offset: true }),
@@ -489,6 +536,16 @@ export const TimelineWindowItemsResponse = /*#__PURE__*/ zod
                   timelineWindowItemsResponseItemsItemTwoFiveKindDefault,
                 )
                 .check(/*#__PURE__*/ zod.meta({ title: 'Kind' })),
+              life_area_override_present: /*#__PURE__*/ zod._default(
+                /*#__PURE__*/ zod.boolean(),
+                timelineWindowItemsResponseItemsItemTwoFiveLifeAreaOverridePresentDefault,
+              ),
+              life_area_override_ref: /*#__PURE__*/ zod.optional(
+                /*#__PURE__*/ zod.union([
+                  /*#__PURE__*/ zod.uuid(),
+                  /*#__PURE__*/ zod.null(),
+                ]),
+              ),
               local_date: /*#__PURE__*/ zod.iso.date(),
               period: /*#__PURE__*/ zod.enum([
                 'morning',
@@ -593,6 +650,16 @@ export const TimelineWindowItemsResponse = /*#__PURE__*/ zod
               timelineWindowItemsResponseItemsItemThreeKindDefault,
             )
             .check(/*#__PURE__*/ zod.meta({ title: 'Kind' })),
+          life_area_override_present: /*#__PURE__*/ zod._default(
+            /*#__PURE__*/ zod.boolean(),
+            timelineWindowItemsResponseItemsItemThreeLifeAreaOverridePresentDefault,
+          ),
+          life_area_override_ref: /*#__PURE__*/ zod.optional(
+            /*#__PURE__*/ zod.union([
+              /*#__PURE__*/ zod.uuid(),
+              /*#__PURE__*/ zod.null(),
+            ]),
+          ),
           occurrence_ref: /*#__PURE__*/ zod.uuid(),
           placement: /*#__PURE__*/ zod.union([
             /*#__PURE__*/ zod.object({
@@ -792,6 +859,16 @@ export const TimelineWindowItemsResponse = /*#__PURE__*/ zod
               timelineWindowItemsResponseItemsItemFourKindDefault,
             )
             .check(/*#__PURE__*/ zod.meta({ title: 'Kind' })),
+          life_area_override_present: /*#__PURE__*/ zod._default(
+            /*#__PURE__*/ zod.boolean(),
+            timelineWindowItemsResponseItemsItemFourLifeAreaOverridePresentDefault,
+          ),
+          life_area_override_ref: /*#__PURE__*/ zod.optional(
+            /*#__PURE__*/ zod.union([
+              /*#__PURE__*/ zod.uuid(),
+              /*#__PURE__*/ zod.null(),
+            ]),
+          ),
           occurrence_ref: /*#__PURE__*/ zod.uuid(),
           source_kind: /*#__PURE__*/ zod.enum(['routine', 'event']),
           source_native_ref: /*#__PURE__*/ zod.uuid(),

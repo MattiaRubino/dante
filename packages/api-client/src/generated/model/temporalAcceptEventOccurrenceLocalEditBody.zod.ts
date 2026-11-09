@@ -77,6 +77,10 @@ export const temporalAcceptEventOccurrenceLocalEditBodyStructureAgendaPartsMax =
 
 export const temporalAcceptEventOccurrenceLocalEditBodyStructureExpectedParticipantsMax = 100;
 
+export const temporalAcceptEventOccurrenceLocalEditBodyStructureNewLifeAreaOneColorCodeOneRegExp =
+  new RegExp('^#[0-9A-F]{6}$');
+export const temporalAcceptEventOccurrenceLocalEditBodyStructureNewLifeAreaOneNameMax = 100;
+
 export const TemporalAcceptEventOccurrenceLocalEditBody =
   /*#__PURE__*/ zod.object({
     expected_recurrence_state_ref: /*#__PURE__*/ zod.union([
@@ -601,6 +605,33 @@ export const TemporalAcceptEventOccurrenceLocalEditBody =
         /*#__PURE__*/ zod.uuid(),
         /*#__PURE__*/ zod.null(),
       ]),
+      new_life_area: /*#__PURE__*/ zod.optional(
+        /*#__PURE__*/ zod.union([
+          /*#__PURE__*/ zod.object({
+            color_code: /*#__PURE__*/ zod.optional(
+              /*#__PURE__*/ zod.union([
+                /*#__PURE__*/ zod
+                  .string()
+                  .check(
+                    /*#__PURE__*/ zod.regex(
+                      temporalAcceptEventOccurrenceLocalEditBodyStructureNewLifeAreaOneColorCodeOneRegExp,
+                    ),
+                  ),
+                /*#__PURE__*/ zod.null(),
+              ]),
+            ),
+            name: /*#__PURE__*/ zod
+              .string()
+              .check(/*#__PURE__*/ zod.minLength(1))
+              .check(
+                /*#__PURE__*/ zod.maxLength(
+                  temporalAcceptEventOccurrenceLocalEditBodyStructureNewLifeAreaOneNameMax,
+                ),
+              ),
+          }),
+          /*#__PURE__*/ zod.null(),
+        ]),
+      ),
     }),
   });
 

@@ -439,15 +439,19 @@ describe('remote temporal Timeline data source', () => {
     );
     const window = await source.loadWindow(WINDOW_REQUEST);
     if (window.kind !== 'window') throw new Error('Expected populated window');
-    expect(window.items.map((item) => ({
-      kind: item.kind,
-      present: item.kind === 'scheduled_activity'
-        ? undefined
-        : item.lifeAreaOverridePresent,
-      ref: item.kind === 'scheduled_activity'
-        ? undefined
-        : item.lifeAreaOverrideRef,
-    }))).toEqual([
+    expect(
+      window.items.map((item) => ({
+        kind: item.kind,
+        present:
+          item.kind === 'scheduled_activity'
+            ? undefined
+            : item.lifeAreaOverridePresent,
+        ref:
+          item.kind === 'scheduled_activity'
+            ? undefined
+            : item.lifeAreaOverrideRef,
+      })),
+    ).toEqual([
       { kind: 'scheduled_event', present: true, ref: area },
       { kind: 'scheduled_occurrence', present: true, ref: null },
       { kind: 'expected_occurrence', present: false, ref: null },
@@ -474,8 +478,7 @@ describe('remote temporal Timeline data source', () => {
                 start_date: '2026-09-07',
                 end_date_exclusive: '2026-09-08',
                 life_area_override_present: false,
-                life_area_override_ref:
-                  '01991f2a-4567-7def-8abc-4567890abcde',
+                life_area_override_ref: '01991f2a-4567-7def-8abc-4567890abcde',
               },
             ]),
           ),

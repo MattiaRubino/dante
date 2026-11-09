@@ -10,6 +10,7 @@ export const timelineScheduledEventResponseEndsLocalAtRegExp = new RegExp(
   '^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d{1,6})?$',
 );
 export const timelineScheduledEventResponseKindDefault = `scheduled_event`;
+export const timelineScheduledEventResponseLifeAreaOverridePresentDefault = false;
 export const timelineScheduledEventResponseStartsLocalAtRegExp = new RegExp(
   '^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d{1,6})?$',
 );
@@ -30,6 +31,16 @@ export const TimelineScheduledEventResponse = /*#__PURE__*/ zod
         timelineScheduledEventResponseKindDefault,
       )
       .check(/*#__PURE__*/ zod.meta({ title: 'Kind' })),
+    life_area_override_present: /*#__PURE__*/ zod._default(
+      /*#__PURE__*/ zod.boolean(),
+      timelineScheduledEventResponseLifeAreaOverridePresentDefault,
+    ),
+    life_area_override_ref: /*#__PURE__*/ zod.optional(
+      /*#__PURE__*/ zod.union([
+        /*#__PURE__*/ zod.uuid(),
+        /*#__PURE__*/ zod.null(),
+      ]),
+    ),
     placement_material_state_ref: /*#__PURE__*/ zod.uuid(),
     schedule_ref: /*#__PURE__*/ zod.uuid(),
     starts_local_at: /*#__PURE__*/ zod
