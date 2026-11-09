@@ -3412,7 +3412,7 @@
       "purpose": "Activity Edit committed-Objective regression and independent draft isolation",
       "invariant": "Prove no-op Activity Save sends no atomic edit, registered boolean/quantity/qualitative/range rows are not editable, and deleting one recorded result preserves an incomplete new Objective draft while retaining cancel semantics.",
       "status": "UNREVIEWED",
-      "audit_note": "Behavior and assertions reviewed against 2026-11-09 recorded-Objective contract; new fixes await focused Vitest/real-stack proof. Retains UNREVIEWED until execution and whole-file semantic qualification."
+      "audit_note": "2026-11-09 source audit: compact + Obiettivo button, registrered rows immutable, true unrecorded undo case, independent deleted-result and incomplete draft coverage; fresh runtime result pending."
     },
     {
       "path": "apps/web/src/features/home/ui/timeline/event-inspector-actions.test.tsx",
@@ -3422,7 +3422,7 @@
       "purpose": "Event Edit recorded Objective regression and independent draft isolation",
       "invariant": "Prove unchanged Event Edit has no mutation, registered Objective deletion requires confirmation, and newly drafted Objective edits are not discarded during canonical result refresh.",
       "status": "UNREVIEWED",
-      "audit_note": "Behavior and assertions reviewed against 2026-11-09 recorded-Objective contract; new fixes await focused Vitest/real-stack proof. Retains UNREVIEWED until execution and whole-file semantic qualification."
+      "audit_note": "2026-11-09 source audit: compact + Obiettivo button, registrered rows immutable, true unrecorded undo case, independent deleted-result and incomplete draft coverage; fresh runtime result pending."
     },
     {
       "path": "apps/web/src/features/home/ui/timeline/event-schedule-editor.test.ts",
@@ -3990,7 +3990,7 @@
       "purpose": "",
       "invariant": "",
       "status": "UNREVIEWED",
-      "audit_note": "Needs contract/assertion review, rejection cases, and executable evidence; filename alone is not proof."
+      "audit_note": "2026-11-09: updated Advanced Create add-Objective accessible name + Obiettivo without removing nested structure assertions. Fresh Vitest pending."
     },
     {
       "path": "apps/web/src/features/temporal-create/ui/temporal-create-composer.test.tsx",
@@ -4000,7 +4000,7 @@
       "purpose": "",
       "invariant": "",
       "status": "UNREVIEWED",
-      "audit_note": "Needs contract/assertion review, rejection cases, and executable evidence; filename alone is not proof."
+      "audit_note": "2026-11-09: updated accessible Create action to owner-approved compact + Obiettivo; existing creation semantics remain unchanged. Fresh Vitest pending."
     },
     {
       "path": "apps/web/src/features/temporal-create/ui/temporal-create-context-catalog.test.tsx",
@@ -5577,10 +5577,10 @@
       "suite": "web-browser-real-stack",
       "contract_id": "T05",
       "candidate_behavior": "stateful Activity/Event ordinary, recurring and one-off-conversion journeys",
-      "purpose": "Exercise 100 source-driven P1/P2/P3 authenticated user paths with stepwise Create/Edit/duplicate/delete/reload and independently asserted API, Schedule and card identity.",
-      "invariant": "Edits never generate extra canonical Occurrence/Schedule identities; converted first source identity survives, multi-interval Activity cards share one Activity but have unique Schedules, and protected instances retain independent truth.",
+      "purpose": "100 authenticated user journeys per browser: P1 rich one-offs, P2 native series with explicit edits of physical first, middle and bounded last, and P3 converted sources with preserved first identity, nested objectives/sessions/agenda/areas and canonical no-duplicate Schedule readback.",
+      "invariant": "Recurrence source/local/future boundaries protect first and final edited instances, finite series never materialize a sixth item, each Event occurrence has one correct placement, and each multi-interval Activity intentionally renders N distinct Schedule cards sharing one Activity ref.",
       "status": "QUALIFIED",
-      "audit_note": "Intent and case structure reviewed 2026-11-09; first-physical-instance duplicate checks added. Registered before fresh local 3-browser evidence; no PASS claimed."
+      "audit_note": "Static source reviewed for per-step truth and accepted UI selectors, 2026-11-09. New bounded-last and nested Event SchedulePlacement assertions not yet executed; PASS remains unclaimed."
     },
     {
       "path": "apps/web/e2e/auth/temporal-stateful-runtime.spec.ts",
