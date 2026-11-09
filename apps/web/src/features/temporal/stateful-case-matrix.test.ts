@@ -63,6 +63,29 @@ describe('Temporal v2 mandatory multi-feature population', () => {
     }
   });
 
+  it('retains bounded series for first, middle and last instance protection', () => {
+    for (const group of [EVENT_CASES, ACTIVITY_CASES]) {
+      const finite = group.filter((entry) => recurrenceFor(entry).repeatCount !== null);
+      expect(finite.map((entry) => entry.id),
+        'every fourth scenario has a true last Occurrence')
+        .toEqual(group.filter((_, index) => index % 4 === 3).map((entry) => entry.id));
+      expect(finite).toHaveLength(5);
+      for (const entry of finite) {
+        // Five instances = first, at least one intermediary, and a last.
+        expect(recurrenceFor(entry).repeatCount).toBe(5);
+      }
+    }
+    const multiInterval = ACTIVITY_CASES.filter(
+      (entry) => !entry.allDay && entry.intervalCount > 1,
+    );
+    expect(multiInterval.length).toBeGreaterThan(10);
+    for (const entry of multiInterval) {
+      // Timeline asserts intervalCount distinct Schedule refs, but exactly
+      // one logical Activity ref; additional cards are intentional.
+      expect(entry.intervalCount).toBeGreaterThan(1);
+    }
+  });
+
   it('requires a new seeded user for every phase and scenario', () => {
     // Phase 1: 40, phase 2: 40, phase 3: 20.
     const slots = [
