@@ -21,6 +21,10 @@ function cardOn(page: Page, date: string, title: string): Locator {
   ).filter({ hasText: title });
 }
 
+// Fail a missing or disabled UI action promptly with the exact locator.
+// The 300-second journey deadline still covers legitimate multi-step work.
+test.use({ actionTimeout: 15_000, navigationTimeout: 15_000 });
+
 test.describe('Temporal v2 — recorded facts survive Edit', () => {
   test.describe.configure({ timeout: 300_000 });
 
