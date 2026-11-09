@@ -173,6 +173,63 @@ describe('owner-scoped Event profile CAS source', () => {
     expect(result.agendaParts).toEqual(['Apertura']);
     expect(result.updatedPlacementStateRef).toBe(UPDATED_MATERIAL);
   });
+  // Regression 2026-11-09: a normal Event had no way to create a new
+  // Life Area in Edit. Serialize the new catalog profile/appearance inside
+  // the same atomic request as the accepted Event assignment (no extra POST).
+  it('sends a new Life Area in the normal Event atomic edit and refreshes the accepted assignment', async () => {
+    const createdAreaRef = '0199a666-6666-7666-8666-666666666666';
+    const requests: unknown[] = [];
+    let saved = false;
+    const fetchFn = vi.fn<typeof globalThis.fetch>((input, init) => {
+      const url = fetchRequestUrl(input);
+      if (url === '/api/v1/auth/session')
+        return Promise.resolve(json({ authenticated: true, csrf_token: 'csrf' }));
+      if (url === '/api/v1/temporal/events/' + EVENT) {
+        return Promise.resolve(
+          json({
+            ...original,
+            life_area_ref: saved ? createdAreaRef : AREA,
+            life_area_assignment_revision: saved ? 3 : 2,
+          }),
+        );
+      }
+      if (url === '/api/v1/temporal/events/' + EVENT + '/atomic-edit') {
+        requests.push(JSON.parse(fetchRequestBody(init?.body)) as unknown);
+        saved = true;
+        return Promise.resolve(json({
+          event: { ...original, life_area_ref: createdAreaRef },
+          objectives: [],
+          placement_material_state_ref: null,
+        }));
+      }
+      throw new Error('Unexpected Event URL ' + url);
+    });
+    const source = createRemoteEventProfileDataSource(fetchFn);
+    const before = await source.load(EVENT);
+    const after = await source.reviseAtomic(
+      EVENT,
+      before,
+      {
+        lifeArea: {
+          ref: null,
+          expectedRevision: 2,
+          newArea: { name: 'Nuova Area', colorCode: '#FFD600' },
+        },
+      },
+      'event:area:normal',
+    );
+    expect(requests).toHaveLength(1);
+    expect(requests[0]).toMatchObject({
+      operation_id: 'event:area:normal',
+      life_area: {
+        life_area_ref: null,
+        expected_assignment_revision: 2,
+        new_life_area: { name: 'Nuova Area', color_code: '#FFD600' },
+      },
+    });
+    expect(after.lifeAreaRef).toBe(createdAreaRef);
+  });
+
   it('uses accepted revision + operation ID and refreshes canonical Event', async () => {
     const sent: unknown[] = [];
     let changed = false;
