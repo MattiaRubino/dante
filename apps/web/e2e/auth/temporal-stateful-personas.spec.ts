@@ -488,6 +488,21 @@ async function seriesRevision(
     .getByRole('textbox', { name: 'Nome obiettivo' })
     .fill(revisedGoal.label);
   changedGoals[0] = revisedGoal;
+  const removedObjective = changedGoals.pop()!;
+  await inspector.locator('[data-create-objective]').last()
+    .getByRole('button', { name: 'Rimuovi obiettivo' }).click();
+  await inspector.getByRole('button', { name: 'Aggiungi obiettivo' }).click();
+  const newObjective = {
+    label: nextTitle + ' obiettivo nuovo',
+    kind: 'boolean' as const,
+    target: null, minimum: null, maximum: null,
+    verification: 'none' as const,
+  };
+  await inspector.locator('[data-create-objective]').last()
+    .getByRole('textbox', { name: 'Nome obiettivo' })
+    .fill(newObjective.label);
+  changedGoals.push(newObjective);
+  expect(removedObjective.label).not.toBe(newObjective.label);
   let agenda = [...originalTruth.agenda];
   let sessions = [...originalTruth.sessions];
   if (persona.kind === 'event') {
@@ -495,6 +510,9 @@ async function seriesRevision(
     await inspector.getByRole('textbox', { name: 'Punto scaletta 1' })
       .fill(revised);
     agenda[0] = revised;
+    await inspector.locator('[data-temporal-create-agenda-part]').last()
+      .getByRole('button', { name: 'Rimuovi punto' }).click();
+    agenda.pop();
     await inspector.getByRole('button', { name: 'Aggiungi punto alla scaletta' })
       .click();
     const appended = nextTitle + ' scaletta nuova';
@@ -507,6 +525,9 @@ async function seriesRevision(
     await inspector.getByRole('textbox', { name: 'Nome Sessione 1' })
       .fill(revised);
     sessions[0] = revised;
+    await inspector.locator('.temporal-create-tree-item.is-session').last()
+      .getByRole('button', { name: /^Rimuovi Sessione \d+$/ }).click();
+    sessions.pop();
     await inspector.locator('.temporal-create-activity-tree__root-actions')
       .getByRole('button', { name: 'Sessione', exact: true }).click();
     const appended = nextTitle + ' Sessione nuova';
