@@ -8,7 +8,7 @@ import {
   expect, test, type Locator, type Page,
 } from '@playwright/test';
 
-import { openHome, scenarioDate, serverRead, uniqueTitle } from
+import { dateAfter, openHome, scenarioDate, serverRead, uniqueTitle } from
   './temporal-user-journey-support';
 import { ACTIVITY_CASES, EVENT_CASES } from
   './temporal-stateful-case-matrix';
@@ -202,6 +202,20 @@ test.describe('Temporal v2 — recorded facts survive Edit', () => {
         'two distinct physical Schedule cards').toBe(
           ACTIVITY_CASES[0]!.intervalCount,
         );
+      const window = await serverRead(
+        page,
+        '/api/v1/temporal/timeline/window?start_date=' + day +
+          '&end_date_exclusive=' + dateAfter(day, 1),
+      ) as Record<string, unknown>;
+      const physical = (window.items as Record<string, unknown>[])
+        .filter((row) => row.kind === 'scheduled_activity' &&
+          row.activity_ref === authored.item.sourceRef &&
+          row.title === title);
+      expect(physical, 'both cards refer to the same Activity source')
+        .toHaveLength(ACTIVITY_CASES[0]!.intervalCount);
+      expect(new Set(physical.map((row) => String(row.schedule_ref))).size,
+        'canonical Session Activity has distinct interval Schedules')
+        .toBe(ACTIVITY_CASES[0]!.intervalCount);
       const card = cards.first();
       const controls = card.locator(
         '[data-timeline-session-subject="' + authored.item.sourceRef + '"]',
