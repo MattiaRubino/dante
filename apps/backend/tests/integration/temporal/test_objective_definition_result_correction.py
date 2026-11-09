@@ -38,7 +38,7 @@ def _definition(*, operation: str, expected: int, target: int = 7) -> dict[str, 
     }
 
 
-def test_objective_definition_and_result_corrections_are_canonical_without_deletion(
+def test_recorded_objective_is_immutable_until_its_entire_result_is_deleted(
     migrated_database: Any,
     activity_hibp_stub_url: str,
 ) -> None:
@@ -75,28 +75,32 @@ def test_objective_definition_and_result_corrections_are_canonical_without_delet
             headers=headers,
         )
         assert created_objective.status_code == 201, created_objective.text
-        # Only the internal materializer can mint generated template lineage.
-        forged = client.post(
-            f"/api/v1/temporal/activities/{activity_ref}/objectives",
-            json={
-                "operation_id": f"b14:objective:activity:{activity_ref}:0",
-                "label": "Origine falsa",
-                "result_kind": "boolean",
-                "presentation_order": 0,
-            },
-            headers=headers,
-        )
-        assert forged.status_code == 422
         objective_ref = created_objective.json()["objective_ref"]
         definition_url = f"/api/v1/temporal/objectives/{objective_ref}/definition"
         result_url = f"/api/v1/temporal/objectives/{objective_ref}/result"
         correction_url = f"/api/v1/temporal/objectives/{objective_ref}/correction"
+        removal_url = f"/api/v1/temporal/objectives/{objective_ref}/delete-recording"
+        list_url = f"/api/v1/temporal/activities/{activity_ref}/objectives"
 
-        baseline = client.get(definition_url, headers=_base_headers())
-        assert baseline.status_code == 200
-        assert baseline.json()["objective_ref"] == objective_ref
-        assert baseline.json()["definition_revision"] == 0
-        assert baseline.json()["evaluation_state_ref"] is None
+        original = client.get(definition_url, headers=_base_headers())
+        assert original.status_code == 200
+        assert original.json()["definition_revision"] == 0
+        # Definition changes are still legal BEFORE a result exists.
+        revised = client.put(
+            definition_url,
+            json=_definition(operation="m2:definition", expected=0),
+            headers=headers,
+        )
+        assert revised.status_code == 200, revised.text
+        assert revised.json()["definition_revision"] == 1
+        assert revised.json()["evaluation_state_ref"] is None
+        replay_before_fact = client.put(
+            definition_url,
+            json=_definition(operation="m2:definition", expected=0),
+            headers=headers,
+        )
+        assert replay_before_fact.status_code == 200
+        assert replay_before_fact.json()["replayed"] is True
 
         measured = client.post(
             result_url,
@@ -105,111 +109,102 @@ def test_objective_definition_and_result_corrections_are_canonical_without_delet
         )
         assert measured.status_code == 201, measured.text
         first = measured.json()
-        assert first["assessment_code"] == "not_satisfied"
+        assert first["assessment_code"] == "satisfied"
 
-        revised = client.put(
+        # An accepted result makes even a harmless rename illegal until
+        # explicit and complete removal of the recorded fact.
+        locked = client.put(
+            definition_url,
+            json=_definition(operation="m2:locked", expected=1, target=9),
+            headers=headers,
+        )
+        assert locked.status_code == 409, locked.text
+        locked_replay = client.put(
             definition_url,
             json=_definition(operation="m2:definition", expected=0),
             headers=headers,
         )
-        assert revised.status_code == 200, revised.text
-        changed = revised.json()
-        assert changed["objective_ref"] == objective_ref
-        assert changed["definition_revision"] == 1
-        assert changed["assessment_code"] == "satisfied"
-        assert changed["evaluation_state_ref"] != first["evaluation_state_ref"]
-        assert revised.json()["replayed"] is False
-
-        current = client.get(definition_url, headers=_base_headers()).json()
-        assert current["definition_revision"] == 1
-        assert current["label"] == "Percorrere almeno sette km"
-        listed = client.get(
-            f"/api/v1/temporal/activities/{activity_ref}/objectives",
-            headers=_base_headers(),
-        )
-        assert listed.status_code == 200, listed.text
-        assert len(listed.json()) == 1
-        assert listed.json()[0]["objective_ref"] == objective_ref
-        assert listed.json()[0]["assessment_code"] == "satisfied"
-
-        replay = client.put(
-            definition_url,
-            json=_definition(operation="m2:definition", expected=0),
-            headers=headers,
-        )
-        assert replay.status_code == 200, replay.text
-        assert replay.json()["replayed"] is True
-        assert replay.json()["definition_revision"] == 1
-        stale = client.put(
-            definition_url,
-            json=_definition(operation="m2:stale", expected=0, target=9),
-            headers=headers,
-        )
-        assert stale.status_code == 409
-        reuse = client.put(
-            definition_url,
-            json=_definition(operation="m2:definition", expected=0, target=9),
-            headers=headers,
-        )
-        assert reuse.status_code == 409
+        assert locked_replay.status_code == 409
 
         corrected = client.post(
             correction_url,
             json={
                 "operation_id": "m2:correct-result",
-                "expected_evaluation_state_ref": changed["evaluation_state_ref"],
+                "expected_evaluation_state_ref": first["evaluation_state_ref"],
                 "observed_numeric": 6,
             },
             headers=headers,
         )
         assert corrected.status_code == 200, corrected.text
         last = corrected.json()
-        assert last["objective_ref"] == objective_ref
         assert last["observation_ref"] != first["observation_ref"]
         assert last["assessment_code"] == "not_satisfied"
-        # A definition replay must retain its original accepted evaluation,
-        # not silently return this later corrected Observation's assessment.
-        definition_replay = client.put(
-            definition_url,
-            json=_definition(operation="m2:definition", expected=0),
-            headers=headers,
-        )
-        assert definition_replay.status_code == 200
-        assert definition_replay.json()["replayed"] is True
-        assert definition_replay.json()["evaluation_state_ref"] == changed["evaluation_state_ref"]
-        assert definition_replay.json()["assessment_code"] == "satisfied"
         replayed = client.post(
             correction_url,
             json={
                 "operation_id": "m2:correct-result",
-                "expected_evaluation_state_ref": changed["evaluation_state_ref"],
+                "expected_evaluation_state_ref": first["evaluation_state_ref"],
                 "observed_numeric": 6,
             },
             headers=headers,
         )
         assert replayed.status_code == 200
         assert replayed.json()["replayed"] is True
-        assert replayed.json()["observation_ref"] == last["observation_ref"]
-
         obsolete_cas = client.post(
             correction_url,
             json={
-                "operation_id": "m2:obsolete-result",
-                "expected_evaluation_state_ref": changed["evaluation_state_ref"],
-                "observed_numeric": 9,
+                "operation_id": "m2:obsolete",
+                "expected_evaluation_state_ref": first["evaluation_state_ref"],
+                "observed_numeric": 12,
             },
             headers=headers,
         )
         assert obsolete_cas.status_code == 409
-        latest = client.get(
-            f"/api/v1/temporal/activities/{activity_ref}/objectives",
-            headers=_base_headers(),
-        ).json()
-        assert latest[0]["assessment_code"] == "not_satisfied"
-        assert Decimal(str(latest[0]["observed_numeric"])) == Decimal("6")
+        stale_removal = client.post(
+            removal_url,
+            json={"expected_evaluation_state_ref": first["evaluation_state_ref"]},
+            headers=headers,
+        )
+        assert stale_removal.status_code == 409
+        latest = client.get(list_url, headers=_base_headers())
+        assert latest.status_code == 200
+        assert latest.json()[0]["observation_ref"] == last["observation_ref"]
 
-        # Internal audit is append-only; neither the original observation,
-        # original evaluation nor the objective identity was replaced.
+        bob_csrf = _signin(client, bob)
+        bob_headers = {**_base_headers(), CSRF_HEADER_NAME: bob_csrf}
+        assert client.get(definition_url, headers=_base_headers()).status_code == 404
+        denied = client.post(
+            removal_url,
+            json={"expected_evaluation_state_ref": last["evaluation_state_ref"]},
+            headers=bob_headers,
+        )
+        assert denied.status_code == 404
+        csrf = _signin(client, alice)
+        headers = {**_base_headers(), CSRF_HEADER_NAME: csrf}
+
+        deleted = client.post(
+            removal_url,
+            json={"expected_evaluation_state_ref": last["evaluation_state_ref"]},
+            headers=headers,
+        )
+        assert deleted.status_code == 200, deleted.text
+        assert deleted.json() == {
+            "objective_ref": objective_ref,
+            "removed_observations": 2,
+        }
+        assert client.post(
+            removal_url,
+            json={"expected_evaluation_state_ref": last["evaluation_state_ref"]},
+            headers=headers,
+        ).status_code == 409
+
+        remaining = client.get(list_url, headers=_base_headers()).json()
+        assert len(remaining) == 1
+        assert remaining[0]["objective_ref"] == objective_ref
+        assert remaining[0]["observation_ref"] is None
+        assert remaining[0]["evaluation_state_ref"] is None
+        assert remaining[0]["label"] == "Percorrere almeno sette km"
+
         with (
             psycopg.connect(
                 **migrated_database.connection_kwargs(
@@ -222,39 +217,36 @@ def test_objective_definition_and_result_corrections_are_canonical_without_delet
             cursor.execute(
                 """
                 SELECT
-                    (SELECT count(*) FROM dante.temporal_objective_definition_revision
-                     WHERE objective_ref=%s),
-                    (SELECT count(*) FROM dante.temporal_objective_observation
-                     WHERE objective_ref=%s),
-                    (SELECT count(*) FROM dante.temporal_objective_evaluation_state
-                     WHERE objective_ref=%s)
+                  (SELECT count(*) FROM dante.temporal_objective_definition_revision
+                    WHERE objective_ref=%s),
+                  (SELECT count(*) FROM dante.temporal_objective_observation
+                    WHERE objective_ref=%s),
+                  (SELECT count(*) FROM dante.temporal_objective_evaluation_state
+                    WHERE objective_ref=%s),
+                  (SELECT count(*) FROM dante.temporal_objective_evaluation_current_history
+                    WHERE objective_ref=%s),
+                  (SELECT count(*) FROM dante.temporal_objective_result_operation
+                    WHERE objective_ref=%s),
+                  (SELECT count(*) FROM dante.temporal_objective_input_draft
+                    WHERE objective_ref=%s),
+                  (SELECT count(*) FROM dante.observation
+                    WHERE observation_ref IN (%s,%s))
                 """,
-                (UUID(objective_ref),) * 3,
+                (UUID(objective_ref),) * 6
+                + (UUID(first["observation_ref"]), UUID(last["observation_ref"])),
             )
             counts = cursor.fetchone()
-        assert counts == (1, 2, 3)
-        # Test-admin audit is deliberately separate from application runtime:
-        # dante_runtime must NOT receive table SELECT permissions.
+        assert counts == (1, 0, 0, 0, 0, 0, 0)
 
-        bob_csrf = _signin(client, bob)
-        bob_headers = {**_base_headers(), CSRF_HEADER_NAME: bob_csrf}
-        assert client.get(definition_url, headers=_base_headers()).status_code == 404
-        denied = client.put(
+        # The original logical definition is preserved and unlocked.
+        unlocked = client.put(
             definition_url,
-            json=_definition(operation="m2:cross-owner", expected=1),
-            headers=bob_headers,
+            json=_definition(operation="m2:unlocked", expected=1, target=9),
+            headers=headers,
         )
-        assert denied.status_code == 404
-        refused = client.post(
-            correction_url,
-            json={
-                "operation_id": "m2:cross-owner-correction",
-                "expected_evaluation_state_ref": last["evaluation_state_ref"],
-                "observed_numeric": 3,
-            },
-            headers=bob_headers,
-        )
-        assert refused.status_code == 404
+        assert unlocked.status_code == 200, unlocked.text
+        assert unlocked.json()["definition_revision"] == 2
+
 
 
 def test_event_objective_same_identity_definition_revision(
@@ -368,14 +360,13 @@ def test_qualitative_objective_never_synthesizes_manual_assessment(
             },
             headers=headers,
         )
-        assert renamed.status_code == 200, renamed.text
-        assert renamed.json()["assessment_code"] == "partial"
-        assert renamed.json()["evaluation_state_ref"] == state_ref
+        assert renamed.status_code == 409, renamed.text
+        assert state_ref == result.json()["evaluation_state_ref"]
         impossible = client.put(
             f"/api/v1/temporal/objectives/{objective}/definition",
             json={
                 "operation_id": "m2:qual:kind-switch",
-                "expected_revision": 1,
+                "expected_revision": 0,
                 "label": "Quantità",
                 "result_kind": "quantity",
                 "comparator_code": "gte",
@@ -390,5 +381,5 @@ def test_qualitative_objective_never_synthesizes_manual_assessment(
             headers=_base_headers(),
         ).json()
         assert latest[0]["objective_ref"] == objective
-        assert latest[0]["label"] == "Qualità corretta"
+        assert latest[0]["label"] == "Qualità"
         assert latest[0]["assessment_code"] == "partial"
