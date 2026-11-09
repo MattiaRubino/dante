@@ -36,7 +36,11 @@ describe('M2 Objective corrections', () => {
       throw new Error(`Unexpected request ${uri}`);
     });
     const source = createRemoteRealityObjectiveDataSource(fetchFn);
-    const edit = { add: [], revise: [], retire: [] };
+    const edit = {
+      add: [],
+      revise: [],
+      retire: [{ objectiveRef: ref, operationId: 'retire:accepted', expectedRevision: 1 }],
+    };
     try {
       await expect(source.applyActivityEdits(ref, edit)).rejects.toThrow(
         'Conflict',
