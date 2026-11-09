@@ -1,5 +1,18 @@
 # Timeline / Temporal-Operational — Workstream Handoff
 
+## 2026-11-09 — Six-scenario E2E RED and guarded parallel V2 mode
+
+The owner uploaded the automatic smoke archive for `V2-(P1-A01|P2-E04|P2-A04|P3-E01|P3-A01|RT-02)`: all 18 tests collected on Chromium/Firefox/WebKit in **716.48 seconds**, **0 PASS, 9 FAIL, 9 ERROR**. Two cases per browser repeatedly hit five-minute test timeouts because the recurring-series editor still displayed the legacy **`＋ Aggiungi obiettivo`** control although approved Create/Event/Activity Edit use **`+ Obiettivo`**. A precise UI-label fix is staged, with 15-second V2-only action timeout protection; no E2E result is green until re-run.
+
+Other diagnoses: P1 Activity atomic Edit does not issue its PUT within 30 seconds (cause pending, new 15-second wait reports validation alerts and invalid fields); P2 Routine's one-card readback is correct but the test falsely requires an explicit interval role rather than checking its actual envelope/interval physical Schedule IDs against canonical snapshot; P3 converted Activity shows **Timeline non disponibile** after the POST despite one timeline GET 200 (unresolved product/runtime bug, now diagnosed through read-state and visible UI alerts); RT-02 falsely demanded one card when the Activity persona intentionally has two intervals, now verifies exactly two distinct Schedule refs and retains Session lifecycle assertions. Existing persistence, identity, cancellation, full Objective and recurrence requirements are preserved.
+
+**Throughput upgrade:** `python3 tooling/testing/run_real_stack_playwright.py --workers 3 --v2-workers auto --grep 'V2-(...)'` uses three independent Postgres+API browser projects and now chooses **1–2 workers per project based on CPU and free WSL memory**, up to six concurrent browsers. Explicit `--v2-workers 2` is supported. Non-V2/mixed selections are rejected for same-stack parallel execution (legacy tests can intentionally stop PostgreSQL). Default `--v2-workers 1` preserves the existing full gate behavior. Regression self-test covers selection refusal, accepted V2 patterns, V2 worker selection, browser inventory equality, and automatic capped archives. Network/trace diagnostics now retain up to **six reduced traces per browser** (full original traces all remain on local disk) to cover all six smoke cases instead of truncating the later P3/RT failures.
+
+**Owner next step:** pull latest candidate; run `python3 tooling/testing/run_real_stack_playwright.py --self-test`, `pnpm --filter @dante/web typecheck`, then a six-case smoke with `--workers 3 --v2-workers auto` (or explicit `2`), not the 306-slot matrix yet. Upload only the new automatic `REALSTACK_DIAGNOSTICS`. If P3 Activity Timeline remains unavailable, investigate the backend read and converted Schedule/materialization contract before changing the test or product.
+
+---
+
+
 ## 2026-11-09 — E2E workflow: no manual diagnostics tar, exact Inspector delete reentry
 
 User's second isolated `V2-(P1-E01|RT-01)` smoke: 6 collected / **3 RT-01 PASS / 3 P1-E01 ERROR**, 342.37 sec wall clock. Trace/JUnit/screenshots prove P1-E01 reaches E01/7 with original Event and its copy intact. The old `deleteOneOff` helper checked cancelled deletion by `assertCard()`, which invokes a fresh `openHome()` and unmounts the active Inspector; the next click waited on a closed modal for the remainder of 300 seconds. The driver now **reopens the Inspector and bounds missing-control visibility to 10 seconds** before performing the second confirmed deletion. It retains strong canonical DELETE/404/reload and copy-survival assertions; no change to the DANTE product is justified by these traces.
