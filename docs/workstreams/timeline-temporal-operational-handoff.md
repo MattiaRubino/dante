@@ -1,5 +1,18 @@
 # Timeline / Temporal-Operational — Workstream Handoff
 
+## 2026-11-09 — Full gate on e06467c9f; diagnosis of seven red groups
+
+The owner's `FULL_GATE_LOGS.tar.gz` and manifest prove 27/27 groups executed with source stability PASS, 20 PASS and seven FAIL in 1114s. Full PostgreSQL 371.5s PASS; Web Vitest PASS, repo typecheck/build PASS. The failing groups: REPO_FORMAT (16 mismatched prettier files), REPO_ESLINT (five test-source typing errors), GENERATED_DRIFT (committed OpenAPI and 24 regenerated API Zod/index outputs), BACKEND_NON_POSTGRES (680 PASS, one schema snapshot test FAIL), WEB_BROWSER_NONAUTH (145/146 PASS), WEB_BROWSER_REAL_STACK (111/113 PASS).
+
+The formatting and generated schema failures are straightforward drift. Regenerate using the **canonical repository root** `pnpm api:generate` script (FastAPI exporter, Orval and Prettier), and run pinned `pnpm exec prettier --write .`; do not manually edit generated models. Source changes introduced in GitHub commit f12b3e1 only modify tests:
+- REPO_ESLINT: remove a redundant button assertion; compare typed-`unknown` review payloads with `toMatchObject`, preserving selectedRef/scope/title/lock assertions; validate the outbound POST body is a JSON string rather than coercing arbitrary BodyInit.
+- WEB_BROWSER_NONAUTH: the Playwright quantity-row fixture omitted the `data-result-kind="quantity"` attribute that production `TemporalObjectiveEditorRow` actually emits. Without the attribute the CSS intentionally uses a single column. The corrected fixture keeps the same real browser geometry proof.
+- Firefox Event hard delete: canonical DELETE succeeded; test `page.reload()` failed `NS_ERROR_FAILURE` before post-delete verification. The test now navigates to the same Home day using `waitUntil:'commit'`, then requires a fresh authoritative Timeline GET plus `ready` UI marker and verifies the deleted Schedule is absent.
+- WebKit series Event: the `/series-edit` POST was aborted when the test immediately navigated away after clicking Confirm; the next Timeline GET contained the old title. The Event E2E now waits for POST 200 and review-dialog teardown before navigating, mirroring the previously passing Activity series journey. **Do not assert a series update that has not been accepted by the server.**
+
+No backend business/domain or migration code changed. Before a full-gate retry, the owner should run canonical generation + formatting + lint/typecheck/schema test, then a focused 3-case browser verification (quantity geometry Chromium, deleted Event Firefox, following-series Event WebKit); preserve logs/traces and commit regenerated assets and formatter changes only if static checks are green. The focused browsers must be tested against the same SHA after that commit. Do not claim complete gate green until the final 27-group run.
+
+
 ## 2026-11-09 — Precise RED causes from RECHECK_05b49a0bf
 
 Owner's focused Playwright Chromium run on `05b49a0` failed two cases. The one-off Event delete actually returned HTTP 200. The test's interpolation of `await accepted.text()` ran **even when the assertion was green**, but Chromium had released the body during the application's post-delete navigation. The corrected assertion checks HTTP status without a discarded body; the existing page reload, deleted profile 404, and independent duplicate survival checks remain mandatory.
