@@ -23,7 +23,8 @@ const PASSWORD = 'correct horse battery staple';
 const REQUEST_TIMEOUT = 25_000;
 
 export type Subject = 'activity' | 'event';
-export type Cadence = 'none' | 'daily' | 'weekly' | 'monthly' | 'yearly' | 'custom';
+export type Cadence =
+  'none' | 'daily' | 'weekly' | 'monthly' | 'yearly' | 'custom';
 
 export type CreatedItem = Readonly<{
   kind: Subject;
@@ -52,10 +53,15 @@ export type CreateOptions = Readonly<{
   placementProtected?: boolean;
 }>;
 
-export function scenarioEmail(info: TestInfo, slot: 1 | 2 | 3 | 4 | 5 | 6 | 7): string {
+export function scenarioEmail(
+  info: TestInfo,
+  slot: 1 | 2 | 3 | 4 | 5 | 6 | 7,
+): string {
   const base = ACCOUNT_BASE[info.project.name];
   if (base === undefined) {
-    throw new Error('No isolated user for browser project ' + info.project.name);
+    throw new Error(
+      'No isolated user for browser project ' + info.project.name,
+    );
   }
   return 'synthetic.user+e2e-' + String(base + slot) + '@example.com';
 }
@@ -129,7 +135,9 @@ export async function openHome(page: Page, date: string): Promise<void> {
     timeout: 15_000,
   });
   expect((await read).status()).toBe(200);
-  await expect(page.locator('[data-temporal-read-state="ready"]')).toBeVisible();
+  await expect(
+    page.locator('[data-temporal-read-state="ready"]'),
+  ).toBeVisible();
 }
 
 export async function reloadHome(page: Page, date: string): Promise<void> {
@@ -158,7 +166,7 @@ async function setStartDate(composer: Locator, date: string): Promise<void> {
     // A future Create date can cross a month/year boundary. Calendar
     // neighboring-month cells may exist but be disabled.
     for (let offset = 0; offset < 12; offset += 1) {
-      if (await day.isVisible() && await day.isEnabled()) break;
+      if ((await day.isVisible()) && (await day.isEnabled())) break;
       await picker.getByRole('button', { name: 'Mese successivo' }).click();
     }
     await expect(day).toBeEnabled();
@@ -175,7 +183,9 @@ async function setClock(
   const trigger = composer.getByRole('button', { name: /^Fuso orario:/ });
   if (!(await trigger.getAttribute('aria-label'))?.includes('Europe/Rome')) {
     await trigger.click();
-    await composer.getByRole('button', { name: 'Europe/Rome', exact: true }).click();
+    await composer
+      .getByRole('button', { name: 'Europe/Rome', exact: true })
+      .click();
   }
   const [hour, minute] = value.split(':');
   if (hour === undefined || minute === undefined) {
@@ -184,12 +194,12 @@ async function setClock(
   const end = Temporal.PlainTime.from(value).add({ minutes: 40 });
   await composer.getByRole('textbox', { name: 'Inizio: ore' }).fill(hour);
   await composer.getByRole('textbox', { name: 'Inizio: minuti' }).fill(minute);
-  await composer.getByRole('textbox', { name: 'Fine: ore' }).fill(
-    String(end.hour).padStart(2, '0'),
-  );
-  await composer.getByRole('textbox', { name: 'Fine: minuti' }).fill(
-    String(end.minute).padStart(2, '0'),
-  );
+  await composer
+    .getByRole('textbox', { name: 'Fine: ore' })
+    .fill(String(end.hour).padStart(2, '0'));
+  await composer
+    .getByRole('textbox', { name: 'Fine: minuti' })
+    .fill(String(end.minute).padStart(2, '0'));
   // Time controls may roll an intermediate end clock into the next day
   // while their hours/minutes are entered separately. The journey requests
   // a 40-minute intraday placement: author its end *date* explicitly.
@@ -201,7 +211,7 @@ async function setClock(
       'button[data-temporal-date="' + startDate + '"]',
     );
     for (let offset = 0; offset < 12; offset += 1) {
-      if (await day.isVisible() && await day.isEnabled()) break;
+      if ((await day.isVisible()) && (await day.isEnabled())) break;
       await picker.getByRole('button', { name: 'Mese precedente' }).click();
     }
     await expect(day).toBeEnabled();
@@ -214,7 +224,6 @@ async function setClock(
   await expect(
     composer.getByRole('textbox', { name: 'Fine: minuti' }),
   ).toHaveValue(String(end.minute).padStart(2, '0'));
-
 }
 
 export async function configureCreate(
@@ -223,7 +232,8 @@ export async function configureCreate(
 ): Promise<void> {
   await composer.getByRole('textbox', { name: 'Titolo' }).fill(options.title);
   if (options.lifeArea) {
-    await composer.getByRole('textbox', { name: 'Life Area (opzionale)' })
+    await composer
+      .getByRole('textbox', { name: 'Life Area (opzionale)' })
       .fill(options.lifeArea);
   }
   if (options.allDay) {
@@ -244,7 +254,10 @@ export async function configureCreate(
     await composer.getByRole('button', { name: /Opzioni avanzate/ }).click();
     // The production data contract uses "advanced" for the expanded form.
     // "is-full" is a layout class, not a third surface state.
-    await expect(composer).toHaveAttribute('data-temporal-create-surface', 'advanced');
+    await expect(composer).toHaveAttribute(
+      'data-temporal-create-surface',
+      'advanced',
+    );
     await expect(composer).toHaveClass(/\bis-full\b/);
   }
   if (options.placementProtected) {
@@ -258,33 +271,44 @@ export async function configureCreate(
       .locator('[aria-label="Aggiungi Sessione pianificata"]')
       .getByRole('button', { name: 'Sessione' })
       .click();
-    await composer.getByRole('textbox', { name: 'Nome Sessione' })
+    await composer
+      .getByRole('textbox', { name: 'Nome Sessione' })
       .fill(options.plannedSession);
   }
   if (options.agenda) {
-    await composer.getByRole('button', { name: 'Aggiungi punto alla scaletta' }).click();
-    await composer.getByRole('textbox', { name: 'Punto scaletta 1' })
+    await composer
+      .getByRole('button', { name: 'Aggiungi punto alla scaletta' })
+      .click();
+    await composer
+      .getByRole('textbox', { name: 'Punto scaletta 1' })
       .fill(options.agenda);
   }
   if (options.objective) {
     await composer.getByRole('button', { name: 'Aggiungi obiettivo' }).click();
-    await composer.getByRole('textbox', { name: 'Obiettivo 1' })
+    await composer
+      .getByRole('textbox', { name: 'Obiettivo 1' })
       .fill(options.objective);
     if (options.objectiveQuantity !== undefined) {
-      await composer.getByRole('combobox', {
-        name: 'Tipo risultato obiettivo 1',
-      }).selectOption('quantity');
-      await composer.getByRole('spinbutton', { name: 'Target obiettivo' })
+      await composer
+        .getByRole('combobox', {
+          name: 'Tipo risultato obiettivo 1',
+        })
+        .selectOption('quantity');
+      await composer
+        .getByRole('spinbutton', { name: 'Target obiettivo' })
         .fill(String(options.objectiveQuantity));
-      await composer.getByRole('textbox', { name: 'Unità obiettivo' })
+      await composer
+        .getByRole('textbox', { name: 'Unità obiettivo' })
         .fill('ore');
     }
   }
   if (options.recurrence && options.recurrence !== 'none') {
     const panel = composer.getByRole('region', {
-      name: 'Ripetizione', exact: true,
+      name: 'Ripetizione',
+      exact: true,
     });
-    await panel.getByRole('combobox', { name: 'Ripeti' })
+    await panel
+      .getByRole('combobox', { name: 'Ripeti' })
       .selectOption(options.recurrence);
     await expect(panel).toHaveAttribute('data-recurrence-expanded', 'true');
     if (options.monthlyOrdinal) {
@@ -305,9 +329,11 @@ export async function configureCreate(
       if (!weekday) {
         throw new Error('Invalid ordinal weekday for ' + options.date);
       }
-      await panel.getByRole('combobox', { name: 'Posizione nel mese' })
+      await panel
+        .getByRole('combobox', { name: 'Posizione nel mese' })
         .selectOption(String(ordinal));
-      await panel.getByRole('combobox', { name: 'Giorno della settimana' })
+      await panel
+        .getByRole('combobox', { name: 'Giorno della settimana' })
         .selectOption(weekday);
       await expect(
         panel.getByRole('combobox', { name: 'Posizione nel mese' }),
@@ -318,11 +344,13 @@ export async function configureCreate(
     }
     if (options.repeatCount) {
       await panel.getByRole('radio', { name: 'Dopo' }).click();
-      await panel.getByRole('spinbutton', { name: 'Numero di occorrenze' })
+      await panel
+        .getByRole('spinbutton', { name: 'Numero di occorrenze' })
         .fill(String(options.repeatCount));
     }
     if (options.interval && options.interval !== 1) {
-      await panel.getByRole('spinbutton', { name: 'Intervallo di ripetizione' })
+      await panel
+        .getByRole('spinbutton', { name: 'Intervallo di ripetizione' })
         .fill(String(options.interval));
     }
   }
@@ -341,8 +369,7 @@ export async function submitCreate(
       (options.kind === 'activity' ? 'activities' : 'events');
   const accepted = page.waitForResponse(
     (response) =>
-      response.url().endsWith(path) &&
-      response.request().method() === 'POST',
+      response.url().endsWith(path) && response.request().method() === 'POST',
     { timeout: REQUEST_TIMEOUT },
   );
   await composer.getByRole('button', { name: 'Aggiungi', exact: true }).click();
@@ -356,22 +383,26 @@ export async function submitCreate(
       .getAttribute('data-temporal-date')
       .catch(() => null);
     throw new Error(
-      'Create POST absent for ' + options.title +
-        '; start=' + startDate +
-        '; validation=' + JSON.stringify(alerts),
+      'Create POST absent for ' +
+        options.title +
+        '; start=' +
+        startDate +
+        '; validation=' +
+        JSON.stringify(alerts),
       { cause: error },
     );
   }
   const payload = (await response.json()) as Record<string, unknown>;
   expect(response.ok(), JSON.stringify({ path, payload })).toBe(true);
   await expect(composer).toHaveCount(0);
-  const sourceRef = payload[
-    options.recurring
-      ? 'source_ref'
-      : options.kind === 'activity'
-        ? 'activity_ref'
-        : 'event_ref'
-  ];
+  const sourceRef =
+    payload[
+      options.recurring
+        ? 'source_ref'
+        : options.kind === 'activity'
+          ? 'activity_ref'
+          : 'event_ref'
+    ];
   expect(sourceRef).toEqual(expect.stringMatching(/^[\da-f-]{36}$/i));
   const schedule = payload.schedule as Record<string, unknown> | null;
   return {
@@ -399,8 +430,8 @@ export async function create(
   return submitCreate(page, composer, {
     kind: options.kind,
     title: options.title,
-    recurring: options.recurrence !== undefined &&
-      options.recurrence !== 'none',
+    recurring:
+      options.recurrence !== undefined && options.recurrence !== 'none',
   });
 }
 
@@ -411,24 +442,21 @@ export async function openInspector(
   if (!item.scheduleRef) {
     throw new Error('A physical Schedule is required to open this instance.');
   }
-  const card = page.locator(
-    '[data-timeline-event="' + item.scheduleRef + '"]',
-  );
+  const card = page.locator('[data-timeline-event="' + item.scheduleRef + '"]');
   await expect(card).toHaveCount(1);
   await card.scrollIntoViewIfNeeded();
   await card.getByRole('button', { name: item.title, exact: true }).click();
   const inspector = page.locator('.timeline-event-modal[role="dialog"]');
   await expect(inspector).toBeVisible();
-  await expect(inspector.getByRole('heading', { name: item.title })).toBeVisible();
+  await expect(
+    inspector.getByRole('heading', { name: item.title }),
+  ).toBeVisible();
   // The dialog's accessible name changes during Edit. Use a stable owner
   // locator for the whole journey instead of a stale title-bound role query.
   return inspector;
 }
 
-export async function serverRead(
-  page: Page,
-  path: string,
-): Promise<unknown> {
+export async function serverRead(page: Page, path: string): Promise<unknown> {
   const response = await page.request.get(path, {
     headers: { 'X-Dante-Time-Zone': 'Europe/Rome' },
   });
