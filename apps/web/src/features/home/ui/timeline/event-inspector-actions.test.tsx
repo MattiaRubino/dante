@@ -1452,7 +1452,7 @@ describe('Event Inspector actions', () => {
     });
     expect(within(recorded).getByText('Risultato: Sì')).toBeTruthy();
     expect(screen.queryByRole('textbox', { name: 'Nome obiettivo' })).toBeNull();
-    fireEvent.click(screen.getByRole('button', { name: /Aggiungi obiettivo$/ }));
+    fireEvent.click(screen.getByRole('button', { name: '+ Obiettivo' }));
     expect(screen.getByRole('textbox', { name: 'Nome obiettivo' }))
       .toHaveProperty('value', '');
     fireEvent.click(within(recorded).getByRole('button', {
@@ -1655,7 +1655,7 @@ describe('Event Inspector actions', () => {
     );
     fireEvent.click(screen.getByRole('button', { name: /^Modifica$/ }));
     fireEvent.click(
-      await screen.findByRole('button', { name: '＋ Aggiungi obiettivo' }),
+      await screen.findByRole('button', { name: '+ Obiettivo' }),
     );
     fireEvent.change(screen.getByRole('textbox', { name: 'Nome obiettivo' }), {
       target: { value: 'Presentare il progetto' },
@@ -1708,7 +1708,7 @@ describe('Event Inspector actions', () => {
     );
     fireEvent.click(screen.getByRole('button', { name: /^Modifica$/ }));
     fireEvent.click(
-      await screen.findByRole('button', { name: '＋ Aggiungi obiettivo' }),
+      await screen.findByRole('button', { name: '+ Obiettivo' }),
     );
     fireEvent.change(screen.getByRole('textbox', { name: 'Nome obiettivo' }), {
       target: { value: 'Partecipare' },
