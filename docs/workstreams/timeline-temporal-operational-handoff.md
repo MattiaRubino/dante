@@ -1,5 +1,16 @@
 # Timeline / Temporal-Operational — Workstream Handoff
 
+## 2026-11-09 — 3-browser trace diagnosis and atomic Save E2E synchronization
+
+Owner provided the `e2e-v2-smoke-20261109-214115` artifacts: **3/3 RT-01 PASS, 0/3 P1-E01 PASS** over six reported browser tests, ~50 seconds with three independent disposable stacks. All P1-E01 failures were the same test-driver sequencing fault at E01/5 new Life Area after Edit, not a proven product defect. Each trace shows the catalog GET returned the old area before the second Event atomic PUT was issued (its response was missing after test failure/teardown). The PUT contained valid new-area name and `#8E24AA` intent; cannot infer backend outcome when request was cancelled.
+
+The E2E helper `saveOneOffEditor(page,editor,item)` now synchronizes **exact Event/Activity `PUT /atomic-edit` HTTP 200** and UI save-completion, and is reused in E01/4 and E01/5. This retains exact new Area catalog cardinality and assigned-area truth checks, with no sleeps or assertion weakening. Documented in `docs/development/temporal-user-lifecycle-journey-matrix.md`. Only tests and docs changed.
+
+**Next gate:** pull new SHA, `pnpm --filter @dante/web typecheck`, then `python3 tooling/testing/run_real_stack_playwright.py --workers 3 --grep 'V2-(P1-E01|RT-01)'`. If 6/6 PASS, expand to 102 v2 per browser using `--grep '^.*V2-'` (or `--grep 'V2-'`). Do not claim green until owner evidence; if failure remains preserve 3 JUnit/log/trace sets. Never rerun all 306 on a single shared HTTP/PostgreSQL stack.
+
+---
+
+
 ## 2026-11-09 — Compact Objective actions and complete v2 recurring E2E boundary (GIT CANDIDATE, not validated)
 
 The user clarified shared UI text: use **`+ Obiettivo`** (not `＋ Aggiungi obiettivo`) in Create, Activity Edit and Event Edit. The button's accessible name, tests and real-browser locators have been changed together, retaining the same add operation and unsaved-draft isolation.
