@@ -248,6 +248,7 @@ export async function authorPersona(
     repeatCount: number | null;
   }>,
   enableLiveSession = false,
+  clockOverride?: string,
 ): Promise<AuthoredPersona> {
   const colorIndex = Number(persona.id.slice(1)) - 1;
   const color = HEX_COLORS[colorIndex % HEX_COLORS.length]!;
@@ -263,7 +264,7 @@ export async function authorPersona(
     kind: persona.kind,
     title,
     date,
-    clock: persona.kind === 'event' ? '11:20' : '09:10',
+    clock: clockOverride ?? (persona.kind === 'event' ? '11:20' : '09:10'),
     ...(persona.allDay ? { allDay: true } : {}),
     ...(areaName ? { lifeArea: areaName } : {}),
     ...(recurrence

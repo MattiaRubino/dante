@@ -3,6 +3,7 @@
  * ordinary CRUD suite cannot verify: confirmed Objective results, and active
  * Session/Edit protection. Neither test is xfailed or skipped for known bugs.
  */
+import { Temporal } from '@dante/time';
 import {
   expect, test, type Locator, type Page,
 } from '@playwright/test';
@@ -99,12 +100,18 @@ test.describe('Temporal v2 — recorded facts survive Edit', () => {
   ) => {
     const user = await signedInPersona(browser, info, 101);
     const { page } = user;
-    const day = scenarioDate(5);
+    // Run during a genuinely current, in-progress Activity. A future
+    // planned Activity cannot be started by Play merely to satisfy a test.
+    const start = Temporal.Now.zonedDateTimeISO('Europe/Rome').subtract({
+      minutes: 15,
+    });
+    const day = start.toPlainDate().toString();
+    const clock = start.toPlainTime().toString({ smallestUnit: 'minute' });
     const title = uniqueTitle('v2 sessione in esecuzione');
     try {
       await openHome(page, day);
       const authored = await authorPersona(
-        page, ACTIVITY_CASES[0]!, title, day, undefined, true,
+        page, ACTIVITY_CASES[0]!, title, day, undefined, true, clock,
       );
       await openHome(page, day);
       const card = cardOn(page, day, title);
