@@ -175,8 +175,22 @@ def _write_diagnostic_archive(directory: Path) -> Path:
     """
     reduced = directory / "diagnostic-traces"
     inventory: list[dict[str, object]] = []
-    for source in sorted(directory.glob("*/test-results/**/trace.zip")):
+    omitted_origins: list[str] = []
+    traces_per_project: dict[str, int] = {}
+    # Full matrices may have hundreds of failures. Cap upload-oriented trace
+    # reduction to the first three per browser; retain every raw trace on disk.
+    sources = sorted(
+        directory.glob("*/test-results/**/trace.zip"),
+        key=lambda source: (source.parent.parent.parent.name, source.stat().st_mtime),
+    )
+    for source in sources:
         relative = source.relative_to(directory)
+        project = relative.parts[0]
+        count = traces_per_project.get(project, 0)
+        if count >= 3:
+            omitted_origins.append(relative.as_posix())
+            continue
+        traces_per_project[project] = count + 1
         target = reduced / relative.with_name("trace-diagnostic.zip")
         target.parent.mkdir(parents=True, exist_ok=True)
         skipped = 0
@@ -216,6 +230,7 @@ def _write_diagnostic_archive(directory: Path) -> Path:
             "format": "dante-e2e-compact-v1",
             "original_traces_retained_on_disk": True,
             "traces": inventory,
+            "raw_traces_not_in_compact_archive": omitted_origins,
         }, indent=2) + "\n", encoding="utf-8",
     )
     names = {
