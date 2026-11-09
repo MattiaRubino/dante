@@ -488,6 +488,9 @@ def main() -> None:
             try:
                 _docker(
                     "run",
+                    # Delete anonymous Postgres data volumes when this
+                    # disposable container exits, even after a forced stop.
+                    "--rm",
                     "--detach",
                     "--name",
                     container_name,
@@ -513,7 +516,7 @@ def main() -> None:
                 break
             except subprocess.CalledProcessError as exc:
                 stderr = (exc.stderr or "").strip()
-                _docker("rm", "--force", container_name, check=False)
+                _docker("rm", "--force", "--volumes", container_name, check=False)
                 retryable_port_failure = any(
                     marker in stderr.lower()
                     for marker in (
@@ -601,7 +604,7 @@ def main() -> None:
         hibp_thread.join(timeout=2)
         hibp_server.server_close()
         if container_started:
-            _docker("rm", "--force", container_name, check=False)
+            _docker("rm", "--force", "--volumes", container_name, check=False)
 
 
 if __name__ == "__main__":
