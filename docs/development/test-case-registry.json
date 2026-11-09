@@ -5601,6 +5601,46 @@
       "invariant": "No destructive callback occurs from cancel/Escape or while busy; explicit confirmation is distinct from deleting the Objective itself; keyboard focus stays within the modal and returns to its origin.",
       "status": "QUALIFIED",
       "audit_note": "New focused jsdom positive/refusal/busy/keyboard cases reviewed 2026-11-09; Vitest execution evidence pending; not yet marked PASS."
+    },
+    {
+      "path": "apps/backend/tests/integration/temporal/test_recurring_series_life_area.py",
+      "suite": "backend-postgres-integration",
+      "contract_id": "T05",
+      "candidate_behavior": "Recurring Event/Activity Life Area structural series edits, transaction and readback",
+      "purpose": "Prove recurring edits preserve selected/future identity, catalog color and owner scoped Life Area placement with CAS and real materialization.",
+      "invariant": "Life Area create/replace/recolor in a recurring series does not lose identity, misassign color or partially commit on rejected change.",
+      "status": "UNREVIEWED",
+      "audit_note": "Registered from source and visual QA drift report 2026-11-09. Fresh PostgreSQL evidence and full test audit pending."
+    },
+    {
+      "path": "apps/backend/tests/unit/temporal/test_recurring_series_life_area_intent.py",
+      "suite": "backend-unit",
+      "contract_id": "T05",
+      "candidate_behavior": "Authoritative recurring Life Area create/reuse/color intent validation",
+      "purpose": "Ensure Event and Routine structural edits reject malformed or ambiguous Life Area source intents.",
+      "invariant": "Valid new Life Area intents pass; invalid names/color codes and incompatible color intents fail before any write.",
+      "status": "UNREVIEWED",
+      "audit_note": "Registered from source 2026-11-09. Targeted pytest and full-file audit pending."
+    },
+    {
+      "path": "apps/web/src/features/temporal-create/ui/temporal-life-area-select.test.tsx",
+      "suite": "web-unit-component",
+      "contract_id": "T02",
+      "candidate_behavior": "Existing Life Area catalog remains selectable in Event/Activity editor",
+      "purpose": "Verify focusing a selected Life Area shows all catalog options while typed queries still filter correctly.",
+      "invariant": "Already-selected Life Area must not hide alternative existing areas nor break user search.",
+      "status": "UNREVIEWED",
+      "audit_note": "Registered from source after Visual QA; fresh Vitest and full test case audit pending."
+    },
+    {
+      "path": "apps/web/src/features/temporal/stateful-case-matrix.test.ts",
+      "suite": "web-unit",
+      "contract_id": "T05",
+      "candidate_behavior": "100 user-journey persona and rich recurrence case-matrix contract",
+      "purpose": "Prove 20 Event +20 Activity scenarios, all supported objective kinds, policy/area variants, recurrence cadences, finite count and non-overlapping accounts.",
+      "invariant": "Every P1/P2/P3 persona index is stable and uniquely seeded; no case silently disappears or loses feature-density.",
+      "status": "UNREVIEWED",
+      "audit_note": "Registered from source; matrix self-test and full Vitest evidence pending."
     }
   ]
 }
