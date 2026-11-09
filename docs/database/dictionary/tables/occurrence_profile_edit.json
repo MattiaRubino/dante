@@ -8,7 +8,7 @@
     "name": "occurrence_profile_edit",
     "ownership_class": "dante_owned"
   },
-  "purpose": "Append-only owner-scoped recurring metadata corrections. From-next edits exclude the selected registered instance; accepted series edits retain an immutable list of protected future exceptions.",
+  "purpose": "Append-only owner-scoped recurring metadata corrections. Only clean selected instances can use inclusive following-scope edits; protected selected instances require from-next and protected future exceptions remain excluded.",
   "classification": {
     "persistence_role": "occurrence_scoped_profile_edit_history",
     "canonicality": "canonical",
@@ -16,7 +16,8 @@
   },
   "semantic_traceability": {
     "authority_sources": [
-      "docs/workstreams/timeline-temporal-operational-b14-ui-consolidation-2026-09-30.md"
+      "docs/workstreams/timeline-temporal-operational-b14-ui-consolidation-2026-09-30.md",
+      "docs/domain/decisions/confirmed-objective-edit-and-recurring-protection-v1.md"
     ],
     "domain_concepts": [
       "Recurrence",
@@ -380,7 +381,26 @@
         "live": true
       }
     ],
-    "triggers": [],
+    "triggers": [
+      {
+        "name": "tr_occurrence_profile_edit_protected_selected",
+        "routine": "dante.enforce_selected_occurrence_series_protection",
+        "events": [
+          "INSERT"
+        ],
+        "timing": "BEFORE",
+        "orientation": "ROW",
+        "constraint_trigger": false,
+        "deferrable": false,
+        "initially_deferred": false,
+        "enabled_mode": "ORIGIN",
+        "update_columns": [],
+        "when_condition": null,
+        "arguments": [],
+        "invariant_role": "recurring_selected_protection",
+        "reason": "Reject inclusive series writes whose selected occurrence has live/paused/finished Session, recorded Objective, or local exception."
+      }
+    ],
     "table": {
       "persistence": "permanent",
       "access_method": "heap",
@@ -417,12 +437,14 @@
       "Never mutate any other already-past instance",
       "Record skipped, locally changed, or recorded future instances as immutable exclusions from this series metadata edit",
       "Routine/Event parity and current immutable Recurrence state",
-      "No table access for dante_runtime"
+      "No table access for dante_runtime",
+      "Selected already-recorded or locally edited instance is rejected from inclusive series changes at SQL admission"
     ],
     "test_refs": [
       "apps/backend/tests/integration/temporal/test_b14_m1_scoped_profile_edit.py",
       "apps/backend/tests/integration/database/test_current_catalog.py",
-      "apps/backend/tests/integration/database/test_database_current_catalog.py"
+      "apps/backend/tests/integration/database/test_database_current_catalog.py",
+      "apps/backend/tests/integration/temporal/test_recurring_profile_scoped_edit.py"
     ],
     "staged_evidence": []
   }
