@@ -72,6 +72,22 @@ def test_objective_verification_persists_independently_and_replays(
         assert len(listing.json()) == 1
         assert listing.json()[0]["verification_mode"] == initial_mode
 
+        # Regression: the Activity Edit snapshot must reflect the independent
+        # verification policy, not silently fall back to ObjectiveResponse's
+        # default "none" when the definition is actually review_on_end.
+        edit_snapshot = client.get(
+            f"/api/v1/temporal/activities/{activity_ref}/edit-snapshot",
+            headers=_base_headers(),
+        )
+        assert edit_snapshot.status_code == 200, edit_snapshot.text
+        snapshot_objectives = edit_snapshot.json()["objectives"]
+        assert len(snapshot_objectives) == 1
+        assert snapshot_objectives[0]["objective_ref"] == objective_ref
+        assert snapshot_objectives[0]["verification_mode"] == initial_mode
+        assert snapshot_objectives[0]["verification_revision"] == (
+            0 if initial_mode == "none" else 1
+        )
+
         definition_path = f"/api/v1/temporal/objectives/{objective_ref}/definition"
         definition = client.get(definition_path, headers=_base_headers())
         assert definition.status_code == 200, definition.text
@@ -98,6 +114,17 @@ def test_objective_verification_persists_independently_and_replays(
         assert changed_state.status_code == 200, changed_state.text
         assert changed_state.json()["verification_mode"] == target
         assert changed_state.json()["verification_revision"] == (
+            edit["expected_verification_revision"] + 1
+        )
+        changed_snapshot = client.get(
+            f"/api/v1/temporal/activities/{activity_ref}/edit-snapshot",
+            headers=_base_headers(),
+        )
+        assert changed_snapshot.status_code == 200, changed_snapshot.text
+        current_objective = changed_snapshot.json()["objectives"][0]
+        assert current_objective["objective_ref"] == objective_ref
+        assert current_objective["verification_mode"] == target
+        assert current_objective["verification_revision"] == (
             edit["expected_verification_revision"] + 1
         )
         assert client.put(definition_path, json=edit, headers=headers).status_code == 200
