@@ -1249,7 +1249,7 @@ describe('Objective correction in Activity Editor', () => {
     expect(screen.queryByRole('textbox', { name: 'Nome obiettivo' })).toBeNull();
     // A half-written new Objective is not a prerequisite for deleting an
     // unrelated confirmed result; its draft must survive the readback.
-    fireEvent.click(screen.getByRole('button', { name: /Aggiungi obiettivo$/ }));
+    fireEvent.click(screen.getByRole('button', { name: '+ Obiettivo' }));
     const unfinished = screen.getByRole('textbox', { name: 'Nome obiettivo' });
     expect(unfinished).toHaveProperty('value', '');
     fireEvent.click(within(recorded).getByRole('button', {
@@ -1579,7 +1579,7 @@ describe('Activity Inspector', () => {
       />,
     );
     fireEvent.click(
-      await screen.findByRole('button', { name: /Aggiungi obiettivo/ }),
+      await screen.findByRole('button', { name: '+ Obiettivo' }),
     );
     fireEvent.change(screen.getByRole('textbox', { name: 'Nome obiettivo' }), {
       target: { value: 'Percorrere 10 km' },
