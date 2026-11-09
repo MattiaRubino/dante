@@ -892,6 +892,10 @@ async function deleteRecurringAndProveNoResurrection(
   await expect(onDay(page, earlierDay, originalTitle)).toHaveCount(0);
 }
 
+// Fail a missing or disabled UI action promptly with the exact locator.
+// The 300-second journey deadline still covers legitimate multi-step work.
+test.use({ actionTimeout: 15_000, navigationTimeout: 15_000 });
+
 test.describe('Temporal v2 — real stateful user personas', () => {
   test.describe.configure({ timeout: 300_000 });
 
