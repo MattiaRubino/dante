@@ -1263,6 +1263,22 @@ export function ActivityEditPanel({
           );
           return;
         }
+        // Saving an unchanged Activity is an editor close, never an empty
+        // atomic-edit command. PostgreSQL rejects empty writes, and sending
+        // one would invent a mutation instead of preserving accepted state.
+        if (
+          (!recurringContext || editScope === 'only_this') &&
+          !proposedRecurrence &&
+          !coreDirty &&
+          !planDirty &&
+          !lockDirty &&
+          !areaDirty &&
+          !objectiveDirty &&
+          !nameDirty
+        ) {
+          onSaved(profile);
+          return;
+        }
         setObjectiveError('');
         setPending(true);
         setPlanPending(true);
