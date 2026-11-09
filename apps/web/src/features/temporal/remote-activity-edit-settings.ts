@@ -474,6 +474,9 @@ export function createRemoteActivityEditSettings(
       edit: AtomicExtras,
       operationId: string,
     ): Promise<{ profile: ActivityProfile; settings: ActivityEditSettings }> {
+      if (Object.keys(edit).length === 0) {
+        throw new Error('Nessuna modifica da salvare.');
+      }
       const ref = profile.activityRef;
       const response = await request(endpoint(ref, 'atomic-edit'), {
         method: 'PUT',
@@ -568,6 +571,14 @@ export function createRemoteActivityEditSettings(
       const raw: unknown = await response.json();
       if (!response.ok) {
         const problem = object(raw);
+        // Pydantic's technical validation text belongs in developer
+        // diagnostics, not in the user-facing Activity Edit.
+        if (response.status === 422) {
+          throw new Error(
+            'Modifica non salvata: alcuni dati non sono validi. ' +
+            'Controlla le modifiche e riprova.',
+          );
+        }
         throw new Error(
           typeof problem.detail === 'string'
             ? problem.detail
