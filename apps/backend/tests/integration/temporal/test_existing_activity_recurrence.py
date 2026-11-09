@@ -174,7 +174,9 @@ async def test_converted_activity_with_two_intervals_materializes_next_day(
     runtime = create_database_runtime(migrated_database.runtime_settings())
     day = date(2027, 1, 2)
 
-    def placement(hour: int, minute: int, end_hour: int, end_minute: int):
+    def placement(
+        hour: int, minute: int, end_hour: int, end_minute: int,
+    ) -> NamedZoneLocalIntervalPlacement:
         return NamedZoneLocalIntervalPlacement(
             starts_local_at=datetime(2027, 1, 2, hour, minute),  # noqa: DTZ001
             ends_local_at=datetime(2027, 1, 2, end_hour, end_minute),  # noqa: DTZ001
@@ -212,12 +214,8 @@ async def test_converted_activity_with_two_intervals_materializes_next_day(
             row for row in snapshot.schedules if row.role_code == "envelope"
         )
         assert envelope.placement_material_state_ref is not None
-        assert len([
-            row for row in snapshot.schedules if row.role_code == "interval"
-        ]) == 2
-        assert len([
-            row for row in snapshot.schedules if row.role_code == "planned"
-        ]) == 2
+        assert sum(row.role_code == "interval" for row in snapshot.schedules) == 2
+        assert sum(row.role_code == "planned" for row in snapshot.schedules) == 2
 
         recurrence = CalendarRecurrence(
             family_code="calendar_wall_clock",
@@ -291,10 +289,9 @@ async def test_converted_activity_with_two_intervals_materializes_next_day(
                     _SNAPSHOT, {"actor": actor, "activity": generated_ref},
                 )
             )
-        assert len([
-            row for row in generated_snapshot.schedules
-            if row.role_code == "interval"
-        ]) == 2
+        assert sum(
+            row.role_code == "interval" for row in generated_snapshot.schedules
+        ) == 2
         assert [
             row.display_name for row in generated_snapshot.schedules
             if row.role_code == "planned"
