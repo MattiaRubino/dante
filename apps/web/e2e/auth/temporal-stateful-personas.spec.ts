@@ -413,11 +413,13 @@ async function seriesRevision(
   nextTitle: string,
   persona: PersonaCase,
   originalTruth: PersonaTruth,
+  fromNext = false,
 ): Promise<PersonaTruth> {
   const inspector = await openEdit(page, day, originalTitle);
   const scope = page.getByRole('dialog', { name: 'Modifica ricorrenza' });
-  await scope.getByRole('button', { name: 'Questa e le successive' })
-    .click();
+  await scope.getByRole('button', {
+    name: fromNext ? 'Dalla prossima istanza' : 'Questa e le successive',
+  }).click();
   await inspector.getByRole('textbox', { name: 'Titolo' }).fill(nextTitle);
   const changedGoals = [...originalTruth.objectives];
   const revisedGoal = {
@@ -549,6 +551,48 @@ async function localRevision(
   }).fill(changedTitle);
   await inspector.getByRole('button', { name: 'Salva modifiche' }).click();
   await assertCard(page, day, changedTitle);
+}
+
+async function assertReturningSeriesTruth(
+  page: Page, day: string, sourceRef: string,
+  title: string, persona: PersonaCase,
+): Promise<PersonaTruth> {
+  const entry = await occurrence(page, day, sourceRef);
+  expect(entry.title).toBe(title);
+  const state = await serverRead(
+    page,
+    '/api/v1/temporal/occurrences/' + String(entry.occurrence_ref) +
+      '/series-edit-source',
+  ) as Record<string, unknown>;
+  const snapshot = state.structure_snapshot as Record<string, unknown>;
+  const template = persona.kind === 'activity'
+    ? snapshot.activity_template as Record<string, unknown>
+    : snapshot;
+  const goals = (template.objectives as Record<string, unknown>[]).map(
+    (goal) => ({
+      label: String(goal.label),
+      kind: goal.result_kind as PersonaTruth['objectives'][number]['kind'],
+      target: typeof goal.target_value === 'number' ? goal.target_value : null,
+      minimum: typeof goal.target_min === 'number' ? goal.target_min : null,
+      maximum: typeof goal.target_max === 'number' ? goal.target_max : null,
+      verification: goal.verification_mode === 'review_on_end'
+        ? 'review_on_end' as const : 'none' as const,
+    }),
+  );
+  return {
+    title,
+    description: typeof state.description === 'string'
+      ? state.description : null,
+    areaRef: (template.life_area_ref ?? null) as string | null,
+    areaName: null,
+    objectives: goals,
+    agenda: persona.kind === 'event'
+      ? snapshot.agenda_parts as string[] : [],
+    sessions: persona.kind === 'activity'
+      ? (template.planned_slices as Record<string, unknown>[])
+        .map((session) => String(session.name)) : [],
+    explicitExtraIntervals: 0,
+  };
 }
 
 async function deleteRecurringAndProveNoResurrection(
@@ -749,12 +793,47 @@ test.describe('Temporal v2 — real stateful user personas', () => {
           expect(earlier.title, 'local exception must be protected')
             .toBe(localTitle);
         });
+        const middle = nextOccurrence(future, recurrence);
+        const later = nextOccurrence(middle, recurrence);
+        const anotherLocal = revisedTitle + ' eccezione intermedia';
         await test.step(
-          persona.id + '/6 Delete single → checkpoint → whole series',
+          persona.id + '/6 Another local exception, then FROM NEXT',
+          async () => {
+            await localRevision(
+              page, middle, revisedTitle, persona.kind, anotherLocal,
+            );
+            await assertCard(page, future, revisedTitle);
+            const current = await occurrence(
+              page, middle, authored.item.sourceRef,
+            );
+            expect(current.title).toBe(anotherLocal);
+            // This is the previously modified selected instance: choosing
+            // "Dalla prossima istanza" must EXCLUDE the selected boundary.
+            const fromNextTitle = revisedTitle + ' dalla prossima';
+            const previousTruth = await assertReturningSeriesTruth(
+              page, future, authored.item.sourceRef,
+              revisedTitle, persona,
+            );
+            const nextTruth = await seriesRevision(
+              page, middle, anotherLocal, fromNextTitle,
+              persona, previousTruth, true,
+            );
+            await assertCard(page, middle, anotherLocal);
+            await expect(onDay(page, middle, fromNextTitle)).toHaveCount(0);
+            await assertCard(page, later, fromNextTitle);
+            await assertRecurringTruth(
+              page, later, authored.item.sourceRef, nextTruth, persona,
+            );
+            await assertCard(page, future, revisedTitle);
+            await assertCard(page, day, localTitle);
+          },
+        );
+        await test.step(
+          persona.id + '/7 Delete single → checkpoint → whole series',
           async () => {
             await deleteRecurringAndProveNoResurrection(
-              page, future, nextOccurrence(future, recurrence),
-              day, localTitle, revisedTitle, persona.kind,
+              page, later, nextOccurrence(later, recurrence),
+              day, localTitle, revisedTitle + ' dalla prossima', persona.kind,
             );
           },
         );
