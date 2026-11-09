@@ -67,6 +67,7 @@ import {
   type ExistingRecurrenceControlHandle,
 } from './existing-recurrence-control';
 import { SessionAttemptDeleteDialog } from './session-attempt-delete-dialog';
+import { ObjectiveRecordingDeleteDialog } from './objective-recording-delete-dialog';
 import { UnsavedChangesDialog } from './unsaved-changes-dialog';
 import {
   createRemoteRecurringProfileEdit,
@@ -464,6 +465,8 @@ export function ActivityEditPanel({
   const [removedObjectives, setRemovedObjectives] = useState<string[]>([]);
   const [objectivePending, setObjectivePending] = useState(false);
   const [objectiveError, setObjectiveError] = useState('');
+  const [deletingObjective, setDeletingObjective] = useState<ObjectiveView | null>(null);
+  const [objectiveDeletePending, setObjectiveDeletePending] = useState(false);
   const [correctingObjective, setCorrectingObjective] =
     useState<ObjectiveView | null>(null);
   const [correctedValue, setCorrectedValue] = useState('');
@@ -955,6 +958,60 @@ export function ActivityEditPanel({
         );
       })
       .finally(() => setObjectivePending(false));
+  };
+
+  const requestRecordedObjectiveDeletion = (objective: ObjectiveView) => {
+    if (
+      pending || planPending || objectivePending || objectiveDeletePending ||
+      !objective.observationRef || !objective.evaluationStateRef
+    ) return;
+    if (dirty) {
+      setObjectiveError(
+        'Salva o annulla le modifiche prima di eliminare la registrazione.',
+      );
+      return;
+    }
+    setObjectiveError('');
+    setDeletingObjective(objective);
+  };
+
+  const confirmRecordedObjectiveDeletion = () => {
+    if (
+      !deletingObjective?.evaluationStateRef || !settings ||
+      objectiveDeletePending
+    ) return;
+    const objective = deletingObjective;
+    setObjectiveDeletePending(true);
+    setObjectiveError('');
+    void objectiveSource
+      .deleteRecordedResult(
+        objective.objectiveRef, objective.evaluationStateRef!,
+      )
+      .then(() => settingsSource.refreshObjectives(profile.activityRef, settings))
+      .then((fresh) => {
+        setSettings(fresh);
+        setObjectiveRows(fresh.objectives.map(existingObjectiveDraft));
+        setRemovedObjectives([]);
+        setCorrectingObjective(null);
+        setDeletingObjective(null);
+        correctionOperation.current = null;
+        operation.current = undefined;
+      })
+      .catch((reason: unknown) => {
+        setDeletingObjective(null);
+        setObjectiveError(
+          reason instanceof Error
+            ? reason.message
+            : 'Eliminazione registrazione non riuscita. Riapri Modifica.',
+        );
+        void settingsSource.refreshObjectives(profile.activityRef, settings)
+          .then((fresh) => {
+            setSettings(fresh);
+            setObjectiveRows(fresh.objectives.map(existingObjectiveDraft));
+          })
+          .catch(() => {});
+      })
+      .finally(() => setObjectiveDeletePending(false));
   };
 
   const prepareObjectiveRows = async (): Promise<ActivityObjectiveBatch> => {
@@ -2325,8 +2382,14 @@ export function ActivityEditPanel({
                         row={row}
                         index={index}
                         total={visible.length}
-                        disabled={pending || planPending || objectivePending}
+                        disabled={pending || planPending || objectivePending || objectiveDeletePending}
                         onInspect={() => inspectObjective(row)}
+                        onCorrectRecorded={() => {
+                          if (row.original) startResultCorrection(row.original);
+                        }}
+                        onDeleteRecorded={() => {
+                          if (row.original) requestRecordedObjectiveDeletion(row.original);
+                        }}
                         onChange={(patch) => patchObjective(row.id, patch)}
                         onMove={(direction) => moveObjective(row.id, direction)}
                         onRemove={() => {
@@ -2382,20 +2445,6 @@ export function ActivityEditPanel({
                       {objectiveError}
                     </small>
                   ) : null}
-                  {settings.objectives
-                    .filter((row) => row.observationRef)
-                    .map((row) => (
-                      <div key={row.objectiveRef}>
-                        <span>{row.label} · risultato registrato</span>
-                        <button
-                          type="button"
-                          disabled={objectivePending || pending}
-                          onClick={() => startResultCorrection(row)}
-                        >
-                          Correggi risultato
-                        </button>
-                      </div>
-                    ))}
                 </div>
                 {correctingObjective ? (
                   <fieldset disabled={objectivePending}>
@@ -2600,6 +2649,14 @@ export function ActivityEditPanel({
           {pending ? 'Salvataggio…' : 'Salva modifiche'}
         </button>
       </div>
+      {deletingObjective ? (
+        <ObjectiveRecordingDeleteDialog
+          objectiveLabel={deletingObjective.label}
+          busy={objectiveDeletePending}
+          onConfirm={confirmRecordedObjectiveDeletion}
+          onCancel={() => setDeletingObjective(null)}
+        />
+      ) : null}
       {deletingAttempt ? (
         <SessionAttemptDeleteDialog
           sessionType={
