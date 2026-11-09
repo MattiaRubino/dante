@@ -301,6 +301,9 @@ def _self_test() -> None:
         failure = root / "chromium" / "test-results" / "failed-test"
         failure.mkdir(parents=True)
         (root / "chromium" / "playwright.log").write_text("FAILED\n")
+        (root / "chromium" / "junit.xml").write_text(
+            "<testsuite><testcase><failure/></testcase></testsuite>\n"
+        )
         (failure / "error-context.md").write_text("button absent\n")
         with zipfile.ZipFile(failure / "trace.zip", "w") as trace:
             trace.writestr("0-trace.trace", "action=click\n")
@@ -314,7 +317,10 @@ def _self_test() -> None:
                 "diagnostic-traces/chromium/test-results/"
                 "failed-test/trace-diagnostic.zip"
             )
-            assert {"summary.json", "chromium/playwright.log", reduced_name} <= member_names
+            assert {
+                "summary.json", "chromium/playwright.log",
+                "chromium/junit.xml", reduced_name,
+            } <= member_names
             assert "chromium/test-results/failed-test/error-context.md" in member_names
             member = bundle.extractfile(reduced_name)
             assert member is not None
