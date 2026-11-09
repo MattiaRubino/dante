@@ -596,25 +596,16 @@ async function assertRecurringTruth(
   ) as Record<string, unknown>;
   expect(loaded.source_native_ref).toBe(sourceRef);
   const structure = loaded.structure_snapshot as Record<string, unknown>;
-  const template = persona.kind === 'activity'
-    ? structure.activity_template as Record<string, unknown>
-    : structure;
-  const objectives = template.objectives as Record<string, unknown>[];
+  // Activity takes the early return and checks its materialized snapshot.
+  // Only Event source snapshots reach this branch.
+  const objectives = structure.objectives as Record<string, unknown>[];
   expect(objectives.map((item) => item.label),
     'persisted recurring Objective order for ' + persona.id)
     .toEqual(truth.objectives.map((item) => item.label));
-  if (persona.kind === 'event') {
-    expect(structure.agenda_parts, 'persisted recurring Event agenda')
-      .toEqual(truth.agenda);
-    expect(structure.life_area_ref ?? null, 'persisted recurring Event Life Area')
-      .toBe(truth.areaRef);
-  } else {
-    const planned = template.planned_slices as Record<string, unknown>[];
-    expect(planned.map((item) => item.name),
-      'persisted recurring planned Sessions').toEqual(truth.sessions);
-    expect(template.life_area_ref ?? null,
-      'persisted recurring Activity Life Area').toBe(truth.areaRef);
-  }
+  expect(structure.agenda_parts, 'persisted recurring Event agenda')
+    .toEqual(truth.agenda);
+  expect(structure.life_area_ref ?? null, 'persisted recurring Event Life Area')
+    .toBe(truth.areaRef);
 }
 
 async function seriesRevision(
