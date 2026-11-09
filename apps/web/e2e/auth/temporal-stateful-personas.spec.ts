@@ -28,7 +28,9 @@ const TZ = { 'X-Dante-Time-Zone': 'Europe/Rome' } as const;
 
 function onDay(page: Page, day: string, title: string): Locator {
   return page.locator(
-    '[data-timeline-event][data-planned-date="' + day + '"]',
+    '[data-timeline-event][data-planned-date="' + day +
+      '"], [data-timeline-all-day-lane="' + day +
+      '"] [data-timeline-all-day-item]',
   ).filter({ hasText: title });
 }
 
@@ -73,11 +75,19 @@ async function assertCard(
   return card;
 }
 
+async function clickCard(card: Locator, title: string): Promise<void> {
+  if (await card.getAttribute('data-timeline-all-day-item') !== null) {
+    await card.click();
+  } else {
+    await card.getByRole('button', { name: title, exact: true }).click();
+  }
+}
+
 async function openEdit(
   page: Page, day: string, title: string,
 ): Promise<Locator> {
   const card = await assertCard(page, day, title);
-  await card.getByRole('button', { name: title, exact: true }).click();
+  await clickCard(card, title);
   const inspector = page.locator('.timeline-event-modal[role="dialog"]');
   await expect(inspector).toBeVisible();
   await inspector.getByRole('button', { name: 'Modifica', exact: true }).click();
@@ -157,7 +167,7 @@ async function duplicateAndCompare(
 ): Promise<CreatedItem> {
   const { item, truth } = authored;
   const card = await assertCard(page, day, truth.title);
-  await card.getByRole('button', { name: truth.title, exact: true }).click();
+  await clickCard(card, truth.title);
   const inspector = page.locator('.timeline-event-modal[role="dialog"]');
   await inspector.getByRole('button', { name: 'Duplica' }).click();
   const composer = page.locator('[data-temporal-create="composer"]');
@@ -198,7 +208,7 @@ async function deleteOneOff(
   page: Page, day: string, item: CreatedItem,
 ): Promise<void> {
   const card = await assertCard(page, day, item.title);
-  await card.getByRole('button', { name: item.title, exact: true }).click();
+  await clickCard(card, item.title);
   const inspector = page.locator('.timeline-event-modal[role="dialog"]');
   const action = item.kind === 'event' ? 'Elimina Event' : 'Elimina';
   await inspector.getByRole('button', { name: action, exact: true }).click();
@@ -547,8 +557,11 @@ test.describe('Temporal v2 — real stateful user personas', () => {
             .click();
           expect((await conversion).status()).toBe(200);
           const originalCard = await assertCard(page, day, title);
-          expect(await originalCard.getAttribute('data-timeline-event'))
-            .toBe(authored.item.scheduleRef);
+          expect(await originalCard.getAttribute(
+            persona.allDay
+              ? 'data-timeline-all-day-item'
+              : 'data-timeline-event',
+          )).toBe(authored.item.scheduleRef);
           await assertCard(page, dateAfter(day, 1), title);
         });
         await test.step(persona.id + '/4 Local change on generated instance', async () => {
@@ -571,8 +584,11 @@ test.describe('Temporal v2 — real stateful user personas', () => {
           await assertCard(page, dateAfter(day, 3), title + ' futuro');
           await assertCard(page, dateAfter(day, 1), title + ' locale');
           const first = await assertCard(page, day, title);
-          expect(await first.getAttribute('data-timeline-event'))
-            .toBe(authored.item.scheduleRef);
+          expect(await first.getAttribute(
+            persona.allDay
+              ? 'data-timeline-all-day-item'
+              : 'data-timeline-event',
+          )).toBe(authored.item.scheduleRef);
         });
       } finally {
         await user.close();
