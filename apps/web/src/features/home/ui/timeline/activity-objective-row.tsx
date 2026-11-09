@@ -136,6 +136,46 @@ export function objectiveDraftError(
   return null;
 }
 
+export function recordedObjectiveSummary(objective: ObjectiveView): Readonly<{
+  criterion: string;
+  result: string;
+}> {
+  const unit = objective.unitCode ? ' ' + objective.unitCode : '';
+  const number = (value: number | null) =>
+    value === null ? '—' : new Intl.NumberFormat('it-IT').format(value);
+  if (objective.resultKind === 'boolean') {
+    return {
+      criterion: 'Risultato atteso: Sì / No',
+      result: objective.observedBoolean === null
+        ? '—' : objective.observedBoolean ? 'Sì' : 'No',
+    };
+  }
+  if (objective.resultKind === 'qualitative') {
+    return {
+      criterion: 'Risultato atteso: qualitativo',
+      result: objective.qualitativeCode ?? '—',
+    };
+  }
+  if (objective.resultKind === 'range') {
+    return {
+      criterion: 'Intervallo: ' + number(objective.targetMin) +
+        ' – ' + number(objective.targetMax) + unit,
+      result: number(objective.observedNumeric) + unit,
+    };
+  }
+  const comparator = {
+    eq: '=',
+    gte: '≥',
+    lte: '≤',
+    between: 'tra',
+  }[objective.comparatorCode ?? 'eq'];
+  return {
+    criterion: 'Obiettivo: ' + comparator + ' ' +
+      number(objective.targetValue) + unit,
+    result: number(objective.observedNumeric) + unit,
+  };
+}
+
 export function ActivityObjectiveRow({
   row,
   index,
@@ -145,6 +185,8 @@ export function ActivityObjectiveRow({
   onChange,
   onRemove,
   onMove,
+  onDeleteRecorded,
+  onCorrectRecorded,
 }: Readonly<{
   row: ActivityObjectiveDraft;
   index: number;
@@ -154,7 +196,49 @@ export function ActivityObjectiveRow({
   onChange: (patch: Partial<ActivityObjectiveDraft>) => void;
   onRemove: () => void;
   onMove: (direction: -1 | 1) => void;
+  onDeleteRecorded?: () => void;
+  onCorrectRecorded?: () => void;
 }>) {
+  if (row.original?.observationRef) {
+    const summary = recordedObjectiveSummary(row.original);
+    return (
+      <div
+        className="timeline-activity-editor__record"
+        data-objective-recorded={row.original.objectiveRef}
+        role="group"
+        aria-label={'Obiettivo registrato ' + row.original.label}
+      >
+        <div className="timeline-activity-editor__record-content">
+          <strong>{row.original.label}</strong>
+          <span className="timeline-activity-editor__record-state">
+            Registrato
+          </span>
+          <span>{summary.criterion}</span>
+          <span>Risultato: {summary.result}</span>
+        </div>
+        <div className="timeline-activity-editor__record-actions">
+          {onCorrectRecorded ? (
+            <button
+              type="button"
+              disabled={disabled}
+              onClick={onCorrectRecorded}
+            >
+              Correggi risultato
+            </button>
+          ) : null}
+          <button
+            type="button"
+            className="timeline-activity-editor__delete-trigger"
+            disabled={disabled || !onDeleteRecorded}
+            onClick={onDeleteRecorded}
+          >
+            Elimina registrazione
+          </button>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <TemporalObjectiveEditorRow
       objective={row}
@@ -204,12 +288,6 @@ export function ActivityObjectiveRow({
                 Questa e le prossime
               </label>
             </fieldset>
-          ) : null}
-          {row.original?.observationRef ? (
-            <p role="status">
-              Questo obiettivo ha risultati registrati: lo storico viene
-              conservato e la rimozione non è consentita.
-            </p>
           ) : null}
         </>
       }
