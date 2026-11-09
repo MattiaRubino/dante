@@ -187,9 +187,13 @@ test.describe('Temporal v2 — recorded facts survive Edit', () => {
         page, ACTIVITY_CASES[0]!, title, day, undefined, true, clock,
       );
       await openHome(page, day);
-      const cards = cardOn(page, day, title);
-      // This persona has TWO legitimate physical interval cards for ONE
-      // Activity. A second card is not a duplicate logical Activity.
+      // This live test runs at wall clock NOW. Near midnight the second
+      // interval starts on the following local date, so counting only
+      // [data-planned-date=day] discards one legitimate Schedule card.
+      // The visible Home window contains both days; check both physical
+      // placements, regardless of the current hour.
+      const cards = page.locator('[data-timeline-event]')
+        .filter({ hasText: title });
       await expect(cards).toHaveCount(ACTIVITY_CASES[0]!.intervalCount);
       const scheduleRefs = await cards.evaluateAll((elements) =>
         elements.map((element) =>
@@ -205,7 +209,7 @@ test.describe('Temporal v2 — recorded facts survive Edit', () => {
       const window = await serverRead(
         page,
         '/api/v1/temporal/timeline/window?start_date=' + day +
-          '&end_date_exclusive=' + dateAfter(day, 1),
+          '&end_date_exclusive=' + dateAfter(day, 2),
       ) as Record<string, unknown>;
       const physical = (window.items as Record<string, unknown>[])
         .filter((row) => row.kind === 'scheduled_activity' &&
@@ -216,7 +220,18 @@ test.describe('Temporal v2 — recorded facts survive Edit', () => {
       expect(new Set(physical.map((row) => String(row.schedule_ref))).size,
         'canonical Session Activity has distinct interval Schedules')
         .toBe(ACTIVITY_CASES[0]!.intervalCount);
-      const card = cards.first();
+      expect(new Set(scheduleRefs),
+        'both physical Timeline cards match their canonical Schedule identities')
+        .toEqual(new Set(physical.map((row) => String(row.schedule_ref))));
+      const placementDates = physical.map((row) =>
+        String(row.display_starts_local_at ?? row.starts_local_at).slice(0, 10),
+      );
+      expect(placementDates.every((date) =>
+        date === day || date === dateAfter(day, 1),
+      ), 'both live Activity intervals are within the current or following day')
+        .toBe(true);
+      const card = cardOn(page, day, title).first();
+      await expect(card).toBeVisible();
       const controls = card.locator(
         '[data-timeline-session-subject="' + authored.item.sourceRef + '"]',
       );
