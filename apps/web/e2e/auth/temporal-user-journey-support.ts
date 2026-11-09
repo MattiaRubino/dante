@@ -284,7 +284,14 @@ export async function configureCreate(
       .fill(options.agenda);
   }
   if (options.objective) {
-    await composer.getByRole('button', { name: 'Aggiungi obiettivo' }).click();
+    const addObjective = composer.getByRole('button', {
+      name: '+ Obiettivo',
+      exact: true,
+    });
+    // This is the public Create control. Fail at this exact boundary if
+    // product copy changes, instead of consuming the five-minute journey.
+    await expect(addObjective).toBeVisible({ timeout: 10_000 });
+    await addObjective.click();
     await composer
       .getByRole('textbox', { name: 'Obiettivo 1' })
       .fill(options.objective);
