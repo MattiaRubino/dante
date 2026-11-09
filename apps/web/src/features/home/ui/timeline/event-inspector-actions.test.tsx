@@ -564,6 +564,99 @@ describe('Event Inspector actions', () => {
     expect(acceptSeries).not.toHaveBeenCalled();
   });
 
+  // Regression 2026-11-09: for "Solo questa istanza", clearing the
+  // inherited Life Area appeared saved in Edit but the Timeline retained the
+  // old source color. Reassigning another area similarly kept the source hue.
+  // Creation previously failed with "Scegli una Life Area dall'elenco".
+  // All three intents must be submitted to the instance-local endpoint.
+  it.each([
+    {
+      scenario: 'replace inherited area',
+      query: 'Progetti',
+      clear: false,
+      expectedArea: 'area-projects',
+      creates: false,
+    },
+    {
+      scenario: 'remove inherited area',
+      query: '',
+      clear: true,
+      expectedArea: null,
+      creates: false,
+    },
+    {
+      scenario: 'create a fresh local area',
+      query: 'Nuova Area Occorrenza',
+      clear: false,
+      expectedArea: null,
+      creates: true,
+    },
+  ])('stages the recurring Event local Life Area: $scenario', async (scenario) => {
+    const occurrenceRef = '0199a555-5555-7555-8555-555555555555';
+    isRecurring.mockResolvedValue(true);
+    loadOccurrenceContext.mockResolvedValue({
+      occurrenceRef,
+      sourceRef: eventRef,
+      editRevision: 2,
+      recurrenceStateRef: '0199a666-6666-7666-8666-666666666666',
+    });
+    loadOccurrenceEvent.mockResolvedValue({
+      eventRef,
+      title: 'Conferenza ricorrente',
+      description: null,
+      location: null,
+      colorCode: null,
+      lifeAreaRef: 'area-old',
+      profileRevision: 2,
+      agendaRevision: 1,
+      agendaParts: ['Scaletta'],
+    });
+    loadOccurrencePatch.mockResolvedValue({});
+    loadArea.mockResolvedValue({
+      currentRef: 'area-old',
+      currentRevision: 2,
+      options: [
+        { ref: 'area-old', name: 'Studio', colorCode: '#4285F4' },
+        { ref: 'area-projects', name: 'Progetti', colorCode: '#FFD600' },
+      ],
+    });
+    saveRecurringEvent.mockResolvedValue(undefined);
+    render(
+      <EventInspectorActions
+        eventRef={eventRef}
+        occurrenceRef={occurrenceRef}
+        placement={placement}
+        onDuplicate={vi.fn()}
+      />,
+    );
+    fireEvent.click(screen.getByRole('button', { name: 'Modifica' }));
+    fireEvent.click(
+      await screen.findByRole('button', { name: 'Solo questa istanza' }),
+    );
+    const input = await screen.findByRole('textbox', {
+      name: 'Life Area (opzionale)',
+    });
+    expect(input).toHaveProperty('value', 'Studio');
+    if (scenario.clear) {
+      fireEvent.click(screen.getByRole('button', { name: 'Rimuovi Life Area' }));
+    } else {
+      fireEvent.change(input, { target: { value: scenario.query } });
+    }
+    fireEvent.click(screen.getByRole('button', { name: 'Salva modifiche' }));
+    await waitFor(() => expect(saveRecurringEvent).toHaveBeenCalledOnce());
+    const localStructure: unknown = saveRecurringEvent.mock.calls[0]?.[2];
+    expect(localStructure).toMatchObject({ lifeAreaRef: scenario.expectedArea });
+    if (scenario.creates) {
+      expect(localStructure).toMatchObject({
+        newArea: { name: 'Nuova Area Occorrenza' },
+      });
+    } else {
+      expect(localStructure).not.toHaveProperty('newArea');
+    }
+    expect(reviseAtomic).not.toHaveBeenCalled();
+    expect(acceptSeries).not.toHaveBeenCalled();
+  });
+
   it('closes an unchanged selected recurring Event without revising the series or instance', async () => {
     const occurrenceRef = '0199a555-5555-7555-8555-555555555555';
     isRecurring.mockResolvedValue(true);
