@@ -446,6 +446,49 @@ async function seriesRevision(
   };
 }
 
+async function recolorExistingSeriesArea(
+  page: Page, day: string, title: string,
+  truth: PersonaTruth,
+): Promise<void> {
+  expect(truth.areaRef, 'precondition: assigned existing Life Area')
+    .toEqual(expect.stringMatching(UUID));
+  const editor = await openEdit(page, day, title);
+  await page.getByRole('dialog', { name: 'Modifica ricorrenza' })
+    .getByRole('button', { name: 'Questa e le successive' })
+    .click();
+  const areaColorButton = editor.getByRole('button', {
+    name: 'Colore Life Area',
+  });
+  await expect(areaColorButton).toBeEnabled();
+  await areaColorButton.click();
+  const picker = page.getByRole('dialog', { name: 'Scegli colore' });
+  await expect(picker).toBeVisible();
+  await picker.getByRole('button', { name: 'Giallo', exact: true }).click();
+  await expect(editor.getByText(
+    /Modificare il colore della Life Area aggiorna/,
+  )).toBeVisible();
+  await editor.getByRole('button', { name: 'Salva modifiche' }).click();
+  const review = page.getByRole('dialog', {
+    name: 'Controlla prima di salvare',
+  });
+  await expect(review).toBeVisible();
+  const accepted = page.waitForResponse((response) =>
+    response.url().endsWith('/series-edit') &&
+    response.request().method() === 'POST',
+  );
+  await review.getByRole('button', { name: 'Conferma salvataggio' })
+    .click();
+  const response = await accepted;
+  expect(response.status(), await response.text()).toBe(200);
+  const catalog = await serverRead(page, '/api/v1/temporal/life-areas')
+    as readonly Record<string, unknown>[];
+  const persisted = catalog.filter((area) =>
+    area.life_area_ref === truth.areaRef,
+  );
+  expect(persisted).toHaveLength(1);
+  expect(persisted[0]!.color_code).toBe('#FFD600');
+}
+
 async function localRevision(
   page: Page,
   day: string,
@@ -558,8 +601,22 @@ test.describe('Temporal v2 — real stateful user personas', () => {
           await assertCard(page, future, title);
           await assertCard(page, day, localTitle);
         });
+        if (persona.area === 'existing') {
+          await test.step(
+            persona.id + '/4 Change assigned Life Area global color',
+            async () => {
+              await recolorExistingSeriesArea(
+                page, future, title, authored.truth,
+              );
+              await assertCard(page, day, localTitle);
+              await assertRecurringTruth(
+                page, future, authored.item.sourceRef, authored.truth, persona,
+              );
+            },
+          );
+        }
         const revisedTitle = title + ' questa e successive';
-        await test.step(persona.id + '/4 Following-series revision', async () => {
+        await test.step(persona.id + '/5 Following-series revision', async () => {
           const revisedTruth = await seriesRevision(
             page, future, title, revisedTitle, persona, authored.truth,
           );
