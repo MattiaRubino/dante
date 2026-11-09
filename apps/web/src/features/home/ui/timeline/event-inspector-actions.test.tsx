@@ -1435,7 +1435,9 @@ describe('Event Inspector actions', () => {
       agendaRevision: 0,
       agendaParts: [],
     });
-    deleteRecordedResult.mockResolvedValueOnce(1);
+    deleteRecordedResult
+      .mockRejectedValueOnce(new Error('Registrazione cambiata.'))
+      .mockResolvedValueOnce(1);
     render(
       <EventInspectorActions
         eventRef={eventRef}
@@ -1467,7 +1469,24 @@ describe('Event Inspector actions', () => {
       name: 'Eliminare la registrazione?',
     })).getByRole('button', { name: 'Sì, elimina' }));
     await waitFor(() => {
-      expect(deleteRecordedResult).toHaveBeenCalledWith(
+      expect(screen.getByRole('alert').textContent)
+        .toContain('Registrazione cambiata.');
+    });
+    expect(deleteRecordedResult).toHaveBeenCalledTimes(1);
+    expect(screen.getByRole('textbox', { name: 'Nome obiettivo' }))
+      .toHaveProperty('value', '');
+    expect(screen.getByRole('group', {
+      name: 'Obiettivo registrato Presenza',
+    })).toBeTruthy();
+    fireEvent.click(within(recorded).getByRole('button', {
+      name: 'Elimina registrazione',
+    }));
+    fireEvent.click(within(screen.getByRole('alertdialog', {
+      name: 'Eliminare la registrazione?',
+    })).getByRole('button', { name: 'Sì, elimina' }));
+    await waitFor(() => {
+      expect(deleteRecordedResult).toHaveBeenCalledTimes(2);
+      expect(deleteRecordedResult).toHaveBeenLastCalledWith(
         stored.objectiveRef,
         stored.evaluationStateRef,
       );
