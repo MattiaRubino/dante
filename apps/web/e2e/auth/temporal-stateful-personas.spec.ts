@@ -851,6 +851,19 @@ async function localRevision(
     name: kind === 'event' ? 'Titolo Event' : 'Titolo',
   }).fill(changedTitle);
   await inspector.getByRole('button', { name: 'Salva modifiche' }).click();
+  // A Save click is not proof of persistence. The generated Event may
+  // POST /event-local-edit (or PUT the physical first Event profile);
+  // Activities use an atomic PUT. Wait for the editor's actual accepted
+  // completion before Home navigation, which otherwise aborts that write.
+  if (kind === 'event') {
+    await expect(
+      inspector.getByText('Evento aggiornato.'),
+    ).toBeVisible({ timeout: 15_000 });
+  } else {
+    await expect(
+      inspector.getByRole('button', { name: 'Salva modifiche' }),
+    ).toHaveCount(0, { timeout: 15_000 });
+  }
   await assertCard(page, day, changedTitle);
 }
 
