@@ -1,5 +1,14 @@
 # Timeline / Temporal-Operational — Workstream Handoff
 
+## 2026-11-10 — P3-A01 DB PASS vs browser RED: widen regression, do not claim root cause
+
+Owner checked out `240feebc4` and ran `test_converted_activity_with_two_intervals_materializes_next_day`: **1 PASS, 8.93s**. The original test used direct Python authoring and conversion, one 2-day checkpoint and canonical SQL-backed read; it did not exercise HTTP and SPA Edit, existing-area selection, two Objective definitions, the 43-day Home checkpoint or the scoped-edit/duplicate checks from `V2-P3-A01`. So this result proves the narrow next-day recurrence materialization but does **not** settle the prior browser `Timeline non disponibile`.
+
+At the owner's request for faithful testing, updated only the PostgreSQL regression: three-day priority checkpoint and read, then full 43-day checkpoint, idempotent replay, final read; assert two distinct original Schedule IDs, two next-day IDs and two far-window final-day IDs with distinct logical Activity identity. Documentation: `docs/development/temporal-user-lifecycle-journey-matrix.md`. No production code changed or product behavior inferred. **NOT YET RE-RUN** on WSL. Ask for the narrow targeted backend run first, then a `--project chromium --v2-workers 1 --grep 'V2-P3-A01'` only when the backend passes. Inspect the auto-diagnostics for an actual failing HTTP checkpoint/window or UI parse. Avoid modifying DANTE functionality before confirming it with the user.
+
+---
+
+
 ## 2026-11-09 — E2E docker/volume lifecycle and Chromium-only smoke
 
 User warned about Docker disk volume accumulation, and requested a one-browser rapid smoke option. Inspected `tooling/serve-access-auth-stack.py`: disposable PostgreSQL 18 ran via `docker run` and both cleanup branches used `docker rm --force`, which can leave PostgreSQL image-declared anonymous Docker volumes after container removal. Launch now includes `--rm` and both cleanup paths include `docker rm --force --volumes` targeting only the E2E's unique container name. Do not run a global Docker prune and do not automatically delete preexisting dangling volumes; they may belong to unrelated projects. `tooling/testing/run_real_stack_playwright.py --self-test` now statically checks run/finally/startup failure cleanup flags so this safety policy cannot silently regress.
