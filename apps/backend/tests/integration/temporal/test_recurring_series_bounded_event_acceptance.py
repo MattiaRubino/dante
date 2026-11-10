@@ -14,10 +14,13 @@ from typing import Any
 
 import pytest
 from fastapi import Request, Response
+from sqlalchemy import text
+from sqlalchemy.exc import OperationalError
 from tests.integration.temporal.test_primary_life_area_assignment import _seed_self
 from tests.integration.temporal.test_recurring_event_create import _daily_named_zone
 from tests.integration.temporal.test_schedule_place import _context
 
+from dante.modules.temporal import recurring_series_edit
 from dante.modules.temporal.application import (
     TemporalTimelineApplication,
     TimelineScheduledOccurrenceItem,
@@ -42,6 +45,7 @@ pytestmark = pytest.mark.postgres
 @pytest.mark.asyncio
 async def test_native_finite_event_preserves_local_first_last_and_accepts_following(
     migrated_database: Any,
+    monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     actor = _seed_self(migrated_database)
     runtime = create_database_runtime(migrated_database.runtime_settings())
@@ -166,6 +170,33 @@ async def test_native_finite_event_preserves_local_first_last_and_accepts_follow
             profile_patch=patch,
         )
         assert len(preview.scope.protected_future_occurrence_refs) == 1
+
+        # First attempt simulates the SQLSTATE 40001 observed during a
+        # concurrent Life Area CREATE in Chromium E04. Real DB transaction
+        # rolls back, then the same intent must commit in the next transaction
+        # with one area and one series revision, without preview bypass.
+        original_create = recurring_series_edit.create_life_area_in_session
+        create_attempts = 0
+
+        class SerializationAbort(Exception):
+            sqlstate = "40001"
+
+        async def transient_create(*args: Any, **kwargs: Any) -> Any:
+            nonlocal create_attempts
+            create_attempts += 1
+            if create_attempts == 1:
+                raise OperationalError(
+                    "redacted diagnostic statement",
+                    {},
+                    SerializationAbort("simulated serialization failure"),
+                )
+            return await original_create(*args, **kwargs)
+
+        monkeypatch.setattr(
+            recurring_series_edit,
+            "create_life_area_in_session",
+            transient_create,
+        )
         accepted = await series.accept(
             self_person_ref=actor,
             selected_occurrence_ref=selected_ref,
@@ -179,8 +210,37 @@ async def test_native_finite_event_preserves_local_first_last_and_accepts_follow
             expected_fingerprint=preview.fingerprint,
             operation_id="e04:series:accept",
         )
+        assert create_attempts == 2
+        replay = await series.accept(
+            self_person_ref=actor,
+            selected_occurrence_ref=selected_ref,
+            requested_scope="this_and_following",
+            expected_revision=source.edit_revision,
+            expected_state_ref=source.recurrence_state_ref,
+            effective_zone_id="Europe/Rome",
+            proposed_recurrence=proposal,
+            proposed_structure=structure,
+            profile_patch=patch,
+            expected_fingerprint=preview.fingerprint,
+            operation_id="e04:series:accept",
+        )
+        assert replay.replayed
+        assert replay.recurrence_state_ref == accepted.recurrence_state_ref
+        assert create_attempts == 2
         assert accepted.protected_count == 1
         assert accepted.superseded_count == len(preview.scope.target_occurrence_refs)
+
+        async with runtime.session_factory() as session, session.begin():
+            area_rows = (
+                await session.execute(
+                    text(
+                        "SELECT life_area_ref FROM dante.list_self_life_areas(:actor) "
+                        "WHERE name='E04 Area futura'"
+                    ),
+                    {"actor": actor},
+                )
+            ).all()
+            assert len(area_rows) == 1
 
         # The first and final explicit local edits must survive a source edit.
         await materializer.checkpoint_window(

@@ -1,5 +1,15 @@
 # Timeline / Temporal-Operational — Workstream Handoff
 
+## 2026-11-10 — P2 Event serialization retry after confirmed Chromium SQLSTATE 40001
+
+Owner's second focused dynamic E2E: P2-A04 PASS, P2-E04 FAIL. Backend diagnostic tied to the exact 409 request: `failure_stage=life_area_create`, `sqlstate=40001`, `exception_type=OperationalError`, during SERIALIZABLE Event following-series acceptance with new Life Area. SQLSTATE 40001 is a PostgreSQL serialization abort, **not** a stale-source/CAS conflict. The prior PostgreSQL regression passed without contention, which did not prove the real browser case.
+
+Series `accept` now retries only SQLSTATE 40001, with at most 3 full transaction attempts (rollback and new session each time, short bounded delays). It invokes the same existing `_accept_once` command and rechecks owner scope, operation replay receipt, source version, preview fingerprint, selected protection and complete occurrence reconciliation on every attempt. Any actual conflict (wrong version/fingerprint/protected selected), non-40001 SQL error or validation failure never becomes a successful retry. All Life Area, occurrence and series writes remain in one ACID transaction. The PostgreSQL regression injects first-attempt 40001 during Life Area creation after real preview, verifies next attempt accepts, and checks exactly one committed area. Unit tests cover successful retry, exhaustion, stale conflict, and nonretryable SQLSTATE.
+
+Await targeted WSL tests and focused Chromium E04 before declaring green, then all V2 Chromium with `--v2-workers auto`. No test skipped.
+
+---
+
 ## 2026-11-10 — Dynamic E2E RED follow-up: canonical empty-window shape and SQLSTATE diagnostic
 
 Owner Chromium six-V2 dynamic smoke returned 3 PASS/3 FAIL; focused follow-up 1 PASS (RT-02), 2 FAIL (P2-E04 HTTP 409 at series accept; P2-A04 `kind:empty` at finite end). Exact E04 trace confirms preview/accept identical recurrence (`expected_count=4`, selected second biweekly date), and error `Series changed during acceptance.` from a generic SQLAlchemy catch, without actual SQLSTATE. Do not claim or fabricate its SQL cause. The native Event focused PostgreSQL regression now establishes 5 instances, edits original first and final locally, changes second-and-following with a new Life Area, title, Agenda, and finite count 4; it must preserve protected exceptions and cardinality. SQL failures in the outer series transaction log safe `failure_stage`, `sqlstate`, and constraint `error_code` only (never bind values or SQL). Keep public 409 unchanged pending actual diagnosis.

@@ -6,6 +6,7 @@ fingerprint alone never grants permission to replace Recurrence or facts.
 
 from __future__ import annotations
 
+import asyncio
 import hashlib
 import json
 import logging
@@ -35,13 +36,21 @@ from dante.modules.temporal.occurrence import (
 )
 from dante.modules.temporal.occurrence_edit_inventory import OccurrenceEditInventoryApplication
 from dante.modules.temporal.occurrence_edit_scope import RecurrenceEditScopePlan
-from dante.modules.temporal.recurrence import CalendarRecurrence, RecurrenceApplication, _view
+from dante.modules.temporal.recurrence import (
+    CalendarRecurrence,
+    RecurrenceApplication,
+    RecurrencePersistenceError,
+    _view,
+)
 from dante.modules.temporal.recurring_series_reconciliation import (
     SeriesReconciliation,
     SeriesReconciliationError,
     SeriesReconciliationWindow,
 )
-from dante.modules.temporal.recurring_structure_policy import RecurringStructurePolicyApplication
+from dante.modules.temporal.recurring_structure_policy import (
+    RecurringStructurePolicyApplication,
+    RecurringStructurePolicyError,
+)
 from dante.modules.temporal.recurring_structure_preview import (
     RecurringStructurePreviewApplication,
 )
@@ -50,6 +59,28 @@ from dante.platform.database.references import NativeRef
 from dante.platform.observability.logging import log_event
 
 _LOGGER = logging.getLogger(__name__)
+_MAX_SERIALIZATION_ATTEMPTS = 3
+_SERIALIZATION_RETRY_DELAY_SECONDS = 0.025
+
+
+def _is_serialization_failure(exc: BaseException) -> bool:
+    """Only SQLSTATE 40001 permits repeating a fully rolled-back transaction.
+
+    Governed temporal dependencies sometimes wrap DBAPI errors in domain
+    exceptions; preserve their causal chain without retrying stale edits,
+    malformed requests, unique violations or unrelated database errors.
+    """
+    current: BaseException | None = exc
+    while current is not None:
+        original = getattr(current, "orig", None)
+        if (
+            getattr(original, "sqlstate", None) == "40001"
+            or getattr(original, "pgcode", None) == "40001"
+        ):
+            return True
+        current = current.__cause__
+    return False
+
 
 type SeriesScope = Literal["this_and_following", "from_next"]
 type SeriesOwner = Literal["routine", "event"]
@@ -874,7 +905,59 @@ class RecurringSeriesEditApplication:
         expected_fingerprint: str,
         operation_id: str,
     ) -> RecurringSeriesAccepted:
-        """Accept source and materialized-plan transitions in one transaction."""
+        """Retry only serialization aborts, re-running the complete CAS command.
+
+        A SERIALIZABLE abort rolls back even the newly created Life Area.
+        The new transaction re-checks the preview fingerprint, source revision,
+        selected protection, occurrence inventory and idempotency receipt. An
+        actual stale edit must still fail; it is not eligible for retry.
+        """
+        for attempt in range(_MAX_SERIALIZATION_ATTEMPTS):
+            try:
+                return await self._accept_once(
+                    self_person_ref=self_person_ref,
+                    selected_occurrence_ref=selected_occurrence_ref,
+                    requested_scope=requested_scope,
+                    expected_revision=expected_revision,
+                    expected_state_ref=expected_state_ref,
+                    effective_zone_id=effective_zone_id,
+                    proposed_recurrence=proposed_recurrence,
+                    proposed_structure=proposed_structure,
+                    profile_patch=profile_patch,
+                    expected_fingerprint=expected_fingerprint,
+                    operation_id=operation_id,
+                )
+            except (
+                SQLAlchemyError,
+                RecurrencePersistenceError,
+                RecurringStructurePolicyError,
+                RecurringSeriesEditConflictError,
+            ) as exc:
+                if not _is_serialization_failure(exc):
+                    raise
+                if attempt + 1 == _MAX_SERIALIZATION_ATTEMPTS:
+                    raise RecurringSeriesEditConflictError(
+                        "Could not serialize recurring-series acceptance after bounded retries."
+                    ) from exc
+                await asyncio.sleep(_SERIALIZATION_RETRY_DELAY_SECONDS * (2**attempt))
+        raise AssertionError("Unreachable retry state.")
+
+    async def _accept_once(
+        self,
+        *,
+        self_person_ref: NativeRef,
+        selected_occurrence_ref: UUID,
+        requested_scope: SeriesScope,
+        expected_revision: int,
+        expected_state_ref: UUID,
+        effective_zone_id: str,
+        proposed_recurrence: CalendarRecurrence,
+        proposed_structure: dict[str, object],
+        profile_patch: dict[str, str | None] | None,
+        expected_fingerprint: str,
+        operation_id: str,
+    ) -> RecurringSeriesAccepted:
+        """One SERIALIZABLE attempt, with a fresh transaction and full CAS."""
         request_hash = _request_hash(
             self_person_ref=self_person_ref,
             selected_occurrence_ref=selected_occurrence_ref,
@@ -1118,7 +1201,7 @@ class RecurringSeriesEditApplication:
             diagnostic = getattr(origin, "diag", None)
             log_event(
                 _LOGGER,
-                logging.ERROR,
+                logging.WARNING if _is_serialization_failure(exc) else logging.ERROR,
                 "temporal.recurring_series.accept_sql_failure",
                 fields={
                     "failure_stage": failure_stage,
@@ -1129,6 +1212,8 @@ class RecurringSeriesEditApplication:
                 },
                 exception=exc,
             )
+            if _is_serialization_failure(exc):
+                raise  # Caller retries only after the session context rolled back.
             raise RecurringSeriesEditConflictError("Series changed during acceptance.") from exc
 
     async def prepare_in_session(
