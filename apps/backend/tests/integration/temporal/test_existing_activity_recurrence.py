@@ -706,6 +706,17 @@ async def test_existing_event_keeps_first_event_and_excludes_duplicate_occurrenc
             expected_fingerprint=review.fingerprint,
             operation_id="existing-event-repeat:edit-first",
         )
+        # A successful following-series edit is NOT the end of the user
+        # journey: Home immediately checkpoints the new recurrence state.
+        # Re-checkpoint before counting the physical first Event, otherwise
+        # a second generated first-day Schedule is invisible to the test.
+        await materializer.checkpoint_window(
+            self_person_ref=actor,
+            operation_id="existing-event-repeat:after-first-series-edit",
+            start_date=date(2027, 1, 2),
+            end_date_exclusive=date(2027, 1, 4),
+            effective_zone_id="Europe/Rome",
+        )
         revised_window = await TemporalTimelineApplication(runtime.session_factory).read_window(
             query=TimelineWindowQuery(
                 start_date=date(2027, 1, 2),
@@ -713,6 +724,29 @@ async def test_existing_event_keeps_first_event_and_excludes_duplicate_occurrenc
             ),
             context=_context(actor),
         )
+        first_date_rows = [
+            item for item in revised_window.items
+            if (
+                isinstance(item, TimelineNamedZoneLocalEventItem)
+                and item.event_ref == original
+            ) or (
+                isinstance(item, TimelineScheduledOccurrenceItem)
+                and item.source_native_ref == started.source_ref
+                and isinstance(item.coordinate, CalendarCoordinate)
+                and item.coordinate.generated_date == date(2027, 1, 2)
+            ) or (
+                isinstance(item, TimelineExpectedOccurrenceItem)
+                and item.source_native_ref == started.source_ref
+                and isinstance(item.coordinate, CalendarCoordinate)
+                and item.coordinate.generated_date == date(2027, 1, 2)
+            )
+        ]
+        assert len(first_date_rows) == 1, (
+            "First converted Event must own exactly one visible placement "
+            "after this-and-following Edit AND a fresh checkpoint."
+        )
+        assert isinstance(first_date_rows[0], TimelineNamedZoneLocalEventItem)
+        assert first_date_rows[0].schedule_ref == schedule.schedule_ref
         revised_original = [
             item
             for item in revised_window.items
