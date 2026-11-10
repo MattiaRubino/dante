@@ -4,6 +4,8 @@ from __future__ import annotations
 
 from dataclasses import replace
 from datetime import date, datetime, time, timedelta
+from hashlib import sha256
+from uuid import uuid7
 from typing import Any
 
 import pytest
@@ -19,7 +21,10 @@ from dante.modules.temporal.application import (
     TimelineNamedZoneLocalEventItem,
     TimelineScheduledOccurrenceItem,
 )
-from dante.modules.temporal.authoring import TemporalAuthoringApplication
+from dante.modules.temporal.authoring import (
+    AuthoringLifeAreaIntent,
+    TemporalAuthoringApplication,
+)
 from dante.modules.temporal.contracts import TimelineWindowQuery
 from dante.modules.temporal.occurrence import CalendarCoordinate, OccurrenceApplication
 from dante.modules.temporal.placement_lock import PlacementLockApplication
@@ -161,8 +166,14 @@ async def test_existing_activity_starts_series_with_same_first_identity_and_one_
 
 
 @pytest.mark.asyncio
+@pytest.mark.parametrize(
+    "rich_metadata",
+    [False, True],
+    ids=("intervals_only", "area_two_numeric_objectives"),
+)
 async def test_converted_activity_with_two_intervals_materializes_next_day(
     migrated_database: Any,
+    rich_metadata: bool,
 ) -> None:
     """Converted Activity checkpoints the priority and wide Timeline windows.
 
@@ -192,6 +203,10 @@ async def test_converted_activity_with_two_intervals_materializes_next_day(
             self_person_ref=actor,
             operation_id="conversion:rich-two-intervals:create",
             title="Studio multiintervallo",
+            life_area_intent=(
+                AuthoringLifeAreaIntent(new_name="Studio area", color_code="#4285F4")
+                if rich_metadata else None
+            ),
             placement=placement(9, 10, 11, 20),
             activity_intervals=(
                 placement(9, 10, 9, 50),
@@ -201,6 +216,63 @@ async def test_converted_activity_with_two_intervals_materializes_next_day(
             planned_slice_names=("Studio iniziale", "Studio libero"),
         )
         activity_ref = authored.item.subject_native_ref
+        if rich_metadata:
+            assert authored.item.life_area_ref is not None
+            # Unlike the first green DB test, the manual failing UI case has
+            # TWO numeric Objective definitions and an existing Life Area.
+            # Persist the real Objective SQL state before converting, so the
+            # routine template must materialize both on its first five days.
+            async with runtime.session_factory() as session, session.begin():
+                for index, (kind, comparator, target, low, high) in enumerate((
+                    ("quantity", "gte", 12, None, None),
+                    ("range", "between", None, 12, 1222),
+                )):
+                    operation_id = f"conversion:rich-two-intervals:objective:{index}"
+                    result = (
+                        await session.execute(
+                            text(
+                                "SELECT * FROM dante.create_self_temporal_objective("
+                                ":actor,:operation,:fingerprint,:objective,:kind,:subject,"
+                                ":label,:result_kind,:comparator,:target_value,:target_min,"
+                                ":target_max,:unit,:presentation_order)"
+                            ),
+                            {
+                                "actor": actor,
+                                "operation": operation_id,
+                                "fingerprint": sha256(operation_id.encode()).hexdigest(),
+                                "objective": uuid7(),
+                                "kind": "activity",
+                                "subject": activity_ref,
+                                "label": f"Mele obiettivo {index + 1}",
+                                "result_kind": kind,
+                                "comparator": comparator,
+                                "target_value": target,
+                                "target_min": low,
+                                "target_max": high,
+                                "unit": "mele",
+                                "presentation_order": index,
+                            },
+                        )
+                    ).mappings().one()
+                    if index == 0:
+                        await session.execute(
+                            text(
+                                "SELECT * FROM dante.set_self_objective_verification("
+                                ":actor,:objective,:operation,:fingerprint,:expected,:mode)"
+                            ),
+                            {
+                                "actor": actor,
+                                "objective": result["objective_ref"],
+                                "operation": "verify:" + sha256(
+                                    operation_id.encode()
+                                ).hexdigest(),
+                                "fingerprint": sha256(
+                                    f"{operation_id}:review_on_end".encode()
+                                ).hexdigest(),
+                                "expected": 0,
+                                "mode": "review_on_end",
+                            },
+                        )
         async with runtime.session_factory() as session, session.begin():
             snapshot = ActivityEditSnapshot.model_validate(
                 await session.scalar(
@@ -217,6 +289,10 @@ async def test_converted_activity_with_two_intervals_materializes_next_day(
         assert envelope.placement_material_state_ref is not None
         assert sum(row.role_code == "interval" for row in snapshot.schedules) == 2
         assert sum(row.role_code == "planned" for row in snapshot.schedules) == 2
+        if rich_metadata:
+            assert len(snapshot.objectives) == 2
+            assert snapshot.objectives[0].verification_mode == "review_on_end"
+            assert snapshot.life_area_ref == authored.item.life_area_ref
 
         recurrence = CalendarRecurrence(
             family_code="calendar_wall_clock",
@@ -258,20 +334,21 @@ async def test_converted_activity_with_two_intervals_materializes_next_day(
         )
         timeline_reader = TemporalTimelineApplication(runtime.session_factory)
 
-        # Home first checkpoints the selected days before expanding its
-        # complete 43-day read. A two-day test cannot detect late
-        # materialization failures or unbounded replay inconsistencies.
+        # The real Chromium failure was the first FIVE-DAY priority
+        # checkpoint after POST /recurring/activities/.../start returned 200.
+        # Keep the 43-day background pass afterwards if this first step works.
+        priority_end = day + timedelta(days=5 if rich_metadata else 3)
         await materializer.checkpoint_window(
             self_person_ref=actor,
             operation_id="conversion:rich-two-intervals:priority",
             start_date=day,
-            end_date_exclusive=day + timedelta(days=3),
+            end_date_exclusive=priority_end,
             effective_zone_id="Europe/Rome",
         )
         priority_read = await timeline_reader.read_window(
             query=TimelineWindowQuery(
                 start_date=day,
-                end_date_exclusive=day + timedelta(days=3),
+                end_date_exclusive=priority_end,
             ),
             context=_context(actor),
         )
@@ -367,6 +444,11 @@ async def test_converted_activity_with_two_intervals_materializes_next_day(
             row.display_name for row in generated_snapshot.schedules
             if row.role_code == "planned"
         ] == ["Studio iniziale", "Studio libero"]
+        if rich_metadata:
+            assert generated_snapshot.life_area_ref == authored.item.life_area_ref
+            assert [item.label for item in generated_snapshot.objectives] == [
+                "Mele obiettivo 1", "Mele obiettivo 2",
+            ]
     finally:
         await runtime.dispose()
 
