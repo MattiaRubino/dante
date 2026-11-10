@@ -1536,9 +1536,17 @@ test.describe('Temporal v2 — real stateful user personas', () => {
         'first Event Only-this must render the accepted local title',
       ).toHaveCount(1);
       await expect(
-        onDay(page, day, editedTitle),
-        'first Event must keep one card after Only-this',
+        onDay(page, day, localTitle).getByRole('button', {
+          name: localTitle, exact: true,
+        }),
+        'the only first-day Event card must expose the exact local title',
       ).toHaveCount(1);
+      await expect(
+        onDay(page, day, editedTitle).getByRole('button', {
+          name: editedTitle, exact: true,
+        }),
+        'a stale first-day series title must not remain as another card',
+      ).toHaveCount(0);
       await assertOriginalScheduleIdentity(page, day, authored.item);
       await assertDayHasNoDuplicatePlacements(
         page, day, title, localTitle, persona,
