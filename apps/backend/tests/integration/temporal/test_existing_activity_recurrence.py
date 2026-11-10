@@ -910,6 +910,109 @@ async def test_existing_event_keeps_first_event_and_excludes_duplicate_occurrenc
         assert len(replay_future) == 1
         assert replay_future[0].schedule_ref == revised_future[0].schedule_ref
 
+        # A SECOND selected-and-following edit must still include the physical
+        # first. This catches false local-change protection and retired first
+        # Occurrence identities introduced by earlier conversions/edits.
+        second_source = await series.source(
+            self_person_ref=actor,
+            selected_occurrence_ref=first_occurrence,
+        )
+        second_structure = {
+            **second_source.structure_snapshot,
+            "agenda_parts": ["Arrivo seconda versione"],
+        }
+        second_preview = await series.preview(
+            self_person_ref=actor,
+            selected_occurrence_ref=first_occurrence,
+            requested_scope="this_and_following",
+            expected_revision=second_source.edit_revision,
+            expected_state_ref=second_source.recurrence_state_ref,
+            effective_zone_id="Europe/Rome",
+            proposed_recurrence=second_source.recurrence,
+            proposed_structure=second_structure,
+            profile_patch={"title": "Visita seconda versione"},
+        )
+        assert first_occurrence in second_preview.scope.target_occurrence_refs
+        second_accepted = await series.accept(
+            self_person_ref=actor,
+            selected_occurrence_ref=first_occurrence,
+            requested_scope="this_and_following",
+            expected_revision=second_source.edit_revision,
+            expected_state_ref=second_source.recurrence_state_ref,
+            effective_zone_id="Europe/Rome",
+            proposed_recurrence=second_source.recurrence,
+            proposed_structure=second_structure,
+            profile_patch={"title": "Visita seconda versione"},
+            expected_fingerprint=second_preview.fingerprint,
+            operation_id="existing-event-repeat:edit-first-again",
+        )
+        async with runtime.session_factory() as session, session.begin():
+            final_structure_state = await session.scalar(
+                text(
+                    "SELECT effective_structure_state_ref "
+                    "FROM dante.get_self_event_recurring_first_structure(:actor,:first)"
+                ),
+                {"actor": actor, "first": first_occurrence},
+            )
+            assert final_structure_state == second_accepted.recurrence_state_ref
+            assert not await session.scalar(
+                text(
+                    "SELECT dante.is_self_recurring_occurrence_superseded("
+                    ":actor,:first)"
+                ),
+                {"actor": actor, "first": first_occurrence},
+            )
+            assert (
+                await session.scalar(
+                    text(
+                        "SELECT dante.get_self_occurrence_edit_protection("
+                        ":actor,:first)"
+                    ),
+                    {"actor": actor, "first": first_occurrence},
+                )
+                is None
+            )
+        await materializer.checkpoint_window(
+            self_person_ref=actor,
+            operation_id="existing-event-repeat:after-second-first-edit",
+            start_date=date(2027, 1, 2),
+            end_date_exclusive=date(2027, 1, 4),
+            effective_zone_id="Europe/Rome",
+        )
+        second_window = await TemporalTimelineApplication(
+            runtime.session_factory
+        ).read_window(
+            query=TimelineWindowQuery(
+                start_date=date(2027, 1, 2),
+                end_date_exclusive=date(2027, 1, 4),
+            ),
+            context=_context(actor),
+        )
+        second_first = [
+            item for item in second_window.items
+            if (
+                isinstance(item, TimelineNamedZoneLocalEventItem)
+                and item.event_ref == original
+            ) or (
+                isinstance(item, (TimelineScheduledOccurrenceItem, TimelineExpectedOccurrenceItem))
+                and item.source_native_ref == started.source_ref
+                and isinstance(item.coordinate, CalendarCoordinate)
+                and item.coordinate.generated_date == date(2027, 1, 2)
+            )
+        ]
+        assert len(second_first) == 1
+        assert second_first[0].schedule_ref == schedule.schedule_ref
+        assert second_first[0].title == "Visita seconda versione"
+        second_future = [
+            item for item in second_window.items
+            if isinstance(item, TimelineScheduledOccurrenceItem)
+            and item.source_native_ref == started.source_ref
+            and isinstance(item.coordinate, CalendarCoordinate)
+            and item.coordinate.generated_date == date(2027, 1, 3)
+        ]
+        assert len(second_future) == 1
+        assert second_future[0].title == "Visita seconda versione"
+
         # After selected-and-following the linked first instance must still
         # support a real "Solo questa" local edit, NOT merely a read-only
         # Timeline projection or a retired historical Occurrence.
@@ -975,9 +1078,9 @@ async def test_existing_event_keeps_first_event_and_excludes_duplicate_occurrenc
                     "SELECT dante.get_self_occurrence_profile_patch("
                     ":actor,:later)"
                 ),
-                {"actor": actor, "later": revised_future[0].occurrence_ref},
+                {"actor": actor, "later": second_future[0].occurrence_ref},
             )
-            assert later_patch["title"] == "Visita aggiornata"
+            assert later_patch["title"] == "Visita seconda versione"
             assert "event_local" not in later_patch
 
         async with runtime.session_factory() as session, session.begin():
