@@ -14,6 +14,7 @@ from datetime import date, datetime, timedelta
 from itertools import pairwise
 from typing import Literal, cast
 from uuid import UUID
+from zoneinfo import ZoneInfo
 
 from sqlalchemy import text
 from sqlalchemy.exc import SQLAlchemyError
@@ -25,7 +26,12 @@ from dante.modules.temporal.life_area import (
     change_life_area_color_in_session,
     create_life_area_in_session,
 )
-from dante.modules.temporal.occurrence import CalendarCoordinate, OccurrenceApplication, _occurrence
+from dante.modules.temporal.occurrence import (
+    CalendarCoordinate,
+    OccurrenceApplication,
+    _calendar_candidates,
+    _occurrence,
+)
 from dante.modules.temporal.occurrence_edit_inventory import OccurrenceEditInventoryApplication
 from dante.modules.temporal.occurrence_edit_scope import RecurrenceEditScopePlan
 from dante.modules.temporal.recurrence import CalendarRecurrence, RecurrenceApplication, _view
@@ -447,6 +453,103 @@ class RecurringSeriesEditApplication:
         self._initial_routine = RoutineOccurrencePolicyApplication(session_factory)
         self._initial_event = EventOccurrencePolicyApplication(session_factory)
 
+    async def _exclude_converted_first_on_revised_state(
+        self,
+        session: AsyncSession,
+        *,
+        self_person_ref: NativeRef,
+        source_ref: UUID,
+        new_state_ref: UUID,
+        proposed_recurrence: CalendarRecurrence,
+        effective_zone_id: str,
+        operation_id: str,
+        already_excluded: tuple[CalendarCoordinate, ...],
+    ) -> None:
+        """Keep the converted first Event represented by its original Schedule.
+
+        A versioned Recurrence creates NEW Occurrence identities on checkpoint.
+        The converted first Event is backed by a *physical* Event/Schedule,
+        however, not the old Occurrence's transient material-state identity.
+        Without a structural exclusion on the replacement state, a following
+        edit can generate a second first-day Occurrence and a second card.
+
+        Exclude only a candidate generated on the linked first Event's day.
+        A series revised from a later boundary has no such candidate. Both
+        links and exclusions are owner-scoped and updated in the same
+        serializable transaction as the new recurrence policy.
+        """
+        seed = (
+            (
+                await session.execute(
+                    text(
+                        "SELECT first_occurrence_ref FROM "
+                        "dante.get_self_event_recurring_first_by_source(:actor,:source)"
+                    ),
+                    {"actor": self_person_ref, "source": source_ref},
+                )
+            )
+            .scalar_one_or_none()
+        )
+        if seed is None:
+            return  # Native recurring Event, without an original first Event.
+
+        first_row = (
+            (
+                await session.execute(
+                    text("SELECT * FROM dante.get_self_occurrence(:actor,:first)"),
+                    {"actor": self_person_ref, "first": seed},
+                )
+            )
+            .mappings()
+            .one_or_none()
+        )
+        if first_row is None:
+            raise RecurringSeriesEditConflictError(
+                "Converted first Event identity is no longer available."
+            )
+        first_coordinate = _occurrence(first_row).coordinate
+        if not isinstance(first_coordinate, CalendarCoordinate):
+            raise RecurringSeriesEditConflictError(
+                "Converted first Event has no calendar coordinate."
+            )
+        first_day = first_coordinate.generated_date
+        generated = [
+            candidate.coordinate
+            for candidate in _calendar_candidates(
+                source_ref,
+                proposed_recurrence,
+                first_day,
+                first_day + timedelta(days=1),
+                ZoneInfo(effective_zone_id),
+            )
+            if isinstance(candidate.coordinate, CalendarCoordinate)
+            and candidate.coordinate.generated_date == first_day
+        ]
+        if len(generated) > 1:
+            raise SeriesReconciliationError(
+                "Converted first Event cannot have multiple first-day occurrences."
+            )
+        if not generated:
+            return  # From-next or another boundary that excludes the first day.
+
+        coordinate = generated[0]
+        if any(
+            protected.generated_date == coordinate.generated_date
+            and protected.generated_wall_time == coordinate.generated_wall_time
+            for protected in already_excluded
+        ):
+            return  # Protection reconciliation already excludes this coordinate.
+
+        await self._occurrences.exclude_in_session(
+            session,
+            owner="event",
+            self_person_ref=self_person_ref,
+            source_ref=source_ref,
+            governing_recurrence_state_ref=new_state_ref,
+            operation_id=_child_operation(operation_id, "converted-first"),
+            coordinate=coordinate,
+        )
+
     async def source(
         self, *, self_person_ref: NativeRef, selected_occurrence_ref: UUID
     ) -> RecurringSeriesSource:
@@ -811,6 +914,19 @@ class RecurringSeriesEditApplication:
                         governing_recurrence_state_ref=new_state,
                         operation_id=_child_operation(operation_id, f"exception:{index}"),
                         coordinate=coordinate,
+                    )
+                if prepared.owner == "event":
+                    await self._exclude_converted_first_on_revised_state(
+                        session,
+                        self_person_ref=self_person_ref,
+                        source_ref=prepared.source_ref,
+                        new_state_ref=new_state,
+                        proposed_recurrence=proposed_recurrence,
+                        effective_zone_id=effective_zone_id,
+                        operation_id=operation_id,
+                        already_excluded=(
+                            prepared.reconciliation.protected_matching_coordinates
+                        ),
                     )
                 await self._policies.replace_in_session(
                     session,
