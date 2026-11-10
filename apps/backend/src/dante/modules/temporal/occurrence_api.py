@@ -1051,7 +1051,30 @@ async def accept_event_occurrence_local_edit(
             ):
                 raise RecurringSeriesEditConflictError("Event source is unavailable.")
             if occurrence["governing_recurrence_state_ref"] != body.expected_recurrence_state_ref:
-                raise RecurringSeriesEditConflictError("Event recurrence changed.")
+                # A converted first Event remains one physical, editable
+                # Occurrence (and keeps its original Schedule) across
+                # series-state revisions. Its generated state is historical;
+                # the browser's edit context correctly uses the CURRENT
+                # source recurrence state instead. Admit this difference only
+                # through the owner-scoped first-Occurrence binding. The
+                # canonical acceptance function below still rechecks the
+                # expected current state/revision atomically under source lock.
+                first_linked = await session.scalar(
+                    text(
+                        "SELECT EXISTS("
+                        "SELECT 1 FROM "
+                        "dante.get_self_event_recurring_first_by_occurrence("
+                        ":actor,:occurrence) AS linked "
+                        "WHERE linked.source_event_ref=:source)"
+                    ),
+                    {
+                        "actor": actor,
+                        "occurrence": occurrence_ref,
+                        "source": occurrence["source_native_ref"],
+                    },
+                )
+                if not first_linked:
+                    raise RecurringSeriesEditConflictError("Event recurrence changed.")
             protection = await session.scalar(
                 text("SELECT dante.get_self_occurrence_edit_protection(:actor,:occurrence)"),
                 {"actor": actor, "occurrence": occurrence_ref},
