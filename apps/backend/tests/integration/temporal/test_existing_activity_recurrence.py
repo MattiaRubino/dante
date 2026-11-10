@@ -282,17 +282,16 @@ async def test_converted_activity_with_two_intervals_materializes_next_day(
             for row in priority_read.items
         ) == 2
 
-        for operation_id in (
-            "conversion:rich-two-intervals:wide",
-            "conversion:rich-two-intervals:wide",
-        ):
-            await materializer.checkpoint_window(
+        for attempt in range(2):
+            wide = await materializer.checkpoint_window(
                 self_person_ref=actor,
-                operation_id=operation_id,
+                operation_id="conversion:rich-two-intervals:wide",
                 start_date=day,
                 end_date_exclusive=day + timedelta(days=43),
                 effective_zone_id="Europe/Rome",
             )
+            assert wide.source_count == 1
+            assert wide.replayed_source_count == attempt
         timeline = await timeline_reader.read_window(
             query=TimelineWindowQuery(
                 start_date=day,
@@ -312,6 +311,25 @@ async def test_converted_activity_with_two_intervals_materializes_next_day(
         assert len(activity_refs) == 1
         generated_ref = next(iter(activity_refs))
         assert generated_ref != activity_ref
+
+        # No silent duplicates on any of the 43 days: two Schedule cards
+        # each day, one logical Activity per date, distinct occurrences
+        # across dates, and no resurrection on an idempotent replay.
+        all_placements = [
+            row for row in timeline.items
+            if isinstance(row, TimelineNamedZoneLocalActivityItem)
+            and row.title == "Studio multiintervallo"
+        ]
+        assert len(all_placements) == 43 * 2
+        assert len({row.schedule_ref for row in all_placements}) == 43 * 2
+        for offset in range(43):
+            current_day = day + timedelta(days=offset)
+            daily = [
+                row for row in all_placements
+                if row.starts_local_at.date() == current_day
+            ]
+            assert len(daily) == 2, current_day
+            assert len({row.activity_ref for row in daily}) == 1, current_day
 
         first_day = [
             row for row in timeline.items
