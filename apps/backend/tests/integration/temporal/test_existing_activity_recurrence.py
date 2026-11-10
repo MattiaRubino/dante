@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from dataclasses import replace
-from datetime import date, datetime, time
+from datetime import date, datetime, time, timedelta
 from typing import Any
 
 import pytest
@@ -164,11 +164,12 @@ async def test_existing_activity_starts_series_with_same_first_identity_and_one_
 async def test_converted_activity_with_two_intervals_materializes_next_day(
     migrated_database: Any,
 ) -> None:
-    """Regression: converted rich Activity must checkpoint its future materialization.
+    """Converted Activity checkpoints the priority and wide Timeline windows.
 
     One original Activity with two physical intervals and two planned Sessions
-    must not produce a successful conversion POST followed by an HTTP 503 from
-    the first routine occurrence checkpoint.
+    must retain its identity when the three-day priority checkpoint is followed
+    by a 43-day checkpoint and a replay. This exercises the routine materializer,
+    not the actual authenticated HTTP/SPA path used by V2-P3-A01.
     """
     actor = _seed_self(migrated_database)
     runtime = create_database_runtime(migrated_database.runtime_settings())
@@ -252,21 +253,50 @@ async def test_converted_activity_with_two_intervals_materializes_next_day(
         )
         assert converted.source_ref != activity_ref
 
-        await RoutineOccurrenceMaterializationApplication(
+        materializer = RoutineOccurrenceMaterializationApplication(
             runtime.session_factory
-        ).checkpoint_window(
+        )
+        timeline_reader = TemporalTimelineApplication(runtime.session_factory)
+
+        # Home first checkpoints the selected days before expanding its
+        # complete 43-day read. A two-day test cannot detect late
+        # materialization failures or unbounded replay inconsistencies.
+        await materializer.checkpoint_window(
             self_person_ref=actor,
-            operation_id="conversion:rich-two-intervals:checkpoint",
+            operation_id="conversion:rich-two-intervals:priority",
             start_date=day,
-            end_date_exclusive=date(2027, 1, 4),
+            end_date_exclusive=day + timedelta(days=3),
             effective_zone_id="Europe/Rome",
         )
-        timeline = await TemporalTimelineApplication(
-            runtime.session_factory
-        ).read_window(
+        priority_read = await timeline_reader.read_window(
             query=TimelineWindowQuery(
                 start_date=day,
-                end_date_exclusive=date(2027, 1, 4),
+                end_date_exclusive=day + timedelta(days=3),
+            ),
+            context=_context(actor),
+        )
+        assert sum(
+            isinstance(row, TimelineNamedZoneLocalActivityItem)
+            and row.title == "Studio multiintervallo"
+            and row.starts_local_at.date() == day + timedelta(days=1)
+            for row in priority_read.items
+        ) == 2
+
+        for operation_id in (
+            "conversion:rich-two-intervals:wide",
+            "conversion:rich-two-intervals:wide",
+        ):
+            await materializer.checkpoint_window(
+                self_person_ref=actor,
+                operation_id=operation_id,
+                start_date=day,
+                end_date_exclusive=day + timedelta(days=43),
+                effective_zone_id="Europe/Rome",
+            )
+        timeline = await timeline_reader.read_window(
+            query=TimelineWindowQuery(
+                start_date=day,
+                end_date_exclusive=day + timedelta(days=43),
             ),
             context=_context(actor),
         )
@@ -282,6 +312,29 @@ async def test_converted_activity_with_two_intervals_materializes_next_day(
         assert len(activity_refs) == 1
         generated_ref = next(iter(activity_refs))
         assert generated_ref != activity_ref
+
+        first_day = [
+            row for row in timeline.items
+            if isinstance(row, TimelineNamedZoneLocalActivityItem)
+            and row.title == "Studio multiintervallo"
+            and row.starts_local_at.date() == day
+        ]
+        assert len(first_day) == 2
+        assert {row.activity_ref for row in first_day} == {activity_ref}
+        assert len({row.schedule_ref for row in first_day}) == 2
+
+        last_day = [
+            row for row in timeline.items
+            if isinstance(row, TimelineNamedZoneLocalActivityItem)
+            and row.title == "Studio multiintervallo"
+            and row.starts_local_at.date() == day + timedelta(days=42)
+        ]
+        assert len(last_day) == 2
+        assert len({row.schedule_ref for row in last_day}) == 2
+        assert len({row.activity_ref for row in last_day}) == 1
+        assert next(iter({row.activity_ref for row in last_day})) not in {
+            activity_ref, generated_ref,
+        }
 
         async with runtime.session_factory() as session, session.begin():
             generated_snapshot = ActivityEditSnapshot.model_validate(
