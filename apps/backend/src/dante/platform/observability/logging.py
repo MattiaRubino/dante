@@ -36,6 +36,12 @@ _SAFE_EVENT_FIELDS: Final[frozenset[str]] = frozenset(
         "release_sha",
         "retryable",
         "service_name",
+        # Safe, bounded database failure coordinates. Never include SQL
+        # statements, bind parameters, native refs, or user-defined labels.
+        "failure_stage",
+        "objective_index",
+        "sqlstate",
+        "subject_kind",
     }
 )
 _SENSITIVE_KEY = re.compile(
