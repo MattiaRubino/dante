@@ -1560,7 +1560,19 @@ async def get_recurring_event_occurrence_detail(
             )
             if event is None:
                 raise RecurringSeriesEditConflictError("Event source is unavailable.")
-            state = occurrence.governing_recurrence_state_ref
+            # For the physical first Event, the governing generation is
+            # historical but its effective Agenda/Life Area/participants may
+            # advance with selected-and-following series edits. Read the
+            # owner-scoped first-instance structure pointer, not the stale
+            # generation state. Later instances still use their own state.
+            first_structure_state = await session.scalar(
+                text(
+                    "SELECT effective_structure_state_ref "
+                    "FROM dante.get_self_event_recurring_first_structure(:actor,:first)"
+                ),
+                {"actor": context.self_person_ref, "first": occurrence_ref},
+            )
+            state = first_structure_state or occurrence.governing_recurrence_state_ref
             snapshot = (
                 await RecurringStructurePolicyApplication(
                     request.app.state.database_runtime.session_factory
@@ -1676,7 +1688,19 @@ async def get_recurring_event_occurrence_expected_participation(
                 is None
             ):
                 raise RecurringSeriesEditConflictError("Event source is unavailable.")
-            state = occurrence.governing_recurrence_state_ref
+            # For the physical first Event, the governing generation is
+            # historical but its effective Agenda/Life Area/participants may
+            # advance with selected-and-following series edits. Read the
+            # owner-scoped first-instance structure pointer, not the stale
+            # generation state. Later instances still use their own state.
+            first_structure_state = await session.scalar(
+                text(
+                    "SELECT effective_structure_state_ref "
+                    "FROM dante.get_self_event_recurring_first_structure(:actor,:first)"
+                ),
+                {"actor": context.self_person_ref, "first": occurrence_ref},
+            )
+            state = first_structure_state or occurrence.governing_recurrence_state_ref
             snapshot = (
                 await RecurringStructurePolicyApplication(
                     request.app.state.database_runtime.session_factory
