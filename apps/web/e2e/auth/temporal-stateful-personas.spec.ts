@@ -1456,7 +1456,7 @@ test.describe('Temporal v2 — real stateful user personas', () => {
           authored.item.sourceRef + '/first-occurrence',
       );
       expect(firstRef, 'linked first Occurrence ref')
-        .toEqual(expect.stringMatching(/^[\\da-f-]{36}$/i));
+        .toEqual(expect.stringMatching(/^[\da-f-]{36}$/i));
       const physicalFirst = await serverRead(
         page, '/api/v1/temporal/occurrences/' +
           String(firstRef) + '/event-detail',
