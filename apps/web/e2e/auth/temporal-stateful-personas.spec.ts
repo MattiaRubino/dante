@@ -1446,18 +1446,26 @@ test.describe('Temporal v2 — real stateful user personas', () => {
       await assertDayHasNoDuplicatePlacements(
         page, day, title, editedTitle, persona,
       );
-      // The original physical first Event must reflect the edited series
-      // structure as well as its title. Otherwise suppressing the generated
-      // double would silently retain the OLD agenda on the only remaining
-      // first-day card.
+      // The first physical Event becomes an Occurrence of the series.
+      // Its raw Event descriptor is NOT the user-facing effective profile:
+      // the canonical Event-detail view must merge series structure and
+      // selected-Occurrence overrides, exactly like later instances.
+      const firstRef = await serverRead(
+        page,
+        '/api/v1/temporal/recurring/events/' +
+          authored.item.sourceRef + '/first-occurrence',
+      );
+      expect(firstRef, 'linked first Occurrence ref')
+        .toEqual(expect.stringMatching(/^[\\da-f-]{36}$/i));
       const physicalFirst = await serverRead(
-        page, '/api/v1/temporal/events/' + authored.item.sourceRef,
+        page, '/api/v1/temporal/occurrences/' +
+          String(firstRef) + '/event-detail',
       ) as Record<string, unknown>;
-      expect(physicalFirst.title, 'the physical first Event uses the updated title')
+      expect(physicalFirst.title, 'first effective Event title')
         .toBe(editedTitle);
       expect(
         physicalFirst.agenda_parts,
-        'the physical first Event carries its edited agenda',
+        'the first effective Event carries the edited Agenda',
       ).toEqual([
         title + ' scaletta aggiornata',
         ...authored.truth.agenda.slice(1),
@@ -1482,6 +1490,51 @@ test.describe('Temporal v2 — real stateful user personas', () => {
       await expect(onDay(page, day, title),
         'the first Event must remain single after full Home reload')
         .toHaveCount(1);
+
+      // "Solo questa" on the physical first Event must hydrate through the
+      // Occurrence-effective API. Then change it locally without changing
+      // the next generated Event or creating a second first-day card.
+      const localTitle = editedTitle + ' solo questa';
+      const localAgenda = title + ' scaletta solo questa';
+      const localEditor = await openEdit(page, day, editedTitle);
+      await page.getByRole('dialog', { name: 'Modifica ricorrenza' })
+        .getByRole('button', { name: 'Solo questa' }).click();
+      await expect(
+        localEditor.getByRole('textbox', { name: 'Titolo' }),
+      ).toHaveValue(editedTitle);
+      await expect(
+        localEditor.getByRole('textbox', { name: 'Punto scaletta 1' }),
+      ).toHaveValue(title + ' scaletta aggiornata');
+      await localEditor.getByRole('textbox', { name: 'Titolo' })
+        .fill(localTitle);
+      await localEditor.getByRole('textbox', { name: 'Punto scaletta 1' })
+        .fill(localAgenda);
+      const localSaved = page.waitForResponse((response) =>
+        response.request().method() === 'POST' &&
+        response.url().endsWith('/event-local-edit'),
+      );
+      await localEditor.getByRole('button', { name: 'Salva modifiche' }).click();
+      const saved = await localSaved;
+      expect(saved.status(), await saved.text()).toBe(200);
+
+      await assertCard(page, day, localTitle);
+      await assertOriginalScheduleIdentity(page, day, authored.item);
+      await assertDayHasNoDuplicatePlacements(
+        page, day, title, localTitle, persona,
+      );
+      const effectiveLocal = await serverRead(
+        page, '/api/v1/temporal/occurrences/' +
+          String(firstRef) + '/event-detail',
+      ) as Record<string, unknown>;
+      expect(effectiveLocal.title).toBe(localTitle);
+      expect(effectiveLocal.agenda_parts).toEqual([
+        localAgenda,
+        ...authored.truth.agenda.slice(1),
+      ]);
+      await assertCard(page, nextDay, editedTitle);
+      await assertDayHasNoDuplicatePlacements(
+        page, nextDay, title, editedTitle, persona,
+      );
     } finally {
       await user.close();
     }
