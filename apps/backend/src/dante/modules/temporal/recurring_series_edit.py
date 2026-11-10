@@ -550,6 +550,90 @@ class RecurringSeriesEditApplication:
             coordinate=coordinate,
         )
 
+    async def _synchronize_first_event_instance(
+        self,
+        session: AsyncSession,
+        *,
+        self_person_ref: NativeRef,
+        source_ref: UUID,
+        selected_ref: UUID,
+        requested_scope: SeriesScope,
+        new_state_ref: UUID,
+        persisted_structure: dict[str, object],
+        effective_zone_id: str,
+        operation_id: str,
+    ) -> None:
+        """Commit the first physical Event's effective structure as Occurrence truth.
+
+        The converted first Event owns its existing physical Schedule. A series
+        revision is represented by a new recurrence state, but this physical
+        first is still linked to the original Occurrence identity. Applying
+        only a new source template leaves its Agenda/Area/participants stale.
+
+        When the selected first day is included, store the accepted structure
+        as a scoped *first Occurrence* override in the same SERIALIZABLE
+        transaction. Do not mutate the historical standalone Event descriptor
+        or borrow its raw GET as the user's effective recurring view.
+        Later-date and from-next edits must not rewrite the first instance.
+        """
+        if requested_scope != "this_and_following":
+            return
+        first_ref = await session.scalar(
+            text(
+                "SELECT first_occurrence_ref FROM "
+                "dante.get_self_event_recurring_first_by_source(:actor,:source)"
+            ),
+            {"actor": self_person_ref, "source": source_ref},
+        )
+        if first_ref is None or UUID(str(first_ref)) != selected_ref:
+            return
+
+        local_structure = {
+            "agenda_parts": persisted_structure.get("agenda_parts"),
+            "life_area_ref": persisted_structure.get("life_area_ref"),
+            "expected_participants": persisted_structure.get("expected_participants"),
+        }
+        if (
+            not isinstance(local_structure["agenda_parts"], list)
+            or not isinstance(local_structure["expected_participants"], list)
+        ):
+            raise SeriesReconciliationError(
+                "Converted Event has an incomplete effective first structure."
+            )
+        current = (
+            (
+                await session.execute(
+                    text(
+                        "SELECT edit_revision,recurrence_state_ref "
+                        "FROM dante.get_self_occurrence_edit_revision(:actor,:selected)"
+                    ),
+                    {"actor": self_person_ref, "selected": first_ref},
+                )
+            )
+            .mappings()
+            .one_or_none()
+        )
+        if current is None or current["recurrence_state_ref"] != new_state_ref:
+            raise RecurringSeriesEditConflictError(
+                "Converted Event first instance changed during series edit."
+            )
+        await session.execute(
+            text(
+                "SELECT * FROM dante.accept_self_occurrence_profile_edit("
+                ":actor,:selected,:operation,:revision,:state,'only_this',"
+                ":zone,CAST(:patch AS jsonb))"
+            ),
+            {
+                "actor": self_person_ref,
+                "selected": first_ref,
+                "operation": _child_operation(operation_id, "converted-first-effective"),
+                "revision": current["edit_revision"],
+                "state": new_state_ref,
+                "zone": effective_zone_id,
+                "patch": json.dumps({"event_local": local_structure}, sort_keys=True),
+            },
+        )
+
     async def source(
         self, *, self_person_ref: NativeRef, selected_occurrence_ref: UUID
     ) -> RecurringSeriesSource:
@@ -942,6 +1026,18 @@ class RecurringSeriesEditApplication:
                     superseded_count=len(prepared.scope.target_occurrence_refs),
                     protected_count=len(prepared.scope.protected_future_occurrence_refs),
                 )
+                if prepared.owner == "event":
+                    await self._synchronize_first_event_instance(
+                        session,
+                        self_person_ref=self_person_ref,
+                        source_ref=prepared.source_ref,
+                        selected_ref=selected_occurrence_ref,
+                        requested_scope=requested_scope,
+                        new_state_ref=new_state,
+                        persisted_structure=persisted_structure,
+                        effective_zone_id=effective_zone_id,
+                        operation_id=operation_id,
+                    )
                 return RecurringSeriesAccepted(
                     source_ref=prepared.source_ref,
                     recurrence_state_ref=new_state,
