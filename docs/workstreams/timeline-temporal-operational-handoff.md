@@ -1,5 +1,16 @@
 # Timeline / Temporal-Operational — Workstream Handoff
 
+## 2026-11-10 — E2E 409 at converted-first Only-this; actual API precheck fixed (WSL retest pending)
+
+Owner shared `E2E_EVENT_FIRST_20261110-130226.log` plus `E2E_DIAGNOSTICS.tar(7).gz`. Chromium `V2-P3-EFIRST` exceeded 300 seconds because the new test called `await saved.text()` on a POST response that had **status 409** but did not finish response body read. Trace confirmed: conversion and `Questa e le successive` successfully updated the first effective title + Agenda; first day remained single, the next day's version was correct, `Solo questa` editor hydrated the new values. **The only failing step was saving that local edit**.
+
+Cause: `accept_event_occurrence_local_edit` rejected the linked first Event because it compared its original `governing_recurrence_state_ref` to the latest source state from the editor. First Occurrence generation state is historical after series replacement. The new owner-scoped first-Occurrence binding check allows only this exceptional identity to reach the existing atomic CAS against *current source* state/revision. All unrelated old Occurrences still rejected. The database-level SQL test had not exercised that API precheck. Targeted PostgreSQL regressions now call the real Event-local endpoint after two following edits and assert first-only effective Agenda/title and later-day independence. E2E status assertion checks headers immediately, not hanging on a body that may not arrive.
+
+**Await WSL retest** using the two PostgreSQL cases, then single Chromium E2E. Keep generated artifacts only in `temp/`; never `$HOME`.
+
+---
+
+
 ## 2026-11-10 — Converted Event first parity; atomic effective state, NOT raw original Event
 
 Owner clarified the source of truth: once Event is converted to series, the **existing first Event is the first series instance**, and all user-visible reads/edits must behave like the physical first Activity of a Routine, with `Solo questa`, `Questa e le successive` including selected, and no old standalone card. Original physical Event identity/Schedule/factual records remain durable but its raw source descriptor is NOT the canonical user-visible effective state. Previously `V2-P3-EFIRST` got past double-card assertions but failed its mistaken `GET /events/{original}` title equality; compare `GET /occurrences/{first}/event-detail` instead.
