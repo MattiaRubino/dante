@@ -64,13 +64,14 @@ function accountIndex(info: TestInfo, ordinal: number): number {
   };
   const project = projects[info.project.name];
   if (project === undefined || !Number.isInteger(ordinal) ||
-      ordinal < 0 || ordinal >= 102) {
+      ordinal < 0 || ordinal >= 103) {
     throw new Error('Stateful E2E account partition is invalid');
   }
-  // 1..101 existing; 102..401 matrix; 402..407 runtime-guard personas.
-  return ordinal < 100
-    ? 102 + project * 100 + ordinal
-    : 402 + project * 2 + ordinal - 100;
+  // 1..101 existing; 102..401 matrix; 402..407 runtime guards;
+  // 408..410 dedicated first-Event double-card regression (one per browser).
+  if (ordinal < 100) return 102 + project * 100 + ordinal;
+  if (ordinal < 102) return 402 + project * 2 + ordinal - 100;
+  return 408 + project;
 }
 
 export async function signedInPersona(
