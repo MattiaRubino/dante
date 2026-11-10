@@ -1446,6 +1446,22 @@ test.describe('Temporal v2 — real stateful user personas', () => {
       await assertDayHasNoDuplicatePlacements(
         page, day, title, editedTitle, persona,
       );
+      // The original physical first Event must reflect the edited series
+      // structure as well as its title. Otherwise suppressing the generated
+      // double would silently retain the OLD agenda on the only remaining
+      // first-day card.
+      const physicalFirst = await serverRead(
+        page, '/api/v1/temporal/events/' + authored.item.sourceRef,
+      ) as Record<string, unknown>;
+      expect(physicalFirst.title, 'the physical first Event uses the updated title')
+        .toBe(editedTitle);
+      expect(
+        physicalFirst.agenda_parts,
+        'the physical first Event carries its edited agenda',
+      ).toEqual([
+        title + ' scaletta aggiornata',
+        ...authored.truth.agenda.slice(1),
+      ]);
       const firstDayCards = page.locator(
         '[data-timeline-event][data-planned-date="' + day +
           '"], [data-timeline-all-day-lane="' + day +
