@@ -69,9 +69,11 @@ describe('Finite recurring-series editor boundaries', () => {
   });
 
   it('rejects missing bounded metadata instead of extending silently', () => {
-    expect(() => initialRecurrenceForScope({
-      ...base, remainingIncludingSelected: undefined,
-    }, 'this_and_following')).toThrow('Limite della serie finita non disponibile.');
+    const incomplete = { ...base };
+    delete incomplete.remainingIncludingSelected;
+    expect(() =>
+      initialRecurrenceForScope(incomplete, 'this_and_following'),
+    ).toThrow('Limite della serie finita non disponibile.');
   });
 
   it('allows zero remaining after the final instance to be refused on Save', () => {

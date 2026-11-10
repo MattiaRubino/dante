@@ -67,9 +67,7 @@ def test_multiple_wall_times_on_selected_day_are_excluded_together() -> None:
         expected_occurrence_count=6,
         wall_times=(time(9), time(17)),
     )
-    assert _remaining_expected_calendar_counts(
-        recurrence, date(2026, 11, 16)
-    ) == (4, 2)
+    assert _remaining_expected_calendar_counts(recurrence, date(2026, 11, 16)) == (4, 2)
 
 
 def test_monthly_ordinal_uses_canonical_calendar_phase() -> None:
@@ -81,9 +79,7 @@ def test_monthly_ordinal_uses_canonical_calendar_phase() -> None:
         weekdays=(),
         ordinal_weekdays=((7, 3),),
     )
-    assert _remaining_expected_calendar_counts(
-        recurrence, date(2027, 1, 17)
-    ) == (3, 2)
+    assert _remaining_expected_calendar_counts(recurrence, date(2027, 1, 17)) == (3, 2)
 
 
 def test_open_series_has_no_bounded_count() -> None:
