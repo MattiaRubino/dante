@@ -111,6 +111,39 @@ def test_formatter_correlates_request_and_trace_without_business_identity() -> N
         provider.shutdown()
 
 
+def test_structured_temporal_objective_failure_is_correlated_and_sanitized() -> None:
+    """SQLSTATE is actionable; labels, SQL binds and user refs stay private."""
+    formatter = DanteJsonFormatter(maximum_message_characters=512)
+    record = _record("temporal.occurrence.objective_materialization_failed")
+    record.__dict__["dante_fields"] = {
+        "dependency": "postgresql",
+        "error_category": "persistence",
+        "error_code": "temporal.occurrence.persistence_unavailable",
+        "failure_stage": "objective_create",
+        "objective_index": 1,
+        "subject_kind": "activity",
+        "sqlstate": "42883",
+        "outcome": "failed",
+        "objective_label": "person@example.com",
+        "database_bind_parameters": "secret-value",
+    }
+    record.__dict__["dante_exception_type"] = "UndefinedFunction"
+
+    with bind_request_id(_REQUEST_ID):
+        payload = _payload(formatter, record)
+    assert payload["request_id"] == _REQUEST_ID
+    assert payload["event"] == "temporal.occurrence.objective_materialization_failed"
+    assert payload["sqlstate"] == "42883"
+    assert payload["failure_stage"] == "objective_create"
+    assert payload["objective_index"] == 1
+    assert payload["subject_kind"] == "activity"
+    assert payload["exception_type"] == "UndefinedFunction"
+    assert "objective_label" not in payload
+    assert "database_bind_parameters" not in payload
+    assert _EMAIL not in json.dumps(payload)
+    assert "secret-value" not in json.dumps(payload)
+
+
 def test_formatter_bounds_the_emitted_event() -> None:
     formatter = DanteJsonFormatter(maximum_message_characters=256)
 
