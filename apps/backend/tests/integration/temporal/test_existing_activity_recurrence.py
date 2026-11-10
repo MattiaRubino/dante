@@ -672,15 +672,46 @@ async def test_existing_event_keeps_first_event_and_excludes_duplicate_occurrenc
                 )
                 is None
             )
+        # The first Occurrence must possess the same physical Schedule
+        # edit capability as later generated Occurrences, without granting
+        # access to any unrelated actor or Schedule identity.
+        async with runtime.session_factory() as session, session.begin():
+            assert await session.scalar(
+                text(
+                    "SELECT dante.is_self_event_occurrence_schedule("
+                    ":actor,:first,:schedule)"
+                ),
+                {
+                    "actor": actor,
+                    "first": first_occurrence,
+                    "schedule": schedule.schedule_ref,
+                },
+            )
+            assert not await session.scalar(
+                text(
+                    "SELECT dante.is_self_event_occurrence_schedule("
+                    ":actor,:first,:schedule)"
+                ),
+                {
+                    "actor": other,
+                    "first": first_occurrence,
+                    "schedule": schedule.schedule_ref,
+                },
+            )
+
         # Re-edit the already converted Event from its *physical first*
-        # Occurrence. Its Event Schedule is retained, but it must read the
-        # selected+following title correction just like later Occurrences.
+        # Occurrence. Its Event Schedule is retained, but title + full Agenda
+        # must read as effective Occurrence state, just like later instances.
         series = RecurringSeriesEditApplication(runtime.session_factory)
         source = await series.source(
             self_person_ref=actor,
             selected_occurrence_ref=first_occurrence,
         )
         assert source.owner == "event"
+        revised_structure = {
+            **source.structure_snapshot,
+            "agenda_parts": ["Arrivo aggiornato", "Colloquio aggiornato"],
+        }
         review = await series.preview(
             self_person_ref=actor,
             selected_occurrence_ref=first_occurrence,
@@ -689,7 +720,7 @@ async def test_existing_event_keeps_first_event_and_excludes_duplicate_occurrenc
             expected_state_ref=source.recurrence_state_ref,
             effective_zone_id="Europe/Rome",
             proposed_recurrence=source.recurrence,
-            proposed_structure=source.structure_snapshot,
+            proposed_structure=revised_structure,
             profile_patch={"title": "Visita aggiornata"},
         )
         assert first_occurrence in review.scope.target_occurrence_refs
@@ -701,7 +732,7 @@ async def test_existing_event_keeps_first_event_and_excludes_duplicate_occurrenc
             expected_state_ref=source.recurrence_state_ref,
             effective_zone_id="Europe/Rome",
             proposed_recurrence=source.recurrence,
-            proposed_structure=source.structure_snapshot,
+            proposed_structure=revised_structure,
             profile_patch={"title": "Visita aggiornata"},
             expected_fingerprint=review.fingerprint,
             operation_id="existing-event-repeat:edit-first",
@@ -755,6 +786,22 @@ async def test_existing_event_keeps_first_event_and_excludes_duplicate_occurrenc
         assert len(revised_original) == 1
         assert revised_original[0].schedule_ref == schedule.schedule_ref
         assert revised_original[0].title == "Visita aggiornata"
+        async with runtime.session_factory() as session, session.begin():
+            # Canonical first-Occurrence patch, not raw historical Event data,
+            # is the effective structure consumed by the Event Inspector.
+            first_patch = await session.scalar(
+                text(
+                    "SELECT dante.get_self_occurrence_profile_patch("
+                    ":actor,:occurrence)"
+                ),
+                {"actor": actor, "occurrence": first_occurrence},
+            )
+            assert first_patch["title"] == "Visita aggiornata"
+            assert first_patch["event_local"]["agenda_parts"] == [
+                "Arrivo aggiornato", "Colloquio aggiornato",
+            ]
+            assert first_patch["event_local"]["life_area_ref"] is None
+            assert first_patch["event_local"]["expected_participants"] == []
         revised_future = [
             item
             for item in revised_window.items
