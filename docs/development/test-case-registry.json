@@ -5691,6 +5691,16 @@
       "invariant": "Only 40001 may retry; every attempt owns a fresh transaction; maximum 3; no mutation partially committed.",
       "status": "QUALIFIED",
       "audit_note": "Regression added; WSL unit and real PostgreSQL execution pending."
+    },
+    {
+      "path": "apps/backend/tests/unit/temporal/test_e2e_stack_pool_override.py",
+      "suite": "backend-unit",
+      "contract_id": "T05",
+      "candidate_behavior": "test-only PostgreSQL pool budget matches Chromium V2 worker count",
+      "purpose": "Bounded E2E stack resource scaling 1->5+5/5s and 2->10+10/15s, without changing shared or production DatabaseSettings.",
+      "invariant": "One-worker E2E baseline is bit-for-bit unchanged. Invalid worker counts are rejected. Two-worker overrides do not mutate original settings.",
+      "status": "QUALIFIED",
+      "audit_note": "Added with two-worker E2E progress reporting; WSL verification pending."
     }
   ]
 }

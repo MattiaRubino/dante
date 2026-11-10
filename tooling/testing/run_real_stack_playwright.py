@@ -151,11 +151,14 @@ def _run_project(
         "DANTE_E2E_WEB_PORT": str(port),
         "DANTE_E2E_PREBUILT_WEB": "1",
         "PLAYWRIGHT_JUNIT_OUTPUT_FILE": str(junit),
+        "DANTE_E2E_PER_STACK_WORKERS": str(v2_workers),
+        "DANTE_E2E_PROGRESS_JSONL": str(shard / "progress.jsonl"),
     }
     command = (
         "pnpm", "exec", "playwright", "test", "--config",
         "playwright.auth.config.ts", "--project", project,
-        f"--workers={v2_workers}", "--retries=0", "--reporter=line,junit",
+        f"--workers={v2_workers}", "--retries=0",
+        "--reporter=line,junit,./e2e/auth/temporal-progress-reporter.ts",
         "--output", str(shard / "test-results"),
         *(("--fully-parallel",) if v2_workers > 1 else ()),
         *_selector(grep),
@@ -249,7 +252,8 @@ def _write_diagnostic_archive(directory: Path) -> Path:
         }, indent=2) + "\n", encoding="utf-8",
     )
     names = {
-        "summary.json", "diagnostic-manifest.json", "playwright.log",
+        "summary.json", "partial-summary.json", "progress.jsonl",
+        "diagnostic-manifest.json", "playwright.log",
         "junit.xml", "web-build.log", "orchestrator-error.txt",
         "report-error.txt", "error-context.md", ".last-run.json",
         "trace-diagnostic.zip", "trace-diagnostic.error.txt",
@@ -268,6 +272,60 @@ def _write_diagnostic_archive(directory: Path) -> Path:
                 recursive=False,
             )
     return archive
+
+
+def _write_partial_progress(directory: Path, *, interrupted: bool) -> Path:
+    """Persist observed per-test results even when Playwright's JUnit is absent.
+
+    A signal may stop a long V2 campaign before JUnit finalization. Only tests
+    with an onTestEnd record are counted; unexecuted tests stay unclassified.
+    This report is diagnostic and never satisfies the green coverage gate.
+    """
+    by_project: list[dict[str, object]] = []
+    for progress in sorted(directory.glob("*/progress.jsonl")):
+        records: list[dict[str, object]] = []
+        malformed = 0
+        for line in progress.read_text(encoding="utf-8").splitlines():
+            try:
+                value = json.loads(line)
+            except json.JSONDecodeError:
+                malformed += 1
+                continue
+            if not isinstance(value, dict) or value.get("status") not in {
+                "passed", "failed", "timedOut", "skipped", "interrupted",
+            }:
+                malformed += 1
+                continue
+            records.append(value)
+        by_project.append({
+            "project": progress.parent.name,
+            "completed": len(records),
+            "passed": sum(
+                row["status"] == "passed" and row.get("outcome") == "expected"
+                for row in records
+            ),
+            "failed": sum(
+                row["status"] in {"failed", "timedOut", "interrupted"}
+                or row.get("outcome") == "unexpected"
+                for row in records
+            ),
+            "skipped": sum(row["status"] == "skipped" for row in records),
+            "malformed_records": malformed,
+            "cases": records,
+        })
+    result = directory / "partial-summary.json"
+    result.write_text(
+        json.dumps({
+            "format": "dante-e2e-progress-v1",
+            "complete": False,
+            "interrupted": interrupted,
+            "counts_are_only_observed": True,
+            "not_an_acceptance_result": True,
+            "projects": by_project,
+        }, ensure_ascii=False, indent=2) + "\n",
+        encoding="utf-8",
+    )
+    return result
 
 
 def _v2_selection_isolated(grep: str | None) -> bool:
@@ -419,6 +477,19 @@ def _self_test() -> None:
         failure = root / "chromium" / "test-results" / "failed-test"
         failure.mkdir(parents=True)
         (root / "chromium" / "playwright.log").write_text("FAILED\n")
+        (root / "chromium" / "progress.jsonl").write_text(
+            json.dumps({"title": "V2-P1-A02", "status": "passed", "outcome": "expected"})
+            + "\n"
+            + json.dumps({"title": "V2-P2-E01", "status": "failed", "outcome": "unexpected"})
+            + "\n",
+            encoding="utf-8",
+        )
+        snapshot = json.loads(_write_partial_progress(root, interrupted=True).read_text())
+        assert snapshot["complete"] is False
+        assert snapshot["not_an_acceptance_result"] is True
+        assert snapshot["projects"][0]["completed"] == 2
+        assert snapshot["projects"][0]["passed"] == 1
+        assert snapshot["projects"][0]["failed"] == 1
         (root / "chromium" / "junit.xml").write_text(
             "<testsuite><testcase><failure/></testcase></testsuite>\n"
         )
@@ -436,7 +507,8 @@ def _self_test() -> None:
                 "failed-test/trace-diagnostic.zip"
             )
             assert {
-                "summary.json", "chromium/playwright.log",
+                "summary.json", "partial-summary.json",
+                "chromium/progress.jsonl", "chromium/playwright.log",
                 "chromium/junit.xml", reduced_name,
             } <= member_names
             assert "chromium/test-results/failed-test/error-context.md" in member_names
@@ -534,6 +606,7 @@ def main() -> int:
     directory.mkdir(parents=True, exist_ok=True)
     started = time.monotonic()
     report = directory / "summary.json"
+    interrupted = False
     try:
         planned = {
             project: _plan(project, directory, args.grep)
@@ -597,6 +670,14 @@ def main() -> int:
         )
         print(f"REALSTACK_REPORT={report}", flush=True)
         return int(not success)
+    except KeyboardInterrupt:
+        interrupted = True
+        (directory / "orchestrator-error.txt").write_text(
+            "Interrupted by operator; only completed per-test records are recoverable.\n",
+            encoding="utf-8",
+        )
+        print("REALSTACK INTERRUPTED: observed tests saved as partial diagnostics", flush=True)
+        return 130
     except (OSError, RuntimeError, subprocess.SubprocessError) as exc:
         (directory / "orchestrator-error.txt").write_text(
             f"{type(exc).__name__}: {exc}\n", encoding="utf-8",
@@ -604,9 +685,11 @@ def main() -> int:
         print(f"REALSTACK ERROR: {exc}", file=sys.stderr, flush=True)
         return 2
     finally:
-        # Guaranteed diagnostics on success, assertion failures or startup
-        # errors. Full-size original traces stay in project directories.
+        # Guaranteed diagnostics on success, SIGINT, failures or startup
+        # errors. JUnit absence never turns observed test records into PASS.
+        # Full-size original traces stay in project directories.
         try:
+            _write_partial_progress(directory, interrupted=interrupted)
             archive = _write_diagnostic_archive(directory)
             print(f"REALSTACK_DIAGNOSTICS={archive}", flush=True)
         except (OSError, RuntimeError, zipfile.BadZipFile) as exc:

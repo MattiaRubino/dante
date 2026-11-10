@@ -10,6 +10,7 @@ from uuid import uuid7
 
 import psycopg
 from dante.auth.email import normalize_email
+from dante.platform.config.settings import Settings
 from psycopg import sql
 
 _CORE_PATH = Path(__file__).with_name("serve-access-auth-stack.py")
@@ -21,6 +22,7 @@ _REQUIRED_EXTENSIONS: tuple[tuple[str, str | None], ...] = (
     ("pg_stat_statements", None),
 )
 _E2E_RATE_CAPACITY_ENV = "DANTE_E2E_SIGNIN_RATE_CAPACITY"
+_E2E_BROWSER_WORKERS_ENV = "DANTE_E2E_PER_STACK_WORKERS"
 _E2E_CONTROL_ID_ENV = "DANTE_E2E_CONTROL_ID"
 _E2E_CONTROL_LABEL = "dante.e2e.control_id"
 # 1-101: auth/lifecycle; 102-401: v2 matrix; 402-407: runtime guards;
@@ -117,6 +119,40 @@ def _auth_settings_override(
         if not callable(model_copy):
             raise TypeError("Auth settings do not support bounded E2E overrides.")
         return model_copy(update={"signin_rate_capacity": capacity})
+
+    return build
+
+
+def _runtime_database_pool_override(
+    original: Callable[..., Settings],
+) -> Callable[..., Settings]:
+    """Size only the disposable E2E API for two concurrent browser workers.
+
+    The legacy serial stack keeps its original 5+5/5s budget; production
+    database settings are unaffected. A two-worker matrix may drive >10
+    simultaneous API reads and checkpoints on its one disposable database.
+    """
+
+    def build(*, port: int, runtime_password: str, auth_settings: object) -> Settings:
+        settings = original(
+            port=port, runtime_password=runtime_password, auth_settings=auth_settings
+        )
+        workers = os.environ.get(_E2E_BROWSER_WORKERS_ENV, "1")
+        if workers not in {"1", "2"}:
+            raise RuntimeError(f"{_E2E_BROWSER_WORKERS_ENV} must be 1 or 2.")
+        if workers == "1":
+            return settings
+        return settings.model_copy(
+            update={
+                "database": settings.database.model_copy(
+                    update={
+                        "pool_size": 10,
+                        "max_overflow": 10,
+                        "pool_timeout_seconds": 15.0,
+                    }
+                )
+            }
+        )
 
     return build
 
@@ -242,6 +278,7 @@ def main() -> None:
     core._docker = _docker_with_control_label(core._docker, control_id)
     core._create_extensions = _extension_guard(database_name)
     core._auth_settings = _auth_settings_override(core._auth_settings)
+    core._runtime_settings = _runtime_database_pool_override(core._runtime_settings)
     core._seed_account = _seed_account_with_e2e_accounts(
         core._seed_account,
         database_name=database_name,
