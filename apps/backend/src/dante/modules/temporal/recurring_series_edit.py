@@ -8,6 +8,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+import logging
 from copy import deepcopy
 from dataclasses import asdict, dataclass
 from datetime import date, datetime, timedelta
@@ -46,6 +47,9 @@ from dante.modules.temporal.recurring_structure_preview import (
 )
 from dante.modules.temporal.routine_occurrence_policy import RoutineOccurrencePolicyApplication
 from dante.platform.database.references import NativeRef
+from dante.platform.observability.logging import log_event
+
+_LOGGER = logging.getLogger(__name__)
 
 type SeriesScope = Literal["this_and_following", "from_next"]
 type SeriesOwner = Literal["routine", "event"]
@@ -882,6 +886,7 @@ class RecurringSeriesEditApplication:
             proposed_structure=proposed_structure,
             profile_patch=profile_patch,
         )
+        failure_stage = "operation_lookup"
         try:
             async with self._session_factory() as session, session.begin():
                 await session.execute(text("SET TRANSACTION ISOLATION LEVEL SERIALIZABLE"))
@@ -928,6 +933,7 @@ class RecurringSeriesEditApplication:
                         ),
                         replayed=True,
                     )
+                failure_stage = "prepare"
                 prepared = await self.prepare_in_session(
                     session,
                     self_person_ref=self_person_ref,
@@ -951,6 +957,7 @@ class RecurringSeriesEditApplication:
                 new_area = persisted_structure.pop("new_life_area", None)
                 color_change = persisted_structure.pop("area_color_change", None)
                 if isinstance(new_area, dict):
+                    failure_stage = "life_area_create"
                     area_ref = await create_life_area_in_session(
                         session,
                         actor=self_person_ref,
@@ -974,6 +981,7 @@ class RecurringSeriesEditApplication:
                         color_code=cast(str, color_change["color_code"]),
                     )
                 if profile_patch:
+                    failure_stage = "profile_patch_accept"
                     await session.execute(
                         text(
                             "SELECT * FROM dante.accept_self_occurrence_profile_edit_previewed("
@@ -992,6 +1000,7 @@ class RecurringSeriesEditApplication:
                             "fingerprint": prepared.source_fingerprint,
                         },
                     )
+                failure_stage = "recurrence_replace"
                 replacement = await self._recurrences.replace_in_session(
                     session,
                     owner=prepared.owner,
@@ -1006,6 +1015,7 @@ class RecurringSeriesEditApplication:
                 # the series (same ownership model as a linked Activity). It
                 # must remain the current Occurrence across source revisions:
                 # superseding it makes "Solo questa" impossible afterward.
+                failure_stage = "event_first_lookup"
                 first_event_ref = (
                     await session.scalar(
                         text(
@@ -1017,6 +1027,7 @@ class RecurringSeriesEditApplication:
                     if prepared.owner == "event"
                     else None
                 )
+                failure_stage = "supersede_clean"
                 superseded_count = 0
                 preserved_first_ref: UUID | None = None
                 for index, ref in enumerate(prepared.scope.target_occurrence_refs):
@@ -1040,6 +1051,7 @@ class RecurringSeriesEditApplication:
                         effective_zone_id=effective_zone_id,
                     )
                     superseded_count += 1
+                failure_stage = "exclude_protected"
                 for index, coordinate in enumerate(
                     prepared.reconciliation.protected_matching_coordinates
                 ):
@@ -1053,6 +1065,7 @@ class RecurringSeriesEditApplication:
                         coordinate=coordinate,
                     )
                 if prepared.owner == "event":
+                    failure_stage = "exclude_converted_first"
                     await self._exclude_converted_first_on_revised_state(
                         session,
                         self_person_ref=self_person_ref,
@@ -1063,6 +1076,7 @@ class RecurringSeriesEditApplication:
                         operation_id=operation_id,
                         already_excluded=(prepared.reconciliation.protected_matching_coordinates),
                     )
+                failure_stage = "persist_structure"
                 await self._policies.replace_in_session(
                     session,
                     self_person_ref=self_person_ref,
@@ -1078,6 +1092,7 @@ class RecurringSeriesEditApplication:
                     protected_count=len(prepared.scope.protected_future_occurrence_refs),
                 )
                 if prepared.owner == "event":
+                    failure_stage = "advance_converted_first"
                     await self._advance_converted_first_structure(
                         session,
                         self_person_ref=self_person_ref,
@@ -1087,6 +1102,7 @@ class RecurringSeriesEditApplication:
                         previous_state_ref=expected_state_ref,
                         new_state_ref=new_state,
                     )
+                failure_stage = "transaction_commit"
                 return RecurringSeriesAccepted(
                     source_ref=prepared.source_ref,
                     recurrence_state_ref=new_state,
@@ -1095,6 +1111,24 @@ class RecurringSeriesEditApplication:
                     preserved_occurrence_ref=preserved_first_ref,
                 )
         except SQLAlchemyError as exc:
+            # Keep SQL and bound values private. Emit only stable coordinates
+            # so a failing real-stack journey identifies the violated DB
+            # invariant instead of losing its cause behind a generic 409.
+            origin = getattr(exc, "orig", None)
+            diagnostic = getattr(origin, "diag", None)
+            log_event(
+                _LOGGER,
+                logging.ERROR,
+                "temporal.recurring_series.accept_sql_failure",
+                fields={
+                    "failure_stage": failure_stage,
+                    "sqlstate": getattr(origin, "sqlstate", None) or "unknown",
+                    "error_code": getattr(diagnostic, "constraint_name", None) or "unknown",
+                    "subject_kind": "recurring_series",
+                    "error_category": "database",
+                },
+                exception=exc,
+            )
             raise RecurringSeriesEditConflictError("Series changed during acceptance.") from exc
 
     async def prepare_in_session(

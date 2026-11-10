@@ -567,9 +567,20 @@ async function assertNoOccurrenceBeyondFiniteEnd(
       '/api/v1/temporal/timeline/window?start_date=' + next +
         '&end_date_exclusive=' + dateAfter(next, 1),
     ) as Record<string, unknown>;
-    expect(window.kind).toBe('window');
-    const unauthorized = (window.items as Record<string, unknown>[])
-      .filter((row) =>
+    // An entirely empty canonical Timeline uses kind='empty' and omits
+    // items. Do not require a nonempty-window envelope to prove a finite
+    // recurrence stopped generating; reject malformed responses instead.
+    expect(['window', 'empty']).toContain(window.kind);
+    const items = window.items;
+    if (window.kind === 'empty') {
+      expect(items, 'empty Timeline must have no item payload').toBeUndefined();
+    } else {
+      expect(Array.isArray(items), 'window Timeline must expose items').toBe(true);
+    }
+    const rows: Record<string, unknown>[] = Array.isArray(items)
+      ? items as Record<string, unknown>[]
+      : [];
+    const unauthorized = rows.filter((row) =>
         typeof row.title === 'string' &&
         row.title.startsWith(uniqueSourceTitle),
       );

@@ -5671,6 +5671,16 @@
       "invariant": "Series count is recomputed from canonical candidates for partial edits. Explicit user count changes remain authoritative; multi-wall-time calendar days and final boundaries are handled without silent extensions.",
       "status": "QUALIFIED",
       "audit_note": "New targeted regression committed, WSL execution pending; no PASS claimed."
+    },
+    {
+      "path": "apps/backend/tests/integration/temporal/test_recurring_series_bounded_event_acceptance.py",
+      "suite": "backend-postgres",
+      "contract_id": "T05",
+      "candidate_behavior": "native finite Event with first/last local structure exceptions and following structural+metadata edit",
+      "purpose": "Reproduce real-stack E04 SQL 409 with strict protected first/final, expected-count 4, new Life Area, and title/Agenda changes.",
+      "invariant": "Accepted following-series edit never silently extends a finite schedule, retains local exceptions and commits new structure/area together.",
+      "status": "QUALIFIED",
+      "audit_note": "Reproduces Chromium E04 case; owner WSL PostgreSQL execution pending to expose SQLSTATE and establish RED/GREEN."
     }
   ]
 }
