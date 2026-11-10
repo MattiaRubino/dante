@@ -1,5 +1,16 @@
 # Timeline / Temporal-Operational — Workstream Handoff
 
+## 2026-11-10 — P3-A01: SQLSTATE 42883 Objective materialization cause confirmed, candidate fix published
+
+User reproduced the Timeline warning manually and provided the full `area_two_numeric_objectives` Postgres traceback. **The root cause is now identified from original SQLSTATE, not inferred:** the routine materializer calls `dante.create_self_temporal_objective` with untyped `float` numerical target, so psycopg binds it as PostgreSQL `double precision` while the canonical function accepts `numeric`; PostgreSQL raises `UndefinedFunction 42883`. `RoutineOccurrenceMaterializationApplication._create_objectives` wraps this as `OccurrencePersistenceError`; `POST /api/v1/temporal/occurrences/checkpoint` emits generic 503 and the UI shows an error without necessarily disabling preloaded cards. Earlier empty-objective integration was green because the failing SQL call was not performed.
+
+Published a **two-branch explicit numeric bind** (both `create_self_temporal_objective` and `create_self_occurrence_objective`), without schema migration or business behavior changes. Extended safe structured logging at the exact failure source with request correlation (existing platform context), exception class, SQLSTATE, stage and Objective index; logging formatter continues to discard arbitrary fields, SQL/params, labels and refs. Added formatter confidentiality regression. Added a float-valued Objective to an existing routine-occurrence integration regression so both SQL function signatures are covered. The failed `area_two_numeric_objectives` test is preserved for RED-to-GREEN verification.
+
+**Not yet verified on WSL; do NOT claim fixed/green until user result.** Narrow command from repo root: `cd apps/backend && uv run --locked pytest -q --no-cov --tb=short -m postgres 'tests/integration/temporal/test_existing_activity_recurrence.py::test_converted_activity_with_two_intervals_materializes_next_day' tests/integration/temporal/test_objective_recurring_instance_scope.py::test_generated_routine_objective_scope_selected_past_and_later_future tests/test_observability_logging.py`. Then one `--project chromium --v2-workers 1 --grep 'V2-P3-A01'` only after backend green; user already verified manual reproduction. Record all real failures with real SQLSTATE and request correlation, not more speculative loops. See `docs/development/temporal-user-lifecycle-journey-matrix.md`.
+
+---
+
+
 ## 2026-11-10 — P3-A01 DB PASS vs browser RED: widen regression, do not claim root cause
 
 Owner checked out `240feebc4` and ran `test_converted_activity_with_two_intervals_materializes_next_day`: **1 PASS, 8.93s**. The original test used direct Python authoring and conversion, one 2-day checkpoint and canonical SQL-backed read; it did not exercise HTTP and SPA Edit, existing-area selection, two Objective definitions, the 43-day Home checkpoint or the scoped-edit/duplicate checks from `V2-P3-A01`. So this result proves the narrow next-day recurrence materialization but does **not** settle the prior browser `Timeline non disponibile`.
