@@ -1,5 +1,19 @@
 # Timeline / Temporal-Operational — Workstream Handoff
 
+## 2026-11-10 — Original Event first-day duplicate, targeted RED reproduction
+
+Owner screenshot shows two Event cards `asd` at the same local time 11:00–11:30 on 2026-11-10 after converting one ordinary Event into a recurring series and editing it; only one card visibly retains an agenda section. Must not dismiss or assume duplicate SQL state without a Schedule identity read. The existing `V2-P3-E01` browser green covers **Solo questa** on first Event and scoped changes on later occurrences, **not** editing first Event with **Questa e le successive**. Existing backend test checks first original immediately after series accept but not the subsequent Home materialization checkpoint.
+
+Two precise regressions have been staged **without modifying product code**:
+- Extend `test_existing_event_keeps_first_event_and_excludes_duplicate_occurrence[locked/ unlocked]` to checkpoint the new recurrence after first-day `this_and_following` revision, then assert exactly ONE first-day Event across original canonical Event and materialized/expected converted series Occurrences, same original physical Schedule.
+- New browser `V2-P3-EFIRST`: create one-off Event with agenda, convert through UI, edit original first day with `Questa e le successive` (name + agenda), confirm series save, reload Home to trigger checkpoint, assert first-day **canonical** count and **DOM** card count both one, no original old-title card, next day has updated title. Isolated new per-browser E2E accounts `408..410` are seeded (ordinal 102). Does not weaken any other existing matrix.
+- Do not confuse with `V2-P2-E04` (native finite Event series); older E04 failures occurred at multiple stages and do not prove the reported converted-first-event duplicate.
+
+**Owner local gate:** `cd apps/backend && uv run --locked pytest -q --no-cov --tb=short -m postgres tests/integration/temporal/test_existing_activity_recurrence.py::test_existing_event_keeps_first_event_and_excludes_duplicate_occurrence`. If green, `cd ~/projects/dante && python3 tooling/testing/run_real_stack_playwright.py --project chromium --v2-workers 1 --grep 'V2-P3-EFIRST'` (diagnostics archive saved automatically). A red response pinpoints where the production correction belongs; preserve all existing identity, scope, and recurrence invariants. No new green claim until WSL results.
+
+---
+
+
 ## 2026-11-10 — P3-A01: SQLSTATE 42883 Objective materialization cause confirmed, candidate fix published
 
 User reproduced the Timeline warning manually and provided the full `area_two_numeric_objectives` Postgres traceback. **The root cause is now identified from original SQLSTATE, not inferred:** the routine materializer calls `dante.create_self_temporal_objective` with untyped `float` numerical target, so psycopg binds it as PostgreSQL `double precision` while the canonical function accepts `numeric`; PostgreSQL raises `UndefinedFunction 42883`. `RoutineOccurrenceMaterializationApplication._create_objectives` wraps this as `OccurrencePersistenceError`; `POST /api/v1/temporal/occurrences/checkpoint` emits generic 503 and the UI shows an error without necessarily disabling preloaded cards. Earlier empty-objective integration was green because the failing SQL call was not performed.
