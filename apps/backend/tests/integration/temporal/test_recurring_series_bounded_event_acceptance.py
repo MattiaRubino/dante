@@ -98,13 +98,12 @@ async def test_native_finite_event_preserves_local_first_last_and_accepts_follow
             effective_zone_id="Europe/Rome",
         )
         window = await timeline.read_window(
-            query=TimelineWindowQuery(
-                start_date=first_date, end_date_exclusive=date(2027, 3, 1)
-            ),
+            query=TimelineWindowQuery(start_date=first_date, end_date_exclusive=date(2027, 3, 1)),
             context=_context(actor),
         )
         physical = [
-            item for item in window.items
+            item
+            for item in window.items
             if isinstance(item, TimelineScheduledOccurrenceItem)
             and item.source_native_ref == created.source_ref
         ]
@@ -115,27 +114,35 @@ async def test_native_finite_event_preserves_local_first_last_and_accepts_follow
         }
         assert len(by_date) == len(physical) == 5
         assert sorted(by_date) == [
-            first_date, next_date, date(2027, 1, 31), date(2027, 2, 14), final_date
+            first_date,
+            next_date,
+            date(2027, 1, 31),
+            date(2027, 2, 14),
+            final_date,
         ]
-        request = Request({
-            "type": "http",
-            "app": SimpleNamespace(state=SimpleNamespace(database_runtime=runtime)),
-        })
+        request = Request(
+            {
+                "type": "http",
+                "app": SimpleNamespace(state=SimpleNamespace(database_runtime=runtime)),
+            }
+        )
         context = _context(actor)
         for revision, target in enumerate((by_date[first_date], by_date[final_date])):
             saved = await accept_event_occurrence_local_edit(
                 target.occurrence_ref,
-                EventOccurrenceLocalEditCommand.model_validate({
-                    "operation_id": f"e04:local:{revision}",
-                    "expected_revision": revision,
-                    "expected_recurrence_state_ref": created.recurrence_material_state_ref,
-                    "profile_patch": {"title": f"E04 eccezione {revision}"},
-                    "structure": {
-                        "agenda_parts": [f"Scaletta eccezione {revision}"],
-                        "life_area_ref": None,
-                        "expected_participants": [],
-                    },
-                }),
+                EventOccurrenceLocalEditCommand.model_validate(
+                    {
+                        "operation_id": f"e04:local:{revision}",
+                        "expected_revision": revision,
+                        "expected_recurrence_state_ref": created.recurrence_material_state_ref,
+                        "profile_patch": {"title": f"E04 eccezione {revision}"},
+                        "structure": {
+                            "agenda_parts": [f"Scaletta eccezione {revision}"],
+                            "life_area_ref": None,
+                            "expected_participants": [],
+                        },
+                    }
+                ),
                 context,
                 request,
                 Response(),
@@ -143,15 +150,11 @@ async def test_native_finite_event_preserves_local_first_last_and_accepts_follow
             assert saved.revision == revision + 1
 
         selected_ref = by_date[next_date].occurrence_ref
-        source = await series.source(
-            self_person_ref=actor, selected_occurrence_ref=selected_ref
-        )
+        source = await series.source(self_person_ref=actor, selected_occurrence_ref=selected_ref)
         assert source.edit_revision == 2
         assert source.remaining_including_selected == 4
         assert source.remaining_after_selected == 3
-        proposal = replace(
-            source.recurrence, effective_from=next_date, expected_occurrence_count=4
-        )
+        proposal = replace(source.recurrence, effective_from=next_date, expected_occurrence_count=4)
         structure = {
             **source.structure_snapshot,
             "agenda_parts": ["Scaletta serie aggiornata"],
@@ -178,7 +181,7 @@ async def test_native_finite_event_preserves_local_first_last_and_accepts_follow
         original_create = recurring_series_edit.create_life_area_in_session
         create_attempts = 0
 
-        class SerializationAbort(Exception):
+        class SerializationAbortError(Exception):
             sqlstate = "40001"
 
         async def transient_create(*args: Any, **kwargs: Any) -> Any:
@@ -188,7 +191,7 @@ async def test_native_finite_event_preserves_local_first_last_and_accepts_follow
                 raise OperationalError(
                     "redacted diagnostic statement",
                     {},
-                    SerializationAbort("simulated serialization failure"),
+                    SerializationAbortError("simulated serialization failure"),
                 )
             return await original_create(*args, **kwargs)
 
@@ -251,9 +254,7 @@ async def test_native_finite_event_preserves_local_first_last_and_accepts_follow
             effective_zone_id="Europe/Rome",
         )
         after = await timeline.read_window(
-            query=TimelineWindowQuery(
-                start_date=first_date, end_date_exclusive=date(2027, 3, 1)
-            ),
+            query=TimelineWindowQuery(start_date=first_date, end_date_exclusive=date(2027, 3, 1)),
             context=context,
         )
         titles = {

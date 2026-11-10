@@ -10,10 +10,10 @@ import pytest
 from sqlalchemy.exc import OperationalError
 
 from dante.modules.temporal.recurring_series_edit import (
+    _MAX_SERIALIZATION_ATTEMPTS,
     RecurringSeriesAccepted,
     RecurringSeriesEditApplication,
     RecurringSeriesEditConflictError,
-    _MAX_SERIALIZATION_ATTEMPTS,
     _is_serialization_failure,
 )
 
