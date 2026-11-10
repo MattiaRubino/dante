@@ -196,7 +196,10 @@ async def test_converted_activity_with_two_intervals_materializes_next_day(
     day = date(2027, 1, 2)
 
     def placement(
-        hour: int, minute: int, end_hour: int, end_minute: int,
+        hour: int,
+        minute: int,
+        end_hour: int,
+        end_minute: int,
     ) -> NamedZoneLocalIntervalPlacement:
         return NamedZoneLocalIntervalPlacement(
             starts_local_at=datetime(2027, 1, 2, hour, minute),  # noqa: DTZ001
@@ -206,15 +209,14 @@ async def test_converted_activity_with_two_intervals_materializes_next_day(
         )
 
     try:
-        authored = await TemporalAuthoringApplication(
-            runtime.session_factory
-        ).create_activity(
+        authored = await TemporalAuthoringApplication(runtime.session_factory).create_activity(
             self_person_ref=actor,
             operation_id="conversion:rich-two-intervals:create",
             title="Studio multiintervallo",
             life_area_intent=(
                 AuthoringLifeAreaIntent(new_name="Studio area", color_code="#4285F4")
-                if rich_metadata else None
+                if rich_metadata
+                else None
             ),
             placement=placement(9, 10, 11, 20),
             activity_intervals=(
@@ -232,37 +234,43 @@ async def test_converted_activity_with_two_intervals_materializes_next_day(
             # Persist the real Objective SQL state before converting, so the
             # routine template must materialize both on its first five days.
             async with runtime.session_factory() as session, session.begin():
-                for index, (kind, comparator, target, low, high) in enumerate((
-                    ("quantity", "gte", 12, None, None),
-                    ("range", "between", None, 12, 1222),
-                )):
+                for index, (kind, comparator, target, low, high) in enumerate(
+                    (
+                        ("quantity", "gte", 12, None, None),
+                        ("range", "between", None, 12, 1222),
+                    )
+                ):
                     operation_id = f"conversion:rich-two-intervals:objective:{index}"
                     result = (
-                        await session.execute(
-                            text(
-                                "SELECT * FROM dante.create_self_temporal_objective("
-                                ":actor,:operation,:fingerprint,:objective,:kind,:subject,"
-                                ":label,:result_kind,:comparator,:target_value,:target_min,"
-                                ":target_max,:unit,:presentation_order)"
-                            ),
-                            {
-                                "actor": actor,
-                                "operation": operation_id,
-                                "fingerprint": sha256(operation_id.encode()).hexdigest(),
-                                "objective": uuid7(),
-                                "kind": "activity",
-                                "subject": activity_ref,
-                                "label": f"Mele obiettivo {index + 1}",
-                                "result_kind": kind,
-                                "comparator": comparator,
-                                "target_value": target,
-                                "target_min": low,
-                                "target_max": high,
-                                "unit": "mele",
-                                "presentation_order": index,
-                            },
+                        (
+                            await session.execute(
+                                text(
+                                    "SELECT * FROM dante.create_self_temporal_objective("
+                                    ":actor,:operation,:fingerprint,:objective,:kind,:subject,"
+                                    ":label,:result_kind,:comparator,:target_value,:target_min,"
+                                    ":target_max,:unit,:presentation_order)"
+                                ),
+                                {
+                                    "actor": actor,
+                                    "operation": operation_id,
+                                    "fingerprint": sha256(operation_id.encode()).hexdigest(),
+                                    "objective": uuid7(),
+                                    "kind": "activity",
+                                    "subject": activity_ref,
+                                    "label": f"Mele obiettivo {index + 1}",
+                                    "result_kind": kind,
+                                    "comparator": comparator,
+                                    "target_value": target,
+                                    "target_min": low,
+                                    "target_max": high,
+                                    "unit": "mele",
+                                    "presentation_order": index,
+                                },
+                            )
                         )
-                    ).mappings().one()
+                        .mappings()
+                        .one()
+                    )
                     if index == 0:
                         await session.execute(
                             text(
@@ -272,9 +280,7 @@ async def test_converted_activity_with_two_intervals_materializes_next_day(
                             {
                                 "actor": actor,
                                 "objective": result["objective_ref"],
-                                "operation": "verify:" + sha256(
-                                    operation_id.encode()
-                                ).hexdigest(),
+                                "operation": "verify:" + sha256(operation_id.encode()).hexdigest(),
                                 "fingerprint": sha256(
                                     f"{operation_id}:review_on_end".encode()
                                 ).hexdigest(),
@@ -285,16 +291,15 @@ async def test_converted_activity_with_two_intervals_materializes_next_day(
         async with runtime.session_factory() as session, session.begin():
             snapshot = ActivityEditSnapshot.model_validate(
                 await session.scalar(
-                    _SNAPSHOT, {"actor": actor, "activity": activity_ref},
+                    _SNAPSHOT,
+                    {"actor": actor, "activity": activity_ref},
                 )
             )
             revision = await session.scalar(
                 text("SELECT revision FROM dante.get_self_activity_profile(:actor,:activity)"),
                 {"actor": actor, "activity": activity_ref},
             )
-        envelope = next(
-            row for row in snapshot.schedules if row.role_code == "envelope"
-        )
+        envelope = next(row for row in snapshot.schedules if row.role_code == "envelope")
         assert envelope.placement_material_state_ref is not None
         assert sum(row.role_code == "interval" for row in snapshot.schedules) == 2
         assert sum(row.role_code == "planned" for row in snapshot.schedules) == 2
@@ -323,9 +328,7 @@ async def test_converted_activity_with_two_intervals_materializes_next_day(
             ambiguous_local_time_policy="earlier",
             step_unit_code=None,
         )
-        converted = await RecurringConversionApplication(
-            runtime.session_factory
-        ).activity(
+        converted = await RecurringConversionApplication(runtime.session_factory).activity(
             self_person_ref=actor,
             operation_id="conversion:rich-two-intervals:start",
             basis=ExistingActivityBasis(
@@ -338,9 +341,7 @@ async def test_converted_activity_with_two_intervals_materializes_next_day(
         )
         assert converted.source_ref != activity_ref
 
-        materializer = RoutineOccurrenceMaterializationApplication(
-            runtime.session_factory
-        )
+        materializer = RoutineOccurrenceMaterializationApplication(runtime.session_factory)
         timeline_reader = TemporalTimelineApplication(runtime.session_factory)
 
         # The real Chromium failure was the first FIVE-DAY priority
@@ -361,12 +362,15 @@ async def test_converted_activity_with_two_intervals_materializes_next_day(
             ),
             context=_context(actor),
         )
-        assert sum(
-            isinstance(row, TimelineNamedZoneLocalActivityItem)
-            and row.title == "Studio multiintervallo"
-            and row.starts_local_at.date() == day + timedelta(days=1)
-            for row in priority_read.items
-        ) == 2
+        assert (
+            sum(
+                isinstance(row, TimelineNamedZoneLocalActivityItem)
+                and row.title == "Studio multiintervallo"
+                and row.starts_local_at.date() == day + timedelta(days=1)
+                for row in priority_read.items
+            )
+            == 2
+        )
 
         for attempt in range(2):
             wide = await materializer.checkpoint_window(
@@ -386,7 +390,8 @@ async def test_converted_activity_with_two_intervals_materializes_next_day(
             context=_context(actor),
         )
         future = [
-            row for row in timeline.items
+            row
+            for row in timeline.items
             if isinstance(row, TimelineNamedZoneLocalActivityItem)
             and row.title == "Studio multiintervallo"
             and row.starts_local_at.date() == date(2027, 1, 3)
@@ -402,7 +407,8 @@ async def test_converted_activity_with_two_intervals_materializes_next_day(
         # each day, one logical Activity per date, distinct occurrences
         # across dates, and no resurrection on an idempotent replay.
         all_placements = [
-            row for row in timeline.items
+            row
+            for row in timeline.items
             if isinstance(row, TimelineNamedZoneLocalActivityItem)
             and row.title == "Studio multiintervallo"
         ]
@@ -410,15 +416,13 @@ async def test_converted_activity_with_two_intervals_materializes_next_day(
         assert len({row.schedule_ref for row in all_placements}) == 43 * 2
         for offset in range(43):
             current_day = day + timedelta(days=offset)
-            daily = [
-                row for row in all_placements
-                if row.starts_local_at.date() == current_day
-            ]
+            daily = [row for row in all_placements if row.starts_local_at.date() == current_day]
             assert len(daily) == 2, current_day
             assert len({row.activity_ref for row in daily}) == 1, current_day
 
         first_day = [
-            row for row in timeline.items
+            row
+            for row in timeline.items
             if isinstance(row, TimelineNamedZoneLocalActivityItem)
             and row.title == "Studio multiintervallo"
             and row.starts_local_at.date() == day
@@ -428,7 +432,8 @@ async def test_converted_activity_with_two_intervals_materializes_next_day(
         assert len({row.schedule_ref for row in first_day}) == 2
 
         last_day = [
-            row for row in timeline.items
+            row
+            for row in timeline.items
             if isinstance(row, TimelineNamedZoneLocalActivityItem)
             and row.title == "Studio multiintervallo"
             and row.starts_local_at.date() == day + timedelta(days=42)
@@ -437,26 +442,26 @@ async def test_converted_activity_with_two_intervals_materializes_next_day(
         assert len({row.schedule_ref for row in last_day}) == 2
         assert len({row.activity_ref for row in last_day}) == 1
         assert next(iter({row.activity_ref for row in last_day})) not in {
-            activity_ref, generated_ref,
+            activity_ref,
+            generated_ref,
         }
 
         async with runtime.session_factory() as session, session.begin():
             generated_snapshot = ActivityEditSnapshot.model_validate(
                 await session.scalar(
-                    _SNAPSHOT, {"actor": actor, "activity": generated_ref},
+                    _SNAPSHOT,
+                    {"actor": actor, "activity": generated_ref},
                 )
             )
-        assert sum(
-            row.role_code == "interval" for row in generated_snapshot.schedules
-        ) == 2
+        assert sum(row.role_code == "interval" for row in generated_snapshot.schedules) == 2
         assert [
-            row.display_name for row in generated_snapshot.schedules
-            if row.role_code == "planned"
+            row.display_name for row in generated_snapshot.schedules if row.role_code == "planned"
         ] == ["Studio iniziale", "Studio libero"]
         if rich_metadata:
             assert generated_snapshot.life_area_ref == authored.item.life_area_ref
             assert [item.label for item in generated_snapshot.objectives] == [
-                "Mele obiettivo 1", "Mele obiettivo 2",
+                "Mele obiettivo 1",
+                "Mele obiettivo 2",
             ]
     finally:
         await runtime.dispose()
@@ -686,10 +691,7 @@ async def test_existing_event_keeps_first_event_and_excludes_duplicate_occurrenc
         # access to any unrelated actor or Schedule identity.
         async with runtime.session_factory() as session, session.begin():
             assert await session.scalar(
-                text(
-                    "SELECT dante.is_self_event_occurrence_schedule("
-                    ":actor,:first,:schedule)"
-                ),
+                text("SELECT dante.is_self_event_occurrence_schedule(:actor,:first,:schedule)"),
                 {
                     "actor": actor,
                     "first": first_occurrence,
@@ -697,10 +699,7 @@ async def test_existing_event_keeps_first_event_and_excludes_duplicate_occurrenc
                 },
             )
             assert not await session.scalar(
-                text(
-                    "SELECT dante.is_self_event_occurrence_schedule("
-                    ":actor,:first,:schedule)"
-                ),
+                text("SELECT dante.is_self_event_occurrence_schedule(:actor,:first,:schedule)"),
                 {
                     "actor": other,
                     "first": first_occurrence,
@@ -708,10 +707,7 @@ async def test_existing_event_keeps_first_event_and_excludes_duplicate_occurrenc
                 },
             )
             assert not await session.scalar(
-                text(
-                    "SELECT dante.is_self_event_occurrence_schedule("
-                    ":actor,:first,:schedule)"
-                ),
+                text("SELECT dante.is_self_event_occurrence_schedule(:actor,:first,:schedule)"),
                 {
                     "actor": actor,
                     "first": first_occurrence,
@@ -758,9 +754,7 @@ async def test_existing_event_keeps_first_event_and_excludes_duplicate_occurrenc
             operation_id="existing-event-repeat:edit-first",
         )
         assert first_acceptance.preserved_occurrence_ref == first_occurrence
-        assert first_acceptance.superseded_count == (
-            len(review.scope.target_occurrence_refs) - 1
-        )
+        assert first_acceptance.superseded_count == (len(review.scope.target_occurrence_refs) - 1)
         replay = await series.accept(
             self_person_ref=actor,
             selected_occurrence_ref=first_occurrence,
@@ -806,16 +800,16 @@ async def test_existing_event_keeps_first_event_and_excludes_duplicate_occurrenc
             context=_context(actor),
         )
         first_date_rows = [
-            item for item in revised_window.items
-            if (
-                isinstance(item, TimelineNamedZoneLocalEventItem)
-                and item.event_ref == original
-            ) or (
+            item
+            for item in revised_window.items
+            if (isinstance(item, TimelineNamedZoneLocalEventItem) and item.event_ref == original)
+            or (
                 isinstance(item, TimelineScheduledOccurrenceItem)
                 and item.source_native_ref == started.source_ref
                 and isinstance(item.coordinate, CalendarCoordinate)
                 and item.coordinate.generated_date == date(2027, 1, 2)
-            ) or (
+            )
+            or (
                 isinstance(item, TimelineExpectedOccurrenceItem)
                 and item.source_native_ref == started.source_ref
                 and isinstance(item.coordinate, CalendarCoordinate)
@@ -840,10 +834,7 @@ async def test_existing_event_keeps_first_event_and_excludes_duplicate_occurrenc
             # Canonical first-Occurrence patch, not raw historical Event data,
             # is the effective structure consumed by the Event Inspector.
             first_patch = await session.scalar(
-                text(
-                    "SELECT dante.get_self_occurrence_profile_patch("
-                    ":actor,:occurrence)"
-                ),
+                text("SELECT dante.get_self_occurrence_profile_patch(:actor,:occurrence)"),
                 {"actor": actor, "occurrence": first_occurrence},
             )
             assert first_patch["title"] == "Visita aggiornata"
@@ -876,15 +867,13 @@ async def test_existing_event_keeps_first_event_and_excludes_duplicate_occurrenc
                 },
             )
             assert latest_structure["agenda_parts"] == [
-                "Arrivo aggiornato", "Colloquio aggiornato",
+                "Arrivo aggiornato",
+                "Colloquio aggiornato",
             ]
             assert latest_structure["life_area_ref"] is None
             assert latest_structure["expected_participants"] == []
             assert not await session.scalar(
-                text(
-                    "SELECT dante.is_self_recurring_occurrence_superseded("
-                    ":actor,:first)"
-                ),
+                text("SELECT dante.is_self_recurring_occurrence_superseded(:actor,:first)"),
                 {"actor": actor, "first": first_occurrence},
             )
             assert (
@@ -915,9 +904,7 @@ async def test_existing_event_keeps_first_event_and_excludes_duplicate_occurrenc
             end_date_exclusive=date(2027, 1, 4),
             effective_zone_id="Europe/Rome",
         )
-        replay_window = await TemporalTimelineApplication(
-            runtime.session_factory
-        ).read_window(
+        replay_window = await TemporalTimelineApplication(runtime.session_factory).read_window(
             query=TimelineWindowQuery(
                 start_date=date(2027, 1, 2),
                 end_date_exclusive=date(2027, 1, 4),
@@ -925,11 +912,10 @@ async def test_existing_event_keeps_first_event_and_excludes_duplicate_occurrenc
             context=_context(actor),
         )
         replay_first = [
-            item for item in replay_window.items
-            if (
-                isinstance(item, TimelineNamedZoneLocalEventItem)
-                and item.event_ref == original
-            ) or (
+            item
+            for item in replay_window.items
+            if (isinstance(item, TimelineNamedZoneLocalEventItem) and item.event_ref == original)
+            or (
                 isinstance(item, (TimelineScheduledOccurrenceItem, TimelineExpectedOccurrenceItem))
                 and item.source_native_ref == started.source_ref
                 and isinstance(item.coordinate, CalendarCoordinate)
@@ -939,7 +925,8 @@ async def test_existing_event_keeps_first_event_and_excludes_duplicate_occurrenc
         assert len(replay_first) == 1
         assert replay_first[0].schedule_ref == schedule.schedule_ref
         replay_future = [
-            item for item in replay_window.items
+            item
+            for item in replay_window.items
             if isinstance(item, TimelineScheduledOccurrenceItem)
             and item.source_native_ref == started.source_ref
             and isinstance(item.coordinate, CalendarCoordinate)
@@ -994,18 +981,12 @@ async def test_existing_event_keeps_first_event_and_excludes_duplicate_occurrenc
             )
             assert final_structure_state == second_accepted.recurrence_state_ref
             assert not await session.scalar(
-                text(
-                    "SELECT dante.is_self_recurring_occurrence_superseded("
-                    ":actor,:first)"
-                ),
+                text("SELECT dante.is_self_recurring_occurrence_superseded(:actor,:first)"),
                 {"actor": actor, "first": first_occurrence},
             )
             assert (
                 await session.scalar(
-                    text(
-                        "SELECT dante.get_self_occurrence_edit_protection("
-                        ":actor,:first)"
-                    ),
+                    text("SELECT dante.get_self_occurrence_edit_protection(:actor,:first)"),
                     {"actor": actor, "first": first_occurrence},
                 )
                 is None
@@ -1017,9 +998,7 @@ async def test_existing_event_keeps_first_event_and_excludes_duplicate_occurrenc
             end_date_exclusive=date(2027, 1, 4),
             effective_zone_id="Europe/Rome",
         )
-        second_window = await TemporalTimelineApplication(
-            runtime.session_factory
-        ).read_window(
+        second_window = await TemporalTimelineApplication(runtime.session_factory).read_window(
             query=TimelineWindowQuery(
                 start_date=date(2027, 1, 2),
                 end_date_exclusive=date(2027, 1, 4),
@@ -1027,11 +1006,10 @@ async def test_existing_event_keeps_first_event_and_excludes_duplicate_occurrenc
             context=_context(actor),
         )
         second_first = [
-            item for item in second_window.items
-            if (
-                isinstance(item, TimelineNamedZoneLocalEventItem)
-                and item.event_ref == original
-            ) or (
+            item
+            for item in second_window.items
+            if (isinstance(item, TimelineNamedZoneLocalEventItem) and item.event_ref == original)
+            or (
                 isinstance(item, (TimelineScheduledOccurrenceItem, TimelineExpectedOccurrenceItem))
                 and item.source_native_ref == started.source_ref
                 and isinstance(item.coordinate, CalendarCoordinate)
@@ -1042,7 +1020,8 @@ async def test_existing_event_keeps_first_event_and_excludes_duplicate_occurrenc
         assert second_first[0].schedule_ref == schedule.schedule_ref
         assert second_first[0].title == "Visita seconda versione"
         second_future = [
-            item for item in second_window.items
+            item
+            for item in second_window.items
             if isinstance(item, TimelineScheduledOccurrenceItem)
             and item.source_native_ref == started.source_ref
             and isinstance(item.coordinate, CalendarCoordinate)
@@ -1057,11 +1036,7 @@ async def test_existing_event_keeps_first_event_and_excludes_duplicate_occurrenc
         # The SQL-only acceptance formerly passed while the API returned 409.
         request = cast(
             Request,
-            SimpleNamespace(
-                app=SimpleNamespace(
-                    state=SimpleNamespace(database_runtime=runtime)
-                )
-            ),
+            SimpleNamespace(app=SimpleNamespace(state=SimpleNamespace(database_runtime=runtime))),
         )
         context = _context(actor)
         current_state = await get_occurrence_profile_edit_state(
@@ -1113,31 +1088,20 @@ async def test_existing_event_keeps_first_event_and_excludes_duplicate_occurrenc
 
         async with runtime.session_factory() as session, session.begin():
             first_local_patch = await session.scalar(
-                text(
-                    "SELECT dante.get_self_occurrence_profile_patch("
-                    ":actor,:first)"
-                ),
+                text("SELECT dante.get_self_occurrence_profile_patch(:actor,:first)"),
                 {"actor": actor, "first": first_occurrence},
             )
             assert first_local_patch["title"] == "Visita primo giorno"
-            assert first_local_patch["event_local"]["agenda_parts"] == [
-                "Visita solo questa"
-            ]
+            assert first_local_patch["event_local"]["agenda_parts"] == ["Visita solo questa"]
             assert (
                 await session.scalar(
-                    text(
-                        "SELECT dante.get_self_occurrence_edit_protection("
-                        ":actor,:first)"
-                    ),
+                    text("SELECT dante.get_self_occurrence_edit_protection(:actor,:first)"),
                     {"actor": actor, "first": first_occurrence},
                 )
                 == "local_change"
             )
             later_patch = await session.scalar(
-                text(
-                    "SELECT dante.get_self_occurrence_profile_patch("
-                    ":actor,:later)"
-                ),
+                text("SELECT dante.get_self_occurrence_profile_patch(:actor,:later)"),
                 {"actor": actor, "later": second_future[0].occurrence_ref},
             )
             assert later_patch["title"] == "Visita seconda versione"

@@ -109,9 +109,7 @@ async def test_event_following_series_life_area_is_atomic_and_survives_reload(
             effective_zone_id="Europe/Rome",
         )
         initial_ref = await selected()
-        loaded = await series.source(
-            self_person_ref=actor, selected_occurrence_ref=initial_ref
-        )
+        loaded = await series.source(self_person_ref=actor, selected_occurrence_ref=initial_ref)
         assert loaded.structure_snapshot["life_area_ref"] is None
         proposed = replace(loaded.recurrence, effective_from=day)
         structure = {
@@ -174,17 +172,13 @@ async def test_event_following_series_life_area_is_atomic_and_survives_reload(
             effective_zone_id="Europe/Rome",
         )
         current_ref = await selected()
-        current = await series.source(
-            self_person_ref=actor, selected_occurrence_ref=current_ref
-        )
+        current = await series.source(self_person_ref=actor, selected_occurrence_ref=current_ref)
         assert current.structure_snapshot["life_area_ref"] == str(assigned_ref)
         assert "new_life_area" not in current.structure_snapshot
 
         request = cast(
             Request,
-            SimpleNamespace(
-                app=SimpleNamespace(state=SimpleNamespace(database_runtime=runtime))
-            ),
+            SimpleNamespace(app=SimpleNamespace(state=SimpleNamespace(database_runtime=runtime))),
         )
         detail = await get_recurring_event_occurrence_detail(
             current_ref, _context(actor), request, Response()
@@ -241,9 +235,7 @@ async def test_event_following_series_life_area_is_atomic_and_survives_reload(
             effective_zone_id="Europe/Rome",
         )
         third_ref = await selected()
-        third = await series.source(
-            self_person_ref=actor, selected_occurrence_ref=third_ref
-        )
+        third = await series.source(self_person_ref=actor, selected_occurrence_ref=third_ref)
         orphan = {
             **third.structure_snapshot,
             "life_area_ref": None,

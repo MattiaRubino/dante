@@ -170,10 +170,11 @@ def _validate_series_area_intent(owner: SeriesOwner, structure: dict[str, object
         ):
             raise SeriesReconciliationError("New recurring Life Area is invalid.")
     if appearance is not None:
-        if (
-            not isinstance(appearance, dict)
-            or set(appearance) != {"life_area_ref", "expected_revision", "color_code"}
-        ):
+        if not isinstance(appearance, dict) or set(appearance) != {
+            "life_area_ref",
+            "expected_revision",
+            "color_code",
+        }:
             raise SeriesReconciliationError("Recurring Life Area appearance is invalid.")
         ref = appearance.get("life_area_ref")
         revision = appearance.get("expected_revision")
@@ -480,17 +481,14 @@ class RecurringSeriesEditApplication:
         serializable transaction as the new recurrence policy.
         """
         seed = (
-            (
-                await session.execute(
-                    text(
-                        "SELECT first_occurrence_ref FROM "
-                        "dante.get_self_event_recurring_first_by_source(:actor,:source)"
-                    ),
-                    {"actor": self_person_ref, "source": source_ref},
-                )
+            await session.execute(
+                text(
+                    "SELECT first_occurrence_ref FROM "
+                    "dante.get_self_event_recurring_first_by_source(:actor,:source)"
+                ),
+                {"actor": self_person_ref, "source": source_ref},
             )
-            .scalar_one_or_none()
-        )
+        ).scalar_one_or_none()
         if seed is None:
             return  # Native recurring Event, without an original first Event.
 
@@ -1017,9 +1015,7 @@ class RecurringSeriesEditApplication:
                         proposed_recurrence=proposed_recurrence,
                         effective_zone_id=effective_zone_id,
                         operation_id=operation_id,
-                        already_excluded=(
-                            prepared.reconciliation.protected_matching_coordinates
-                        ),
+                        already_excluded=(prepared.reconciliation.protected_matching_coordinates),
                     )
                 await self._policies.replace_in_session(
                     session,
@@ -1130,9 +1126,7 @@ class RecurringSeriesEditApplication:
                 int(area_row["revision"]) != appearance["expected_revision"]
                 or bool(area_row["archived"])
             ):
-                raise RecurringSeriesEditConflictError(
-                    "Life Area changed before series preview."
-                )
+                raise RecurringSeriesEditConflictError("Life Area changed before series preview.")
         if owner == "event" and "expected_participants" in proposed_structure:
             owned_people = {
                 str(row[0])
