@@ -613,10 +613,22 @@ class TemporalTimelineApplication:
                        NULL::text AS source_kind,
                        NULL::uuid AS source_native_ref,
                        NULL::uuid AS occurrence_ref,
-                       COALESCE(first_edit.patch->'event_local' ? 'life_area_ref',false)
-                           AS life_area_override_present,
-                       NULLIF(first_edit.patch->'event_local'->>'life_area_ref','')::uuid
-                           AS life_area_override_ref
+                       COALESCE(
+                           first_edit.patch->'event_local' ? 'life_area_ref',
+                           first_edit.structure_snapshot ? 'life_area_ref',
+                           false
+                       ) AS life_area_override_present,
+                       CASE
+                           WHEN COALESCE(
+                               first_edit.patch->'event_local' ? 'life_area_ref',
+                               false
+                           ) THEN NULLIF(
+                               first_edit.patch->'event_local'->>'life_area_ref',''
+                           )::uuid
+                           ELSE NULLIF(
+                               first_edit.structure_snapshot->>'life_area_ref',''
+                           )::uuid
+                       END AS life_area_override_ref
                   FROM dante.event_expectation AS expectation
              LEFT JOIN LATERAL (
                  -- A converted Event keeps its physical first Schedule.
@@ -624,13 +636,25 @@ class TemporalTimelineApplication:
                  -- not the unmodified original Event descriptor.
                  SELECT dante.get_self_occurrence_profile_patch(
                      :self_person_ref, linked.first_occurrence_ref
-                 ) AS patch
+                 ) AS patch,
+                 effective_policy.structure_snapshot
                    FROM dante.get_self_event_recurring_seed(
                        :self_person_ref, expectation.event_ref
                    ) AS seed
                    JOIN dante.get_self_event_recurring_first_by_source(
                        :self_person_ref, seed.source_event_ref
                    ) AS linked ON TRUE
+              LEFT JOIN LATERAL (
+                 SELECT policy.structure_snapshot
+                   FROM dante.get_self_event_recurring_first_structure(
+                       :self_person_ref, linked.first_occurrence_ref
+                   ) AS linked_state
+                   JOIN dante.get_self_recurring_structure_policy_revision(
+                       :self_person_ref,'event',
+                       linked_state.source_event_ref,
+                       linked_state.effective_structure_state_ref
+                   ) AS policy ON TRUE
+              ) AS effective_policy ON TRUE
              ) AS first_edit ON TRUE
                 UNION ALL
                 SELECT 'occurrence'::text AS owner_kind,
