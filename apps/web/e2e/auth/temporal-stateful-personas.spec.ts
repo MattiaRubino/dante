@@ -1515,7 +1515,14 @@ test.describe('Temporal v2 — real stateful user personas', () => {
       );
       await localEditor.getByRole('button', { name: 'Salva modifiche' }).click();
       const saved = await localSaved;
-      expect(saved.status(), await saved.text()).toBe(200);
+      // Response headers arrive before the body. A rejected local-edit
+      // returned HTTP 409 but waiting on response.text() blocked until the
+      // *global five-minute timeout*, masking the real failure. Assert the
+      // status directly so a regression fails immediately and diagnostically.
+      expect(
+        saved.status(),
+        'converted first Event Only-this must accept the local edit',
+      ).toBe(200);
 
       await assertCard(page, day, localTitle);
       await assertOriginalScheduleIdentity(page, day, authored.item);
