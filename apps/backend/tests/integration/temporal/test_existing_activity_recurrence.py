@@ -755,6 +755,59 @@ async def test_existing_event_keeps_first_event_and_excludes_duplicate_occurrenc
         assert len(revised_original) == 1
         assert revised_original[0].schedule_ref == schedule.schedule_ref
         assert revised_original[0].title == "Visita aggiornata"
+        revised_future = [
+            item
+            for item in revised_window.items
+            if isinstance(item, TimelineScheduledOccurrenceItem)
+            and item.source_native_ref == started.source_ref
+            and isinstance(item.coordinate, CalendarCoordinate)
+            and item.coordinate.generated_date == date(2027, 1, 3)
+        ]
+        assert len(revised_future) == 1
+        assert revised_future[0].title == "Visita aggiornata"
+
+        # A second checkpoint, with a different operation ID, must not
+        # resurrect a "new" first-day occurrence. The exclusion is tied to
+        # the current recurrence state rather than one checkpoint operation.
+        await materializer.checkpoint_window(
+            self_person_ref=actor,
+            operation_id="existing-event-repeat:after-first-series-edit-replay",
+            start_date=date(2027, 1, 2),
+            end_date_exclusive=date(2027, 1, 4),
+            effective_zone_id="Europe/Rome",
+        )
+        replay_window = await TemporalTimelineApplication(
+            runtime.session_factory
+        ).read_window(
+            query=TimelineWindowQuery(
+                start_date=date(2027, 1, 2),
+                end_date_exclusive=date(2027, 1, 4),
+            ),
+            context=_context(actor),
+        )
+        replay_first = [
+            item for item in replay_window.items
+            if (
+                isinstance(item, TimelineNamedZoneLocalEventItem)
+                and item.event_ref == original
+            ) or (
+                isinstance(item, (TimelineScheduledOccurrenceItem, TimelineExpectedOccurrenceItem))
+                and item.source_native_ref == started.source_ref
+                and isinstance(item.coordinate, CalendarCoordinate)
+                and item.coordinate.generated_date == date(2027, 1, 2)
+            )
+        ]
+        assert len(replay_first) == 1
+        assert replay_first[0].schedule_ref == schedule.schedule_ref
+        replay_future = [
+            item for item in replay_window.items
+            if isinstance(item, TimelineScheduledOccurrenceItem)
+            and item.source_native_ref == started.source_ref
+            and isinstance(item.coordinate, CalendarCoordinate)
+            and item.coordinate.generated_date == date(2027, 1, 3)
+        ]
+        assert len(replay_future) == 1
+        assert replay_future[0].schedule_ref == revised_future[0].schedule_ref
 
         async with runtime.session_factory() as session, session.begin():
             await session.execute(
