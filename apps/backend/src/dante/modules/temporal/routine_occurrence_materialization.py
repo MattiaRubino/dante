@@ -537,6 +537,7 @@ class RoutineOccurrenceMaterializationApplication:
         if not isinstance(objectives, (list, tuple)) or len(objectives) > 100:
             raise OccurrenceInputError("Recurring Objectives template is invalid.")
 
+        index = -1  # A pool/transaction failure can occur before the first row.
         try:
             async with self._write_session(session) as write_session:
                 for index, raw in enumerate(objectives):
