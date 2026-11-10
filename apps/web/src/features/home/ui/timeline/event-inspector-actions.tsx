@@ -270,8 +270,8 @@ export function EventInspectorActions({
         seed,
         placementLock,
       ] = await Promise.all([
-        context && occurrenceRef && eventSource.loadOccurrenceEvent
-          ? eventSource.loadOccurrenceEvent(occurrenceRef)
+        context && eventSource.loadOccurrenceEvent
+          ? eventSource.loadOccurrenceEvent(context.occurrenceRef)
           : profileSource.load(eventRef),
         areaSource.load(eventRef),
         objectiveSource.listObjectives(
@@ -1396,9 +1396,11 @@ export function EventInspectorActions({
           onOnlyThis={() => {
             const choice = editChoice;
             setEditChoice(null);
-            void (choice.firstExistingEvent
-              ? openProfileEditor()
-              : openProfileEditor('only_this', choice.context));
+            // A converted Event's physical first Schedule is one recurring
+            // Occurrence, not a standalone Event edit. Always hydrate and
+            // save the effective Occurrence (title, Agenda, Life Area,
+            // objectives) through the same path as later instances.
+            void openProfileEditor('only_this', choice.context);
           }}
           onFollowing={() => {
             const choice = editChoice;
