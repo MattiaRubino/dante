@@ -1524,7 +1524,21 @@ test.describe('Temporal v2 — real stateful user personas', () => {
         'converted first Event Only-this must accept the local edit',
       ).toBe(200);
 
-      await assertCard(page, day, localTitle);
+      // Verify the actual post-save UI *in place*. The old assertCard()
+      // navigated again before checking; Chromium's trace proved the card
+      // briefly rendered with the correct local title, then a fresh
+      // navigation/virtualized-day recycle removed that date from the DOM.
+      // A virtualized day not present in the viewport is NOT evidence of a
+      // failed local edit. This expectation still insists on exactly one
+      // physical card with the newly saved title on the editing screen.
+      await expect(
+        onDay(page, day, localTitle),
+        'first Event Only-this must render the accepted local title',
+      ).toHaveCount(1);
+      await expect(
+        onDay(page, day, editedTitle),
+        'first Event must keep one card after Only-this',
+      ).toHaveCount(1);
       await assertOriginalScheduleIdentity(page, day, authored.item);
       await assertDayHasNoDuplicatePlacements(
         page, day, title, localTitle, persona,
