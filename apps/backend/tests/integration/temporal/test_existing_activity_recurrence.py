@@ -698,6 +698,17 @@ async def test_existing_event_keeps_first_event_and_excludes_duplicate_occurrenc
                     "schedule": schedule.schedule_ref,
                 },
             )
+            assert not await session.scalar(
+                text(
+                    "SELECT dante.is_self_event_occurrence_schedule("
+                    ":actor,:first,:schedule)"
+                ),
+                {
+                    "actor": actor,
+                    "first": first_occurrence,
+                    "schedule": following[0].schedule_ref,
+                },
+            )
 
         # Re-edit the already converted Event from its *physical first*
         # Occurrence. Its Event Schedule is retained, but title + full Agenda
