@@ -44,9 +44,12 @@ BEGIN
         SELECT 1 FROM dante.event_expectation e
          WHERE e.event_ref=requested_source AND e.self_person_ref=actor
     ) OR NOT EXISTS (
-        SELECT 1 FROM dante.get_self_recurring_structure_policy_revision(
-            actor,'event',requested_source,requested_new_state
-        )
+        SELECT 1 FROM dante.recurring_structure_policy_revision policy
+         WHERE policy.self_person_ref=actor
+           AND policy.owner_kind='event'
+           AND policy.source_native_ref=requested_source
+           AND policy.recurrence_state_ref=requested_new_state
+           AND policy.previous_state_ref=requested_previous_state
     ) THEN
         RAISE EXCEPTION USING ERRCODE='23503',
             CONSTRAINT='event_recurring_first_structure_unavailable',
