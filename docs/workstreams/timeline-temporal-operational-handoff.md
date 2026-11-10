@@ -1,5 +1,12 @@
 # Timeline / Temporal-Operational — Workstream Handoff
 
+## 2026-11-10 — Chromium last step: local edit accepted, wrong DOM re-navigation assertion (retest pending)
+
+Owner `summary(2).json`: 1 Chromium discovered, 1 failed, 45.87s. E2E diagnostics prove that `Only this` on converted first Event now posts **HTTP 200**, revision 2; the canonical Timeline GET returns the *first-only* title on the original first Schedule and retains the series title for later days. The frame snapshot at 33490ms shows the local title on the physical first card, but the test's generic `assertCard` navigates once more and the virtualized day disappears from the later DOM snapshot; it reports 0 cards incorrectly. Updated only the E2E: assert exact first-only title on the current UI after save, stale title absent, one physical card; continue checking canonical first Schedule identity/Agenda and next-day UI. **Await Chromium rerun**. Don't modify Event serialization for this frontend viewport false negative or send artifacts outside repository `temp/`.
+
+---
+
+
 ## 2026-11-10 — E2E 409 at converted-first Only-this; actual API precheck fixed (WSL retest pending)
 
 Owner shared `E2E_EVENT_FIRST_20261110-130226.log` plus `E2E_DIAGNOSTICS.tar(7).gz`. Chromium `V2-P3-EFIRST` exceeded 300 seconds because the new test called `await saved.text()` on a POST response that had **status 409** but did not finish response body read. Trace confirmed: conversion and `Questa e le successive` successfully updated the first effective title + Agenda; first day remained single, the next day's version was correct, `Solo questa` editor hydrated the new values. **The only failing step was saving that local edit**.
