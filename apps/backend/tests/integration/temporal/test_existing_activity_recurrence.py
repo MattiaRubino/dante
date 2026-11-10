@@ -2,14 +2,15 @@
 
 from __future__ import annotations
 
-import json
 from dataclasses import replace
 from datetime import date, datetime, time, timedelta
 from hashlib import sha256
+from types import SimpleNamespace
+from typing import Any, cast
 from uuid import uuid7
-from typing import Any
 
 import pytest
+from fastapi import Request, Response
 from sqlalchemy import text
 from tests.integration.temporal.test_activity_quick_authoring_metadata import _seed_self
 from tests.integration.temporal.test_schedule_place import _context
@@ -28,6 +29,12 @@ from dante.modules.temporal.authoring import (
 )
 from dante.modules.temporal.contracts import TimelineWindowQuery
 from dante.modules.temporal.occurrence import CalendarCoordinate, OccurrenceApplication
+from dante.modules.temporal.occurrence_api import (
+    EventOccurrenceLocalEditCommand,
+    accept_event_occurrence_local_edit,
+    get_occurrence_profile_edit_state,
+    get_recurring_event_occurrence_detail,
+)
 from dante.modules.temporal.placement_lock import PlacementLockApplication
 from dante.modules.temporal.recurrence import CalendarRecurrence
 from dante.modules.temporal.recurring_authoring import (
@@ -1013,45 +1020,67 @@ async def test_existing_event_keeps_first_event_and_excludes_duplicate_occurrenc
         assert len(second_future) == 1
         assert second_future[0].title == "Visita seconda versione"
 
-        # After selected-and-following the linked first instance must still
-        # support a real "Solo questa" local edit, NOT merely a read-only
-        # Timeline projection or a retired historical Occurrence.
-        async with runtime.session_factory() as session, session.begin():
-            current = (
-                await session.execute(
-                    text(
-                        "SELECT edit_revision,recurrence_state_ref "
-                        "FROM dante.get_self_occurrence_edit_revision(:actor,:first)"
-                    ),
-                    {"actor": actor, "first": first_occurrence},
+        # Regression at the REAL Event-local API boundary: the linked first
+        # has a historical generation state, but its edit context MUST use
+        # the current Recurrence state after two following-series revisions.
+        # The SQL-only acceptance formerly passed while the API returned 409.
+        request = cast(
+            Request,
+            SimpleNamespace(
+                app=SimpleNamespace(
+                    state=SimpleNamespace(database_runtime=runtime)
                 )
-            ).one()
-            await session.execute(
+            ),
+        )
+        context = _context(actor)
+        current_state = await get_occurrence_profile_edit_state(
+            first_occurrence, context, request, Response()
+        )
+        assert current_state.recurrence_state_ref == second_accepted.recurrence_state_ref
+        async with runtime.session_factory() as session, session.begin():
+            generated_state = await session.scalar(
                 text(
-                    "SELECT * FROM dante.accept_self_occurrence_profile_edit("
-                    ":actor,:first,:operation,:revision,:state,'only_this',"
-                    ":zone,CAST(:patch AS jsonb))"
+                    "SELECT governing_recurrence_state_ref "
+                    "FROM dante.get_self_occurrence(:actor,:first)"
                 ),
-                {
-                    "actor": actor,
-                    "first": first_occurrence,
-                    "operation": "existing-event-repeat:first-only-this",
-                    "revision": current.edit_revision,
-                    "state": current.recurrence_state_ref,
-                    "zone": "Europe/Rome",
-                    "patch": json.dumps(
-                        {
-                            "title": "Visita primo giorno",
-                            "event_local": {
-                                "agenda_parts": ["Visita solo questa"],
-                                "life_area_ref": None,
-                                "expected_participants": [],
-                            },
-                        },
-                        sort_keys=True,
-                    ),
-                },
+                {"actor": actor, "first": first_occurrence},
             )
+        assert generated_state != current_state.recurrence_state_ref, (
+            "The first-Event API regression must cover the historical/current "
+            "state difference that previously returned 409 in Chromium."
+        )
+        accepted_local = await accept_event_occurrence_local_edit(
+            first_occurrence,
+            EventOccurrenceLocalEditCommand.model_validate(
+                {
+                    "operation_id": "existing-event-repeat:first-only-this",
+                    "expected_revision": current_state.edit_revision,
+                    "expected_recurrence_state_ref": current_state.recurrence_state_ref,
+                    "profile_patch": {"title": "Visita primo giorno"},
+                    "structure": {
+                        "agenda_parts": ["Visita solo questa"],
+                        "life_area_ref": None,
+                        "expected_participants": [],
+                    },
+                }
+            ),
+            context,
+            request,
+            Response(),
+        )
+        assert list(accepted_local.target_occurrence_refs) == [first_occurrence]
+        effective_first = await get_recurring_event_occurrence_detail(
+            first_occurrence, context, request, Response()
+        )
+        assert effective_first.title == "Visita primo giorno"
+        assert effective_first.agenda_parts == ["Visita solo questa"]
+        effective_next = await get_recurring_event_occurrence_detail(
+            second_future[0].occurrence_ref, context, request, Response()
+        )
+        assert effective_next.title == "Visita seconda versione"
+        assert effective_next.agenda_parts == ["Arrivo seconda versione"]
+
+        async with runtime.session_factory() as session, session.begin():
             first_local_patch = await session.scalar(
                 text(
                     "SELECT dante.get_self_occurrence_profile_patch("
