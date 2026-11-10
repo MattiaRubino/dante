@@ -2,7 +2,6 @@
 
 from __future__ import annotations
 
-from decimal import Decimal
 from typing import Any
 from uuid import UUID
 
@@ -192,11 +191,14 @@ def test_recorded_objective_is_immutable_until_its_entire_result_is_deleted(
             "objective_ref": objective_ref,
             "removed_observations": 2,
         }
-        assert client.post(
-            removal_url,
-            json={"expected_evaluation_state_ref": last["evaluation_state_ref"]},
-            headers=headers,
-        ).status_code == 409
+        assert (
+            client.post(
+                removal_url,
+                json={"expected_evaluation_state_ref": last["evaluation_state_ref"]},
+                headers=headers,
+            ).status_code
+            == 409
+        )
 
         remaining = client.get(list_url, headers=_base_headers()).json()
         assert len(remaining) == 1
@@ -246,7 +248,6 @@ def test_recorded_objective_is_immutable_until_its_entire_result_is_deleted(
         )
         assert unlocked.status_code == 200, unlocked.text
         assert unlocked.json()["definition_revision"] == 2
-
 
 
 def test_event_objective_same_identity_definition_revision(

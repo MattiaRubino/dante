@@ -110,8 +110,7 @@ $function$;
 def upgrade() -> None:
     db = op.get_bind()
     db.exec_driver_sql(
-        "ALTER TABLE dante.event_recurring_seed "
-        "ADD COLUMN effective_structure_state_ref uuid"
+        "ALTER TABLE dante.event_recurring_seed ADD COLUMN effective_structure_state_ref uuid"
     )
     db.exec_driver_sql(
         "ALTER TABLE dante.event_recurring_seed "
@@ -127,8 +126,7 @@ def upgrade() -> None:
     ):
         db.exec_driver_sql(f"ALTER FUNCTION dante.{signature} OWNER TO dante_owner")
         db.exec_driver_sql(
-            f"REVOKE ALL ON FUNCTION dante.{signature} "
-            "FROM PUBLIC,dante_runtime,dante_migrator"
+            f"REVOKE ALL ON FUNCTION dante.{signature} FROM PUBLIC,dante_runtime,dante_migrator"
         )
         db.exec_driver_sql(f"GRANT EXECUTE ON FUNCTION dante.{signature} TO dante_runtime")
 

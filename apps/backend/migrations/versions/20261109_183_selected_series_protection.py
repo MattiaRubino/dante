@@ -43,8 +43,7 @@ def upgrade() -> None:
     bind = op.get_bind()
     bind.exec_driver_sql(_GUARD)
     bind.exec_driver_sql(
-        "ALTER FUNCTION dante.enforce_selected_occurrence_series_protection() "
-        "OWNER TO dante_owner"
+        "ALTER FUNCTION dante.enforce_selected_occurrence_series_protection() OWNER TO dante_owner"
     )
     bind.exec_driver_sql(
         "REVOKE ALL ON FUNCTION dante.enforce_selected_occurrence_series_protection() "

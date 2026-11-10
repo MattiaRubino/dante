@@ -31,9 +31,7 @@ def test_series_life_area_authoring_validation(
         {"name": "Nuova", "color_code": "#4285f4"},
     ):
         with pytest.raises(SeriesReconciliationError):
-            _validate_series_area_intent(
-                owner, {**structure, "new_life_area": invalid}
-            )
+            _validate_series_area_intent(owner, {**structure, "new_life_area": invalid})
     with pytest.raises(SeriesReconciliationError):
         _validate_series_area_intent(
             owner,
@@ -46,4 +44,3 @@ def test_series_life_area_authoring_validation(
                 },
             },
         )
-

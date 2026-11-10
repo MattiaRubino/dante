@@ -30,9 +30,9 @@ from dante.modules.temporal.occurrence_api import (
     ScopedProfileEditCommand,
     accept_event_occurrence_local_edit,
     accept_occurrence_profile_edit,
-    get_recurring_event_occurrence_detail,
     get_occurrence_profile_edit_preview,
     get_occurrence_profile_edit_state,
+    get_recurring_event_occurrence_detail,
 )
 from dante.modules.temporal.recurrence import CalendarRecurrence, RecurrenceApplication
 from dante.modules.temporal.routine import RoutineApplication
@@ -662,9 +662,7 @@ async def test_selected_local_edit_is_protected_from_inclusive_series_sql(
             end_date_exclusive=day + timedelta(days=3),
             effective_zone_id=ZONE,
         )
-        first, second, third = [
-            item.occurrence_ref for item in checkpoint.occurrences
-        ]
+        first, second, third = [item.occurrence_ref for item in checkpoint.occurrences]
         edited = await _edit(
             runtime,
             actor,
@@ -677,10 +675,7 @@ async def test_selected_local_edit_is_protected_from_inclusive_series_sql(
         assert edited["revision"] == 1
         async with runtime.session_factory() as session, session.begin():
             reason = await session.scalar(
-                text(
-                    "SELECT dante.get_self_occurrence_edit_protection("
-                    ":actor,:selected)"
-                ),
+                text("SELECT dante.get_self_occurrence_edit_protection(:actor,:selected)"),
                 {"actor": actor, "selected": first},
             )
         assert reason == "local_change"
@@ -695,9 +690,7 @@ async def test_selected_local_edit_is_protected_from_inclusive_series_sql(
                 "protected:rejected",
                 expected=1,
             )
-        assert await _patch(runtime, actor, first) == {
-            "title": "Studio personale"
-        }
+        assert await _patch(runtime, actor, first) == {"title": "Studio personale"}
         assert await _patch(runtime, actor, second) == {}
         accepted = await _edit(
             runtime,
@@ -711,11 +704,7 @@ async def test_selected_local_edit_is_protected_from_inclusive_series_sql(
         )
         assert first not in accepted["target_occurrence_refs"]
         assert {second, third}.issubset(set(accepted["target_occurrence_refs"]))
-        assert await _patch(runtime, actor, first) == {
-            "title": "Studio personale"
-        }
-        assert await _patch(runtime, actor, second) == {
-            "title": "Studio futuro"
-        }
+        assert await _patch(runtime, actor, first) == {"title": "Studio personale"}
+        assert await _patch(runtime, actor, second) == {"title": "Studio futuro"}
     finally:
         await runtime.dispose()

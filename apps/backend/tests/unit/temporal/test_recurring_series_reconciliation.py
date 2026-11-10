@@ -708,7 +708,7 @@ def test_inclusive_series_edits_preserve_every_protected_future(
     assert scope.target_occurrence_refs == (FIRST, CLEAN)
     assert scope.protected_future_occurrence_refs == (LOCAL,)
     assert scope.protected_future_reasons == (
-        (LOCAL, 'local_change' if future_reason == 'legacy_unknown' else future_reason),
+        (LOCAL, "local_change" if future_reason == "legacy_unknown" else future_reason),
     )
 
 

@@ -129,9 +129,7 @@ def select_recurrence_edit_scope(
     if scope == "this_and_following" and (
         selected.has_recorded_facts or selected.has_override or selected.skipped
     ):
-        raise EditScopeInputError(
-            "A protected selected instance requires a from-next edit."
-        )
+        raise EditScopeInputError("A protected selected instance requires a from-next edit.")
     anchor = _instant(selected.expected_at, field="selected.expected_at")
     later: list[tuple[datetime, UUID]] = []
     protected: list[tuple[datetime, UUID, str]] = []
