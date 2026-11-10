@@ -24,6 +24,7 @@ from dante.modules.temporal.application import (
 )
 from dante.modules.temporal.contracts import TimelineWindowQuery
 from dante.modules.temporal.event_occurrence_policy import EventOccurrencePolicyApplication
+from dante.modules.temporal.occurrence import CalendarCoordinate
 from dante.modules.temporal.occurrence_api import (
     EventOccurrenceLocalEditCommand,
     accept_event_occurrence_local_edit,
@@ -103,8 +104,13 @@ async def test_native_finite_event_preserves_local_first_last_and_accepts_follow
             if isinstance(item, TimelineScheduledOccurrenceItem)
             and item.source_native_ref == created.source_ref
         ]
-        physical.sort(key=lambda item: item.coordinate.generated_date)
-        assert [item.coordinate.generated_date for item in physical] == [
+        by_date = {
+            item.coordinate.generated_date: item
+            for item in physical
+            if isinstance(item.coordinate, CalendarCoordinate)
+        }
+        assert len(by_date) == len(physical) == 5
+        assert sorted(by_date) == [
             first_date, next_date, date(2027, 1, 31), date(2027, 2, 14), final_date
         ]
         request = Request({
@@ -112,7 +118,7 @@ async def test_native_finite_event_preserves_local_first_last_and_accepts_follow
             "app": SimpleNamespace(state=SimpleNamespace(database_runtime=runtime)),
         })
         context = _context(actor)
-        for revision, target in enumerate((physical[0], physical[-1])):
+        for revision, target in enumerate((by_date[first_date], by_date[final_date])):
             saved = await accept_event_occurrence_local_edit(
                 target.occurrence_ref,
                 EventOccurrenceLocalEditCommand.model_validate({
@@ -132,7 +138,7 @@ async def test_native_finite_event_preserves_local_first_last_and_accepts_follow
             )
             assert saved.revision == revision + 1
 
-        selected_ref = physical[1].occurrence_ref
+        selected_ref = by_date[next_date].occurrence_ref
         source = await series.source(
             self_person_ref=actor, selected_occurrence_ref=selected_ref
         )
@@ -195,10 +201,30 @@ async def test_native_finite_event_preserves_local_first_last_and_accepts_follow
             for item in after.items
             if isinstance(item, TimelineScheduledOccurrenceItem)
             and item.source_native_ref == created.source_ref
+            and isinstance(item.coordinate, CalendarCoordinate)
         }
         assert titles[first_date] == "E04 eccezione 0"
         assert titles[final_date] == "E04 eccezione 1"
         assert titles[next_date] == "E04 serie aggiornata"
-        assert date(2027, 3, 14) not in titles
+
+        beyond_final = date(2027, 3, 14)
+        await materializer.checkpoint_window(
+            self_person_ref=actor,
+            operation_id="e04:after:last-boundary",
+            start_date=beyond_final,
+            end_date_exclusive=date(2027, 3, 15),
+            effective_zone_id="Europe/Rome",
+        )
+        expired = await timeline.read_window(
+            query=TimelineWindowQuery(
+                start_date=beyond_final, end_date_exclusive=date(2027, 3, 15)
+            ),
+            context=context,
+        )
+        assert not any(
+            item.source_native_ref == created.source_ref
+            for item in expired.items
+            if isinstance(item, TimelineScheduledOccurrenceItem)
+        )
     finally:
         await runtime.dispose()
