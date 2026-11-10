@@ -1,5 +1,20 @@
 # Timeline / Temporal-Operational — Workstream Handoff
 
+## 2026-11-10 — Event converted-first physical card duplicate, true backend RED, structural exclusion candidate
+
+Owner pulled `30c19cb01` and ran the targeted dual-variant Postgres regression `test_existing_event_keeps_first_event_and_excludes_duplicate_occurrence`: **2 FAILED (unlocked + protected) in 11.90 s**. After `this_and_following` from the first converted Event and a *fresh checkpoint*, the canonical Timeline contains **two** first-date items (physical original plus regenerated recurrence item). This validates the owner's screenshot `asd` double card as a backend identity defect, not just a UI rendering glitch. The older test never checkpointed after the revision and was falsely green.
+
+The Event conversion's `event_recurring_seed.first_occurrence_ref` binds one original physical Event + Schedule to a specific first Occurrence ID. A series-edit `recurrence_state` transition can generate a **different first-date occurrence** under a new material state; the policy materializer's `if occurrence.occurrence_ref == first_occurrence_ref: continue` protects only the old ID. Adding UI dedupe would hide invalid canonical data. Do not delete the original Event or its recorded state.
+
+Published **candidate production fix** in `RecurringSeriesEditApplication.accept`: under its existing serializable admission lock/preview fingerprint, inspect the owner-scoped converted-first seed and its canonical date; evaluate the revised recurrence for that day; create a new-state `OccurrenceApplication.exclude_in_session` structural exclusion for the candidate (unless the approved protected reconciliation already excludes it). The physical first Event/Schedule remains unchanged. Native Event series and revisions from later dates do not synthesize first-day exclusions. Never silently accept duplication.
+
+Strengthened the two DB cases to recheckpoint with a different operation ID and verify first-date cardinality, stable original Schedule, one future Event with updated title and stable future Schedule. Dedicated `V2-P3-EFIRST` browser journey independently checks canonical row identity and DOM card count after real first-day `Questa e le successive`, title and agenda changes, using seeded account 408 on Chromium (409/410 Firefox/WebKit). Both suite and product fix **remain unverified on WSL**, no green claim yet.
+
+**Immediate owner gate (no 306 suite):** `cd apps/backend && uv run --locked pytest -q --no-cov --tb=short -m postgres tests/integration/temporal/test_existing_activity_recurrence.py::test_existing_event_keeps_first_event_and_excludes_duplicate_occurrence`; only after PASS run `cd ~/projects/dante && python3 tooling/testing/run_real_stack_playwright.py --project chromium --v2-workers 1 --grep 'V2-P3-EFIRST'` and inspect the archive. Protect original Events, physical Schedule IDs, series version history and separately protected local edits.
+
+---
+
+
 ## 2026-11-10 — Original Event first-day duplicate, targeted RED reproduction
 
 Owner screenshot shows two Event cards `asd` at the same local time 11:00–11:30 on 2026-11-10 after converting one ordinary Event into a recurring series and editing it; only one card visibly retains an agenda section. Must not dismiss or assume duplicate SQL state without a Schedule identity read. The existing `V2-P3-E01` browser green covers **Solo questa** on first Event and scoped changes on later occurrences, **not** editing first Event with **Questa e le successive**. Existing backend test checks first original immediately after series accept but not the subsequent Home materialization checkpoint.
