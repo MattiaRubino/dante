@@ -221,7 +221,9 @@ async def test_generated_routine_objective_scope_selected_past_and_later_future(
                         "label": "Corsa dieci km",
                         "result_kind": "quantity",
                         "comparator_code": "gte",
-                        "target_value": 10,
+                        # A JSON numeric template decodes as float and
+                        # must still resolve the PostgreSQL numeric signature.
+                        "target_value": 10.0,
                         "unit_code": "km",
                         "presentation_order": 0,
                     }
