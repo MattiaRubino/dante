@@ -585,16 +585,22 @@ class RoutineOccurrenceMaterializationApplication:
                         statement = """
                             SELECT * FROM dante.create_self_occurrence_objective(
                                 :actor,:operation,:fingerprint,:objective,:subject,
-                                :label,:result_kind,:comparator,:target_value,
-                                :target_min,:target_max,:unit,:presentation_order
+                                :label,:result_kind,:comparator,
+                                CAST(:target_value AS numeric),
+                                CAST(:target_min AS numeric),
+                                CAST(:target_max AS numeric),
+                                :unit,:presentation_order
                             )
                         """
                     else:
                         statement = """
                             SELECT * FROM dante.create_self_temporal_objective(
                                 :actor,:operation,:fingerprint,:objective,:kind,:subject,
-                                :label,:result_kind,:comparator,:target_value,
-                                :target_min,:target_max,:unit,:presentation_order
+                                :label,:result_kind,:comparator,
+                                CAST(:target_value AS numeric),
+                                CAST(:target_min AS numeric),
+                                CAST(:target_max AS numeric),
+                                :unit,:presentation_order
                             )
                         """
                         params["kind"] = subject_kind
