@@ -75,6 +75,7 @@ class RecurringSeriesAccepted:
     recurrence_state_ref: UUID
     superseded_count: int
     protected_count: int
+    preserved_occurrence_ref: UUID | None = None
     replayed: bool = False
 
 
@@ -860,11 +861,27 @@ class RecurringSeriesEditApplication:
                         or prior["previous_state_ref"] != expected_state_ref
                     ):
                         raise RecurringSeriesEditConflictError("Operation id was reused.")
+                    # Preserve the owner-scoped identity on idempotent replay.
+                    # Do not infer a preserved instance from count differences.
+                    replay_first = (
+                        await session.scalar(
+                            text(
+                                "SELECT first_occurrence_ref FROM "
+                                "dante.get_self_event_recurring_first_by_source(:actor,:source)"
+                            ),
+                            {"actor": self_person_ref, "source": prior["source_native_ref"]},
+                        )
+                        if requested_scope == "this_and_following"
+                        else None
+                    )
                     return RecurringSeriesAccepted(
                         source_ref=prior["source_native_ref"],
                         recurrence_state_ref=prior["recurrence_state_ref"],
                         superseded_count=prior["superseded_count"],
                         protected_count=prior["protected_count"],
+                        preserved_occurrence_ref=(
+                            replay_first if replay_first == selected_occurrence_ref else None
+                        ),
                         replayed=True,
                     )
                 prepared = await self.prepare_in_session(
@@ -957,8 +974,17 @@ class RecurringSeriesEditApplication:
                     else None
                 )
                 superseded_count = 0
+                preserved_first_ref: UUID | None = None
                 for index, ref in enumerate(prepared.scope.target_occurrence_refs):
                     if first_event_ref is not None and ref == first_event_ref:
+                        if (
+                            requested_scope != "this_and_following"
+                            or ref != selected_occurrence_ref
+                        ):
+                            raise RecurringSeriesEditConflictError(
+                                "Converted first Event has an invalid preservation scope."
+                            )
+                        preserved_first_ref = ref
                         continue
                     await self._policies.supersede_clean_in_session(
                         session,
@@ -1024,6 +1050,7 @@ class RecurringSeriesEditApplication:
                     recurrence_state_ref=new_state,
                     superseded_count=superseded_count,
                     protected_count=len(prepared.scope.protected_future_occurrence_refs),
+                    preserved_occurrence_ref=preserved_first_ref,
                 )
         except SQLAlchemyError as exc:
             raise RecurringSeriesEditConflictError("Series changed during acceptance.") from exc

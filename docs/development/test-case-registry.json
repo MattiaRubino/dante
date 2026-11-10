@@ -5641,6 +5641,16 @@
       "invariant": "No persona silently disappears or duplicates an identity; bounded series retain five occurrences and final-instance coverage; browser account partitions remain disjoint; multi-interval Activities remain defined as one logical Activity with multiple valid physical Schedule cards.",
       "status": "QUALIFIED",
       "audit_note": "QUALIFIED after source-level review 2026-11-09: persona counts/IDs, scenario density, categorical coverage, finite-boundary distribution and disjoint account computation checked; Vitest and real E2E execution remain NOT_RUN."
+    },
+    {
+      "path": "apps/web/src/features/temporal/remote-recurring-series-edit-first-event.test.ts",
+      "suite": "web-unit-component",
+      "contract_id": "T05",
+      "candidate_behavior": "converted physical first Event series-edit confirmation",
+      "purpose": "Validate preserved-first response identity, supersession count, replay and wrong owner/scope/source/metadata refusal.",
+      "invariant": "Only an explicitly attested selected physical first Event may remain current instead of being superseded; neither false off-by-one nor incorrect protected count is accepted.",
+      "status": "QUALIFIED",
+      "audit_note": "Owner observed focused RED 2026-11-10 (1 FAIL, 1 PASS). GitHub candidate committed, WSL GREEN and browser gate pending."
     }
   ]
 }

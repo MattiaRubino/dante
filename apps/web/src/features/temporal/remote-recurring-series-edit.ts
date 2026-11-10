@@ -183,10 +183,25 @@ export function createRemoteRecurringSeriesEdit(
           body: JSON.stringify(body(intent, review.fingerprint)),
         }),
       );
+      // A converted Event's original physical first Occurrence remains
+      // current, so it is targeted by the edit but not superseded. Only
+      // an explicitly identified selected-first Event can reduce the count.
+      const preserved = value.preserved_occurrence_ref;
+      const preservedFirst =
+        typeof preserved === 'string' &&
+        intent.source.owner === 'event' &&
+        intent.scope === 'this_and_following' &&
+        preserved === intent.selectedRef &&
+        review.targetRefs.filter((ref) => ref === preserved).length === 1;
+      const preservationValid = preserved === null || preservedFirst;
+      const expectedSuperseded =
+        review.targetRefs.length - (preservedFirst ? 1 : 0);
       if (
         value.source_native_ref !== intent.source.sourceRef ||
         typeof value.recurrence_state_ref !== 'string' ||
-        value.superseded_count !== review.targetRefs.length ||
+        !preservationValid ||
+        !Number.isSafeInteger(value.superseded_count) ||
+        value.superseded_count !== expectedSuperseded ||
         value.protected_count !== review.protected.length
       ) {
         throw new Error(

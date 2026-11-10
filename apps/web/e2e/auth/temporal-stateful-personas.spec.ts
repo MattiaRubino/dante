@@ -1531,21 +1531,24 @@ test.describe('Temporal v2 — real stateful user personas', () => {
       // A virtualized day not present in the viewport is NOT evidence of a
       // failed local edit. This expectation still insists on exactly one
       // physical card with the newly saved title on the editing screen.
+      const firstDayCardsAfterLocal = page.locator(
+        '[data-timeline-event][data-planned-date="' + day + '"]',
+      );
       await expect(
-        onDay(page, day, localTitle),
-        'first Event Only-this must render the accepted local title',
+        firstDayCardsAfterLocal,
+        'one physical first Event card after Only-this',
       ).toHaveCount(1);
       await expect(
-        onDay(page, day, localTitle).getByRole('button', {
+        firstDayCardsAfterLocal.getByRole('button', {
           name: localTitle, exact: true,
         }),
-        'the only first-day Event card must expose the exact local title',
+        'the first Event exposes its full accessible title',
       ).toHaveCount(1);
       await expect(
-        onDay(page, day, editedTitle).getByRole('button', {
+        firstDayCardsAfterLocal.getByRole('button', {
           name: editedTitle, exact: true,
         }),
-        'a stale first-day series title must not remain as another card',
+        'stale first-day series title must not remain',
       ).toHaveCount(0);
       await assertOriginalScheduleIdentity(page, day, authored.item);
       await assertDayHasNoDuplicatePlacements(

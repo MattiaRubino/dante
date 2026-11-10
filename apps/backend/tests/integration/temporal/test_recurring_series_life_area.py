@@ -158,6 +158,9 @@ async def test_event_following_series_life_area_is_atomic_and_survives_reload(
         )
         assert replay.replayed
         assert replay.recurrence_state_ref == accepted.recurrence_state_ref
+        assert accepted.preserved_occurrence_ref is None
+        assert replay.preserved_occurrence_ref is None
+        assert accepted.superseded_count == len(preview.scope.target_occurrence_refs)
         existing = await catalog("Serie Blu")
         assert len(existing) == 1
         assert existing[0]["color_code"] == "#4285F4"

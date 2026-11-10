@@ -1,5 +1,16 @@
 # Timeline / Temporal-Operational — Workstream Handoff
 
+## 2026-11-10 — Converted first Event series acceptance receipt: explicit preserved identity (candidate)
+
+Owner's focused Vitest RED reproduced the mismatch: preview includes the physical first Occurrence, while backend correctly retains it rather than superseding it. The old frontend incorrectly required `superseded_count == target_occurrence_refs.length` and reported `Conferma della serie non coerente` after HTTP acceptance. Long title and Event Agenda are not the cause.
+
+Fix candidate: return explicit `preserved_occurrence_ref` in backend accepted/replay result and FastAPI response. The client accepts one fewer superseded target only when the preserved Occurrence is exactly the selected converted Event, present once in the reviewed targets, under inclusive `this_and_following`; native Event/Routine and `from_next` return null. Strict owner/scope/count/protected checks remain. No DB migration needed because owner-scoped converted-first seed already exists. PostgreSQL regressions assert real first identity, replay, response serialization and native Event null; the RED Vitest is retained with refusal variants. The final Chromium `V2-P3-EFIRST` assertion also uses exact accessible title rather than visually truncated card text, retaining card cardinality and stale-title absence.
+
+**Status:** committed on feature branch, WSL tests/codegen/Chromium pending; do not claim GREEN or full 27-group gate until same-SHA owner results. Do not edit generated OpenAPI sources by hand.
+
+---
+
+
 ## 2026-11-10 — Chromium last step: local edit accepted, wrong DOM re-navigation assertion (retest pending)
 
 Owner `summary(2).json`: 1 Chromium discovered, 1 failed, 45.87s. E2E diagnostics prove that `Only this` on converted first Event now posts **HTTP 200**, revision 2; the canonical Timeline GET returns the *first-only* title on the original first Schedule and retains the series title for later days. The frame snapshot at 33490ms shows the local title on the physical first card, but the test's generic `assertCard` navigates once more and the virtualized day disappears from the later DOM snapshot; it reports 0 cards incorrectly. Updated only the E2E: assert exact first-only title on the current UI after save, stale title absent, one physical card; continue checking canonical first Schedule identity/Agenda and next-day UI. **Await Chromium rerun**. Don't modify Event serialization for this frontend viewport false negative or send artifacts outside repository `temp/`.

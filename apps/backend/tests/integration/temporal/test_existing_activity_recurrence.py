@@ -31,6 +31,7 @@ from dante.modules.temporal.contracts import TimelineWindowQuery
 from dante.modules.temporal.occurrence import CalendarCoordinate, OccurrenceApplication
 from dante.modules.temporal.occurrence_api import (
     EventOccurrenceLocalEditCommand,
+    RecurringSeriesEditResponse,
     accept_event_occurrence_local_edit,
     get_occurrence_profile_edit_state,
     get_recurring_event_occurrence_detail,
@@ -743,7 +744,7 @@ async def test_existing_event_keeps_first_event_and_excludes_duplicate_occurrenc
             profile_patch={"title": "Visita aggiornata"},
         )
         assert first_occurrence in review.scope.target_occurrence_refs
-        await series.accept(
+        first_acceptance = await series.accept(
             self_person_ref=actor,
             selected_occurrence_ref=first_occurrence,
             requested_scope="this_and_following",
@@ -756,6 +757,36 @@ async def test_existing_event_keeps_first_event_and_excludes_duplicate_occurrenc
             expected_fingerprint=review.fingerprint,
             operation_id="existing-event-repeat:edit-first",
         )
+        assert first_acceptance.preserved_occurrence_ref == first_occurrence
+        assert first_acceptance.superseded_count == (
+            len(review.scope.target_occurrence_refs) - 1
+        )
+        replay = await series.accept(
+            self_person_ref=actor,
+            selected_occurrence_ref=first_occurrence,
+            requested_scope="this_and_following",
+            expected_revision=source.edit_revision,
+            expected_state_ref=source.recurrence_state_ref,
+            effective_zone_id="Europe/Rome",
+            proposed_recurrence=source.recurrence,
+            proposed_structure=revised_structure,
+            profile_patch={"title": "Visita aggiornata"},
+            expected_fingerprint=review.fingerprint,
+            operation_id="existing-event-repeat:edit-first",
+        )
+        assert replay.replayed is True
+        assert replay.recurrence_state_ref == first_acceptance.recurrence_state_ref
+        assert replay.preserved_occurrence_ref == first_occurrence
+        assert replay.superseded_count == first_acceptance.superseded_count
+        payload = RecurringSeriesEditResponse(
+            source_native_ref=first_acceptance.source_ref,
+            recurrence_state_ref=first_acceptance.recurrence_state_ref,
+            superseded_count=first_acceptance.superseded_count,
+            protected_count=first_acceptance.protected_count,
+            preserved_occurrence_ref=first_acceptance.preserved_occurrence_ref,
+            replayed=first_acceptance.replayed,
+        ).model_dump(mode="json")
+        assert payload["preserved_occurrence_ref"] == str(first_occurrence)
         # A successful following-series edit is NOT the end of the user
         # journey: Home immediately checkpoints the new recurrence state.
         # Re-checkpoint before counting the physical first Event, otherwise

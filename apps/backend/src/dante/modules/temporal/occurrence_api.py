@@ -309,6 +309,7 @@ class RecurringSeriesEditResponse(BaseModel):
     recurrence_state_ref: UUID
     superseded_count: int
     protected_count: int
+    preserved_occurrence_ref: UUID | None
     replayed: bool
 
 
@@ -1902,6 +1903,7 @@ async def accept_recurring_series_edit(
         recurrence_state_ref=accepted.recurrence_state_ref,
         superseded_count=accepted.superseded_count,
         protected_count=accepted.protected_count,
+        preserved_occurrence_ref=accepted.preserved_occurrence_ref,
         replayed=accepted.replayed,
     )
 

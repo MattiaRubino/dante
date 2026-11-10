@@ -1,3 +1,13 @@
+## 2026-11-10 — Converted first Event series acceptance receipt: explicit preserved identity (candidate)
+
+Owner's focused Vitest RED reproduced the mismatch: preview includes the physical first Occurrence, while backend correctly retains it rather than superseding it. The old frontend incorrectly required `superseded_count == target_occurrence_refs.length` and reported `Conferma della serie non coerente` after HTTP acceptance. Long title and Event Agenda are not the cause.
+
+Fix candidate: return explicit `preserved_occurrence_ref` in backend accepted/replay result and FastAPI response. The client accepts one fewer superseded target only when the preserved Occurrence is exactly the selected converted Event, present once in the reviewed targets, under inclusive `this_and_following`; native Event/Routine and `from_next` return null. Strict owner/scope/count/protected checks remain. No DB migration needed because owner-scoped converted-first seed already exists. PostgreSQL regressions assert real first identity, replay, response serialization and native Event null; the RED Vitest is retained with refusal variants. The final Chromium `V2-P3-EFIRST` assertion also uses exact accessible title rather than visually truncated card text, retaining card cardinality and stale-title absence.
+
+**Status:** committed on feature branch, WSL tests/codegen/Chromium pending; do not claim GREEN or full 27-group gate until same-SHA owner results. Do not edit generated OpenAPI sources by hand.
+
+---
+
 ## 2026-11-10 — E2E first local edit: HTTP 200 and canonical Timeline title correct; date virtualization in test
 
 Owner's `E2E_DIAGNOSTICS.tar(8).gz` and `summary(2).json`: Chromium `V2-P3-EFIRST` runs 1, fails 1 in 45.87 s, at `assertCard(..., localTitle)` (test line 1527), 0 DOM cards with the new title after that helper does an unconditional extra `openHome(page, day)` navigation. This is **not** another database rejection: network trace has `POST /occurrences/{first}/event-local-edit` **HTTP 200** (revision 2), plus three successful `GET /timeline/window` reads where the physical original Event/Schedule carries the accepted first-only title; next day retains series title. Browser trace frame around 33490 ms also captures the physical first card rendered **with the exact correct new title** immediately before an extra reload/recycling transition; later virtualized-day frame no longer includes day 15 in its rendered range. A DOM locator on a date that has been recycled outside the viewport cannot prove a failed mutation.
