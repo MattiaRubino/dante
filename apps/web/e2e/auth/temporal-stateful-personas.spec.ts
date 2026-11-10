@@ -1387,7 +1387,7 @@ test.describe('Temporal v2 — real stateful user personas', () => {
     { browser }, info,
   ) => {
     const persona = EVENT_CASES[0]!;
-    const user = await signedInPersona(browser, info, 150);
+    const user = await signedInPersona(browser, info, 102);
     const { page } = user;
     registerPersona(page, persona);
     const day = scenarioDate(5);
