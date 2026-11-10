@@ -10,6 +10,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+import logging
 from collections.abc import AsyncIterator
 from contextlib import asynccontextmanager
 from datetime import UTC, date, datetime, timedelta
@@ -75,6 +76,9 @@ from dante.modules.temporal.schedule_reminder import (
     ScheduleReminderPersistenceError,
 )
 from dante.platform.database.references import NativeRef
+from dante.platform.observability.logging import log_event
+
+_LOGGER = logging.getLogger(__name__)
 
 
 class RoutineOccurrenceMaterializationApplication:
@@ -606,6 +610,28 @@ class RoutineOccurrenceMaterializationApplication:
                         params["kind"] = subject_kind
                     await write_session.execute(text(statement), params)
         except SQLAlchemyError as exc:
+            # A failed Objective write aborts the checkpoint transaction.
+            # Emit one bounded, source-owned diagnostic while the SQLSTATE is
+            # still available. Never log Objective labels, IDs, SQL arguments
+            # or the raw psycopg exception message (may contain user data).
+            driver_error = getattr(exc, "orig", None)
+            sqlstate = getattr(driver_error, "sqlstate", None)
+            log_event(
+                _LOGGER,
+                logging.ERROR,
+                "temporal.occurrence.objective_materialization_failed",
+                fields={
+                    "dependency": "postgresql",
+                    "error_category": "persistence",
+                    "error_code": "temporal.occurrence.persistence_unavailable",
+                    "failure_stage": "objective_create",
+                    "subject_kind": subject_kind,
+                    "objective_index": index,
+                    "sqlstate": sqlstate if isinstance(sqlstate, str) else "unknown",
+                    "outcome": "failed",
+                },
+                exception=driver_error if isinstance(driver_error, BaseException) else exc,
+            )
             raise OccurrencePersistenceError() from exc
 
     async def _protect_schedules(
