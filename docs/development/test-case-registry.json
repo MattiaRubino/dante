@@ -5651,6 +5651,26 @@
       "invariant": "Only an explicitly attested selected physical first Event may remain current instead of being superseded; neither false off-by-one nor incorrect protected count is accepted.",
       "status": "QUALIFIED",
       "audit_note": "Owner observed focused RED 2026-11-10 (1 FAIL, 1 PASS). GitHub candidate committed, WSL GREEN and browser gate pending."
+    },
+    {
+      "path": "apps/web/src/features/home/ui/timeline/recurring-series-bounds.test.ts",
+      "suite": "web-unit",
+      "contract_id": "T05",
+      "candidate_behavior": "finite series editor initializes remaining expected count for each scope",
+      "purpose": "Guard inclusive vs exclusive selected boundaries on bounded calendar series; prevent accidental extra occurrence after the original last day.",
+      "invariant": "Series count is recomputed from canonical candidates for partial edits. Explicit user count changes remain authoritative; multi-wall-time calendar days and final boundaries are handled without silent extensions.",
+      "status": "QUALIFIED",
+      "audit_note": "New targeted regression committed, WSL execution pending; no PASS claimed."
+    },
+    {
+      "path": "apps/backend/tests/unit/temporal/test_recurring_series_bounded_counts.py",
+      "suite": "backend-unit",
+      "contract_id": "T05",
+      "candidate_behavior": "canonical expected-count calendar candidate remainder on partial edits",
+      "purpose": "Guard inclusive vs exclusive selected boundaries on bounded calendar series; prevent accidental extra occurrence after the original last day.",
+      "invariant": "Series count is recomputed from canonical candidates for partial edits. Explicit user count changes remain authoritative; multi-wall-time calendar days and final boundaries are handled without silent extensions.",
+      "status": "QUALIFIED",
+      "audit_note": "New targeted regression committed, WSL execution pending; no PASS claimed."
     }
   ]
 }

@@ -10,6 +10,7 @@ import {
   type SeriesScope,
 } from '../../../temporal/remote-recurring-series-edit';
 import { createRemoteRecurringProfileEdit } from '../../../temporal/remote-recurring-profile-edit';
+import { initialRecurrenceForScope } from './recurring-series-bounds';
 import { TemporalCreatePlacementLockButton } from '../../../temporal-create/ui/temporal-create-placement-lock-button';
 import { TemporalAuthoringTitleRow } from '../../../temporal-create/ui/temporal-authoring-title-row';
 import { TimeControl } from '../../../temporal-create/ui/temporal-create-core-u2';
@@ -89,19 +90,6 @@ function dayAfter(day: string): string {
 
 function dayBefore(day: string): string {
   return Temporal.PlainDate.from(day).subtract({ days: 1 }).toString();
-}
-
-function initialRecurrence(
-  source: RecurringSeriesSource,
-  scope: SeriesScope,
-): Entry {
-  return {
-    ...source.recurrence,
-    effective_from:
-      scope === 'from_next'
-        ? dayAfter(source.selectedDate)
-        : source.selectedDate,
-  };
 }
 
 function writeRows(
@@ -317,7 +305,7 @@ export function RecurringSeriesEditor({
         setParticipantLabels(labels);
         setSource(loaded);
         setStructure(loaded.structure);
-        setRecurrence(initialRecurrence(loaded, scope));
+        setRecurrence(initialRecurrenceForScope(loaded, scope));
         setTitle(loaded.title);
         setAreaQuery(
           areaOptions.find((area) => area.ref === assignedArea)?.name ?? '',
@@ -606,6 +594,13 @@ export function RecurringSeriesEditor({
     setAreaError('');
     if (!title.trim()) {
       setError('Inserisci un titolo.');
+      return;
+    }
+    if (
+      recurrence.range_kind === 'expected_count' &&
+      asNumber(recurrence.expected_occurrence_count) < 1
+    ) {
+      setError('Non ci sono istanze successive da modificare. Cambia esplicitamente il limite per estendere la serie.');
       return;
     }
     if (normalizedAreaName && !activeArea && !creatingArea) {
@@ -1601,11 +1596,7 @@ export function RecurringSeriesEditor({
                               type="number"
                               min={1}
                               aria-label="Numero di occorrenze"
-                              value={
-                                asNumber(
-                                  recurrence.expected_occurrence_count,
-                                ) || 1
-                              }
+                              value={asNumber(recurrence.expected_occurrence_count)}
                               onFocus={() =>
                                 changeRecurrence({
                                   ...recurrence,

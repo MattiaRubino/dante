@@ -1,5 +1,14 @@
 # Timeline / Temporal-Operational — Workstream Handoff
 
+## 2026-11-10 — Finite partial-series boundary + Session end response synchronization (candidate)
+
+Owner's dynamic Chromium smoke completed six independent real-stack V2 scenarios using two same-stack workers: 3 PASS (P1-A01, P3-E01, P3-A01), 3 FAIL (P2-E04, P2-A04, RT-02), no skips. Both finite P2 failures prove one extra generated occurrence on 2027-01-24 despite an original fifth/final date of 2027-01-10: partial edits copied `expected_occurrence_count=5` while moving `effective_from` later. Backend now computes the canonical remaining candidate count from the *existing finite recurrence* for inclusive and exclusive selected-date scopes; `series-edit-source` exposes both counts and the editor initializes the correct `expected_occurrence_count`. Explicit user changes to the count remain possible; no default extension. Pure backend regressions cover biweekly, monthly ordinal, two wall times/day, open-series and off-cadence refusals. TS unit regressions verify Event and Routine scopes. Native Event Life Area integration verifies unbounded readback unchanged.
+
+RT-02 dispatched `POST /sessions/{ref}/end` then immediately read `GET /sessions` before commit. The test now waits for the exact POST response, requires success, and polls the canonical session until `open=false` and `ended_at` is set, without skipping or weakening persistence assertions. **Candidate published; targeted WSL unit/PostgreSQL, API codegen/typecheck and dynamic Chromium smoke remain required**. Do not claim green before evidence. In a later phase run all V2 on Chromium with `--v2-workers auto`, leaving cross-browser for stabilization.
+
+---
+
+
 ## 2026-11-10 — Converted first Event series acceptance receipt: explicit preserved identity (candidate)
 
 Owner's focused Vitest RED reproduced the mismatch: preview includes the physical first Occurrence, while backend correctly retains it rather than superseding it. The old frontend incorrectly required `superseded_count == target_occurrence_refs.length` and reported `Conferma della serie non coerente` after HTTP acceptance. Long title and Event Agenda are not the cause.

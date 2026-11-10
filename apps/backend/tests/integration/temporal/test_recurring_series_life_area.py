@@ -111,6 +111,8 @@ async def test_event_following_series_life_area_is_atomic_and_survives_reload(
         initial_ref = await selected()
         loaded = await series.source(self_person_ref=actor, selected_occurrence_ref=initial_ref)
         assert loaded.structure_snapshot["life_area_ref"] is None
+        assert loaded.remaining_including_selected is None
+        assert loaded.remaining_after_selected is None
         proposed = replace(loaded.recurrence, effective_from=day)
         structure = {
             **loaded.structure_snapshot,

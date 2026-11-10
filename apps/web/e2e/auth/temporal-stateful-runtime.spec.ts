@@ -275,7 +275,23 @@ test.describe('Temporal v2 — recorded facts survive Edit', () => {
         const rows = await list();
         return rows.find((session) => session.session_ref === sessionRef)?.paused;
       }).toBe(false);
+      // The click only dispatches an asynchronous POST. Reading immediately
+      // may overtake its commit; assert HTTP acceptance, then canonical truth.
+      const ending = page.waitForResponse((response) =>
+        response.request().method() === 'POST' &&
+        response.url().endsWith('/api/v1/temporal/sessions/' + sessionRef + '/end'),
+      );
       await controls.getByRole('button', { name: 'Termina' }).click();
+      const endedResponse = await ending;
+      expect(endedResponse.ok(), 'Session end must be accepted by the API').toBe(true);
+      await expect.poll(async () => {
+        const rows = await list();
+        const current = rows.find((session) => session.session_ref === sessionRef);
+        return { open: current?.open, hasEnd: typeof current?.ended_at === 'string' };
+      }, { message: 'Session end must be persisted before the next read' }).toEqual({
+        open: false,
+        hasEnd: true,
+      });
       const finished = await list();
       const recorded = finished.find((session) =>
         session.session_ref === sessionRef,

@@ -92,6 +92,47 @@ class RecurringSeriesSource:
     description: str | None
     location: str | None
     color_code: str | None
+    remaining_including_selected: int | None
+    remaining_after_selected: int | None
+
+
+def _remaining_expected_calendar_counts(
+    recurrence: CalendarRecurrence, selected_date: date
+) -> tuple[int | None, int | None]:
+    """Respect an existing finite series when editing its later segment.
+
+    Count the source's canonical civil candidates rather than subtracting
+    weeks/months in the browser. Count all wall times on the selected day
+    for the exclusive from-next boundary. A locally edited occurrence still
+    has its original recurrence coordinate.
+    """
+    if recurrence.range_kind != "expected_count":
+        return None, None
+    if recurrence.expected_occurrence_count is None:
+        raise SeriesReconciliationError("Finite series count is missing.")
+    if selected_date < recurrence.effective_from:
+        raise SeriesReconciliationError("Selected instance precedes its series.")
+
+    candidates = _calendar_candidates(
+        UUID(int=0),
+        recurrence,
+        recurrence.effective_from,
+        selected_date + timedelta(days=1),
+        ZoneInfo(recurrence.zone_id or "UTC"),
+    )
+    dates = [
+        coordinate.generated_date
+        for candidate in candidates
+        if isinstance(coordinate := candidate.coordinate, CalendarCoordinate)
+    ]
+    before = sum(day < selected_date for day in dates)
+    through = sum(day <= selected_date for day in dates)
+    if before == through:
+        raise SeriesReconciliationError(
+            "Selected instance is not in the current finite recurrence."
+        )
+    remaining = recurrence.expected_occurrence_count
+    return remaining - before, remaining - through
 
 
 def _child_operation(parent: str, purpose: str) -> str:
@@ -767,6 +808,9 @@ class RecurringSeriesEditApplication:
                 location = event.location
                 color_code = event.color_code
             _validate_structure(owner, recurrence_view.recurrence, structure)
+            remaining_inclusive, remaining_exclusive = _remaining_expected_calendar_counts(
+                recurrence_view.recurrence, selected_row["generated_date"]
+            )
             return RecurringSeriesSource(
                 source_ref=source_ref,
                 owner=owner,
@@ -779,6 +823,8 @@ class RecurringSeriesEditApplication:
                 description=description if isinstance(description, str) else None,
                 location=location if isinstance(location, str) else None,
                 color_code=color_code if isinstance(color_code, str) else None,
+                remaining_including_selected=remaining_inclusive,
+                remaining_after_selected=remaining_exclusive,
             )
 
     async def preview(

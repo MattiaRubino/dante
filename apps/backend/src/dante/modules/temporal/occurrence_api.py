@@ -403,6 +403,8 @@ class RecurringSeriesSourceResponse(BaseModel):
     description: str | None
     location: str | None
     color_code: str | None
+    remaining_including_selected: int | None
+    remaining_after_selected: int | None
 
 
 class ScopedProfileEditPreviewResponse(BaseModel):
@@ -1546,6 +1548,8 @@ async def get_recurring_series_edit_source(
         description=source.description,
         location=source.location,
         color_code=source.color_code,
+        remaining_including_selected=source.remaining_including_selected,
+        remaining_after_selected=source.remaining_after_selected,
     )
 
 
