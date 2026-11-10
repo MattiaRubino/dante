@@ -23,8 +23,9 @@ _REQUIRED_EXTENSIONS: tuple[tuple[str, str | None], ...] = (
 _E2E_RATE_CAPACITY_ENV = "DANTE_E2E_SIGNIN_RATE_CAPACITY"
 _E2E_CONTROL_ID_ENV = "DANTE_E2E_CONTROL_ID"
 _E2E_CONTROL_LABEL = "dante.e2e.control_id"
-# 1-101: existing auth/lifecycle suites. 102-401: three isolated v2 matrices; 402-407: focused runtime guards.
-_E2E_ACCOUNT_COUNT = 407
+# 1-101: auth/lifecycle; 102-401: v2 matrix; 402-407: runtime guards;
+# 408-410: converted-first-Event duplicate regression, isolated per browser.
+_E2E_ACCOUNT_COUNT = 410
 
 
 def _load_core() -> ModuleType:
