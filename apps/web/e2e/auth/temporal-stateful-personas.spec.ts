@@ -1379,4 +1379,95 @@ test.describe('Temporal v2 — real stateful user personas', () => {
       }
     });
   }
+
+  // Focused regression for the reported first-day duplicate after converting
+  // an ordinary Event and immediately editing "This and following" from the
+  // ORIGINAL physical first Event. P3-E01 only used "Only this" on day one.
+  test('V2-P3-EFIRST converted first Event following-edit has one card', async (
+    { browser }, info,
+  ) => {
+    const persona = EVENT_CASES[0]!;
+    const user = await signedInPersona(browser, info, 150);
+    const { page } = user;
+    registerPersona(page, persona);
+    const day = scenarioDate(5);
+    const nextDay = dateAfter(day, 1);
+    const title = uniqueTitle('v2 prima Event senza doppioni');
+    const editedTitle = title + ' modificato dalla prima';
+    try {
+      await openHome(page, day);
+      const authored = await authorPersona(page, persona, title, day);
+      const editor = await openEdit(page, day, title);
+      await editor.getByRole('region', { name: 'Ripetizione', exact: true })
+        .getByRole('combobox', { name: 'Ripeti' }).selectOption('daily');
+      const conversion = page.waitForResponse((response) =>
+        response.request().method() === 'POST' &&
+        response.url().endsWith(
+          '/api/v1/temporal/recurring/events/' +
+          authored.item.sourceRef + '/start',
+        ),
+      );
+      await editor.getByRole('button', { name: 'Salva modifiche' }).click();
+      expect((await conversion).status(), 'first Event conversion accepted')
+        .toBe(200);
+
+      await assertOriginalScheduleIdentity(page, day, authored.item);
+      await assertDayHasNoDuplicatePlacements(
+        page, day, title, title, persona,
+      );
+      await assertCard(page, nextDay, title);
+
+      const firstEditor = await openEdit(page, day, title);
+      await page.getByRole('dialog', { name: 'Modifica ricorrenza' })
+        .getByRole('button', { name: 'Questa e le successive' }).click();
+      await firstEditor.getByRole('textbox', { name: 'Titolo' })
+        .fill(editedTitle);
+      await firstEditor.getByRole('textbox', { name: 'Punto scaletta 1' })
+        .fill(title + ' scaletta aggiornata');
+      await firstEditor.getByRole('button', { name: 'Salva modifiche' })
+        .click();
+      const confirmation = page.getByRole('dialog', {
+        name: 'Controlla prima di salvare',
+      });
+      await expect(confirmation).toBeVisible();
+      const accepted = page.waitForResponse((response) =>
+        response.request().method() === 'POST' &&
+        response.url().endsWith('/series-edit'),
+      );
+      await confirmation.getByRole('button', { name: 'Conferma salvataggio' })
+        .click();
+      const response = await accepted;
+      expect(response.status(), await response.text()).toBe(200);
+
+      // A NEW Home checkpoint after series Edit is essential: the duplication
+      // was not observable by only reading the old stored first Event.
+      await assertCard(page, day, editedTitle);
+      await assertOriginalScheduleIdentity(page, day, authored.item);
+      await assertDayHasNoDuplicatePlacements(
+        page, day, title, editedTitle, persona,
+      );
+      const firstDayCards = page.locator(
+        '[data-timeline-event][data-planned-date="' + day +
+          '"], [data-timeline-all-day-lane="' + day +
+          '"] [data-timeline-all-day-item]',
+      );
+      await expect(firstDayCards,
+        'one rendered card, not both an old and a regenerated first Event')
+        .toHaveCount(1);
+      await expect(firstDayCards.getByRole('button', {
+        name: title, exact: true,
+      }), 'old unmodified first Event must not remain visible')
+        .toHaveCount(0);
+      await assertCard(page, nextDay, editedTitle);
+      await assertDayHasNoDuplicatePlacements(
+        page, nextDay, title, editedTitle, persona,
+      );
+      await openHome(page, day);
+      await expect(onDay(page, day, title),
+        'the first Event must remain single after full Home reload')
+        .toHaveCount(1);
+    } finally {
+      await user.close();
+    }
+  });
 });
