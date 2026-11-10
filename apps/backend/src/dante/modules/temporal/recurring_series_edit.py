@@ -550,7 +550,7 @@ class RecurringSeriesEditApplication:
             coordinate=coordinate,
         )
 
-    async def _synchronize_first_event_instance(
+    async def _advance_converted_first_structure(
         self,
         session: AsyncSession,
         *,
@@ -558,79 +558,43 @@ class RecurringSeriesEditApplication:
         source_ref: UUID,
         selected_ref: UUID,
         requested_scope: SeriesScope,
+        previous_state_ref: UUID,
         new_state_ref: UUID,
-        persisted_structure: dict[str, object],
-        effective_zone_id: str,
-        operation_id: str,
     ) -> None:
-        """Commit the first physical Event's effective structure as Occurrence truth.
+        """Move the first linked Event's EFFECTIVE series structure forward.
 
-        The converted first Event owns its existing physical Schedule. A series
-        revision is represented by a new recurrence state, but this physical
-        first is still linked to the original Occurrence identity. Applying
-        only a new source template leaves its Agenda/Area/participants stale.
+        Keep the original first Occurrence and its physical Schedule current.
+        The accepted source structure is already persisted against the new
+        Recurrence state in this SERIALIZABLE transaction. The owner-scoped
+        database capability binds that revision to the first physical Event
+        only when the user edits it via "this_and_following".
 
-        When the selected first day is included, store the accepted structure
-        as a scoped *first Occurrence* override in the same SERIALIZABLE
-        transaction. Do not mutate the historical standalone Event descriptor
-        or borrow its raw GET as the user's effective recurring view.
-        Later-date and from-next edits must not rewrite the first instance.
+        This is *not* a local-only Occurrence edit: inherited series structure
+        must never mark the first instance as locally protected and thereby
+        prevent future full-series edits.
         """
         if requested_scope != "this_and_following":
             return
-        first_ref = await session.scalar(
+        first = await session.scalar(
             text(
                 "SELECT first_occurrence_ref FROM "
                 "dante.get_self_event_recurring_first_by_source(:actor,:source)"
             ),
             {"actor": self_person_ref, "source": source_ref},
         )
-        if first_ref is None or UUID(str(first_ref)) != selected_ref:
+        if first is None or UUID(str(first)) != selected_ref:
             return
-
-        local_structure = {
-            "agenda_parts": persisted_structure.get("agenda_parts"),
-            "life_area_ref": persisted_structure.get("life_area_ref"),
-            "expected_participants": persisted_structure.get("expected_participants"),
-        }
-        if (
-            not isinstance(local_structure["agenda_parts"], list)
-            or not isinstance(local_structure["expected_participants"], list)
-        ):
-            raise SeriesReconciliationError(
-                "Converted Event has an incomplete effective first structure."
-            )
-        current = (
-            (
-                await session.execute(
-                    text(
-                        "SELECT edit_revision,recurrence_state_ref "
-                        "FROM dante.get_self_occurrence_edit_revision(:actor,:selected)"
-                    ),
-                    {"actor": self_person_ref, "selected": first_ref},
-                )
-            )
-            .mappings()
-            .one_or_none()
-        )
-        if current is None or current["recurrence_state_ref"] != new_state_ref:
-            raise RecurringSeriesEditConflictError(
-                "Converted Event first instance changed during series edit."
-            )
         await session.execute(
             text(
-                "SELECT * FROM dante.accept_self_occurrence_profile_edit("
-                ":actor,:selected,:operation,:revision,:state,'only_this',"
-                ":zone,CAST(:patch AS jsonb))"
+                "SELECT dante.advance_self_event_recurring_first_structure("
+                ":actor,:source,:first,:previous,:new_state)"
             ),
             {
                 "actor": self_person_ref,
-                "selected": first_ref,
-                "operation": _child_operation(operation_id, "converted-first-effective"),
-                "revision": current["edit_revision"],
-                "state": new_state_ref,
-                "zone": effective_zone_id,
-                "patch": json.dumps({"event_local": local_structure}, sort_keys=True),
+                "source": source_ref,
+                "first": first,
+                "previous": previous_state_ref,
+                "new_state": new_state_ref,
             },
         )
 
@@ -977,7 +941,25 @@ class RecurringSeriesEditApplication:
                     recurrence=proposed_recurrence,
                 )
                 new_state = replacement.recurrence.material_state_ref
+                # A converted original Event is a physical FIRST instance of
+                # the series (same ownership model as a linked Activity). It
+                # must remain the current Occurrence across source revisions:
+                # superseding it makes "Solo questa" impossible afterward.
+                first_event_ref = (
+                    await session.scalar(
+                        text(
+                            "SELECT first_occurrence_ref FROM "
+                            "dante.get_self_event_recurring_first_by_source(:actor,:source)"
+                        ),
+                        {"actor": self_person_ref, "source": prepared.source_ref},
+                    )
+                    if prepared.owner == "event"
+                    else None
+                )
+                superseded_count = 0
                 for index, ref in enumerate(prepared.scope.target_occurrence_refs):
+                    if first_event_ref is not None and ref == first_event_ref:
+                        continue
                     await self._policies.supersede_clean_in_session(
                         session,
                         self_person_ref=self_person_ref,
@@ -987,6 +969,7 @@ class RecurringSeriesEditApplication:
                         operation_id=_child_operation(operation_id, f"supersede:{index}"),
                         effective_zone_id=effective_zone_id,
                     )
+                    superseded_count += 1
                 for index, coordinate in enumerate(
                     prepared.reconciliation.protected_matching_coordinates
                 ):
@@ -1023,25 +1006,23 @@ class RecurringSeriesEditApplication:
                     structure_snapshot=persisted_structure,
                     request_hash=request_hash,
                     preview_fingerprint=expected_fingerprint,
-                    superseded_count=len(prepared.scope.target_occurrence_refs),
+                    superseded_count=superseded_count,
                     protected_count=len(prepared.scope.protected_future_occurrence_refs),
                 )
                 if prepared.owner == "event":
-                    await self._synchronize_first_event_instance(
+                    await self._advance_converted_first_structure(
                         session,
                         self_person_ref=self_person_ref,
                         source_ref=prepared.source_ref,
                         selected_ref=selected_occurrence_ref,
                         requested_scope=requested_scope,
+                        previous_state_ref=expected_state_ref,
                         new_state_ref=new_state,
-                        persisted_structure=persisted_structure,
-                        effective_zone_id=effective_zone_id,
-                        operation_id=operation_id,
                     )
                 return RecurringSeriesAccepted(
                     source_ref=prepared.source_ref,
                     recurrence_state_ref=new_state,
-                    superseded_count=len(prepared.scope.target_occurrence_refs),
+                    superseded_count=superseded_count,
                     protected_count=len(prepared.scope.protected_future_occurrence_refs),
                 )
         except SQLAlchemyError as exc:
