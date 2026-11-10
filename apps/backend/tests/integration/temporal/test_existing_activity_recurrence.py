@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from dataclasses import replace
+import json
 from datetime import date, datetime, time, timedelta
 from hashlib import sha256
 from uuid import uuid7
@@ -808,11 +809,53 @@ async def test_existing_event_keeps_first_event_and_excludes_duplicate_occurrenc
                 {"actor": actor, "occurrence": first_occurrence},
             )
             assert first_patch["title"] == "Visita aggiornata"
-            assert first_patch["event_local"]["agenda_parts"] == [
+            assert "event_local" not in first_patch, (
+                "Inherited series structure must NOT be recorded as a local-only "
+                "exception; that would protect the first instance from later "
+                "this-and-following edits."
+            )
+            first_structure_state = (
+                await session.execute(
+                    text(
+                        "SELECT source_event_ref,effective_structure_state_ref "
+                        "FROM dante.get_self_event_recurring_first_structure(:actor,:first)"
+                    ),
+                    {"actor": actor, "first": first_occurrence},
+                )
+            ).one()
+            assert first_structure_state.source_event_ref == started.source_ref
+            assert first_structure_state.effective_structure_state_ref is not None
+            latest_structure = await session.scalar(
+                text(
+                    "SELECT structure_snapshot FROM "
+                    "dante.get_self_recurring_structure_policy_revision("
+                    ":actor,'event',:source,:state)"
+                ),
+                {
+                    "actor": actor,
+                    "source": started.source_ref,
+                    "state": first_structure_state.effective_structure_state_ref,
+                },
+            )
+            assert latest_structure["agenda_parts"] == [
                 "Arrivo aggiornato", "Colloquio aggiornato",
             ]
-            assert first_patch["event_local"]["life_area_ref"] is None
-            assert first_patch["event_local"]["expected_participants"] == []
+            assert latest_structure["life_area_ref"] is None
+            assert latest_structure["expected_participants"] == []
+            assert not await session.scalar(
+                text(
+                    "SELECT dante.is_self_recurring_occurrence_superseded("
+                    ":actor,:first)"
+                ),
+                {"actor": actor, "first": first_occurrence},
+            )
+            assert (
+                await session.scalar(
+                    text("SELECT dante.get_self_occurrence_edit_protection(:actor,:first)"),
+                    {"actor": actor, "first": first_occurrence},
+                )
+                is None
+            )
         revised_future = [
             item
             for item in revised_window.items
@@ -866,6 +909,76 @@ async def test_existing_event_keeps_first_event_and_excludes_duplicate_occurrenc
         ]
         assert len(replay_future) == 1
         assert replay_future[0].schedule_ref == revised_future[0].schedule_ref
+
+        # After selected-and-following the linked first instance must still
+        # support a real "Solo questa" local edit, NOT merely a read-only
+        # Timeline projection or a retired historical Occurrence.
+        async with runtime.session_factory() as session, session.begin():
+            current = (
+                await session.execute(
+                    text(
+                        "SELECT edit_revision,recurrence_state_ref "
+                        "FROM dante.get_self_occurrence_edit_revision(:actor,:first)"
+                    ),
+                    {"actor": actor, "first": first_occurrence},
+                )
+            ).one()
+            await session.execute(
+                text(
+                    "SELECT * FROM dante.accept_self_occurrence_profile_edit("
+                    ":actor,:first,:operation,:revision,:state,'only_this',"
+                    ":zone,CAST(:patch AS jsonb))"
+                ),
+                {
+                    "actor": actor,
+                    "first": first_occurrence,
+                    "operation": "existing-event-repeat:first-only-this",
+                    "revision": current.edit_revision,
+                    "state": current.recurrence_state_ref,
+                    "zone": "Europe/Rome",
+                    "patch": json.dumps(
+                        {
+                            "title": "Visita primo giorno",
+                            "event_local": {
+                                "agenda_parts": ["Visita solo questa"],
+                                "life_area_ref": None,
+                                "expected_participants": [],
+                            },
+                        },
+                        sort_keys=True,
+                    ),
+                },
+            )
+            first_local_patch = await session.scalar(
+                text(
+                    "SELECT dante.get_self_occurrence_profile_patch("
+                    ":actor,:first)"
+                ),
+                {"actor": actor, "first": first_occurrence},
+            )
+            assert first_local_patch["title"] == "Visita primo giorno"
+            assert first_local_patch["event_local"]["agenda_parts"] == [
+                "Visita solo questa"
+            ]
+            assert (
+                await session.scalar(
+                    text(
+                        "SELECT dante.get_self_occurrence_edit_protection("
+                        ":actor,:first)"
+                    ),
+                    {"actor": actor, "first": first_occurrence},
+                )
+                == "local_change"
+            )
+            later_patch = await session.scalar(
+                text(
+                    "SELECT dante.get_self_occurrence_profile_patch("
+                    ":actor,:later)"
+                ),
+                {"actor": actor, "later": revised_future[0].occurrence_ref},
+            )
+            assert later_patch["title"] == "Visita aggiornata"
+            assert "event_local" not in later_patch
 
         async with runtime.session_factory() as session, session.begin():
             await session.execute(
