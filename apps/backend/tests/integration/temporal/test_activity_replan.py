@@ -604,6 +604,131 @@ async def test_placement_lock_allows_new_unplaced_named_session_but_blocks_movem
 
 
 @pytest.mark.asyncio
+async def test_locked_envelope_allows_atomic_named_session_replacement_but_not_locked_named_delete(
+    migrated_database: Any,
+) -> None:
+    """A named Session's lock is independent of the Activity envelope lock."""
+    actor = _seed_self(migrated_database)
+    runtime = create_database_runtime(migrated_database.runtime_settings())
+    try:
+        created = await TemporalAuthoringApplication(runtime.session_factory).create_activity(
+            self_person_ref=actor,
+            operation_id="locked-envelope:named-replace:create",
+            title="Studio protetto",
+            placement=_window(9, 12),
+            activity_intervals=(_window(9, 12),),
+            planned_slices=(None, None),
+            planned_slice_names=("Da sostituire", "Da mantenere"),
+        )
+        activity = created.item.subject_native_ref
+        before = await _snapshot(runtime, actor, activity)
+        envelope = next(row for row in before.schedules if row.role_code == "envelope")
+        interval = next(row for row in before.schedules if row.role_code == "interval")
+        removed = next(
+            row for row in before.schedules
+            if row.role_code == "planned" and row.display_name == "Da sostituire"
+        )
+        retained = next(
+            row for row in before.schedules
+            if row.role_code == "planned" and row.display_name == "Da mantenere"
+        )
+        async with runtime.session_factory() as session, session.begin():
+            await session.execute(
+                text(
+                    "SELECT * FROM dante.set_self_schedule_placement_lock("
+                    ":actor,:schedule,true,NULL)"
+                ),
+                {"actor": actor, "schedule": envelope.schedule_ref},
+            )
+
+        # This is the same atomic-edit shape as the Activity persona: retain
+        # the existing interval and one named Session, delete another named
+        # Session and add a replacement. No envelope coordinate is changed.
+        accepted = await apply_activity_atomic_edit(
+            activity,
+            ActivityAtomicEditCommand(
+                replan=ActivityReplanCommand(
+                    operation_id="locked-envelope:named-replace:save",
+                    intervals=[_move(interval, 9, 12)],
+                    planned_sessions=[_retain(retained)],
+                    delete_planned_sessions=[
+                        DeletePlannedRow(
+                            schedule_ref=removed.schedule_ref,
+                            expected_material_state_ref=removed.placement_material_state_ref,
+                        )
+                    ],
+                    new_planned_sessions=[
+                        NewPlannedRow(client_ref=uuid7(), name="Sessione nuova")
+                    ],
+                ),
+            ),
+            _context(actor),
+            _request(runtime),
+            Response(),
+        )
+        after = accepted.snapshot
+        after_envelope = next(row for row in after.schedules if row.role_code == "envelope")
+        after_interval = next(row for row in after.schedules if row.role_code == "interval")
+        assert after_envelope.schedule_ref == envelope.schedule_ref
+        assert (
+            after_envelope.placement_material_state_ref
+            == envelope.placement_material_state_ref
+        )
+        assert after_interval.schedule_ref == interval.schedule_ref
+        assert (
+            after_interval.placement_material_state_ref
+            == interval.placement_material_state_ref
+        )
+        assert after.placement_lock is not None
+        assert after.placement_lock.locked is True
+        planned = [row for row in after.schedules if row.role_code == "planned"]
+        assert len(planned) == 2
+        assert {row.display_name for row in planned} == {
+            "Da mantenere", "Sessione nuova",
+        }
+        assert any(row.schedule_ref == retained.schedule_ref for row in planned)
+        assert all(row.schedule_ref != removed.schedule_ref for row in planned)
+
+        # The independence is symmetric: locking the named Session itself
+        # still denies deletion, even though the envelope no longer vetoes it.
+        async with runtime.session_factory() as session, session.begin():
+            await session.execute(
+                text(
+                    "SELECT * FROM dante.set_self_schedule_placement_lock("
+                    ":actor,:schedule,true,NULL)"
+                ),
+                {"actor": actor, "schedule": retained.schedule_ref},
+            )
+        replacement = next(row for row in planned if row.schedule_ref != retained.schedule_ref)
+        with pytest.raises(ProblemError) as locked_named:
+            await apply_activity_replan(
+                activity,
+                ActivityReplanCommand(
+                    operation_id="locked-envelope:named-replace:reject-locked",
+                    intervals=[_move(after_interval, 9, 12)],
+                    planned_sessions=[_retain(replacement)],
+                    delete_planned_sessions=[
+                        DeletePlannedRow(
+                            schedule_ref=retained.schedule_ref,
+                            expected_material_state_ref=retained.placement_material_state_ref,
+                        )
+                    ],
+                ),
+                _context(actor),
+                _request(runtime),
+                Response(),
+            )
+        assert locked_named.value.status == 409
+        assert "named Session placement" in locked_named.value.detail
+        after_rejection = await _snapshot(runtime, actor, activity)
+        assert {row.schedule_ref for row in after_rejection.schedules} == {
+            row.schedule_ref for row in after.schedules
+        }
+    finally:
+        await runtime.dispose()
+
+
+@pytest.mark.asyncio
 async def test_running_attempts_block_moving_and_named_configuration_deletion(
     migrated_database: Any,
 ) -> None:

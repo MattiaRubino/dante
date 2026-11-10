@@ -1,5 +1,15 @@
 # Timeline / Temporal-Operational — Workstream Handoff
 
+## 2026-11-10 — Full V2 Chromium interrupted at ~89/103: locked Activity named Session regression
+
+The 103-scenario real-stack run was interrupted by Ctrl+C after approximately 30 minutes. A compact partial archive contains 55 failure reports but **no final JUnit**, so do not claim exhaustive PASS/FAIL counts. The 17 HTTP 409 `Unlock the Activity placement before replanning` reports under P1 Activity follow a common payload: the user edits metadata and Objectives, retains all existing Activity interval coordinates unchanged, removes one named planned Session and adds another. Prior `apply_activity_replan_in_session` wrongly regarded `delete_planned_sessions` as an **envelope coordinate revision**, and rejected it when `placement_protected=true`. The envelope is not moved.
+
+The guarded fix excludes pure `delete_planned_sessions` from envelope placement-change detection. It retains the named Session's own placement lock check, the recorded-attempt protection, and all genuine envelope/interval lock checks. PostgreSQL integration regression `test_locked_envelope_allows_atomic_named_session_replacement_but_not_locked_named_delete` exercises real atomic replacement, unchanged locked envelope and interval identities, preserved named identity, single replacement and rejection of a separately locked named Session.
+
+Other REDs remain, notably P2 Event scope/physical placement mismatches and connection exhaustion `QueuePool size 5 overflow 5 timeout 5s` during broad parallelism. Do not dilute functional assertions or treat the interrupt as test successes. Next run targeted P1-A02 and P1-A03 with an isolated stack, then triage P2 and DB pool before the 103-scenario rerun. Full dynamic suite should emit durable partial diagnostics on interruption.
+
+---
+
 ## 2026-11-10 — P2 Event serialization retry after confirmed Chromium SQLSTATE 40001
 
 Owner's second focused dynamic E2E: P2-A04 PASS, P2-E04 FAIL. Backend diagnostic tied to the exact 409 request: `failure_stage=life_area_create`, `sqlstate=40001`, `exception_type=OperationalError`, during SERIALIZABLE Event following-series acceptance with new Life Area. SQLSTATE 40001 is a PostgreSQL serialization abort, **not** a stale-source/CAS conflict. The prior PostgreSQL regression passed without contention, which did not prove the real browser case.

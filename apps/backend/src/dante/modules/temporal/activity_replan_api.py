@@ -939,14 +939,15 @@ async def apply_activity_replan_in_session(
         if any(row.schedule_ref in recorded_planned for row in body.delete_planned_sessions):
             raise _conflict("Elimina la registrazione prima di rimuovere la Sessione.")
     envelope = next(row for row in snapshot.schedules if row.role_code == "envelope")
-    # A placement lock freezes existing Schedule coordinates, not new
-    # Activity structure. Adding a planned Session inside the already
-    # accepted envelope (timed or untimed) does not move that envelope.
-    # Real placement revisions, removals and interval changes stay guarded.
-    existing_placement_changes = bool(
-        placements or body.remove_intervals or body.new_intervals or body.delete_planned_sessions
+    # The envelope lock protects its accepted time and interval geometry;
+    # it does not lock independent named Session configuration. Replacing
+    # an unplaced planned Session must not impersonate envelope replanning.
+    # Each deleted named Session is checked against its OWN placement lock
+    # below, and sessions with recorded attempts remain protected above.
+    envelope_placement_changes = bool(
+        placements or body.remove_intervals or body.new_intervals or body.split_envelope
     )
-    if existing_placement_changes and await session.scalar(
+    if envelope_placement_changes and await session.scalar(
         text("""
             SELECT locked FROM dante.get_self_schedule_placement_lock(:actor,:schedule)
         """),
