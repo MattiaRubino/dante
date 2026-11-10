@@ -1,5 +1,16 @@
 # Timeline / Temporal-Operational — Workstream Handoff
 
+## 2026-11-10 — Converted Event first parity; atomic effective state, NOT raw original Event
+
+Owner clarified the source of truth: once Event is converted to series, the **existing first Event is the first series instance**, and all user-visible reads/edits must behave like the physical first Activity of a Routine, with `Solo questa`, `Questa e le successive` including selected, and no old standalone card. Original physical Event identity/Schedule/factual records remain durable but its raw source descriptor is NOT the canonical user-visible effective state. Previously `V2-P3-EFIRST` got past double-card assertions but failed its mistaken `GET /events/{original}` title equality; compare `GET /occurrences/{first}/event-detail` instead.
+
+Implemented candidate repairs: `EventInspectorActions` now hydrates **Only this** from the linked first Occurrence rather than raw standalone event; removed `occurrenceRef` prop gate. New migration `20261110_184_converted_first_event_schedule_identity.py` expands owner-scoped `is_self_event_occurrence_schedule` for original physical first Schedule without cross-owner access. `RecurringSeriesEditApplication.accept` now writes the accepted first-day Event-local Agenda, Life Area and participants on the first linked Occurrence within the same serializable source transaction when that first is selected for `this_and_following`. Never modify first when editing from next or a later date. Existing revised first-date recurrence exclusion still prevents two physical Event cards. PostgreSQL regression variants check first Agenda patch and Schedule capability; Chromium journey checks effective API, then edits first through Only this and asserts next-day independence, without relaxing cardinality rules. Full details: `docs/development/temporal-user-lifecycle-journey-matrix.md`.
+
+**Status: source committed, not run**; require WSL: `git pull --ff-only origin feature/timeline-temporal-operational`; `cd apps/backend && uv run --locked pytest -q --no-cov --tb=short -m postgres tests/integration/temporal/test_existing_activity_recurrence.py::test_existing_event_keeps_first_event_and_excludes_duplicate_occurrence`; `cd ~/projects/dante && pnpm --filter @dante/web typecheck`; `python3 tooling/testing/run_real_stack_playwright.py --project chromium --v2-workers 1 --grep 'V2-P3-EFIRST'` only once DB is green. Review remaining Event-vs-Activity parity (Objective inheritance, first-day time replan, protected instances) separately; don't claim blanket parity or run 306 tests at this stage.
+
+---
+
+
 ## 2026-11-10 — Event converted-first physical card duplicate, true backend RED, structural exclusion candidate
 
 Owner pulled `30c19cb01` and ran the targeted dual-variant Postgres regression `test_existing_event_keeps_first_event_and_excludes_duplicate_occurrence`: **2 FAILED (unlocked + protected) in 11.90 s**. After `this_and_following` from the first converted Event and a *fresh checkpoint*, the canonical Timeline contains **two** first-date items (physical original plus regenerated recurrence item). This validates the owner's screenshot `asd` double card as a backend identity defect, not just a UI rendering glitch. The older test never checkpointed after the revision and was falsely green.
