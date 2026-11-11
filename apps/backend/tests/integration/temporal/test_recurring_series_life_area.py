@@ -3,9 +3,10 @@
 from __future__ import annotations
 
 from dataclasses import replace
-from datetime import date
+from datetime import date, time
 from types import SimpleNamespace
 from typing import Any, cast
+from zoneinfo import ZoneInfo
 
 import pytest
 from fastapi import Request, Response
@@ -20,6 +21,11 @@ from dante.modules.temporal.application import (
 )
 from dante.modules.temporal.contracts import TimelineWindowQuery
 from dante.modules.temporal.event_occurrence_policy import EventOccurrencePolicyApplication
+from dante.modules.temporal.occurrence import CalendarCoordinate
+from dante.modules.temporal.occurrence_api import (
+    EventOccurrenceLocalEditCommand,
+    accept_event_occurrence_local_edit,
+)
 from dante.modules.temporal.occurrence_api import get_recurring_event_occurrence_detail
 from dante.modules.temporal.recurring_authoring import RecurringAuthoringApplication
 from dante.modules.temporal.recurring_series_edit import (
@@ -274,5 +280,197 @@ async def test_event_following_series_life_area_is_atomic_and_survives_reload(
                 operation_id="series-area:aborted",
             )
         assert await catalog("Area non committata") == []
+    finally:
+        await runtime.dispose()
+
+
+@pytest.mark.asyncio
+async def test_monthly_all_day_event_following_edit_resolves_midnight_and_preserves_local_first(
+    migrated_database: Any,
+) -> None:
+    """Real PostgreSQL: a local first edit must not block later all-day series authoring."""
+    actor = _seed_self(migrated_database)
+    runtime = create_database_runtime(migrated_database.runtime_settings())
+    authoring = RecurringAuthoringApplication(runtime.session_factory)
+    policy = EventOccurrencePolicyApplication(runtime.session_factory)
+    materializer = RoutineOccurrenceMaterializationApplication(runtime.session_factory)
+    timeline = TemporalTimelineApplication(runtime.session_factory)
+    series = RecurringSeriesEditApplication(runtime.session_factory)
+    first_day = date(2026, 11, 16)
+    selected_day = date(2026, 12, 21)
+    next_day = date(2027, 1, 18)
+    end_exclusive = date(2027, 1, 20)
+    zone = ZoneInfo("Europe/Rome")
+    recurrence = replace(
+        _daily_named_zone(),
+        effective_from=first_day,
+        pattern_code="monthly_ordinal_weekdays",
+        wall_times=(),
+        ordinal_weekdays=((1, 3),),
+    )
+
+    try:
+        created = await authoring.create_event(
+            self_person_ref=actor,
+            operation_id="all-day-series:create",
+            title="Mensile tutto il giorno",
+            life_area_intent=None,
+            agenda_parts=("Scaletta iniziale",),
+            description=None,
+            location=None,
+            item_color_code=None,
+            recurrence=recurrence,
+        )
+        await policy.set(
+            self_person_ref=actor,
+            event_ref=created.source_ref,
+            placement_kind="all_day",
+            duration_minutes=None,
+            duration_days=1,
+            reminder_lead_minutes=None,
+        )
+        await materializer.checkpoint_window(
+            self_person_ref=actor,
+            operation_id="all-day-series:checkpoint",
+            start_date=first_day,
+            end_date_exclusive=end_exclusive,
+            effective_zone_id="Europe/Rome",
+        )
+        window = await timeline.read_window(
+            query=TimelineWindowQuery(
+                start_date=first_day, end_date_exclusive=end_exclusive
+            ),
+            context=_context(actor),
+        )
+        instances = {
+            item.coordinate.generated_date: item
+            for item in window.items
+            if isinstance(item, TimelineScheduledOccurrenceItem)
+            and item.source_native_ref == created.source_ref
+            and isinstance(item.coordinate, CalendarCoordinate)
+        }
+        assert set(instances) == {first_day, selected_day, next_day}
+        first_ref = instances[first_day].occurrence_ref
+        selected_ref = instances[selected_day].occurrence_ref
+        next_ref = instances[next_day].occurrence_ref
+
+        request = Request(
+            {
+                "type": "http",
+                "app": SimpleNamespace(
+                    state=SimpleNamespace(database_runtime=runtime)
+                ),
+            }
+        )
+        local = await accept_event_occurrence_local_edit(
+            first_ref,
+            EventOccurrenceLocalEditCommand.model_validate(
+                {
+                    "operation_id": "all-day-series:first-local",
+                    "expected_revision": 0,
+                    "expected_recurrence_state_ref": created.recurrence_material_state_ref,
+                    "profile_patch": {"title": "Prima istanza locale"},
+                    "structure": {
+                        "agenda_parts": ["Scaletta locale"],
+                        "life_area_ref": None,
+                        "expected_participants": [],
+                    },
+                }
+            ),
+            _context(actor),
+            request,
+            Response(),
+        )
+        assert local.revision == 1
+
+        # In the original SQL this SELECT raised
+        # occurrence_edit_unresolved_zone even though an all-day date has no
+        # timed instant. The civil-midnight ordering must stay in Rome.
+        async with runtime.session_factory() as session, session.begin():
+            instant = await session.scalar(
+                text(
+                    "SELECT dante.occurrence_edit_coordinate_instant("
+                    ":actor,:occurrence,:zone)"
+                ),
+                {
+                    "actor": actor,
+                    "occurrence": selected_ref,
+                    "zone": "Europe/Rome",
+                },
+            )
+        assert instant is not None
+        local_instant = instant.astimezone(zone)
+        assert local_instant.date() == selected_day
+        assert local_instant.timetz().replace(tzinfo=None) == time.min
+
+        loaded = await series.source(
+            self_person_ref=actor, selected_occurrence_ref=selected_ref
+        )
+        assert loaded.edit_revision == 1
+        proposal = replace(loaded.recurrence, effective_from=selected_day)
+        structure = {
+            **loaded.structure_snapshot,
+            "new_life_area": {
+                "name": "Area mensile tutto il giorno",
+                "color_code": "#4285F4",
+            },
+        }
+        preview = await series.preview(
+            self_person_ref=actor,
+            selected_occurrence_ref=selected_ref,
+            requested_scope="this_and_following",
+            expected_revision=loaded.edit_revision,
+            expected_state_ref=loaded.recurrence_state_ref,
+            effective_zone_id="Europe/Rome",
+            proposed_recurrence=proposal,
+            proposed_structure=structure,
+            profile_patch=None,
+        )
+        assert set(preview.scope.target_occurrence_refs) == {selected_ref, next_ref}
+        assert first_ref not in preview.scope.target_occurrence_refs
+
+        accepted = await series.accept(
+            self_person_ref=actor,
+            selected_occurrence_ref=selected_ref,
+            requested_scope="this_and_following",
+            expected_revision=loaded.edit_revision,
+            expected_state_ref=loaded.recurrence_state_ref,
+            effective_zone_id="Europe/Rome",
+            proposed_recurrence=proposal,
+            proposed_structure=structure,
+            profile_patch=None,
+            expected_fingerprint=preview.fingerprint,
+            operation_id="all-day-series:accept",
+        )
+        assert accepted.source_ref == created.source_ref
+        assert accepted.recurrence_state_ref != loaded.recurrence_state_ref
+
+        async with runtime.session_factory() as session, session.begin():
+            patch = await session.scalar(
+                text(
+                    "SELECT dante.get_self_occurrence_profile_patch("
+                    ":actor,:occurrence)"
+                ),
+                {"actor": actor, "occurrence": first_ref},
+            )
+            areas = (
+                (
+                    await session.execute(
+                        text(
+                            "SELECT life_area_ref,color_code FROM "
+                            "dante.list_self_life_areas(:actor) WHERE name=:name"
+                        ),
+                        {
+                            "actor": actor,
+                            "name": "Area mensile tutto il giorno",
+                        },
+                    )
+                )
+                .mappings()
+                .all()
+            )
+        assert patch["title"] == "Prima istanza locale"
+        assert len(areas) == 1
+        assert areas[0]["color_code"] == "#4285F4"
     finally:
         await runtime.dispose()
