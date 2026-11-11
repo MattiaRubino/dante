@@ -298,7 +298,7 @@ def test_reject_more_than_10000_candidates() -> None:
 def test_series_edit_rejection_log_preserves_known_invariant_but_redacts_arbitrary_input(
     caplog: pytest.LogCaptureFixture,
 ) -> None:
-     with caplog.at_level(logging.WARNING, logger="dante.modules.temporal.occurrence_api"):
+    with caplog.at_level(logging.WARNING, logger="dante.modules.temporal.occurrence_api"):
         _log_series_edit_rejection(
             "preview",
             SeriesReconciliationError("Regenerated cadence escapes its declared horizon."),
