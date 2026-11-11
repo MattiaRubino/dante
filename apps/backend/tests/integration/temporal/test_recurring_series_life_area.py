@@ -25,8 +25,8 @@ from dante.modules.temporal.occurrence import CalendarCoordinate
 from dante.modules.temporal.occurrence_api import (
     EventOccurrenceLocalEditCommand,
     accept_event_occurrence_local_edit,
+    get_recurring_event_occurrence_detail,
 )
-from dante.modules.temporal.occurrence_api import get_recurring_event_occurrence_detail
 from dante.modules.temporal.recurring_authoring import RecurringAuthoringApplication
 from dante.modules.temporal.recurring_series_edit import (
     RecurringSeriesEditApplication,
