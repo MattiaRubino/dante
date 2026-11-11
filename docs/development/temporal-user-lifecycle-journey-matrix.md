@@ -1,3 +1,13 @@
+## 2026-11-11 — P2-A01 advances to deletion; whole-series DELETE exceeds 15-second E2E wait
+
+Chromium diagnostic `20261111-154205` reports `V2-P2-A01` at step **A01/8 Delete single → checkpoint → whole series**, after the earlier 409-prone following-series revisions have completed. `page.waitForResponse` at `temporal-stateful-personas.spec.ts:983` times out at 15 seconds (test `actionTimeout`), with **no HTTP status yet**. Trace confirms the second `DELETE /api/v1/temporal/hard-deletion/{activity}` was *started* at 15:37:32.258Z; its response is absent/incomplete when Chromium tears down. The earlier single-instance DELETE returned HTTP 200. The full-series SQL function `dante.delete_self_temporal_hard` iterates generated Activity roots and invokes `delete_self_activity_lifecycle_graph` separately for each, so the whole-series graph may be substantially heavier; this does **not** yet prove the absence of an SQL lock wait or performance regression.
+
+Targeted containment: `remote-temporal-hard-deletion.ts` now schedules confirmed DELETE under the same in-tab occurrence-inventory checkpoint fence as series editing. `remote-temporal-hard-deletion.test.ts` verifies checkpoint-before-delete, delete-before-checkpoint, and preserved 409/released queue. In the stateful E2E, **only whole-series DELETE** gets a bounded `90_000` ms response wait while the suite's 300-second journey limit remains; it must receive HTTP 200 and subsequent canonical absence checks must still succeed. A second trace showing continued slowness or timeout should trigger SQL/DB lock and lifecycle-graph performance diagnosis, **not** another timeout increase.
+
+Status: code published, **local Prettier/ESLint/typecheck/Vitest/Chromium run is pending**; do not mark A01 green yet. The unrelated local generated OpenAPI changes must be preserved.
+
+---
+
 ## 2026-11-11 — P2-A01 second E2E trace: checkpoint AFTER preview, BEFORE accept
 
 Chromium `V2-P2-A01` on `2faca8b14` still fails with 409 at Following-series revision. The **new** 2026-11-11 14:45:25–26 UTC Playwright trace establishes the missing interval: `series-edit-preview` POST begins 14:45:25.983Z and returns 200 with 35 target Occurrences; `occurrences/checkpoint` POST begins 14:45:26.281Z and returns 200 after materializing 37 Occurrences in the requested Timeline window; `series-edit` POST begins 14:45:26.549Z and returns `temporal.recurring_series.stale` 409 (`Series preview changed before acceptance.`). The first FIFO gated each HTTP call but intentionally permitted a checkpoint between the preview and the human confirmation.
