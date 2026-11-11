@@ -220,4 +220,151 @@ describe('recurring review and Timeline checkpoint admission', () => {
     );
     expect(calls).toEqual(['checkpoint', 'accept']);
   });
+
+  it('keeps the inventory fixed after preview until acceptance completes', async () => {
+    const acceptedResponse = heldResponse();
+    const calls: string[] = [];
+    const acceptedPayload = {
+      source_native_ref: SOURCE,
+      recurrence_state_ref: STATE,
+      superseded_count: 1,
+      protected_count: 0,
+      preserved_occurrence_ref: null,
+      replayed: false,
+    };
+    const fetchFn = vi.fn<typeof globalThis.fetch>((input) => {
+      const url = requestUrl(input);
+      if (url.endsWith('/auth/session')) {
+        return Promise.resolve(
+          Response.json({ authenticated: true, csrf_token: 'csrf-test' }),
+        );
+      }
+      if (url.endsWith('/series-edit-preview')) {
+        calls.push('preview');
+        return Promise.resolve(Response.json(PREVIEW));
+      }
+      if (url.endsWith('/series-edit')) {
+        calls.push('accept');
+        return acceptedResponse.promise;
+      }
+      if (url.endsWith('/occurrences/checkpoint')) {
+        calls.push('checkpoint');
+        return Promise.resolve(Response.json(CHECKPOINT));
+      }
+      throw new Error('Unexpected request: ' + url);
+    });
+    const timeline = createRemoteTemporalTimelineDataSource(
+      fetchFn,
+      () => 'Europe/Rome',
+    );
+    const series = createRemoteRecurringSeriesEdit(fetchFn);
+    if (!timeline.checkpointWindow) {
+      throw new Error('Checkpoint capability missing.');
+    }
+
+    const { review, lease } = await series.beginReview(INTENT);
+    try {
+      const checkpoint = timeline.checkpointWindow(WINDOW);
+      await flushMicrotasks();
+      expect(calls).toEqual(['preview']);
+
+      const accepted = series.accept(INTENT, review, lease);
+      await vi.waitFor(() => expect(calls).toContain('accept'));
+      expect(calls).toEqual(['preview', 'accept']);
+      acceptedResponse.complete(Response.json(acceptedPayload));
+      await expect(accepted).resolves.toBeUndefined();
+      await flushMicrotasks();
+      expect(calls).toEqual(['preview', 'accept']);
+
+      lease.release();
+      await expect(checkpoint).resolves.toMatchObject({ occurrenceCount: 36 });
+      expect(calls).toEqual(['preview', 'accept', 'checkpoint']);
+    } finally {
+      acceptedResponse.complete(Response.json(acceptedPayload));
+      lease.release();
+    }
+  });
+
+  it('unblocks queued checkpoints when the human review is cancelled', async () => {
+    const calls: string[] = [];
+    const fetchFn = vi.fn<typeof globalThis.fetch>((input) => {
+      const url = requestUrl(input);
+      if (url.endsWith('/auth/session')) {
+        return Promise.resolve(
+          Response.json({ authenticated: true, csrf_token: 'csrf-test' }),
+        );
+      }
+      if (url.endsWith('/series-edit-preview')) {
+        calls.push('preview');
+        return Promise.resolve(Response.json(PREVIEW));
+      }
+      if (url.endsWith('/occurrences/checkpoint')) {
+        calls.push('checkpoint');
+        return Promise.resolve(Response.json(CHECKPOINT));
+      }
+      throw new Error('Unexpected request: ' + url);
+    });
+    const timeline = createRemoteTemporalTimelineDataSource(
+      fetchFn,
+      () => 'Europe/Rome',
+    );
+    const series = createRemoteRecurringSeriesEdit(fetchFn);
+    if (!timeline.checkpointWindow) {
+      throw new Error('Checkpoint capability missing.');
+    }
+
+    const { lease } = await series.beginReview(INTENT);
+    try {
+      const checkpoint = timeline.checkpointWindow(WINDOW);
+      await flushMicrotasks();
+      expect(calls).toEqual(['preview']);
+      lease.release();
+      lease.release(); // Cancel and component cleanup may both release.
+      await expect(checkpoint).resolves.toMatchObject({ occurrenceCount: 36 });
+      expect(calls).toEqual(['preview', 'checkpoint']);
+      await expect(
+        lease.run(() => Promise.resolve('stale acceptance')),
+      ).rejects.toThrow('Recurring review already closed.');
+    } finally {
+      lease.release();
+    }
+  });
+
+  it('releases the held inventory automatically on a rejected preview', async () => {
+    const calls: string[] = [];
+    const fetchFn = vi.fn<typeof globalThis.fetch>((input) => {
+      const url = requestUrl(input);
+      if (url.endsWith('/auth/session')) {
+        return Promise.resolve(
+          Response.json({ authenticated: true, csrf_token: 'csrf-test' }),
+        );
+      }
+      if (url.endsWith('/series-edit-preview')) {
+        calls.push('preview');
+        return Promise.resolve(
+          Response.json({ detail: 'Invalid preview.' }, { status: 409 }),
+        );
+      }
+      if (url.endsWith('/occurrences/checkpoint')) {
+        calls.push('checkpoint');
+        return Promise.resolve(Response.json(CHECKPOINT));
+      }
+      throw new Error('Unexpected request: ' + url);
+    });
+    const timeline = createRemoteTemporalTimelineDataSource(
+      fetchFn,
+      () => 'Europe/Rome',
+    );
+    const series = createRemoteRecurringSeriesEdit(fetchFn);
+    if (!timeline.checkpointWindow) {
+      throw new Error('Checkpoint capability missing.');
+    }
+    await expect(series.beginReview(INTENT)).rejects.toThrow(
+      'La ricorrenza o una delle istanze è cambiata.',
+    );
+    await expect(timeline.checkpointWindow(WINDOW)).resolves.toMatchObject({
+      occurrenceCount: 36,
+    });
+    expect(calls).toEqual(['preview', 'checkpoint']);
+  });
 });
