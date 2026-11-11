@@ -84,7 +84,7 @@ describe('recurring review and Timeline checkpoint admission', () => {
       }
       throw new Error('Unexpected request: ' + url);
     });
-    const timeline = createRemoteTemporalTimelineDataSource(fetchFn);
+    const timeline = createRemoteTemporalTimelineDataSource(fetchFn, () => 'Europe/Rome');
     const series = createRemoteRecurringSeriesEdit(fetchFn);
     if (!timeline.checkpointWindow) throw new Error('Checkpoint capability missing.');
 
@@ -118,7 +118,7 @@ describe('recurring review and Timeline checkpoint admission', () => {
       }
       throw new Error('Unexpected request: ' + url);
     });
-    const timeline = createRemoteTemporalTimelineDataSource(fetchFn);
+    const timeline = createRemoteTemporalTimelineDataSource(fetchFn, () => 'Europe/Rome');
     const series = createRemoteRecurringSeriesEdit(fetchFn);
     if (!timeline.checkpointWindow) throw new Error('Checkpoint capability missing.');
 
@@ -163,7 +163,7 @@ describe('recurring review and Timeline checkpoint admission', () => {
       }
       throw new Error('Unexpected request: ' + url);
     });
-    const timeline = createRemoteTemporalTimelineDataSource(fetchFn);
+    const timeline = createRemoteTemporalTimelineDataSource(fetchFn, () => 'Europe/Rome');
     const series = createRemoteRecurringSeriesEdit(fetchFn);
     if (!timeline.checkpointWindow) throw new Error('Checkpoint capability missing.');
 
