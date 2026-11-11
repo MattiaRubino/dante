@@ -1,4 +1,5 @@
 import { createWebFetch } from '../../platform/api/web-fetch';
+import { withTemporalOccurrenceInventoryFence } from './temporal-occurrence-inventory-fence';
 import {
   invalidateTemporalPlanningRead,
   invalidateTemporalTimelineRead,
@@ -169,15 +170,17 @@ export function createRemoteRecurringSeriesEdit(
       };
     },
     async preview(intent: Intent): Promise<RecurringSeriesReview> {
-      const value = await read(
-        await request(path(intent.selectedRef, 'series-edit-preview'), {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'X-Dante-CSRF': await csrf(),
-          },
-          body: JSON.stringify(body(intent, null)),
-        }),
+      const value = await withTemporalOccurrenceInventoryFence(async () =>
+        read(
+          await request(path(intent.selectedRef, 'series-edit-preview'), {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'X-Dante-CSRF': await csrf(),
+            },
+            body: JSON.stringify(body(intent, null)),
+          }),
+        ),
       );
       if (
         value.source_native_ref !== intent.source.sourceRef ||
@@ -201,15 +204,17 @@ export function createRemoteRecurringSeriesEdit(
       };
     },
     async accept(intent: Intent, review: RecurringSeriesReview): Promise<void> {
-      const value = await read(
-        await request(path(intent.selectedRef, 'series-edit'), {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'X-Dante-CSRF': await csrf(),
-          },
-          body: JSON.stringify(body(intent, review.fingerprint)),
-        }),
+      const value = await withTemporalOccurrenceInventoryFence(async () =>
+        read(
+          await request(path(intent.selectedRef, 'series-edit'), {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'X-Dante-CSRF': await csrf(),
+            },
+            body: JSON.stringify(body(intent, review.fingerprint)),
+          }),
+        ),
       );
       // A converted Event's original physical first Occurrence remains
       // current, so it is targeted by the edit but not superseded. Only
