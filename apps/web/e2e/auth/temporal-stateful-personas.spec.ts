@@ -1180,7 +1180,7 @@ async function localRevision(
     };
     const onRequestFailed = (request: import('@playwright/test').Request) => {
       if (isAtomicActivityEdit(request.url(), request.method())) {
-        failed = request.failure()?.errorText ?? 'unknown transport error';
+        failed = request.failure() ?? 'unknown transport error';
       }
     };
     page.on('request', onRequest);
