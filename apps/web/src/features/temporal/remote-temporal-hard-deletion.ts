@@ -1,5 +1,7 @@
 import { createWebFetch } from '../../platform/api/web-fetch';
-import { withTemporalOccurrenceInventoryFence } from './temporal-occurrence-inventory-fence';
+import {
+  withTemporalOccurrenceInventoryFence,
+} from './temporal-occurrence-inventory-fence';
 import {
   invalidateTemporalPlanningRead,
   invalidateTemporalTimelineRead,
