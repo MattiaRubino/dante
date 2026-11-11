@@ -1,3 +1,9 @@
+## 2026-11-11 — All-day named-zone Occurrence edit ordering (candidate revision `20261111_186`)
+
+A date-only monthly all-day Event Occurrence has `clock_basis_code='named_zone'`, `generated_date` set, `generated_wall_time=NULL` and `resolved_at=NULL`. The original `dante.occurrence_edit_coordinate_instant` treated this valid all-day shape as an unresolved timed coordinate, blocking a guarded `this_and_following` preview with HTTP 422. Forward revision `20261111_186` retains the same owner-scoped SQL function signature and grants, accepts date-only named-zone coordinates for the established midnight/effective-IANA-zone conversion, and still rejects unresolved timed named-zone coordinates. No historical migration edits or new table/column are required. The new PostgreSQL regression is `test_monthly_all_day_event_following_edit_resolves_midnight_and_preserves_local_first` in `test_recurring_series_life_area.py`. Owner-local DB integration and browser acceptance are pending.
+
+---
+
 # Timeline / Temporal-Operational — Candidate Database Overlay
 
 **Local `_165` structural series policy candidate (2026-10-22, unverified):**
