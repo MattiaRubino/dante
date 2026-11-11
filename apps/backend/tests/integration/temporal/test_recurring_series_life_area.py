@@ -337,9 +337,7 @@ async def test_monthly_all_day_event_following_edit_resolves_midnight_and_preser
             effective_zone_id="Europe/Rome",
         )
         window = await timeline.read_window(
-            query=TimelineWindowQuery(
-                start_date=first_day, end_date_exclusive=end_exclusive
-            ),
+            query=TimelineWindowQuery(start_date=first_day, end_date_exclusive=end_exclusive),
             context=_context(actor),
         )
         instances = {
@@ -357,9 +355,7 @@ async def test_monthly_all_day_event_following_edit_resolves_midnight_and_preser
         request = Request(
             {
                 "type": "http",
-                "app": SimpleNamespace(
-                    state=SimpleNamespace(database_runtime=runtime)
-                ),
+                "app": SimpleNamespace(state=SimpleNamespace(database_runtime=runtime)),
             }
         )
         local = await accept_event_occurrence_local_edit(
@@ -388,10 +384,7 @@ async def test_monthly_all_day_event_following_edit_resolves_midnight_and_preser
         # timed instant. The civil-midnight ordering must stay in Rome.
         async with runtime.session_factory() as session, session.begin():
             instant = await session.scalar(
-                text(
-                    "SELECT dante.occurrence_edit_coordinate_instant("
-                    ":actor,:occurrence,:zone)"
-                ),
+                text("SELECT dante.occurrence_edit_coordinate_instant(:actor,:occurrence,:zone)"),
                 {
                     "actor": actor,
                     "occurrence": selected_ref,
@@ -447,10 +440,7 @@ async def test_monthly_all_day_event_following_edit_resolves_midnight_and_preser
 
         async with runtime.session_factory() as session, session.begin():
             patch = await session.scalar(
-                text(
-                    "SELECT dante.get_self_occurrence_profile_patch("
-                    ":actor,:occurrence)"
-                ),
+                text("SELECT dante.get_self_occurrence_profile_patch(:actor,:occurrence)"),
                 {"actor": actor, "occurrence": first_ref},
             )
             areas = (
