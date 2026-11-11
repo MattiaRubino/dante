@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, type RefObject } from 'react';
+import { useCallback, useEffect, useRef, useState, type RefObject } from 'react';
 import { Temporal } from '@dante/time';
 import { createWebFetch } from '../../../../platform/api/web-fetch';
 import { createRemoteTemporalResponsibilityDataSource } from '../../../temporal/remote-responsibility-data-source';
@@ -10,6 +10,7 @@ import {
   type SeriesScope,
 } from '../../../temporal/remote-recurring-series-edit';
 import { createRemoteRecurringProfileEdit } from '../../../temporal/remote-recurring-profile-edit';
+import type { TemporalOccurrenceInventoryReviewLease } from '../../../temporal/temporal-occurrence-inventory-fence';
 import { initialRecurrenceForScope } from './recurring-series-bounds';
 import { TemporalCreatePlacementLockButton } from '../../../temporal-create/ui/temporal-create-placement-lock-button';
 import { TemporalAuthoringTitleRow } from '../../../temporal-create/ui/temporal-authoring-title-row';
@@ -257,6 +258,26 @@ export function RecurringSeriesEditor({
   const operation = useRef(crypto.randomUUID());
   const reviewDialogRef = useRef<HTMLDivElement>(null);
   const previewButtonRef = useRef<HTMLButtonElement>(null);
+  const reviewLeaseRef = useRef<TemporalOccurrenceInventoryReviewLease | null>(null);
+  const previewEpochRef = useRef(0);
+  const discardReview = useCallback(() => {
+    previewEpochRef.current += 1;
+    reviewLeaseRef.current?.release();
+    reviewLeaseRef.current = null;
+    setReview(null);
+  }, []);
+  const cancelEditor = () => {
+    discardReview();
+    onCancel();
+  };
+
+  useEffect(() => {
+    return () => {
+      previewEpochRef.current += 1;
+      reviewLeaseRef.current?.release();
+      reviewLeaseRef.current = null;
+    };
+  }, []);
 
   useEffect(() => {
     let active = true;
@@ -330,11 +351,15 @@ export function RecurringSeriesEditor({
 
   useEffect(() => {
     if (!closeRequestRef) return;
-    closeRequestRef.current = review ? () => setReview(null) : onCancel;
+    closeRequestRef.current = review
+      ? busy
+        ? () => undefined
+        : discardReview
+      : cancelEditor;
     return () => {
       closeRequestRef.current = null;
     };
-  }, [closeRequestRef, onCancel, review]);
+  }, [busy, closeRequestRef, discardReview, onCancel, review]);
 
   useEffect(() => {
     if (!review) return;
@@ -342,10 +367,10 @@ export function RecurringSeriesEditor({
     const previewButton = previewButtonRef.current;
     dialog?.querySelector<HTMLButtonElement>('button')?.focus();
     const dismiss = (event: KeyboardEvent) => {
-      if (event.key === 'Escape') {
+      if (event.key === 'Escape' && !busy) {
         event.stopImmediatePropagation();
         event.preventDefault();
-        setReview(null);
+        discardReview();
       } else if (event.key === 'Tab' && dialog) {
         const buttons = Array.from(
           dialog.querySelectorAll<HTMLButtonElement>('button:not(:disabled)'),
@@ -367,15 +392,15 @@ export function RecurringSeriesEditor({
       document.removeEventListener('keydown', dismiss, true);
       previewButton?.focus();
     };
-  }, [review]);
+  }, [busy, discardReview, review]);
 
   const changeStructure = (value: Entry) => {
     setStructure(value);
-    setReview(null);
+    discardReview();
   };
   const changeRecurrence = (value: Entry) => {
     setRecurrence(value);
-    setReview(null);
+    discardReview();
   };
   const template = asEntry(structure.activity_template);
   const updateTemplate = (patch: Entry) =>
@@ -585,7 +610,7 @@ export function RecurringSeriesEditor({
   };
   const updateMetadata = (set: (value: string) => void, value: string) => {
     set(value);
-    setReview(null);
+    discardReview();
   };
 
   const prepare = async () => {
@@ -618,6 +643,7 @@ export function RecurringSeriesEditor({
       setError('La fine di ogni intervallo deve seguire l’inizio.');
       return;
     }
+    const previewEpoch = ++previewEpochRef.current;
     setBusy(true);
     try {
       const completeStructure =
@@ -665,7 +691,13 @@ export function RecurringSeriesEditor({
         profilePatch: Object.keys(patch).length ? patch : null,
         operationId: operation.current,
       };
-      const result = await remote.preview(intent);
+      const { review: result, lease } = await remote.beginReview(intent);
+      if (previewEpochRef.current !== previewEpoch) {
+        lease.release();
+        return;
+      }
+      reviewLeaseRef.current?.release();
+      reviewLeaseRef.current = lease;
       setReviewedIntent(intent);
       setReview(result);
     } catch (reason) {
@@ -679,15 +711,21 @@ export function RecurringSeriesEditor({
 
   const accept = async () => {
     if (!reviewedIntent || !review || busy) return;
+    const lease = reviewLeaseRef.current;
+    if (!lease) {
+      setError('Anteprima non più disponibile. Controlla nuovamente le modifiche.');
+      discardReview();
+      return;
+    }
     setBusy(true);
     setError('');
     try {
-      await remote.accept(reviewedIntent, review);
+      await remote.accept(reviewedIntent, review, lease);
       onSaved();
     } catch (reason) {
       setError(reason instanceof Error ? reason.message : 'Serie non salvata.');
-      setReview(null);
     } finally {
+      discardReview();
       setBusy(false);
     }
   };
@@ -1652,10 +1690,10 @@ export function RecurringSeriesEditor({
                 onChange={(value) => {
                   if (activeAreaOption) {
                     setAreaColorOverride(value);
-                    setReview(null);
+                    discardReview();
                   } else if (creatingArea) {
                     setNewAreaColor(value);
-                    setReview(null);
+                    discardReview();
                   } else {
                     updateMetadata(setColor, value);
                   }
@@ -1675,7 +1713,7 @@ export function RecurringSeriesEditor({
                   setAreaQuery(value);
                   setAreaColorOverride(null);
                   setAreaError('');
-                  setReview(null);
+                  discardReview();
                   if (value.trim() !== activeAreaOption?.name) {
                     if (owner === 'routine')
                       updateTemplate({ life_area_ref: null });
@@ -1854,7 +1892,7 @@ export function RecurringSeriesEditor({
         ) : null}
       </div>
       <div className="timeline-activity-editor__actions dante-temporal-panel-actions">
-        <button type="button" disabled={busy} onClick={onCancel}>
+        <button type="button" disabled={busy} onClick={cancelEditor}>
           Annulla
         </button>
         <button
@@ -1911,7 +1949,7 @@ export function RecurringSeriesEditor({
               <button
                 type="button"
                 disabled={busy}
-                onClick={() => setReview(null)}
+                onClick={() => discardReview()}
               >
                 Torna alla modifica
               </button>
