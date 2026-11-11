@@ -1,3 +1,18 @@
+## 2026-11-11 — P2 40-case concurrent Chromium matrix: 17 green, 23 red
+
+Artifact supplied by the user: `E2E_DIAGNOSTICS.tar(20261111-182033).gz`; `summary.json` and all 40 `chromium/junit.xml` cases inspected. Chromium, one real-stack, `--v2-workers 2 --grep V2-P2-`: **40 discovered, 40 recorded, 17 passed, 10 assertion failures, 13 errors, zero skips**, wrapper **1860.44 s**, Chromium **1856.19 s**. Sum of JUnit per-case test seconds is ~3601.95, so two active workers account for most wall time: adding a broad rerun without fixing shared causes is wasteful. Prior standalone A01 PASS does NOT imply this concurrent matrix is green; A01 and A02 both get HTTP 409 at the whole-series DELETE assertion.
+
+Observed families (keep every red case; no skips/xfail):
+- **11 Activity atomic PUT response timeouts at 15 s**: `A09–A15, A17–A20`, mostly step 3 (local exception), also some step 2B/6. The report does not prove whether the PUT was sent, failed validation or was slow; instrument request-start/response and editor errors before choosing a timeout increase.
+- **4 Event life-area color editor missing**: `E11,E14,E16,E17` at step 4. Inspector snapshot shows the original details with disabled controls rather than the expected series editor. Distinguish pending editor hydration, abandoned editor and product failure using trace/request evidence.
+- **2 all-day Activity E2E expectation mismatches**: `A06,A16` at step 2. A canonical all-day envelope Schedule exists despite zero *authored* intervals. E2E assertion corrected on branch in `temporal-stateful-personas.spec.ts` to expect one envelope for all-day, retaining exact Schedule ID checks (commit `8c614c833b3232a6ab5efa67c11e9a27cabd54b4`). Await targeted acceptance.
+- **2 Activity full-series deletion conflicts**: `A01,A02`, step 8, DELETE returns 409 rather than 200 under two-worker load. The deletion preview/accept race is a candidate requiring trace evidence; do not weaken CAS.
+- **4 distinct Event issues**: `E10` missing expected future card at step 8; `E18` missing title textbox at step 6; `E19` delete dialog lacks single-instance choice at step 8; `E20` missing title textbox at step 2B.
+
+Result breakdown: Event `12/20` PASS, Activity `5/20` PASS; `17/40` total. Slowest passing scenarios include `E12` 243.64 s and `E13` 219.88 s. With one stack and two browser workers the full suite is not suited to every fix-loop. **Use minimal representative selections first** (for example `--workers 1 --project chromium --v2-workers 2 --grep 'V2-(P2-E11|P2-A01|P2-A10|P2-A06)'`, accepted by the existing V2 selector policy); run full P2 only after families are corrected. The full parallel gate additionally requires a clean checkout and must not reset unrelated generated OpenAPI files. Do not declare this suite green based on previous individual E2E passes.
+
+---
+
 ## 2026-11-11 — V2-P2-A01 accepted on real stack (Chromium)
 
 Observed from the user's uploaded `summary(20261111-171405).json` and compact `E2E_DIAGNOSTICS` JUnit: `V2-P2-A01 native series → local → following` **PASS**, 1/1 discovered and recorded, 0 failures, 0 errors, 0 skips, 0 retries, exit code 0. Test-case duration **129.532 s**, Chromium project **156.57 s**, full wrapper **162.15 s**. The E2E scenario completes the final single-instance deletion, checkpoint and whole-series deletion assertions (the same A01/8 path that previously timed out). Frontend commit reported on GitHub: `66c24559d9f2949f411ebe0b127dd4ee3296971c`.
