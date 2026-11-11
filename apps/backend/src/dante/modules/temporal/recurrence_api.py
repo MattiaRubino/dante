@@ -273,11 +273,20 @@ def _spec(payload: RecurrenceRequest) -> RecurrenceSpec:
 
 
 def _state(value: RecurrenceView) -> RecurrenceStateResponse:
+    recurrence = asdict(value.recurrence)
+    if isinstance(value.recurrence, CalendarRecurrence):
+        # Domain stores positional coordinates as tuples; the API contract
+        # exposes named fields. Keep calendar semantics and order unchanged.
+        recurrence["ordinal_weekdays"] = [
+            {"weekday_number": weekday, "ordinal": ordinal}
+            for weekday, ordinal in value.recurrence.ordinal_weekdays
+        ]
+        recurrence["year_month_days"] = [
+            {"month_number": month, "month_day": day}
+            for month, day in value.recurrence.year_month_days
+        ]
     return RecurrenceStateResponse.model_validate(
-        {
-            "material_state_ref": value.material_state_ref,
-            "recurrence": asdict(value.recurrence),
-        }
+        {"material_state_ref": value.material_state_ref, "recurrence": recurrence}
     )
 
 
