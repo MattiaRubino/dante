@@ -889,10 +889,16 @@ async function assertRecurringTruth(
       persistedPlacements.map((row) => String(row.schedule_ref)).sort(),
       'every displayed recurring Activity Schedule has its own canonical snapshot row',
     ).toEqual([...placedRefs].sort());
+    // All-day Activities have no explicit interval, but still carry one
+    // physical envelope Schedule. Zero authored intervals does not mean
+    // zero persisted Timeline placements.
+    const expectedPhysicalCount = persona.allDay
+      ? 1
+      : truth.expectedIntervalCount;
     expect(
       persistedPlacements,
       'exact physical interval identity mapping',
-    ).toHaveLength(truth.expectedIntervalCount);
+    ).toHaveLength(expectedPhysicalCount);
     expect(snapshot.life_area_ref ?? null, 'recurring Activity Life Area').toBe(
       truth.areaRef,
     );
