@@ -16,9 +16,7 @@ import type {
   TemporalTimelineWindowCheckpointResult,
   TemporalTimelineWindowRequest,
 } from './timeline-read';
-import {
-  withTemporalOccurrenceInventoryFence,
-} from './temporal-occurrence-inventory-fence';
+import { withTemporalOccurrenceInventoryFence } from './temporal-occurrence-inventory-fence';
 
 const TEMPORAL_TIMELINE_WINDOW_ENDPOINT = '/api/v1/temporal/timeline/window';
 const TEMPORAL_OCCURRENCE_WINDOW_CHECKPOINT_ENDPOINT =

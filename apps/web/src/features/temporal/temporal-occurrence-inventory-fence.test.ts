@@ -1,12 +1,8 @@
 import { describe, expect, it, vi } from 'vitest';
 
-import {
-  createRemoteRecurringSeriesEdit,
-} from './remote-recurring-series-edit';
+import { createRemoteRecurringSeriesEdit } from './remote-recurring-series-edit';
 import { createRemoteTemporalTimelineDataSource } from './remote-timeline-read';
-import {
-  withTemporalOccurrenceInventoryFence,
-} from './temporal-occurrence-inventory-fence';
+import { withTemporalOccurrenceInventoryFence } from './temporal-occurrence-inventory-fence';
 
 const SOURCE = '0199a111-1111-7111-8111-111111111111';
 const SELECTED = '0199a222-2222-7222-8222-222222222222';
@@ -69,12 +65,18 @@ async function flushMicrotasks(): Promise<void> {
   }
 }
 
+function requestUrl(input: RequestInfo | URL): string {
+  if (typeof input === 'string') return input;
+  if (input instanceof URL) return input.href;
+  return input.url;
+}
+
 describe('recurring review and Timeline checkpoint admission', () => {
   it('waits for a running checkpoint before preview', async () => {
     const checkpointResponse = heldResponse();
     const calls: string[] = [];
     const fetchFn = vi.fn<typeof globalThis.fetch>((input) => {
-      const url = String(input);
+      const url = requestUrl(input);
       if (url.endsWith('/auth/session')) {
         return Promise.resolve(
           Response.json({ authenticated: true, csrf_token: 'csrf-test' }),
@@ -117,7 +119,7 @@ describe('recurring review and Timeline checkpoint admission', () => {
     const previewResponse = heldResponse();
     const calls: string[] = [];
     const fetchFn = vi.fn<typeof globalThis.fetch>((input) => {
-      const url = String(input);
+      const url = requestUrl(input);
       if (url.endsWith('/auth/session')) {
         return Promise.resolve(
           Response.json({ authenticated: true, csrf_token: 'csrf-test' }),
@@ -173,7 +175,7 @@ describe('recurring review and Timeline checkpoint admission', () => {
     const checkpointResponse = heldResponse();
     const calls: string[] = [];
     const fetchFn = vi.fn<typeof globalThis.fetch>((input) => {
-      const url = String(input);
+      const url = requestUrl(input);
       if (url.endsWith('/auth/session')) {
         return Promise.resolve(
           Response.json({ authenticated: true, csrf_token: 'csrf-test' }),

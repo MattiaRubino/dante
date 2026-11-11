@@ -1,7 +1,5 @@
 import { createWebFetch } from '../../platform/api/web-fetch';
-import {
-  withTemporalOccurrenceInventoryFence,
-} from './temporal-occurrence-inventory-fence';
+import { withTemporalOccurrenceInventoryFence } from './temporal-occurrence-inventory-fence';
 import {
   invalidateTemporalPlanningRead,
   invalidateTemporalTimelineRead,
@@ -134,22 +132,18 @@ export function createRemoteRecurringSeriesEdit(
       const exclusive = value.remaining_after_selected;
       if (
         finite &&
-        (
-          !Number.isSafeInteger(inclusive) ||
+        (!Number.isSafeInteger(inclusive) ||
           !Number.isSafeInteger(exclusive) ||
           (inclusive as number) < 1 ||
           (exclusive as number) < 0 ||
-          (inclusive as number) <= (exclusive as number)
-        )
+          (inclusive as number) <= (exclusive as number))
       ) {
         throw new Error('Limite della serie finita non coerente.');
       }
       if (
         !finite &&
-        (
-          (inclusive !== null && inclusive !== undefined) ||
-          (exclusive !== null && exclusive !== undefined)
-        )
+        ((inclusive !== null && inclusive !== undefined) ||
+          (exclusive !== null && exclusive !== undefined))
       ) {
         throw new Error('Limite della serie non coerente.');
       }
@@ -167,8 +161,8 @@ export function createRemoteRecurringSeriesEdit(
           typeof value.color_code === 'string' ? value.color_code : null,
         recurrence: object(value.recurrence),
         structure: object(value.structure_snapshot),
-        remainingIncludingSelected: finite ? inclusive as number : null,
-        remainingAfterSelected: finite ? exclusive as number : null,
+        remainingIncludingSelected: finite ? (inclusive as number) : null,
+        remainingAfterSelected: finite ? (exclusive as number) : null,
       };
     },
     async preview(intent: Intent): Promise<RecurringSeriesReview> {
