@@ -1,3 +1,13 @@
+## 2026-11-11 — P2-A01 real-stack 409: checkpoint overlaps fingerprinted preview
+
+Old Chromium trace `V2-P2-A01` (09:11:24Z–09:11:26Z) shows full Timeline `POST /occurrences/checkpoint` starting at 09:11:24.689Z, then `POST /occurrences/{selected}/series-edit-preview` starting at 09:11:24.914Z before checkpoint completion. The preview returns 200 but the subsequent `/series-edit` returns 409 `temporal.recurring_series.stale` with `Series preview changed before acceptance.` The trace also shows a SQLSTATE 40001 transient serialization abort during an earlier series acceptance, already covered by the server's bounded transaction retry.
+
+**Frontend fix:** shared same-tab FIFO in `temporal-occurrence-inventory-fence.ts` orders checkpoint, series preview and series accept *including CSRF fetch*, and releases the queue after rejection. Both remote data sources use the same gate. It prevents a checkpoint already requested in this tab from changing the occurrence inventory while a preview is being built. Ordinary read-only Timeline fetches still run concurrently. The server source revision, protection, fingerprint and SERIALIZABLE CAS are unchanged: changes from other tabs/devices or after review still correctly produce 409 and require a fresh explicit review; no automatic stale replay, retry or hidden write.
+
+**Regression:** `temporal-occurrence-inventory-fence.test.ts` verifies checkpoint-before-preview, preview-before-checkpoint, failure releases the queue, and HTTP 409 remains an error without silent retry. Test execution and Chromium `V2-P2-A01` on this new SHA are **pending**; do not mark A01 green yet. P2-E03 has already passed both real PostgreSQL and Chromium E2E, and P2-A03 passed Chromium.
+
+---
+
 ## 2026-11-11 — E03 all-day monthly following edit: SQL coordinate resolver rejects valid all-day anchor
 
 Focused Chromium `V2-P2-E03` (42.02 s, 0/1 PASS) still reaches the series preview but receives HTTP 422. The request selected a 2026-12-21 all-day third-Monday Occurrence following a local first-instance edit on 2026-11-16; POST `series-edit-preview` is rejected before review. The response is `temporal.recurrence_edit.invalid`. The added Python validation logger is absent from the Playwright bundle because the SQL constraint path is handled separately as `DBAPIError`.
