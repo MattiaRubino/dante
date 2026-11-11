@@ -62,7 +62,7 @@ from dante.modules.temporal.reality_objective_api import (
 from dante.modules.temporal.reality_objective_api import (
     _fingerprint as reality_fingerprint,
 )
-from dante.modules.temporal.recurrence import CalendarRecurrence
+from dante.modules.temporal.recurrence import CalendarRecurrence, RecurrenceInputError
 from dante.modules.temporal.recurrence_api import CalendarRecurrenceRequest, _spec
 from dante.modules.temporal.recurring_series_edit import (
     RecurringSeriesEditApplication,
@@ -1516,6 +1516,8 @@ def _log_series_edit_rejection(
         SeriesReconciliationError,
         StructuralSeriesPreviewError,
         EditScopeInputError,
+        RecurrenceInputError,
+        OccurrenceInputError,
         RecurringSeriesEditConflictError,
         RecurringStructurePolicyError,
     )
