@@ -1,5 +1,9 @@
 import { createWebFetch } from '../../platform/api/web-fetch';
-import { withTemporalOccurrenceInventoryFence } from './temporal-occurrence-inventory-fence';
+import {
+  holdTemporalOccurrenceInventoryReview,
+  withTemporalOccurrenceInventoryFence,
+  type TemporalOccurrenceInventoryReviewLease,
+} from './temporal-occurrence-inventory-fence';
 import {
   invalidateTemporalPlanningRead,
   invalidateTemporalTimelineRead,
@@ -112,6 +116,79 @@ export function createRemoteRecurringSeriesEdit(
     };
   }
 
+  async function previewRequest(intent: Intent): Promise<RecurringSeriesReview> {
+    const value = await read(
+        await request(path(intent.selectedRef, 'series-edit-preview'), {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'X-Dante-CSRF': await csrf(),
+          },
+          body: JSON.stringify(body(intent, null)),
+        }),
+    );
+    if (
+      value.source_native_ref !== intent.source.sourceRef ||
+      value.owner_kind !== intent.source.owner ||
+      value.selected_occurrence_ref !== intent.selectedRef ||
+      typeof value.fingerprint !== 'string' ||
+      !/^[0-9a-f]{64}$/.test(value.fingerprint) ||
+      !Array.isArray(value.target_occurrence_refs) ||
+      !value.target_occurrence_refs.every(
+        (ref: unknown) => typeof ref === 'string',
+      ) ||
+      !Number.isSafeInteger(value.new_expected_count)
+    ) {
+      throw new Error('Anteprima della serie non coerente.');
+    }
+    return {
+      fingerprint: value.fingerprint,
+      targetRefs: value.target_occurrence_refs,
+      newExpectedCount: value.new_expected_count as number,
+      protected: protectedRows(value.protected_occurrences),
+    };
+  }
+
+  async function acceptRequest(intent: Intent, review: RecurringSeriesReview): Promise<void> {
+    const value = await read(
+        await request(path(intent.selectedRef, 'series-edit'), {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'X-Dante-CSRF': await csrf(),
+          },
+          body: JSON.stringify(body(intent, review.fingerprint)),
+        }),
+    );
+    // A converted Event's original physical first Occurrence remains
+    // current, so it is targeted by the edit but not superseded. Only
+    // an explicitly identified selected-first Event can reduce the count.
+    const preserved = value.preserved_occurrence_ref;
+    const preservedFirst =
+      typeof preserved === 'string' &&
+      intent.source.owner === 'event' &&
+      intent.scope === 'this_and_following' &&
+      preserved === intent.selectedRef &&
+      review.targetRefs.filter((ref) => ref === preserved).length === 1;
+    const preservationValid = preserved === null || preservedFirst;
+    const expectedSuperseded =
+      review.targetRefs.length - (preservedFirst ? 1 : 0);
+    if (
+      value.source_native_ref !== intent.source.sourceRef ||
+      typeof value.recurrence_state_ref !== 'string' ||
+      !preservationValid ||
+      !Number.isSafeInteger(value.superseded_count) ||
+      value.superseded_count !== expectedSuperseded ||
+      value.protected_count !== review.protected.length
+    ) {
+      throw new Error(
+        'Conferma della serie non coerente. Ricarica la Timeline.',
+      );
+    }
+    invalidateTemporalTimelineRead();
+    invalidateTemporalPlanningRead();
+  }
+
   return Object.freeze({
     async load(selectedRef: string): Promise<RecurringSeriesSource> {
       const value = await read(
@@ -166,79 +243,25 @@ export function createRemoteRecurringSeriesEdit(
       };
     },
     async preview(intent: Intent): Promise<RecurringSeriesReview> {
-      const value = await withTemporalOccurrenceInventoryFence(async () =>
-        read(
-          await request(path(intent.selectedRef, 'series-edit-preview'), {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-              'X-Dante-CSRF': await csrf(),
-            },
-            body: JSON.stringify(body(intent, null)),
-          }),
-        ),
-      );
-      if (
-        value.source_native_ref !== intent.source.sourceRef ||
-        value.owner_kind !== intent.source.owner ||
-        value.selected_occurrence_ref !== intent.selectedRef ||
-        typeof value.fingerprint !== 'string' ||
-        !/^[0-9a-f]{64}$/.test(value.fingerprint) ||
-        !Array.isArray(value.target_occurrence_refs) ||
-        !value.target_occurrence_refs.every(
-          (ref: unknown) => typeof ref === 'string',
-        ) ||
-        !Number.isSafeInteger(value.new_expected_count)
-      ) {
-        throw new Error('Anteprima della serie non coerente.');
-      }
-      return {
-        fingerprint: value.fingerprint,
-        targetRefs: value.target_occurrence_refs,
-        newExpectedCount: value.new_expected_count as number,
-        protected: protectedRows(value.protected_occurrences),
-      };
+      return withTemporalOccurrenceInventoryFence(() => previewRequest(intent));
     },
-    async accept(intent: Intent, review: RecurringSeriesReview): Promise<void> {
-      const value = await withTemporalOccurrenceInventoryFence(async () =>
-        read(
-          await request(path(intent.selectedRef, 'series-edit'), {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-              'X-Dante-CSRF': await csrf(),
-            },
-            body: JSON.stringify(body(intent, review.fingerprint)),
-          }),
-        ),
+    async beginReview(intent: Intent) {
+      const { value, lease } = await holdTemporalOccurrenceInventoryReview(() =>
+        previewRequest(intent),
       );
-      // A converted Event's original physical first Occurrence remains
-      // current, so it is targeted by the edit but not superseded. Only
-      // an explicitly identified selected-first Event can reduce the count.
-      const preserved = value.preserved_occurrence_ref;
-      const preservedFirst =
-        typeof preserved === 'string' &&
-        intent.source.owner === 'event' &&
-        intent.scope === 'this_and_following' &&
-        preserved === intent.selectedRef &&
-        review.targetRefs.filter((ref) => ref === preserved).length === 1;
-      const preservationValid = preserved === null || preservedFirst;
-      const expectedSuperseded =
-        review.targetRefs.length - (preservedFirst ? 1 : 0);
-      if (
-        value.source_native_ref !== intent.source.sourceRef ||
-        typeof value.recurrence_state_ref !== 'string' ||
-        !preservationValid ||
-        !Number.isSafeInteger(value.superseded_count) ||
-        value.superseded_count !== expectedSuperseded ||
-        value.protected_count !== review.protected.length
-      ) {
-        throw new Error(
-          'Conferma della serie non coerente. Ricarica la Timeline.',
-        );
+      return { review: value, lease };
+    },
+    async accept(
+      intent: Intent,
+      review: RecurringSeriesReview,
+      lease?: TemporalOccurrenceInventoryReviewLease,
+    ): Promise<void> {
+      const command = () => acceptRequest(intent, review);
+      if (lease) {
+        await lease.run(command);
+      } else {
+        await withTemporalOccurrenceInventoryFence(command);
       }
-      invalidateTemporalTimelineRead();
-      invalidateTemporalPlanningRead();
     },
   });
 }
