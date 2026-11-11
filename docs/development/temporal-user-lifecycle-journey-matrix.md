@@ -1,3 +1,17 @@
+## 2026-11-11 — targeted remediation after expensive 17/40 Chromium P2 run
+
+The 30m56s P2 run supplied enough evidence to avoid another blind full-matrix rerun. New code on `feature/timeline-temporal-operational` addresses **two confirmed repeated races**:
+1. Event `Questa e le successive` no longer hydrates the entire independent *local Event editor* before displaying `RecurringSeriesEditor`; after validated scope choice the series editor loads its own versioned source. This removes an unnecessary multi-API prerequisite observed as Inspector busy/disabled in E11/E14/E16/E17 traces. Existing Event inspector test now asserts no local profile/occurrence-patch fetch.
+2. Activity/Event destructive confirmation now holds a **same-tab Occurrence inventory lease from all hard-delete previews until acceptance/cancellation/unmount**, mirroring the already accepted series-edit lifecycle. The full-series DELETE is executed inside the lease without re-entering the FIFO; checkpoints are unblocked on completion/failure. The backend SERIALIZABLE/fingerprint CAS remains unchanged; distinct-tab external modifications still legitimately return 409. Inspector acceptance tests and a remote preview→accept regression were updated.
+
+**Activity 11× PUT timeout:** the archived traces did not include a completed/matching PUT response, and cannot distinguish client-side validation, disabled Save, HTTP pending or transport failure. Do NOT invent a SQL fix or increase broad timeouts. The stateful test now asserts Save readiness and reports whether a matching PUT actually started, any failed request, UI alerts, and invalid fields; waits are bounded at 5 s for ready and 12 s for the exact response. Run **one representative A10** after lint/typecheck/Vitest, inspect its diagnostics, then correct the root if still red.
+
+A06/A16 all-day canonical envelope expectation was previously corrected, not yet rerun. Remaining E10/E18/E19/E20 need representative traces after fast-path Event fix; old snapshots do not prove the same cause. P2 suite remains **17/40 on the last full run**, not green on the new SHA.
+
+**Verification gate:** format then run ESLint/typecheck and targeted Vitest (`event-inspector-actions.test.tsx`, `activity-inspector-actions.test.tsx`, `remote-temporal-hard-deletion.test.ts`), then a **small** Chromium subset or individual A10 if needed. Preserve seven local generated OpenAPI modifications; full parallel gate requires a clean checkout and should not run before targeted fixes are validated.
+
+---
+
 ## 2026-11-11 — P2 40-case concurrent Chromium matrix: 17 green, 23 red
 
 Artifact supplied by the user: `E2E_DIAGNOSTICS.tar(20261111-182033).gz`; `summary.json` and all 40 `chromium/junit.xml` cases inspected. Chromium, one real-stack, `--v2-workers 2 --grep V2-P2-`: **40 discovered, 40 recorded, 17 passed, 10 assertion failures, 13 errors, zero skips**, wrapper **1860.44 s**, Chromium **1856.19 s**. Sum of JUnit per-case test seconds is ~3601.95, so two active workers account for most wall time: adding a broad rerun without fixing shared causes is wasteful. Prior standalone A01 PASS does NOT imply this concurrent matrix is green; A01 and A02 both get HTTP 409 at the whole-series DELETE assertion.
