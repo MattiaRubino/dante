@@ -1277,15 +1277,20 @@ export function EventInspectorActions({
             ]);
           }
 
-          const series = await hardDelete.preview(eventRef, 'event_series');
+          // The series fingerprint read and the occurrence-identity lookup
+          // are independent. Run them together while the review lease is held.
+          const [series, choices] = await Promise.all([
+            hardDelete.preview(eventRef, 'event_series'),
+            occurrenceRef || scheduleRef
+              ? hardDelete.eventOccurrences(eventRef)
+              : Promise.resolve([]),
+          ]);
           let selected: string | null = null;
           if (occurrenceRef) {
-            const choices = await hardDelete.eventOccurrences(eventRef);
             if (choices.some((item) => item.occurrenceRef === occurrenceRef)) {
               selected = occurrenceRef;
             }
           } else if (scheduleRef) {
-            const choices = await hardDelete.eventOccurrences(eventRef);
             const matches = choices.filter(
               (item) => item.scheduleRef === scheduleRef,
             );
