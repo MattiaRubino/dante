@@ -343,9 +343,7 @@ async def test_monthly_all_day_event_following_edit_resolves_midnight_and_preser
                 effective_zone_id="Europe/Rome",
             )
             window = await timeline.read_window(
-                query=TimelineWindowQuery(
-                    start_date=window_start, end_date_exclusive=window_end
-                ),
+                query=TimelineWindowQuery(start_date=window_start, end_date_exclusive=window_end),
                 context=_context(actor),
             )
             for item in window.items:
