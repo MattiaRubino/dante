@@ -146,6 +146,13 @@ export function EventInspectorActions({
   const [deleteReviewLease, setDeleteReviewLease] =
     useState<TemporalOccurrenceInventoryReviewLease | null>(null);
   useEffect(() => () => deleteReviewLease?.release(), [deleteReviewLease]);
+  const inspectorAlive = useRef(true);
+  useEffect(() => {
+    inspectorAlive.current = true;
+    return () => {
+      inspectorAlive.current = false;
+    };
+  }, []);
 
   const [profileSource] = useState(createRemoteEventProfileDataSource);
   const [placementLockSource] = useState(createRemotePlacementLockDataSource);
@@ -1301,6 +1308,10 @@ export function EventInspectorActions({
             : null;
           return instance ? [instance, series] : [series];
         });
+      if (!inspectorAlive.current) {
+        lease.release();
+        return;
+      }
       setDeleteReviewLease(lease);
       setDeletePreviews(previews);
     } catch (reason) {
