@@ -14,6 +14,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import type { ActivityDuplicateSeed } from '../../../temporal-create/application/activity-duplicate-seed';
 import { invalidateTemporalTimelineRead } from '../../../temporal/timeline-invalidation';
 import { EventInspectorActions } from './event-inspector-actions';
+import { withTemporalOccurrenceInventoryFence } from '../../../temporal/temporal-occurrence-inventory-fence';
 import { RecurringSeriesEditor } from './recurring-series-editor';
 import { useTimelineCardDetails } from './timeline-card-details';
 import type { TimelineEvent } from './model/timeline-types';
@@ -2439,6 +2440,11 @@ describe('Event Inspector actions', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Annulla' }));
     expect(confirmHardDeletion).not.toHaveBeenCalled();
     expect(onDeleted).not.toHaveBeenCalled();
+    await expect(
+      withTemporalOccurrenceInventoryFence(() =>
+        Promise.resolve('checkpoint can resume'),
+      ),
+    ).resolves.toBe('checkpoint can resume');
 
     fireEvent.click(screen.getByRole('button', { name: 'Elimina Event' }));
     await screen.findByRole('button', {
