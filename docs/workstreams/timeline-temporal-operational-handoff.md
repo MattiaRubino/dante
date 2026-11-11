@@ -1,3 +1,11 @@
+## 2026-11-11 — Focused E03/A03 recheck: A03 GREEN, E03 preview 422; instrumented without relaxing validation
+
+The owner's two-worker Chromium `V2-(P2-E03|P2-A03)` completed in 85.77 s: **P2-A03 PASS**, **P2-E03 FAIL**. E03 no longer fails reading the ordinal calendar recurrence: the GET returns HTTP 200 with the named third-Monday selector. After a successful local first-Occurrence edit, its later selected-and-following global Life Area recolor sends a valid-looking all-day monthly recurrence and receives **POST /series-edit-preview HTTP 422**, code `temporal.recurrence_edit.invalid`; no review dialog is shown. The public problem deliberately hides the specific internal invariant. The backend now logs `temporal.recurring_series.edit_rejected` with phase, exception class and safe constant validation reason, and a unit regression verifies unknown ValueError content is redacted. Public HTTP behavior, transactions, protection and fingerprint validation are unchanged. The reason and functional correction **remain unconfirmed** until a fresh single E03 real-stack run on the new SHA; do not launch broad V2 or call this fixed.
+
+Another outstanding issue remains **P2-A01 HTTP 409** on recurring series confirmation (possible checkpoint/preview race), to diagnose separately with source-locked real PostgreSQL evidence, not by skipping CAS. The two P2-A03 and P2-A04 Activity scenarios, P2-E01 and P2-E04 Event scenarios and P3-EFIRST have observed focused browser PASS on their relevant earlier SHAs, but the full current SHA is not globally qualified.
+
+---
+
 # Timeline / Temporal-Operational — Workstream Handoff
 
 ## 2026-11-11 — P1-A06: all-day Activity duplicate must retain unplaced named Sessions
