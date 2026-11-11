@@ -2448,7 +2448,13 @@ describe('Event Inspector actions', () => {
       screen.getByRole('button', { name: 'Elimina definitivamente' }),
     );
     await waitFor(() =>
-      expect(confirmHardDeletion).toHaveBeenCalledWith(preview),
+      expect(confirmHardDeletion).toHaveBeenCalledWith(
+        preview,
+        expect.objectContaining({
+          release: expect.any(Function),
+          run: expect.any(Function),
+        }),
+      ),
     );
     expect(onDeleted).toHaveBeenCalledOnce();
   });
@@ -2501,6 +2507,10 @@ describe('Event Inspector actions', () => {
       await waitFor(() =>
         expect(confirmHardDeletion).toHaveBeenCalledWith(
           scope === 'event_once' ? onlyThis : series,
+          expect.objectContaining({
+          release: expect.any(Function),
+          run: expect.any(Function),
+        }),
         ),
       );
       expect(onDeleted).toHaveBeenCalledOnce();
@@ -2689,7 +2699,13 @@ describe('Event Inspector actions', () => {
       screen.getByRole('button', { name: 'Solo questa istanza' }),
     );
     await waitFor(() =>
-      expect(confirmHardDeletion).toHaveBeenCalledWith(instance),
+      expect(confirmHardDeletion).toHaveBeenCalledWith(
+        instance,
+        expect.objectContaining({
+          release: expect.any(Function),
+          run: expect.any(Function),
+        }),
+      ),
     );
     expect(confirmHardDeletion).not.toHaveBeenCalledWith(series);
     expect(onDeleted).toHaveBeenCalledOnce();
