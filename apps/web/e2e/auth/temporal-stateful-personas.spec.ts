@@ -1169,7 +1169,8 @@ async function localRevision(
   } else {
     const isAtomicActivityEdit = (url: string, method: string) =>
       method === 'PUT' &&
-      /\\/api\\/v1\\/temporal\\/activities\\/[^/]+\\/atomic-edit$/.test(url);
+      url.includes('/api/v1/temporal/activities/') &&
+      url.endsWith('/atomic-edit');
     let started = false;
     let failed: string | null = null;
     const onRequest = (request: import('@playwright/test').Request) => {
