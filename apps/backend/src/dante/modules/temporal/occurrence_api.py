@@ -1503,9 +1503,7 @@ def _series_source_recurrence(value: CalendarRecurrence) -> CalendarRecurrenceRe
     )
 
 
-def _log_series_edit_rejection(
-    phase: Literal["preview", "accept"], exc: Exception
-) -> None:
+def _log_series_edit_rejection(phase: Literal["preview", "accept"], exc: Exception) -> None:
     """Surface the exact *internal* validation invariant without leaking inputs.
 
     These domain exception classes contain fixed, developer-owned messages.
