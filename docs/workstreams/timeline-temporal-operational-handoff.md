@@ -1,3 +1,13 @@
+## 2026-11-11 — P2-A01 second E2E trace: checkpoint AFTER preview, BEFORE accept
+
+Chromium `V2-P2-A01` on `2faca8b14` still fails with 409 at Following-series revision. The **new** 2026-11-11 14:45:25–26 UTC Playwright trace establishes the missing interval: `series-edit-preview` POST begins 14:45:25.983Z and returns 200 with 35 target Occurrences; `occurrences/checkpoint` POST begins 14:45:26.281Z and returns 200 after materializing 37 Occurrences in the requested Timeline window; `series-edit` POST begins 14:45:26.549Z and returns `temporal.recurring_series.stale` 409 (`Series preview changed before acceptance.`). The first FIFO gated each HTTP call but intentionally permitted a checkpoint between the preview and the human confirmation.
+
+**Correction:** a same-tab inventory review lease now spans preview, human confirmation and acceptance. `holdTemporalOccurrenceInventoryReview` reserves the queue slot before CSRF, exposes a one-time idempotent release and permits acceptance inside the held slot. `RecurringSeriesEditor` releases on Back, Cancel, Escape, close/unmount, failed preview or completed acceptance; the preview epoch prevents orphaned leases when an editor closes while preview is pending. A checkpoint enqueued after preview waits for the user's explicit disposition. No PostgreSQL lock is held, no cross-tab changes are silently accepted, the backend SERIALIZABLE/CAS checks remain authoritative, and server 409 handling stays unchanged. Existing `preview()`/`accept()` client APIs continue to use the original per-request fence for non-interactive callers.
+
+Regression test file `temporal-occurrence-inventory-fence.test.ts` extends coverage to a checkpoint requested **between** review and accept, explicit cancellation/release, and rejected preview cleanup. Frontend lint/typecheck/Vitest and Chromium A01 **must be executed locally** before calling this green. E03 and A03 remain the previously recorded passing scenarios. Do not use a broad gate until A01 passes.
+
+---
+
 ## 2026-11-11 — P2-A01 real-stack 409: checkpoint overlaps fingerprinted preview
 
 Old Chromium trace `V2-P2-A01` (09:11:24Z–09:11:26Z) shows full Timeline `POST /occurrences/checkpoint` starting at 09:11:24.689Z, then `POST /occurrences/{selected}/series-edit-preview` starting at 09:11:24.914Z before checkpoint completion. The preview returns 200 but the subsequent `/series-edit` returns 409 `temporal.recurring_series.stale` with `Series preview changed before acceptance.` The trace also shows a SQLSTATE 40001 transient serialization abort during an earlier series acceptance, already covered by the server's bounded transaction retry.
