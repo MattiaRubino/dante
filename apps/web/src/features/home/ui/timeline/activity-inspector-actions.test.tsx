@@ -2788,7 +2788,13 @@ describe('Activity Inspector', () => {
     await screen.findByRole('button', { name: 'Tutta la serie' });
     fireEvent.click(screen.getByRole('button', { name: 'Tutta la serie' }));
     await waitFor(() =>
-      expect(confirmHardDeletion).toHaveBeenCalledWith(series),
+      expect(confirmHardDeletion).toHaveBeenCalledWith(
+        series,
+        expect.objectContaining({
+          release: expect.any(Function),
+          run: expect.any(Function),
+        }),
+      ),
     );
     expect(confirmHardDeletion).toHaveBeenCalledTimes(1);
     expect(deleteHard).not.toHaveBeenCalled();
