@@ -1,8 +1,12 @@
 import { describe, expect, it, vi } from 'vitest';
 
-import { createRemoteRecurringSeriesEdit } from './remote-recurring-series-edit';
+import {
+  createRemoteRecurringSeriesEdit,
+} from './remote-recurring-series-edit';
 import { createRemoteTemporalTimelineDataSource } from './remote-timeline-read';
-import { withTemporalOccurrenceInventoryFence } from './temporal-occurrence-inventory-fence';
+import {
+  withTemporalOccurrenceInventoryFence,
+} from './temporal-occurrence-inventory-fence';
 
 const SOURCE = '0199a111-1111-7111-8111-111111111111';
 const SELECTED = '0199a222-2222-7222-8222-222222222222';
@@ -66,7 +70,7 @@ async function flushMicrotasks(): Promise<void> {
 }
 
 describe('recurring review and Timeline checkpoint admission', () => {
-  it('waits for a running checkpoint before requesting a series preview', async () => {
+  it('waits for a running checkpoint before preview', async () => {
     const checkpointResponse = heldResponse();
     const calls: string[] = [];
     const fetchFn = vi.fn<typeof globalThis.fetch>(async (input) => {
@@ -84,9 +88,14 @@ describe('recurring review and Timeline checkpoint admission', () => {
       }
       throw new Error('Unexpected request: ' + url);
     });
-    const timeline = createRemoteTemporalTimelineDataSource(fetchFn, () => 'Europe/Rome');
+    const timeline = createRemoteTemporalTimelineDataSource(
+      fetchFn,
+      () => 'Europe/Rome',
+    );
     const series = createRemoteRecurringSeriesEdit(fetchFn);
-    if (!timeline.checkpointWindow) throw new Error('Checkpoint capability missing.');
+    if (!timeline.checkpointWindow) {
+      throw new Error('Checkpoint capability missing.');
+    }
 
     const checkpoint = timeline.checkpointWindow(WINDOW);
     await vi.waitFor(() => expect(calls).toContain('checkpoint'));
@@ -96,11 +105,13 @@ describe('recurring review and Timeline checkpoint admission', () => {
 
     checkpointResponse.complete(Response.json(CHECKPOINT));
     await expect(checkpoint).resolves.toMatchObject({ occurrenceCount: 36 });
-    await expect(preview).resolves.toMatchObject({ fingerprint: PREVIEW.fingerprint });
+    await expect(preview).resolves.toMatchObject({
+      fingerprint: PREVIEW.fingerprint,
+    });
     expect(calls).toEqual(['checkpoint', 'preview']);
   });
 
-  it('does not start a new checkpoint during an active series preview', async () => {
+  it('defers checkpoint during an active series preview', async () => {
     const previewResponse = heldResponse();
     const calls: string[] = [];
     const fetchFn = vi.fn<typeof globalThis.fetch>(async (input) => {
@@ -118,9 +129,14 @@ describe('recurring review and Timeline checkpoint admission', () => {
       }
       throw new Error('Unexpected request: ' + url);
     });
-    const timeline = createRemoteTemporalTimelineDataSource(fetchFn, () => 'Europe/Rome');
+    const timeline = createRemoteTemporalTimelineDataSource(
+      fetchFn,
+      () => 'Europe/Rome',
+    );
     const series = createRemoteRecurringSeriesEdit(fetchFn);
-    if (!timeline.checkpointWindow) throw new Error('Checkpoint capability missing.');
+    if (!timeline.checkpointWindow) {
+      throw new Error('Checkpoint capability missing.');
+    }
 
     const preview = series.preview(INTENT);
     await vi.waitFor(() => expect(calls).toContain('preview'));
@@ -129,7 +145,9 @@ describe('recurring review and Timeline checkpoint admission', () => {
     expect(calls).toEqual(['preview']);
 
     previewResponse.complete(Response.json(PREVIEW));
-    await expect(preview).resolves.toMatchObject({ fingerprint: PREVIEW.fingerprint });
+    await expect(preview).resolves.toMatchObject({
+      fingerprint: PREVIEW.fingerprint,
+    });
     await expect(checkpoint).resolves.toMatchObject({ occurrenceCount: 36 });
     expect(calls).toEqual(['preview', 'checkpoint']);
   });
@@ -141,11 +159,13 @@ describe('recurring review and Timeline checkpoint admission', () => {
       ),
     ).rejects.toThrow('checkpoint rejected');
     await expect(
-      withTemporalOccurrenceInventoryFence(() => Promise.resolve('preview permitted')),
+      withTemporalOccurrenceInventoryFence(() =>
+        Promise.resolve('preview permitted'),
+      ),
     ).resolves.toBe('preview permitted');
   });
 
-  it('preserves server 409 rejection, with no silent re-preview or retry', async () => {
+  it('preserves HTTP 409 without silent retry or acceptance', async () => {
     const checkpointResponse = heldResponse();
     const calls: string[] = [];
     const fetchFn = vi.fn<typeof globalThis.fetch>(async (input) => {
@@ -163,9 +183,14 @@ describe('recurring review and Timeline checkpoint admission', () => {
       }
       throw new Error('Unexpected request: ' + url);
     });
-    const timeline = createRemoteTemporalTimelineDataSource(fetchFn, () => 'Europe/Rome');
+    const timeline = createRemoteTemporalTimelineDataSource(
+      fetchFn,
+      () => 'Europe/Rome',
+    );
     const series = createRemoteRecurringSeriesEdit(fetchFn);
-    if (!timeline.checkpointWindow) throw new Error('Checkpoint capability missing.');
+    if (!timeline.checkpointWindow) {
+      throw new Error('Checkpoint capability missing.');
+    }
 
     const checkpoint = timeline.checkpointWindow(WINDOW);
     await vi.waitFor(() => expect(calls).toContain('checkpoint'));
