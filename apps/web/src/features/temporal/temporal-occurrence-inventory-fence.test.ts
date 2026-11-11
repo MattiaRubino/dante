@@ -73,10 +73,12 @@ describe('recurring review and Timeline checkpoint admission', () => {
   it('waits for a running checkpoint before preview', async () => {
     const checkpointResponse = heldResponse();
     const calls: string[] = [];
-    const fetchFn = vi.fn<typeof globalThis.fetch>(async (input) => {
+    const fetchFn = vi.fn<typeof globalThis.fetch>((input) => {
       const url = String(input);
       if (url.endsWith('/auth/session')) {
-        return Response.json({ authenticated: true, csrf_token: 'csrf-test' });
+        return Promise.resolve(
+          Response.json({ authenticated: true, csrf_token: 'csrf-test' }),
+        );
       }
       if (url.endsWith('/occurrences/checkpoint')) {
         calls.push('checkpoint');
@@ -84,7 +86,7 @@ describe('recurring review and Timeline checkpoint admission', () => {
       }
       if (url.endsWith('/series-edit-preview')) {
         calls.push('preview');
-        return Response.json(PREVIEW);
+        return Promise.resolve(Response.json(PREVIEW));
       }
       throw new Error('Unexpected request: ' + url);
     });
@@ -114,10 +116,12 @@ describe('recurring review and Timeline checkpoint admission', () => {
   it('defers checkpoint during an active series preview', async () => {
     const previewResponse = heldResponse();
     const calls: string[] = [];
-    const fetchFn = vi.fn<typeof globalThis.fetch>(async (input) => {
+    const fetchFn = vi.fn<typeof globalThis.fetch>((input) => {
       const url = String(input);
       if (url.endsWith('/auth/session')) {
-        return Response.json({ authenticated: true, csrf_token: 'csrf-test' });
+        return Promise.resolve(
+          Response.json({ authenticated: true, csrf_token: 'csrf-test' }),
+        );
       }
       if (url.endsWith('/series-edit-preview')) {
         calls.push('preview');
@@ -125,7 +129,7 @@ describe('recurring review and Timeline checkpoint admission', () => {
       }
       if (url.endsWith('/occurrences/checkpoint')) {
         calls.push('checkpoint');
-        return Response.json(CHECKPOINT);
+        return Promise.resolve(Response.json(CHECKPOINT));
       }
       throw new Error('Unexpected request: ' + url);
     });
@@ -168,10 +172,12 @@ describe('recurring review and Timeline checkpoint admission', () => {
   it('preserves HTTP 409 without silent retry or acceptance', async () => {
     const checkpointResponse = heldResponse();
     const calls: string[] = [];
-    const fetchFn = vi.fn<typeof globalThis.fetch>(async (input) => {
+    const fetchFn = vi.fn<typeof globalThis.fetch>((input) => {
       const url = String(input);
       if (url.endsWith('/auth/session')) {
-        return Response.json({ authenticated: true, csrf_token: 'csrf-test' });
+        return Promise.resolve(
+          Response.json({ authenticated: true, csrf_token: 'csrf-test' }),
+        );
       }
       if (url.endsWith('/occurrences/checkpoint')) {
         calls.push('checkpoint');
@@ -179,7 +185,9 @@ describe('recurring review and Timeline checkpoint admission', () => {
       }
       if (url.endsWith('/series-edit')) {
         calls.push('accept');
-        return Response.json({ detail: 'Stale series.' }, { status: 409 });
+        return Promise.resolve(
+          Response.json({ detail: 'Stale series.' }, { status: 409 }),
+        );
       }
       throw new Error('Unexpected request: ' + url);
     });
