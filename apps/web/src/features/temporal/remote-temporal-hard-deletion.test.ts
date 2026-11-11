@@ -1,8 +1,6 @@
 import { describe, expect, it, vi } from 'vitest';
 
-import {
-  createRemoteTemporalHardDeletion,
-} from './remote-temporal-hard-deletion';
+import { createRemoteTemporalHardDeletion } from './remote-temporal-hard-deletion';
 import { createRemoteTemporalTimelineDataSource } from './remote-timeline-read';
 
 const ACTIVITY = '0199a222-2222-7222-8222-222222222222';
@@ -134,9 +132,10 @@ describe('atomic recurring hard deletion versus Timeline checkpoint', () => {
     const fetchFn = testFetch(
       calls,
       () => Promise.resolve(Response.json(CHECKPOINT)),
-      () => Promise.resolve(
-        Response.json({ detail: 'Stale graph' }, { status: 409 }),
-      ),
+      () =>
+        Promise.resolve(
+          Response.json({ detail: 'Stale graph' }, { status: 409 }),
+        ),
     );
     const timeline = createRemoteTemporalTimelineDataSource(
       fetchFn,

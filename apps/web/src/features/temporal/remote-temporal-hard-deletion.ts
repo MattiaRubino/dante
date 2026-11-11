@@ -1,7 +1,5 @@
 import { createWebFetch } from '../../platform/api/web-fetch';
-import {
-  withTemporalOccurrenceInventoryFence,
-} from './temporal-occurrence-inventory-fence';
+import { withTemporalOccurrenceInventoryFence } from './temporal-occurrence-inventory-fence';
 import {
   invalidateTemporalPlanningRead,
   invalidateTemporalTimelineRead,
@@ -135,7 +133,9 @@ export function createRemoteTemporalHardDeletion(
           !Number.isSafeInteger(accepted.deleted_rows) ||
           accepted.deleted_rows < 1
         ) {
-          throw new Error('Conferma eliminazione non coerente con la selezione.');
+          throw new Error(
+            'Conferma eliminazione non coerente con la selezione.',
+          );
         }
         invalidateTemporalTimelineRead();
         invalidateTemporalPlanningRead();
