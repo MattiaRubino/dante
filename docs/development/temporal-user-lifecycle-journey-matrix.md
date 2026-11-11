@@ -1,3 +1,17 @@
+## 2026-11-11 — P2-A04 Activity local edit: wait for the actual atomic commit
+
+Owner's three-case isolated Chromium smoke `V2-(P2-E04|P2-A04|P3-EFIRST)` produced **2 PASS** (P2-E04, P3-EFIRST) and **1 FAIL** (P2-A04) in 102.13 s. The failing A04 step expected the last finite Activity's locally changed title on 2027-01-11; HTTP 200 canonical Timeline instead retained the original title. The diagnostic trace demonstrates that Activity Edit changed the submit button label from `Salva modifiche` to `Salvataggio…`; the test's `toHaveCount(0)` on the former label passed while the editor was still pending. It immediately navigated Home and no `PUT /activities/{ref}/atomic-edit` had completed or even appeared in the recorded network. This is a **test driver false completion**, not evidence of a rejected Activity edit, a recurrence cardinality defect, or an Event regression.
+
+`localRevision` now waits for the exact Activity atomic PUT response and HTTP 200, then requires the Activity editor form to close before navigation; the existing physical-placement, title and recurrence-boundary checks remain intact. Event confirmation retains its successful UI acknowledgement path. **Candidate committed, not yet re-executed locally:** run single Chromium `--grep 'V2-P2-A04'` first, then representative P2 tests; do not treat this fix as green before a real-stack replay. The separate P2-E04 and P3-EFIRST are observed PASS on the preceding HEAD.
+
+---
+
+## 2026-11-11 — Focused P1-A02/A06 browser confirmation
+
+The owner's newer `V2-(P1-A02|P1-A06)` summary and progress show **2/2 PASS** in Chromium after the all-day untimed named Session duplication fix. Earlier RED evidence remains useful diagnostically but is superseded for these precise cases. This result does not certify all P1 or the full gate.
+
+---
+
 ## 2026-11-11 — P1-A06: all-day Activity duplicate must retain unplaced named Sessions
 
 The focused parallel Chromium run `V2-(P1-A02|P1-A06)` recorded 2/2, 1 PASS (P1-A02) and 1 FAIL (P1-A06), after 6 backend unit tests, 1 PostgreSQL regression and the runner's self-test passed. The P1-A06 HTML snapshot proves successful Activity metadata/Objective/Session replacement and Life Area changes, followed by clicking Inspector `Duplica`. No composer appeared because `buildActivityDuplicateSeed` deliberately threw `Le sessioni pianificate richiedono un’attività con orario.` for a `date_span` with named planned Sessions.
