@@ -1405,21 +1405,17 @@ export function EventInspectorActions({
           onFollowing={() => {
             const choice = editChoice;
             setEditChoice(null);
-            if (choice.firstExistingEvent) {
-              // The shared series editor reads the generated Occurrence.
-              // Do not fetch a second synthetic Event for the physical first.
-              setEditScope(
-                choice.selectedProtection ? 'from_next' : 'this_and_following',
-              );
-              setRecurringContext(choice.context);
-              setEditingProfile(true);
-              setProfileNotice('');
-              return;
-            }
-            void openProfileEditor(
+            // The series editor loads its own authoritative source and
+            // catalog. Hydrating the *local* Event editor here performs
+            // unrelated profile/objective/participant reads and can leave
+            // the inspector busy while the series form never appears.
+            // This applies equally to generated and converted-first Events.
+            setEditScope(
               choice.selectedProtection ? 'from_next' : 'this_and_following',
-              choice.context,
             );
+            setRecurringContext(choice.context);
+            setEditingProfile(true);
+            setProfileNotice('');
           }}
           onCancel={() => {
             setEditChoice(null);
