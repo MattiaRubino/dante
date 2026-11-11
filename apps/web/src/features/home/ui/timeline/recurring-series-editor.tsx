@@ -266,10 +266,10 @@ export function RecurringSeriesEditor({
     reviewLeaseRef.current = null;
     setReview(null);
   }, []);
-  const cancelEditor = () => {
+  const cancelEditor = useCallback(() => {
     discardReview();
     onCancel();
-  };
+  }, [discardReview, onCancel]);
 
   useEffect(() => {
     return () => {
@@ -359,7 +359,7 @@ export function RecurringSeriesEditor({
     return () => {
       closeRequestRef.current = null;
     };
-  }, [busy, closeRequestRef, discardReview, onCancel, review]);
+  }, [busy, cancelEditor, closeRequestRef, discardReview, review]);
 
   useEffect(() => {
     if (!review) return;
