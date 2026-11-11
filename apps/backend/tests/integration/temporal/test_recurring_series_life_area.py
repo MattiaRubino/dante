@@ -329,24 +329,32 @@ async def test_monthly_all_day_event_following_edit_resolves_midnight_and_preser
             duration_days=1,
             reminder_lead_minutes=None,
         )
-        await materializer.checkpoint_window(
-            self_person_ref=actor,
-            operation_id="all-day-series:checkpoint",
-            start_date=first_day,
-            end_date_exclusive=end_exclusive,
-            effective_zone_id="Europe/Rome",
-        )
-        window = await timeline.read_window(
-            query=TimelineWindowQuery(start_date=first_day, end_date_exclusive=end_exclusive),
-            context=_context(actor),
-        )
-        instances = {
-            item.coordinate.generated_date: item
-            for item in window.items
-            if isinstance(item, TimelineScheduledOccurrenceItem)
-            and item.source_native_ref == created.source_ref
-            and isinstance(item.coordinate, CalendarCoordinate)
-        }
+        # Both checkpoint and timeline read impose a 62-day maximum. Keep
+        # adjacent half-open windows to cover the three monthly occurrences.
+        boundary = date(2026, 12, 17)
+        windows = ((first_day, boundary), (boundary, end_exclusive))
+        instances = {}
+        for index, (window_start, window_end) in enumerate(windows, start=1):
+            await materializer.checkpoint_window(
+                self_person_ref=actor,
+                operation_id=f"all-day-series:checkpoint:{index}",
+                start_date=window_start,
+                end_date_exclusive=window_end,
+                effective_zone_id="Europe/Rome",
+            )
+            window = await timeline.read_window(
+                query=TimelineWindowQuery(
+                    start_date=window_start, end_date_exclusive=window_end
+                ),
+                context=_context(actor),
+            )
+            for item in window.items:
+                if (
+                    isinstance(item, TimelineScheduledOccurrenceItem)
+                    and item.source_native_ref == created.source_ref
+                    and isinstance(item.coordinate, CalendarCoordinate)
+                ):
+                    instances[item.coordinate.generated_date] = item
         assert set(instances) == {first_day, selected_day, next_day}
         first_ref = instances[first_day].occurrence_ref
         selected_ref = instances[selected_day].occurrence_ref
