@@ -30,6 +30,7 @@ def test_calendar_positional_values_reject_zero(
     with pytest.raises(ValidationError, match="must not be zero"):
         model(**payload)
 
+
 @pytest.mark.parametrize(
     ("extra", "expected_field", "expected_value"),
     [
