@@ -309,7 +309,8 @@ def test_series_edit_rejection_log_preserves_known_invariant_but_redacts_arbitra
         )
 
     records = [
-        record for record in caplog.records
+        record
+        for record in caplog.records
         if record.name == "dante.modules.temporal.occurrence_api"
         and record.msg == "temporal.recurring_series.edit_rejected"
     ]
