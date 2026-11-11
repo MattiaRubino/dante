@@ -824,6 +824,10 @@ describe('Event Inspector actions', () => {
       name: 'Area assegnata',
     });
     expect(areaInput).toHaveProperty('value', 'Studio');
+    // Following-series edit must never wait on the unrelated local Event
+    // profile/Objective/participant hydration; the series editor owns reads.
+    expect(loadProfile).not.toHaveBeenCalled();
+    expect(loadOccurrencePatch).not.toHaveBeenCalled();
     // The color is now an accessible trigger button, not a decorative img.
     const colorTrigger = screen.getByRole('button', { name: 'Colore Life Area' });
     expect(
