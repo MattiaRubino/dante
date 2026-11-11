@@ -116,16 +116,18 @@ export function createRemoteRecurringSeriesEdit(
     };
   }
 
-  async function previewRequest(intent: Intent): Promise<RecurringSeriesReview> {
+  async function previewRequest(
+    intent: Intent,
+  ): Promise<RecurringSeriesReview> {
     const value = await read(
-        await request(path(intent.selectedRef, 'series-edit-preview'), {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'X-Dante-CSRF': await csrf(),
-          },
-          body: JSON.stringify(body(intent, null)),
-        }),
+      await request(path(intent.selectedRef, 'series-edit-preview'), {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-Dante-CSRF': await csrf(),
+        },
+        body: JSON.stringify(body(intent, null)),
+      }),
     );
     if (
       value.source_native_ref !== intent.source.sourceRef ||
@@ -149,16 +151,19 @@ export function createRemoteRecurringSeriesEdit(
     };
   }
 
-  async function acceptRequest(intent: Intent, review: RecurringSeriesReview): Promise<void> {
+  async function acceptRequest(
+    intent: Intent,
+    review: RecurringSeriesReview,
+  ): Promise<void> {
     const value = await read(
-        await request(path(intent.selectedRef, 'series-edit'), {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'X-Dante-CSRF': await csrf(),
-          },
-          body: JSON.stringify(body(intent, review.fingerprint)),
-        }),
+      await request(path(intent.selectedRef, 'series-edit'), {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-Dante-CSRF': await csrf(),
+        },
+        body: JSON.stringify(body(intent, review.fingerprint)),
+      }),
     );
     // A converted Event's original physical first Occurrence remains
     // current, so it is targeted by the edit but not superseded. Only

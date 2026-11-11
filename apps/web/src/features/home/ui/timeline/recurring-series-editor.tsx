@@ -1,4 +1,10 @@
-import { useCallback, useEffect, useRef, useState, type RefObject } from 'react';
+import {
+  useCallback,
+  useEffect,
+  useRef,
+  useState,
+  type RefObject,
+} from 'react';
 import { Temporal } from '@dante/time';
 import { createWebFetch } from '../../../../platform/api/web-fetch';
 import { createRemoteTemporalResponsibilityDataSource } from '../../../temporal/remote-responsibility-data-source';
@@ -244,7 +250,9 @@ export function RecurringSeriesEditor({
   >([]);
   const [areaQuery, setAreaQuery] = useState('');
   const [newAreaColor, setNewAreaColor] = useState('#EA5C12');
-  const [areaColorOverride, setAreaColorOverride] = useState<string | null>(null);
+  const [areaColorOverride, setAreaColorOverride] = useState<string | null>(
+    null,
+  );
   const [areaError, setAreaError] = useState('');
   const [participantLabels, setParticipantLabels] = useState<
     Record<string, string>
@@ -258,7 +266,9 @@ export function RecurringSeriesEditor({
   const operation = useRef(crypto.randomUUID());
   const reviewDialogRef = useRef<HTMLDivElement>(null);
   const previewButtonRef = useRef<HTMLButtonElement>(null);
-  const reviewLeaseRef = useRef<TemporalOccurrenceInventoryReviewLease | null>(null);
+  const reviewLeaseRef = useRef<TemporalOccurrenceInventoryReviewLease | null>(
+    null,
+  );
   const previewEpochRef = useRef(0);
   const discardReview = useCallback(() => {
     previewEpochRef.current += 1;
@@ -270,6 +280,14 @@ export function RecurringSeriesEditor({
     discardReview();
     onCancel();
   }, [discardReview, onCancel]);
+
+  // Form changes invalidate the review without reading refs in render paths.
+  useEffect(() => {
+    if (review === null) {
+      reviewLeaseRef.current?.release();
+      reviewLeaseRef.current = null;
+    }
+  }, [review]);
 
   useEffect(() => {
     return () => {
@@ -396,11 +414,11 @@ export function RecurringSeriesEditor({
 
   const changeStructure = (value: Entry) => {
     setStructure(value);
-    discardReview();
+    setReview(null);
   };
   const changeRecurrence = (value: Entry) => {
     setRecurrence(value);
-    discardReview();
+    setReview(null);
   };
   const template = asEntry(structure.activity_template);
   const updateTemplate = (patch: Entry) =>
@@ -536,7 +554,8 @@ export function RecurringSeriesEditor({
     !activeArea &&
     !areas.some(
       (area) =>
-        area.name.toLocaleLowerCase() === normalizedAreaName.toLocaleLowerCase(),
+        area.name.toLocaleLowerCase() ===
+        normalizedAreaName.toLocaleLowerCase(),
     );
   const changingAreaColor =
     !!activeAreaOption &&
@@ -625,7 +644,9 @@ export function RecurringSeriesEditor({
       recurrence.range_kind === 'expected_count' &&
       asNumber(recurrence.expected_occurrence_count) < 1
     ) {
-      setError('Non ci sono istanze successive da modificare. Cambia esplicitamente il limite per estendere la serie.');
+      setError(
+        'Non ci sono istanze successive da modificare. Cambia esplicitamente il limite per estendere la serie.',
+      );
       return;
     }
     if (normalizedAreaName && !activeArea && !creatingArea) {
@@ -713,7 +734,9 @@ export function RecurringSeriesEditor({
     if (!reviewedIntent || !review || busy) return;
     const lease = reviewLeaseRef.current;
     if (!lease) {
-      setError('Anteprima non più disponibile. Controlla nuovamente le modifiche.');
+      setError(
+        'Anteprima non più disponibile. Controlla nuovamente le modifiche.',
+      );
       discardReview();
       return;
     }
@@ -1634,7 +1657,9 @@ export function RecurringSeriesEditor({
                               type="number"
                               min={1}
                               aria-label="Numero di occorrenze"
-                              value={asNumber(recurrence.expected_occurrence_count)}
+                              value={asNumber(
+                                recurrence.expected_occurrence_count,
+                              )}
                               onFocus={() =>
                                 changeRecurrence({
                                   ...recurrence,
@@ -1717,8 +1742,7 @@ export function RecurringSeriesEditor({
                   if (value.trim() !== activeAreaOption?.name) {
                     if (owner === 'routine')
                       updateTemplate({ life_area_ref: null });
-                    else
-                      changeStructure({ ...structure, life_area_ref: null });
+                    else changeStructure({ ...structure, life_area_ref: null });
                   }
                 }}
                 onChoose={(area) => {
@@ -1742,7 +1766,8 @@ export function RecurringSeriesEditor({
               />
               {creatingArea ? (
                 <small role="status">
-                  La nuova Life Area sarà creata insieme al salvataggio della serie.
+                  La nuova Life Area sarà creata insieme al salvataggio della
+                  serie.
                 </small>
               ) : null}
               {changingAreaColor ? (

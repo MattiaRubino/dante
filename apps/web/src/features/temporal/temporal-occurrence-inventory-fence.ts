@@ -37,7 +37,9 @@ export type TemporalOccurrenceInventoryReviewLease = Readonly<{
 
 export async function holdTemporalOccurrenceInventoryReview<T>(
   operation: () => Promise<T>,
-): Promise<Readonly<{ value: T; lease: TemporalOccurrenceInventoryReviewLease }>> {
+): Promise<
+  Readonly<{ value: T; lease: TemporalOccurrenceInventoryReviewLease }>
+> {
   const previous = settled;
   let unlock: () => void = () => undefined;
   const held = new Promise<void>((resolve) => {
