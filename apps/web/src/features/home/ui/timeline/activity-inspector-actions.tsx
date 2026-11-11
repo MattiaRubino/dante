@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 
 import {
@@ -87,6 +87,13 @@ export function ActivityInspectorActions({
   const [deleteReviewLease, setDeleteReviewLease] =
     useState<TemporalOccurrenceInventoryReviewLease | null>(null);
   useEffect(() => () => deleteReviewLease?.release(), [deleteReviewLease]);
+  const inspectorAlive = useRef(true);
+  useEffect(() => {
+    inspectorAlive.current = true;
+    return () => {
+      inspectorAlive.current = false;
+    };
+  }, []);
 
   const [confirmingVault, setConfirmingVault] = useState(false);
   const [pending, setPending] = useState(false);
@@ -253,6 +260,12 @@ export function ActivityInspectorActions({
                     hardDelete.preview(activityRef, 'activity_series'),
                   ]),
                 );
+              // A preview may resolve after Inspector unmount; never leave
+              // its queue reservation stranded in that case.
+              if (!inspectorAlive.current) {
+                lease.release();
+                return;
+              }
               setDeleteReviewLease(lease);
               setRecurringDeletePreview(value);
             }
