@@ -1167,22 +1167,64 @@ async function localRevision(
       timeout: 15_000,
     });
   } else {
-    const [accepted] = await Promise.all([
-      page.waitForResponse(
-        (response) =>
-          response.request().method() === 'PUT' &&
-          /\/api\/v1\/temporal\/activities\/[^/]+\/atomic-edit$/.test(
-            response.url(),
-          ),
-        { timeout: 15_000 },
-      ),
-      inspector.getByRole('button', { name: 'Salva modifiche' }).click(),
-    ]);
-    expect(accepted.status(), 'Activity occurrence edit must commit').toBe(200);
-    await expect(
-      inspector.locator('form.timeline-activity-editor'),
-      'Activity editor must finish saving before Timeline navigation',
-    ).toHaveCount(0, { timeout: 15_000 });
+    const isAtomicActivityEdit = (url: string, method: string) =>
+      method === 'PUT' &&
+      /\\/api\\/v1\\/temporal\\/activities\\/[^/]+\\/atomic-edit$/.test(url);
+    let started = false;
+    let failed: string | null = null;
+    const onRequest = (request: import('@playwright/test').Request) => {
+      if (isAtomicActivityEdit(request.url(), request.method())) {
+        started = true;
+      }
+    };
+    const onRequestFailed = (request: import('@playwright/test').Request) => {
+      if (isAtomicActivityEdit(request.url(), request.method())) {
+        failed = request.failure()?.errorText ?? 'unknown transport error';
+      }
+    };
+    page.on('request', onRequest);
+    page.on('requestfailed', onRequestFailed);
+    const saveButton = inspector.getByRole('button', {
+      name: 'Salva modifiche',
+    });
+    try {
+      await expect(saveButton, 'Activity editor must be ready before Save')
+        .toBeEnabled({ timeout: 5_000 });
+      const [accepted] = await Promise.all([
+        page.waitForResponse(
+          (response) =>
+            isAtomicActivityEdit(response.url(), response.request().method()),
+          { timeout: 12_000 },
+        ),
+        saveButton.click(),
+      ]);
+      expect(
+        accepted.status(),
+        'Activity occurrence edit must commit: ' + await accepted.text(),
+      ).toBe(200);
+      await expect(
+        inspector.locator('form.timeline-activity-editor'),
+        'Activity editor must finish saving before Timeline navigation',
+      ).toHaveCount(0, { timeout: 15_000 });
+    } catch (reason) {
+      const alerts = await inspector.locator('[role="alert"]')
+        .allTextContents().catch(() => []);
+      const invalidFields = await inspector.locator('[aria-invalid="true"]')
+        .evaluateAll((nodes) => nodes.map((node) =>
+          node.getAttribute('aria-label') ??
+          node.getAttribute('name') ?? 'unnamed',
+        )).catch(() => []);
+      throw new Error(
+        'Activity local edit did not commit: PUT started=' + started +
+          '; failed=' + failed +
+          '; alerts=' + JSON.stringify(alerts) +
+          '; invalidFields=' + JSON.stringify(invalidFields),
+        { cause: reason },
+      );
+    } finally {
+      page.off('request', onRequest);
+      page.off('requestfailed', onRequestFailed);
+    }
   }
   await assertCard(page, day, changedTitle);
 }
