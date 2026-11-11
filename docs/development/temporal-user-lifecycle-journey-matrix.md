@@ -1,3 +1,11 @@
+## 2026-11-11 — P2-E03 preview 422 after ordinal read fixed; targeted internal validation diagnostics
+
+Owner's fresh Chromium smoke `V2-(P2-E03|P2-A03)` on `00acac32536e` recorded **1 PASS** (A03), **1 FAIL** (E03), 0 skips, 85.77 seconds. A03's genuine global Life Area recolor now passes end to end. E03 now loads the monthly ordinal recurrence correctly (GET `/events/{ref}/recurrence` HTTP 200 with `ordinal_weekdays=[{weekday_number:1,ordinal:3}]`), but fails later at its global Life Area color-change review: POST `/occurrences/{selected}/series-edit-preview` returns `422 temporal.recurrence_edit.invalid`. The actual body is for an all-day monthly third-Monday Event, inclusive `this_and_following` starting 2026-12-21 and genuine blue recolor of an existing Life Area. It retains unchanged Agenda, Objectives, participants and the loaded recurrence rule. The review dialog is absent because server preview refuses the proposal, **not** because of a UI selector or timeout.
+
+The public 422 currently hides the exact internal invariant. The backend now emits `temporal.recurring_series.edit_rejected` with `phase`, exception class and constant developer-owned validation reason for both preview and acceptance; unexpected ValueError detail is redacted. Request payloads, SQL, titles, personal data and IDs are not logged. Public problem codes and write safety are unchanged. Added focused logging regression. **Diagnosis only, not a functional fix**: run backend unit and a single real-stack `V2-P2-E03` to capture the precise reason, then fix the specific invariant with PostgreSQL regression before another broad browser gate. Do not weaken the validation, delete tests, or claim green.
+
+---
+
 ## 2026-11-11 — Five-case Chromium smoke: positional Recurrence API and Life Area E2E fixture
 
 The 5-case Chromium V2 smoke `V2-(P2-A01|P2-A03|P2-E01|P2-E03|RT-02)` produced 2 PASS (P2-E01, RT-02), 2 FAIL (P2-A01, P2-A03) and 1 ERROR (P2-E03), 0 skips, in 116.7 s.
