@@ -1,3 +1,11 @@
+## 2026-11-11 — V2-P2-A01 accepted on real stack (Chromium)
+
+Observed from the user's uploaded `summary(20261111-171405).json` and compact `E2E_DIAGNOSTICS` JUnit: `V2-P2-A01 native series → local → following` **PASS**, 1/1 discovered and recorded, 0 failures, 0 errors, 0 skips, 0 retries, exit code 0. Test-case duration **129.532 s**, Chromium project **156.57 s**, full wrapper **162.15 s**. The E2E scenario completes the final single-instance deletion, checkpoint and whole-series deletion assertions (the same A01/8 path that previously timed out). Frontend commit reported on GitHub: `66c24559d9f2949f411ebe0b127dd4ee3296971c`.
+
+This closes the known A01 functional regression for this Chromium run; `P2-A03` and `P2-E03` previously passed on their own targeted runs. **Do not infer per-operation SQL performance from aggregate run time**: this compact artifact has no per-step DELETE response timing or query plan. Next step is the broader stateful P2 persona matrix, then the clean-checkout full parallel gate. The parallel gate explicitly rejects any uncommitted generated OpenAPI changes; preserve them until reconciled rather than resetting or staging them incidentally.
+
+---
+
 ## 2026-11-11 — P2-A01 advances to deletion; whole-series DELETE exceeds 15-second E2E wait
 
 Chromium diagnostic `20261111-154205` reports `V2-P2-A01` at step **A01/8 Delete single → checkpoint → whole series**, after the earlier 409-prone following-series revisions have completed. `page.waitForResponse` at `temporal-stateful-personas.spec.ts:983` times out at 15 seconds (test `actionTimeout`), with **no HTTP status yet**. Trace confirms the second `DELETE /api/v1/temporal/hard-deletion/{activity}` was *started* at 15:37:32.258Z; its response is absent/incomplete when Chromium tears down. The earlier single-instance DELETE returned HTTP 200. The full-series SQL function `dante.delete_self_temporal_hard` iterates generated Activity roots and invokes `delete_self_activity_lifecycle_graph` separately for each, so the whole-series graph may be substantially heavier; this does **not** yet prove the absence of an SQL lock wait or performance regression.
