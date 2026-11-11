@@ -396,9 +396,7 @@ async def test_monthly_all_day_event_following_edit_resolves_midnight_and_preser
         assert local_instant.date() == selected_day
         assert local_instant.timetz().replace(tzinfo=None) == time.min
 
-        loaded = await series.source(
-            self_person_ref=actor, selected_occurrence_ref=selected_ref
-        )
+        loaded = await series.source(self_person_ref=actor, selected_occurrence_ref=selected_ref)
         assert loaded.edit_revision == 1
         proposal = replace(loaded.recurrence, effective_from=selected_day)
         structure = {
