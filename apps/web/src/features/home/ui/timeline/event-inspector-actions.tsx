@@ -30,6 +30,10 @@ import {
   createRemoteTemporalHardDeletion,
   type TemporalHardDeletionPreview,
 } from '../../../temporal/remote-temporal-hard-deletion';
+import {
+  holdTemporalOccurrenceInventoryReview,
+  type TemporalOccurrenceInventoryReviewLease,
+} from '../../../temporal/temporal-occurrence-inventory-fence';
 import { createRemoteTemporalOrganizationDataSource } from '../../../temporal/remote-organization';
 import {
   createRemoteDraftVault,
@@ -139,6 +143,9 @@ export function EventInspectorActions({
   const [deletePreviews, setDeletePreviews] = useState<
     readonly TemporalHardDeletionPreview[] | null
   >(null);
+  const [deleteReviewLease, setDeleteReviewLease] =
+    useState<TemporalOccurrenceInventoryReviewLease | null>(null);
+  useEffect(() => () => deleteReviewLease?.release(), [deleteReviewLease]);
 
   const [profileSource] = useState(createRemoteEventProfileDataSource);
   const [placementLockSource] = useState(createRemotePlacementLockDataSource);
@@ -1253,43 +1260,44 @@ export function EventInspectorActions({
     setBusy(true);
     setError('');
     try {
-      const recurring = await recurrenceGuard.isRecurring(eventRef);
-      if (!recurring) {
-        const seededSource = await existingRecurrence.eventSeed(eventRef);
-        if (seededSource === null) {
-          setDeletePreviews([await hardDelete.preview(eventRef, 'event_once')]);
-        } else {
-          // Preserve the source Event's physical first-instance identity.
-          const [instance, series] = await Promise.all([
-            hardDelete.preview(eventRef, 'event_once'),
-            hardDelete.preview(eventRef, 'event_series'),
-          ]);
-          setDeletePreviews([instance, series]);
-        }
-      } else {
-        const series = await hardDelete.preview(eventRef, 'event_series');
-        // A single instance may only be removed when its identity is certain.
-        // No free-form instance picker in a destructive confirmation.
-        let selected: string | null = null;
-        if (occurrenceRef) {
-          const choices = await hardDelete.eventOccurrences(eventRef);
-          if (
-            choices.some((choice) => choice.occurrenceRef === occurrenceRef)
-          ) {
-            selected = occurrenceRef;
+      // A checkpoint may materialize the source between preview and the
+      // destructive confirmation. Keep both fingerprint reads and the
+      // user review in a single same-tab inventory admission lease.
+      const { value: previews, lease } =
+        await holdTemporalOccurrenceInventoryReview(async () => {
+          const recurring = await recurrenceGuard.isRecurring(eventRef);
+          if (!recurring) {
+            const seededSource = await existingRecurrence.eventSeed(eventRef);
+            if (seededSource === null) {
+              return [await hardDelete.preview(eventRef, 'event_once')];
+            }
+            return Promise.all([
+              hardDelete.preview(eventRef, 'event_once'),
+              hardDelete.preview(eventRef, 'event_series'),
+            ]);
           }
-        } else if (scheduleRef) {
-          const choices = await hardDelete.eventOccurrences(eventRef);
-          const matches = choices.filter(
-            (choice) => choice.scheduleRef === scheduleRef,
-          );
-          if (matches.length === 1) selected = matches[0]!.occurrenceRef;
-        }
-        const instance = selected
-          ? await hardDelete.preview(selected, 'event_instance')
-          : null;
-        setDeletePreviews(instance ? [instance, series] : [series]);
-      }
+
+          const series = await hardDelete.preview(eventRef, 'event_series');
+          let selected: string | null = null;
+          if (occurrenceRef) {
+            const choices = await hardDelete.eventOccurrences(eventRef);
+            if (choices.some((item) => item.occurrenceRef === occurrenceRef)) {
+              selected = occurrenceRef;
+            }
+          } else if (scheduleRef) {
+            const choices = await hardDelete.eventOccurrences(eventRef);
+            const matches = choices.filter(
+              (item) => item.scheduleRef === scheduleRef,
+            );
+            if (matches.length === 1) selected = matches[0]!.occurrenceRef;
+          }
+          const instance = selected
+            ? await hardDelete.preview(selected, 'event_instance')
+            : null;
+          return instance ? [instance, series] : [series];
+        });
+      setDeleteReviewLease(lease);
+      setDeletePreviews(previews);
     } catch (reason) {
       setError(
         reason instanceof Error
@@ -1306,7 +1314,10 @@ export function EventInspectorActions({
     setBusy(true);
     setError('');
     try {
-      await hardDelete.deleteConfirmed(preview);
+      await hardDelete.deleteConfirmed(
+        preview,
+        deleteReviewLease ?? undefined,
+      );
       if (onDeleted) onDeleted();
       else window.location.reload();
     } catch (reason) {
@@ -1316,6 +1327,8 @@ export function EventInspectorActions({
           : 'Eliminazione Event rifiutata.',
       );
     } finally {
+      deleteReviewLease?.release();
+      setDeleteReviewLease(null);
       setBusy(false);
     }
   };
@@ -1942,6 +1955,8 @@ export function EventInspectorActions({
             onConfirm: () => void acceptDeletion(preview),
           }))}
           onCancel={() => {
+            deleteReviewLease?.release();
+            setDeleteReviewLease(null);
             setDeletePreviews(null);
             setError('');
           }}
