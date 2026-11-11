@@ -841,6 +841,19 @@ async function recolorExistingSeriesArea(
 ): Promise<void> {
   expect(truth.areaRef, 'precondition: assigned existing Life Area')
     .toEqual(expect.stringMatching(UUID));
+  const originalCatalog = (await serverRead(
+    page, '/api/v1/temporal/life-areas',
+  )) as readonly Record<string, unknown>[];
+  const originalArea = originalCatalog.filter(
+    (area) => area.life_area_ref === truth.areaRef,
+  );
+  expect(originalArea, 'one existing Life Area before global recolor')
+    .toHaveLength(1);
+  const originalColor = String(originalArea[0]!.color_code).toUpperCase();
+  expect(originalColor).toMatch(/^#[0-9A-F]{6}$/);
+  const newColor = originalColor === '#FFD600' ? '#4285F4' : '#FFD600';
+  const newColorName = newColor === '#4285F4' ? 'Blu' : 'Giallo';
+  expect(newColor).not.toBe(originalColor);
   const editor = await openEdit(page, day, title);
   await page.getByRole('dialog', { name: 'Modifica ricorrenza' })
     .getByRole('button', { name: 'Questa e le successive' })
@@ -852,7 +865,9 @@ async function recolorExistingSeriesArea(
   await areaColorButton.click();
   const picker = page.getByRole('dialog', { name: 'Scegli colore' });
   await expect(picker).toBeVisible();
-  await picker.getByRole('button', { name: 'Giallo', exact: true }).click();
+  await picker.getByRole('button', {
+    name: newColorName, exact: true,
+  }).click();
   await expect(editor.getByText(
     /Modificare il colore della Life Area aggiorna/,
   )).toBeVisible();
@@ -875,7 +890,7 @@ async function recolorExistingSeriesArea(
     area.life_area_ref === truth.areaRef,
   );
   expect(persisted).toHaveLength(1);
-  expect(persisted[0]!.color_code).toBe('#FFD600');
+  expect(persisted[0]!.color_code).toBe(newColor);
 }
 
 async function localRevision(
