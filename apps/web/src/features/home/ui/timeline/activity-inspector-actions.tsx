@@ -17,6 +17,10 @@ import {
   type TemporalHardDeletionPreview,
 } from '../../../temporal/remote-temporal-hard-deletion';
 import {
+  holdTemporalOccurrenceInventoryReview,
+  type TemporalOccurrenceInventoryReviewLease,
+} from '../../../temporal/temporal-occurrence-inventory-fence';
+import {
   createRemoteDraftVault,
   notifyDraftVaultUpdated,
 } from '../../../temporal-create/application/remote-draft-vault';
@@ -80,6 +84,10 @@ export function ActivityInspectorActions({
   const [recurringDeletePreview, setRecurringDeletePreview] = useState<
     readonly [TemporalHardDeletionPreview, TemporalHardDeletionPreview] | null
   >(null);
+  const [deleteReviewLease, setDeleteReviewLease] =
+    useState<TemporalOccurrenceInventoryReviewLease | null>(null);
+  useEffect(() => () => deleteReviewLease?.release(), [deleteReviewLease]);
+
   const [confirmingVault, setConfirmingVault] = useState(false);
   const [pending, setPending] = useState(false);
   const [error, setError] = useState('');
@@ -234,14 +242,20 @@ export function ActivityInspectorActions({
             const current = await source.sessionImpact(activityRef);
             const origin =
               await recurringSource.loadActivityContext(activityRef);
-            const scopes =
-              origin === null
-                ? null
-                : await Promise.all([
+            if (origin === null) {
+              setRecurringDeletePreview(null);
+            } else {
+              // Keep preview and acceptance on one inventory snapshot.
+              const { value, lease } =
+                await holdTemporalOccurrenceInventoryReview(() =>
+                  Promise.all([
                     hardDelete.preview(activityRef, 'activity_instance'),
                     hardDelete.preview(activityRef, 'activity_series'),
-                  ]);
-            setRecurringDeletePreview(scopes);
+                  ]),
+                );
+              setDeleteReviewLease(lease);
+              setRecurringDeletePreview(value);
+            }
             setDeleteImpact(current);
             setConfirming(true);
           })
@@ -397,10 +411,16 @@ export function ActivityInspectorActions({
                     label: 'Solo questa istanza',
                     onConfirm: () =>
                       void action(async () => {
-                        await hardDelete.deleteConfirmed(
-                          recurringDeletePreview[0],
-                        );
-                        onDeleted();
+                        try {
+                          await hardDelete.deleteConfirmed(
+                            recurringDeletePreview[0],
+                            deleteReviewLease ?? undefined,
+                          );
+                          onDeleted();
+                        } finally {
+                          deleteReviewLease?.release();
+                          setDeleteReviewLease(null);
+                        }
                       }),
                   },
                   {
@@ -408,10 +428,16 @@ export function ActivityInspectorActions({
                     label: 'Tutta la serie',
                     onConfirm: () =>
                       void action(async () => {
-                        await hardDelete.deleteConfirmed(
-                          recurringDeletePreview[1],
-                        );
-                        onDeleted();
+                        try {
+                          await hardDelete.deleteConfirmed(
+                            recurringDeletePreview[1],
+                            deleteReviewLease ?? undefined,
+                          );
+                          onDeleted();
+                        } finally {
+                          deleteReviewLease?.release();
+                          setDeleteReviewLease(null);
+                        }
                       }),
                   },
                 ]
@@ -431,6 +457,8 @@ export function ActivityInspectorActions({
                 ]
           }
           onCancel={() => {
+            deleteReviewLease?.release();
+            setDeleteReviewLease(null);
             setConfirming(false);
             setDeleteImpact(null);
             setRecurringDeletePreview(null);
