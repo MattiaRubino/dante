@@ -290,3 +290,40 @@ def test_reject_more_than_10000_candidates() -> None:
             captured_at=NOW,
             authoritative_inventory=True,
         )
+
+
+def test_series_edit_rejection_log_preserves_known_invariant_but_redacts_arbitrary_input(
+    caplog: pytest.LogCaptureFixture,
+) -> None:
+    import logging
+
+    from dante.modules.temporal.occurrence_api import _log_series_edit_rejection
+    from dante.modules.temporal.recurring_series_reconciliation import SeriesReconciliationError
+
+    with caplog.at_level(logging.WARNING, logger="dante.modules.temporal.occurrence_api"):
+        _log_series_edit_rejection(
+            "preview",
+            SeriesReconciliationError("Regenerated cadence escapes its declared horizon."),
+        )
+        _log_series_edit_rejection(
+            "accept",
+            ValueError("PRIVATE INPUT MUST NOT BE LOGGED"),
+        )
+
+    records = [
+        record for record in caplog.records
+        if record.name == "dante.modules.temporal.occurrence_api"
+        and record.msg == "temporal.recurring_series.edit_rejected"
+    ]
+    assert len(records) == 2
+    assert records[0].dante_fields == {
+        "phase": "preview",
+        "exception_type": "SeriesReconciliationError",
+        "reason": "Regenerated cadence escapes its declared horizon.",
+    }
+    assert records[1].dante_fields == {
+        "phase": "accept",
+        "exception_type": "ValueError",
+        "reason": "redacted",
+    }
+    assert "PRIVATE INPUT" not in str(records[1].dante_fields)
