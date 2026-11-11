@@ -74,17 +74,16 @@ export function buildActivityDuplicateSeed(
     );
   }
   if (
-    primary?.temporalForm === 'date_span' &&
-    (!primary.start || !primary.end || intervals.length)
+    (envelope?.temporalForm === 'date_span' && intervals.length > 0) ||
+    (primary?.temporalForm === 'date_span' &&
+      (!primary.start || !primary.end))
   ) {
     throw new Error('L’intervallo a giorni non è duplicabile in questa forma.');
   }
-  if (primary?.temporalForm === 'date_span' && planned.length) {
-    throw new Error(
-      'Le sessioni pianificate richiedono un’attività con orario.',
-    );
-  }
-
+  // An all-day Activity can contain independent, *unplaced* named
+  // Sessions. They are canonical structure, not time slots. Preserve their
+  // names and order when duplicating, without inventing any clock times.
+  // The date_span + interval mix remains rejected above.
   const fields: TemporalCreateFieldSeed = {
     kind: 'activity',
     title: profile.title,

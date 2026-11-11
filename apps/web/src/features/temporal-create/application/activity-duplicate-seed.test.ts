@@ -143,4 +143,111 @@ describe('Activity duplicate draft', () => {
       vi.unstubAllGlobals();
     }
   });
+
+  it('duplicates an all-day Activity with untimed named Sessions without changing its day range', () => {
+    vi.stubGlobal('crypto', {
+      randomUUID: vi.fn()
+        .mockReturnValueOnce('copied-session-a')
+        .mockReturnValueOnce('copied-session-b')
+        .mockReturnValueOnce('copied-objective'),
+    });
+    try {
+      const allDay: ActivityEditSettings = {
+        ...settings,
+        schedules: [
+          {
+            scheduleRef: 'all-day-envelope',
+            role: 'envelope',
+            name: null,
+            order: 0,
+            placementStateRef: 'all-day-state',
+            temporalForm: 'date_span',
+            start: '2026-11-16',
+            end: '2026-11-18',
+            zoneId: null,
+          },
+          {
+            scheduleRef: 'planned-one',
+            role: 'planned',
+            name: 'Ripasso',
+            order: 2,
+            placementStateRef: null,
+            temporalForm: null,
+            start: null,
+            end: null,
+            zoneId: null,
+          },
+          {
+            scheduleRef: 'planned-two',
+            role: 'planned',
+            name: 'Lettura',
+            order: 1,
+            placementStateRef: null,
+            temporalForm: null,
+            start: null,
+            end: null,
+            zoneId: null,
+          },
+        ],
+      };
+      const seed = buildActivityDuplicateSeed(profile, allDay);
+      expect(seed.fields).toMatchObject({
+        kind: 'activity',
+        title: 'Lavoro',
+        timeSemantics: 'all-day',
+        date: '2026-11-16',
+        contextId: 'area',
+      });
+      expect(seed.fields).not.toHaveProperty('startTime');
+      expect(seed.fields).not.toHaveProperty('durationMinutes');
+      expect(seed.advanced.endDate).toBe('2026-11-17');
+      expect(seed.advanced.activityStructure?.placementProtected).toBe(true);
+      expect(seed.advanced.activityStructure?.activityIntervals).toEqual([]);
+      expect(seed.advanced.activityStructure?.plannedSlices).toMatchObject([
+        { title: 'Lettura', timeEnabled: false },
+        { title: 'Ripasso', timeEnabled: false },
+      ]);
+      expect(seed.advanced.activityStructure?.plannedSlices).toHaveLength(2);
+      expect(seed.advanced.objectives?.map((row) => row.label)).toEqual([
+        'Finire',
+      ]);
+      expect(seed.advanced.objectives?.[0]).not.toHaveProperty('objectiveRef');
+      expect(seed.advanced.objectives?.[0]).not.toHaveProperty('observationRef');
+    } finally {
+      vi.unstubAllGlobals();
+    }
+  });
+
+  it('rejects inconsistent date-span Activities with separate time intervals', () => {
+    const invalid: ActivityEditSettings = {
+      ...settings,
+      schedules: [
+        {
+          scheduleRef: 'all-day-envelope',
+          role: 'envelope',
+          name: null,
+          order: 0,
+          placementStateRef: 'date-state',
+          temporalForm: 'date_span',
+          start: '2026-11-16',
+          end: '2026-11-18',
+          zoneId: null,
+        },
+        {
+          scheduleRef: 'interval',
+          role: 'interval',
+          name: null,
+          order: 1,
+          placementStateRef: 'interval-state',
+          temporalForm: 'named_zone_local',
+          start: '2026-11-16T09:00:00',
+          end: '2026-11-16T10:00:00',
+          zoneId: 'Europe/Rome',
+        },
+      ],
+    };
+    expect(() => buildActivityDuplicateSeed(profile, invalid)).toThrow(
+      'L’intervallo a giorni non è duplicabile in questa forma.',
+    );
+  });
 });

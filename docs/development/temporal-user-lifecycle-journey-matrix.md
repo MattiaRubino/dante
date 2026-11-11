@@ -1,3 +1,12 @@
+## 2026-11-11 — P1-A06: all-day Activity duplicate must retain unplaced named Sessions
+
+The focused parallel Chromium run `V2-(P1-A02|P1-A06)` recorded 2/2, 1 PASS (P1-A02) and 1 FAIL (P1-A06), after 6 backend unit tests, 1 PostgreSQL regression and the runner's self-test passed. The P1-A06 HTML snapshot proves successful Activity metadata/Objective/Session replacement and Life Area changes, followed by clicking Inspector `Duplica`. No composer appeared because `buildActivityDuplicateSeed` deliberately threw `Le sessioni pianificate richiedono un’attività con orario.` for a `date_span` with named planned Sessions.
+
+This guard contradicted valid all-day Activity canonical structure: unplaced named Sessions are allowed, as confirmed by the real saved state and by `buildTemporalCreateRecurringActivityTemplate` preserving `time_enabled:false` planned slices for all-day Activities. The duplicate seed now retains the original day range (end-exclusive -> inclusive), life area, objectives, placement protection and ordered untimed Sessions, without introducing invented clock times. The existing invalid `date_span`/interval mix rejection remains unchanged.
+
+The new unit regression asserts two out-of-order named Sessions are sorted and copied as untimed, no borrowed time fields, all-day date range preserved, and fresh Objective IDs. Targeted Chromium P1-A06 remains to be rerun; do not mark green before real execution. The separate P1-A02 scenario remains previously observed PASS. Next triage P2 grouped errors after this gate.
+
+---
 ## 2026-11-10 — Disposable E2E database capacity and interruption durability
 
 The first broad two-worker Chromium V2 run was interrupted near case 89/103. It exhibited repeated `QueuePool limit of size 5 overflow 5 ... timeout 5.00` after ~19 minutes, and did not produce JUnit because the browser process had not completed. The shared stack's `serve-access-auth-stack.py` sets only 5+5/5 seconds regardless of browser concurrency. Only for two-worker E2E execution, the Access/Auth harness now copies `DatabaseSettings` with a bounded 10+10/15-second pool; one-worker tests and production settings retain their original values. This addresses a demonstrated *test harness capacity mismatch*, but is not proof of absence of held connections; continued pool timeouts require further investigation.

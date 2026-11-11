@@ -3765,12 +3765,12 @@
     {
       "path": "apps/web/src/features/temporal-create/application/activity-duplicate-seed.test.ts",
       "suite": "web-unit-component",
-      "contract_id": "P-OTHER",
-      "candidate_behavior": "activity duplicate seed",
-      "purpose": "",
-      "invariant": "",
-      "status": "UNREVIEWED",
-      "audit_note": "Needs contract/assertion review, rejection cases, and executable evidence; filename alone is not proof."
+      "contract_id": "T05",
+      "candidate_behavior": "Activity duplication preserves all-day time span and independent untimed named Sessions",
+      "purpose": "Guard E2E V2-P1-A06; duplicate the final canonical all-day Activity with ordered planned Sessions, objectives and placement lock.",
+      "invariant": "date_span remains all-day, end-exclusive is converted to inclusive correctly, unplaced sessions remain time-disabled, no observed Objective results or record refs are copied.",
+      "status": "QUALIFIED",
+      "audit_note": "New regression covers date_span with named planned Sessions; pending WSL Vitest and E2E verification."
     },
     {
       "path": "apps/web/src/features/temporal-create/application/event-duplicate-seed.test.ts",
