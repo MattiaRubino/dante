@@ -980,9 +980,15 @@ async function deleteRecurringAndProveNoResurrection(
   await clickCard(future, laterTitle);
   await inspector.getByRole('button', { name: deletionButton, exact: true })
     .click();
-  const removedSeries = page.waitForResponse((response) =>
-    response.request().method() === 'DELETE' &&
-    response.url().includes('/api/v1/temporal/hard-deletion/'),
+  // Whole-series deletion atomically removes every materialized Activity
+  // lifecycle graph; the ordinary 15s click timeout is too short for this
+  // intentionally bounded, destructive database transaction. Await the
+  // actual HTTP response, never infer success from dialog disappearance.
+  const removedSeries = page.waitForResponse(
+    (response) =>
+      response.request().method() === 'DELETE' &&
+      response.url().includes('/api/v1/temporal/hard-deletion/'),
+    { timeout: 90_000 },
   );
   await dialog.getByRole('button', { name: 'Tutta la serie' }).click();
   expect((await removedSeries).status()).toBe(200);
