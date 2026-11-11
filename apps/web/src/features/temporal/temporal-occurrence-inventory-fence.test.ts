@@ -136,12 +136,12 @@ describe('recurring review and Timeline checkpoint admission', () => {
 
   it('releases subsequent operations after a failed checkpoint', async () => {
     await expect(
-      withTemporalOccurrenceInventoryFence(async () => {
-        throw new Error('checkpoint rejected');
-      }),
+      withTemporalOccurrenceInventoryFence(() =>
+        Promise.reject(new Error('checkpoint rejected')),
+      ),
     ).rejects.toThrow('checkpoint rejected');
     await expect(
-      withTemporalOccurrenceInventoryFence(async () => 'preview permitted'),
+      withTemporalOccurrenceInventoryFence(() => Promise.resolve('preview permitted')),
     ).resolves.toBe('preview permitted');
   });
 
