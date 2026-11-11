@@ -17,9 +17,6 @@ export function withTemporalOccurrenceInventoryFence<T>(
   operation: () => Promise<T>,
 ): Promise<T> {
   const result = settled.then(operation);
-  settled = result.then(
-    () => undefined,
-    () => undefined,
-  );
+  settled = result.then(() => undefined, () => undefined);
   return result;
 }
