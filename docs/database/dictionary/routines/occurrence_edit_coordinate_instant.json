@@ -8,7 +8,7 @@
     "name": "occurrence_edit_coordinate_instant",
     "ownership_class": "dante_owned"
   },
-  "purpose": "Resolve one self-owned typed Occurrence coordinate to an aware instant under the validated effective IANA zone; explicitly decline unordered extra occurrences and DST gaps.",
+  "purpose": "Resolve a self-owned typed Occurrence coordinate to an aware instant under the validated IANA zone; for named-zone all-day calendar occurrences use the civil date at local midnight, while requiring DST-resolved instants for timed named-zone candidates and rejecting unordered extras or DST gaps.",
   "classification": {
     "persistence_role": "occurrence_scoped_edit_capability",
     "canonicality": "capability_surface",
@@ -108,12 +108,14 @@
       "Actual history is never overwritten",
       "Correct effective zone/DST handling and bounded candidate scan",
       "Stable replay, stale CAS and protected future conflicts",
-      "Routine/Event source parity"
+      "Routine/Event source parity",
+      "Named-zone all-day calendar instances with no wall time or resolved instant retain a valid civil-midnight edit ordering; timed unresolved named-zone coordinates remain rejected"
     ],
     "test_refs": [
       "apps/backend/tests/integration/temporal/test_b14_m1_scoped_profile_edit.py",
       "apps/backend/tests/integration/database/test_current_catalog.py",
-      "apps/backend/tests/integration/database/test_database_current_catalog.py"
+      "apps/backend/tests/integration/database/test_database_current_catalog.py",
+      "apps/backend/tests/integration/temporal/test_recurring_series_life_area.py"
     ],
     "staged_evidence": []
   }
