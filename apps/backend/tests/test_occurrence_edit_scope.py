@@ -315,14 +315,14 @@ def test_series_edit_rejection_log_preserves_known_invariant_but_redacts_arbitra
         and record.msg == "temporal.recurring_series.edit_rejected"
     ]
     assert len(records) == 2
-    assert getattr(records[0], "dante_fields") == {
+    assert vars(records[0])["dante_fields"] == {
         "phase": "preview",
         "exception_type": "SeriesReconciliationError",
         "reason": "Regenerated cadence escapes its declared horizon.",
     }
-    assert getattr(records[1], "dante_fields") == {
+    assert vars(records[1])["dante_fields"] == {
         "phase": "accept",
         "exception_type": "ValueError",
         "reason": "redacted",
     }
-    assert "PRIVATE INPUT" not in str(getattr(records[1], "dante_fields"))
+    assert "PRIVATE INPUT" not in str(vars(records[1])["dante_fields"])
