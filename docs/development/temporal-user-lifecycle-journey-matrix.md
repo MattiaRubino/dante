@@ -1,3 +1,17 @@
+## 2026-11-11 — Five-case Chromium smoke: positional Recurrence API and Life Area E2E fixture
+
+The 5-case Chromium V2 smoke `V2-(P2-A01|P2-A03|P2-E01|P2-E03|RT-02)` produced 2 PASS (P2-E01, RT-02), 2 FAIL (P2-A01, P2-A03) and 1 ERROR (P2-E03), 0 skips, in 116.7 s.
+
+E03 is a backend HTTP 500: `GET /events/{ref}/recurrence` validates tuple `ordinal_weekdays` via `RecurrenceStateResponse` which expects named objects. The transport-only fix serializes ordinal weekday and annual month/day coordinates as explicit field maps, with offline contract regressions for each. The Domain tuple representation and canonical persistence remain unchanged. Candidate remains unverified on WSL.
+
+A03 is a test-fixture mistake: the `existing` Life Area is already `#FFD600` for case 03, and selecting Giallo again is a no-op. The browser test now deterministically chooses a *different* named color and still asserts the global-change warning and canonical catalog readback; no product warning has been fabricated. Candidate remains unverified on WSL.
+
+A01 is separate and **unresolved**: HTTP 409 `temporal.recurring_series.stale` in the second series acceptance. Its network trace shows `POST /occurrences/checkpoint` beginning before the preview and completing before acceptance. This suggests an inventory/preview interaction but does not yet prove which fingerprint input changed. Do not bypass the fingerprint or silently auto-accept a stale review; isolate with a real-stack single-browser A01 journey and canonical fingerprint diagnostics.
+
+No full green E2E gate is claimed for this commit series. The owner's generated OpenAPI/client changes are not modified by these source/test updates.
+
+---
+
 ## 2026-11-11 — P2-A04 Activity local edit: wait for the actual atomic commit
 
 Owner's three-case isolated Chromium smoke `V2-(P2-E04|P2-A04|P3-EFIRST)` produced **2 PASS** (P2-E04, P3-EFIRST) and **1 FAIL** (P2-A04) in 102.13 s. The failing A04 step expected the last finite Activity's locally changed title on 2027-01-11; HTTP 200 canonical Timeline instead retained the original title. The diagnostic trace demonstrates that Activity Edit changed the submit button label from `Salva modifiche` to `Salvataggio…`; the test's `toHaveCount(0)` on the former label passed while the editor was still pending. It immediately navigated Home and no `PUT /activities/{ref}/atomic-edit` had completed or even appeared in the recorded network. This is a **test driver false completion**, not evidence of a rejected Activity edit, a recurrence cardinality defect, or an Event regression.
