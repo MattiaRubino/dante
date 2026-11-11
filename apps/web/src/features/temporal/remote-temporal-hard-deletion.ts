@@ -1,5 +1,8 @@
 import { createWebFetch } from '../../platform/api/web-fetch';
-import { withTemporalOccurrenceInventoryFence } from './temporal-occurrence-inventory-fence';
+import {
+  withTemporalOccurrenceInventoryFence,
+  type TemporalOccurrenceInventoryReviewLease,
+} from './temporal-occurrence-inventory-fence';
 import {
   invalidateTemporalPlanningRead,
   invalidateTemporalTimelineRead,
@@ -93,8 +96,11 @@ export function createRemoteTemporalHardDeletion(
       }
       return { requestedRef: ref, scope, fingerprint: value.fingerprint };
     },
-    async deleteConfirmed(preview: TemporalHardDeletionPreview): Promise<void> {
-      return withTemporalOccurrenceInventoryFence(async () => {
+    async deleteConfirmed(
+      preview: TemporalHardDeletionPreview,
+      lease?: TemporalOccurrenceInventoryReviewLease,
+    ): Promise<void> {
+      const operation = async () => {
         const authResponse = await request('/api/v1/auth/session');
         const auth = record(await authResponse.json());
         if (
@@ -139,7 +145,10 @@ export function createRemoteTemporalHardDeletion(
         }
         invalidateTemporalTimelineRead();
         invalidateTemporalPlanningRead();
-      });
+      };
+      return lease
+        ? lease.run(operation)
+        : withTemporalOccurrenceInventoryFence(operation);
     },
   });
 }
