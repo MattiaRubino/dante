@@ -891,18 +891,31 @@ async function localRevision(
   await inspector.getByRole('textbox', {
     name: kind === 'event' ? 'Titolo Event' : 'Titolo',
   }).fill(changedTitle);
-  await inspector.getByRole('button', { name: 'Salva modifiche' }).click();
-  // A Save click is not proof of persistence. The generated Event may
-  // POST /event-local-edit (or PUT the physical first Event profile);
-  // Activities use an atomic PUT. Wait for the editor's actual accepted
-  // completion before Home navigation, which otherwise aborts that write.
+  // The Activity submit button changes its accessible name to "Salvataggio…"
+  // immediately on submission. Waiting for "Salva modifiche" to disappear
+  // proves only that the request STARTED, not that PostgreSQL accepted it.
+  // Navigating at that point can abort the actual atomic PUT. Observe the
+  // precise mutation response and the editor closing before reloading Home.
   if (kind === 'event') {
+    await inspector.getByRole('button', { name: 'Salva modifiche' }).click();
     await expect(
       inspector.getByText('Evento aggiornato.'),
     ).toBeVisible({ timeout: 15_000 });
   } else {
+    const [accepted] = await Promise.all([
+      page.waitForResponse((response) =>
+        response.request().method() === 'PUT' &&
+        /\/api\/v1\/temporal\/activities\/[^/]+\/atomic-edit$/.test(
+          response.url(),
+        ),
+      { timeout: 15_000 }),
+      inspector.getByRole('button', { name: 'Salva modifiche' }).click(),
+    ]);
+    expect(accepted.status(), 'Activity occurrence edit must commit')
+      .toBe(200);
     await expect(
-      inspector.getByRole('button', { name: 'Salva modifiche' }),
+      inspector.locator('form.timeline-activity-editor'),
+      'Activity editor must finish saving before Timeline navigation',
     ).toHaveCount(0, { timeout: 15_000 });
   }
   await assertCard(page, day, changedTitle);
