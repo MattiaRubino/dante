@@ -2,6 +2,7 @@ import { describe, expect, it, vi } from 'vitest';
 
 import { createRemoteTemporalHardDeletion } from './remote-temporal-hard-deletion';
 import { createRemoteTemporalTimelineDataSource } from './remote-timeline-read';
+import { holdTemporalOccurrenceInventoryReview } from './temporal-occurrence-inventory-fence';
 
 const ACTIVITY = '0199a222-2222-7222-8222-222222222222';
 const PREVIEW = {
@@ -154,4 +155,43 @@ describe('atomic recurring hard deletion versus Timeline checkpoint', () => {
     });
     expect(calls).toEqual(['delete', 'checkpoint']);
   });
+  it('keeps a confirmed whole-series delete consistent across human review', async () => {
+    const waitingDelete = heldResponse();
+    const calls: string[] = [];
+    const fetchFn = testFetch(
+      calls,
+      () => Promise.resolve(Response.json(CHECKPOINT)),
+      () => waitingDelete.promise,
+    );
+    const timeline = createRemoteTemporalTimelineDataSource(
+      fetchFn,
+      () => 'Europe/Rome',
+    );
+    const deletion = createRemoteTemporalHardDeletion(fetchFn);
+    if (!timeline.checkpointWindow) {
+      throw new Error('Checkpoint capability missing.');
+    }
+    // Model the actual Activity/Event inspector: capture every preview
+    // fingerprint under the same lease used by the confirmation.
+    const { lease } = await holdTemporalOccurrenceInventoryReview(
+      () => Promise.resolve(PREVIEW),
+    );
+    try {
+      const checkpoint = timeline.checkpointWindow(WINDOW);
+      await Promise.resolve();
+      expect(calls).toEqual([]);
+      const deleted = deletion.deleteConfirmed(PREVIEW, lease);
+      await vi.waitFor(() => expect(calls).toEqual(['delete']));
+      waitingDelete.complete(Response.json(DELETED));
+      await expect(deleted).resolves.toBeUndefined();
+      expect(calls).toEqual(['delete']);
+      lease.release();
+      await expect(checkpoint).resolves.toMatchObject({ occurrenceCount: 37 });
+      expect(calls).toEqual(['delete', 'checkpoint']);
+    } finally {
+      waitingDelete.complete(Response.json(DELETED));
+      lease.release();
+    }
+  });
+
 });
