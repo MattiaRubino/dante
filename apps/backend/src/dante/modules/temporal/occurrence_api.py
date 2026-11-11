@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+import logging
 from dataclasses import asdict
 from datetime import date, datetime, time
 from typing import Annotated, Literal
@@ -52,6 +53,7 @@ from dante.modules.temporal.occurrence_edit_inventory import (
     OccurrenceEditInventoryApplication,
     OccurrenceEditInventoryLimitError,
 )
+from dante.modules.temporal.occurrence_edit_scope import EditScopeInputError
 from dante.modules.temporal.reality_objective_api import (
     ActivityObjectiveBatchCommand,
     RealityPolicyCommand,
@@ -71,6 +73,7 @@ from dante.modules.temporal.recurring_structure_policy import (
     RecurringStructurePolicyApplication,
     RecurringStructurePolicyError,
 )
+from dante.modules.temporal.recurring_structure_preview import StructuralSeriesPreviewError
 from dante.modules.temporal.routine_occurrence_materialization import (
     RoutineOccurrenceMaterializationApplication,
 )
@@ -98,7 +101,9 @@ from dante.modules.temporal.schedule_reminder import (
 )
 from dante.platform.database.references import MaterialStateRef, NativeRef, ScopedRecordRef
 from dante.platform.http.problem import ProblemError
+from dante.platform.observability.logging import log_event
 
+_LOGGER = logging.getLogger(__name__)
 router = APIRouter(prefix="/api/v1/temporal", tags=["temporal"])
 Context = Annotated[DanteContext, Depends(require_dante_context)]
 MutatingContext = Annotated[DanteContext, Depends(require_mutating_dante_context)]
@@ -1498,6 +1503,34 @@ def _series_source_recurrence(value: CalendarRecurrence) -> CalendarRecurrenceRe
     )
 
 
+def _log_series_edit_rejection(
+    phase: Literal["preview", "accept"], exc: Exception
+) -> None:
+    """Surface the exact *internal* validation invariant without leaking inputs.
+
+    These domain exception classes contain fixed, developer-owned messages.
+    Unknown ValueError messages may contain user input and are always redacted.
+    Public RFC 9457 problem details remain unchanged.
+    """
+    safe_types = (
+        SeriesReconciliationError,
+        StructuralSeriesPreviewError,
+        EditScopeInputError,
+        RecurringSeriesEditConflictError,
+        RecurringStructurePolicyError,
+    )
+    log_event(
+        _LOGGER,
+        logging.WARNING,
+        "temporal.recurring_series.edit_rejected",
+        fields={
+            "phase": phase,
+            "exception_type": type(exc).__name__,
+            "reason": str(exc) if type(exc) in safe_types else "redacted",
+        },
+    )
+
+
 def _series_problem(exc: Exception) -> ProblemError:
     if isinstance(exc, (SeriesReconciliationError, ValueError)):
         return _problem(OccurrenceInputError(str(exc)))
@@ -1842,6 +1875,7 @@ async def preview_recurring_series_edit(
         RecurringStructurePolicyError,
         ValueError,
     ) as exc:
+        _log_series_edit_rejection("preview", exc)
         raise _series_problem(exc) from exc
     return RecurringSeriesEditPreviewResponse(
         source_native_ref=prepared.source_ref,
@@ -1901,6 +1935,7 @@ async def accept_recurring_series_edit(
         RecurringStructurePolicyError,
         ValueError,
     ) as exc:
+        _log_series_edit_rejection("accept", exc)
         raise _series_problem(exc) from exc
     return RecurringSeriesEditResponse(
         source_native_ref=accepted.source_ref,
