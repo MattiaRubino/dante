@@ -16,6 +16,7 @@ import type {
   TemporalTimelineWindowCheckpointResult,
   TemporalTimelineWindowRequest,
 } from './timeline-read';
+import { withTemporalOccurrenceInventoryFence } from './temporal-occurrence-inventory-fence';
 
 const TEMPORAL_TIMELINE_WINDOW_ENDPOINT = '/api/v1/temporal/timeline/window';
 const TEMPORAL_OCCURRENCE_WINDOW_CHECKPOINT_ENDPOINT =
@@ -1190,37 +1191,39 @@ export function createRemoteTemporalTimelineDataSource(
       request: TemporalTimelineWindowCheckpointRequest,
       signal?: AbortSignal,
     ): Promise<TemporalTimelineWindowCheckpointResult> {
-      validateCheckpointRequest(request);
-      const csrf = await checkpointCsrfToken(webFetch, signal);
-      const response = await fetchTimelineResponse(
-        webFetch,
-        TEMPORAL_OCCURRENCE_WINDOW_CHECKPOINT_ENDPOINT,
-        {
-          method: 'POST',
-          headers: new Headers({
-            'Content-Type': 'application/json',
-            [CSRF_HEADER_NAME]: csrf,
-          }),
-          body: JSON.stringify({
-            operation_id: request.operationId.trim(),
-            start_date: request.startDate,
-            end_date_exclusive: request.endDateExclusive,
-          }),
-          ...(signal === undefined ? {} : { signal }),
-        },
-      );
-      const payload = await responsePayload(
-        response,
-        'Timeline checkpoint response',
-      );
-      if (!response.ok) {
-        throw new TemporalTimelineRemoteError(
-          'http',
-          `Timeline checkpoint failed with HTTP ${response.status}.`,
-          response.status,
+      return withTemporalOccurrenceInventoryFence(async () => {
+        validateCheckpointRequest(request);
+        const csrf = await checkpointCsrfToken(webFetch, signal);
+        const response = await fetchTimelineResponse(
+          webFetch,
+          TEMPORAL_OCCURRENCE_WINDOW_CHECKPOINT_ENDPOINT,
+          {
+            method: 'POST',
+            headers: new Headers({
+              'Content-Type': 'application/json',
+              [CSRF_HEADER_NAME]: csrf,
+            }),
+            body: JSON.stringify({
+              operation_id: request.operationId.trim(),
+              start_date: request.startDate,
+              end_date_exclusive: request.endDateExclusive,
+            }),
+            ...(signal === undefined ? {} : { signal }),
+          },
         );
-      }
-      return parseWindowCheckpoint(payload, request);
+        const payload = await responsePayload(
+          response,
+          'Timeline checkpoint response',
+        );
+        if (!response.ok) {
+          throw new TemporalTimelineRemoteError(
+            'http',
+            `Timeline checkpoint failed with HTTP ${response.status}.`,
+            response.status,
+          );
+        }
+        return parseWindowCheckpoint(payload, request);
+      });
     },
 
     async loadWindow(
