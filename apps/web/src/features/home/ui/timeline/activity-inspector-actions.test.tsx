@@ -13,6 +13,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import { ActivityInspectorActions } from './activity-inspector-actions';
 import { ActivityEditPanel } from './activity-edit-panel';
+import { withTemporalOccurrenceInventoryFence } from '../../../temporal/temporal-occurrence-inventory-fence';
 import { SessionAttemptDeleteDialog } from './session-attempt-delete-dialog';
 import type { ActivityDuplicateSeed } from '../../../temporal-create/application/activity-duplicate-seed';
 
@@ -2780,6 +2781,11 @@ describe('Activity Inspector', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Annulla' }));
     expect(confirmHardDeletion).not.toHaveBeenCalled();
     expect(onDeleted).not.toHaveBeenCalled();
+    await expect(
+      withTemporalOccurrenceInventoryFence(() =>
+        Promise.resolve('checkpoint can resume'),
+      ),
+    ).resolves.toBe('checkpoint can resume');
 
     loadRecurringContext.mockResolvedValueOnce({
       sourceRef: series.requestedRef,
