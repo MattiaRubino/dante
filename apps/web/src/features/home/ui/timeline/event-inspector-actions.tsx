@@ -1326,6 +1326,9 @@ export function EventInspectorActions({
       if (onDeleted) onDeleted();
       else window.location.reload();
     } catch (reason) {
+      // A rejected CAS requires a new fingerprint; never reuse a stale
+      // confirmation just because its same-tab review lease was released.
+      setDeletePreviews(null);
       setError(
         reason instanceof Error
           ? reason.message
