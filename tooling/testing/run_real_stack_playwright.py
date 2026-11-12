@@ -67,22 +67,16 @@ def _unique_ports(projects: tuple[str, ...] = PROJECTS) -> dict[str, int]:
     return ports
 
 
-def _selector(grep: str | None, grep_invert: str | None = None) -> tuple[str, ...]:
+def _selector(grep: str | None) -> tuple[str, ...]:
     """Identical filtered inventory and Playwright execution arguments."""
-    return (
-        *(("--grep", grep) if grep is not None else ()),
-        *(("--grep-invert", grep_invert) if grep_invert is not None else ()),
-    )
+    return ("--grep", grep) if grep is not None else ()
 
 
-def _plan(
-    project: str, directory: Path, grep: str | None = None,
-    grep_invert: str | None = None,
-) -> int:
+def _plan(project: str, directory: Path, grep: str | None = None) -> int:
     command = (
         "pnpm", "exec", "playwright", "test", "--config",
         "playwright.auth.config.ts", "--project", project, "--list",
-        *_selector(grep, grep_invert),
+        *_selector(grep),
     )
     result = subprocess.run(
         command, cwd=WEB, text=True, capture_output=True, check=False,
@@ -99,25 +93,6 @@ def _plan(
             f"Cannot establish a unique positive inventory for {project}"
         )
     return int(matches[0])
-
-
-def _verify_v2_legacy_partition() -> None:
-    """Prove V2 and legacy selections cover the full browser inventory."""
-    with tempfile.TemporaryDirectory(prefix="dante-e2e-inventory-") as temp:
-        root = Path(temp)
-        for project in PROJECTS:
-            counts: dict[str, int] = {}
-            for label, grep, grep_invert in (
-                ("full", None, None),
-                ("v2", "V2-", None),
-                ("legacy", None, "V2-"),
-            ):
-                folder = root / label
-                folder.mkdir(exist_ok=True)
-                counts[label] = _plan(project, folder, grep, grep_invert)
-            if counts["full"] != counts["v2"] + counts["legacy"]:
-                raise RuntimeError(f"Incomplete V2/legacy inventory for {project}: {counts}")
-            print(f"REALSTACK_PARTITION {project}: {counts}", flush=True)
 
 
 def _junit_counts(report: Path) -> tuple[int, int, int, int]:
@@ -167,7 +142,6 @@ def _validate_coverage(
 def _run_project(
     project: str, port: int, discovered: int, directory: Path,
     grep: str | None = None, v2_workers: int = 1,
-    grep_invert: str | None = None,
 ) -> ShardResult:
     shard = directory / project
     shard.mkdir(parents=True, exist_ok=False)
@@ -187,7 +161,7 @@ def _run_project(
         "--reporter=line,junit,./e2e/auth/temporal-progress-reporter.ts",
         "--output", str(shard / "test-results"),
         *(("--fully-parallel",) if v2_workers > 1 else ()),
-        *_selector(grep, grep_invert),
+        *_selector(grep),
     )
     started = time.monotonic()
     with (shard / "playwright.log").open("w", encoding="utf-8") as log:
@@ -366,12 +340,10 @@ def _v2_selection_isolated(grep: str | None) -> bool:
     )
 
 
-def _v2_worker_budget(
-    setting: str, grep: str | None, grep_invert: str | None = None,
-) -> int:
+def _v2_worker_budget(setting: str, grep: str | None) -> int:
     if setting == "1":
         return 1
-    if grep_invert is not None or not _v2_selection_isolated(grep):
+    if not _v2_selection_isolated(grep):
         raise ValueError(
             "Parallel tests on one stack require an exclusively V2- "
             "title selection; legacy tests may restart PostgreSQL."
@@ -480,8 +452,8 @@ def _self_test() -> None:
     _assert_disposable_postgres_removal_contract()
     # A filtered inventory must be compared to the same filtered execution,
     # never the original full-suite count.
-    assert _plan.__defaults__ == (None, None)
-    assert _run_project.__defaults__ == (None, 1, None)
+    assert _plan.__defaults__ == (None,)
+    assert _run_project.__defaults__ == (None, 1)
     assert _v2_selection_isolated("V2-")
     assert _v2_selection_isolated("V2-P1-E01")
     assert _v2_selection_isolated("V2-(P1-A01|P2-E04|RT-02)")
@@ -495,17 +467,10 @@ def _self_test() -> None:
             raise AssertionError("Non-V2 tests must never share one stack concurrently")
     assert _v2_worker_budget("1", None) == 1
     assert _v2_worker_budget("2", "V2-P1-A01") == 2
-    try:
-        _v2_worker_budget("2", "V2-", "V2-")
-    except ValueError:
-        pass
-    else:
-        raise AssertionError("Inverted selections must never use two same-stack workers")
     assert _selector(None) == ()
     assert _selector(r"V2-P3-(E01|A01)") == (
         "--grep", r"V2-P3-(E01|A01)",
     )
-    assert _selector(None, "V2-") == ("--grep-invert", "V2-")
     with tempfile.TemporaryDirectory(prefix="dante-e2e-archive-test.") as temp:
         root = Path(temp)
         (root / "summary.json").write_text('{"exit_code": 1}\n')
@@ -590,33 +555,18 @@ def main() -> int:
     )
     parser.add_argument("--self-test", action="store_true")
     parser.add_argument(
-        "--verify-partition", action="store_true",
-        help="List full, V2, and legacy inventories for every browser and "
-             "require exact partition coverage without starting the stack.",
-    )
-    parser.add_argument(
         "--grep", default=None,
         help="Playwright test-title regex (also filters --list inventory); "
              "default runs the full unfiltered suite",
-    )
-    parser.add_argument(
-        "--grep-invert", default=None,
-        help="Exclude matching test titles in both inventory and execution; "
-             "use V2- for the legacy half of the complete E2E gate.",
     )
     args = parser.parse_args()
     if args.self_test:
         _self_test()
         return 0
-    if args.verify_partition:
-        _verify_v2_legacy_partition()
-        return 0
-    if args.grep is not None and args.grep_invert is not None:
-        parser.error("--grep and --grep-invert are separate gate partitions")
     if not 1 <= args.workers <= len(PROJECTS):
         parser.error("--workers must be between 1 and 3")
     try:
-        per_project = _v2_worker_budget(args.v2_workers, args.grep, args.grep_invert)
+        per_project = _v2_worker_budget(args.v2_workers, args.grep)
     except ValueError as exc:
         parser.error(str(exc))
     selected_projects = (args.project,) if args.project is not None else PROJECTS
@@ -641,7 +591,7 @@ def main() -> int:
             [
                 "pnpm", "exec", "playwright", "test", "--config",
                 "playwright.auth.config.ts",
-                *_selector(args.grep, args.grep_invert),
+                *_selector(args.grep),
             ],
             cwd=WEB, env=env, check=False,
         ).returncode
@@ -659,7 +609,7 @@ def main() -> int:
     interrupted = False
     try:
         planned = {
-            project: _plan(project, directory, args.grep, args.grep_invert)
+            project: _plan(project, directory, args.grep)
             for project in selected_projects
         }
         print(f"REALSTACK: discovered {planned}, total={sum(planned.values())}", flush=True)
@@ -684,7 +634,7 @@ def main() -> int:
             futures = {
                 pool.submit(
                     _run_project, p, ports[p], planned[p], directory,
-                    args.grep, per_project, args.grep_invert,
+                    args.grep, per_project,
                 ): p
                 for p in selected_projects
             }
@@ -709,7 +659,6 @@ def main() -> int:
                 "v2_workers_per_project": per_project,
                 "maximum_concurrent_browsers": stack_count * per_project,
                 "grep": args.grep,
-                "grep_invert": args.grep_invert,
                 "elapsed_seconds": round(time.monotonic() - started, 2),
                 "discovered": sum(planned.values()),
                 "recorded": sum(r.recorded for r in results),
