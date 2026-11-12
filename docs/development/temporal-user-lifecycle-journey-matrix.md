@@ -1,3 +1,13 @@
+## 2026-11-12 — bounded full Chromium gate after 78-minute partial run
+
+The owner's unfiltered serial run on f0f31619 completed **117/142** Chromium cases before interruption: **90 PASS, 27 FAIL**, zero skips among observed cases. Per-case durations already sum to about **78 minutes**, so the old `--workers 1 --project chromium` command is impractical. These 27 reds are actual observed test failures requiring their JUnit/error-context/trace diagnostics; the remaining 25 cases were not executed. Do not call this run green or treat the 27 as one confirmed cause.
+
+Run the complete inventory in **one invocation**, with **Chromium only**: `python3 tooling/testing/run_real_stack_playwright.py --project chromium --fast-chromium`. The wrapper compares exact listed case identities against all 142 unfiltered cases before executing, then runs 39 legacy cases on a database-isolated stack and 103 V2 cases on two independent database-isolated Chromium shards (52/51, up to two workers each). One aggregate `summary.json` and one diagnostics archive are emitted; no tests are skipped by design. The legacy outage/recovery test cannot share a PostgreSQL instance concurrently with V2. Progress prints every 20 seconds and the command exits with partial evidence after 45 minutes rather than waiting indefinitely. SIGINT immediately packages the partial summary and logs without recursively reducing traces; originals remain on disk.
+
+The selector was verified against Playwright 1.62.1 in a fresh checkout: full 142 unique cases, disjoint 39+52+51, exact union; Python compile and runner self-test pass. The new full live stack execution is **NOT_RUN** yet; its timing and green/red outcome must be measured from the owner's WSL/Docker environment. A green result would cover Chromium only.
+
+---
+
 ## 2026-11-12 — unfiltered Chromium run blocked by restartable Docker contract
 
 The owner ran the complete, unfiltered Chromium inventory: **142 discovered, 142 recorded, 9 PASS, 130 FAIL, 3 ERROR, 0 SKIP**, 111.65s wrapper time. The first five Access/Auth tests passed. Test six, the deliberate PostgreSQL outage/recovery journey, stopped the disposable database and failed in its mandatory `database-start` cleanup: the control script found **zero** containers for its unique control ID. Most following tests then failed almost immediately against the absent database. This is one harness cascade, **not 133 independently diagnosed product defects**; the run cannot assess the V2 matrix.
@@ -10,7 +20,7 @@ Confirmed code cause: `serve-access-auth-stack.py` starts PostgreSQL with `docke
 
 Owner Chromium evidence: A10 alone passed 1/1 in 80.37s. Four concurrent P2 representatives recorded 3/4 PASS in 240.04s: E11, A06 and A10 green; A01 returned HTTP 409 on whole-series DELETE after the single deletion succeeded. A following A01+E11 two-worker run passed 2/2 in 144.93s. The earlier 409 is **intermittent, not resolved**. Its submitted fingerprint matched the series preview, but the compact trace omitted the HTTP problem body. The E2E assertion now captures a bounded response body when a DELETE is rejected; no product fix is claimed.
 
-The next requested run is one **unfiltered Chromium execution**: `python3 tooling/testing/run_real_stack_playwright.py --workers 1 --project chromium`. This includes every V2 and earlier authenticated real-stack scenario in one inventory and one JUnit report, with automatic diagnostics and no same-stack concurrency. Report the exact SHA, inventory, PASS/FAIL/SKIP, elapsed time and archive. A green Chromium run is evidence for Chromium only; Firefox/WebKit and the 27-group gate remain separate later acceptance.
+The serial command below is superseded by the bounded Chromium orchestration at the top of this document. Its complete rerun is not yet green.
 
 
 ---
