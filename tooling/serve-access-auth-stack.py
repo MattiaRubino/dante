@@ -488,9 +488,9 @@ def main() -> None:
             try:
                 _docker(
                     "run",
-                    # Delete anonymous Postgres data volumes when this
-                    # disposable container exits, even after a forced stop.
-                    "--rm",
+                    # The outage E2E stops and restarts this same container.
+                    # --rm would erase it on stop; both cleanup paths below
+                    # remove the container and anonymous volumes explicitly.
                     "--detach",
                     "--name",
                     container_name,
