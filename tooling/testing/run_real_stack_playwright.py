@@ -14,6 +14,7 @@ import ast
 import json
 import os
 import re
+import signal
 import socket
 import subprocess
 import sys
@@ -49,6 +50,129 @@ class ShardResult:
     errors: int
     exit_code: int
     seconds: float
+
+
+@dataclass(frozen=True, slots=True)
+class ChromiumRun:
+    name: str
+    grep: str
+    invert: bool
+    shard: str | None
+    workers: int
+
+
+FAST_CHROMIUM = (
+    ChromiumRun("chromium-legacy", "V2-", True, None, 1),
+    ChromiumRun("chromium-v2-1", "V2-", False, "1/2", 2),
+    ChromiumRun("chromium-v2-2", "V2-", False, "2/2", 2),
+)
+
+
+class GateTimeout(RuntimeError):
+    """The bounded full Chromium run ended before its inventory completed."""
+
+
+def _chromium_args(run: ChromiumRun) -> tuple[str, ...]:
+    return (
+        "--grep-invert" if run.invert else "--grep", run.grep,
+        *(("--shard", run.shard) if run.shard else ()),
+        *(("--fully-parallel",) if run.workers > 1 else ()),
+    )
+
+
+def _chromium_inventory(output: str) -> set[str]:
+    """Use Playwright's listed case identities to prove exact shard coverage."""
+    return {
+        line.strip() for line in output.splitlines()
+        if line.strip().startswith("[chromium] › ")
+    }
+
+
+def _plan_chromium(run: ChromiumRun, directory: Path) -> tuple[int, set[str]]:
+    command = (
+        "pnpm", "exec", "playwright", "test", "--config",
+        "playwright.auth.config.ts", "--project", "chromium", "--list",
+        *_chromium_args(run),
+    )
+    result = subprocess.run(command, cwd=WEB, text=True, capture_output=True,
+                            check=False)
+    output = result.stdout + "\n" + result.stderr
+    (directory / f"{run.name}.inventory.log").write_text(output, encoding="utf-8")
+    matches = COLLECTED_TESTS.findall(output)
+    cases = _chromium_inventory(output)
+    if result.returncode or len(matches) != 1 or not cases or len(cases) != int(matches[0]):
+        raise RuntimeError(f"Cannot establish exact Playwright inventory for {run.name}")
+    return int(matches[0]), cases
+
+
+def _validate_chromium_partition(
+    full: set[str], inventories: dict[str, set[str]],
+    runs: tuple[ChromiumRun, ...] = FAST_CHROMIUM,
+) -> None:
+    if not full or set(inventories) != {run.name for run in runs}:
+        raise RuntimeError("Chromium run is missing an inventory")
+    union: set[str] = set()
+    for run in runs:
+        cases = inventories[run.name]
+        if not cases or union.intersection(cases):
+            raise RuntimeError(f"Chromium inventory overlaps or is empty: {run.name}")
+        union.update(cases)
+    if union != full:
+        raise RuntimeError(
+            f"Chromium partition differs from full inventory: "
+            f"missing={len(full - union)}, unexpected={len(union - full)}"
+        )
+
+
+def _launch_chromium(
+    run: ChromiumRun, port: int, directory: Path,
+) -> tuple[subprocess.Popen[bytes], object, float]:
+    shard = directory / run.name
+    shard.mkdir(parents=True, exist_ok=False)
+    env = {
+        **os.environ,
+        "DANTE_E2E_WEB_PORT": str(port),
+        "DANTE_E2E_PREBUILT_WEB": "1",
+        "PLAYWRIGHT_JUNIT_OUTPUT_FILE": str(shard / "junit.xml"),
+        "DANTE_E2E_PER_STACK_WORKERS": str(run.workers),
+        "DANTE_E2E_PROGRESS_JSONL": str(shard / "progress.jsonl"),
+    }
+    command = (
+        "pnpm", "exec", "playwright", "test", "--config",
+        "playwright.auth.config.ts", "--project", "chromium",
+        f"--workers={run.workers}", "--retries=0",
+        "--reporter=line,junit,./e2e/auth/temporal-progress-reporter.ts",
+        "--output", str(shard / "test-results"),
+        *_chromium_args(run),
+    )
+    log = (shard / "playwright.log").open("w", encoding="utf-8")
+    try:
+        process = subprocess.Popen(
+            command, cwd=WEB, env=env, stdout=log, stderr=subprocess.STDOUT,
+            start_new_session=True,
+        )
+    except BaseException:
+        log.close()
+        raise
+    return process, log, time.monotonic()
+
+
+def _finish_chromium(
+    run: ChromiumRun, port: int, discovered: int, directory: Path,
+    exit_code: int, started: float,
+) -> ShardResult:
+    shard = directory / run.name
+    try:
+        recorded, skipped, failed, errors = _junit_counts(shard / "junit.xml")
+    except (OSError, ElementTree.ParseError, RuntimeError) as exc:
+        (shard / "report-error.txt").write_text(f"{exc}\n", encoding="utf-8")
+        recorded, skipped, failed, errors = 0, 0, 0, 1
+    return ShardResult(
+        project=run.name, port=port, discovered=discovered,
+        recorded=recorded, passed=recorded - skipped - failed - errors,
+        skipped=skipped, failed=failed, errors=errors, exit_code=exit_code,
+        seconds=round(time.monotonic() - started, 2),
+    )
 
 
 def _free_port() -> int:
@@ -184,7 +308,7 @@ def _run_project(
     )
 
 
-def _write_diagnostic_archive(directory: Path) -> Path:
+def _write_diagnostic_archive(directory: Path, *, include_traces: bool = True) -> Path:
     """Package the actual Playwright evidence automatically and compactly.
 
     Keep each original trace.zip untouched for the local trace viewer.
@@ -197,9 +321,13 @@ def _write_diagnostic_archive(directory: Path) -> Path:
     traces_per_project: dict[str, int] = {}
     # Full matrices may have hundreds of failures. Cap upload-oriented trace
     # reduction to the first six per browser; retain every raw trace on disk.
-    sources = sorted(
-        directory.glob("*/test-results/**/trace.zip"),
-        key=lambda source: (source.parent.parent.parent.name, source.stat().st_mtime),
+    # An interrupted run must return control promptly, even when Playwright
+    # left thousands of trace resources behind. They remain available locally.
+    sources = (
+        sorted(directory.glob("*/test-results/**/trace.zip"),
+               key=lambda source: (source.parent.parent.parent.name,
+                                   source.stat().st_mtime))
+        if include_traces else []
     )
     for source in sources:
         relative = source.relative_to(directory)
@@ -258,12 +386,17 @@ def _write_diagnostic_archive(directory: Path) -> Path:
         "report-error.txt", "error-context.md", ".last-run.json",
         "trace-diagnostic.zip", "trace-diagnostic.error.txt",
     }
-    files = sorted(
-        p for p in directory.rglob("*")
-        if p.is_file() and (
-            p.name in names or p.name.endswith(".inventory.log")
+    if include_traces:
+        files = sorted(
+            p for p in directory.rglob("*")
+            if p.is_file() and (p.name in names or p.name.endswith(".inventory.log"))
         )
-    )
+    else:
+        files = sorted(
+            p for parent in (directory, *directory.iterdir()) if parent.is_dir()
+            for p in parent.iterdir()
+            if p.is_file() and (p.name in names or p.name.endswith(".inventory.log"))
+        )
     archive = directory / "E2E_DIAGNOSTICS.tar.gz"
     with tarfile.open(archive, "w:gz", compresslevel=1) as output:
         for file in files:
@@ -471,6 +604,27 @@ def _self_test() -> None:
     assert _selector(r"V2-P3-(E01|A01)") == (
         "--grep", r"V2-P3-(E01|A01)",
     )
+    assert _chromium_args(FAST_CHROMIUM[0]) == ("--grep-invert", "V2-")
+    assert _chromium_args(FAST_CHROMIUM[1]) == (
+        "--grep", "V2-", "--shard", "1/2", "--fully-parallel",
+    )
+    full = {"[chromium] › case-a", "[chromium] › case-b", "[chromium] › case-c"}
+    inventories = {
+        FAST_CHROMIUM[0].name: {"[chromium] › case-a"},
+        FAST_CHROMIUM[1].name: {"[chromium] › case-b"},
+        FAST_CHROMIUM[2].name: {"[chromium] › case-c"},
+    }
+    _validate_chromium_partition(full, inventories)
+    for damaged in (
+        {**inventories, FAST_CHROMIUM[2].name: set()},
+        {**inventories, FAST_CHROMIUM[2].name: inventories[FAST_CHROMIUM[1].name]},
+    ):
+        try:
+            _validate_chromium_partition(full, damaged)
+        except RuntimeError:
+            pass
+        else:
+            raise AssertionError("Missing or duplicated Chromium cases must fail")
     with tempfile.TemporaryDirectory(prefix="dante-e2e-archive-test.") as temp:
         root = Path(temp)
         (root / "summary.json").write_text('{"exit_code": 1}\n')
@@ -519,6 +673,10 @@ def _self_test() -> None:
                 assert "0-trace.network" in reduced_zip.namelist()
                 assert "resources/page@100.jpeg" not in reduced_zip.namelist()
         assert (failure / "trace.zip").exists()
+        interrupted_archive = _write_diagnostic_archive(root, include_traces=False)
+        with tarfile.open(interrupted_archive, "r:gz") as bundle:
+            assert "partial-summary.json" in bundle.getnames()
+            assert all("trace-diagnostic" not in name for name in bundle.getnames())
         # Even a broad RED matrix may only add six reduced traces per browser
         # to the upload, without deleting any original browser evidence.
         for i in range(6):
@@ -534,6 +692,153 @@ def _self_test() -> None:
             assert (root / "chromium" / "test-results" / f"extra-{i}" /
                     "trace.zip").exists()
     print("PASS: browser sharding, coverage, and auto-packaged E2E diagnostics")
+
+
+def _progress_counts(directory: Path) -> tuple[int, int, int]:
+    completed = passed = failed = 0
+    for path in directory.glob("*/progress.jsonl"):
+        for line in path.read_text(encoding="utf-8").splitlines():
+            try:
+                row = json.loads(line)
+            except json.JSONDecodeError:
+                continue
+            completed += 1
+            passed += row.get("status") == "passed" and row.get("outcome") == "expected"
+            failed += row.get("status") in {"failed", "timedOut", "interrupted"}
+    return completed, passed, failed
+
+
+def _run_full_chromium(directory: Path, report: Path, started: float,
+                       max_minutes: int) -> int:
+    total = _plan("chromium", directory)
+    full = _chromium_inventory(
+        (directory / "chromium.inventory.log").read_text(encoding="utf-8")
+    )
+    if len(full) != total:
+        raise RuntimeError("Full Chromium inventory has duplicate or missing case IDs")
+    inventories: dict[str, set[str]] = {}
+    planned: dict[str, int] = {}
+    for run in FAST_CHROMIUM:
+        planned[run.name], inventories[run.name] = _plan_chromium(run, directory)
+    _validate_chromium_partition(full, inventories)
+    print(
+        f"REALSTACK_CHROMIUM: all {total} cases, three isolated stacks, "
+        "five Chromium workers maximum; one aggregate report",
+        flush=True,
+    )
+    build_env = {
+        **os.environ,
+        "VITE_DANTE_APPLE_ENABLED": "true",
+        "VITE_DANTE_PASSKEY_ENABLED": "true",
+    }
+    with (directory / "web-build.log").open("w", encoding="utf-8") as log:
+        build = subprocess.run(
+            ["pnpm", "--filter", "@dante/web", "build"],
+            cwd=ROOT, env=build_env, stdout=log, stderr=subprocess.STDOUT,
+            check=False,
+        )
+    if build.returncode:
+        raise RuntimeError(f"Shared frontend build failed ({build.returncode})")
+
+    ports = _unique_ports(tuple(run.name for run in FAST_CHROMIUM))
+    active: dict[str, tuple[subprocess.Popen[bytes], object, float]] = {}
+    results: dict[str, ShardResult] = {}
+    deadline = started + max_minutes * 60
+    next_update = time.monotonic() + 20
+    try:
+        for run in FAST_CHROMIUM:
+            active[run.name] = _launch_chromium(run, ports[run.name], directory)
+        while active:
+            for run in FAST_CHROMIUM:
+                item = active.get(run.name)
+                if item is None:
+                    continue
+                process, log, launched = item
+                code = process.poll()
+                if code is None:
+                    continue
+                log.close()
+                del active[run.name]
+                result = _finish_chromium(run, ports[run.name], planned[run.name],
+                                          directory, code, launched)
+                results[run.name] = result
+                print(
+                    f"REALSTACK {run.name}: {result.recorded}/{result.discovered} "
+                    f"passed={result.passed} failed={result.failed} "
+                    f"errors={result.errors} elapsed={result.seconds}s",
+                    flush=True,
+                )
+            now = time.monotonic()
+            if now >= next_update:
+                done, passed, failed = _progress_counts(directory)
+                print(
+                    f"REALSTACK_PROGRESS: {done}/{total} completed, "
+                    f"passed={passed} failed={failed}, "
+                    f"elapsed={round(now - started)}s",
+                    flush=True,
+                )
+                next_update = now + 20
+            if active and now >= deadline:
+                raise GateTimeout(
+                    f"Chromium gate exceeded {max_minutes} minutes; "
+                    "partial results and logs have been saved"
+                )
+            if active:
+                time.sleep(1)
+    finally:
+        # Stop each complete process group: Playwright, its web server and
+        # the stack's Python cleanup handler all receive SIGTERM.
+        previous_sigint = signal.signal(signal.SIGINT, signal.SIG_IGN)
+        try:
+            for process, _, _ in active.values():
+                if process.poll() is None:
+                    try:
+                        os.killpg(process.pid, signal.SIGTERM)
+                    except ProcessLookupError:
+                        pass
+            for process, log, _ in active.values():
+                try:
+                    process.wait(timeout=12)
+                except subprocess.TimeoutExpired:
+                    try:
+                        os.killpg(process.pid, signal.SIGKILL)
+                    except ProcessLookupError:
+                        pass
+                    process.wait(timeout=3)
+                finally:
+                    log.close()
+        finally:
+            signal.signal(signal.SIGINT, previous_sigint)
+    ordered = [results[run.name] for run in FAST_CHROMIUM]
+    for result in ordered:
+        if result.recorded != planned[result.project]:
+            raise RuntimeError(
+                f"{result.project}: JUnit recorded {result.recorded}/"
+                f"{planned[result.project]} cases"
+            )
+    if sum(r.skipped for r in ordered) > MAX_BASELINE_SKIPS:
+        raise RuntimeError("Chromium gate introduced unexpected skipped cases")
+    if sum(r.recorded for r in ordered) != total:
+        raise RuntimeError("Chromium gate dropped or duplicated cases")
+    success = all(r.exit_code == 0 and r.failed == 0 and r.errors == 0 for r in ordered)
+    report.write_text(
+        json.dumps({
+            "selected_projects": ["chromium"],
+            "mode": "full-chromium-isolated",
+            "maximum_concurrent_browsers": 5,
+            "elapsed_seconds": round(time.monotonic() - started, 2),
+            "discovered": total,
+            "recorded": sum(r.recorded for r in ordered),
+            "skipped": sum(r.skipped for r in ordered),
+            "passed": sum(r.passed for r in ordered),
+            "failed": sum(r.failed for r in ordered),
+            "errors": sum(r.errors for r in ordered),
+            "exit_code": 0 if success else 1,
+            "projects": [asdict(r) for r in ordered],
+        }, indent=2) + "\n", encoding="utf-8",
+    )
+    print(f"REALSTACK_REPORT={report}", flush=True)
+    return int(not success)
 
 
 def main() -> int:
@@ -555,6 +860,16 @@ def main() -> int:
     )
     parser.add_argument("--self-test", action="store_true")
     parser.add_argument(
+        "--fast-chromium", action="store_true",
+        help="One complete Chromium invocation, internally isolated and "
+             "parallel, with one coverage-checked report",
+    )
+    parser.add_argument(
+        "--max-minutes", type=int, default=45,
+        help="Hard limit for --fast-chromium; return partial diagnostics "
+             "instead of running indefinitely (default: 45)",
+    )
+    parser.add_argument(
         "--grep", default=None,
         help="Playwright test-title regex (also filters --list inventory); "
              "default runs the full unfiltered suite",
@@ -565,6 +880,10 @@ def main() -> int:
         return 0
     if not 1 <= args.workers <= len(PROJECTS):
         parser.error("--workers must be between 1 and 3")
+    if args.max_minutes < 1:
+        parser.error("--max-minutes must be positive")
+    if args.fast_chromium and (args.project != "chromium" or args.grep is not None):
+        parser.error("--fast-chromium requires --project chromium and no --grep")
     try:
         per_project = _v2_worker_budget(args.v2_workers, args.grep)
     except ValueError as exc:
@@ -576,12 +895,13 @@ def main() -> int:
             "--v2-workers >1 with --workers 1 requires an explicit "
             "--project chromium/firefox/webkit smoke selection"
         )
-    print(
-        f"REALSTACK_CONCURRENCY=stacks:{stack_count} "
-        f"per_stack:{per_project} maximum_browsers:{stack_count * per_project}",
-        flush=True,
-    )
-    if args.workers == 1 and args.project is None:
+    if not args.fast_chromium:
+        print(
+            f"REALSTACK_CONCURRENCY=stacks:{stack_count} "
+            f"per_stack:{per_project} maximum_browsers:{stack_count * per_project}",
+            flush=True,
+        )
+    if args.workers == 1 and args.project is None and not args.fast_chromium:
         # Bit-for-bit equivalent selection and startup behavior to the
         # last all-green gate; no new sharding assumptions in fallback.
         port = _free_port()
@@ -608,6 +928,8 @@ def main() -> int:
     report = directory / "summary.json"
     interrupted = False
     try:
+        if args.fast_chromium:
+            return _run_full_chromium(directory, report, started, args.max_minutes)
         planned = {
             project: _plan(project, directory, args.grep)
             for project in selected_projects
@@ -678,6 +1000,13 @@ def main() -> int:
         )
         print("REALSTACK INTERRUPTED: observed tests saved as partial diagnostics", flush=True)
         return 130
+    except GateTimeout as exc:
+        interrupted = True
+        (directory / "orchestrator-error.txt").write_text(
+            f"{type(exc).__name__}: {exc}\n", encoding="utf-8",
+        )
+        print(f"REALSTACK TIMEOUT: {exc}", file=sys.stderr, flush=True)
+        return 124
     except (OSError, RuntimeError, subprocess.SubprocessError) as exc:
         (directory / "orchestrator-error.txt").write_text(
             f"{type(exc).__name__}: {exc}\n", encoding="utf-8",
@@ -690,9 +1019,9 @@ def main() -> int:
         # Full-size original traces stay in project directories.
         try:
             _write_partial_progress(directory, interrupted=interrupted)
-            archive = _write_diagnostic_archive(directory)
+            archive = _write_diagnostic_archive(directory, include_traces=not interrupted)
             print(f"REALSTACK_DIAGNOSTICS={archive}", flush=True)
-        except (OSError, RuntimeError, zipfile.BadZipFile) as exc:
+        except (OSError, RuntimeError, zipfile.BadZipFile, KeyboardInterrupt) as exc:
             print(
                 f"REALSTACK DIAGNOSTICS FAILED: {exc}",
                 file=sys.stderr, flush=True,
