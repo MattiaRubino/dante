@@ -1,3 +1,11 @@
+## 2026-11-12 — unfiltered Chromium run blocked by restartable Docker contract
+
+The owner ran the complete, unfiltered Chromium inventory: **142 discovered, 142 recorded, 9 PASS, 130 FAIL, 3 ERROR, 0 SKIP**, 111.65s wrapper time. The first five Access/Auth tests passed. Test six, the deliberate PostgreSQL outage/recovery journey, stopped the disposable database and failed in its mandatory `database-start` cleanup: the control script found **zero** containers for its unique control ID. Most following tests then failed almost immediately against the absent database. This is one harness cascade, **not 133 independently diagnosed product defects**; the run cannot assess the V2 matrix.
+
+Confirmed code cause: `serve-access-auth-stack.py` starts PostgreSQL with `docker run --rm`; `access-auth-e2e-control.py` uses `docker stop` then `docker start` on the **same container**. Docker removes an `--rm` container at stop. The repair removes `--rm`, retains `docker rm --force --volumes` on startup failure and in the harness `finally`, and changes the runner's self-test to reject the incompatible `--rm` lifecycle. Python compilation and the runner self-test pass on the candidate; the WSL Docker restart and full Chromium rerun remain **NOT_RUN** on that candidate.
+
+---
+
 ## 2026-11-12 — complete single-browser Chromium diagnostic
 
 Owner Chromium evidence: A10 alone passed 1/1 in 80.37s. Four concurrent P2 representatives recorded 3/4 PASS in 240.04s: E11, A06 and A10 green; A01 returned HTTP 409 on whole-series DELETE after the single deletion succeeded. A following A01+E11 two-worker run passed 2/2 in 144.93s. The earlier 409 is **intermittent, not resolved**. Its submitted fingerprint matched the series preview, but the compact trace omitted the HTTP problem body. The E2E assertion now captures a bounded response body when a DELETE is rejected; no product fix is claimed.
