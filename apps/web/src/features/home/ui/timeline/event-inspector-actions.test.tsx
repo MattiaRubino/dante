@@ -72,7 +72,13 @@ const acceptSeries = vi.fn();
 vi.mock('../../../temporal/remote-recurring-series-edit', () => ({
   createRemoteRecurringSeriesEdit: () => ({
     load: loadSeries,
-    preview: reviewSeries,
+    beginReview: async (intent: unknown) => ({
+      review: (await reviewSeries(intent)) as unknown,
+      lease: {
+        release: vi.fn(),
+        run: async (operation: () => Promise<unknown>) => operation(),
+      },
+    }),
     accept: acceptSeries,
   }),
 }));
@@ -927,6 +933,10 @@ describe('Event Inspector actions', () => {
       expect(acceptSeries).toHaveBeenCalledWith(
         expect.objectContaining({ scope: 'from_next' }),
         structuralReview,
+        expect.objectContaining({
+          release: functionMatcher(),
+          run: functionMatcher(),
+        }),
       ),
     );
     expect(saveRecurringEvent).not.toHaveBeenCalled();
@@ -1066,15 +1076,18 @@ describe('Event Inspector actions', () => {
     eventFirstOccurrence.mockResolvedValue(firstRef);
     loadOccurrenceContext.mockResolvedValue(context);
     loadRecurringPreview.mockResolvedValue({ selectedProtection: null });
-    loadProfile.mockResolvedValue({
+    loadOccurrenceEvent.mockResolvedValue({
       eventRef,
       title: 'Primo Evento',
       description: null,
       location: null,
       colorCode: null,
       profileRevision: 0,
+      agendaRevision: 0,
       agendaParts: [],
+      lifeAreaRef: null,
     });
+    loadOccurrencePatch.mockResolvedValue({});
     render(
       <EventInspectorActions
         eventRef={eventRef}
@@ -1091,8 +1104,11 @@ describe('Event Inspector actions', () => {
     fireEvent.click(
       screen.getByRole('button', { name: 'Solo questa istanza' }),
     );
-    await waitFor(() => expect(loadProfile).toHaveBeenCalledWith(eventRef));
-    expect(loadOccurrenceEvent).not.toHaveBeenCalled();
+    await waitFor(() =>
+      expect(loadOccurrenceEvent).toHaveBeenCalledWith(firstRef),
+    );
+    expect(loadProfile).not.toHaveBeenCalled();
+    expect(listObjectives).toHaveBeenCalledWith('occurrence', firstRef);
   });
 
   it('starts a future recurrence from the saved Event while retaining the first identity', async () => {
