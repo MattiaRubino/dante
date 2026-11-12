@@ -227,11 +227,22 @@ non-auth browser gate run one after the other **while** the PostgreSQL
 queue may still be active; their server ports remain separate, and browser
 test-results are archived before another browser gate runs. Only the
 opt-in parallel runner sets `DANTE_E2E_NONAUTH_WORKERS` (default 3);
-direct `playwright.config.ts` usage remains one worker. The real-stack
-auth Playwright gate stays **one worker** and starts **after** PostgreSQL
-has completely drained, because several of its actual tests deliberately
-stop and restart a real PostgreSQL instance. It cannot safely join the
-other PostgreSQL or browser pools without stronger resource isolation.
+direct `playwright.config.ts` usage remains one worker. The real-stack auth Playwright gate starts **after** PostgreSQL has
+completely drained. Its governed runner starts up to three independent
+browser/API/PostgreSQL stacks, one per Chromium, Firefox and WebKit project.
+The unfiltered gate keeps one Playwright worker inside each stack because
+legacy tests deliberately stop and restart their PostgreSQL. An exclusively
+V2 title selection may use two workers per stack: the accounts are isolated,
+and the runner enforces the bound. Never apply that mode to legacy tests.
+
+For a complete, faster diagnostic run on one unchanged SHA, first run
+`run_real_stack_playwright.py --verify-partition`. It checks that the
+`--grep V2-` and `--grep-invert V2-` inventories add up to the full
+inventory **for each browser**. Then run both selections on all three
+projects, V2 with `--workers 3 --v2-workers 2` and legacy with
+`--workers 3 --grep-invert V2-`. Preserve both summaries and archives;
+neither half alone is a full E2E PASS. The normal unfiltered gate remains
+the reference single-run acceptance path.
 
 Use:
 ```bash
