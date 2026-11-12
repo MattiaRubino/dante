@@ -27,6 +27,10 @@ function anyInstance(ctor: typeof String): unknown {
   return expect.any(ctor) as unknown;
 }
 
+function functionMatcher(): unknown {
+  return expect.any(Function) as unknown;
+}
+
 function requiredRecord(value: unknown): Record<string, unknown> {
   if (typeof value !== 'object' || value === null || Array.isArray(value)) {
     throw new Error('Expected an object in the mutation call.');
@@ -2797,8 +2801,8 @@ describe('Activity Inspector', () => {
       expect(confirmHardDeletion).toHaveBeenCalledWith(
         series,
         expect.objectContaining({
-          release: expect.any(Function),
-          run: expect.any(Function),
+          release: functionMatcher(),
+          run: functionMatcher(),
         }),
       ),
     );
