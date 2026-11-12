@@ -397,6 +397,10 @@ def _write_diagnostic_archive(directory: Path, *, include_traces: bool = True) -
             for p in parent.iterdir()
             if p.is_file() and (p.name in names or p.name.endswith(".inventory.log"))
         )
+        # Read only the immediate result directory for each case. A partial
+        # run needs its failure snapshots, but recursive trace traversal is
+        # what made the previous Ctrl+C appear to hang.
+        files.extend(sorted(directory.glob("*/test-results/*/error-context.md")))
     archive = directory / "E2E_DIAGNOSTICS.tar.gz"
     with tarfile.open(archive, "w:gz", compresslevel=1) as output:
         for file in files:
@@ -676,6 +680,7 @@ def _self_test() -> None:
         interrupted_archive = _write_diagnostic_archive(root, include_traces=False)
         with tarfile.open(interrupted_archive, "r:gz") as bundle:
             assert "partial-summary.json" in bundle.getnames()
+            assert "chromium/test-results/failed-test/error-context.md" in bundle.getnames()
             assert all("trace-diagnostic" not in name for name in bundle.getnames())
         # Even a broad RED matrix may only add six reduced traces per browser
         # to the upload, without deleting any original browser evidence.
@@ -841,6 +846,32 @@ def _run_full_chromium(directory: Path, report: Path, started: float,
     return int(not success)
 
 
+def _recover_last_run() -> int:
+    explicit = os.environ.get("DANTE_E2E_REAL_STACK_ARTIFACTS_DIR")
+    if explicit:
+        candidates = [Path(explicit).resolve()]
+    else:
+        candidates = list((ROOT / "temp").glob("dante-realstack-*"))
+    candidates = [
+        candidate for candidate in candidates
+        if candidate.is_dir() and list(candidate.glob("*/progress.jsonl"))
+    ]
+    if not candidates:
+        raise RuntimeError("No existing real-stack progress found under temp/")
+    directory = max(
+        candidates,
+        key=lambda candidate: max(
+            path.stat().st_mtime for path in candidate.glob("*/progress.jsonl")
+        ),
+    )
+    partial = _write_partial_progress(directory, interrupted=True)
+    archive = _write_diagnostic_archive(directory, include_traces=False)
+    print(f"REALSTACK_RECOVERED_FROM={directory}", flush=True)
+    print(f"REALSTACK_PARTIAL={partial}", flush=True)
+    print(f"REALSTACK_DIAGNOSTICS={archive}", flush=True)
+    return 0
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument(
@@ -860,6 +891,11 @@ def main() -> int:
     )
     parser.add_argument("--self-test", action="store_true")
     parser.add_argument(
+        "--recover-last", action="store_true",
+        help="Package progress, JUnit, logs and error contexts from the last "
+             "interrupted real-stack run without launching tests",
+    )
+    parser.add_argument(
         "--fast-chromium", action="store_true",
         help="One complete Chromium invocation, internally isolated and "
              "parallel, with one coverage-checked report",
@@ -878,6 +914,12 @@ def main() -> int:
     if args.self_test:
         _self_test()
         return 0
+    if args.recover_last:
+        try:
+            return _recover_last_run()
+        except (OSError, RuntimeError) as exc:
+            print(f"REALSTACK RECOVERY FAILED: {exc}", file=sys.stderr)
+            return 2
     if not 1 <= args.workers <= len(PROJECTS):
         parser.error("--workers must be between 1 and 3")
     if args.max_minutes < 1:
