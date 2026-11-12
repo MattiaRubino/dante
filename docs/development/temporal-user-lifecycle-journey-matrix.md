@@ -1,3 +1,11 @@
+## 2026-11-12 — complete browser inventory in two isolated selections
+
+Owner Chromium evidence: A10 alone passed 1/1 in 80.37s. Four concurrent P2 representatives recorded 3/4 PASS in 240.04s: E11, A06 and A10 green; A01 returned HTTP 409 on whole-series DELETE after the single deletion succeeded. A following A01+E11 two-worker run passed 2/2 in 144.93s. The earlier 409 is **intermittent, not resolved**. Its submitted fingerprint matched the series preview, but the compact trace omitted the HTTP problem body. The E2E assertion now captures a bounded response body when a DELETE is rejected; no product fix is claimed.
+
+The governed real-stack runner supports `--grep-invert` with identical selection in discovery and execution. `--verify-partition` must establish full = V2 + legacy for each of Chromium, Firefox and WebKit before a split gate. Execute both halves on **the same clean SHA**: `--workers 3 --v2-workers 2 --grep 'V2-'` for the 102 V2 cases per browser, then `--workers 3 --grep-invert 'V2-'` for every retained legacy test. The legacy half remains one worker per independent stack, preserving outage/recovery isolation. Upload both summaries and automatic diagnostics. A green half cannot certify the other; any 409 or missing test keeps the global E2E gate red. The unfiltered runner remains available as the reference acceptance run.
+
+---
+
 ## 2026-11-11 — targeted remediation after expensive 17/40 Chromium P2 run
 
 The 30m56s P2 run supplied enough evidence to avoid another blind full-matrix rerun. New code on `feature/timeline-temporal-operational` addresses **two confirmed repeated races**:
