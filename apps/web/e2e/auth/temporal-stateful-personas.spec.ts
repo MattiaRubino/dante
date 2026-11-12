@@ -1305,7 +1305,23 @@ async function deleteRecurringAndProveNoResurrection(
     { timeout: 90_000 },
   );
   await dialog.getByRole('button', { name: 'Tutta la serie' }).click();
-  expect((await removedSeries).status()).toBe(200);
+  const seriesResponse = await removedSeries;
+  const failureBody =
+    seriesResponse.status() === 200
+      ? ''
+      : await Promise.race([
+          seriesResponse.text().catch(() => 'response body unavailable'),
+          new Promise<string>((resolve) => {
+            setTimeout(
+              () => resolve('response body timed out after 3s'),
+              3_000,
+            );
+          }),
+        ]);
+  expect(
+    seriesResponse.status(),
+    `Whole-series DELETE returned HTTP ${seriesResponse.status()}: ${failureBody}`,
+  ).toBe(200);
   await expect(dialog).toHaveCount(0);
   await openHome(page, laterDay);
   await expect(onDay(page, laterDay, laterTitle)).toHaveCount(0);
