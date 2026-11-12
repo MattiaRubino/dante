@@ -1,8 +1,9 @@
-## 2026-11-12 — complete browser inventory in two isolated selections
+## 2026-11-12 — complete single-browser Chromium diagnostic
 
 Owner Chromium evidence: A10 alone passed 1/1 in 80.37s. Four concurrent P2 representatives recorded 3/4 PASS in 240.04s: E11, A06 and A10 green; A01 returned HTTP 409 on whole-series DELETE after the single deletion succeeded. A following A01+E11 two-worker run passed 2/2 in 144.93s. The earlier 409 is **intermittent, not resolved**. Its submitted fingerprint matched the series preview, but the compact trace omitted the HTTP problem body. The E2E assertion now captures a bounded response body when a DELETE is rejected; no product fix is claimed.
 
-The governed real-stack runner supports `--grep-invert` with identical selection in discovery and execution. `--verify-partition` must establish full = V2 + legacy for each of Chromium, Firefox and WebKit before a split gate. Execute both halves on **the same clean SHA**: `--workers 3 --v2-workers 2 --grep 'V2-'` for the 102 V2 cases per browser, then `--workers 3 --grep-invert 'V2-'` for every retained legacy test. The legacy half remains one worker per independent stack, preserving outage/recovery isolation. Upload both summaries and automatic diagnostics. A green half cannot certify the other; any 409 or missing test keeps the global E2E gate red. The unfiltered runner remains available as the reference acceptance run.
+The next requested run is one **unfiltered Chromium execution**: `python3 tooling/testing/run_real_stack_playwright.py --workers 1 --project chromium`. This includes every V2 and earlier authenticated real-stack scenario in one inventory and one JUnit report, with automatic diagnostics and no same-stack concurrency. Report the exact SHA, inventory, PASS/FAIL/SKIP, elapsed time and archive. A green Chromium run is evidence for Chromium only; Firefox/WebKit and the 27-group gate remain separate later acceptance.
+
 
 ---
 
