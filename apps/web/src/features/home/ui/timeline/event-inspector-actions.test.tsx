@@ -20,7 +20,6 @@ import { useTimelineCardDetails } from './timeline-card-details';
 import type { TimelineEvent } from './model/timeline-types';
 import { EventDetailDialog } from './timeline-overlays';
 
-
 function functionMatcher(): unknown {
   return expect.any(Function) as unknown;
 }
@@ -841,7 +840,9 @@ describe('Event Inspector actions', () => {
     expect(loadProfile).not.toHaveBeenCalled();
     expect(loadOccurrencePatch).not.toHaveBeenCalled();
     // The color is now an accessible trigger button, not a decorative img.
-    const colorTrigger = screen.getByRole('button', { name: 'Colore Life Area' });
+    const colorTrigger = screen.getByRole('button', {
+      name: 'Colore Life Area',
+    });
     expect(
       (colorTrigger.querySelector('span[aria-hidden="true"]') as HTMLElement)
         .style.background,
@@ -1443,15 +1444,15 @@ describe('Event Inspector actions', () => {
       observationRef: 'old-accepted-observation',
       evaluationStateRef: 'old-evaluation-state',
     };
-    listObjectives
-      .mockResolvedValueOnce([stored])
-      .mockResolvedValueOnce([{
+    listObjectives.mockResolvedValueOnce([stored]).mockResolvedValueOnce([
+      {
         ...stored,
         observationRef: null,
         evaluationStateRef: null,
         observedBoolean: null,
         assessmentCode: null,
-      }]);
+      },
+    ]);
     loadProfile.mockResolvedValue({
       eventRef,
       title: 'Conferenza',
@@ -1477,40 +1478,61 @@ describe('Event Inspector actions', () => {
       name: 'Obiettivo registrato Presenza',
     });
     expect(within(recorded).getByText('Risultato: Sì')).toBeTruthy();
-    expect(screen.queryByRole('textbox', { name: 'Nome obiettivo' })).toBeNull();
+    expect(
+      screen.queryByRole('textbox', { name: 'Nome obiettivo' }),
+    ).toBeNull();
     fireEvent.click(screen.getByRole('button', { name: '+ Obiettivo' }));
-    expect(screen.getByRole('textbox', { name: 'Nome obiettivo' }))
-      .toHaveProperty('value', '');
-    fireEvent.click(within(recorded).getByRole('button', {
-      name: 'Elimina registrazione',
-    }));
+    expect(
+      screen.getByRole('textbox', { name: 'Nome obiettivo' }),
+    ).toHaveProperty('value', '');
+    fireEvent.click(
+      within(recorded).getByRole('button', {
+        name: 'Elimina registrazione',
+      }),
+    );
     const dialog = await screen.findByRole('alertdialog', {
       name: 'Eliminare la registrazione?',
     });
     fireEvent.click(within(dialog).getByRole('button', { name: 'Annulla' }));
     expect(deleteRecordedResult).not.toHaveBeenCalled();
-    fireEvent.click(within(recorded).getByRole('button', {
-      name: 'Elimina registrazione',
-    }));
-    fireEvent.click(within(screen.getByRole('alertdialog', {
-      name: 'Eliminare la registrazione?',
-    })).getByRole('button', { name: 'Sì, elimina' }));
+    fireEvent.click(
+      within(recorded).getByRole('button', {
+        name: 'Elimina registrazione',
+      }),
+    );
+    fireEvent.click(
+      within(
+        screen.getByRole('alertdialog', {
+          name: 'Eliminare la registrazione?',
+        }),
+      ).getByRole('button', { name: 'Sì, elimina' }),
+    );
     await waitFor(() => {
-      expect(screen.getByRole('alert').textContent)
-        .toContain('Registrazione cambiata.');
+      expect(screen.getByRole('alert').textContent).toContain(
+        'Registrazione cambiata.',
+      );
     });
     expect(deleteRecordedResult).toHaveBeenCalledTimes(1);
-    expect(screen.getByRole('textbox', { name: 'Nome obiettivo' }))
-      .toHaveProperty('value', '');
-    expect(screen.getByRole('group', {
-      name: 'Obiettivo registrato Presenza',
-    })).toBeTruthy();
-    fireEvent.click(within(recorded).getByRole('button', {
-      name: 'Elimina registrazione',
-    }));
-    fireEvent.click(within(screen.getByRole('alertdialog', {
-      name: 'Eliminare la registrazione?',
-    })).getByRole('button', { name: 'Sì, elimina' }));
+    expect(
+      screen.getByRole('textbox', { name: 'Nome obiettivo' }),
+    ).toHaveProperty('value', '');
+    expect(
+      screen.getByRole('group', {
+        name: 'Obiettivo registrato Presenza',
+      }),
+    ).toBeTruthy();
+    fireEvent.click(
+      within(recorded).getByRole('button', {
+        name: 'Elimina registrazione',
+      }),
+    );
+    fireEvent.click(
+      within(
+        screen.getByRole('alertdialog', {
+          name: 'Eliminare la registrazione?',
+        }),
+      ).getByRole('button', { name: 'Sì, elimina' }),
+    );
     await waitFor(() => {
       expect(deleteRecordedResult).toHaveBeenCalledTimes(2);
       expect(deleteRecordedResult).toHaveBeenLastCalledWith(
@@ -1518,7 +1540,8 @@ describe('Event Inspector actions', () => {
         stored.evaluationStateRef,
       );
       expect(
-        screen.getAllByRole('textbox', { name: 'Nome obiettivo' })
+        screen
+          .getAllByRole('textbox', { name: 'Nome obiettivo' })
           .map((input) => (input as HTMLInputElement).value),
       ).toEqual(['Presenza', '']);
     });
@@ -1680,9 +1703,7 @@ describe('Event Inspector actions', () => {
       />,
     );
     fireEvent.click(screen.getByRole('button', { name: /^Modifica$/ }));
-    fireEvent.click(
-      await screen.findByRole('button', { name: '+ Obiettivo' }),
-    );
+    fireEvent.click(await screen.findByRole('button', { name: '+ Obiettivo' }));
     fireEvent.change(screen.getByRole('textbox', { name: 'Nome obiettivo' }), {
       target: { value: 'Presentare il progetto' },
     });
@@ -1733,9 +1754,7 @@ describe('Event Inspector actions', () => {
       />,
     );
     fireEvent.click(screen.getByRole('button', { name: /^Modifica$/ }));
-    fireEvent.click(
-      await screen.findByRole('button', { name: '+ Obiettivo' }),
-    );
+    fireEvent.click(await screen.findByRole('button', { name: '+ Obiettivo' }));
     fireEvent.change(screen.getByRole('textbox', { name: 'Nome obiettivo' }), {
       target: { value: 'Partecipare' },
     });
@@ -2177,31 +2196,62 @@ describe('Event Inspector actions', () => {
     };
     listObjectives.mockResolvedValueOnce([
       baseline,
-      { ...baseline, objectiveRef: 'q1', label: 'Quantità', resultKind: 'quantity',
-        comparatorCode: 'gte', targetValue: 12, observedNumeric: 123,
-        observedBoolean: null, presentationOrder: 1 },
-      { ...baseline, objectiveRef: 'v1', label: 'Valutazione',
-        resultKind: 'qualitative', observedBoolean: null, qualitativeCode: 'good',
-        presentationOrder: 2 },
-      { ...baseline, objectiveRef: 'r1', label: 'Intervallo',
-        resultKind: 'range', comparatorCode: 'between', targetMin: 12,
-        targetMax: 123, observedNumeric: 132, observedBoolean: null,
-        presentationOrder: 3 },
+      {
+        ...baseline,
+        objectiveRef: 'q1',
+        label: 'Quantità',
+        resultKind: 'quantity',
+        comparatorCode: 'gte',
+        targetValue: 12,
+        observedNumeric: 123,
+        observedBoolean: null,
+        presentationOrder: 1,
+      },
+      {
+        ...baseline,
+        objectiveRef: 'v1',
+        label: 'Valutazione',
+        resultKind: 'qualitative',
+        observedBoolean: null,
+        qualitativeCode: 'good',
+        presentationOrder: 2,
+      },
+      {
+        ...baseline,
+        objectiveRef: 'r1',
+        label: 'Intervallo',
+        resultKind: 'range',
+        comparatorCode: 'between',
+        targetMin: 12,
+        targetMax: 123,
+        observedNumeric: 132,
+        observedBoolean: null,
+        presentationOrder: 3,
+      },
     ]);
     loadProfile.mockResolvedValue({
-      eventRef, title: 'Conferenza', description: null, location: null,
-      colorCode: null, profileRevision: 1, agendaParts: [],
+      eventRef,
+      title: 'Conferenza',
+      description: null,
+      location: null,
+      colorCode: null,
+      profileRevision: 1,
+      agendaParts: [],
     });
     render(
       <EventInspectorActions
-        eventRef={eventRef} placement={placement} onDuplicate={vi.fn()}
+        eventRef={eventRef}
+        placement={placement}
+        onDuplicate={vi.fn()}
       />,
     );
     fireEvent.click(screen.getByRole('button', { name: 'Modifica' }));
     await screen.findByRole('group', { name: 'Obiettivo registrato Presenza' });
     fireEvent.click(screen.getByRole('button', { name: 'Salva modifiche' }));
     await waitFor(() =>
-      expect(screen.queryByRole('textbox', { name: 'Titolo Event' })).toBeNull(),
+      expect(
+        screen.queryByRole('textbox', { name: 'Titolo Event' }),
+      ).toBeNull(),
     );
     expect(reviseAtomic).not.toHaveBeenCalled();
     expect(reviseProfile).not.toHaveBeenCalled();
@@ -2535,9 +2585,9 @@ describe('Event Inspector actions', () => {
         expect(confirmHardDeletion).toHaveBeenCalledWith(
           scope === 'event_once' ? onlyThis : series,
           expect.objectContaining({
-          release: functionMatcher(),
-          run: functionMatcher(),
-        }),
+            release: functionMatcher(),
+            run: functionMatcher(),
+          }),
         ),
       );
       expect(onDeleted).toHaveBeenCalledOnce();
