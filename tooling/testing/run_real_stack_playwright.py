@@ -386,14 +386,14 @@ def _assert_disposable_postgres_removal_contract() -> None:
     removals = [tokens for tokens in commands if tokens[0] == "rm"]
     if not (
         len(started) == 1 and
-        "--rm" in started[0] and
+        "--rm" not in started[0] and
         len(removals) == 2 and
         all({"--force", "--volumes"} <= set(tokens) for tokens in removals)
     ):
         raise AssertionError(
-            "Disposable E2E PostgreSQL must use docker run --rm and "
-            "both startup-failure and final cleanup docker rm --volumes; "
-            "never leave anonymous Postgres data volumes."
+            "Restartable E2E PostgreSQL cannot use docker run --rm; "
+            "both startup-failure and final cleanup must use "
+            "docker rm --force --volumes."
         )
 
 
