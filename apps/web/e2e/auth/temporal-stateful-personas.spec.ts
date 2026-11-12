@@ -1189,8 +1189,10 @@ async function localRevision(
       name: 'Salva modifiche',
     });
     try {
-      await expect(saveButton, 'Activity editor must be ready before Save')
-        .toBeEnabled({ timeout: 5_000 });
+      await expect(
+        saveButton,
+        'Activity editor must be ready before Save',
+      ).toBeEnabled({ timeout: 5_000 });
       const [accepted] = await Promise.all([
         page.waitForResponse(
           (response) =>
@@ -1201,25 +1203,37 @@ async function localRevision(
       ]);
       expect(
         accepted.status(),
-        'Activity occurrence edit must commit: ' + await accepted.text(),
+        'Activity occurrence edit must commit: ' + (await accepted.text()),
       ).toBe(200);
       await expect(
         inspector.locator('form.timeline-activity-editor'),
         'Activity editor must finish saving before Timeline navigation',
       ).toHaveCount(0, { timeout: 15_000 });
     } catch (reason) {
-      const alerts = await inspector.locator('[role="alert"]')
-        .allTextContents().catch(() => []);
-      const invalidFields = await inspector.locator('[aria-invalid="true"]')
-        .evaluateAll((nodes) => nodes.map((node) =>
-          node.getAttribute('aria-label') ??
-          node.getAttribute('name') ?? 'unnamed',
-        )).catch(() => []);
+      const alerts = await inspector
+        .locator('[role="alert"]')
+        .allTextContents()
+        .catch(() => []);
+      const invalidFields = await inspector
+        .locator('[aria-invalid="true"]')
+        .evaluateAll((nodes) =>
+          nodes.map(
+            (node) =>
+              node.getAttribute('aria-label') ??
+              node.getAttribute('name') ??
+              'unnamed',
+          ),
+        )
+        .catch(() => []);
       throw new Error(
-        'Activity local edit did not commit: PUT started=' + started +
-          '; failed=' + failed +
-          '; alerts=' + JSON.stringify(alerts) +
-          '; invalidFields=' + JSON.stringify(invalidFields),
+        'Activity local edit did not commit: PUT started=' +
+          started +
+          '; failed=' +
+          failed +
+          '; alerts=' +
+          JSON.stringify(alerts) +
+          '; invalidFields=' +
+          JSON.stringify(invalidFields),
         { cause: reason },
       );
     } finally {
