@@ -235,14 +235,14 @@ legacy tests deliberately stop and restart their PostgreSQL. An exclusively
 V2 title selection may use two workers per stack: the accounts are isolated,
 and the runner enforces the bound. Never apply that mode to legacy tests.
 
-For a complete, faster diagnostic run on one unchanged SHA, first run
-`run_real_stack_playwright.py --verify-partition`. It checks that the
-`--grep V2-` and `--grep-invert V2-` inventories add up to the full
-inventory **for each browser**. Then run both selections on all three
-projects, V2 with `--workers 3 --v2-workers 2` and legacy with
-`--workers 3 --grep-invert V2-`. Preserve both summaries and archives;
-neither half alone is a full E2E PASS. The normal unfiltered gate remains
-the reference single-run acceptance path.
+For an exhaustive **single-browser** diagnostic, run
+`run_real_stack_playwright.py --workers 1 --project chromium` with no
+`--grep`. It discovers and executes every authenticated real-stack E2E
+case in Chromium, including V2 and the earlier tests, with one worker on
+its isolated stack. The summary verifies recorded JUnit coverage against
+that inventory and retains automatic diagnostics. This establishes
+Chromium coverage only; the eventual three-browser acceptance remains
+a separate gate.
 
 Use:
 ```bash
