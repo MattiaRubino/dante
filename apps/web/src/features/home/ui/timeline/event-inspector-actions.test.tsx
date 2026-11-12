@@ -20,6 +20,11 @@ import { useTimelineCardDetails } from './timeline-card-details';
 import type { TimelineEvent } from './model/timeline-types';
 import { EventDetailDialog } from './timeline-overlays';
 
+
+function functionMatcher(): unknown {
+  return expect.any(Function) as unknown;
+}
+
 const loadEvent = vi.fn();
 const loadOccurrenceEvent = vi.fn();
 const listExpectedParticipation = vi.fn().mockResolvedValue([]);
@@ -2457,8 +2462,8 @@ describe('Event Inspector actions', () => {
       expect(confirmHardDeletion).toHaveBeenCalledWith(
         preview,
         expect.objectContaining({
-          release: expect.any(Function),
-          run: expect.any(Function),
+          release: functionMatcher(),
+          run: functionMatcher(),
         }),
       ),
     );
@@ -2514,8 +2519,8 @@ describe('Event Inspector actions', () => {
         expect(confirmHardDeletion).toHaveBeenCalledWith(
           scope === 'event_once' ? onlyThis : series,
           expect.objectContaining({
-          release: expect.any(Function),
-          run: expect.any(Function),
+          release: functionMatcher(),
+          run: functionMatcher(),
         }),
         ),
       );
@@ -2708,8 +2713,8 @@ describe('Event Inspector actions', () => {
       expect(confirmHardDeletion).toHaveBeenCalledWith(
         instance,
         expect.objectContaining({
-          release: expect.any(Function),
-          run: expect.any(Function),
+          release: functionMatcher(),
+          run: functionMatcher(),
         }),
       ),
     );
