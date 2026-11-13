@@ -1,3 +1,13 @@
+## 2026-11-13 — weighted full Chromium distribution and five-case proof
+
+The owner's focused real-stack rerun at the preceding candidate completed **5/5 Chromium PASS** in **351.38s** (P1-A04 27.21s, P2-E11 73.97s, P2-E20 81.07s, P2-A10 85.43s, P3-E02 65.53s). The corrected single-envelope assertion and exact agenda selector are exercised; the five cases did not reproduce a 503. This does not qualify the remaining 137 cases or a long-running pool stability claim.
+
+The interrupted one-worker campaign recorded **78.2 minutes of per-case execution for 117/142**: 32 legacy cases 1.8m, 40 P1 22.2m, 40 P2 45.6m, and the first five P3 8.6m. Playwright count-based V2 sharding placed all 40 P1 and only 12 P2 in the first stack, while the second held 28 P2, all 21 P3, and two runtime cases. Its slow half would leave the first V2 stack idle. The full Chromium wrapper now assigns each unique V2 ID to one of two isolated stacks using deterministic phase-duration weights, then compares every selected Playwright `--list` identity with the complete inventory before execution. The actual inventory proof is **39 legacy + 52/51 V2 = 142 unique cases**; both V2 stacks now mix P1/P2/P3. The JUnit count check and one aggregate summary remain mandatory.
+
+Using the observed P1/P2/five P3 durations and estimated 110s for unobserved P3 cases, the V2 work is roughly **53/56 worker-minutes** across the two stacks, versus approximately **38/71** with count-based sharding. Two workers per stack give an idealized slow-stack floor near **28 minutes**, versus roughly **36 minutes** before; setup, PostgreSQL contention and future failures add wall time. These are projections, **not measured full-gate speedups**. The reporter now includes explicit `test.step` durations in each per-test progress record to identify the next real bottleneck. The complete balanced gate remains **NOT_RUN**. Do not promise the previous three-minute runtime for this much larger, stateful matrix.
+
+---
+
 ## 2026-11-13 — interrupted Chromium evidence and focused candidate fixes
 
 Recovered 27 per-case error contexts and the full Playwright/WebServer log from the 117/142 interrupted run. **Two deterministic E2E test defects:** P1-A04 expected a separate `interval` role for a single timed Activity, although Create persists only its physical `envelope` until additional bands are authored; the readback now checks the envelope plus exact explicit interval count. P2-E20 used a non-exact accessible name, so `Punto scaletta 1` also matched `Punto scaletta 10`; all five first-agenda selectors are exact. Neither test is skipped or weakened; the canonical schedule identity checks remain.
