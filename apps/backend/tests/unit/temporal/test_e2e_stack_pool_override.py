@@ -6,6 +6,7 @@ import runpy
 from dataclasses import dataclass, replace
 from pathlib import Path
 from typing import Any
+from uuid import uuid4
 
 import pytest
 from pydantic import SecretStr
@@ -45,11 +46,11 @@ def _baseline() -> _CopyableSettings:
 @pytest.mark.parametrize(
     ("workers", "expected"),
     [
-        ("1", (5, 5, 5.0)),
+        ("1", (10, 10, 15.0)),
         ("2", (10, 10, 15.0)),
     ],
 )
-def test_e2e_pool_budget_depends_only_on_browser_worker_count(
+def test_disposable_e2e_pool_is_bounded_for_supported_worker_counts(
     monkeypatch: pytest.MonkeyPatch,
     harness_override: Any,
     workers: str,
@@ -62,7 +63,7 @@ def test_e2e_pool_budget_depends_only_on_browser_worker_count(
         return baseline
 
     settings = harness_override(original)(
-        port=5432, runtime_password="only-test", auth_settings=object()
+        port=5432, runtime_password=uuid4().hex, auth_settings=object()
     )
     assert (
         settings.database.pool_size,
@@ -74,10 +75,7 @@ def test_e2e_pool_budget_depends_only_on_browser_worker_count(
         baseline.database.max_overflow,
         baseline.database.pool_timeout_seconds,
     ) == (5, 5, 5.0)
-    if workers == "1":
-        assert settings is baseline
-    else:
-        assert settings is not baseline
+    assert settings is not baseline
 
 
 @pytest.mark.parametrize("workers", ["0", "3", "auto", "-1"])
@@ -93,4 +91,4 @@ def test_e2e_pool_budget_rejects_unsupported_worker_counts(
 
     build = harness_override(original)
     with pytest.raises(RuntimeError, match="must be 1 or 2"):
-        build(port=5432, runtime_password="only-test", auth_settings=object())
+        build(port=5432, runtime_password=uuid4().hex, auth_settings=object())
