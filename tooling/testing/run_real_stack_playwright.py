@@ -22,7 +22,7 @@ import tarfile
 import tempfile
 import time
 import zipfile
-from concurrent.futures import ThreadPoolExecutor, as_completed
+from concurrent.futures import FIRST_COMPLETED, ThreadPoolExecutor, wait
 from dataclasses import asdict, dataclass
 from pathlib import Path
 from xml.etree import ElementTree
@@ -712,6 +712,9 @@ def _self_test() -> None:
         assert snapshot["projects"][0]["completed"] == 2
         assert snapshot["projects"][0]["passed"] == 1
         assert snapshot["projects"][0]["failed"] == 1
+        progress_line = _progress_line(root, 10, time.monotonic())
+        assert "2/10 (20.0%)" in progress_line
+        assert "passed=1 failed=1" in progress_line
         (root / "chromium" / "junit.xml").write_text(
             "<testsuite><testcase><failure/></testcase></testsuite>\n"
         )
@@ -775,6 +778,16 @@ def _progress_counts(directory: Path) -> tuple[int, int, int]:
             passed += row.get("status") == "passed" and row.get("outcome") == "expected"
             failed += row.get("status") in {"failed", "timedOut", "interrupted"}
     return completed, passed, failed
+
+
+def _progress_line(directory: Path, total: int, started: float) -> str:
+    completed, passed, failed = _progress_counts(directory)
+    return (
+        f"REALSTACK_PROGRESS: {completed}/{total} "
+        f"({completed / total * 100:.1f}%) completed, "
+        f"passed={passed} failed={failed}, "
+        f"elapsed={round(time.monotonic() - started)}s"
+    )
 
 
 def _run_full_chromium(directory: Path, report: Path, started: float,
@@ -841,13 +854,7 @@ def _run_full_chromium(directory: Path, report: Path, started: float,
                 )
             now = time.monotonic()
             if now >= next_update:
-                done, passed, failed = _progress_counts(directory)
-                print(
-                    f"REALSTACK_PROGRESS: {done}/{total} completed, "
-                    f"passed={passed} failed={failed}, "
-                    f"elapsed={round(now - started)}s",
-                    flush=True,
-                )
+                print(_progress_line(directory, total, started), flush=True)
                 next_update = now + 20
             if active and now >= deadline:
                 raise GateTimeout(
@@ -1068,17 +1075,23 @@ def main() -> int:
                 ): p
                 for p in selected_projects
             }
-            for future in as_completed(futures):
-                project = futures[future]
-                result = future.result()
-                completed[project] = result
-                print(
-                    f"REALSTACK {project}: exit={result.exit_code} "
-                    f"recorded={result.recorded}/{result.discovered} "
-                    f"passed={result.passed} skipped={result.skipped} "
-                    f"failed={result.failed} errors={result.errors} "
-                    f"seconds={result.seconds}", flush=True,
+            remaining = set(futures)
+            while remaining:
+                ready, remaining = wait(
+                    remaining, timeout=20, return_when=FIRST_COMPLETED,
                 )
+                print(_progress_line(directory, sum(planned.values()), started), flush=True)
+                for future in ready:
+                    project = futures[future]
+                    result = future.result()
+                    completed[project] = result
+                    print(
+                        f"REALSTACK {project}: exit={result.exit_code} "
+                        f"recorded={result.recorded}/{result.discovered} "
+                        f"passed={result.passed} skipped={result.skipped} "
+                        f"failed={result.failed} errors={result.errors} "
+                        f"seconds={result.seconds}", flush=True,
+                    )
         results = [completed[p] for p in selected_projects]
         _validate_coverage(planned, results, selected_projects)
         success = all(r.exit_code == 0 and r.failed == 0 and r.errors == 0 for r in results)
