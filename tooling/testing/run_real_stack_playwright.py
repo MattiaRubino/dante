@@ -509,6 +509,7 @@ def _v2_selection_isolated(grep: str | None) -> bool:
     return grep is not None and (
         re.fullmatch(r"V2-[A-Z0-9-]*", grep) is not None
         or re.fullmatch(r"V2-\([A-Z0-9|\-]+\)", grep) is not None
+        or re.fullmatch(r"V2-[A-Z0-9-]+\([A-Z0-9|\-]+\)", grep) is not None
     )
 
 
@@ -629,7 +630,12 @@ def _self_test() -> None:
     assert _v2_selection_isolated("V2-")
     assert _v2_selection_isolated("V2-P1-E01")
     assert _v2_selection_isolated("V2-(P1-A01|P2-E04|RT-02)")
-    for unsafe in (None, "auth", "V2-P1|other", "V2-.*", "V2-(P1)|Auth"):
+    assert _v2_selection_isolated("V2-P1-(E10|E15|A08|A19)")
+    assert _v2_worker_budget("2", "V2-P1-(E10|E15|A08|A19)") == 2
+    for unsafe in (
+        None, "auth", "V2-P1|other", "V2-.*", "V2-(P1)|Auth",
+        "V2-P1-(E10|A08)|Auth", "V2-P1-(E10|.*)",
+    ):
         assert not _v2_selection_isolated(unsafe)
         try:
             _v2_worker_budget("2", unsafe)
