@@ -188,10 +188,7 @@ async function saveOneOffEditor(
   }
   expect(
     accepted.status(),
-    'atomic Edit must succeed before canonical read: ' +
-      endpoint +
-      ' — ' +
-      (await accepted.text()),
+    'atomic Edit must succeed before canonical read: ' + endpoint,
   ).toBe(200);
   if (item.kind === 'event') {
     await expect(editor.getByText('Evento aggiornato.')).toBeVisible();
@@ -559,7 +556,10 @@ async function deleteOneOff(
   await confirm
     .getByRole('button', { name: 'Elimina definitivamente' })
     .click();
-  expect((await removed).status()).toBe(200);
+  expect(
+    (await removed).status(),
+    'confirmed one-off DELETE must succeed',
+  ).toBe(200);
   await expect(confirm).toHaveCount(0);
   await openHome(page, day);
   await expect(onDay(page, day, item.title)).toHaveCount(0);
@@ -1049,7 +1049,7 @@ async function seriesRevision(
     .getByRole('button', { name: 'Conferma salvataggio' })
     .click();
   const response = await accepted;
-  expect(response.status(), await response.text()).toBe(200);
+  expect(response.status(), 'series edit must succeed').toBe(200);
   await expect(confirmation).toHaveCount(0);
   const areas = (await serverRead(
     page,
@@ -1129,7 +1129,7 @@ async function recolorExistingSeriesArea(
   );
   await review.getByRole('button', { name: 'Conferma salvataggio' }).click();
   const response = await accepted;
-  expect(response.status(), await response.text()).toBe(200);
+  expect(response.status(), 'Life Area series edit must succeed').toBe(200);
   const catalog = (await serverRead(
     page,
     '/api/v1/temporal/life-areas',
@@ -2015,7 +2015,10 @@ test.describe('Temporal v2 — real stateful user personas', () => {
         .getByRole('button', { name: 'Conferma salvataggio' })
         .click();
       const response = await accepted;
-      expect(response.status(), await response.text()).toBe(200);
+      expect(
+        response.status(),
+        'converted first Event series edit must succeed',
+      ).toBe(200);
 
       // A NEW Home checkpoint after series Edit is essential: the duplication
       // was not observable by only reading the old stored first Event.

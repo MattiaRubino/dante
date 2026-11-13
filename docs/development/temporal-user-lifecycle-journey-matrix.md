@@ -1,3 +1,13 @@
+## 2026-11-13 — first forty-case Chromium P1 checkpoint
+
+Owner WSL diagnostics `E2E_DIAGNOSTICS.tar(20261113-090752).gz` record the exact P1 inventory: **40/40 recorded, 36 PASS, 3 FAIL, 1 ERROR, zero skips**, one Chromium stack with two workers in **847.24s**. This is a red checkpoint, not a green phase or whole-suite result. E10 one-off Event hard delete returned HTTP 409; E15 Event atomic Edit returned HTTP 409 and the E2E assertion waited on `response.text()` until its 300s global deadline. A08 and A19 Activity hard deletes returned HTTP 503; the server logged `sqlstate=40001 constraint=None` at both requests. Their 503s are PostgreSQL serializable transaction aborts, not measured pool exhaustion in this run.
+
+Candidate repair: Activity and temporal Event hard-delete endpoints retry **only** SQLSTATE 40001 with a new transaction and the unchanged CAS fingerprint, at most three times. Real stale fingerprints remain rejected; exhausted serialization attempts return retryable service failure. The Event hard-delete endpoint logs safe SQLSTATE/constraint diagnostics to distinguish a genuine stale 409 from a serialization error on rerun. The stateful browser journey checks HTTP status without waiting for an unfinished error body at Event atomic Edit or series edits. Six bounded-retry unit cases pass locally; real PostgreSQL/Chromium acceptance is **NOT_RUN on this candidate**. The pre-existing test integrity inventory also flags two unrelated unregistered Web test files; this is not a qualified full-gate pass.
+
+First retest only the four observed reds together on one Chromium stack: `python3 tooling/testing/run_real_stack_playwright.py --workers 1 --project chromium --v2-workers 2 --grep 'V2-P1-(E10|E15|A08|A19)'`. Read the resulting diagnostics before rerunning all P1, and do not proceed to P2 while P1 remains red. Percent progress is completed cases over discovered cases, not predicted remaining time.
+
+---
+
 ## 2026-11-13 — weighted full Chromium distribution and five-case proof
 
 The owner's focused real-stack rerun at the preceding candidate completed **5/5 Chromium PASS** in **351.38s** (P1-A04 27.21s, P2-E11 73.97s, P2-E20 81.07s, P2-A10 85.43s, P3-E02 65.53s). The corrected single-envelope assertion and exact agenda selector are exercised; the five cases did not reproduce a 503. This does not qualify the remaining 137 cases or a long-running pool stability claim.

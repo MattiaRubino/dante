@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import asyncio
 import hashlib
 import logging
 from typing import Annotated
@@ -408,16 +409,30 @@ async def delete_self_activity_hard(
 ) -> ActivityHardDeleteResponse:
     response.headers["Cache-Control"] = "no-store"
     try:
-        async with request.app.state.database_runtime.session_factory() as session, session.begin():
-            await session.execute(text("SET TRANSACTION ISOLATION LEVEL SERIALIZABLE"))
-            deleted = await session.scalar(
-                text("SELECT dante.delete_self_activity_hard(:actor,:activity,:fingerprint)"),
-                {
-                    "actor": context.self_person_ref,
-                    "activity": activity_ref,
-                    "fingerprint": body.expected_session_fingerprint,
-                },
-            )
+        for attempt in range(3):
+            try:
+                async with (
+                    request.app.state.database_runtime.session_factory() as session,
+                    session.begin(),
+                ):
+                    await session.execute(text("SET TRANSACTION ISOLATION LEVEL SERIALIZABLE"))
+                    deleted = await session.scalar(
+                        text(
+                            "SELECT dante.delete_self_activity_hard(:actor,:activity,:fingerprint)"
+                        ),
+                        {
+                            "actor": context.self_person_ref,
+                            "activity": activity_ref,
+                            "fingerprint": body.expected_session_fingerprint,
+                        },
+                    )
+                break
+            except DBAPIError as exc:
+                if getattr(exc.orig, "sqlstate", None) != "40001" or attempt == 2:
+                    raise
+                # The transaction rolled back. Recheck the original CAS token
+                # in a fresh transaction; genuine stale state remains a 409.
+                await asyncio.sleep(0.025 * (2**attempt))
     except DBAPIError as exc:
         constraint = getattr(getattr(exc.orig, "diag", None), "constraint_name", None)
         if constraint == "activity_lifecycle_unavailable":

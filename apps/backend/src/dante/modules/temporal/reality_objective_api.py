@@ -2,8 +2,10 @@
 
 from __future__ import annotations
 
+import asyncio
 import hashlib
 import json
+import logging
 from collections.abc import Mapping
 from datetime import datetime
 from decimal import Decimal
@@ -21,6 +23,7 @@ from dante.context.dependencies import require_dante_context, require_mutating_d
 from dante.platform.http.problem import ProblemError
 
 router = APIRouter(prefix="/api/v1/temporal", tags=["temporal"])
+logger = logging.getLogger(__name__)
 Context = Annotated[DanteContext, Depends(require_dante_context)]
 MutatingContext = Annotated[DanteContext, Depends(require_mutating_dante_context)]
 
@@ -1915,6 +1918,15 @@ class TemporalHardDeleteResult(BaseModel):
 def _hard_delete_problem(exc: DBAPIError) -> ProblemError:
     diagnostic = getattr(getattr(exc, "orig", None), "diag", None)
     constraint = getattr(diagnostic, "constraint_name", None)
+    if getattr(exc.orig, "sqlstate", None) == "40001":
+        return ProblemError(
+            status=503,
+            code="temporal.hard_delete.unavailable",
+            category="service",
+            title="Eliminazione non disponibile",
+            detail="La cancellazione atomica non è stata completata; riprova.",
+            retryable=True,
+        )
     if constraint == "temporal_hard_unavailable":
         return ProblemError(
             status=404,
@@ -2012,21 +2024,38 @@ async def apply_temporal_hard_deletion(
 ) -> TemporalHardDeleteResult:
     response.headers["Cache-Control"] = "no-store"
     try:
-        async with request.app.state.database_runtime.session_factory() as session, session.begin():
-            await session.execute(text("SET TRANSACTION ISOLATION LEVEL SERIALIZABLE"))
-            deleted_rows = await session.scalar(
-                text(
-                    "SELECT dante.delete_self_temporal_hard("
-                    ":actor,:requested_ref,:scope,:fingerprint)"
-                ),
-                {
-                    "actor": context.self_person_ref,
-                    "requested_ref": requested_ref,
-                    "scope": body.scope,
-                    "fingerprint": body.expected_fingerprint,
-                },
-            )
+        for attempt in range(3):
+            try:
+                async with (
+                    request.app.state.database_runtime.session_factory() as session,
+                    session.begin(),
+                ):
+                    await session.execute(text("SET TRANSACTION ISOLATION LEVEL SERIALIZABLE"))
+                    deleted_rows = await session.scalar(
+                        text(
+                            "SELECT dante.delete_self_temporal_hard("
+                            ":actor,:requested_ref,:scope,:fingerprint)"
+                        ),
+                        {
+                            "actor": context.self_person_ref,
+                            "requested_ref": requested_ref,
+                            "scope": body.scope,
+                            "fingerprint": body.expected_fingerprint,
+                        },
+                    )
+                break
+            except DBAPIError as exc:
+                if getattr(exc.orig, "sqlstate", None) != "40001" or attempt == 2:
+                    raise
+                # Only a completely rolled-back serialization failure is
+                # retryable; the same fingerprint is checked on each attempt.
+                await asyncio.sleep(0.025 * (2**attempt))
     except DBAPIError as exc:
+        logger.warning(
+            "temporal.hard_delete.db_error sqlstate=%s constraint=%s",
+            getattr(exc.orig, "sqlstate", None),
+            getattr(getattr(exc.orig, "diag", None), "constraint_name", None),
+        )
         raise _hard_delete_problem(exc) from exc
     except SQLAlchemyError as exc:
         raise ProblemError(
