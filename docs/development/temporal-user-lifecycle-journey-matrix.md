@@ -1,3 +1,13 @@
+## 2026-11-13 — interrupted Chromium evidence and focused candidate fixes
+
+Recovered 27 per-case error contexts and the full Playwright/WebServer log from the 117/142 interrupted run. **Two deterministic E2E test defects:** P1-A04 expected a separate `interval` role for a single timed Activity, although Create persists only its physical `envelope` until additional bands are authored; the readback now checks the envelope plus exact explicit interval count. P2-E20 used a non-exact accessible name, so `Punto scaletta 1` also matched `Punto scaletta 10`; all five first-agenda selectors are exact. Neither test is skipped or weakened; the canonical schedule identity checks remain.
+
+The first server pool timeout occurs in P2-E11 during recurring Objective materialization; the log contains **17 SQLAlchemy QueuePool timeout exceptions** with `size 5 overflow 5 timeout 5s`. Subsequent 503/readiness failures and disabled Activity Save buttons may be secondary, but their causality is not yet proven. The disposable E2E API now uses the previously tested 10+10/15s budget for **both one- and two-worker** runs. Production database settings are untouched. This is containment of measured E2E capacity, not proof of a fixed connection leak or all 27 failures.
+
+Checks on the candidate: Web Prettier/ESLint/typecheck PASS; backend Ruff PASS; six E2E-pool unit cases PASS. The local real-stack Chromium verification is **NOT_RUN** in the cloud environment (no Docker binary). Next use one focused Chromium invocation over P1-A04, P2-E11, P2-E20, P2-A10 and P3-E02; inspect its single report/diagnostics before broadening. No full-suite green claim.
+
+---
+
 ## 2026-11-12 — bounded full Chromium gate after 78-minute partial run
 
 The owner's unfiltered serial run on f0f31619 completed **117/142** Chromium cases before interruption: **90 PASS, 27 FAIL**, zero skips among observed cases. Per-case durations already sum to about **78 minutes**, so the old `--workers 1 --project chromium` command is impractical. These 27 reds are actual observed test failures requiring their JUnit/error-context/trace diagnostics; the remaining 25 cases were not executed. Do not call this run green or treat the 27 as one confirmed cause.
