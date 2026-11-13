@@ -61,11 +61,11 @@ class ChromiumRun:
     workers: int
 
 
-FAST_CHROMIUM = (
-    ChromiumRun("chromium-legacy", "V2-", True, None, 1),
-    ChromiumRun("chromium-v2-1", "V2-", False, "1/2", 2),
-    ChromiumRun("chromium-v2-2", "V2-", False, "2/2", 2),
-)
+LEGACY_CHROMIUM = ChromiumRun("chromium-legacy", "V2-", True, None, 1)
+V2_TITLE_ID = re.compile(r"^(V2-[A-Z0-9-]+)(?:\s|$)")
+# Approximate seconds per journey from the 117-case interrupted Chromium run.
+# These weights only distribute work; live --list and JUnit prove coverage.
+V2_PHASE_SECONDS = {"P1": 35, "P2": 75, "P3": 110}
 
 
 class GateTimeout(RuntimeError):
@@ -88,6 +88,41 @@ def _chromium_inventory(output: str) -> set[str]:
     }
 
 
+def _balanced_chromium_runs(full: set[str]) -> tuple[ChromiumRun, ...]:
+    """Balance estimated journey time instead of Playwright's test count.
+
+    Every V2 test keeps its own Playwright/account identity and each run has
+    its own disposable stack. Unknown future V2 IDs receive a conservative
+    default weight; the full inventory equality still guards new test cases.
+    """
+    cases: dict[str, int] = {}
+    for title in full:
+        name = title.rsplit(" › ", 1)[-1]
+        if not name.startswith("V2-"):
+            continue
+        match = V2_TITLE_ID.match(name)
+        if match is None or match.group(1) in cases:
+            raise RuntimeError("V2 case titles must have unique stable IDs")
+        case_id = match.group(1)
+        phase = case_id.split("-", 2)[1]
+        cases[case_id] = V2_PHASE_SECONDS.get(phase, 90)
+    if len(cases) < 2:
+        raise RuntimeError("Cannot distribute fewer than two V2 cases")
+    bins: list[list[str]] = [[], []]
+    seconds = [0, 0]
+    for case_id, weight in sorted(cases.items(), key=lambda item: (-item[1], item[0])):
+        index = min(range(2), key=lambda i: (seconds[i], len(bins[i])))
+        bins[index].append(case_id)
+        seconds[index] += weight
+    runs = [LEGACY_CHROMIUM]
+    for index, selected in enumerate(bins, start=1):
+        suffixes = "|".join(re.escape(case_id[3:]) for case_id in sorted(selected))
+        runs.append(ChromiumRun(
+            f"chromium-v2-{index}", rf"\bV2-(?:{suffixes})\b", False, None, 2,
+        ))
+    return tuple(runs)
+
+
 def _plan_chromium(run: ChromiumRun, directory: Path) -> tuple[int, set[str]]:
     command = (
         "pnpm", "exec", "playwright", "test", "--config",
@@ -107,7 +142,7 @@ def _plan_chromium(run: ChromiumRun, directory: Path) -> tuple[int, set[str]]:
 
 def _validate_chromium_partition(
     full: set[str], inventories: dict[str, set[str]],
-    runs: tuple[ChromiumRun, ...] = FAST_CHROMIUM,
+    runs: tuple[ChromiumRun, ...],
 ) -> None:
     if not full or set(inventories) != {run.name for run in runs}:
         raise RuntimeError("Chromium run is missing an inventory")
@@ -608,27 +643,56 @@ def _self_test() -> None:
     assert _selector(r"V2-P3-(E01|A01)") == (
         "--grep", r"V2-P3-(E01|A01)",
     )
-    assert _chromium_args(FAST_CHROMIUM[0]) == ("--grep-invert", "V2-")
-    assert _chromium_args(FAST_CHROMIUM[1]) == (
-        "--grep", "V2-", "--shard", "1/2", "--fully-parallel",
-    )
-    full = {"[chromium] › case-a", "[chromium] › case-b", "[chromium] › case-c"}
-    inventories = {
-        FAST_CHROMIUM[0].name: {"[chromium] › case-a"},
-        FAST_CHROMIUM[1].name: {"[chromium] › case-b"},
-        FAST_CHROMIUM[2].name: {"[chromium] › case-c"},
+    full = {
+        "[chromium] › case-a",
+        "[chromium] › V2-P1-E01 creates Event",
+        "[chromium] › V2-P2-A01 edits Activity",
+        "[chromium] › V2-P3-EFIRST converts Event",
+        "[chromium] › V2-RT-01 records Actual",
     }
-    _validate_chromium_partition(full, inventories)
+    runs = _balanced_chromium_runs(full)
+    assert _chromium_args(runs[0]) == ("--grep-invert", "V2-")
+    assert all(run.shard is None and run.workers == 2 for run in runs[1:])
+    inventories = {
+        runs[0].name: {"[chromium] › case-a"},
+        **{
+            run.name: {
+                title for title in full if re.search(run.grep, title)
+            }
+            for run in runs[1:]
+        },
+    }
+    _validate_chromium_partition(full, inventories, runs)
     for damaged in (
-        {**inventories, FAST_CHROMIUM[2].name: set()},
-        {**inventories, FAST_CHROMIUM[2].name: inventories[FAST_CHROMIUM[1].name]},
+        {**inventories, runs[2].name: set()},
+        {**inventories, runs[2].name: inventories[runs[1].name]},
     ):
         try:
-            _validate_chromium_partition(full, damaged)
+            _validate_chromium_partition(full, damaged, runs)
         except RuntimeError:
             pass
         else:
             raise AssertionError("Missing or duplicated Chromium cases must fail")
+    try:
+        _balanced_chromium_runs({"[chromium] › V2-P1-E01", "[chromium] › V2-P1-E01 duplicate"})
+    except RuntimeError:
+        pass
+    else:
+        raise AssertionError("Duplicate V2 IDs must fail before browser startup")
+    weighted = {
+        f"[chromium] › V2-{phase}-E{index:02d} journey"
+        for phase, count in (("P1", 40), ("P2", 40), ("P3", 20))
+        for index in range(1, count + 1)
+    }
+    balanced = _balanced_chromium_runs(weighted)
+    estimated = [
+        sum(
+            V2_PHASE_SECONDS[title.rsplit(" › ", 1)[-1].split("-", 2)[1]]
+            for title in weighted if re.search(run.grep, title)
+        )
+        for run in balanced[1:]
+    ]
+    assert abs(estimated[0] - estimated[1]) <= max(V2_PHASE_SECONDS.values())
     with tempfile.TemporaryDirectory(prefix="dante-e2e-archive-test.") as temp:
         root = Path(temp)
         (root / "summary.json").write_text('{"exit_code": 1}\n')
@@ -721,14 +785,16 @@ def _run_full_chromium(directory: Path, report: Path, started: float,
     )
     if len(full) != total:
         raise RuntimeError("Full Chromium inventory has duplicate or missing case IDs")
+    runs = _balanced_chromium_runs(full)
     inventories: dict[str, set[str]] = {}
     planned: dict[str, int] = {}
-    for run in FAST_CHROMIUM:
+    for run in runs:
         planned[run.name], inventories[run.name] = _plan_chromium(run, directory)
-    _validate_chromium_partition(full, inventories)
+    _validate_chromium_partition(full, inventories, runs)
     print(
         f"REALSTACK_CHROMIUM: all {total} cases, three isolated stacks, "
-        "five Chromium workers maximum; one aggregate report",
+        "five Chromium workers maximum; weighted V2 distribution "
+        f"{planned[runs[1].name]}/{planned[runs[2].name]}; one aggregate report",
         flush=True,
     )
     build_env = {
@@ -745,16 +811,16 @@ def _run_full_chromium(directory: Path, report: Path, started: float,
     if build.returncode:
         raise RuntimeError(f"Shared frontend build failed ({build.returncode})")
 
-    ports = _unique_ports(tuple(run.name for run in FAST_CHROMIUM))
+    ports = _unique_ports(tuple(run.name for run in runs))
     active: dict[str, tuple[subprocess.Popen[bytes], object, float]] = {}
     results: dict[str, ShardResult] = {}
     deadline = started + max_minutes * 60
     next_update = time.monotonic() + 20
     try:
-        for run in FAST_CHROMIUM:
+        for run in runs:
             active[run.name] = _launch_chromium(run, ports[run.name], directory)
         while active:
-            for run in FAST_CHROMIUM:
+            for run in runs:
                 item = active.get(run.name)
                 if item is None:
                     continue
@@ -814,7 +880,7 @@ def _run_full_chromium(directory: Path, report: Path, started: float,
                     log.close()
         finally:
             signal.signal(signal.SIGINT, previous_sigint)
-    ordered = [results[run.name] for run in FAST_CHROMIUM]
+    ordered = [results[run.name] for run in runs]
     for result in ordered:
         if result.recorded != planned[result.project]:
             raise RuntimeError(
