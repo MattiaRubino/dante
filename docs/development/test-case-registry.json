@@ -4503,6 +4503,26 @@
       "audit_note": "Needs contract/assertion review, rejection cases, and executable evidence; filename alone is not proof."
     },
     {
+      "path": "apps/web/src/features/temporal/remote-temporal-hard-deletion.test.ts",
+      "suite": "web-unit-component",
+      "contract_id": "T03",
+      "candidate_behavior": "hard deletion and checkpoint admission order",
+      "purpose": "Exercise concurrent Timeline checkpoint and confirmed recurring hard deletion, including a preview held across human confirmation and rejected DELETE cleanup.",
+      "invariant": "Deletion and checkpoint do not overtake one another; HTTP 409 is propagated and releases queued checkpoint work without a false acceptance.",
+      "status": "QUALIFIED",
+      "audit_note": "Reviewed assertions and rejection path; focused Vitest 4/4 passed locally on the current candidate. Real PostgreSQL acceptance remains separate."
+    },
+    {
+      "path": "apps/web/src/features/temporal/temporal-occurrence-inventory-fence.test.ts",
+      "suite": "web-unit-component",
+      "contract_id": "T05",
+      "candidate_behavior": "recurring review and Timeline checkpoint admission order",
+      "purpose": "Exercise checkpoint/series-preview queue ordering, preview-to-accept lease, cancellation, rejected preview and rejected acceptance.",
+      "invariant": "Only one inventory-changing operation admits at a time; a stale acceptance is rejected and every failure or cancellation releases the lease.",
+      "status": "QUALIFIED",
+      "audit_note": "Reviewed assertions and refusal paths; focused Vitest 7/7 passed locally on the current candidate. Real PostgreSQL acceptance remains separate."
+    },
+    {
       "path": "apps/web/src/features/temporal/responsibility-controls.test.tsx",
       "suite": "web-unit-component",
       "contract_id": "P-OTHER",
@@ -5701,6 +5721,16 @@
       "invariant": "Each attempt checks the same authorized CAS fingerprint in a fresh transaction; other SQL errors are not retried and three serialization failures terminate with a service error.",
       "status": "QUALIFIED",
       "audit_note": "Synthetic transaction boundary tests; real PostgreSQL and Chromium concurrency acceptance pending."
+    },
+    {
+      "path": "apps/backend/tests/unit/temporal/test_activity_atomic_edit_serialization_retry.py",
+      "suite": "backend-unit",
+      "contract_id": "T03",
+      "candidate_behavior": "bounded SQLSTATE 40001 retry for ordinary Activity atomic Save",
+      "purpose": "Verify a serializable Activity Save abort retries its entire operation with unchanged Life Area assignment intent and limits attempts to three.",
+      "invariant": "Only SQLSTATE 40001 retries; a genuine Life Area CAS conflict or uniqueness violation stays a 409, and exhausted serialization failures are a retryable service error.",
+      "status": "QUALIFIED",
+      "audit_note": "Synthetic retry-boundary proof; real PostgreSQL and Chromium concurrency acceptance pending."
     },
     {
       "path": "apps/backend/tests/unit/temporal/test_e2e_stack_pool_override.py",

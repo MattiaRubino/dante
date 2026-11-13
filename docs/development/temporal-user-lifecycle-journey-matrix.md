@@ -1,3 +1,11 @@
+## 2026-11-13 — forty-case P1 Chromium checkpoint, Activity Save conflict
+
+Owner WSL archive `E2E_DIAGNOSTICS.tar(20261113-094318).gz`: exactly **40 discovered/recorded, 39 PASS, one FAIL, zero skips**, Chromium with two workers, 778.2s. The sole red `V2-P1-A03` received HTTP 409 from ordinary Activity atomic Save when creating and assigning a new Life Area after a successful first edit. Trace confirms a unique new-area name, `expected_assignment_revision=1`, and no Life Area mutation in the first edit; the archive contains no server SQLSTATE/constraint diagnostic for that request. Thus the precise cause of the 409 is **unproven**, and P1 remains red.
+
+The Activity atomic endpoint had mapped PostgreSQL serialization abort `40001` to the same 409 as genuine stale-CAS conflicts. Candidate hardening retries **only** `40001` at most three times around the entire rolled-back Activity Save, rechecking its original owner/revision intent in a fresh transaction. Genuine Life Area CAS/unique conflicts remain 409; exhausted serialization attempts become a retryable 503. Safe SQLSTATE/constraint logging distinguishes the remaining failure if it recurs. Five focused unit cases pass locally, as do changed-path Ruff/mypy. Two previously unregistered Web concurrency tests were reviewed, registered and passed 11/11 Vitest; test registry integrity now passes. Real PostgreSQL and Chromium evidence remain **NOT_RUN** on this candidate. Recheck A03 alone, then the entire P1 inventory before proceeding to P2.
+
+---
+
 ## 2026-11-13 — first forty-case Chromium P1 checkpoint
 
 Owner WSL diagnostics `E2E_DIAGNOSTICS.tar(20261113-090752).gz` record the exact P1 inventory: **40/40 recorded, 36 PASS, 3 FAIL, 1 ERROR, zero skips**, one Chromium stack with two workers in **847.24s**. This is a red checkpoint, not a green phase or whole-suite result. E10 one-off Event hard delete returned HTTP 409; E15 Event atomic Edit returned HTTP 409 and the E2E assertion waited on `response.text()` until its 300s global deadline. A08 and A19 Activity hard deletes returned HTTP 503; the server logged `sqlstate=40001 constraint=None` at both requests. Their 503s are PostgreSQL serializable transaction aborts, not measured pool exhaustion in this run.

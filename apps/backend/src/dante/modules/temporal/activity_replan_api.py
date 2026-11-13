@@ -2,8 +2,10 @@
 
 from __future__ import annotations
 
+import asyncio
 import hashlib
 import json
+import logging
 from datetime import date, datetime
 from itertools import pairwise
 from typing import Annotated
@@ -44,6 +46,8 @@ from dante.modules.temporal.schedule import (
 )
 from dante.platform.database.references import MaterialStateRef, NativeRef, ScopedRecordRef
 from dante.platform.http.problem import ProblemError
+
+logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/api/v1/temporal/activities", tags=["temporal"])
 ReadContext = Annotated[DanteContext, Depends(require_dante_context)]
@@ -1197,6 +1201,71 @@ async def apply_activity_replan(
         ) from exc
 
 
+async def _commit_activity_atomic_edit_once(
+    activity_ref: UUID, body: ActivityAtomicEditCommand, context: DanteContext, request: Request
+) -> ActivityAtomicEditResponse:
+    """One fully rolled-back-on-error SERIALIZABLE attempt, including the Life Area."""
+    actor = context.self_person_ref
+    async with request.app.state.database_runtime.session_factory() as session, session.begin():
+        await session.execute(text("SET TRANSACTION ISOLATION LEVEL SERIALIZABLE"))
+        if body.placement_lock is not None and not body.placement_lock.locked:
+            await _set_atomic_lock(session, actor, body.placement_lock, False)
+        if body.replan is not None:
+            await apply_activity_replan_in_session(
+                session, actor=actor, activity_ref=activity_ref, body=body.replan
+            )
+        for change in body.planned_names:
+            await session.execute(
+                text(
+                    "SELECT * FROM dante.revise_self_planned_session_name("
+                    ":actor,:activity,:schedule,:expected,:name)"
+                ),
+                {
+                    "actor": actor,
+                    "activity": NativeRef(activity_ref),
+                    "schedule": change.schedule_ref,
+                    "expected": change.expected_name,
+                    "name": change.name,
+                },
+            )
+        if body.life_area is not None:
+            await _apply_atomic_area(session, actor, activity_ref, body.life_area)
+        objectives = (
+            await apply_activity_objective_edits_in_session(
+                session,
+                actor=actor,
+                subject_ref=activity_ref,
+                payload=body.objectives,
+                effective_zone_id=context.effective_zone_id,
+            )
+            if body.objectives is not None
+            else []
+        )
+        core = (
+            await revise_activity_core_in_session(
+                session, actor=actor, activity_ref=activity_ref, body=body.core
+            )
+            if body.core is not None
+            else None
+        )
+        if body.placement_lock is not None and body.placement_lock.locked:
+            await _set_atomic_lock(session, actor, body.placement_lock, True)
+        if body.occurrence_profile is not None:
+            await _apply_atomic_occurrence_profile(
+                session,
+                actor,
+                activity_ref,
+                body.occurrence_profile,
+                context.effective_zone_id,
+                body.operation_id or "",
+            )
+        return ActivityAtomicEditResponse(
+            snapshot=await _read(session, actor, activity_ref),
+            objectives=objectives,
+            core=core,
+        )
+
+
 @router.put(
     "/{activity_ref}/atomic-edit",
     response_model=ActivityAtomicEditResponse,
@@ -1211,68 +1280,32 @@ async def apply_activity_atomic_edit(
 ) -> ActivityAtomicEditResponse:
     """Commit every ordinary Activity edit in one serializable Save transaction."""
     response.headers["Cache-Control"] = "no-store"
-    actor = context.self_person_ref
     try:
-        async with request.app.state.database_runtime.session_factory() as session, session.begin():
-            await session.execute(text("SET TRANSACTION ISOLATION LEVEL SERIALIZABLE"))
-            if body.placement_lock is not None and not body.placement_lock.locked:
-                await _set_atomic_lock(session, actor, body.placement_lock, False)
-            if body.replan is not None:
-                await apply_activity_replan_in_session(
-                    session, actor=actor, activity_ref=activity_ref, body=body.replan
-                )
-            for change in body.planned_names:
-                await session.execute(
-                    text(
-                        "SELECT * FROM dante.revise_self_planned_session_name("
-                        ":actor,:activity,:schedule,:expected,:name)"
-                    ),
-                    {
-                        "actor": actor,
-                        "activity": NativeRef(activity_ref),
-                        "schedule": change.schedule_ref,
-                        "expected": change.expected_name,
-                        "name": change.name,
-                    },
-                )
-            if body.life_area is not None:
-                await _apply_atomic_area(session, actor, activity_ref, body.life_area)
-            objectives = (
-                await apply_activity_objective_edits_in_session(
-                    session,
-                    actor=actor,
-                    subject_ref=activity_ref,
-                    payload=body.objectives,
-                    effective_zone_id=context.effective_zone_id,
-                )
-                if body.objectives is not None
-                else []
-            )
-            core = (
-                await revise_activity_core_in_session(
-                    session, actor=actor, activity_ref=activity_ref, body=body.core
-                )
-                if body.core is not None
-                else None
-            )
-            if body.placement_lock is not None and body.placement_lock.locked:
-                await _set_atomic_lock(session, actor, body.placement_lock, True)
-            if body.occurrence_profile is not None:
-                await _apply_atomic_occurrence_profile(
-                    session,
-                    actor,
-                    activity_ref,
-                    body.occurrence_profile,
-                    context.effective_zone_id,
-                    body.operation_id or "",
-                )
-            return ActivityAtomicEditResponse(
-                snapshot=await _read(session, actor, activity_ref),
-                objectives=objectives,
-                core=core,
-            )
+        for attempt in range(3):
+            try:
+                return await _commit_activity_atomic_edit_once(activity_ref, body, context, request)
+            except DBAPIError as exc:
+                if getattr(exc.orig, "sqlstate", None) != "40001" or attempt == 2:
+                    raise
+                # A PostgreSQL serialization abort rolled back the whole edit.
+                # Retry its original CAS checks in a fresh transaction.
+                await asyncio.sleep(0.025 * (2**attempt))
+        raise AssertionError("Unreachable atomic Edit retry state")
     except DBAPIError as exc:
         constraint = getattr(getattr(exc.orig, "diag", None), "constraint_name", None)
+        sqlstate = getattr(exc.orig, "sqlstate", None)
+        logger.warning(
+            "activity.atomic_edit.db_error sqlstate=%s constraint=%s", sqlstate, constraint
+        )
+        if sqlstate == "40001":
+            raise ProblemError(
+                status=503,
+                code="temporal.activity_edit.unavailable",
+                category="service",
+                title="Salvataggio non disponibile",
+                detail="La modifica non è stata completata; riprova.",
+                retryable=True,
+            ) from exc
         if constraint == "temporal_objective_retirement_recorded":
             raise ProblemError(
                 status=409,
