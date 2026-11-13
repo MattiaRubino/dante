@@ -293,7 +293,7 @@ async function editOneOff(
     const changed = agenda[0]! + ' aggiornata';
     await initial
       .first()
-      .getByRole('textbox', { name: 'Punto scaletta 1' })
+      .getByRole('textbox', { name: 'Punto scaletta 1', exact: true })
       .fill(changed);
     agenda[0] = changed;
     await initial.last().getByRole('button', { name: 'Rimuovi punto' }).click();
@@ -983,7 +983,7 @@ async function seriesRevision(
   if (persona.kind === 'event') {
     const revised = agenda[0]! + ' serie';
     await inspector
-      .getByRole('textbox', { name: 'Punto scaletta 1' })
+      .getByRole('textbox', { name: 'Punto scaletta 1', exact: true })
       .fill(revised);
     agenda[0] = revised;
     await inspector
@@ -1997,7 +1997,7 @@ test.describe('Temporal v2 — real stateful user personas', () => {
         .getByRole('textbox', { name: 'Titolo' })
         .fill(editedTitle);
       await firstEditor
-        .getByRole('textbox', { name: 'Punto scaletta 1' })
+        .getByRole('textbox', { name: 'Punto scaletta 1', exact: true })
         .fill(title + ' scaletta aggiornata');
       await firstEditor
         .getByRole('button', { name: 'Salva modifiche' })
@@ -2101,13 +2101,16 @@ test.describe('Temporal v2 — real stateful user personas', () => {
         localEditor.getByRole('textbox', { name: 'Titolo' }),
       ).toHaveValue(editedTitle);
       await expect(
-        localEditor.getByRole('textbox', { name: 'Punto scaletta 1' }),
+        localEditor.getByRole('textbox', {
+          name: 'Punto scaletta 1',
+          exact: true,
+        }),
       ).toHaveValue(title + ' scaletta aggiornata');
       await localEditor
         .getByRole('textbox', { name: 'Titolo' })
         .fill(localTitle);
       await localEditor
-        .getByRole('textbox', { name: 'Punto scaletta 1' })
+        .getByRole('textbox', { name: 'Punto scaletta 1', exact: true })
         .fill(localAgenda);
       const localSaved = page.waitForResponse(
         (response) =>
