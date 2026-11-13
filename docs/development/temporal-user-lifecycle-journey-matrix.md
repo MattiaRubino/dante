@@ -4,7 +4,7 @@ Recovered 27 per-case error contexts and the full Playwright/WebServer log from 
 
 The first server pool timeout occurs in P2-E11 during recurring Objective materialization; the log contains **17 SQLAlchemy QueuePool timeout exceptions** with `size 5 overflow 5 timeout 5s`. Subsequent 503/readiness failures and disabled Activity Save buttons may be secondary, but their causality is not yet proven. The disposable E2E API now uses the previously tested 10+10/15s budget for **both one- and two-worker** runs. Production database settings are untouched. This is containment of measured E2E capacity, not proof of a fixed connection leak or all 27 failures.
 
-Checks on the candidate: Web Prettier/ESLint/typecheck PASS; backend Ruff PASS; six E2E-pool unit cases PASS. The local real-stack Chromium verification is **NOT_RUN** in the cloud environment (no Docker binary). Next use one focused Chromium invocation over P1-A04, P2-E11, P2-E20, P2-A10 and P3-E02; inspect its single report/diagnostics before broadening. No full-suite green claim.
+Checks on the candidate: Web Prettier/ESLint/typecheck PASS; backend Ruff PASS; six E2E-pool unit cases PASS. The local real-stack Chromium verification is **NOT_RUN** in the cloud environment (no Docker binary). Next run exactly five focused Chromium cases in one invocation: `python3 tooling/testing/run_real_stack_playwright.py --workers 1 --project chromium --grep 'V2-(P1-A04|P2-E11|P2-E20|P2-A10|P3-E02)'`. The Playwright `--list` inventory was verified as 5/5. Inspect its single report/diagnostics before broadening. No full-suite green claim.
 
 ---
 
