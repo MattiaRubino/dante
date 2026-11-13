@@ -1,3 +1,11 @@
+## 2026-11-13 — second forty-case P1 run, Event Life Area conflict
+
+Owner WSL archive `E2E_DIAGNOSTICS.tar(20261113-101126).gz`: **40 discovered/recorded, 39 PASS, one FAIL, zero skips**, 821.76s. The red changed from Activity A03 to Event E08, at step 5 new Life Area assignment: Event atomic Save returned 409. Trace shows the preceding Event Edit succeeded with `profile_revision=1`, no assigned Life Area (`life_area_assignment_revision=null`), the next PUT used expected profile revision 1 and assignment revision 0, and a unique new-area name. The server did not log a SQLSTATE for Event atomic Edit, so the precise cause remains **unproven**. This is a red P1; the prior focused A03/A04 pass cannot be merged into a 40/40 green claim.
+
+The Event atomic endpoint likewise mapped serializable PostgreSQL abort `40001` to an ordinary 409. Candidate hardening retries only `40001` around the complete rolled-back Event/Agenda/Objective/Life Area transaction, at most three times with the original CAS intent and fresh advisory transaction lock; true stale revisions and uniqueness errors remain 409. Exhausted serialization attempts return a retryable 503. Safe SQLSTATE/constraint logging will identify the next rejected write if this is not the cause. Focused Event and Activity retry unit tests pass 10/10 locally; real-stack Chromium proof remains **NOT_RUN** on this candidate.
+
+---
+
 ## 2026-11-13 — forty-case P1 Chromium checkpoint, Activity Save conflict
 
 Owner WSL archive `E2E_DIAGNOSTICS.tar(20261113-094318).gz`: exactly **40 discovered/recorded, 39 PASS, one FAIL, zero skips**, Chromium with two workers, 778.2s. The sole red `V2-P1-A03` received HTTP 409 from ordinary Activity atomic Save when creating and assigning a new Life Area after a successful first edit. Trace confirms a unique new-area name, `expected_assignment_revision=1`, and no Life Area mutation in the first edit; the archive contains no server SQLSTATE/constraint diagnostic for that request. Thus the precise cause of the 409 is **unproven**, and P1 remains red.

@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+import asyncio
+import logging
 from datetime import date, datetime
 from typing import Annotated, Any, Literal, cast
 from uuid import UUID, uuid7
@@ -75,6 +77,8 @@ from dante.modules.temporal.schedule_reminder import (
 from dante.platform.database.references import MaterialStateRef, NativeRef, ScopedRecordRef
 from dante.platform.database.runtime import DatabaseRuntime
 from dante.platform.http.problem import ProblemError
+
+logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/api/v1/temporal", tags=["temporal"])
 DanteContextDependency = Annotated[DanteContext, Depends(require_dante_context)]
@@ -983,6 +987,295 @@ async def revise_event_profile(
     return RevisedEventProfileResponse(**accepted)
 
 
+async def _commit_one_off_event_atomic_edit_once(
+    event_ref: UUID, body: EventAtomicEditCommand, context: DanteContext, request: Request
+) -> EventAtomicEditResponse:
+    """One serializable Event Save; a failed transaction is fully rolled back."""
+    actor = context.self_person_ref
+    native_event = NativeRef(event_ref)
+    runtime = cast(DatabaseRuntime, request.app.state.database_runtime)
+    async with runtime.session_factory() as session, session.begin():
+        await session.execute(text("SET TRANSACTION ISOLATION LEVEL SERIALIZABLE"))
+        await session.execute(
+            text("SELECT pg_advisory_xact_lock(hashtextextended(:key,0))"),
+            {"key": f"event-atomic:{actor}:{event_ref}"},
+        )
+        current = await _read_event_in_session(
+            session, self_person_ref=actor, event_ref=native_event
+        )
+        if current is None:
+            raise _not_found_problem()
+        recurrence = await session.execute(
+            text("SELECT 1 FROM dante.get_self_event_recurrence(:actor,:source) LIMIT 1"),
+            {"actor": actor, "source": native_event},
+        )
+        if recurrence.first() is not None:
+            raise ProblemError(
+                status=409,
+                code="temporal.event_edit.recurring_source",
+                category="conflict",
+                title="Recurring Event scope required",
+                detail="Select an Occurrence and an explicit edit scope.",
+            )
+        target_schedule = (
+            body.schedule.schedule_ref
+            if body.schedule is not None
+            else body.reminder.schedule_ref
+            if body.reminder is not None
+            else body.placement_lock.schedule_ref
+            if body.placement_lock is not None
+            else None
+        )
+        if target_schedule is not None:
+            owned = (
+                await session.execute(
+                    text("SELECT dante.assert_self_event_schedule(:actor,:event,:schedule)"),
+                    {
+                        "actor": actor,
+                        "event": native_event,
+                        "schedule": target_schedule,
+                    },
+                )
+            ).scalar_one()
+            if not owned:
+                raise ProblemError(
+                    status=409,
+                    code="temporal.event_edit.schedule_mismatch",
+                    category="conflict",
+                    title="Event Schedule changed",
+                    detail="Reload the Event before changing its Schedule.",
+                )
+        if body.placement_lock is not None and (
+            target_schedule != body.placement_lock.schedule_ref
+        ):
+            raise ProblemError(
+                status=422,
+                code="temporal.event_edit.lock_schedule_mismatch",
+                category="validation",
+                title="Invalid placement lock target",
+                detail="The placement lock must belong to the edited Event Schedule.",
+            )
+        if body.reminder is not None:
+            change_reminder = body.reminder
+            if target_schedule != change_reminder.schedule_ref:
+                raise ProblemError(
+                    status=422,
+                    code="temporal.event_edit.reminder_schedule_mismatch",
+                    category="validation",
+                    title="Invalid reminder target",
+                    detail="The reminder must belong to the revised Event Schedule.",
+                )
+
+        async def configure_reminder(change_reminder: EventAtomicReminderChange) -> None:
+            await ScheduleReminderApplication(runtime.session_factory).configure(
+                self_person_ref=actor,
+                schedule_ref=ScopedRecordRef(change_reminder.schedule_ref),
+                operation_id=f"{body.operation_id}:reminder",
+                expected_material_state_ref=(
+                    MaterialStateRef(change_reminder.expected_state_ref)
+                    if change_reminder.expected_state_ref is not None
+                    else None
+                ),
+                enabled=change_reminder.enabled,
+                lead_minutes=change_reminder.lead_minutes,
+                session=session,
+            )
+
+        # A date-span/floating conversion removes the exact start required by
+        # an active reminder. Disable it before revising the placement, in
+        # the same transaction, so the complete edit remains atomic.
+        if body.reminder is not None and not body.reminder.enabled:
+            await configure_reminder(body.reminder)
+        if body.placement_lock is not None and not body.placement_lock.locked:
+            await session.execute(
+                text(
+                    "SELECT * FROM dante.set_self_schedule_placement_lock("
+                    ":actor,:schedule,false,:revision)"
+                ),
+                {
+                    "actor": actor,
+                    "schedule": body.placement_lock.schedule_ref,
+                    "revision": body.placement_lock.expected_revision,
+                },
+            )
+        if body.schedule is not None:
+            change_schedule = body.schedule
+            await revise_schedule_in_session(
+                session,
+                self_person_ref=actor,
+                operation_id=f"{body.operation_id}:schedule",
+                schedule_ref=ScopedRecordRef(change_schedule.schedule_ref),
+                expected_material_state_ref=MaterialStateRef(
+                    change_schedule.expected_material_state_ref
+                ),
+                placement=_placement_from_request(change_schedule.placement),
+            )
+        if body.reminder is not None and body.reminder.enabled:
+            await configure_reminder(body.reminder)
+        if body.placement_lock is not None and body.placement_lock.locked:
+            await session.execute(
+                text(
+                    "SELECT * FROM dante.set_self_schedule_placement_lock("
+                    ":actor,:schedule,true,:revision)"
+                ),
+                {
+                    "actor": actor,
+                    "schedule": body.placement_lock.schedule_ref,
+                    "revision": body.placement_lock.expected_revision,
+                },
+            )
+        if body.participants:
+            participation = ResponsibilityParticipationApplication(runtime.session_factory)
+            for index, change_participant in enumerate(body.participants):
+                await participation.set_expected_participation(
+                    self_person_ref=actor,
+                    operation_id=f"{body.operation_id}:participant:{index}",
+                    event_ref=native_event,
+                    participant_person_ref=(
+                        actor
+                        if change_participant.participant_ref == "self"
+                        else NativeRef(change_participant.participant_ref)
+                    ),
+                    requirement_code=change_participant.requirement_code,
+                    expected_requirement_code=change_participant.expected_requirement_code,
+                    session=session,
+                )
+        if body.profile is not None:
+            change = body.profile
+            await session.execute(
+                text("""
+                    SELECT * FROM dante.revise_self_event_profile(
+                        :actor,:event,:operation,:expected,:title,
+                        :description,:location,:color)
+                """),
+                {
+                    "actor": actor,
+                    "event": native_event,
+                    "operation": change.operation_id,
+                    "expected": change.expected_revision,
+                    "title": change.title,
+                    "description": change.description,
+                    "location": change.location,
+                    "color": change.color_code,
+                },
+            )
+        if body.agenda is not None:
+            change_agenda = body.agenda
+            await TemporalEventApplication(runtime.session_factory).replace_agenda_in_session(
+                session,
+                self_person_ref=actor,
+                event_ref=native_event,
+                operation_id=change_agenda.operation_id,
+                expected_revision=change_agenda.expected_revision,
+                agenda_parts=change_agenda.agenda_parts,
+            )
+        if body.life_area is not None:
+            change_area = body.life_area
+            selected_area = change_area.life_area_ref
+            if change_area.new_life_area is not None:
+                new_area = change_area.new_life_area
+                selected_area = await create_life_area_in_session(
+                    session,
+                    actor=actor,
+                    operation_id=body.operation_id,
+                    name=new_area.name,
+                    color_code=new_area.color_code,
+                )
+            await session.execute(
+                text("""
+                    SELECT * FROM dante.assign_self_event_life_area(
+                        :actor,:operation,:fingerprint,:event,:area,:expected)
+                """),
+                {
+                    "actor": actor,
+                    "operation": f"{body.operation_id}:area",
+                    "fingerprint": assignment_fingerprint(
+                        kind="event",
+                        subject_ref=native_event,
+                        life_area_ref=selected_area,
+                        expected=change_area.expected_assignment_revision,
+                    ),
+                    "event": native_event,
+                    "area": selected_area,
+                    "expected": change_area.expected_assignment_revision,
+                },
+            )
+        if body.reality is not None:
+            change_reality = body.reality
+            intent = {
+                "version": 1,
+                "subject_kind": "event",
+                "subject_native_ref": str(event_ref),
+                "mode_code": change_reality.mode_code,
+                "expected_state_ref": (
+                    str(change_reality.expected_state_ref)
+                    if change_reality.expected_state_ref is not None
+                    else None
+                ),
+            }
+            await session.execute(
+                text("""
+                    SELECT * FROM dante.set_self_reality_review_policy(
+                        :actor,:operation,:fingerprint,'event',:event,:state,:mode,:expected)
+                """),
+                {
+                    "actor": actor,
+                    "operation": change_reality.operation_id,
+                    "fingerprint": reality_fingerprint(intent),
+                    "event": native_event,
+                    "state": uuid7(),
+                    "mode": change_reality.mode_code,
+                    "expected": change_reality.expected_state_ref,
+                },
+            )
+        objectives = (
+            await apply_event_objective_edits_in_session(
+                session,
+                actor=actor,
+                subject_ref=event_ref,
+                payload=body.objectives,
+                effective_zone_id=context.effective_zone_id,
+            )
+            if body.objectives is not None
+            else []
+        )
+        saved = await _read_event_in_session(session, self_person_ref=actor, event_ref=native_event)
+        if saved is None:
+            raise _not_found_problem()
+        placement_state = None
+        if body.schedule is not None:
+            placement_state = await session.scalar(
+                text(
+                    "SELECT current_placement.material_state_ref "
+                    "FROM dante.schedule_current_placement AS current_placement "
+                    "JOIN dante.schedule AS schedule_row "
+                    "ON schedule_row.schedule_ref=current_placement.scoped_owner_ref "
+                    "JOIN dante.event_expectation AS owned "
+                    "ON owned.event_ref=schedule_row.subject_native_ref "
+                    "WHERE owned.self_person_ref=:actor "
+                    "AND owned.event_ref=:event AND schedule_row.schedule_ref=:schedule"
+                ),
+                {
+                    "actor": actor,
+                    "event": event_ref,
+                    "schedule": body.schedule.schedule_ref,
+                },
+            )
+            if placement_state is None:
+                raise ProblemError(
+                    status=409,
+                    code="temporal.event_edit.placement_revision_missing",
+                    category="conflict",
+                    title="Event Schedule changed",
+                    detail="The accepted Event Schedule has no current placement state.",
+                )
+        return EventAtomicEditResponse(
+            event=_event_response(saved),
+            objectives=objectives,
+            placement_material_state_ref=placement_state,
+        )
+
+
 @router.put(
     "/events/{event_ref}/atomic-edit",
     response_model=EventAtomicEditResponse,
@@ -1001,292 +1294,19 @@ async def apply_one_off_event_atomic_edit(
     cannot silently flatten a series or partially persist its descendants.
     """
     response.headers["Cache-Control"] = "no-store"
-    actor = context.self_person_ref
-    native_event = NativeRef(event_ref)
-    runtime = cast(DatabaseRuntime, request.app.state.database_runtime)
     try:
-        async with runtime.session_factory() as session, session.begin():
-            await session.execute(text("SET TRANSACTION ISOLATION LEVEL SERIALIZABLE"))
-            await session.execute(
-                text("SELECT pg_advisory_xact_lock(hashtextextended(:key,0))"),
-                {"key": f"event-atomic:{actor}:{event_ref}"},
-            )
-            current = await _read_event_in_session(
-                session, self_person_ref=actor, event_ref=native_event
-            )
-            if current is None:
-                raise _not_found_problem()
-            recurrence = await session.execute(
-                text("SELECT 1 FROM dante.get_self_event_recurrence(:actor,:source) LIMIT 1"),
-                {"actor": actor, "source": native_event},
-            )
-            if recurrence.first() is not None:
-                raise ProblemError(
-                    status=409,
-                    code="temporal.event_edit.recurring_source",
-                    category="conflict",
-                    title="Recurring Event scope required",
-                    detail="Select an Occurrence and an explicit edit scope.",
+        for attempt in range(3):
+            try:
+                return await _commit_one_off_event_atomic_edit_once(
+                    event_ref, body, context, request
                 )
-            target_schedule = (
-                body.schedule.schedule_ref
-                if body.schedule is not None
-                else body.reminder.schedule_ref
-                if body.reminder is not None
-                else body.placement_lock.schedule_ref
-                if body.placement_lock is not None
-                else None
-            )
-            if target_schedule is not None:
-                owned = (
-                    await session.execute(
-                        text("SELECT dante.assert_self_event_schedule(:actor,:event,:schedule)"),
-                        {
-                            "actor": actor,
-                            "event": native_event,
-                            "schedule": target_schedule,
-                        },
-                    )
-                ).scalar_one()
-                if not owned:
-                    raise ProblemError(
-                        status=409,
-                        code="temporal.event_edit.schedule_mismatch",
-                        category="conflict",
-                        title="Event Schedule changed",
-                        detail="Reload the Event before changing its Schedule.",
-                    )
-            if body.placement_lock is not None and (
-                target_schedule != body.placement_lock.schedule_ref
-            ):
-                raise ProblemError(
-                    status=422,
-                    code="temporal.event_edit.lock_schedule_mismatch",
-                    category="validation",
-                    title="Invalid placement lock target",
-                    detail="The placement lock must belong to the edited Event Schedule.",
-                )
-            if body.reminder is not None:
-                change_reminder = body.reminder
-                if target_schedule != change_reminder.schedule_ref:
-                    raise ProblemError(
-                        status=422,
-                        code="temporal.event_edit.reminder_schedule_mismatch",
-                        category="validation",
-                        title="Invalid reminder target",
-                        detail="The reminder must belong to the revised Event Schedule.",
-                    )
-
-            async def configure_reminder(change_reminder: EventAtomicReminderChange) -> None:
-                await ScheduleReminderApplication(runtime.session_factory).configure(
-                    self_person_ref=actor,
-                    schedule_ref=ScopedRecordRef(change_reminder.schedule_ref),
-                    operation_id=f"{body.operation_id}:reminder",
-                    expected_material_state_ref=(
-                        MaterialStateRef(change_reminder.expected_state_ref)
-                        if change_reminder.expected_state_ref is not None
-                        else None
-                    ),
-                    enabled=change_reminder.enabled,
-                    lead_minutes=change_reminder.lead_minutes,
-                    session=session,
-                )
-
-            # A date-span/floating conversion removes the exact start required by
-            # an active reminder. Disable it before revising the placement, in
-            # the same transaction, so the complete edit remains atomic.
-            if body.reminder is not None and not body.reminder.enabled:
-                await configure_reminder(body.reminder)
-            if body.placement_lock is not None and not body.placement_lock.locked:
-                await session.execute(
-                    text(
-                        "SELECT * FROM dante.set_self_schedule_placement_lock("
-                        ":actor,:schedule,false,:revision)"
-                    ),
-                    {
-                        "actor": actor,
-                        "schedule": body.placement_lock.schedule_ref,
-                        "revision": body.placement_lock.expected_revision,
-                    },
-                )
-            if body.schedule is not None:
-                change_schedule = body.schedule
-                await revise_schedule_in_session(
-                    session,
-                    self_person_ref=actor,
-                    operation_id=f"{body.operation_id}:schedule",
-                    schedule_ref=ScopedRecordRef(change_schedule.schedule_ref),
-                    expected_material_state_ref=MaterialStateRef(
-                        change_schedule.expected_material_state_ref
-                    ),
-                    placement=_placement_from_request(change_schedule.placement),
-                )
-            if body.reminder is not None and body.reminder.enabled:
-                await configure_reminder(body.reminder)
-            if body.placement_lock is not None and body.placement_lock.locked:
-                await session.execute(
-                    text(
-                        "SELECT * FROM dante.set_self_schedule_placement_lock("
-                        ":actor,:schedule,true,:revision)"
-                    ),
-                    {
-                        "actor": actor,
-                        "schedule": body.placement_lock.schedule_ref,
-                        "revision": body.placement_lock.expected_revision,
-                    },
-                )
-            if body.participants:
-                participation = ResponsibilityParticipationApplication(runtime.session_factory)
-                for index, change_participant in enumerate(body.participants):
-                    await participation.set_expected_participation(
-                        self_person_ref=actor,
-                        operation_id=f"{body.operation_id}:participant:{index}",
-                        event_ref=native_event,
-                        participant_person_ref=(
-                            actor
-                            if change_participant.participant_ref == "self"
-                            else NativeRef(change_participant.participant_ref)
-                        ),
-                        requirement_code=change_participant.requirement_code,
-                        expected_requirement_code=change_participant.expected_requirement_code,
-                        session=session,
-                    )
-            if body.profile is not None:
-                change = body.profile
-                await session.execute(
-                    text("""
-                        SELECT * FROM dante.revise_self_event_profile(
-                            :actor,:event,:operation,:expected,:title,
-                            :description,:location,:color)
-                    """),
-                    {
-                        "actor": actor,
-                        "event": native_event,
-                        "operation": change.operation_id,
-                        "expected": change.expected_revision,
-                        "title": change.title,
-                        "description": change.description,
-                        "location": change.location,
-                        "color": change.color_code,
-                    },
-                )
-            if body.agenda is not None:
-                change_agenda = body.agenda
-                await TemporalEventApplication(runtime.session_factory).replace_agenda_in_session(
-                    session,
-                    self_person_ref=actor,
-                    event_ref=native_event,
-                    operation_id=change_agenda.operation_id,
-                    expected_revision=change_agenda.expected_revision,
-                    agenda_parts=change_agenda.agenda_parts,
-                )
-            if body.life_area is not None:
-                change_area = body.life_area
-                selected_area = change_area.life_area_ref
-                if change_area.new_life_area is not None:
-                    new_area = change_area.new_life_area
-                    selected_area = await create_life_area_in_session(
-                        session,
-                        actor=actor,
-                        operation_id=body.operation_id,
-                        name=new_area.name,
-                        color_code=new_area.color_code,
-                    )
-                await session.execute(
-                    text("""
-                        SELECT * FROM dante.assign_self_event_life_area(
-                            :actor,:operation,:fingerprint,:event,:area,:expected)
-                    """),
-                    {
-                        "actor": actor,
-                        "operation": f"{body.operation_id}:area",
-                        "fingerprint": assignment_fingerprint(
-                            kind="event",
-                            subject_ref=native_event,
-                            life_area_ref=selected_area,
-                            expected=change_area.expected_assignment_revision,
-                        ),
-                        "event": native_event,
-                        "area": selected_area,
-                        "expected": change_area.expected_assignment_revision,
-                    },
-                )
-            if body.reality is not None:
-                change_reality = body.reality
-                intent = {
-                    "version": 1,
-                    "subject_kind": "event",
-                    "subject_native_ref": str(event_ref),
-                    "mode_code": change_reality.mode_code,
-                    "expected_state_ref": (
-                        str(change_reality.expected_state_ref)
-                        if change_reality.expected_state_ref is not None
-                        else None
-                    ),
-                }
-                await session.execute(
-                    text("""
-                        SELECT * FROM dante.set_self_reality_review_policy(
-                            :actor,:operation,:fingerprint,'event',:event,:state,:mode,:expected)
-                    """),
-                    {
-                        "actor": actor,
-                        "operation": change_reality.operation_id,
-                        "fingerprint": reality_fingerprint(intent),
-                        "event": native_event,
-                        "state": uuid7(),
-                        "mode": change_reality.mode_code,
-                        "expected": change_reality.expected_state_ref,
-                    },
-                )
-            objectives = (
-                await apply_event_objective_edits_in_session(
-                    session,
-                    actor=actor,
-                    subject_ref=event_ref,
-                    payload=body.objectives,
-                    effective_zone_id=context.effective_zone_id,
-                )
-                if body.objectives is not None
-                else []
-            )
-            saved = await _read_event_in_session(
-                session, self_person_ref=actor, event_ref=native_event
-            )
-            if saved is None:
-                raise _not_found_problem()
-            placement_state = None
-            if body.schedule is not None:
-                placement_state = await session.scalar(
-                    text(
-                        "SELECT current_placement.material_state_ref "
-                        "FROM dante.schedule_current_placement AS current_placement "
-                        "JOIN dante.schedule AS schedule_row "
-                        "ON schedule_row.schedule_ref=current_placement.scoped_owner_ref "
-                        "JOIN dante.event_expectation AS owned "
-                        "ON owned.event_ref=schedule_row.subject_native_ref "
-                        "WHERE owned.self_person_ref=:actor "
-                        "AND owned.event_ref=:event AND schedule_row.schedule_ref=:schedule"
-                    ),
-                    {
-                        "actor": actor,
-                        "event": event_ref,
-                        "schedule": body.schedule.schedule_ref,
-                    },
-                )
-                if placement_state is None:
-                    raise ProblemError(
-                        status=409,
-                        code="temporal.event_edit.placement_revision_missing",
-                        category="conflict",
-                        title="Event Schedule changed",
-                        detail="The accepted Event Schedule has no current placement state.",
-                    )
-            return EventAtomicEditResponse(
-                event=_event_response(saved),
-                objectives=objectives,
-                placement_material_state_ref=placement_state,
-            )
+            except DBAPIError as exc:
+                if getattr(exc.orig, "sqlstate", None) != "40001" or attempt == 2:
+                    raise
+                # A PostgreSQL serialization abort rolled back the entire
+                # Event, Objective and Life Area edit; replay the original CAS.
+                await asyncio.sleep(0.025 * (2**attempt))
+        raise AssertionError("Unreachable Event atomic Edit retry state")
     except EventAgendaRevisionConflictError as exc:
         raise ProblemError(
             status=409,
@@ -1330,7 +1350,18 @@ async def apply_one_off_event_atomic_edit(
         ) from exc
     except DBAPIError as exc:
         constraint = getattr(getattr(exc.orig, "diag", None), "constraint_name", None)
-        if constraint or getattr(exc.orig, "sqlstate", None) in {"40001", "23505"}:
+        sqlstate = getattr(exc.orig, "sqlstate", None)
+        logger.warning("event.atomic_edit.db_error sqlstate=%s constraint=%s", sqlstate, constraint)
+        if sqlstate == "40001":
+            raise ProblemError(
+                status=503,
+                code="temporal.event_edit.unavailable",
+                category="service",
+                title="Event unavailable",
+                detail="The Event edit could not be saved after bounded retries.",
+                retryable=True,
+            ) from exc
+        if constraint or sqlstate == "23505":
             raise ProblemError(
                 status=409,
                 code="temporal.event_edit.conflict",

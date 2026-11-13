@@ -5733,6 +5733,16 @@
       "audit_note": "Synthetic retry-boundary proof; real PostgreSQL and Chromium concurrency acceptance pending."
     },
     {
+      "path": "apps/backend/tests/unit/temporal/test_event_atomic_edit_serialization_retry.py",
+      "suite": "backend-unit",
+      "contract_id": "T03",
+      "candidate_behavior": "bounded SQLSTATE 40001 retry for one-off Event atomic Save",
+      "purpose": "Verify a serializable Event Save abort retries the complete transaction with its original Life Area intent and stops after three attempts.",
+      "invariant": "Only SQLSTATE 40001 retries; a genuine Life Area CAS or uniqueness conflict remains a 409, and exhausted serialization failures return retryable service error.",
+      "status": "QUALIFIED",
+      "audit_note": "Synthetic retry-boundary proof; real PostgreSQL and Chromium concurrency acceptance pending."
+    },
+    {
       "path": "apps/backend/tests/unit/temporal/test_e2e_stack_pool_override.py",
       "suite": "backend-unit",
       "contract_id": "T05",
