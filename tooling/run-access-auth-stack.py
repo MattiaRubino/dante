@@ -9,9 +9,10 @@ from types import ModuleType
 from uuid import uuid7
 
 import psycopg
+from psycopg import sql
+
 from dante.auth.email import normalize_email
 from dante.platform.config.settings import Settings
-from psycopg import sql
 
 _CORE_PATH = Path(__file__).with_name("serve-access-auth-stack.py")
 _REQUIRED_EXTENSIONS: tuple[tuple[str, str | None], ...] = (
@@ -126,11 +127,10 @@ def _auth_settings_override(
 def _runtime_database_pool_override(
     original: Callable[..., Settings],
 ) -> Callable[..., Settings]:
-    """Size only the disposable E2E API for two concurrent browser workers.
+    """Give the disposable E2E API room for overlapping Timeline checkpoints.
 
-    The legacy serial stack keeps its original 5+5/5s budget; production
-    database settings are unaffected. A two-worker matrix may drive >10
-    simultaneous API reads and checkpoints on its one disposable database.
+    Even one browser worker can issue more than ten overlapping API reads
+    and materializations. Production database settings are unaffected.
     """
 
     def build(*, port: int, runtime_password: str, auth_settings: object) -> Settings:
@@ -140,8 +140,6 @@ def _runtime_database_pool_override(
         workers = os.environ.get(_E2E_BROWSER_WORKERS_ENV, "1")
         if workers not in {"1", "2"}:
             raise RuntimeError(f"{_E2E_BROWSER_WORKERS_ENV} must be 1 or 2.")
-        if workers == "1":
-            return settings
         return settings.model_copy(
             update={
                 "database": settings.database.model_copy(
@@ -289,4 +287,3 @@ def main() -> None:
 
 if __name__ == "__main__":
     main()
-
