@@ -17,6 +17,9 @@ class DanteProgressReporter implements Reporter {
       outcome: test.outcome(),
       duration_ms: result.duration,
       retry: result.retry,
+      steps: result.steps
+        .filter((step) => step.category === 'test.step')
+        .map((step) => ({ title: step.title, duration_ms: step.duration })),
     };
     appendFileSync(file, JSON.stringify(record) + '\n', 'utf8');
   }
