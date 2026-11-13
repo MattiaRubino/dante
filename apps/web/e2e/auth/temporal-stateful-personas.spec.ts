@@ -302,6 +302,7 @@ async function editOneOff(
     await editor
       .getByRole('textbox', {
         name: 'Punto scaletta ' + (agenda.length + 1),
+        exact: true,
       })
       .fill(appended);
     agenda.push(appended);
@@ -999,6 +1000,7 @@ async function seriesRevision(
     await inspector
       .getByRole('textbox', {
         name: 'Punto scaletta ' + (agenda.length + 1),
+        exact: true,
       })
       .fill(appended);
     agenda.push(appended);
