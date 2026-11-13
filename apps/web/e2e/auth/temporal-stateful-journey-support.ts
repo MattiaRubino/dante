@@ -23,10 +23,7 @@ import {
   submitCreate,
   type CreatedItem,
 } from './temporal-user-journey-support';
-import type {
-  GoalKind,
-  PersonaCase,
-} from './temporal-stateful-case-matrix';
+import type { GoalKind, PersonaCase } from './temporal-stateful-case-matrix';
 
 const PASSWORD = 'correct horse battery staple';
 const TZ = { 'X-Dante-Time-Zone': 'Europe/Rome' } as const;
@@ -60,11 +57,17 @@ export type AuthoredPersona = Readonly<{
 
 function accountIndex(info: TestInfo, ordinal: number): number {
   const projects: Record<string, number> = {
-    chromium: 0, firefox: 1, webkit: 2,
+    chromium: 0,
+    firefox: 1,
+    webkit: 2,
   };
   const project = projects[info.project.name];
-  if (project === undefined || !Number.isInteger(ordinal) ||
-      ordinal < 0 || ordinal >= 103) {
+  if (
+    project === undefined ||
+    !Number.isInteger(ordinal) ||
+    ordinal < 0 ||
+    ordinal >= 103
+  ) {
     throw new Error('Stateful E2E account partition is invalid');
   }
   // 1..101 existing; 102..401 matrix; 402..407 runtime guards;
@@ -91,9 +94,11 @@ export async function signedInPersona(
     await expect(
       page.getByRole('heading', { level: 1, name: 'Accedi a DANTE' }),
     ).toBeVisible();
-    await page.getByLabel('Email').fill(
-      'synthetic.user+e2e-' + accountIndex(info, ordinal) + '@example.com',
-    );
+    await page
+      .getByLabel('Email')
+      .fill(
+        'synthetic.user+e2e-' + accountIndex(info, ordinal) + '@example.com',
+      );
     await page.getByLabel('Password', { exact: true }).fill(PASSWORD);
     const signin = page.waitForResponse(
       (response) =>
@@ -113,7 +118,7 @@ export async function signedInPersona(
 }
 
 async function sessionCsrf(page: Page): Promise<string> {
-  const raw = await serverRead(page, '/api/v1/auth/session') as {
+  const raw = (await serverRead(page, '/api/v1/auth/session')) as {
     csrf_token?: string;
   };
   expect(raw.csrf_token).toEqual(expect.any(String));
@@ -131,8 +136,9 @@ export async function seedExistingArea(
     data: { name, operation_id: randomUUID() },
   });
   expect(created.status(), 'create authenticated Life Area fixture').toBe(201);
-  const area = await created.json() as {
-    life_area_ref: string; revision: number;
+  const area = (await created.json()) as {
+    life_area_ref: string;
+    revision: number;
   };
   const appearance = await page.request.put(
     '/api/v1/temporal/life-areas/' + area.life_area_ref + '/appearance',
@@ -158,10 +164,12 @@ async function pickColor(
   await composer.getByRole('button', { name: 'Colore Life Area' }).click();
   const picker = page.getByRole('dialog', { name: 'Scegli colore' });
   await expect(picker).toBeVisible();
-  await picker.getByRole('button', {
-    name: COLOR_BUTTONS[index % COLOR_BUTTONS.length]!,
-    exact: true,
-  }).click();
+  await picker
+    .getByRole('button', {
+      name: COLOR_BUTTONS[index % COLOR_BUTTONS.length]!,
+      exact: true,
+    })
+    .click();
 }
 
 function truthFor(
@@ -177,32 +185,39 @@ function truthFor(
     areaRef,
     agenda: Object.freeze(
       persona.kind === 'event'
-        ? Array.from({ length: persona.agendaCount }, (_, i) =>
-            title + ' scaletta ' + (i + 1))
+        ? Array.from(
+            { length: persona.agendaCount },
+            (_, i) => title + ' scaletta ' + (i + 1),
+          )
         : [],
     ),
     objectives: Object.freeze(
-      persona.goalKinds.map((kind, i) => Object.freeze({
-        label: title + ' obiettivo ' + (i + 1),
-        kind,
-        target: kind === 'quantity' ? 10 + i : null,
-        minimum: kind === 'range' ? i + 1 : null,
-        maximum: kind === 'range' ? i + 8 : null,
-        verification: i % 2 === 0 ? 'review_on_end' as const : 'none' as const,
-      })),
+      persona.goalKinds.map((kind, i) =>
+        Object.freeze({
+          label: title + ' obiettivo ' + (i + 1),
+          kind,
+          target: kind === 'quantity' ? 10 + i : null,
+          minimum: kind === 'range' ? i + 1 : null,
+          maximum: kind === 'range' ? i + 8 : null,
+          verification:
+            i % 2 === 0 ? ('review_on_end' as const) : ('none' as const),
+        }),
+      ),
     ),
     sessions: Object.freeze(
       persona.kind === 'activity'
-        ? Array.from({ length: persona.plannedSessionCount }, (_, i) =>
-            title + ' Sessione ' + (i + 1))
+        ? Array.from(
+            { length: persona.plannedSessionCount },
+            (_, i) => title + ' Sessione ' + (i + 1),
+          )
         : [],
     ),
     explicitExtraIntervals:
       persona.kind === 'activity' && !persona.allDay
         ? persona.intervalCount - 1
         : 0,
-    expectedIntervalCount: persona.kind === 'activity'
-      ? persona.intervalCount : 0,
+    expectedIntervalCount:
+      persona.kind === 'activity' ? persona.intervalCount : 0,
   });
 }
 
@@ -219,29 +234,36 @@ async function setObjective(
     });
     await expect(addObjective).toBeVisible({ timeout: 10_000 });
     await addObjective.click();
-    await composer.getByRole('textbox', { name: 'Obiettivo ' + nth })
+    await composer
+      .getByRole('textbox', { name: 'Obiettivo ' + nth })
       .fill(objective.label);
   }
   const row = composer.locator('[data-create-objective]').nth(index);
   await expect(row).toBeVisible();
   if (objective.kind !== 'boolean') {
-    await row.getByRole('combobox', {
-      name: 'Tipo risultato obiettivo ' + nth,
-    }).selectOption(objective.kind);
+    await row
+      .getByRole('combobox', {
+        name: 'Tipo risultato obiettivo ' + nth,
+      })
+      .selectOption(objective.kind);
   }
   if (objective.target !== null) {
-    await row.getByRole('spinbutton', { name: 'Target obiettivo' })
+    await row
+      .getByRole('spinbutton', { name: 'Target obiettivo' })
       .fill(String(objective.target));
     await row.getByRole('textbox', { name: 'Unità obiettivo' }).fill('ore');
   }
   if (objective.minimum !== null && objective.maximum !== null) {
-    await row.getByRole('spinbutton', { name: 'Minimo obiettivo' })
+    await row
+      .getByRole('spinbutton', { name: 'Minimo obiettivo' })
       .fill(String(objective.minimum));
-    await row.getByRole('spinbutton', { name: 'Massimo obiettivo' })
+    await row
+      .getByRole('spinbutton', { name: 'Massimo obiettivo' })
       .fill(String(objective.maximum));
     await row.getByRole('textbox', { name: 'Unità obiettivo' }).fill('punti');
   }
-  await row.getByRole('combobox', { name: 'Verifica obiettivo ' + nth })
+  await row
+    .getByRole('combobox', { name: 'Verifica obiettivo ' + nth })
     .selectOption(objective.verification);
 }
 
@@ -297,24 +319,29 @@ export async function authorPersona(
     if (persona.kind !== 'activity') {
       throw new Error('Live Sessions are Activity-only.');
     }
-    await dialog.locator(
-      'label[data-session-capability="activity"] input[type="checkbox"]',
-    ).check();
+    await dialog
+      .locator(
+        'label[data-session-capability="activity"] input[type="checkbox"]',
+      )
+      .check();
   }
   if (areaName && persona.area === 'existing') {
     // The remote Life Area catalog can finish loading after the initial
     // textbox fill. Selecting the actual catalog option is required: plain
     // text could otherwise stage a duplicate "new" area with the same name.
-    await dialog.getByRole('textbox', { name: 'Life Area (opzionale)' })
+    await dialog
+      .getByRole('textbox', { name: 'Life Area (opzionale)' })
       .click();
     const option = dialog.getByRole('option', {
-      name: areaName, exact: true,
+      name: areaName,
+      exact: true,
     });
     await expect(option).toBeVisible();
     await option.click();
   }
   if (truth.description) {
-    await dialog.getByRole('textbox', { name: 'Descrizione avanzata' })
+    await dialog
+      .getByRole('textbox', { name: 'Descrizione avanzata' })
       .fill(truth.description);
   }
   for (const [i, objective] of truth.objectives.entries()) {
@@ -322,38 +349,47 @@ export async function authorPersona(
   }
   if (persona.kind === 'event') {
     for (let i = 1; i < truth.agenda.length; i += 1) {
-      await dialog.getByRole('button', { name: 'Aggiungi punto alla scaletta' })
+      await dialog
+        .getByRole('button', { name: 'Aggiungi punto alla scaletta' })
         .click();
-      await dialog.getByRole('textbox', { name: 'Punto scaletta ' + (i + 1) })
+      await dialog
+        .getByRole('textbox', { name: 'Punto scaletta ' + (i + 1) })
         .fill(truth.agenda[i]!);
     }
   } else {
     for (let i = 1; i < truth.sessions.length; i += 1) {
-      await dialog.locator('[aria-label="Aggiungi Sessione pianificata"]')
-        .getByRole('button', { name: 'Sessione' }).click();
-      await dialog.locator('[data-create-planned-session]').nth(i)
+      await dialog
+        .locator('[aria-label="Aggiungi Sessione pianificata"]')
+        .getByRole('button', { name: 'Sessione' })
+        .click();
+      await dialog
+        .locator('[data-create-planned-session]')
+        .nth(i)
         .getByRole('textbox', { name: 'Nome Sessione' })
         .fill(truth.sessions[i]!);
     }
     for (let i = 0; i < truth.explicitExtraIntervals; i += 1) {
-      await dialog.getByRole('button', { name: 'Aggiungi intervallo' })
-        .click();
+      await dialog.getByRole('button', { name: 'Aggiungi intervallo' }).click();
     }
   }
   if (areaName && persona.area === 'new') {
     await pickColor(page, dialog, colorIndex);
   }
 
-  await expect(dialog.locator('[data-create-objective]'))
-    .toHaveCount(truth.objectives.length);
+  await expect(dialog.locator('[data-create-objective]')).toHaveCount(
+    truth.objectives.length,
+  );
   if (persona.kind === 'event') {
-    await expect(dialog.locator('[data-temporal-create-agenda-part]'))
-      .toHaveCount(truth.agenda.length);
+    await expect(
+      dialog.locator('[data-temporal-create-agenda-part]'),
+    ).toHaveCount(truth.agenda.length);
   } else {
-    await expect(dialog.locator('[data-create-planned-session]'))
-      .toHaveCount(truth.sessions.length);
-    await expect(dialog.locator('.temporal-create-activity-interval'))
-      .toHaveCount(truth.explicitExtraIntervals);
+    await expect(dialog.locator('[data-create-planned-session]')).toHaveCount(
+      truth.sessions.length,
+    );
+    await expect(
+      dialog.locator('.temporal-create-activity-interval'),
+    ).toHaveCount(truth.explicitExtraIntervals);
   }
 
   const item = await submitCreate(page, dialog, {
@@ -361,9 +397,13 @@ export async function authorPersona(
     title,
     recurring: recurrence !== undefined,
   });
-  const catalog = await serverRead(page, '/api/v1/temporal/life-areas') as
-    readonly Record<string, unknown>[];
-  const found = areaName ? catalog.filter((area) => area.name === areaName) : [];
+  const catalog = (await serverRead(
+    page,
+    '/api/v1/temporal/life-areas',
+  )) as readonly Record<string, unknown>[];
+  const found = areaName
+    ? catalog.filter((area) => area.name === areaName)
+    : [];
   if (areaName) {
     expect(found).toHaveLength(1);
     areaRef = String(found[0]!.life_area_ref);
@@ -387,63 +427,82 @@ export async function assertOneOffTruth(
   actual: AuthoredPersona,
 ): Promise<void> {
   const { item, truth } = actual;
-  const base = await serverRead(
+  const base = (await serverRead(
     page,
     item.kind === 'event'
       ? '/api/v1/temporal/events/' + item.sourceRef
       : '/api/v1/temporal/activities/' + item.sourceRef + '/profile',
-  ) as Record<string, unknown>;
+  )) as Record<string, unknown>;
   expect(base.title, 'canonical title').toBe(truth.title);
-  expect(base.description ?? null, 'canonical description')
-    .toBe(truth.description);
+  expect(base.description ?? null, 'canonical description').toBe(
+    truth.description,
+  );
   const persisted = await serverRead(
     page,
-    '/api/v1/temporal/' + (item.kind === 'event' ? 'events/' : 'activities/') +
-      item.sourceRef + '/objectives',
+    '/api/v1/temporal/' +
+      (item.kind === 'event' ? 'events/' : 'activities/') +
+      item.sourceRef +
+      '/objectives',
   );
   const rows = objectiveRows(persisted);
-  expect(rows.map((row) => row.label), 'ordered Objectives')
-    .toEqual(truth.objectives.map((row) => row.label));
+  expect(
+    rows.map((row) => row.label),
+    'ordered Objectives',
+  ).toEqual(truth.objectives.map((row) => row.label));
   for (const [i, objective] of truth.objectives.entries()) {
     const row = rows[i]!;
     expect(row.result_kind, objective.label + ' type').toBe(objective.kind);
-    expect(row.verification_mode, objective.label + ' verification')
-      .toBe(objective.verification);
+    expect(row.verification_mode, objective.label + ' verification').toBe(
+      objective.verification,
+    );
     if (objective.target !== null) {
-      expect(Number(row.target_value), objective.label + ' target')
-        .toBe(objective.target);
+      expect(Number(row.target_value), objective.label + ' target').toBe(
+        objective.target,
+      );
     }
     if (objective.minimum !== null) {
-      expect(Number(row.target_min), objective.label + ' minimum')
-        .toBe(objective.minimum);
-      expect(Number(row.target_max), objective.label + ' maximum')
-        .toBe(objective.maximum);
+      expect(Number(row.target_min), objective.label + ' minimum').toBe(
+        objective.minimum,
+      );
+      expect(Number(row.target_max), objective.label + ' maximum').toBe(
+        objective.maximum,
+      );
     }
     expect(row.objective_ref).toEqual(expect.stringMatching(/^[\da-f-]{36}$/i));
   }
   if (item.kind === 'event') {
     expect(base.agenda_parts, 'Event agenda order').toEqual(truth.agenda);
-    expect(base.life_area_ref ?? null, 'Event Life Area')
-      .toBe(truth.areaRef);
+    expect(base.life_area_ref ?? null, 'Event Life Area').toBe(truth.areaRef);
   } else {
-    const snapshot = await serverRead(
+    const snapshot = (await serverRead(
       page,
       '/api/v1/temporal/activities/' + item.sourceRef + '/edit-snapshot',
-    ) as Record<string, unknown>;
-    expect(snapshot.life_area_ref ?? null, 'Activity Life Area')
-      .toBe(truth.areaRef);
+    )) as Record<string, unknown>;
+    expect(snapshot.life_area_ref ?? null, 'Activity Life Area').toBe(
+      truth.areaRef,
+    );
     const schedules = snapshot.schedules as Record<string, unknown>[];
-    const sessions = schedules.filter((schedule) => schedule.role_code === 'planned');
-    expect(sessions.map((session) => session.display_name), 'planned Session order')
-      .toEqual(truth.sessions);
-    // The API enumerates all Activity intervals, including the initial
-    // interval authored by Create; the composer adds only the extra ones.
-    const intervalCount = schedules.filter(
+    const sessions = schedules.filter(
+      (schedule) => schedule.role_code === 'planned',
+    );
+    expect(
+      sessions.map((session) => session.display_name),
+      'planned Session order',
+    ).toEqual(truth.sessions);
+    // With one timed period the physical envelope is the only placement.
+    // Adding another interval creates explicit interval rows for all bands.
+    const intervals = schedules.filter(
       (schedule) => schedule.role_code === 'interval',
-    ).length;
-    expect(intervalCount, 'all persisted Activity intervals')
-      .toBe(truth.expectedIntervalCount);
-    expect(new Set(schedules.map((row) => row.schedule_ref)).size)
-      .toBe(schedules.length);
+    );
+    expect(
+      schedules.filter((schedule) => schedule.role_code === 'envelope'),
+      'one persisted Activity envelope',
+    ).toHaveLength(1);
+    expect(intervals, 'explicit persisted Activity intervals').toHaveLength(
+      truth.expectedIntervalCount === 1 ? 0 : truth.expectedIntervalCount,
+    );
+    expect(new Set(schedules.map((row) => row.schedule_ref)).size).toBe(
+      schedules.length,
+    );
   }
 }
