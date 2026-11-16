@@ -24,6 +24,7 @@ import time
 import zipfile
 from concurrent.futures import FIRST_COMPLETED, ThreadPoolExecutor, wait
 from dataclasses import asdict, dataclass
+from datetime import datetime
 from pathlib import Path
 from unittest.mock import patch
 from xml.etree import ElementTree
@@ -1216,7 +1217,10 @@ def main() -> int:
     directory = (
         Path(explicit).resolve()
         if explicit
-        else Path(tempfile.mkdtemp(prefix="dante-realstack-", dir=ROOT / "temp"))
+        else Path(tempfile.mkdtemp(
+            prefix=f"dante-realstack-{datetime.now().astimezone():%Y-%m-%d_%H-%M-%S%z}-",
+            dir=ROOT / "temp",
+        ))
     )
     directory.mkdir(parents=True, exist_ok=True)
     started = time.monotonic()
