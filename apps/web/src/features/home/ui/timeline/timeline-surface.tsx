@@ -38,7 +38,10 @@ import { REVIEW_QUEUE_INVALIDATED } from '../context-rail/review-events';
 import { useSessionPanel } from '../../../temporal/use-session-panel';
 import { useSessionPanelPresentation } from './timeline-session-panel';
 import { applyTimelineSessionReality } from './timeline-session-reality';
-import { useAuthoritativeTimelineHydration } from './timeline-authoritative-hydration';
+import {
+  authoritativeDateLaneIdsToReplace,
+  useAuthoritativeTimelineHydration,
+} from './timeline-authoritative-hydration';
 import { createTimelineLocalContext } from './model/timeline-context-catalog';
 import {
   TIMELINE_PROTOTYPE_NOW_MINUTE,
@@ -484,14 +487,11 @@ export function TimelineSurface({
   );
   const reconcileAuthoritativeDateLane = useCallback(
     (items: readonly TimelineAllDayItem[]) => {
-      const incomingIds = new Set(items.map((item) => item.id));
-      for (const current of state.allDayItems) {
-        if (
-          current.canonicalBasis !== undefined ||
-          incomingIds.has(current.id)
-        ) {
-          dispatch({ type: 'remove-all-day', itemId: current.id });
-        }
+      for (const itemId of authoritativeDateLaneIdsToReplace(
+        state.allDayItems,
+        items,
+      )) {
+        dispatch({ type: 'remove-all-day', itemId });
       }
       for (const item of items) {
         dispatch({ type: 'materialize-all-day', item });
