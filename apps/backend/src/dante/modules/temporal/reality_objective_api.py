@@ -1890,6 +1890,8 @@ TemporalHardDeleteScope = Literal[
     "event_instance",
     "event_series",
 ]
+_HARD_DELETE_SERIALIZATION_ATTEMPTS = 4
+_HARD_DELETE_RETRY_BASE_SECONDS = 0.5
 
 
 class TemporalHardDeletePreview(BaseModel):
@@ -2024,7 +2026,7 @@ async def apply_temporal_hard_deletion(
 ) -> TemporalHardDeleteResult:
     response.headers["Cache-Control"] = "no-store"
     try:
-        for attempt in range(3):
+        for attempt in range(_HARD_DELETE_SERIALIZATION_ATTEMPTS):
             try:
                 async with (
                     request.app.state.database_runtime.session_factory() as session,
@@ -2045,11 +2047,14 @@ async def apply_temporal_hard_deletion(
                     )
                 break
             except DBAPIError as exc:
-                if getattr(exc.orig, "sqlstate", None) != "40001" or attempt == 2:
+                if (
+                    getattr(exc.orig, "sqlstate", None) != "40001"
+                    or attempt + 1 == _HARD_DELETE_SERIALIZATION_ATTEMPTS
+                ):
                     raise
                 # Only a completely rolled-back serialization failure is
                 # retryable; the same fingerprint is checked on each attempt.
-                await asyncio.sleep(0.025 * (2**attempt))
+                await asyncio.sleep(_HARD_DELETE_RETRY_BASE_SECONDS * (2**attempt))
     except DBAPIError as exc:
         logger.warning(
             "temporal.hard_delete.db_error sqlstate=%s constraint=%s",
