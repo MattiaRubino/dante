@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import asyncio
 from datetime import date, datetime, timedelta
 from types import SimpleNamespace
 from typing import Any, cast
@@ -268,6 +269,132 @@ async def test_recurring_activity_instance_skip_and_whole_series_no_regeneration
                 (first_activity, second_activity),
             ).fetchone() == (0,)
     finally:
+        await runtime.dispose()
+
+
+@pytest.mark.asyncio
+async def test_checkpoint_committing_during_series_delete_refuses_stale_confirmation(
+    migrated_database: Any, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """Two real connections compete for one source; no partial delete or 503."""
+    actor = _seed_self(migrated_database)
+    runtime = create_database_runtime(migrated_database.runtime_settings())
+    materializer = RoutineOccurrenceMaterializationApplication(runtime.session_factory)
+    entered = asyncio.Event()
+    release = asyncio.Event()
+    tasks: list[asyncio.Task[Any]] = []
+    try:
+        routine = await RecurringAuthoringApplication(runtime.session_factory).create_routine(
+            self_person_ref=actor,
+            operation_id="hard:race:source",
+            title="Serie da confermare",
+            life_area_intent=None,
+            recurrence=_daily_named_zone(),
+        )
+        await RoutineOccurrencePolicyApplication(runtime.session_factory).set(
+            self_person_ref=actor,
+            routine_ref=routine.source_ref,
+            duration_minutes=45,
+            reminder_lead_minutes=None,
+            activity_template={
+                "version": 1,
+                "planned_slices": [{"name": "Fase", "time_enabled": False}],
+            },
+        )
+        await materializer.checkpoint_window(
+            self_person_ref=actor,
+            operation_id="hard:race:first",
+            start_date=date(2026, 10, 6),
+            end_date_exclusive=date(2026, 10, 7),
+            effective_zone_id="Europe/Rome",
+        )
+        first = _occurrences(migrated_database, routine.source_ref)[0]
+        activity = await _activity_for(runtime, actor, first)
+        assert activity is not None
+        stale_fingerprint = await _preview(runtime, actor, activity, "activity_series")
+
+        checkpoint = materializer._occurrences.checkpoint
+
+        async def held_checkpoint(**kwargs: Any) -> Any:
+            entered.set()
+            await release.wait()
+            return await checkpoint(**kwargs)
+
+        monkeypatch.setattr(materializer._occurrences, "checkpoint", held_checkpoint)
+        checkpoint_task = asyncio.create_task(
+            materializer.checkpoint_window(
+                self_person_ref=actor,
+                operation_id="hard:race:second",
+                start_date=date(2026, 10, 6),
+                end_date_exclusive=date(2026, 10, 8),
+                effective_zone_id="Europe/Rome",
+            )
+        )
+        tasks.append(checkpoint_task)
+        await asyncio.wait_for(entered.wait(), timeout=10)
+        delete_task = asyncio.create_task(
+            apply_temporal_hard_deletion(
+                activity,
+                TemporalHardDeleteCommand(
+                    scope="activity_series", expected_fingerprint=stale_fingerprint
+                ),
+                _context(actor),
+                _request(runtime),
+                Response(),
+            )
+        )
+        tasks.append(delete_task)
+        try:
+            # Observe the DELETE blocked on the source advisory lock before
+            # committing the new Occurrence. This makes the race deterministic.
+            with psycopg.connect(
+                host=migrated_database.cluster.host,
+                port=migrated_database.cluster.port,
+                dbname=migrated_database.name,
+                user=migrated_database.cluster.admin_user,
+                password=migrated_database.cluster.admin_password,
+                autocommit=True,
+            ) as observer:
+                for _ in range(100):
+                    waiting = observer.execute(
+                        "SELECT EXISTS(SELECT 1 FROM pg_stat_activity "
+                        "WHERE datname=%s AND pid<>pg_backend_pid() "
+                        "AND wait_event_type='Lock' "
+                        "AND position('delete_self_temporal_hard(' in query)>0)",
+                        (migrated_database.name,),
+                    ).fetchone()
+                    if waiting == (True,):
+                        break
+                    await asyncio.sleep(0.05)
+                else:
+                    raise AssertionError("Series DELETE never waited for the checkpoint lock")
+        finally:
+            release.set()
+        await asyncio.wait_for(checkpoint_task, timeout=20)
+        with pytest.raises(ProblemError) as stale:
+            await asyncio.wait_for(delete_task, timeout=20)
+        assert stale.value.status == 409
+        assert len(_occurrences(migrated_database, routine.source_ref)) == 2
+        assert await _activity_for(runtime, actor, first) == activity
+
+        fresh = await _preview(runtime, actor, activity, "activity_series")
+        await _delete(runtime, actor, activity, "activity_series", fresh)
+        assert _occurrences(migrated_database, routine.source_ref) == []
+        await materializer.checkpoint_window(
+            self_person_ref=actor,
+            operation_id="hard:race:after-delete",
+            start_date=date(2026, 10, 6),
+            end_date_exclusive=date(2026, 10, 8),
+            effective_zone_id="Europe/Rome",
+        )
+        assert _occurrences(migrated_database, routine.source_ref) == []
+    finally:
+        release.set()
+        pending = [task for task in tasks if not task.done()]
+        for task in pending:
+            task.cancel()
+        if pending:
+            await asyncio.gather(*pending, return_exceptions=True)
         await runtime.dispose()
 
 
