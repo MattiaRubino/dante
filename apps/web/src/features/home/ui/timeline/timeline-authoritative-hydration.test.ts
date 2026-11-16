@@ -7,6 +7,7 @@ import type {
   TemporalTimelineScheduledOccurrenceItem,
 } from '../../../temporal/timeline-read';
 import {
+  authoritativeDateLaneIdsToReplace,
   canonicalScheduledTimelineEvent,
   canonicalScheduledActivityTimelineEvent,
   canonicalScheduledActivityTimelineEvents,
@@ -32,6 +33,50 @@ function scheduledActivity(): TemporalTimelineScheduledActivityItem {
 }
 
 describe('authoritative Timeline hydration', () => {
+  it('retires an expected occurrence when its Schedule becomes canonical without removing local drafts', () => {
+    const expected = {
+      id: 'occurrence-1',
+      title: 'Routine',
+      groupId: 'personale',
+      startDateKey: '2027-01-02',
+      endDateExclusiveKey: '2027-01-03',
+      occurrenceBasis: {
+        occurrenceRef: 'occurrence-1',
+        sourceKind: 'routine' as const,
+        sourceNativeRef: 'routine-1',
+      },
+    };
+    const local = {
+      id: 'local-draft',
+      title: 'Bozza',
+      groupId: 'personale',
+      startDateKey: '2027-01-02',
+      endDateExclusiveKey: '2027-01-03',
+    };
+    const scheduled = {
+      ...local,
+      id: 'canonical-schedule',
+      canonicalBasis: {
+        kind: 'scheduled-activity' as const,
+        activityRef: ACTIVITY_REF,
+        scheduleRef: SCHEDULE_REF,
+        placementMaterialStateRef: MATERIAL_STATE_REF,
+        placement: {
+          kind: 'date-span' as const,
+          startDate: Temporal.PlainDate.from('2027-01-02'),
+          endDateExclusive: Temporal.PlainDate.from('2027-01-03'),
+        },
+      },
+    };
+
+    expect(
+      authoritativeDateLaneIdsToReplace([expected, local, scheduled], []),
+    ).toEqual(['occurrence-1', 'canonical-schedule']);
+    expect(authoritativeDateLaneIdsToReplace([local], [local])).toEqual([
+      'local-draft',
+    ]);
+  });
+
   it('projects a ten-day timed Activity as one date-lane identity with planned clock ends', () => {
     const item = Object.freeze({
       ...scheduledActivity(),
