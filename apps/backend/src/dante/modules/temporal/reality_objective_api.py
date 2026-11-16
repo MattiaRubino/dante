@@ -2069,6 +2069,14 @@ async def apply_temporal_hard_deletion(
                             "fingerprint": body.expected_fingerprint,
                         },
                     )
+                logger.info(
+                    "temporal.hard_delete.accepted scope=%s attempt=%d "
+                    "duration_ms=%d deleted_rows=%d",
+                    body.scope,
+                    attempt + 1,
+                    round((perf_counter() - attempt_started) * 1000),
+                    deleted_rows or 0,
+                )
                 break
             except DBAPIError as exc:
                 if getattr(exc.orig, "sqlstate", None) == "40001":
