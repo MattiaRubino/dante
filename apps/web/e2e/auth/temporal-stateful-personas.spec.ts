@@ -1007,7 +1007,7 @@ async function seriesRevision(
   } else {
     const revised = sessions[0]! + ' serie';
     await inspector
-      .getByRole('textbox', { name: 'Nome Sessione 1' })
+      .getByRole('textbox', { name: 'Nome Sessione 1', exact: true })
       .fill(revised);
     sessions[0] = revised;
     await inspector
@@ -1024,14 +1024,19 @@ async function seriesRevision(
     await inspector
       .getByRole('textbox', {
         name: 'Nome Sessione ' + (sessions.length + 1),
+        exact: true,
       })
       .fill(appended);
     sessions.push(appended);
   }
   const areaName = nextTitle + ' nuova area';
-  await inspector
-    .getByRole('textbox', { name: 'Area assegnata' })
-    .fill(areaName);
+  const areaInput = inspector.getByRole('textbox', { name: 'Area assegnata' });
+  await areaInput.fill('');
+  await areaInput.pressSequentially(areaName);
+  await expect(
+    areaInput,
+    'full Life Area name entered before preview',
+  ).toHaveValue(areaName);
   await expect(
     inspector.getByText(
       'La nuova Life Area sarà creata insieme al salvataggio della serie.',
