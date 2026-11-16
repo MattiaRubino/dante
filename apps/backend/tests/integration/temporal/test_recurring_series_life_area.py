@@ -442,6 +442,34 @@ async def test_monthly_all_day_event_following_edit_resolves_midnight_and_preser
         assert accepted.source_ref == created.source_ref
         assert accepted.recurrence_state_ref != loaded.recurrence_state_ref
 
+        # A successful structural receipt must produce current future cards,
+        # even when the first instance was edited locally. The preview's
+        # new_expected_count may be zero when the cadence itself is unchanged.
+        refreshed = {}
+        for index, (window_start, window_end) in enumerate(windows, start=1):
+            await materializer.checkpoint_window(
+                self_person_ref=actor,
+                operation_id=f"all-day-series:revised-checkpoint:{index}",
+                start_date=window_start,
+                end_date_exclusive=window_end,
+                effective_zone_id="Europe/Rome",
+            )
+            window = await timeline.read_window(
+                query=TimelineWindowQuery(start_date=window_start, end_date_exclusive=window_end),
+                context=_context(actor),
+            )
+            for item in window.items:
+                if (
+                    isinstance(item, TimelineScheduledOccurrenceItem)
+                    and item.source_native_ref == created.source_ref
+                    and isinstance(item.coordinate, CalendarCoordinate)
+                ):
+                    refreshed[item.coordinate.generated_date] = item
+        assert set(refreshed) == {first_day, selected_day, next_day}
+        assert refreshed[first_day].occurrence_ref == first_ref
+        assert refreshed[selected_day].occurrence_ref != selected_ref
+        assert refreshed[next_day].occurrence_ref != next_ref
+
         async with runtime.session_factory() as session, session.begin():
             patch = await session.scalar(
                 text("SELECT dante.get_self_occurrence_profile_patch(:actor,:occurrence)"),
