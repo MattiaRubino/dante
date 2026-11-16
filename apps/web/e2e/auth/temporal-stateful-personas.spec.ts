@@ -1266,6 +1266,10 @@ async function deleteRecurringAndProveNoResurrection(
   const dialog = page.getByRole('alertdialog', {
     name: kind === 'event' ? 'Elimina evento' : 'Elimina attività',
   });
+  // The recurring Activity preflight fingerprints both the selected instance
+  // and the full series before it can show this dialog. Await that real UI
+  // result instead of applying Playwright's unrelated 5s assertion default.
+  await expect(dialog).toBeVisible({ timeout: 30_000 });
   await expect(
     dialog.getByRole('button', { name: 'Solo questa istanza' }),
   ).toBeVisible();
