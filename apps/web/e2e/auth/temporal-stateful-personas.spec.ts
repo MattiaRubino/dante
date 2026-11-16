@@ -1553,6 +1553,10 @@ test.describe('Temporal v2 — real stateful user personas', () => {
                   authored.truth,
                 );
                 await assertCard(page, day, localTitle);
+                // A series revision retires clean future instances. Navigate
+                // to their day and wait for the real checkpoint and Timeline
+                // refresh before asserting the canonical future snapshot.
+                await assertCard(page, future, title);
                 await assertRecurringTruth(
                   page,
                   future,
