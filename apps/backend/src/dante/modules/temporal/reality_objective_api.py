@@ -1917,6 +1917,23 @@ def _hard_delete_serialization_origin(exc: DBAPIError) -> str:
     return f"{match.group(1)}:{match.group(2)}" if match else "unknown"
 
 
+def _hard_delete_serialization_edge(exc: DBAPIError) -> str:
+    """Identify the FK edge in the failing graph query without logging row values."""
+    diagnostic = getattr(getattr(exc, "orig", None), "diag", None)
+    context = getattr(diagnostic, "context", "") or ""
+    match = re.search(
+        r"FROM (dante\.[a-z_]+) AS child\s+JOIN (dante\.[a-z_]+) AS parent",
+        context,
+    )
+    if match:
+        return f"{match.group(1)}->{match.group(2)}"
+    match = re.search(
+        r"FROM (dante\.[a-z_]+) AS address\s+JOIN (dante\.[a-z_]+) AS item",
+        context,
+    )
+    return f"{match.group(1)}->{match.group(2)}" if match else "unknown"
+
+
 class TemporalHardDeletePreview(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
@@ -2082,12 +2099,13 @@ async def apply_temporal_hard_deletion(
                 if getattr(exc.orig, "sqlstate", None) == "40001":
                     logger.warning(
                         "temporal.hard_delete.serialization_abort scope=%s attempt=%d "
-                        "duration_ms=%d reason=%s origin=%s",
+                        "duration_ms=%d reason=%s origin=%s edge=%s",
                         body.scope,
                         attempt + 1,
                         round((perf_counter() - attempt_started) * 1000),
                         _hard_delete_serialization_reason(exc),
                         _hard_delete_serialization_origin(exc),
+                        _hard_delete_serialization_edge(exc),
                     )
                 if (
                     getattr(exc.orig, "sqlstate", None) != "40001"
