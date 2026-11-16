@@ -17,6 +17,10 @@ import {
 } from '@playwright/test';
 
 import {
+  WEB_CLIENT_HEADER_NAME,
+  WEB_CLIENT_HEADER_VALUE,
+} from '../../src/platform/api/web-fetch';
+import {
   configureCreate,
   openCreate,
   serverRead,
@@ -88,15 +92,27 @@ export async function signedInPersona(
     locale: 'it-IT',
   });
   try {
+    const baseURL = info.project.use.baseURL;
+    if (!baseURL) throw new Error('Stateful E2E requires a browser baseURL');
     // Authenticate through the real HTTP endpoint in this isolated context.
     // Its cookie jar is shared with the page that opens the Timeline below.
-    const signin = await context.request.post('/api/v1/auth/signin', {
-      data: {
-        email:
-          'synthetic.user+e2e-' + accountIndex(info, ordinal) + '@example.com',
-        password: PASSWORD,
+    const signin = await context.request.post(
+      new URL('/api/v1/auth/signin', baseURL).toString(),
+      {
+        headers: {
+          Origin: new URL(baseURL).origin,
+          'Sec-Fetch-Site': 'same-origin',
+          [WEB_CLIENT_HEADER_NAME]: WEB_CLIENT_HEADER_VALUE,
+        },
+        data: {
+          email:
+            'synthetic.user+e2e-' +
+            accountIndex(info, ordinal) +
+            '@example.com',
+          password: PASSWORD,
+        },
       },
-    });
+    );
     expect(signin.status(), 'authenticate stateful persona').toBe(200);
     const page = await context.newPage();
     await page.addInitScript(() => localStorage.setItem('dante.locale', 'it'));
