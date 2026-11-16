@@ -16,6 +16,22 @@ import type {
   TimelineExpectedOccurrenceBasis,
 } from './model/timeline-types';
 
+/** Replace every server-owned date-lane projection when its window changes. */
+export function authoritativeDateLaneIdsToReplace(
+  current: readonly TimelineAllDayItem[],
+  incoming: readonly TimelineAllDayItem[],
+): readonly string[] {
+  const incomingIds = new Set(incoming.map((item) => item.id));
+  return current
+    .filter(
+      (item) =>
+        item.canonicalBasis !== undefined ||
+        item.occurrenceBasis !== undefined ||
+        incomingIds.has(item.id),
+    )
+    .map((item) => item.id);
+}
+
 function minuteOfLocalDay(value: PlainDateTime): number {
   return (
     value.hour * 60 +
