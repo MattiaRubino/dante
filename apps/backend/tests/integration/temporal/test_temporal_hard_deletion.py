@@ -399,6 +399,118 @@ async def test_checkpoint_committing_during_series_delete_refuses_stale_confirma
 
 
 @pytest.mark.asyncio
+async def test_independent_users_can_confirm_series_deletion_concurrently(
+    migrated_database: Any,
+) -> None:
+    """Independent owners must not receive a 503 from simultaneous graph deletes."""
+    runtime = create_database_runtime(migrated_database.runtime_settings())
+    materializer = RoutineOccurrenceMaterializationApplication(runtime.session_factory)
+    targets: list[tuple[Any, Any, Any, str]] = []
+    tasks: list[asyncio.Task[Any]] = []
+    try:
+        for index in range(2):
+            actor = _seed_self(migrated_database)
+            routine = await RecurringAuthoringApplication(runtime.session_factory).create_routine(
+                self_person_ref=actor,
+                operation_id=f"hard:independent:{index}:source",
+                title=f"Independent owner {index}",
+                life_area_intent=None,
+                recurrence=_daily_named_zone(),
+            )
+            await RoutineOccurrencePolicyApplication(runtime.session_factory).set(
+                self_person_ref=actor,
+                routine_ref=routine.source_ref,
+                duration_minutes=45,
+                reminder_lead_minutes=None,
+                activity_template={
+                    "version": 1,
+                    "planned_slices": [{"name": "Fase", "time_enabled": False}],
+                },
+            )
+            await materializer.checkpoint_window(
+                self_person_ref=actor,
+                operation_id=f"hard:independent:{index}:window",
+                start_date=date(2026, 10, 6),
+                end_date_exclusive=date(2026, 10, 9),
+                effective_zone_id="Europe/Rome",
+            )
+            occurrences = _occurrences(migrated_database, routine.source_ref)
+            assert len(occurrences) == 3
+            activity = await _activity_for(runtime, actor, occurrences[0])
+            assert activity is not None
+            fingerprint = await _preview(runtime, actor, activity, "activity_series")
+            targets.append((actor, routine.source_ref, activity, fingerprint))
+
+        # SHARE allows the preceding owner checks, but holds both DELETEs at
+        # their first Activity write. Releasing it only once both are waiting
+        # produces overlapping real PostgreSQL SERIALIZABLE transactions.
+        with psycopg.connect(
+            **migrated_database.connection_kwargs(
+                "dante_migrator", migrated_database.cluster.migrator_password
+            )
+        ) as blocker:
+            blocker.execute("SET ROLE dante_owner")
+            blocker.execute("LOCK TABLE dante.activity_intention IN SHARE MODE")
+            try:
+                tasks = [
+                    asyncio.create_task(
+                        apply_temporal_hard_deletion(
+                            activity,
+                            TemporalHardDeleteCommand(
+                                scope="activity_series", expected_fingerprint=fingerprint
+                            ),
+                            _context(actor),
+                            _request(runtime),
+                            Response(),
+                        )
+                    )
+                    for actor, _, activity, fingerprint in targets
+                ]
+                with psycopg.connect(
+                    host=migrated_database.cluster.host,
+                    port=migrated_database.cluster.port,
+                    dbname=migrated_database.name,
+                    user=migrated_database.cluster.admin_user,
+                    password=migrated_database.cluster.admin_password,
+                    autocommit=True,
+                ) as observer:
+                    for _ in range(200):
+                        waiting = observer.execute(
+                            "SELECT count(*) FROM pg_stat_activity "
+                            "WHERE datname=%s AND pid<>pg_backend_pid() "
+                            "AND wait_event_type='Lock' "
+                            "AND position('delete_self_temporal_hard(' in query)>0",
+                            (migrated_database.name,),
+                        ).fetchone()
+                        if waiting == (2,):
+                            break
+                        await asyncio.sleep(0.05)
+                    else:
+                        raise AssertionError(
+                            "Both independent DELETEs must reach the database gate"
+                        )
+            finally:
+                blocker.commit()
+
+        results = await asyncio.wait_for(asyncio.gather(*tasks), timeout=30)
+        assert all(result.deleted_rows > 0 for result in results)
+        for _, source, activity, _ in targets:
+            assert _occurrences(migrated_database, source) == []
+            assert not _exists(
+                migrated_database,
+                "SELECT EXISTS(SELECT 1 FROM dante.activity WHERE activity_ref=%s)",
+                activity,
+            )
+    finally:
+        pending = [task for task in tasks if not task.done()]
+        for task in pending:
+            task.cancel()
+        if pending:
+            await asyncio.gather(*pending, return_exceptions=True)
+        await runtime.dispose()
+
+
+@pytest.mark.asyncio
 async def test_confirmed_recurring_instance_deletion_removes_open_session_atomically(
     migrated_database: Any,
 ) -> None:
