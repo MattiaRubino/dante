@@ -1,3 +1,27 @@
+## 2026-11-16 — Chromium capacity experiment, not a green full gate
+
+The owner's isolated P2-E10–E14 rerun recorded **5/5 PASS in 265.61s** with
+two browser workers; its individual journeys took 67–109s. Their success does
+not explain the interrupted forty-case P2 run under sustained shared-stack
+load. The existing complete Chromium runner already splits legacy tests from
+V2 and verifies exact inventory equality. It now accepts an opt-in
+`--v2-stacks 3` or `4` in `--fast-chromium`, balancing each unique V2 title
+across three or four independently seeded PostgreSQL/API/browser stacks,
+with two browser workers per V2 stack. Its self-test checks disjoint exact
+coverage and estimated duration balance at each count. The optional
+`--stop-after-failures 2` ends a RED diagnostic early with partial logs and
+available compact traces; it must be omitted for complete acceptance.
+
+The prior 117-case run accumulated about 109 V2 worker-minutes. Even perfect
+distribution across eight V2 browser workers would have an idealized floor
+around 14 minutes before stack startup, contention and legacy cases. No speed
+claim, full-suite PASS or safe four-stack WSL resource budget is established
+without a measured owner run. The GPU does not accelerate PostgreSQL and
+browser interaction workloads. Preserve a two-stack fallback if extra Docker
+containers degrade throughput or reliability.
+
+---
+
 ## 2026-11-13 — second forty-case P1 run, Event Life Area conflict
 
 Owner WSL archive `E2E_DIAGNOSTICS.tar(20261113-101126).gz`: **40 discovered/recorded, 39 PASS, one FAIL, zero skips**, 821.76s. The red changed from Activity A03 to Event E08, at step 5 new Life Area assignment: Event atomic Save returned 409. Trace shows the preceding Event Edit succeeded with `profile_revision=1`, no assigned Life Area (`life_area_assignment_revision=null`), the next PUT used expected profile revision 1 and assignment revision 0, and a unique new-area name. The server did not log a SQLSTATE for Event atomic Edit, so the precise cause remains **unproven**. This is a red P1; the prior focused A03/A04 pass cannot be merged into a 40/40 green claim.

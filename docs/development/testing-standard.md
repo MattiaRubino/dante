@@ -246,9 +246,15 @@ a separate gate.
 
 For one **complete Chromium inventory with shorter wall time**, use
 `run_real_stack_playwright.py --project chromium --fast-chromium`. The runner
-builds Web once, verifies that its three isolated stack inventories partition
+builds Web once, verifies that its isolated stack inventories partition
 the unfiltered Chromium inventory exactly, and distributes V2 journeys by
 estimated duration. Legacy outage tests have their own PostgreSQL stack.
+The default is two V2 stacks (four V2 browser workers); `--v2-stacks 3` or
+`--v2-stacks 4` opts into six or eight V2 workers on separate databases.
+Increase this only after measuring available WSL memory, CPU, Docker startup
+reliability and actual completed-case throughput; host GPU memory is not a
+browser/database capacity budget. The coverage check is identical at every
+stack count.
 This is still Chromium-only evidence and needs actual WSL timing and a complete
 JUnit result before claiming a speedup or PASS.
 

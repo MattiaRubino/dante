@@ -92,7 +92,9 @@ def _chromium_inventory(output: str) -> set[str]:
     }
 
 
-def _balanced_chromium_runs(full: set[str]) -> tuple[ChromiumRun, ...]:
+def _balanced_chromium_runs(
+    full: set[str], v2_stacks: int = 2,
+) -> tuple[ChromiumRun, ...]:
     """Balance estimated journey time instead of Playwright's test count.
 
     Every V2 test keeps its own Playwright/account identity and each run has
@@ -110,12 +112,12 @@ def _balanced_chromium_runs(full: set[str]) -> tuple[ChromiumRun, ...]:
         case_id = match.group(1)
         phase = case_id.split("-", 2)[1]
         cases[case_id] = V2_PHASE_SECONDS.get(phase, 90)
-    if len(cases) < 2:
-        raise RuntimeError("Cannot distribute fewer than two V2 cases")
-    bins: list[list[str]] = [[], []]
-    seconds = [0, 0]
+    if v2_stacks not in {2, 3, 4} or len(cases) < v2_stacks:
+        raise RuntimeError("Cannot distribute V2 cases across the requested stacks")
+    bins: list[list[str]] = [[] for _ in range(v2_stacks)]
+    seconds = [0] * v2_stacks
     for case_id, weight in sorted(cases.items(), key=lambda item: (-item[1], item[0])):
-        index = min(range(2), key=lambda i: (seconds[i], len(bins[i])))
+        index = min(range(v2_stacks), key=lambda i: (seconds[i], len(bins[i])))
         bins[index].append(case_id)
         seconds[index] += weight
     runs = [LEGACY_CHROMIUM]
@@ -703,6 +705,28 @@ def _self_test() -> None:
         for run in balanced[1:]
     ]
     assert abs(estimated[0] - estimated[1]) <= max(V2_PHASE_SECONDS.values())
+    for stack_count in (3, 4):
+        expanded = _balanced_chromium_runs(weighted, stack_count)
+        expanded_inventories = {
+            expanded[0].name: {"[chromium] › case-a"},
+            **{
+                run.name: {title for title in weighted if re.search(run.grep, title)}
+                for run in expanded[1:]
+            },
+        }
+        _validate_chromium_partition(
+            {"[chromium] › case-a", *weighted}, expanded_inventories, expanded,
+        )
+        expanded_seconds = [
+            sum(
+                V2_PHASE_SECONDS[title.rsplit(" › ", 1)[-1].split("-", 2)[1]]
+                for title in weighted if re.search(run.grep, title)
+            )
+            for run in expanded[1:]
+        ]
+        assert max(expanded_seconds) - min(expanded_seconds) <= max(
+            V2_PHASE_SECONDS.values()
+        )
     with tempfile.TemporaryDirectory(prefix="dante-e2e-archive-test.") as temp:
         root = Path(temp)
         (root / "summary.json").write_text('{"exit_code": 1}\n')
@@ -820,23 +844,26 @@ def _enforce_diagnostic_failure_budget(directory: Path, limit: int | None) -> No
 
 
 def _run_full_chromium(directory: Path, report: Path, started: float,
-                       max_minutes: int, stop_after_failures: int | None) -> int:
+                       max_minutes: int, stop_after_failures: int | None,
+                       v2_stacks: int) -> int:
     total = _plan("chromium", directory)
     full = _chromium_inventory(
         (directory / "chromium.inventory.log").read_text(encoding="utf-8")
     )
     if len(full) != total:
         raise RuntimeError("Full Chromium inventory has duplicate or missing case IDs")
-    runs = _balanced_chromium_runs(full)
+    runs = _balanced_chromium_runs(full, v2_stacks)
     inventories: dict[str, set[str]] = {}
     planned: dict[str, int] = {}
     for run in runs:
         planned[run.name], inventories[run.name] = _plan_chromium(run, directory)
     _validate_chromium_partition(full, inventories, runs)
     print(
-        f"REALSTACK_CHROMIUM: all {total} cases, three isolated stacks, "
-        "five Chromium workers maximum; weighted V2 distribution "
-        f"{planned[runs[1].name]}/{planned[runs[2].name]}; one aggregate report",
+        f"REALSTACK_CHROMIUM: all {total} cases, {len(runs)} isolated stacks, "
+        f"{sum(run.workers for run in runs)} Chromium workers maximum; "
+        "weighted V2 distribution "
+        f"{'/'.join(str(planned[run.name]) for run in runs[1:])}; "
+        "one aggregate report",
         flush=True,
     )
     build_env = {
@@ -938,7 +965,8 @@ def _run_full_chromium(directory: Path, report: Path, started: float,
         json.dumps({
             "selected_projects": ["chromium"],
             "mode": "full-chromium-isolated",
-            "maximum_concurrent_browsers": 5,
+            "maximum_concurrent_browsers": sum(run.workers for run in runs),
+            "v2_stacks": v2_stacks,
             "elapsed_seconds": round(time.monotonic() - started, 2),
             "discovered": total,
             "recorded": sum(r.recorded for r in ordered),
@@ -1009,6 +1037,11 @@ def main() -> int:
              "parallel, with one coverage-checked report",
     )
     parser.add_argument(
+        "--v2-stacks", type=int, default=2, choices=(2, 3, 4),
+        help="Independent V2 PostgreSQL/browser stacks in --fast-chromium "
+             "(default 2; measure 3 or 4 only if WSL has capacity)",
+    )
+    parser.add_argument(
         "--max-minutes", type=int, default=45,
         help="Hard limit for --fast-chromium; return partial diagnostics "
              "instead of running indefinitely (default: 45)",
@@ -1044,6 +1077,8 @@ def main() -> int:
         parser.error("--stop-after-failures requires --fast-chromium and N >= 1")
     if args.fast_chromium and (args.project != "chromium" or args.grep is not None):
         parser.error("--fast-chromium requires --project chromium and no --grep")
+    if not args.fast_chromium and args.v2_stacks != 2:
+        parser.error("--v2-stacks requires --fast-chromium")
     try:
         per_project = _v2_worker_budget(args.v2_workers, args.grep)
     except ValueError as exc:
@@ -1092,7 +1127,7 @@ def main() -> int:
         if args.fast_chromium:
             return _run_full_chromium(
                 directory, report, started, args.max_minutes,
-                args.stop_after_failures,
+                args.stop_after_failures, args.v2_stacks,
             )
         planned = {
             project: _plan(project, directory, args.grep)
