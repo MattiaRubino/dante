@@ -67,6 +67,11 @@ def _error(code: str) -> OperationalError:
             "dante.session->dante.native_address",
         ),
         (
+            'SQL statement "SELECT 1,child.ctid FROM session AS child '
+            'JOIN native_address AS parent ON child.session_ref=parent.native_ref"',
+            "dante.session->dante.native_address",
+        ),
+        (
             'SQL statement "SELECT 1,address.ctid FROM dante.scoped_address AS address '
             'JOIN dante.schedule AS item ON item.schedule_ref=address.scoped_ref"',
             "dante.scoped_address->dante.schedule",
