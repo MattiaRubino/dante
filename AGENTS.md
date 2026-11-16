@@ -52,6 +52,7 @@ If a bootstrap list in those manuals stops at an old entry point, continue with 
 ## Stable safety rules
 
 - Do not invent requirements.
+- Do not independently decide or introduce product behavior or UI changes, including controls, labels, copy, dimensions, positions, layouts, and flows. Implement only requirements the user has explicitly approved or previously established; when a product choice is undefined, ask the user before changing it. Technical fixes must preserve those approved semantics.
 - Do not silently resolve conflicting sources.
 - PostgreSQL is the canonical persistence.
 - Do not edit an applied migration. Corrections are new forward revisions.
