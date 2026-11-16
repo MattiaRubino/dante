@@ -57,22 +57,31 @@ def _error(code: str) -> OperationalError:
     return OperationalError("redacted statement", {}, _SqlStateError(code))
 
 
-@pytest.mark.parametrize("endpoint", ["activity", "temporal"])
 @pytest.mark.parametrize(
-    ("outcomes", "expected_attempts", "expected_status"),
+    ("endpoint", "outcomes", "expected_status"),
     [
-        ([_error("40001"), 2], 2, None),
-        ([_error("40001"), _error("40001"), _error("40001")], 3, 503),
-        ([_error("23505")], 1, 503),
+        ("activity", [_error("40001"), 2], None),
+        ("activity", [_error("40001")] * 3, 503),
+        ("activity", [_error("23505")], 503),
+        ("temporal", [_error("40001"), 2], None),
+        ("temporal", [_error("40001")] * 3 + [2], None),
+        ("temporal", [_error("40001")] * 4, 503),
+        ("temporal", [_error("23505")], 409),
     ],
 )
 @pytest.mark.asyncio
 async def test_hard_delete_retries_only_serialization_abort_with_same_cas(
     endpoint: str,
     outcomes: list[int | Exception],
-    expected_attempts: int,
     expected_status: int | None,
+    monkeypatch: pytest.MonkeyPatch,
 ) -> None:
+    delays: list[float] = []
+
+    async def record_delay(seconds: float) -> None:
+        delays.append(seconds)
+
+    monkeypatch.setattr("dante.modules.temporal.reality_objective_api.asyncio.sleep", record_delay)
     attempts: list[dict[str, object]] = []
     transactions: list[_Transaction] = []
     remaining = outcomes.copy()
@@ -106,7 +115,7 @@ async def test_hard_delete_retries_only_serialization_abort_with_same_cas(
     else:
         operation = apply_temporal_hard_deletion(
             ref,
-            TemporalHardDeleteCommand(scope="event_once", expected_fingerprint=fingerprint),
+            TemporalHardDeleteCommand(scope="activity_series", expected_fingerprint=fingerprint),
             context,
             request,
             Response(),
@@ -117,10 +126,10 @@ async def test_hard_delete_retries_only_serialization_abort_with_same_cas(
     else:
         with pytest.raises(ProblemError) as raised:
             await operation
-        assert raised.value.status == (
-            409 if endpoint == "temporal" and len(outcomes) == 1 else expected_status
-        )
-    assert len(transactions) == expected_attempts
-    assert len(attempts) == expected_attempts
+        assert raised.value.status == expected_status
+    assert len(transactions) == len(outcomes)
+    assert len(attempts) == len(outcomes)
     assert all(parameters == attempts[0] for parameters in attempts)
     assert attempts[0]["fingerprint"] == fingerprint
+    if endpoint == "temporal":
+        assert delays == [0.5 * (2**attempt) for attempt in range(len(outcomes) - 1)]
