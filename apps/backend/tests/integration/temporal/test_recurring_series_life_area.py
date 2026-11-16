@@ -19,15 +19,20 @@ from dante.modules.temporal.application import (
     TemporalTimelineApplication,
     TimelineScheduledOccurrenceItem,
 )
+from dante.modules.temporal.authoring import AuthoringLifeAreaIntent
 from dante.modules.temporal.contracts import TimelineWindowQuery
 from dante.modules.temporal.event_occurrence_policy import EventOccurrencePolicyApplication
+from dante.modules.temporal.life_area import LifeAreaApplication
 from dante.modules.temporal.occurrence import CalendarCoordinate
 from dante.modules.temporal.occurrence_api import (
     EventOccurrenceLocalEditCommand,
     accept_event_occurrence_local_edit,
     get_recurring_event_occurrence_detail,
 )
-from dante.modules.temporal.recurring_authoring import RecurringAuthoringApplication
+from dante.modules.temporal.recurring_authoring import (
+    EventAuthoringPolicy,
+    RecurringAuthoringApplication,
+)
 from dante.modules.temporal.recurring_series_edit import (
     RecurringSeriesEditApplication,
 )
@@ -37,6 +42,207 @@ from dante.modules.temporal.routine_occurrence_materialization import (
 from dante.platform.database.runtime import create_database_runtime
 
 pytestmark = pytest.mark.postgres
+
+
+@pytest.mark.asyncio
+async def test_weekly_event_color_edit_after_local_exception_keeps_future_cards(
+    migrated_database: Any,
+) -> None:
+    """A global area recolor may not retire the clean future instances of a series."""
+    actor = _seed_self(migrated_database)
+    runtime = create_database_runtime(migrated_database.runtime_settings())
+    areas = LifeAreaApplication(runtime.session_factory)
+    authoring = RecurringAuthoringApplication(runtime.session_factory)
+    materializer = RoutineOccurrenceMaterializationApplication(runtime.session_factory)
+    timeline = TemporalTimelineApplication(runtime.session_factory)
+    series = RecurringSeriesEditApplication(runtime.session_factory)
+    first_day, selected_day, last_day = (date(2027, 1, 2), date(2027, 1, 16), date(2027, 1, 30))
+    end_day = date(2027, 2, 20)
+    query = TimelineWindowQuery(start_date=first_day, end_date_exclusive=end_day)
+
+    async def series_items() -> dict[date, TimelineScheduledOccurrenceItem]:
+        window = await timeline.read_window(query=query, context=_context(actor))
+        return {
+            item.coordinate.generated_date: item
+            for item in window.items
+            if isinstance(item, TimelineScheduledOccurrenceItem)
+            and item.source_native_ref == created.source_ref
+            and isinstance(item.coordinate, CalendarCoordinate)
+        }
+
+    try:
+        created_area = (
+            await areas.create(
+                self_person_ref=actor,
+                operation_id="weekly-recolor:area",
+                name="Area evento settimanale",
+            )
+        ).area
+        area_ref = created_area.life_area_ref
+        appearance = await areas.mutate(
+            self_person_ref=actor,
+            operation_id="weekly-recolor:area-initial-color",
+            life_area_ref=area_ref,
+            expected_revision=created_area.revision,
+            kind="appearance",
+            color_code="#4285F4",
+        )
+        recurrence = replace(
+            _daily_named_zone(),
+            effective_from=first_day,
+            pattern_code="weekly_weekdays",
+            interval_count=2,
+            pattern_anchor_date=first_day,
+            weekdays=(6,),
+            wall_times=(time(11, 20),),
+        )
+        created = await authoring.create_event(
+            self_person_ref=actor,
+            operation_id="weekly-recolor:create",
+            title="Evento settimanale",
+            life_area_intent=AuthoringLifeAreaIntent(life_area_ref=area_ref),
+            recurrence=recurrence,
+            agenda_parts=tuple(f"Scaletta {index}" for index in range(1, 6)),
+            policy=EventAuthoringPolicy(
+                placement_kind="timed",
+                duration_minutes=40,
+                duration_days=None,
+                reminder_lead_minutes=None,
+                reality_mode="manual",
+                objectives=(
+                    {
+                        "label": "Quantità",
+                        "result_kind": "quantity",
+                        "comparator_code": "gte",
+                        "target_value": 10,
+                        "target_min": None,
+                        "target_max": None,
+                        "unit_code": "ore",
+                        "presentation_order": 0,
+                        "verification_mode": "review_on_end",
+                    },
+                    {
+                        "label": "Intervallo",
+                        "result_kind": "range",
+                        "comparator_code": "between",
+                        "target_value": None,
+                        "target_min": 2,
+                        "target_max": 9,
+                        "unit_code": "punti",
+                        "presentation_order": 1,
+                        "verification_mode": "none",
+                    },
+                    *(
+                        {
+                            "label": f"Obiettivo {index}",
+                            "result_kind": "boolean",
+                            "comparator_code": None,
+                            "target_value": None,
+                            "target_min": None,
+                            "target_max": None,
+                            "unit_code": None,
+                            "presentation_order": index,
+                            "verification_mode": "none",
+                        }
+                        for index in range(2, 5)
+                    ),
+                ),
+                placement_protected=True,
+            ),
+        )
+        await materializer.checkpoint_window(
+            self_person_ref=actor,
+            operation_id="weekly-recolor:before",
+            start_date=first_day,
+            end_date_exclusive=end_day,
+            effective_zone_id="Europe/Rome",
+        )
+        initial = await series_items()
+        assert {first_day, selected_day, last_day} <= initial.keys()
+        first_ref = initial[first_day].occurrence_ref
+        selected_ref = initial[selected_day].occurrence_ref
+        request = Request(
+            {
+                "type": "http",
+                "app": SimpleNamespace(state=SimpleNamespace(database_runtime=runtime)),
+            }
+        )
+        await accept_event_occurrence_local_edit(
+            first_ref,
+            EventOccurrenceLocalEditCommand.model_validate(
+                {
+                    "operation_id": "weekly-recolor:first-local",
+                    "expected_revision": 0,
+                    "expected_recurrence_state_ref": created.recurrence_material_state_ref,
+                    "profile_patch": {"title": "Prima istanza locale"},
+                    "structure": {
+                        "agenda_parts": ["Scaletta locale"],
+                        "life_area_ref": str(area_ref),
+                        "expected_participants": [],
+                    },
+                }
+            ),
+            _context(actor),
+            request,
+            Response(),
+        )
+
+        source = await series.source(self_person_ref=actor, selected_occurrence_ref=selected_ref)
+        proposed = replace(source.recurrence, effective_from=selected_day)
+        structure = {
+            **source.structure_snapshot,
+            "area_color_change": {
+                "life_area_ref": str(area_ref),
+                "expected_revision": appearance.accepted_revision,
+                "color_code": "#FFD600",
+            },
+        }
+        preview = await series.preview(
+            self_person_ref=actor,
+            selected_occurrence_ref=selected_ref,
+            requested_scope="this_and_following",
+            expected_revision=source.edit_revision,
+            expected_state_ref=source.recurrence_state_ref,
+            effective_zone_id="Europe/Rome",
+            proposed_recurrence=proposed,
+            proposed_structure=structure,
+        )
+        assert preview.reconciliation.new_coordinates == ()
+        assert first_ref not in preview.scope.target_occurrence_refs
+        await series.accept(
+            self_person_ref=actor,
+            selected_occurrence_ref=selected_ref,
+            requested_scope="this_and_following",
+            expected_revision=source.edit_revision,
+            expected_state_ref=source.recurrence_state_ref,
+            effective_zone_id="Europe/Rome",
+            proposed_recurrence=proposed,
+            proposed_structure=structure,
+            profile_patch=None,
+            expected_fingerprint=preview.fingerprint,
+            operation_id="weekly-recolor:accept",
+        )
+        await materializer.checkpoint_window(
+            self_person_ref=actor,
+            operation_id="weekly-recolor:after",
+            start_date=first_day,
+            end_date_exclusive=end_day,
+            effective_zone_id="Europe/Rome",
+        )
+        current = await series_items()
+        assert {first_day, selected_day, last_day} <= current.keys()
+        assert current[first_day].occurrence_ref == first_ref
+        assert current[selected_day].occurrence_ref != selected_ref
+        assert (
+            next(
+                area
+                for area in await areas.list(self_person_ref=actor)
+                if area.life_area_ref == area_ref
+            ).color_code
+            == "#FFD600"
+        )
+    finally:
+        await runtime.dispose()
 
 
 @pytest.mark.asyncio
