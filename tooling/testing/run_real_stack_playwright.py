@@ -115,6 +115,8 @@ def _balanced_chromium_runs(
         case_id = match.group(1)
         phase = case_id.split("-", 2)[1]
         cases[case_id] = V2_PHASE_SECONDS.get(phase, 90)
+    if not cases and full:
+        return (LEGACY_CHROMIUM,)
     if v2_stacks not in {2, 3, 4} or v2_workers not in {1, 2} or len(cases) < v2_stacks:
         raise RuntimeError("Cannot distribute V2 cases across the requested stacks")
     bins: list[list[str]] = [[] for _ in range(v2_stacks)]
@@ -733,6 +735,7 @@ def _self_test() -> None:
     assert _v2_worker_budget("1", None) == 1
     assert _v2_worker_budget("2", "V2-P1-A01") == 2
     assert _selector(None) == ()
+    assert _balanced_chromium_runs({"[chromium] › legacy case"}) == (LEGACY_CHROMIUM,)
     assert _selector(r"V2-P3-(E01|A01)") == (
         "--grep", r"V2-P3-(E01|A01)",
     )
@@ -1001,7 +1004,7 @@ def _run_full_chromium(directory: Path, report: Path, started: float,
         f"REALSTACK_CHROMIUM: selected {total} cases, {len(runs)} isolated stacks, "
         f"{sum(run.workers for run in runs)} Chromium workers maximum; "
         "weighted V2 distribution "
-        f"{'/'.join(str(planned[run.name]) for run in v2_runs)}; "
+        f"{'/'.join(str(planned[run.name]) for run in v2_runs) or 'none'}; "
         "one aggregate report",
         flush=True,
     )
@@ -1178,6 +1181,11 @@ def main() -> int:
              "--grep, on isolated parallel stacks",
     )
     parser.add_argument(
+        "--legacy-chromium", action="store_true",
+        help="Select only non-V2 Chromium cases with --fast-chromium; keep "
+             "one isolated stack, a deadline, and exact inventory coverage",
+    )
+    parser.add_argument(
         "--v2-stacks", type=int, default=2, choices=(2, 3, 4),
         help="Independent V2 PostgreSQL/browser stacks in --fast-chromium "
              "(default 2; measure 3 or 4 only if WSL has capacity)",
@@ -1223,6 +1231,8 @@ def main() -> int:
         parser.error("--stop-after-failures requires --fast-chromium and N >= 1")
     if args.fast_chromium and args.project != "chromium":
         parser.error("--fast-chromium requires --project chromium")
+    if args.legacy_chromium and (not args.fast_chromium or args.grep is not None):
+        parser.error("--legacy-chromium requires --fast-chromium without --grep")
     if args.fast_chromium and args.grep is not None and not _v2_selection_isolated(args.grep):
         parser.error("--fast-chromium --grep must select exclusively V2 titles")
     if args.fast_chromium and args.v2_workers != "1":
@@ -1283,7 +1293,8 @@ def main() -> int:
         if args.fast_chromium:
             return _run_full_chromium(
                 directory, report, started, args.max_minutes,
-                args.stop_after_failures, args.v2_stacks, args.grep,
+                args.stop_after_failures, args.v2_stacks,
+                r"^(?!.*V2-)" if args.legacy_chromium else args.grep,
                 args.fast_v2_workers,
             )
         planned = {
