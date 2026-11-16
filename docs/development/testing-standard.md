@@ -244,6 +244,21 @@ that inventory and retains automatic diagnostics. This establishes
 Chromium coverage only; the eventual three-browser acceptance remains
 a separate gate.
 
+For one **complete Chromium inventory with shorter wall time**, use
+`run_real_stack_playwright.py --project chromium --fast-chromium`. The runner
+builds Web once, verifies that its three isolated stack inventories partition
+the unfiltered Chromium inventory exactly, and distributes V2 journeys by
+estimated duration. Legacy outage tests have their own PostgreSQL stack.
+This is still Chromium-only evidence and needs actual WSL timing and a complete
+JUnit result before claiming a speedup or PASS.
+
+During RED diagnosis, add `--stop-after-failures 2` to that fast command.
+It stops all stack process groups when two failed cases have been observed and
+packages partial progress, logs and available compact failure traces without
+running the remaining inventory.
+That archive is diagnostic evidence only; omit the option for complete
+acceptance. `--max-minutes` also bounds the fast run (default 45 minutes).
+
 Use:
 ```bash
 python3 tooling/testing/run_parallel_gate.py --self-test

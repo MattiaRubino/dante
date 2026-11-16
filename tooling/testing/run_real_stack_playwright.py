@@ -72,6 +72,10 @@ class GateTimeout(RuntimeError):
     """The bounded full Chromium run ended before its inventory completed."""
 
 
+class DiagnosticStop(RuntimeError):
+    """A diagnostic run reached its failure budget before full coverage."""
+
+
 def _chromium_args(run: ChromiumRun) -> tuple[str, ...]:
     return (
         "--grep-invert" if run.invert else "--grep", run.grep,
@@ -721,6 +725,14 @@ def _self_test() -> None:
         progress_line = _progress_line(root, 10, time.monotonic())
         assert "2/10 (20.0%)" in progress_line
         assert "passed=1 failed=1" in progress_line
+        _enforce_diagnostic_failure_budget(root, None)
+        _enforce_diagnostic_failure_budget(root, 2)
+        try:
+            _enforce_diagnostic_failure_budget(root, 1)
+        except DiagnosticStop as exc:
+            assert "remaining cases were not run" in str(exc)
+        else:
+            raise AssertionError("Diagnostic failure budget did not stop a red run")
         (root / "chromium" / "junit.xml").write_text(
             "<testsuite><testcase><failure/></testcase></testsuite>\n"
         )
@@ -796,8 +808,19 @@ def _progress_line(directory: Path, total: int, started: float) -> str:
     )
 
 
+def _enforce_diagnostic_failure_budget(directory: Path, limit: int | None) -> None:
+    if limit is None:
+        return
+    _, _, failures = _progress_counts(directory)
+    if failures >= limit:
+        raise DiagnosticStop(
+            f"Observed {failures} failed cases (limit {limit}); "
+            "remaining cases were not run"
+        )
+
+
 def _run_full_chromium(directory: Path, report: Path, started: float,
-                       max_minutes: int) -> int:
+                       max_minutes: int, stop_after_failures: int | None) -> int:
     total = _plan("chromium", directory)
     full = _chromium_inventory(
         (directory / "chromium.inventory.log").read_text(encoding="utf-8")
@@ -858,10 +881,16 @@ def _run_full_chromium(directory: Path, report: Path, started: float,
                     f"errors={result.errors} elapsed={result.seconds}s",
                     flush=True,
                 )
+                if result.recorded == 0:
+                    raise RuntimeError(
+                        f"{run.name} produced no JUnit cases; stopping the other "
+                        "stacks and preserving partial diagnostics"
+                    )
             now = time.monotonic()
             if now >= next_update:
                 print(_progress_line(directory, total, started), flush=True)
                 next_update = now + 20
+            _enforce_diagnostic_failure_budget(directory, stop_after_failures)
             if active and now >= deadline:
                 raise GateTimeout(
                     f"Chromium gate exceeded {max_minutes} minutes; "
@@ -985,6 +1014,12 @@ def main() -> int:
              "instead of running indefinitely (default: 45)",
     )
     parser.add_argument(
+        "--stop-after-failures", type=int, default=None,
+        help="Optional --fast-chromium diagnostic limit; stop all stacks "
+             "after N observed failed cases and save partial diagnostics. "
+             "Omit for complete acceptance coverage.",
+    )
+    parser.add_argument(
         "--grep", default=None,
         help="Playwright test-title regex (also filters --list inventory); "
              "default runs the full unfiltered suite",
@@ -1003,6 +1038,10 @@ def main() -> int:
         parser.error("--workers must be between 1 and 3")
     if args.max_minutes < 1:
         parser.error("--max-minutes must be positive")
+    if args.stop_after_failures is not None and (
+        args.stop_after_failures < 1 or not args.fast_chromium
+    ):
+        parser.error("--stop-after-failures requires --fast-chromium and N >= 1")
     if args.fast_chromium and (args.project != "chromium" or args.grep is not None):
         parser.error("--fast-chromium requires --project chromium and no --grep")
     try:
@@ -1048,9 +1087,13 @@ def main() -> int:
     started = time.monotonic()
     report = directory / "summary.json"
     interrupted = False
+    diagnostic_stop = False
     try:
         if args.fast_chromium:
-            return _run_full_chromium(directory, report, started, args.max_minutes)
+            return _run_full_chromium(
+                directory, report, started, args.max_minutes,
+                args.stop_after_failures,
+            )
         planned = {
             project: _plan(project, directory, args.grep)
             for project in selected_projects
@@ -1134,6 +1177,14 @@ def main() -> int:
         )
         print(f"REALSTACK TIMEOUT: {exc}", file=sys.stderr, flush=True)
         return 124
+    except DiagnosticStop as exc:
+        interrupted = True
+        diagnostic_stop = True
+        (directory / "orchestrator-error.txt").write_text(
+            f"{type(exc).__name__}: {exc}\n", encoding="utf-8",
+        )
+        print(f"REALSTACK DIAGNOSTIC STOP: {exc}", flush=True)
+        return 1
     except (OSError, RuntimeError, subprocess.SubprocessError) as exc:
         (directory / "orchestrator-error.txt").write_text(
             f"{type(exc).__name__}: {exc}\n", encoding="utf-8",
@@ -1146,7 +1197,9 @@ def main() -> int:
         # Full-size original traces stay in project directories.
         try:
             _write_partial_progress(directory, interrupted=interrupted)
-            archive = _write_diagnostic_archive(directory, include_traces=not interrupted)
+            archive = _write_diagnostic_archive(
+                directory, include_traces=not interrupted or diagnostic_stop,
+            )
             print(f"REALSTACK_DIAGNOSTICS={archive}", flush=True)
         except (OSError, RuntimeError, zipfile.BadZipFile, KeyboardInterrupt) as exc:
             print(
