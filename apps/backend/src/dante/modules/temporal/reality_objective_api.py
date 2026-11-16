@@ -6,9 +6,11 @@ import asyncio
 import hashlib
 import json
 import logging
+import re
 from collections.abc import Mapping
 from datetime import datetime
 from decimal import Decimal
+from time import perf_counter
 from typing import Annotated, Literal, Self
 from uuid import UUID, uuid7
 
@@ -1894,6 +1896,27 @@ _HARD_DELETE_SERIALIZATION_ATTEMPTS = 4
 _HARD_DELETE_RETRY_BASE_SECONDS = 0.5
 
 
+def _hard_delete_serialization_reason(exc: DBAPIError) -> str:
+    """Log a bounded diagnostic category, never PostgreSQL's raw error text."""
+    diagnostic = getattr(getattr(exc, "orig", None), "diag", None)
+    message = getattr(diagnostic, "message_primary", "") or ""
+    if message.startswith("could not serialize access due to read/write dependencies"):
+        return "read_write_dependency"
+    if message.startswith("could not serialize access due to concurrent update"):
+        return "concurrent_update"
+    if message.startswith("could not serialize access due to concurrent delete"):
+        return "concurrent_delete"
+    return "other"
+
+
+def _hard_delete_serialization_origin(exc: DBAPIError) -> str:
+    """Retain only a routine name and line, never SQL or bound values."""
+    diagnostic = getattr(getattr(exc, "orig", None), "diag", None)
+    context = getattr(diagnostic, "context", "") or ""
+    match = re.search(r"PL/pgSQL function (?:dante\.)?([a-z_]+)\([^\n]*?\) line (\d+)", context)
+    return f"{match.group(1)}:{match.group(2)}" if match else "unknown"
+
+
 class TemporalHardDeletePreview(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
@@ -2027,6 +2050,7 @@ async def apply_temporal_hard_deletion(
     response.headers["Cache-Control"] = "no-store"
     try:
         for attempt in range(_HARD_DELETE_SERIALIZATION_ATTEMPTS):
+            attempt_started = perf_counter()
             try:
                 async with (
                     request.app.state.database_runtime.session_factory() as session,
@@ -2047,6 +2071,16 @@ async def apply_temporal_hard_deletion(
                     )
                 break
             except DBAPIError as exc:
+                if getattr(exc.orig, "sqlstate", None) == "40001":
+                    logger.warning(
+                        "temporal.hard_delete.serialization_abort scope=%s attempt=%d "
+                        "duration_ms=%d reason=%s origin=%s",
+                        body.scope,
+                        attempt + 1,
+                        round((perf_counter() - attempt_started) * 1000),
+                        _hard_delete_serialization_reason(exc),
+                        _hard_delete_serialization_origin(exc),
+                    )
                 if (
                     getattr(exc.orig, "sqlstate", None) != "40001"
                     or attempt + 1 == _HARD_DELETE_SERIALIZATION_ATTEMPTS
