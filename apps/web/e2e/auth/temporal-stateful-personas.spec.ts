@@ -1031,8 +1031,7 @@ async function seriesRevision(
   }
   const areaName = nextTitle + ' nuova area';
   const areaInput = inspector.getByRole('textbox', { name: 'Area assegnata' });
-  await areaInput.fill('');
-  await areaInput.pressSequentially(areaName);
+  await areaInput.fill(areaName);
   await expect(
     areaInput,
     'full Life Area name entered before preview',
