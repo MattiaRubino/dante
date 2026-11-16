@@ -1,3 +1,21 @@
+## 2026-11-16 — three-stack Event P2 startup blocker
+
+Owner archive `E2E_DIAGNOSTICS.tar(20261116-083301).gz` contains **zero
+executed tests**. All three selected V2 stacks failed before Playwright could
+start. The stack reported that the pinned disposable image
+`dante-postgres-local:18.6` was unavailable; the owner then confirmed Docker
+Desktop had not been started. Image absence was **not** established: Docker's
+image inspection also fails when the daemon is stopped. This is an environment
+startup failure, not an Event or Timeline assertion. The runner now checks
+Docker availability after failed image inspection and refuses to build when
+the daemon is stopped. Only when Docker is available and the image is absent
+does it build the Compose `postgres` target once before the parallel stacks,
+verify the resulting image and preserve build output. Runner self-test and
+Python compilation pass in scratch; the twenty-case runtime and product
+status remain unverified until the owner's WSL rerun.
+
+---
+
 ## 2026-11-16 — Chromium capacity experiment, not a green full gate
 
 The owner's isolated P2-E10–E14 rerun recorded **5/5 PASS in 265.61s** with

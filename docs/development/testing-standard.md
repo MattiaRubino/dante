@@ -260,6 +260,10 @@ For a bounded V2 subset, the same fast mode accepts an exclusively V2
 It starts only V2 stacks, checks exact coverage against that selected
 Playwright inventory, and labels the report as a V2 selection rather than a
 full Chromium gate. Mixed/legacy filters are refused in this mode.
+Before any sharded run, the wrapper checks for the pinned disposable
+PostgreSQL image and builds the `postgres` Compose target once if it is
+missing. A Docker daemon outage fails before browser startup; failed build
+output is retained in `postgres-image-build.log` within the diagnostics.
 This is still Chromium-only evidence and needs actual WSL timing and a complete
 JUnit result before claiming a speedup or PASS.
 

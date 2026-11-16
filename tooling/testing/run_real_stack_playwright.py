@@ -25,6 +25,7 @@ import zipfile
 from concurrent.futures import FIRST_COMPLETED, ThreadPoolExecutor, wait
 from dataclasses import asdict, dataclass
 from pathlib import Path
+from unittest.mock import patch
 from xml.etree import ElementTree
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -36,6 +37,7 @@ COLLECTED_TESTS = re.compile(
 # Reference successful 2026-11-09 gate: 117 test slots, four intentional skips.
 # A new skip requires review; a formerly skipped test becoming active is fine.
 MAX_BASELINE_SKIPS = 4
+POSTGRES_IMAGE = "dante-postgres-local:18.6"
 
 
 @dataclass(frozen=True, slots=True)
@@ -236,6 +238,34 @@ def _unique_ports(projects: tuple[str, ...] = PROJECTS) -> dict[str, int]:
     return ports
 
 
+def _ensure_postgres_image(directory: Path) -> None:
+    """Prepare the disposable stack image once before concurrent browsers start."""
+    inspect = ("docker", "image", "inspect", POSTGRES_IMAGE)
+    if subprocess.run(
+        inspect, cwd=ROOT, stdout=subprocess.DEVNULL,
+        stderr=subprocess.DEVNULL, check=False,
+    ).returncode == 0:
+        return
+    if subprocess.run(
+        ("docker", "info"), cwd=ROOT, stdout=subprocess.DEVNULL,
+        stderr=subprocess.DEVNULL, check=False,
+    ).returncode != 0:
+        raise RuntimeError("Docker is unavailable; PostgreSQL image cannot be built")
+    print(f"REALSTACK_SETUP: building missing {POSTGRES_IMAGE} once", flush=True)
+    with (directory / "postgres-image-build.log").open("w", encoding="utf-8") as log:
+        built = subprocess.run(
+            ("docker", "compose", "-f", "infra/compose/local.yaml", "build", "postgres"),
+            cwd=ROOT, stdout=log, stderr=subprocess.STDOUT, check=False,
+        )
+    if built.returncode != 0 or subprocess.run(
+        inspect, cwd=ROOT, stdout=subprocess.DEVNULL,
+        stderr=subprocess.DEVNULL, check=False,
+    ).returncode != 0:
+        raise RuntimeError(
+            f"Could not build {POSTGRES_IMAGE}; see postgres-image-build.log"
+        )
+
+
 def _selector(grep: str | None) -> tuple[str, ...]:
     """Identical filtered inventory and Playwright execution arguments."""
     return ("--grep", grep) if grep is not None else ()
@@ -427,7 +457,7 @@ def _write_diagnostic_archive(directory: Path, *, include_traces: bool = True) -
     names = {
         "summary.json", "partial-summary.json", "progress.jsonl",
         "diagnostic-manifest.json", "playwright.log",
-        "junit.xml", "web-build.log", "orchestrator-error.txt",
+        "junit.xml", "web-build.log", "postgres-image-build.log", "orchestrator-error.txt",
         "report-error.txt", "error-context.md", ".last-run.json",
         "trace-diagnostic.zip", "trace-diagnostic.error.txt",
     }
@@ -640,6 +670,49 @@ def _self_test() -> None:
     assert _v2_selection_isolated("V2-")
     assert _v2_selection_isolated("V2-P1-E01")
     assert _v2_selection_isolated("V2-P2-E")
+    assert f"image: {POSTGRES_IMAGE}" in (
+        ROOT / "infra" / "compose" / "local.yaml"
+    ).read_text(encoding="utf-8")
+    with tempfile.TemporaryDirectory(prefix="dante-e2e-image-test.") as temp:
+        root = Path(temp)
+        with patch.object(subprocess, "run", return_value=subprocess.CompletedProcess([], 0)) as run:
+            _ensure_postgres_image(root)
+            assert run.call_count == 1
+        results = [
+            subprocess.CompletedProcess([], code) for code in (1, 0, 0, 0)
+        ]
+        with (
+            patch.object(subprocess, "run", side_effect=results) as run,
+            patch("builtins.print"),
+        ):
+            _ensure_postgres_image(root)
+            assert run.call_count == 4
+            assert "build" in run.call_args_list[2].args[0]
+        assert (root / "postgres-image-build.log").exists()
+        with (
+            patch.object(subprocess, "run", side_effect=[
+                subprocess.CompletedProcess([], code) for code in (1, 0, 1)
+            ]) as run,
+            patch("builtins.print"),
+        ):
+            try:
+                _ensure_postgres_image(root)
+            except RuntimeError as exc:
+                assert "postgres-image-build.log" in str(exc)
+            else:
+                raise AssertionError("Failed image build must abort browser startup")
+            assert run.call_count == 3
+        with patch.object(subprocess, "run", side_effect=[
+            subprocess.CompletedProcess([], 1),
+            subprocess.CompletedProcess([], 1),
+        ]) as run:
+            try:
+                _ensure_postgres_image(root)
+            except RuntimeError as exc:
+                assert "Docker is unavailable" in str(exc)
+            else:
+                raise AssertionError("Docker outage must not trigger an image build")
+            assert run.call_count == 2
     assert _v2_selection_isolated("V2-(P1-A01|P2-E04|RT-02)")
     assert _v2_selection_isolated("V2-P1-(E10|E15|A08|A19)")
     assert _v2_worker_budget("2", "V2-P1-(E10|E15|A08|A19)") == 2
@@ -1151,6 +1224,7 @@ def main() -> int:
     interrupted = False
     diagnostic_stop = False
     try:
+        _ensure_postgres_image(directory)
         if args.fast_chromium:
             return _run_full_chromium(
                 directory, report, started, args.max_minutes,
