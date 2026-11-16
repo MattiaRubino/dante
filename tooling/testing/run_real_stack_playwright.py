@@ -184,6 +184,7 @@ def _launch_chromium(
         "PLAYWRIGHT_JUNIT_OUTPUT_FILE": str(shard / "junit.xml"),
         "DANTE_E2E_PER_STACK_WORKERS": str(run.workers),
         "DANTE_E2E_PROGRESS_JSONL": str(shard / "progress.jsonl"),
+        "DANTE_E2E_ACTIVITY_JSONL": str(shard / "activity.jsonl"),
     }
     command = (
         "pnpm", "exec", "playwright", "test", "--config",
@@ -353,6 +354,7 @@ def _run_project(
         "PLAYWRIGHT_JUNIT_OUTPUT_FILE": str(junit),
         "DANTE_E2E_PER_STACK_WORKERS": str(v2_workers),
         "DANTE_E2E_PROGRESS_JSONL": str(shard / "progress.jsonl"),
+        "DANTE_E2E_ACTIVITY_JSONL": str(shard / "activity.jsonl"),
     }
     command = (
         "pnpm", "exec", "playwright", "test", "--config",
@@ -456,7 +458,7 @@ def _write_diagnostic_archive(directory: Path, *, include_traces: bool = True) -
         }, indent=2) + "\n", encoding="utf-8",
     )
     names = {
-        "summary.json", "partial-summary.json", "progress.jsonl",
+        "summary.json", "partial-summary.json", "progress.jsonl", "activity.jsonl",
         "diagnostic-manifest.json", "playwright.log",
         "junit.xml", "web-build.log", "postgres-image-build.log", "orchestrator-error.txt",
         "report-error.txt", "error-context.md", ".last-run.json",
@@ -844,6 +846,14 @@ def _self_test() -> None:
         progress_line = _progress_line(root, 10, time.monotonic())
         assert "2/10 (20.0%)" in progress_line
         assert "passed=1 failed=1" in progress_line
+        (root / "chromium" / "activity.jsonl").write_text(
+            json.dumps({"title": "V2-P2-A06", "event": "begin"}) + "\n"
+            + json.dumps({"title": "V2-P2-A06", "event": "step", "step": "A06/5 Edit"}) + "\n"
+            + json.dumps({"title": "V2-P2-A09", "event": "begin"}) + "\n"
+            + json.dumps({"title": "V2-P2-A09", "event": "end"}) + "\n",
+            encoding="utf-8",
+        )
+        assert "active=1 [A06/5 Edit]" in _progress_line(root, 10, time.monotonic())
         _enforce_diagnostic_failure_budget(root, None)
         _enforce_diagnostic_failure_budget(root, 2)
         try:
@@ -871,7 +881,7 @@ def _self_test() -> None:
             assert {
                 "summary.json", "partial-summary.json",
                 "chromium/progress.jsonl", "chromium/playwright.log",
-                "chromium/junit.xml", reduced_name,
+            "chromium/junit.xml", "chromium/activity.jsonl", reduced_name,
             } <= member_names
             assert "chromium/test-results/failed-test/error-context.md" in member_names
             member = bundle.extractfile(reduced_name)
@@ -919,10 +929,30 @@ def _progress_counts(directory: Path) -> tuple[int, int, int]:
 
 def _progress_line(directory: Path, total: int, started: float) -> str:
     completed, passed, failed = _progress_counts(directory)
+    active: dict[str, str] = {}
+    for path in directory.glob("*/activity.jsonl"):
+        for line in path.read_text(encoding="utf-8").splitlines():
+            try:
+                record = json.loads(line)
+            except json.JSONDecodeError:
+                continue
+            if not isinstance(record, dict) or not isinstance(record.get("title"), str):
+                continue
+            key = f"{path.parent.name}:{record['title']}"
+            if record.get("event") == "begin":
+                active[key] = record["title"].rsplit(" › ", 1)[-1]
+            elif record.get("event") == "step" and key in active:
+                step = record.get("step")
+                if isinstance(step, str):
+                    active[key] = step
+            elif record.get("event") == "end":
+                active.pop(key, None)
+    working = ", ".join(sorted(active.values()))
     return (
         f"REALSTACK_PROGRESS: {completed}/{total} "
         f"({completed / total * 100:.1f}%) completed, "
         f"passed={passed} failed={failed}, "
+        f"active={len(active)} [{working}], "
         f"elapsed={round(time.monotonic() - started)}s"
     )
 
