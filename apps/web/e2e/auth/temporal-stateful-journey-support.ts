@@ -88,28 +88,18 @@ export async function signedInPersona(
     locale: 'it-IT',
   });
   try {
+    // Authenticate through the real HTTP endpoint in this isolated context.
+    // Its cookie jar is shared with the page that opens the Timeline below.
+    const signin = await context.request.post('/api/v1/auth/signin', {
+      data: {
+        email:
+          'synthetic.user+e2e-' + accountIndex(info, ordinal) + '@example.com',
+        password: PASSWORD,
+      },
+    });
+    expect(signin.status(), 'authenticate stateful persona').toBe(200);
     const page = await context.newPage();
     await page.addInitScript(() => localStorage.setItem('dante.locale', 'it'));
-    await page.goto('/');
-    await expect(
-      page.getByRole('heading', { level: 1, name: 'Accedi a DANTE' }),
-    ).toBeVisible();
-    await page
-      .getByLabel('Email')
-      .fill(
-        'synthetic.user+e2e-' + accountIndex(info, ordinal) + '@example.com',
-      );
-    await page.getByLabel('Password', { exact: true }).fill(PASSWORD);
-    const signin = page.waitForResponse(
-      (response) =>
-        response.url().endsWith('/api/v1/auth/signin') &&
-        response.request().method() === 'POST',
-    );
-    await page.getByRole('button', { name: 'Accedi', exact: true }).click();
-    expect((await signin).status()).toBe(200);
-    await expect(
-      page.getByRole('heading', { level: 1, name: 'Accesso confermato' }),
-    ).toBeVisible();
     return { page, close: () => context.close() };
   } catch (reason) {
     await context.close();
