@@ -1922,16 +1922,22 @@ def _hard_delete_serialization_edge(exc: DBAPIError) -> str:
     diagnostic = getattr(getattr(exc, "orig", None), "diag", None)
     context = getattr(diagnostic, "context", "") or ""
     match = re.search(
-        r"FROM (dante\.[a-z_]+) AS child\s+JOIN (dante\.[a-z_]+) AS parent",
+        r"FROM ((?:dante\.)?[a-z_]+) AS child\s+JOIN "
+        r"((?:dante\.)?[a-z_]+) AS parent",
         context,
     )
     if match:
-        return f"{match.group(1)}->{match.group(2)}"
+        return "->".join(f"dante.{name.removeprefix('dante.')}" for name in match.groups())
     match = re.search(
-        r"FROM (dante\.[a-z_]+) AS address\s+JOIN (dante\.[a-z_]+) AS item",
+        r"FROM ((?:dante\.)?[a-z_]+) AS address\s+JOIN "
+        r"((?:dante\.)?[a-z_]+) AS item",
         context,
     )
-    return f"{match.group(1)}->{match.group(2)}" if match else "unknown"
+    return (
+        "->".join(f"dante.{name.removeprefix('dante.')}" for name in match.groups())
+        if match
+        else "unknown"
+    )
 
 
 class TemporalHardDeletePreview(BaseModel):
