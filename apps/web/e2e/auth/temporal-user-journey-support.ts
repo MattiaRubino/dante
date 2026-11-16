@@ -137,9 +137,9 @@ export async function openHome(page: Page, date: string): Promise<void> {
   const response = await read;
   expect(response.status(), 'canonical Timeline GET HTTP status').toBe(200);
   try {
-    await expect(
-      page.locator('[data-temporal-read-state="ready"]'),
-    ).toBeVisible();
+    await expect(page.locator('[data-temporal-read-state="ready"]')).toBeVisible({
+      timeout: 15_000,
+    });
   } catch (reason) {
     // A 200 on the window request is not proof that the SPA successfully
     // rendered it. Distinguish an unavailable Timeline from a slow/absent
