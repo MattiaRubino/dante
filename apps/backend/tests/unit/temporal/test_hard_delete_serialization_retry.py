@@ -17,6 +17,7 @@ from dante.modules.temporal.activity_inspector_api import (
 )
 from dante.modules.temporal.reality_objective_api import (
     TemporalHardDeleteCommand,
+    _hard_delete_serialization_edge,
     apply_temporal_hard_deletion,
 )
 from dante.platform.http.problem import ProblemError
@@ -55,6 +56,29 @@ class _Transaction:
 
 def _error(code: str) -> OperationalError:
     return OperationalError("redacted statement", {}, _SqlStateError(code))
+
+
+@pytest.mark.parametrize(
+    ("context", "edge"),
+    [
+        (
+            'SQL statement "SELECT 1,child.ctid FROM dante.session AS child '
+            'JOIN dante.native_address AS parent ON child.session_ref=parent.native_ref"',
+            "dante.session->dante.native_address",
+        ),
+        (
+            'SQL statement "SELECT 1,address.ctid FROM dante.scoped_address AS address '
+            'JOIN dante.schedule AS item ON item.schedule_ref=address.scoped_ref"',
+            "dante.scoped_address->dante.schedule",
+        ),
+        ('SQL statement "SELECT personal.email FROM users"', "unknown"),
+    ],
+)
+def test_serialization_diagnostic_logs_only_graph_relation_names(context: str, edge: str) -> None:
+    original = _SqlStateError("40001")
+    original.diag = SimpleNamespace(context=context)
+    error = OperationalError("redacted statement", {}, original)
+    assert _hard_delete_serialization_edge(error) == edge
 
 
 @pytest.mark.parametrize(
