@@ -120,10 +120,20 @@ export async function signedInPage(
 }
 
 export async function openHome(page: Page, date: string): Promise<void> {
+  // The initial Timeline window spans seven days before the viewed day and
+  // thirty-six days after it (exclusive). Ignore older navigation responses.
+  const startDate = dateAfter(date, -7);
+  const endDateExclusive = dateAfter(date, 36);
   const read = page.waitForResponse(
-    (response) =>
-      response.url().includes('/api/v1/temporal/timeline/window') &&
-      response.request().method() === 'GET',
+    (response) => {
+      const url = new URL(response.url());
+      return (
+        response.request().method() === 'GET' &&
+        url.pathname.endsWith('/api/v1/temporal/timeline/window') &&
+        url.searchParams.get('start_date') === startDate &&
+        url.searchParams.get('end_date_exclusive') === endDateExclusive
+      );
+    },
     { timeout: REQUEST_TIMEOUT },
   );
   // The network trace proves that HTML, scripts and Timeline APIs may have
