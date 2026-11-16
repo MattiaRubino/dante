@@ -120,7 +120,11 @@ def _balanced_chromium_runs(
         index = min(range(v2_stacks), key=lambda i: (seconds[i], len(bins[i])))
         bins[index].append(case_id)
         seconds[index] += weight
-    runs = [LEGACY_CHROMIUM]
+    runs = (
+        [LEGACY_CHROMIUM]
+        if any(not title.rsplit(" › ", 1)[-1].startswith("V2-") for title in full)
+        else []
+    )
     for index, selected in enumerate(bins, start=1):
         suffixes = "|".join(re.escape(case_id[3:]) for case_id in sorted(selected))
         runs.append(ChromiumRun(
@@ -635,6 +639,7 @@ def _self_test() -> None:
     assert _run_project.__defaults__ == (None, 1)
     assert _v2_selection_isolated("V2-")
     assert _v2_selection_isolated("V2-P1-E01")
+    assert _v2_selection_isolated("V2-P2-E")
     assert _v2_selection_isolated("V2-(P1-A01|P2-E04|RT-02)")
     assert _v2_selection_isolated("V2-P1-(E10|E15|A08|A19)")
     assert _v2_worker_budget("2", "V2-P1-(E10|E15|A08|A19)") == 2
@@ -696,7 +701,8 @@ def _self_test() -> None:
         for phase, count in (("P1", 40), ("P2", 40), ("P3", 20))
         for index in range(1, count + 1)
     }
-    balanced = _balanced_chromium_runs(weighted)
+    weighted_with_legacy = {"[chromium] › case-a", *weighted}
+    balanced = _balanced_chromium_runs(weighted_with_legacy)
     estimated = [
         sum(
             V2_PHASE_SECONDS[title.rsplit(" › ", 1)[-1].split("-", 2)[1]]
@@ -706,7 +712,7 @@ def _self_test() -> None:
     ]
     assert abs(estimated[0] - estimated[1]) <= max(V2_PHASE_SECONDS.values())
     for stack_count in (3, 4):
-        expanded = _balanced_chromium_runs(weighted, stack_count)
+        expanded = _balanced_chromium_runs(weighted_with_legacy, stack_count)
         expanded_inventories = {
             expanded[0].name: {"[chromium] › case-a"},
             **{
@@ -726,6 +732,21 @@ def _self_test() -> None:
         ]
         assert max(expanded_seconds) - min(expanded_seconds) <= max(
             V2_PHASE_SECONDS.values()
+        )
+        selected = {
+            f"[chromium] › V2-P2-E{index:02d} journey"
+            for index in range(1, 21)
+        }
+        selected_runs = _balanced_chromium_runs(selected, stack_count)
+        assert len(selected_runs) == stack_count
+        assert all(run.name.startswith("chromium-v2-") for run in selected_runs)
+        _validate_chromium_partition(
+            selected,
+            {
+                run.name: {title for title in selected if re.search(run.grep, title)}
+                for run in selected_runs
+            },
+            selected_runs,
         )
     with tempfile.TemporaryDirectory(prefix="dante-e2e-archive-test.") as temp:
         root = Path(temp)
@@ -845,24 +866,25 @@ def _enforce_diagnostic_failure_budget(directory: Path, limit: int | None) -> No
 
 def _run_full_chromium(directory: Path, report: Path, started: float,
                        max_minutes: int, stop_after_failures: int | None,
-                       v2_stacks: int) -> int:
-    total = _plan("chromium", directory)
+                       v2_stacks: int, grep: str | None) -> int:
+    total = _plan("chromium", directory, grep)
     full = _chromium_inventory(
         (directory / "chromium.inventory.log").read_text(encoding="utf-8")
     )
     if len(full) != total:
-        raise RuntimeError("Full Chromium inventory has duplicate or missing case IDs")
+        raise RuntimeError("Chromium selection has duplicate or missing case IDs")
     runs = _balanced_chromium_runs(full, v2_stacks)
+    v2_runs = [run for run in runs if run.name != LEGACY_CHROMIUM.name]
     inventories: dict[str, set[str]] = {}
     planned: dict[str, int] = {}
     for run in runs:
         planned[run.name], inventories[run.name] = _plan_chromium(run, directory)
     _validate_chromium_partition(full, inventories, runs)
     print(
-        f"REALSTACK_CHROMIUM: all {total} cases, {len(runs)} isolated stacks, "
+        f"REALSTACK_CHROMIUM: selected {total} cases, {len(runs)} isolated stacks, "
         f"{sum(run.workers for run in runs)} Chromium workers maximum; "
         "weighted V2 distribution "
-        f"{'/'.join(str(planned[run.name]) for run in runs[1:])}; "
+        f"{'/'.join(str(planned[run.name]) for run in v2_runs)}; "
         "one aggregate report",
         flush=True,
     )
@@ -964,7 +986,8 @@ def _run_full_chromium(directory: Path, report: Path, started: float,
     report.write_text(
         json.dumps({
             "selected_projects": ["chromium"],
-            "mode": "full-chromium-isolated",
+            "mode": "full-chromium-isolated" if grep is None else "v2-chromium-isolated",
+            "grep": grep,
             "maximum_concurrent_browsers": sum(run.workers for run in runs),
             "v2_stacks": v2_stacks,
             "elapsed_seconds": round(time.monotonic() - started, 2),
@@ -1033,8 +1056,8 @@ def main() -> int:
     )
     parser.add_argument(
         "--fast-chromium", action="store_true",
-        help="One complete Chromium invocation, internally isolated and "
-             "parallel, with one coverage-checked report",
+        help="One coverage-checked Chromium invocation, complete or V2-only "
+             "--grep, on isolated parallel stacks",
     )
     parser.add_argument(
         "--v2-stacks", type=int, default=2, choices=(2, 3, 4),
@@ -1075,8 +1098,12 @@ def main() -> int:
         args.stop_after_failures < 1 or not args.fast_chromium
     ):
         parser.error("--stop-after-failures requires --fast-chromium and N >= 1")
-    if args.fast_chromium and (args.project != "chromium" or args.grep is not None):
-        parser.error("--fast-chromium requires --project chromium and no --grep")
+    if args.fast_chromium and args.project != "chromium":
+        parser.error("--fast-chromium requires --project chromium")
+    if args.fast_chromium and args.grep is not None and not _v2_selection_isolated(args.grep):
+        parser.error("--fast-chromium --grep must select exclusively V2 titles")
+    if args.fast_chromium and args.v2_workers != "1":
+        parser.error("--fast-chromium sets two V2 workers per stack; omit --v2-workers")
     if not args.fast_chromium and args.v2_stacks != 2:
         parser.error("--v2-stacks requires --fast-chromium")
     try:
@@ -1127,7 +1154,7 @@ def main() -> int:
         if args.fast_chromium:
             return _run_full_chromium(
                 directory, report, started, args.max_minutes,
-                args.stop_after_failures, args.v2_stacks,
+                args.stop_after_failures, args.v2_stacks, args.grep,
             )
         planned = {
             project: _plan(project, directory, args.grep)

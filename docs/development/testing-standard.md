@@ -255,6 +255,11 @@ Increase this only after measuring available WSL memory, CPU, Docker startup
 reliability and actual completed-case throughput; host GPU memory is not a
 browser/database capacity budget. The coverage check is identical at every
 stack count.
+For a bounded V2 subset, the same fast mode accepts an exclusively V2
+`--grep` selection, such as `--grep V2-P2-E` for the twenty Event P2 cases.
+It starts only V2 stacks, checks exact coverage against that selected
+Playwright inventory, and labels the report as a V2 selection rather than a
+full Chromium gate. Mixed/legacy filters are refused in this mode.
 This is still Chromium-only evidence and needs actual WSL timing and a complete
 JUnit result before claiming a speedup or PASS.
 

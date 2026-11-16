@@ -11,6 +11,10 @@ with two browser workers per V2 stack. Its self-test checks disjoint exact
 coverage and estimated duration balance at each count. The optional
 `--stop-after-failures 2` ends a RED diagnostic early with partial logs and
 available compact traces; it must be omitted for complete acceptance.
+The same fast runner accepts a strictly V2-only `--grep` subset: selecting
+`V2-P2-E` runs the twenty Event P2 cases across the requested V2 stacks,
+without starting the legacy outage stack. The selected inventory is still
+coverage-checked, and its result is not a 142-case acceptance report.
 
 The prior 117-case run accumulated about 109 V2 worker-minutes. Even perfect
 distribution across eight V2 browser workers would have an idealized floor
