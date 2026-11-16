@@ -341,7 +341,7 @@ test.describe('Timeline — real user Activity/Event lifecycle matrix', () => {
             const planned = (row: Record<string, unknown>) =>
               ((row.schedules ?? []) as Record<string, unknown>[])
                 .filter((schedule) => schedule.role_code === 'planned')
-                .map((schedule) => schedule.name);
+                .map((schedule) => schedule.display_name);
             expect(goals(richBefore)).toContainEqual(
               expect.arrayContaining([goal, 'quantity']),
             );
@@ -765,6 +765,9 @@ test.describe('Timeline — real user Activity/Event lifecycle matrix', () => {
           await seriesInspector
             .getByRole('button', { name: 'Salva modifiche' })
             .click();
+          await expect(page.locator('.timeline-event-modal--edit')).toHaveCount(
+            0,
+          );
           await openHome(page, dateAfter(day, 1));
           await expect(onDay(page, dateAfter(day, 1), localTitle)).toHaveCount(1);
           await openHome(page, dateAfter(day, 2));
