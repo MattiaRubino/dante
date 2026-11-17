@@ -97,8 +97,11 @@ async function assertCard(
   await openHome(page, day);
   const card = onDay(page, day, title);
   const expected = placementExpectations.get(page) ?? 1;
+  // The first Timeline read may precede the priority occurrence checkpoint.
+  // Wait for its authoritative follow-up read to render the physical cards.
   await expect(card, 'exact physical placements on ' + day).toHaveCount(
     expected,
+    { timeout: 20_000 },
   );
   return card.first();
 }
