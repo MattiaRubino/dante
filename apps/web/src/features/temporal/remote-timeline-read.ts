@@ -379,6 +379,10 @@ type ParsedOwnerIdentity =
       placementMaterialStateRef: string;
       title: string;
       wireRefKey: 'event_ref';
+      lifeAreaOverridePresent: boolean;
+      lifeAreaOverrideRef: string | null;
+      seriesLifeAreaPresent: boolean;
+      seriesLifeAreaRef: string | null;
     }>;
 
 function parseOwnerIdentity(
@@ -423,6 +427,7 @@ function parseOwnerIdentity(
       eventRef: parseUuidV7(payload.event_ref, 'event_ref'),
       ...shared,
       ...parseLifeAreaOverride(payload),
+      ...parseSeriesLifeArea(payload),
       wireRefKey: 'event_ref' as const,
     });
   }
@@ -469,6 +474,10 @@ function parseScheduledItem(payload: unknown): TemporalTimelineScheduledItem {
     ('life_area_override_present' in payload ||
       'life_area_override_ref' in payload)
       ? (['life_area_override_present', 'life_area_override_ref'] as const)
+      : []),
+    ...(owner.kind === 'scheduled_event' &&
+    ('series_life_area_present' in payload || 'series_life_area_ref' in payload)
+      ? (['series_life_area_present', 'series_life_area_ref'] as const)
       : []),
   ] as const;
 
@@ -683,6 +692,42 @@ function parseLifeAreaOverride(payload: Record<string, unknown>): Readonly<{
   });
 }
 
+function parseSeriesLifeArea(payload: Record<string, unknown>): Readonly<{
+  seriesLifeAreaPresent: boolean;
+  seriesLifeAreaRef: string | null;
+}> {
+  if (!('series_life_area_present' in payload)) {
+    if ('series_life_area_ref' in payload) {
+      throw new TemporalTimelineRemoteError(
+        'protocol',
+        'Incomplete series Life Area.',
+      );
+    }
+    return Object.freeze({
+      seriesLifeAreaPresent: false,
+      seriesLifeAreaRef: null,
+    });
+  }
+  const present = payload.series_life_area_present;
+  const ref = payload.series_life_area_ref;
+  if (
+    typeof present !== 'boolean' ||
+    !('series_life_area_ref' in payload) ||
+    (ref !== null && typeof ref !== 'string') ||
+    (!present && ref !== null)
+  ) {
+    throw new TemporalTimelineRemoteError(
+      'protocol',
+      'Invalid series Life Area.',
+    );
+  }
+  return Object.freeze({
+    seriesLifeAreaPresent: present,
+    seriesLifeAreaRef:
+      ref === null ? null : parseUuidV7(ref, 'series_life_area_ref'),
+  });
+}
+
 function parseScheduledOccurrence(
   payload: Record<string, unknown>,
 ): TemporalTimelineScheduledOccurrenceItem {
@@ -701,6 +746,10 @@ function parseScheduledOccurrence(
       ...('life_area_override_present' in payload ||
       'life_area_override_ref' in payload
         ? ['life_area_override_present', 'life_area_override_ref']
+        : []),
+      ...('series_life_area_present' in payload ||
+      'series_life_area_ref' in payload
+        ? ['series_life_area_present', 'series_life_area_ref']
         : []),
     ],
     'Scheduled Timeline Occurrence',
@@ -738,6 +787,7 @@ function parseScheduledOccurrence(
         ? null
         : parseOccurrenceCoordinate(payload.coordinate),
     ...parseLifeAreaOverride(payload),
+    ...parseSeriesLifeArea(payload),
     scheduleRef: parseUuidV7(payload.schedule_ref, 'schedule_ref'),
     placementMaterialStateRef: parseUuidV7(
       payload.placement_material_state_ref,
@@ -937,6 +987,10 @@ function parseExpectedOccurrence(
       'life_area_override_ref' in payload
         ? ['life_area_override_present', 'life_area_override_ref']
         : []),
+      ...('series_life_area_present' in payload ||
+      'series_life_area_ref' in payload
+        ? ['series_life_area_present', 'series_life_area_ref']
+        : []),
     ],
     'Expected Timeline Occurrence',
   );
@@ -963,6 +1017,7 @@ function parseExpectedOccurrence(
     title: payload.title,
     coordinate: parseOccurrenceCoordinate(payload.coordinate),
     ...parseLifeAreaOverride(payload),
+    ...parseSeriesLifeArea(payload),
   });
 }
 

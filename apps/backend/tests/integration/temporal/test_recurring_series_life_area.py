@@ -233,6 +233,9 @@ async def test_weekly_event_color_edit_after_local_exception_keeps_future_cards(
         assert {first_day, selected_day, last_day} <= current.keys()
         assert current[first_day].occurrence_ref == first_ref
         assert current[selected_day].occurrence_ref != selected_ref
+        assert current[first_day].series_life_area_ref == area_ref
+        assert current[selected_day].series_life_area_ref == area_ref
+        assert current[last_day].series_life_area_ref == area_ref
         assert (
             next(
                 area
@@ -386,6 +389,18 @@ async def test_event_following_series_life_area_is_atomic_and_survives_reload(
             effective_zone_id="Europe/Rome",
         )
         current_ref = await selected()
+        window = await timeline.read_window(
+            query=TimelineWindowQuery(start_date=day, end_date_exclusive=date(2027, 1, 4)),
+            context=_context(actor),
+        )
+        projected = [
+            item for item in window.items
+            if isinstance(item, TimelineScheduledOccurrenceItem)
+            and item.source_native_ref == created.source_ref
+        ]
+        assert projected
+        assert all(item.series_life_area_present for item in projected)
+        assert all(item.series_life_area_ref == assigned_ref for item in projected)
         current = await series.source(self_person_ref=actor, selected_occurrence_ref=current_ref)
         assert current.structure_snapshot["life_area_ref"] == str(assigned_ref)
         assert "new_life_area" not in current.structure_snapshot

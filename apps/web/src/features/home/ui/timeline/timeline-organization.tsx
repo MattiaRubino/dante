@@ -27,6 +27,15 @@ export function canonicalItemLifeAreaGroup(
   ) {
     return item.lifeAreaOverrideRef ?? LEGACY_UNASSIGNED_GROUP;
   }
+  if (
+    (((item.kind === 'scheduled_occurrence' ||
+      item.kind === 'expected_occurrence') &&
+      item.sourceKind === 'event') ||
+      item.kind === 'scheduled_event') &&
+    item.seriesLifeAreaPresent
+  ) {
+    return item.seriesLifeAreaRef ?? LEGACY_UNASSIGNED_GROUP;
+  }
   const key =
     item.kind === 'scheduled_activity'
       ? `activity:${item.activityRef}`

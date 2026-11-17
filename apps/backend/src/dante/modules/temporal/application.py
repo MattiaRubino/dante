@@ -61,6 +61,8 @@ class _TimelineScheduledEventBase:
     # explicit first-Occurrence structure patch, just like later Occurrences.
     life_area_override_present: bool = field(default=False, kw_only=True)
     life_area_override_ref: UUID | None = field(default=None, kw_only=True)
+    series_life_area_present: bool = field(default=False, kw_only=True)
+    series_life_area_ref: UUID | None = field(default=None, kw_only=True)
 
 
 @dataclass(frozen=True, slots=True)
@@ -189,6 +191,9 @@ class _TimelineOccurrenceBase:
     # "unassigned", while present=False means inherited from source.
     life_area_override_present: bool = field(default=False, kw_only=True)
     life_area_override_ref: UUID | None = field(default=None, kw_only=True)
+    # Effective structure of this recurrence segment; a local override wins.
+    series_life_area_present: bool = field(default=False, kw_only=True)
+    series_life_area_ref: UUID | None = field(default=None, kw_only=True)
 
 
 @dataclass(frozen=True, slots=True)
@@ -343,6 +348,8 @@ def _expected_occurrence_from_row(row: RowMapping) -> TimelineExpectedOccurrence
         coordinate=coordinate,
         life_area_override_present=bool(row["life_area_override_present"]),
         life_area_override_ref=row["life_area_override_ref"],
+        series_life_area_present=bool(row["series_life_area_present"]),
+        series_life_area_ref=row["series_life_area_ref"],
     )
 
 
@@ -393,6 +400,8 @@ def _item_from_row(
             coordinate=_occurrence_coordinate(row),
             life_area_override_present=bool(row["life_area_override_present"]),
             life_area_override_ref=row["life_area_override_ref"],
+            series_life_area_present=bool(row["series_life_area_present"]),
+            series_life_area_ref=row["series_life_area_ref"],
             schedule_ref=identity["schedule_ref"],
             placement_material_state_ref=identity["placement_material_state_ref"],
             placement=placement,
@@ -462,6 +471,8 @@ def _item_from_row(
     if owner_kind == "event":
         identity["life_area_override_present"] = bool(row["life_area_override_present"])
         identity["life_area_override_ref"] = row["life_area_override_ref"]
+        identity["series_life_area_present"] = bool(row["series_life_area_present"])
+        identity["series_life_area_ref"] = row["series_life_area_ref"]
         if temporal_form == "date_span":
             return TimelineDateSpanEventItem(
                 event_ref=subject_ref,
@@ -574,6 +585,22 @@ class TemporalTimelineApplication:
                        :self_person_ref,occurrence.occurrence_ref
                    )
                  ORDER BY schedule.subject_native_ref,schedule.schedule_ref
+            ), event_structure AS MATERIALIZED (
+                SELECT state.source_native_ref,
+                       state.governing_recurrence_state_ref,
+                       policy.structure_snapshot
+                  FROM (
+                      SELECT DISTINCT occurrence.source_native_ref,
+                             occurrence.governing_recurrence_state_ref
+                        FROM scheduled_occurrence AS occurrence
+                        JOIN dante.event_expectation AS event
+                          ON event.event_ref=occurrence.source_native_ref
+                         AND event.self_person_ref=:self_person_ref
+                  ) AS state
+             LEFT JOIN LATERAL dante.get_self_recurring_structure_policy_revision(
+                 :self_person_ref,'event',state.source_native_ref,
+                 state.governing_recurrence_state_ref
+             ) AS policy ON true
             ), self_subject AS (
                 SELECT 'activity'::text AS owner_kind,
                        intention.activity_ref AS subject_native_ref,
@@ -583,7 +610,9 @@ class TemporalTimelineApplication:
                        NULL::uuid AS source_native_ref,
                        NULL::uuid AS occurrence_ref,
                        false AS life_area_override_present,
-                       NULL::uuid AS life_area_override_ref
+                       NULL::uuid AS life_area_override_ref,
+                       false AS series_life_area_present,
+                       NULL::uuid AS series_life_area_ref
                   FROM dante.activity_intention AS intention
              LEFT JOIN LATERAL (
                  SELECT CASE
@@ -628,7 +657,11 @@ class TemporalTimelineApplication:
                            ELSE NULLIF(
                                first_edit.structure_snapshot->>'life_area_ref',''
                            )::uuid
-                       END AS life_area_override_ref
+                       END AS life_area_override_ref,
+                       COALESCE(first_edit.structure_snapshot ? 'life_area_ref',false)
+                           AS series_life_area_present,
+                       NULLIF(first_edit.structure_snapshot->>'life_area_ref','')::uuid
+                           AS series_life_area_ref
                   FROM dante.event_expectation AS expectation
              LEFT JOIN LATERAL (
                  -- A converted Event keeps its physical first Schedule.
@@ -673,7 +706,11 @@ class TemporalTimelineApplication:
                                profile_edit.patch->'event_local'->>'life_area_ref',''
                            )::uuid
                            ELSE NULL::uuid
-                       END AS life_area_override_ref
+                       END AS life_area_override_ref,
+                       COALESCE(policy.structure_snapshot ? 'life_area_ref',false)
+                           AS series_life_area_present,
+                       NULLIF(policy.structure_snapshot->>'life_area_ref','')::uuid
+                           AS series_life_area_ref
                   FROM scheduled_occurrence AS occurrence
                   JOIN self_source AS source
                     ON source.source_native_ref=occurrence.source_native_ref
@@ -682,6 +719,10 @@ class TemporalTimelineApplication:
                      :self_person_ref,occurrence.occurrence_ref
                  ) AS patch
              ) profile_edit ON true
+             LEFT JOIN event_structure AS policy
+               ON policy.source_native_ref=occurrence.source_native_ref
+              AND policy.governing_recurrence_state_ref=
+                  occurrence.governing_recurrence_state_ref
             )
             SELECT subject.owner_kind,
                    subject.subject_native_ref,
@@ -691,6 +732,8 @@ class TemporalTimelineApplication:
                    subject.occurrence_ref,
                    subject.life_area_override_present,
                    subject.life_area_override_ref,
+                   subject.series_life_area_present,
+                   subject.series_life_area_ref,
                    schedule.schedule_ref,
                    COALESCE(user_lock.locked,false) AS placement_locked,
                    current.material_state_ref,
@@ -846,6 +889,26 @@ class TemporalTimelineApplication:
                        expectation.self_person_ref,
                        expectation.title
                   FROM dante.event_expectation AS expectation
+            ), expected_occurrence AS MATERIALIZED (
+                SELECT * FROM dante.list_self_expected_occurrences_in_window(
+                    :self_person_ref,:start_date,:end_date_exclusive,:effective_zone_id
+                )
+            ), event_structure AS MATERIALIZED (
+                SELECT state.source_native_ref,
+                       state.governing_recurrence_state_ref,
+                       policy.structure_snapshot
+                  FROM (
+                      SELECT DISTINCT occurrence.source_native_ref,
+                             occurrence.governing_recurrence_state_ref
+                        FROM expected_occurrence AS occurrence
+                        JOIN dante.event_expectation AS event
+                          ON event.event_ref=occurrence.source_native_ref
+                         AND event.self_person_ref=:self_person_ref
+                  ) AS state
+             LEFT JOIN LATERAL dante.get_self_recurring_structure_policy_revision(
+                 :self_person_ref,'event',state.source_native_ref,
+                 state.governing_recurrence_state_ref
+             ) AS policy ON true
             )
             SELECT occurrence.occurrence_ref,
                    occurrence.source_native_ref,
@@ -859,6 +922,10 @@ class TemporalTimelineApplication:
                        THEN NULLIF(profile_edit.patch->'event_local'->>'life_area_ref','')::uuid
                        ELSE NULL::uuid
                    END AS life_area_override_ref,
+                   COALESCE(policy.structure_snapshot ? 'life_area_ref',false)
+                       AS series_life_area_present,
+                   NULLIF(policy.structure_snapshot->>'life_area_ref','')::uuid
+                       AS series_life_area_ref,
                    occurrence.family_code,
                    occurrence.generated_date,
                    occurrence.generated_wall_time,
@@ -871,12 +938,7 @@ class TemporalTimelineApplication:
                    occurrence.frame_code,
                    occurrence.quota_zone_id,
                    occurrence.position_index
-              FROM dante.list_self_expected_occurrences_in_window(
-                       :self_person_ref,
-                       :start_date,
-                       :end_date_exclusive,
-                       :effective_zone_id
-                   ) AS occurrence
+              FROM expected_occurrence AS occurrence
               JOIN self_source AS source
                 ON source.source_native_ref=occurrence.source_native_ref
                AND source.self_person_ref=:self_person_ref
@@ -885,6 +947,10 @@ class TemporalTimelineApplication:
                  :self_person_ref,occurrence.occurrence_ref
              ) AS patch
          ) profile_edit ON true
+         LEFT JOIN event_structure AS policy
+           ON policy.source_native_ref=occurrence.source_native_ref
+          AND policy.governing_recurrence_state_ref=
+              occurrence.governing_recurrence_state_ref
              WHERE NOT dante.is_self_recurring_occurrence_superseded(
                        :self_person_ref,occurrence.occurrence_ref
                    )

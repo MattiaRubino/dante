@@ -301,8 +301,11 @@ export function TimelineSurface({
             item.kind === 'expected_occurrence') &&
             item.sourceKind === 'event') ||
             item.kind === 'scheduled_event') &&
-          item.lifeAreaOverridePresent === true &&
-          item.lifeAreaOverrideRef === null,
+          ((item.lifeAreaOverridePresent === true &&
+            item.lifeAreaOverrideRef === null) ||
+            (item.lifeAreaOverridePresent !== true &&
+              item.seriesLifeAreaPresent === true &&
+              item.seriesLifeAreaRef === null)),
       );
     return localUnassigned &&
       !groups.some((group) => group.id === LEGACY_UNASSIGNED_GROUP)

@@ -44,6 +44,8 @@ type TemporalTimelineScheduledEventBase = Readonly<{
   title: string;
   lifeAreaOverridePresent?: boolean;
   lifeAreaOverrideRef?: string | null;
+  seriesLifeAreaPresent?: boolean;
+  seriesLifeAreaRef?: string | null;
 }>;
 
 type TemporalTimelineDateSpanFields = Readonly<{
@@ -161,6 +163,8 @@ type TemporalTimelineScheduledOccurrenceBase = Readonly<{
   /** True includes an explicit null (instance detached from the source area). */
   lifeAreaOverridePresent?: boolean;
   lifeAreaOverrideRef?: string | null;
+  seriesLifeAreaPresent?: boolean;
+  seriesLifeAreaRef?: string | null;
 }>;
 
 export type TemporalTimelineScheduledOccurrenceItem =
@@ -182,6 +186,8 @@ export type TemporalTimelineExpectedOccurrenceItem = Readonly<{
   coordinate: TemporalTimelineOccurrenceCoordinate;
   lifeAreaOverridePresent?: boolean;
   lifeAreaOverrideRef?: string | null;
+  seriesLifeAreaPresent?: boolean;
+  seriesLifeAreaRef?: string | null;
   temporalForm?: never;
 }>;
 

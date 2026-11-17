@@ -59,6 +59,31 @@ describe('Timeline organization groups', () => {
     ]);
   });
 
+  it('recolors the shared Life Area group for Activity and Event cards', () => {
+    const current = snapshot({
+      areas: [{ ...snapshot().areas[0]!, revision: 2, colorCode: '#33B679' }],
+      assignments: [
+        ...snapshot().assignments,
+        {
+          kind: 'activity',
+          itemRef: UNASSIGNED_REF,
+          areaRef: AREA_REF,
+          revision: 1,
+        },
+      ],
+    });
+    const groups = canonicalOrganizationGroups(current);
+    expect(groups.find((group) => group.id === AREA_REF)?.colorCode).toBe(
+      '#33B679',
+    );
+    expect(
+      current.assignments.map(
+        (assignment) =>
+          groups.find((group) => group.id === assignment.areaRef)?.colorCode,
+      ),
+    ).toEqual(['#33B679', '#33B679']);
+  });
+
   // Regression 2026-11-09: "Solo questa istanza" was saved correctly in
   // the Event occurrence but its card still used the recurring source's
   // assigned Life Area (and therefore its old color). These three variants
@@ -124,6 +149,57 @@ describe('Timeline organization groups', () => {
         assignments,
       ),
     ).toBe(LEGACY_UNASSIGNED_GROUP);
+  });
+
+  it('uses a recurrence segment area for all cards and lets a local exception win', () => {
+    const previousArea = '0199a8c0-6e72-7bc0-8ad0-a2f403f5617d';
+    const segmentArea = '0199a8c0-6e73-7bc0-8ad0-a2f403f5617d';
+    const localArea = '0199a8c0-6e74-7bc0-8ad0-a2f403f5617d';
+    const sourceNativeRef = '0199a8c0-6e75-7bc0-8ad0-a2f403f5617d';
+    const assignments = new Map([[`event:${sourceNativeRef}`, previousArea]]);
+    const item = {
+      kind: 'expected_occurrence',
+      occurrenceRef: '0199a8c0-6e76-7bc0-8ad0-a2f403f5617d',
+      sourceKind: 'event',
+      sourceNativeRef,
+      title: 'Istanza futura',
+      coordinate: {
+        familyCode: 'calendar-wall-clock',
+        generatedDate: Temporal.PlainDate.from('2026-11-22'),
+        generatedWallTime: null,
+        clockBasis: 'named-zone',
+        zoneId: 'Europe/Rome',
+        resolvedAt: null,
+      },
+      seriesLifeAreaPresent: true,
+      seriesLifeAreaRef: segmentArea,
+    } as const satisfies TemporalTimelineItem;
+
+    expect(canonicalItemLifeAreaGroup(item, assignments)).toBe(segmentArea);
+    expect(
+      canonicalItemLifeAreaGroup(
+        { ...item, lifeAreaOverridePresent: true, lifeAreaOverrideRef: localArea },
+        assignments,
+      ),
+    ).toBe(localArea);
+    expect(
+      canonicalItemLifeAreaGroup(
+        { ...item, lifeAreaOverridePresent: true, lifeAreaOverrideRef: null },
+        assignments,
+      ),
+    ).toBe(LEGACY_UNASSIGNED_GROUP);
+    expect(
+      canonicalItemLifeAreaGroup(
+        { ...item, seriesLifeAreaRef: null },
+        assignments,
+      ),
+    ).toBe(LEGACY_UNASSIGNED_GROUP);
+    expect(
+      canonicalItemLifeAreaGroup(
+        { ...item, seriesLifeAreaPresent: false, seriesLifeAreaRef: null },
+        assignments,
+      ),
+    ).toBe(previousArea);
   });
 
   it('keeps unassigned grouping neutral while retaining each item color', () => {

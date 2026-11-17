@@ -216,6 +216,8 @@ class TimelineScheduledEventResponse(BaseModel):
     title: str
     life_area_override_present: bool = False
     life_area_override_ref: UUID | None = None
+    series_life_area_present: bool = False
+    series_life_area_ref: UUID | None = None
     temporal_form: Literal["floating_local"] = "floating_local"
     starts_local_at: LocalDateTimeText
     ends_local_at: LocalDateTimeText
@@ -233,6 +235,8 @@ class TimelineDateSpanEventResponse(BaseModel):
     title: str
     life_area_override_present: bool = False
     life_area_override_ref: UUID | None = None
+    series_life_area_present: bool = False
+    series_life_area_ref: UUID | None = None
     temporal_form: Literal["date_span"] = "date_span"
     start_date: date
     end_date_exclusive: date
@@ -250,6 +254,8 @@ class TimelineNamedZoneLocalEventResponse(BaseModel):
     title: str
     life_area_override_present: bool = False
     life_area_override_ref: UUID | None = None
+    series_life_area_present: bool = False
+    series_life_area_ref: UUID | None = None
     temporal_form: Literal["named_zone_local"] = "named_zone_local"
     starts_local_at: LocalDateTimeText
     ends_local_at: LocalDateTimeText
@@ -272,6 +278,8 @@ class TimelineAbsoluteEventResponse(BaseModel):
     title: str
     life_area_override_present: bool = False
     life_area_override_ref: UUID | None = None
+    series_life_area_present: bool = False
+    series_life_area_ref: UUID | None = None
     temporal_form: Literal["absolute"] = "absolute"
     starts_at: datetime
     ends_at: datetime
@@ -291,6 +299,8 @@ class TimelineCoarseLocalPeriodEventResponse(BaseModel):
     title: str
     life_area_override_present: bool = False
     life_area_override_ref: UUID | None = None
+    series_life_area_present: bool = False
+    series_life_area_ref: UUID | None = None
     temporal_form: Literal["coarse_local_period"] = "coarse_local_period"
     local_date: date
     period: Literal["morning", "afternoon", "evening"]
@@ -419,6 +429,8 @@ class TimelineScheduledOccurrenceResponse(BaseModel):
     coordinate: TimelineOccurrenceCoordinateResponse | None
     life_area_override_present: bool = False
     life_area_override_ref: UUID | None = None
+    series_life_area_present: bool = False
+    series_life_area_ref: UUID | None = None
     schedule_ref: UUID
     placement_material_state_ref: UUID
     placement: TimelineOccurrencePlacementResponse
@@ -435,6 +447,8 @@ class TimelineExpectedOccurrenceResponse(BaseModel):
     coordinate: TimelineOccurrenceCoordinateResponse
     life_area_override_present: bool = False
     life_area_override_ref: UUID | None = None
+    series_life_area_present: bool = False
+    series_life_area_ref: UUID | None = None
 
 
 TimelineItemResponse = (
@@ -946,6 +960,8 @@ def _timeline_event_item_response(
         "title": item.title,
         "life_area_override_present": item.life_area_override_present,
         "life_area_override_ref": item.life_area_override_ref,
+        "series_life_area_present": item.series_life_area_present,
+        "series_life_area_ref": item.series_life_area_ref,
     }
     if isinstance(item, TimelineFloatingLocalEventItem):
         return TimelineScheduledEventResponse(
@@ -1069,6 +1085,8 @@ def _timeline_item_response(item: TimelineItem) -> TimelineItemResponse:
             coordinate=_timeline_occurrence_coordinate_response(item.coordinate),
             life_area_override_present=item.life_area_override_present,
             life_area_override_ref=item.life_area_override_ref,
+            series_life_area_present=item.series_life_area_present,
+            series_life_area_ref=item.series_life_area_ref,
         )
     if isinstance(item, TimelineScheduledOccurrenceItem):
         return TimelineScheduledOccurrenceResponse(
@@ -1078,6 +1096,8 @@ def _timeline_item_response(item: TimelineItem) -> TimelineItemResponse:
             title=item.title,
             life_area_override_present=item.life_area_override_present,
             life_area_override_ref=item.life_area_override_ref,
+            series_life_area_present=item.series_life_area_present,
+            series_life_area_ref=item.series_life_area_ref,
             coordinate=(
                 _timeline_occurrence_coordinate_response(item.coordinate)
                 if item.coordinate is not None

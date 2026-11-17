@@ -395,6 +395,8 @@ describe('remote temporal Timeline data source', () => {
                 end_date_exclusive: '2026-09-08',
                 life_area_override_present: true,
                 life_area_override_ref: area,
+                series_life_area_present: true,
+                series_life_area_ref: area,
               },
               {
                 kind: 'scheduled_occurrence',
@@ -413,6 +415,8 @@ describe('remote temporal Timeline data source', () => {
                 },
                 life_area_override_present: true,
                 life_area_override_ref: null,
+                series_life_area_present: true,
+                series_life_area_ref: area,
               },
               {
                 kind: 'expected_occurrence',
@@ -430,6 +434,8 @@ describe('remote temporal Timeline data source', () => {
                 },
                 life_area_override_present: false,
                 life_area_override_ref: null,
+                series_life_area_present: true,
+                series_life_area_ref: area,
               },
             ]),
           ),
@@ -456,6 +462,11 @@ describe('remote temporal Timeline data source', () => {
       { kind: 'scheduled_occurrence', present: true, ref: null },
       { kind: 'expected_occurrence', present: false, ref: null },
     ]);
+    expect(
+      window.items.map((item) =>
+        'seriesLifeAreaRef' in item ? item.seriesLifeAreaRef : null,
+      ),
+    ).toEqual([area, area, area]);
   });
 
   // A detached area must not be accepted if the server falsely claims an
