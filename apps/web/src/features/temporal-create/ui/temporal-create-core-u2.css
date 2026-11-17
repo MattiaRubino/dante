@@ -171,14 +171,14 @@
   .temporal-create-timezone-trigger {
   display: inline-flex;
   width: 100% !important;
-  min-height: 42px;
-  height: 42px !important;
+  min-height: var(--dante-temporal-control-height);
+  height: auto !important;
   align-items: center;
   justify-content: flex-start;
   gap: 0;
-  padding: 0 12px;
+  padding: 8px 12px;
   color: var(--dante-semantic-color-home-text-secondary, #b7c0cf);
-  font-size: 12px;
+  font-size: var(--dante-temporal-form-text-size);
   text-align: left;
 }
 
@@ -187,7 +187,7 @@
   .temporal-create-timezone-divider {
   align-self: stretch;
   width: 1px;
-  margin: 8px 12px;
+  margin: 2px 12px;
   background: var(
     --dante-semantic-color-home-border-subtle,
     rgba(255, 255, 255, 0.09)
@@ -199,6 +199,9 @@
   .temporal-create-timezone-label {
   flex: 1;
   min-width: 0;
+  overflow: visible;
+  text-overflow: clip;
+  white-space: normal;
 }
 
 .temporal-create-composer.is-advanced

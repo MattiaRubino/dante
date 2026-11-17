@@ -467,7 +467,8 @@ export function ActivityEditPanel({
   const [removedObjectives, setRemovedObjectives] = useState<string[]>([]);
   const [objectivePending, setObjectivePending] = useState(false);
   const [objectiveError, setObjectiveError] = useState('');
-  const [deletingObjective, setDeletingObjective] = useState<ObjectiveView | null>(null);
+  const [deletingObjective, setDeletingObjective] =
+    useState<ObjectiveView | null>(null);
   const [objectiveDeletePending, setObjectiveDeletePending] = useState(false);
   const [correctingObjective, setCorrectingObjective] =
     useState<ObjectiveView | null>(null);
@@ -976,9 +977,14 @@ export function ActivityEditPanel({
 
   const requestRecordedObjectiveDeletion = (objective: ObjectiveView) => {
     if (
-      pending || planPending || objectivePending || objectiveDeletePending ||
-      !objective.observationRef || !objective.evaluationStateRef
-    ) return;
+      pending ||
+      planPending ||
+      objectivePending ||
+      objectiveDeletePending ||
+      !objective.observationRef ||
+      !objective.evaluationStateRef
+    )
+      return;
     // Removing one accepted result is independent of unfinished
     // Objective drafts or other pending edits to this form.
     setObjectiveError('');
@@ -987,32 +993,45 @@ export function ActivityEditPanel({
 
   const confirmRecordedObjectiveDeletion = () => {
     if (
-      !deletingObjective?.evaluationStateRef || !settings ||
+      !deletingObjective?.evaluationStateRef ||
+      !settings ||
       objectiveDeletePending
-    ) return;
+    )
+      return;
     const objective = deletingObjective;
     setObjectiveDeletePending(true);
     setObjectiveError('');
     void objectiveSource
       .deleteRecordedResult(
-        objective.objectiveRef, objective.evaluationStateRef!,
+        objective.objectiveRef,
+        objective.evaluationStateRef!,
       )
-      .then(() => settingsSource.refreshObjectives(profile.activityRef, settings))
+      .then(() =>
+        settingsSource.refreshObjectives(profile.activityRef, settings),
+      )
       .then((fresh) => {
         const restored = fresh.objectives.find(
           (item) => item.objectiveRef === objective.objectiveRef,
         );
-        if (!restored || restored.observationRef || restored.evaluationStateRef) {
-          throw new Error('Registrazione eliminata, ma rilettura non coerente. Riapri Modifica.');
+        if (
+          !restored ||
+          restored.observationRef ||
+          restored.evaluationStateRef
+        ) {
+          throw new Error(
+            'Registrazione eliminata, ma rilettura non coerente. Riapri Modifica.',
+          );
         }
         setSettings(fresh);
         // Only refresh the affected accepted Objective. Preserve other
         // unsaved new/edited/removal drafts and their operation identities.
-        setObjectiveRows((rows) => rows.map((row) =>
-          row.objectiveRef === objective.objectiveRef
-            ? existingObjectiveDraft(restored)
-            : row,
-        ));
+        setObjectiveRows((rows) =>
+          rows.map((row) =>
+            row.objectiveRef === objective.objectiveRef
+              ? existingObjectiveDraft(restored)
+              : row,
+          ),
+        );
         setCorrectingObjective(null);
         setDeletingObjective(null);
         correctionOperation.current = null;
@@ -2420,13 +2439,19 @@ export function ActivityEditPanel({
                         row={row}
                         index={index}
                         total={visible.length}
-                        disabled={pending || planPending || objectivePending || objectiveDeletePending}
+                        disabled={
+                          pending ||
+                          planPending ||
+                          objectivePending ||
+                          objectiveDeletePending
+                        }
                         onInspect={() => inspectObjective(row)}
                         onCorrectRecorded={() => {
                           if (row.original) startResultCorrection(row.original);
                         }}
                         onDeleteRecorded={() => {
-                          if (row.original) requestRecordedObjectiveDeletion(row.original);
+                          if (row.original)
+                            requestRecordedObjectiveDeletion(row.original);
                         }}
                         onChange={(patch) => patchObjective(row.id, patch)}
                         onMove={(direction) => moveObjective(row.id, direction)}
@@ -2660,7 +2685,9 @@ export function ActivityEditPanel({
       >
         <button
           type="button"
-          disabled={pending || planPending || objectivePending || objectiveDeletePending}
+          disabled={
+            pending || planPending || objectivePending || objectiveDeletePending
+          }
           onClick={requestClose}
         >
           Annulla

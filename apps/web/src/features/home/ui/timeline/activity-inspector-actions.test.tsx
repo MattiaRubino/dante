@@ -1189,20 +1189,56 @@ describe('Objective correction in Activity Editor', () => {
     loadSettings.mockResolvedValueOnce({
       ...currentSettings,
       objectives: [
-        { ...objective, objectiveRef: 'b1', label: 'Sì o no', resultKind: 'boolean',
-          comparatorCode: null, targetValue: null, targetMin: null, targetMax: null,
-          unitCode: null, observedBoolean: true, observedNumeric: null,
-          presentationOrder: 0 },
-        { ...objective, objectiveRef: 'q1', label: 'Mele', targetValue: 12,
-          observedNumeric: 123, unitCode: null, presentationOrder: 1 },
-        { ...objective, objectiveRef: 'v1', label: 'Valutazione',
-          resultKind: 'qualitative', comparatorCode: null, targetValue: null,
-          targetMin: null, targetMax: null, unitCode: null, observedNumeric: null,
-          qualitativeCode: 'satisfied', presentationOrder: 2 },
-        { ...objective, objectiveRef: 'r1', label: 'Intervallo',
-          resultKind: 'range', comparatorCode: 'between', targetValue: null,
-          targetMin: 12, targetMax: 123, observedNumeric: 1333, unitCode: null,
-          presentationOrder: 3 },
+        {
+          ...objective,
+          objectiveRef: 'b1',
+          label: 'Sì o no',
+          resultKind: 'boolean',
+          comparatorCode: null,
+          targetValue: null,
+          targetMin: null,
+          targetMax: null,
+          unitCode: null,
+          observedBoolean: true,
+          observedNumeric: null,
+          presentationOrder: 0,
+        },
+        {
+          ...objective,
+          objectiveRef: 'q1',
+          label: 'Mele',
+          targetValue: 12,
+          observedNumeric: 123,
+          unitCode: null,
+          presentationOrder: 1,
+        },
+        {
+          ...objective,
+          objectiveRef: 'v1',
+          label: 'Valutazione',
+          resultKind: 'qualitative',
+          comparatorCode: null,
+          targetValue: null,
+          targetMin: null,
+          targetMax: null,
+          unitCode: null,
+          observedNumeric: null,
+          qualitativeCode: 'satisfied',
+          presentationOrder: 2,
+        },
+        {
+          ...objective,
+          objectiveRef: 'r1',
+          label: 'Intervallo',
+          resultKind: 'range',
+          comparatorCode: 'between',
+          targetValue: null,
+          targetMin: 12,
+          targetMax: 123,
+          observedNumeric: 1333,
+          unitCode: null,
+          presentationOrder: 3,
+        },
       ],
     });
     const onSaved = vi.fn();
@@ -1217,14 +1253,18 @@ describe('Objective correction in Activity Editor', () => {
     await screen.findByRole('group', {
       name: 'Obiettivo registrato Sì o no',
     });
-    expect(screen.getAllByRole('group', {
-      name: /^Obiettivo registrato /,
-    })).toHaveLength(4);
+    expect(
+      screen.getAllByRole('group', {
+        name: /^Obiettivo registrato /,
+      }),
+    ).toHaveLength(4);
     await submitEditor();
     await waitFor(() => expect(onSaved).toHaveBeenCalledWith(profile));
     expect(applyAtomicEdit).not.toHaveBeenCalled();
     expect(saveCore).not.toHaveBeenCalled();
-    expect(screen.queryByText('One or more request fields are invalid.')).toBeNull();
+    expect(
+      screen.queryByText('One or more request fields are invalid.'),
+    ).toBeNull();
   });
 
   it('locks a registered Activity Objective, confirms physical deletion and restores Edit', async () => {
@@ -1251,42 +1291,62 @@ describe('Objective correction in Activity Editor', () => {
       name: 'Obiettivo registrato Corsa 10 km',
     });
     expect(within(recorded).getByText('Risultato: 8 km')).toBeTruthy();
-    expect(screen.queryByRole('textbox', { name: 'Nome obiettivo' })).toBeNull();
+    expect(
+      screen.queryByRole('textbox', { name: 'Nome obiettivo' }),
+    ).toBeNull();
     // A half-written new Objective is not a prerequisite for deleting an
     // unrelated confirmed result; its draft must survive the readback.
     fireEvent.click(screen.getByRole('button', { name: '+ Obiettivo' }));
     const unfinished = screen.getByRole('textbox', { name: 'Nome obiettivo' });
     expect(unfinished).toHaveProperty('value', '');
-    fireEvent.click(within(recorded).getByRole('button', {
-      name: 'Elimina registrazione',
-    }));
+    fireEvent.click(
+      within(recorded).getByRole('button', {
+        name: 'Elimina registrazione',
+      }),
+    );
     const dialog = await screen.findByRole('alertdialog', {
       name: 'Eliminare la registrazione?',
     });
     fireEvent.click(within(dialog).getByRole('button', { name: 'Annulla' }));
     expect(deleteRecordedResult).not.toHaveBeenCalled();
-    fireEvent.click(within(recorded).getByRole('button', {
-      name: 'Elimina registrazione',
-    }));
-    fireEvent.click(within(screen.getByRole('alertdialog', {
-      name: 'Eliminare la registrazione?',
-    })).getByRole('button', { name: 'Sì, elimina' }));
+    fireEvent.click(
+      within(recorded).getByRole('button', {
+        name: 'Elimina registrazione',
+      }),
+    );
+    fireEvent.click(
+      within(
+        screen.getByRole('alertdialog', {
+          name: 'Eliminare la registrazione?',
+        }),
+      ).getByRole('button', { name: 'Sì, elimina' }),
+    );
     await waitFor(() => {
-      expect(screen.getByRole('alert').textContent)
-        .toContain('Registrazione cambiata.');
+      expect(screen.getByRole('alert').textContent).toContain(
+        'Registrazione cambiata.',
+      );
     });
     expect(deleteRecordedResult).toHaveBeenCalledTimes(1);
-    expect(screen.getByRole('textbox', { name: 'Nome obiettivo' }))
-      .toHaveProperty('value', '');
-    expect(screen.getByRole('group', {
-      name: 'Obiettivo registrato Corsa 10 km',
-    })).toBeTruthy();
-    fireEvent.click(within(recorded).getByRole('button', {
-      name: 'Elimina registrazione',
-    }));
-    fireEvent.click(within(screen.getByRole('alertdialog', {
-      name: 'Eliminare la registrazione?',
-    })).getByRole('button', { name: 'Sì, elimina' }));
+    expect(
+      screen.getByRole('textbox', { name: 'Nome obiettivo' }),
+    ).toHaveProperty('value', '');
+    expect(
+      screen.getByRole('group', {
+        name: 'Obiettivo registrato Corsa 10 km',
+      }),
+    ).toBeTruthy();
+    fireEvent.click(
+      within(recorded).getByRole('button', {
+        name: 'Elimina registrazione',
+      }),
+    );
+    fireEvent.click(
+      within(
+        screen.getByRole('alertdialog', {
+          name: 'Eliminare la registrazione?',
+        }),
+      ).getByRole('button', { name: 'Sì, elimina' }),
+    );
     await waitFor(() => {
       expect(deleteRecordedResult).toHaveBeenCalledTimes(2);
       expect(deleteRecordedResult).toHaveBeenLastCalledWith(
@@ -1294,13 +1354,16 @@ describe('Objective correction in Activity Editor', () => {
         objective.evaluationStateRef,
       );
       expect(
-        screen.getAllByRole('textbox', { name: 'Nome obiettivo' })
+        screen
+          .getAllByRole('textbox', { name: 'Nome obiettivo' })
           .map((input) => (input as HTMLInputElement).value),
       ).toEqual(['Corsa 10 km', '']);
     });
-    expect(screen.queryByRole('group', {
-      name: 'Obiettivo registrato Corsa 10 km',
-    })).toBeNull();
+    expect(
+      screen.queryByRole('group', {
+        name: 'Obiettivo registrato Corsa 10 km',
+      }),
+    ).toBeNull();
     expect(reviseDefinition).not.toHaveBeenCalled();
   });
 
@@ -1583,9 +1646,7 @@ describe('Activity Inspector', () => {
         onCancel={() => undefined}
       />,
     );
-    fireEvent.click(
-      await screen.findByRole('button', { name: '+ Obiettivo' }),
-    );
+    fireEvent.click(await screen.findByRole('button', { name: '+ Obiettivo' }));
     fireEvent.change(screen.getByRole('textbox', { name: 'Nome obiettivo' }), {
       target: { value: 'Percorrere 10 km' },
     });
@@ -1855,17 +1916,19 @@ describe('Activity Inspector', () => {
   it('saves an Activity time-zone change with the existing local hours', async () => {
     const settings = {
       ...currentSettings,
-      schedules: [{
-        scheduleRef: 'envelope',
-        role: 'envelope',
-        name: null,
-        order: 0,
-        placementStateRef: 'state-0',
-        temporalForm: 'named_zone_local',
-        start: '2026-10-09T09:00:00',
-        end: '2026-10-09T12:00:00',
-        zoneId: 'Europe/Rome',
-      }],
+      schedules: [
+        {
+          scheduleRef: 'envelope',
+          role: 'envelope',
+          name: null,
+          order: 0,
+          placementStateRef: 'state-0',
+          temporalForm: 'named_zone_local',
+          start: '2026-10-09T09:00:00',
+          end: '2026-10-09T12:00:00',
+          zoneId: 'Europe/Rome',
+        },
+      ],
     };
     loadSettings.mockResolvedValueOnce(settings);
     render(

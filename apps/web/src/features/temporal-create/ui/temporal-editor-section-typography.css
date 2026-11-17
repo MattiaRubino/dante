@@ -1,6 +1,10 @@
 /* Shared advanced authoring typography; no impact on Timeline cards.
  * Sessioni attività and Scaletta headings stay conditional on the first row. */
-:is(.temporal-create-composer.is-advanced, .timeline-activity-editor, .timeline-event-modal--edit)
+:is(
+    .temporal-create-composer.is-advanced,
+    .timeline-activity-editor,
+    .timeline-event-modal--edit
+  )
   .temporal-editor-section-heading.temporal-editor-section-heading,
 .timeline-event-modal--edit
   .timeline-activity-editor__body
@@ -13,7 +17,11 @@
   text-transform: none;
 }
 
-:is(.temporal-create-composer.is-advanced, .timeline-activity-editor, .timeline-event-modal--edit)
+:is(
+    .temporal-create-composer.is-advanced,
+    .timeline-activity-editor,
+    .timeline-event-modal--edit
+  )
   .temporal-create-description-section
   h3 {
   color: var(--dante-semantic-color-home-text-primary, #f1f5f7);
@@ -22,7 +30,11 @@
   line-height: 1.45;
 }
 
-:is(.temporal-create-composer.is-advanced, .timeline-activity-editor, .timeline-event-modal--edit)
+:is(
+    .temporal-create-composer.is-advanced,
+    .timeline-activity-editor,
+    .timeline-event-modal--edit
+  )
   :is(
     .temporal-create-tree-add,
     .temporal-create-objectives__add,
@@ -35,7 +47,11 @@
   font-size: var(--dante-temporal-action-text-size);
 }
 
-:is(.temporal-create-composer.is-advanced, .timeline-activity-editor, .timeline-event-modal--edit)
+:is(
+    .temporal-create-composer.is-advanced,
+    .timeline-activity-editor,
+    .timeline-event-modal--edit
+  )
   :is(
     .temporal-create-tree-row__actions button,
     .temporal-create-event-agenda__actions button,
@@ -46,7 +62,11 @@
   font-size: var(--dante-temporal-action-text-size);
 }
 
-:is(.temporal-create-composer.is-advanced, .timeline-activity-editor, .timeline-event-modal--edit)
+:is(
+    .temporal-create-composer.is-advanced,
+    .timeline-activity-editor,
+    .timeline-event-modal--edit
+  )
   :is(
     .temporal-create-event-agenda__part > input,
     .temporal-create-event-participants__row,
@@ -57,7 +77,11 @@
   font-size: var(--dante-temporal-form-text-size);
 }
 
-:is(.temporal-create-composer.is-advanced, .timeline-activity-editor, .timeline-event-modal--edit)
+:is(
+    .temporal-create-composer.is-advanced,
+    .timeline-activity-editor,
+    .timeline-event-modal--edit
+  )
   .temporal-create-event-participants__heading
   span {
   font-size: var(--dante-temporal-form-helper-size);
@@ -65,7 +89,11 @@
 }
 
 @media (max-width: 620px) {
-:is(.temporal-create-composer.is-advanced, .timeline-activity-editor, .timeline-event-modal--edit)
+  :is(
+      .temporal-create-composer.is-advanced,
+      .timeline-activity-editor,
+      .timeline-event-modal--edit
+    )
     :is(
       .temporal-create-tree-add,
       .temporal-create-objectives__add,
