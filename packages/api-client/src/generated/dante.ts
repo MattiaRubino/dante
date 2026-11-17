@@ -107,6 +107,8 @@ import type {
   ObjectiveInputConfirm,
   ObjectiveInputDraftSave,
   ObjectiveInputDraftView,
+  ObjectiveRecordedResultDeletionCommand,
+  ObjectiveRecordedResultDeletionResponse,
   ObjectiveResponse,
   ObjectiveResultCommand,
   ObjectiveResultCorrectionCommand,
@@ -11059,6 +11061,81 @@ export const temporalReviseObjectiveDefinition = async (
     status: res.status,
     headers: res.headers,
   } as temporalReviseObjectiveDefinitionResponse;
+};
+
+export type temporalDeleteRecordedObjectiveResultResponse200 = {
+  data: ObjectiveRecordedResultDeletionResponse;
+  status: 200;
+};
+
+export type temporalDeleteRecordedObjectiveResultResponse422 = {
+  data: HTTPValidationError;
+  status: 422;
+};
+
+export type temporalDeleteRecordedObjectiveResultResponseSuccess =
+  temporalDeleteRecordedObjectiveResultResponse200 & {
+    headers: Headers;
+  };
+export type temporalDeleteRecordedObjectiveResultResponseError =
+  temporalDeleteRecordedObjectiveResultResponse422 & {
+    headers: Headers;
+  };
+
+export type temporalDeleteRecordedObjectiveResultResponse =
+  | temporalDeleteRecordedObjectiveResultResponseSuccess
+  | temporalDeleteRecordedObjectiveResultResponseError;
+
+export const getTemporalDeleteRecordedObjectiveResultUrl = (
+  objectiveRef: string,
+) => {
+  return `/api/v1/temporal/objectives/${objectiveRef}/delete-recording`;
+};
+
+/**
+ * Physically remove this Objective's accepted Observation/Evaluation graph.
+ *
+ * Explicit destructive action, independent of editor Save. The Objective
+ * and its definition survive. CAS rejects any concurrent correction.
+ * @summary Delete Recorded Objective Result
+ */
+export const temporalDeleteRecordedObjectiveResult = async (
+  objectiveRef: string,
+  objectiveRecordedResultDeletionCommand: ObjectiveRecordedResultDeletionCommand,
+  options?: RequestInit,
+  fetchFn?: typeof globalThis.fetch,
+): Promise<temporalDeleteRecordedObjectiveResultResponse> => {
+  const getHeaders = (
+    h?: NonNullable<RequestInit['headers']>,
+  ): Record<string, string | readonly string[]> => {
+    if (!h) return {};
+    if (h instanceof Headers) return Object.fromEntries(h.entries());
+    if (Array.isArray(h)) return Object.fromEntries(h);
+    return h;
+  };
+  const res = await (fetchFn ?? fetch)(
+    getTemporalDeleteRecordedObjectiveResultUrl(objectiveRef),
+    {
+      ...options,
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        ...getHeaders(options?.headers),
+      },
+      body: JSON.stringify(objectiveRecordedResultDeletionCommand),
+    },
+  );
+
+  const body = [204, 205, 304].includes(res.status) ? null : await res.text();
+
+  const data: temporalDeleteRecordedObjectiveResultResponse['data'] = body
+    ? JSON.parse(body)
+    : {};
+  return {
+    data,
+    status: res.status,
+    headers: res.headers,
+  } as temporalDeleteRecordedObjectiveResultResponse;
 };
 
 export type temporalSaveObjectiveInputDraftResponse200 = {

@@ -9221,6 +9221,36 @@
         "title": "ObjectiveInputDraftView",
         "type": "object"
       },
+      "ObjectiveRecordedResultDeletionCommand": {
+        "additionalProperties": false,
+        "properties": {
+          "expected_evaluation_state_ref": {
+            "format": "uuid",
+            "title": "Expected Evaluation State Ref",
+            "type": "string"
+          }
+        },
+        "required": ["expected_evaluation_state_ref"],
+        "title": "ObjectiveRecordedResultDeletionCommand",
+        "type": "object"
+      },
+      "ObjectiveRecordedResultDeletionResponse": {
+        "additionalProperties": false,
+        "properties": {
+          "objective_ref": {
+            "format": "uuid",
+            "title": "Objective Ref",
+            "type": "string"
+          },
+          "removed_observations": {
+            "title": "Removed Observations",
+            "type": "integer"
+          }
+        },
+        "required": ["objective_ref", "removed_observations"],
+        "title": "ObjectiveRecordedResultDeletionResponse",
+        "type": "object"
+      },
       "ObjectiveResponse": {
         "additionalProperties": false,
         "properties": {
@@ -13423,6 +13453,18 @@
       "RecurringSeriesEditResponse": {
         "additionalProperties": false,
         "properties": {
+          "preserved_occurrence_ref": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Preserved Occurrence Ref"
+          },
           "protected_count": {
             "title": "Protected Count",
             "type": "integer"
@@ -13451,6 +13493,7 @@
           "recurrence_state_ref",
           "superseded_count",
           "protected_count",
+          "preserved_occurrence_ref",
           "replayed"
         ],
         "title": "RecurringSeriesEditResponse",
@@ -13509,6 +13552,28 @@
             "title": "Recurrence State Ref",
             "type": "string"
           },
+          "remaining_after_selected": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Remaining After Selected"
+          },
+          "remaining_including_selected": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Remaining Including Selected"
+          },
           "selected_date": {
             "format": "date",
             "title": "Selected Date",
@@ -13540,7 +13605,9 @@
           "selected_date",
           "description",
           "location",
-          "color_code"
+          "color_code",
+          "remaining_including_selected",
+          "remaining_after_selected"
         ],
         "title": "RecurringSeriesSourceResponse",
         "type": "object"
@@ -18474,6 +18541,23 @@
             "title": "Schedule Ref",
             "type": "string"
           },
+          "series_life_area_present": {
+            "default": false,
+            "title": "Series Life Area Present",
+            "type": "boolean"
+          },
+          "series_life_area_ref": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Series Life Area Ref"
+          },
           "starts_at": {
             "format": "date-time",
             "title": "Starts At",
@@ -18723,6 +18807,23 @@
             "title": "Schedule Ref",
             "type": "string"
           },
+          "series_life_area_present": {
+            "default": false,
+            "title": "Series Life Area Present",
+            "type": "boolean"
+          },
+          "series_life_area_ref": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Series Life Area Ref"
+          },
           "temporal_form": {
             "const": "coarse_local_period",
             "default": "coarse_local_period",
@@ -18902,6 +19003,23 @@
             "title": "Schedule Ref",
             "type": "string"
           },
+          "series_life_area_present": {
+            "default": false,
+            "title": "Series Life Area Present",
+            "type": "boolean"
+          },
+          "series_life_area_ref": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Series Life Area Ref"
+          },
           "start_date": {
             "format": "date",
             "title": "Start Date",
@@ -19028,6 +19146,23 @@
             "format": "uuid",
             "title": "Occurrence Ref",
             "type": "string"
+          },
+          "series_life_area_present": {
+            "default": false,
+            "title": "Series Life Area Present",
+            "type": "boolean"
+          },
+          "series_life_area_ref": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Series Life Area Ref"
           },
           "source_kind": {
             "enum": ["routine", "event"],
@@ -19244,6 +19379,23 @@
             "format": "uuid",
             "title": "Schedule Ref",
             "type": "string"
+          },
+          "series_life_area_present": {
+            "default": false,
+            "title": "Series Life Area Present",
+            "type": "boolean"
+          },
+          "series_life_area_ref": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Series Life Area Ref"
           },
           "starts_local_at": {
             "examples": ["2026-03-29T01:50:00"],
@@ -19499,6 +19651,23 @@
             "title": "Schedule Ref",
             "type": "string"
           },
+          "series_life_area_present": {
+            "default": false,
+            "title": "Series Life Area Present",
+            "type": "boolean"
+          },
+          "series_life_area_ref": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Series Life Area Ref"
+          },
           "starts_local_at": {
             "examples": ["2026-03-29T01:50:00"],
             "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d{1,6})?$",
@@ -19630,6 +19799,23 @@
             "format": "uuid",
             "title": "Schedule Ref",
             "type": "string"
+          },
+          "series_life_area_present": {
+            "default": false,
+            "title": "Series Life Area Present",
+            "type": "boolean"
+          },
+          "series_life_area_ref": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Series Life Area Ref"
           },
           "source_kind": {
             "enum": ["routine", "event"],
@@ -34696,6 +34882,58 @@
           }
         },
         "summary": "Revise Objective Definition",
+        "tags": ["temporal"]
+      }
+    },
+    "/api/v1/temporal/objectives/{objective_ref}/delete-recording": {
+      "post": {
+        "description": "Physically remove this Objective's accepted Observation/Evaluation graph.\n\nExplicit destructive action, independent of editor Save. The Objective\nand its definition survive. CAS rejects any concurrent correction.",
+        "operationId": "temporal_delete_recorded_objective_result",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "objective_ref",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Objective Ref",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ObjectiveRecordedResultDeletionCommand"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ObjectiveRecordedResultDeletionResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Delete Recorded Objective Result",
         "tags": ["temporal"]
       }
     },

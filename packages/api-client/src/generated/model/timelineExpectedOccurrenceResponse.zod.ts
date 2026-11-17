@@ -14,6 +14,7 @@ export const timelineExpectedOccurrenceResponseCoordinateFourPositionIndexMin = 
 
 export const timelineExpectedOccurrenceResponseKindDefault = `expected_occurrence`;
 export const timelineExpectedOccurrenceResponseLifeAreaOverridePresentDefault = false;
+export const timelineExpectedOccurrenceResponseSeriesLifeAreaPresentDefault = false;
 export const TimelineExpectedOccurrenceResponse = /*#__PURE__*/ zod.object({
   coordinate: /*#__PURE__*/ zod.union([
     /*#__PURE__*/ zod.object({
@@ -104,6 +105,16 @@ export const TimelineExpectedOccurrenceResponse = /*#__PURE__*/ zod.object({
     ]),
   ),
   occurrence_ref: /*#__PURE__*/ zod.uuid(),
+  series_life_area_present: /*#__PURE__*/ zod._default(
+    /*#__PURE__*/ zod.boolean(),
+    timelineExpectedOccurrenceResponseSeriesLifeAreaPresentDefault,
+  ),
+  series_life_area_ref: /*#__PURE__*/ zod.optional(
+    /*#__PURE__*/ zod.union([
+      /*#__PURE__*/ zod.uuid(),
+      /*#__PURE__*/ zod.null(),
+    ]),
+  ),
   source_kind: /*#__PURE__*/ zod.enum(['routine', 'event']),
   source_native_ref: /*#__PURE__*/ zod.uuid(),
   title: /*#__PURE__*/ zod.string(),

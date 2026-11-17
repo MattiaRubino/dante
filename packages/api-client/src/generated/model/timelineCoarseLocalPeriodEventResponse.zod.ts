@@ -8,6 +8,7 @@ import * as zod from 'zod/mini';
 
 export const timelineCoarseLocalPeriodEventResponseKindDefault = `scheduled_event`;
 export const timelineCoarseLocalPeriodEventResponseLifeAreaOverridePresentDefault = false;
+export const timelineCoarseLocalPeriodEventResponseSeriesLifeAreaPresentDefault = false;
 export const timelineCoarseLocalPeriodEventResponseTemporalFormDefault = `coarse_local_period`;
 export const TimelineCoarseLocalPeriodEventResponse = /*#__PURE__*/ zod
   .object({
@@ -32,6 +33,16 @@ export const TimelineCoarseLocalPeriodEventResponse = /*#__PURE__*/ zod
     period: /*#__PURE__*/ zod.enum(['morning', 'afternoon', 'evening']),
     placement_material_state_ref: /*#__PURE__*/ zod.uuid(),
     schedule_ref: /*#__PURE__*/ zod.uuid(),
+    series_life_area_present: /*#__PURE__*/ zod._default(
+      /*#__PURE__*/ zod.boolean(),
+      timelineCoarseLocalPeriodEventResponseSeriesLifeAreaPresentDefault,
+    ),
+    series_life_area_ref: /*#__PURE__*/ zod.optional(
+      /*#__PURE__*/ zod.union([
+        /*#__PURE__*/ zod.uuid(),
+        /*#__PURE__*/ zod.null(),
+      ]),
+    ),
     temporal_form: /*#__PURE__*/ zod
       ._default(
         /*#__PURE__*/ zod.literal('coarse_local_period'),

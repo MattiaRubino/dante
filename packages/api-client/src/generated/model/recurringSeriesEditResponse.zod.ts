@@ -7,6 +7,10 @@
 import * as zod from 'zod/mini';
 
 export const RecurringSeriesEditResponse = /*#__PURE__*/ zod.object({
+  preserved_occurrence_ref: /*#__PURE__*/ zod.union([
+    /*#__PURE__*/ zod.uuid(),
+    /*#__PURE__*/ zod.null(),
+  ]),
   protected_count: /*#__PURE__*/ zod.int(),
   recurrence_state_ref: /*#__PURE__*/ zod.uuid(),
   replayed: /*#__PURE__*/ zod.boolean(),

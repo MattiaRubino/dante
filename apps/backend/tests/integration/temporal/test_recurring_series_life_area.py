@@ -399,7 +399,8 @@ async def test_event_following_series_life_area_is_atomic_and_survives_reload(
             context=_context(actor),
         )
         projected = [
-            item for item in window.items
+            item
+            for item in window.items
             if isinstance(item, TimelineScheduledOccurrenceItem)
             and item.source_native_ref == created.source_ref
         ]

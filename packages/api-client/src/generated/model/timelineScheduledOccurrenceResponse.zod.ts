@@ -35,6 +35,7 @@ export const timelineScheduledOccurrenceResponsePlacementFourDisplayStartsLocalA
   new RegExp('^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d{1,6})?$');
 export const timelineScheduledOccurrenceResponsePlacementFourTemporalFormDefault = `absolute`;
 export const timelineScheduledOccurrenceResponsePlacementFiveTemporalFormDefault = `coarse_local_period`;
+export const timelineScheduledOccurrenceResponseSeriesLifeAreaPresentDefault = false;
 export const TimelineScheduledOccurrenceResponse = /*#__PURE__*/ zod.object({
   coordinate: /*#__PURE__*/ zod.union([
     /*#__PURE__*/ zod.union([
@@ -237,6 +238,16 @@ export const TimelineScheduledOccurrenceResponse = /*#__PURE__*/ zod.object({
   ]),
   placement_material_state_ref: /*#__PURE__*/ zod.uuid(),
   schedule_ref: /*#__PURE__*/ zod.uuid(),
+  series_life_area_present: /*#__PURE__*/ zod._default(
+    /*#__PURE__*/ zod.boolean(),
+    timelineScheduledOccurrenceResponseSeriesLifeAreaPresentDefault,
+  ),
+  series_life_area_ref: /*#__PURE__*/ zod.optional(
+    /*#__PURE__*/ zod.union([
+      /*#__PURE__*/ zod.uuid(),
+      /*#__PURE__*/ zod.null(),
+    ]),
+  ),
   source_kind: /*#__PURE__*/ zod.enum(['routine', 'event']),
   source_native_ref: /*#__PURE__*/ zod.uuid(),
   title: /*#__PURE__*/ zod.string(),

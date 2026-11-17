@@ -8,6 +8,7 @@ import * as zod from 'zod/mini';
 
 export const timelineDateSpanEventResponseKindDefault = `scheduled_event`;
 export const timelineDateSpanEventResponseLifeAreaOverridePresentDefault = false;
+export const timelineDateSpanEventResponseSeriesLifeAreaPresentDefault = false;
 export const timelineDateSpanEventResponseTemporalFormDefault = `date_span`;
 export const TimelineDateSpanEventResponse = /*#__PURE__*/ zod
   .object({
@@ -31,6 +32,16 @@ export const TimelineDateSpanEventResponse = /*#__PURE__*/ zod
     ),
     placement_material_state_ref: /*#__PURE__*/ zod.uuid(),
     schedule_ref: /*#__PURE__*/ zod.uuid(),
+    series_life_area_present: /*#__PURE__*/ zod._default(
+      /*#__PURE__*/ zod.boolean(),
+      timelineDateSpanEventResponseSeriesLifeAreaPresentDefault,
+    ),
+    series_life_area_ref: /*#__PURE__*/ zod.optional(
+      /*#__PURE__*/ zod.union([
+        /*#__PURE__*/ zod.uuid(),
+        /*#__PURE__*/ zod.null(),
+      ]),
+    ),
     start_date: /*#__PURE__*/ zod.iso.date(),
     temporal_form: /*#__PURE__*/ zod
       ._default(

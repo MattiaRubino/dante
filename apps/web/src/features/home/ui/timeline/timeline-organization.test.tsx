@@ -178,7 +178,11 @@ describe('Timeline organization groups', () => {
     expect(canonicalItemLifeAreaGroup(item, assignments)).toBe(segmentArea);
     expect(
       canonicalItemLifeAreaGroup(
-        { ...item, lifeAreaOverridePresent: true, lifeAreaOverrideRef: localArea },
+        {
+          ...item,
+          lifeAreaOverridePresent: true,
+          lifeAreaOverrideRef: localArea,
+        },
         assignments,
       ),
     ).toBe(localArea);

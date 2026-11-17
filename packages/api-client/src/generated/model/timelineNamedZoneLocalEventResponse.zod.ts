@@ -15,6 +15,7 @@ export const timelineNamedZoneLocalEventResponseEndsLocalAtRegExp = new RegExp(
 );
 export const timelineNamedZoneLocalEventResponseKindDefault = `scheduled_event`;
 export const timelineNamedZoneLocalEventResponseLifeAreaOverridePresentDefault = false;
+export const timelineNamedZoneLocalEventResponseSeriesLifeAreaPresentDefault = false;
 export const timelineNamedZoneLocalEventResponseStartsLocalAtRegExp =
   new RegExp('^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d{1,6})?$');
 export const timelineNamedZoneLocalEventResponseTemporalFormDefault = `named_zone_local`;
@@ -62,6 +63,16 @@ export const TimelineNamedZoneLocalEventResponse = /*#__PURE__*/ zod
     resolved_end_at: /*#__PURE__*/ zod.iso.datetime({ offset: true }),
     resolved_start_at: /*#__PURE__*/ zod.iso.datetime({ offset: true }),
     schedule_ref: /*#__PURE__*/ zod.uuid(),
+    series_life_area_present: /*#__PURE__*/ zod._default(
+      /*#__PURE__*/ zod.boolean(),
+      timelineNamedZoneLocalEventResponseSeriesLifeAreaPresentDefault,
+    ),
+    series_life_area_ref: /*#__PURE__*/ zod.optional(
+      /*#__PURE__*/ zod.union([
+        /*#__PURE__*/ zod.uuid(),
+        /*#__PURE__*/ zod.null(),
+      ]),
+    ),
     starts_local_at: /*#__PURE__*/ zod
       .string()
       .check(

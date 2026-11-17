@@ -224,6 +224,14 @@ export const RecurringSeriesSourceResponse = /*#__PURE__*/ zod.object({
     ),
   }),
   recurrence_state_ref: /*#__PURE__*/ zod.uuid(),
+  remaining_after_selected: /*#__PURE__*/ zod.union([
+    /*#__PURE__*/ zod.int(),
+    /*#__PURE__*/ zod.null(),
+  ]),
+  remaining_including_selected: /*#__PURE__*/ zod.union([
+    /*#__PURE__*/ zod.int(),
+    /*#__PURE__*/ zod.null(),
+  ]),
   selected_date: /*#__PURE__*/ zod.iso.date(),
   source_native_ref: /*#__PURE__*/ zod.uuid(),
   structure_snapshot: /*#__PURE__*/ zod.record(
