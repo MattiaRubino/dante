@@ -1918,63 +1918,84 @@ export function ActivityEditPanel({
               className="timeline-activity-editor__readback"
               aria-label="Programmazione attuale"
             >
-              <div
-                className="timeline-activity-editor__placement"
-                role="group"
-                aria-label="Collocazione attuale"
-              >
-                <button
-                  type="button"
-                  className={!allDay ? 'is-selected' : ''}
-                  aria-pressed={!allDay}
-                  disabled={!canReplan || planningLocked || planPending}
-                  onClick={() => {
-                    if (originalAllDay && envelope) {
-                      setPlanDraft((current) => ({
-                        ...current,
-                        [envelope.scheduleRef]: {
-                          start: `${dateSpanDraft.start}T09:00`,
-                          end: `${dateSpanDraft.start}T10:00`,
-                        },
-                      }));
-                    }
-                    setAllDay(false);
-                    setPlanOperation(null);
-                    setPlanError('');
-                  }}
+              <div className="temporal-time-mode-toolbar">
+                <div
+                  className="timeline-activity-editor__placement"
+                  role="group"
+                  aria-label="Collocazione attuale"
                 >
-                  Orario
-                </button>
-                <button
-                  type="button"
-                  className={allDay ? 'is-selected' : ''}
-                  aria-pressed={allDay}
-                  disabled={
-                    !canReplan || planningLocked || hasIntervals || planPending
-                  }
-                  onClick={() => {
-                    if (envelope) {
-                      setDateSpanDraft({
-                        start: (
-                          planDraft[envelope.scheduleRef]?.start ??
-                          envelope.start ??
-                          ''
-                        ).slice(0, 10),
-                        end: (
-                          planDraft[envelope.scheduleRef]?.end ??
-                          envelope.end ??
-                          ''
-                        ).slice(0, 10),
-                      });
+                  <button
+                    type="button"
+                    className={!allDay ? 'is-selected' : ''}
+                    aria-pressed={!allDay}
+                    disabled={!canReplan || planningLocked || planPending}
+                    onClick={() => {
+                      if (originalAllDay && envelope) {
+                        setPlanDraft((current) => ({
+                          ...current,
+                          [envelope.scheduleRef]: {
+                            start: `${dateSpanDraft.start}T09:00`,
+                            end: `${dateSpanDraft.start}T10:00`,
+                          },
+                        }));
+                      }
+                      setAllDay(false);
+                      setPlanOperation(null);
+                      setPlanError('');
+                    }}
+                  >
+                    Orario
+                  </button>
+                  <button
+                    type="button"
+                    className={allDay ? 'is-selected' : ''}
+                    aria-pressed={allDay}
+                    disabled={
+                      !canReplan ||
+                      planningLocked ||
+                      hasIntervals ||
+                      planPending
                     }
-                    setNewIntervals([]);
-                    setAllDay(true);
-                    setPlanOperation(null);
-                    setPlanError('');
-                  }}
-                >
-                  Tutto il giorno
-                </button>
+                    onClick={() => {
+                      if (envelope) {
+                        setDateSpanDraft({
+                          start: (
+                            planDraft[envelope.scheduleRef]?.start ??
+                            envelope.start ??
+                            ''
+                          ).slice(0, 10),
+                          end: (
+                            planDraft[envelope.scheduleRef]?.end ??
+                            envelope.end ??
+                            ''
+                          ).slice(0, 10),
+                        });
+                      }
+                      setNewIntervals([]);
+                      setAllDay(true);
+                      setPlanOperation(null);
+                      setPlanError('');
+                    }}
+                  >
+                    Tutto il giorno
+                  </button>
+                </div>
+                {!allDay &&
+                (envelope?.temporalForm === 'named_zone_local' ||
+                  originalAllDay) ? (
+                  <TemporalTimeZoneControl
+                    zoneId={selectedZoneId ?? originalZoneId}
+                    allowFloating={false}
+                    disabled={!canReplan || planningLocked || planPending}
+                    onChange={(zoneId) => {
+                      if (zoneId) {
+                        setSelectedZoneId(zoneId);
+                        setPlanOperation(null);
+                        setPlanError('');
+                      }
+                    }}
+                  />
+                ) : null}
               </div>
               {hasIntervals ? (
                 <p className="timeline-activity-editor__planning-hint">
@@ -1985,22 +2006,6 @@ export function ActivityEditPanel({
               <h3 className="timeline-activity-editor__visually-hidden">
                 Programmazione attuale
               </h3>
-              {!allDay &&
-              (envelope?.temporalForm === 'named_zone_local' ||
-                originalAllDay) ? (
-                <TemporalTimeZoneControl
-                  zoneId={selectedZoneId ?? originalZoneId}
-                  allowFloating={false}
-                  disabled={!canReplan || planningLocked || planPending}
-                  onChange={(zoneId) => {
-                    if (zoneId) {
-                      setSelectedZoneId(zoneId);
-                      setPlanOperation(null);
-                      setPlanError('');
-                    }
-                  }}
-                />
-              ) : null}
               {planError ? <p role="alert">{planError}</p> : null}
               {nameError ? <p role="alert">{nameError}</p> : null}
               {scopedDomainUnsupported && nameDirty ? (
@@ -2056,7 +2061,7 @@ export function ActivityEditPanel({
                         key={schedule.scheduleRef}
                         className="temporal-create-activity-interval"
                       >
-                        {hasIntervals || newIntervals.length > 0 ? (
+                        {!allDay ? (
                           <span className="temporal-create-activity-interval__label">
                             Intervallo {index + 1}
                           </span>

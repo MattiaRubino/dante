@@ -168,8 +168,9 @@
 
 .temporal-create-backdrop.is-advanced
   .temporal-create-composer__body
-  > .temporal-create-choice-group {
+  > .temporal-create-timing-section {
   order: -20;
+  width: 100%;
 }
 
 .temporal-create-backdrop.is-advanced .temporal-create-title-input {

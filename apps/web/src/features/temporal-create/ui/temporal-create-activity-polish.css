@@ -1,20 +1,54 @@
-/* Activity interval presentation belongs to the canonical interval authoring
-   surface. Keep the primary interval visually quiet until an additional
-   interval exists; once split, number every interval consistently. */
-
-/* Activity timing is a compact cluster, not a row that must be artificially
-   filled. Keep dates and times at deliberate product widths and let the final
-   grid track absorb unused modal space on the right. */
-.temporal-create-composer.is-advanced .temporal-create-u2-when {
-  grid-template-columns: 158px 150px 20px 150px 158px minmax(0, 1fr);
-  column-gap: 8px;
-  row-gap: 6px;
+/* The first and additional Activity intervals share one grid, with a reserved
+   remove track on the first row. The label is an actual row, not a pseudo
+   element that shifts individual controls out of alignment. */
+.temporal-create-composer.is-advanced
+  .temporal-create-timing-section.is-activity {
+  display: grid;
+  gap: 12px;
+  min-width: 0;
+  padding: 16px;
+  border: 1px solid var(--dante-semantic-color-home-border-subtle);
+  border-radius: 12px;
+  background: color-mix(
+    in srgb,
+    var(--dante-semantic-color-home-surface-control, #151f2e) 36%,
+    transparent
+  );
 }
 
-:is(.temporal-create-composer.is-advanced, .timeline-event-modal--edit)
-  .temporal-create-activity-interval__fields {
-  grid-template-columns: 158px 150px 20px 150px 158px 28px minmax(0, 1fr);
-  gap: 8px;
+.temporal-create-composer.is-advanced
+  .temporal-create-timing-section.is-activity
+  .temporal-create-u2-when.temporal-create-u2-when,
+.temporal-create-composer.is-advanced
+  .temporal-create-timing-section.is-activity
+  .temporal-create-activity-interval__fields.temporal-create-activity-interval__fields {
+  grid-template-columns:
+    minmax(110px, 1fr) minmax(150px, 1.4fr) 20px
+    minmax(150px, 1.4fr) minmax(110px, 1fr) 28px;
+  max-width: none;
+  column-gap: 8px;
+}
+
+.temporal-create-primary-interval-label {
+  grid-column: 1 / -1;
+  margin-left: 12px;
+  color: var(--dante-semantic-color-home-text-muted, #8f9bad);
+  font-size: var(--dante-temporal-form-helper-size);
+  font-weight: 700;
+  letter-spacing: 0.045em;
+  line-height: 1.2;
+  text-transform: uppercase;
+}
+
+.temporal-create-composer:not(.is-advanced)
+  .temporal-create-primary-interval-label {
+  display: none;
+}
+
+.temporal-create-composer.is-advanced
+  .temporal-create-timing-section.is-activity
+  .temporal-create-activity-interval__label {
+  margin-left: 12px;
 }
 
 .temporal-create-composer.is-advanced
@@ -50,51 +84,6 @@
   margin: 0 !important;
 }
 
-.temporal-create-composer.is-advanced
-  .temporal-create-u2-when:has(
-    > .temporal-create-activity-intervals .temporal-create-activity-interval
-  )
-  > .temporal-create-date-picker,
-.temporal-create-composer.is-advanced
-  .temporal-create-u2-when:has(
-    > .temporal-create-activity-intervals .temporal-create-activity-interval
-  )
-  > .temporal-create-time-control,
-.temporal-create-composer.is-advanced
-  .temporal-create-u2-when:has(
-    > .temporal-create-activity-intervals .temporal-create-activity-interval
-  )
-  > .temporal-create-time-band-control {
-  margin-top: 16px;
-}
-
-.temporal-create-composer.is-advanced
-  .temporal-create-u2-when:has(
-    > .temporal-create-activity-intervals .temporal-create-activity-interval
-  )
-  > .temporal-create-date-picker:has(+ .temporal-create-time-control)::before {
-  position: absolute;
-  top: -15px;
-  left: 2px;
-  color: var(--dante-semantic-color-home-text-muted, #8f9bad);
-  content: 'Intervallo 1';
-  font-size: 10px;
-  font-weight: 700;
-  letter-spacing: 0.045em;
-  line-height: 12px;
-  text-transform: uppercase;
-  white-space: nowrap;
-}
-
-html[lang^='en']
-  .temporal-create-composer.is-advanced
-  .temporal-create-u2-when:has(
-    > .temporal-create-activity-intervals .temporal-create-activity-interval
-  )
-  > .temporal-create-date-picker:has(+ .temporal-create-time-control)::before {
-  content: 'Interval 1';
-}
-
 :is(.temporal-create-composer.is-advanced, .timeline-event-modal--edit)
   .temporal-create-activity-intervals {
   gap: 12px;
@@ -111,7 +100,7 @@ html[lang^='en']
   .temporal-create-activity-interval__label {
   margin-left: 2px;
   color: var(--dante-semantic-color-home-text-muted, #8f9bad);
-  font-size: 10px;
+  font-size: var(--dante-temporal-form-helper-size);
   font-weight: 700;
   letter-spacing: 0.045em;
   line-height: 12px;
@@ -124,7 +113,7 @@ html[lang^='en']
   .temporal-create-activity-intervals
   > .temporal-create-activity-intervals__add {
   display: inline-flex;
-  min-height: 36px;
+  min-height: var(--dante-temporal-action-height);
   align-items: center;
   justify-self: start;
   gap: 6px;
@@ -138,9 +127,14 @@ html[lang^='en']
     var(--dante-semantic-color-home-surface-control, #151f2e) 68%,
     transparent
   ) !important;
-  font-size: 12px;
+  font-size: var(--dante-temporal-action-text-size);
   font-weight: 650;
   line-height: 1.2;
+}
+
+.temporal-create-timing-section.is-activity
+  .temporal-create-activity-intervals__add {
+  margin-left: 32px !important;
 }
 
 :is(.temporal-create-composer.is-advanced, .timeline-event-modal--edit)
@@ -173,6 +167,40 @@ html[lang^='en']
 }
 
 @media (max-width: 560px) {
+  .temporal-create-composer.is-advanced
+    .temporal-create-timing-section.is-activity
+    .temporal-create-u2-when.temporal-create-u2-when,
+  .temporal-create-composer.is-advanced
+    .temporal-create-timing-section.is-activity
+    .temporal-create-activity-interval__fields.temporal-create-activity-interval__fields {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) 28px;
+  }
+
+  .temporal-create-timing-section.is-activity
+    .temporal-create-u2-when
+    > .temporal-create-u2-date-field {
+    grid-column: 1;
+  }
+
+  .temporal-create-timing-section.is-activity
+    .temporal-create-u2-when
+    > .temporal-create-u2-date-field
+    + .temporal-create-time-control {
+    grid-column: 2;
+  }
+
+  .temporal-create-timing-section.is-activity
+    .temporal-create-u2-when
+    > .temporal-create-time-control:has([data-create-path='endTime']) {
+    grid-column: 1;
+  }
+
+  .temporal-create-timing-section.is-activity
+    .temporal-create-u2-when
+    > .temporal-create-date-picker {
+    grid-column: 2;
+  }
+
   :is(.temporal-create-composer.is-advanced, .timeline-event-modal--edit)
     .temporal-create-activity-interval__fields {
     grid-template-columns: repeat(2, minmax(0, 1fr)) 28px;

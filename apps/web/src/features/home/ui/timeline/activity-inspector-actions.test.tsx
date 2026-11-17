@@ -1942,6 +1942,9 @@ describe('Activity Inspector', () => {
     const zone = await screen.findByRole('button', {
       name: 'Fuso orario: Europe/Rome',
     });
+    expect(zone.closest('.temporal-time-mode-toolbar')).toBeTruthy();
+    expect(zone.textContent).not.toContain('Fuso orario');
+    expect(screen.getByText('Intervallo 1')).toBeTruthy();
     fireEvent.click(zone);
     fireEvent.click(screen.getByRole('button', { name: 'Europe/London' }));
     await submitEditor();

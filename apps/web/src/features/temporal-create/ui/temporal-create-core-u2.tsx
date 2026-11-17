@@ -838,266 +838,281 @@ export function TemporalCreateCoreFieldsU2({
         </div>
       </fieldset>
 
-      <fieldset
-        className="temporal-create-choice-group"
-        data-create-path="timeSemantics"
+      <div
+        className={`temporal-create-timing-section${fields.kind === 'activity' ? ' is-activity' : ''}`}
       >
-        <legend className="temporal-create-visually-hidden">
-          Collocazione
-        </legend>
-        <div className="temporal-create-choice-row">
-          <button
-            type="button"
-            role="radio"
-            aria-checked={fields.timeSemantics === 'timed'}
-            className={fields.timeSemantics === 'timed' ? 'is-active' : ''}
-            onClick={() => changeTimeSemantics('timed')}
+        <div className="temporal-time-mode-toolbar">
+          <fieldset
+            className="temporal-create-choice-group"
+            data-create-path="timeSemantics"
           >
-            Orario
-          </button>
-          <button
-            type="button"
-            role="radio"
-            aria-checked={fields.timeSemantics === 'all-day'}
-            className={fields.timeSemantics === 'all-day' ? 'is-active' : ''}
-            onClick={() => changeTimeSemantics('all-day')}
-          >
-            Tutto il giorno
-          </button>
-        </div>
-      </fieldset>
-      {renderError('timeSemantics')}
-
-      {fields.timeSemantics === 'timed' ? (
-        <div className="temporal-create-u2-when">
-          <TemporalTimeZoneControl
-            zoneId={fields.timeMode === 'floating' ? null : fields.timeZoneId}
-            italian={italian}
-            onChange={(zoneId) =>
-              onPatch(
-                zoneId === null
-                  ? { timeMode: 'floating' }
-                  : { timeMode: 'zoned', timeZoneId: zoneId },
-              )
-            }
-          />
-          {renderError('timeZoneId')}
-
-          <input
-            className="temporal-create-u2-date-bridge"
-            aria-hidden="true"
-            tabIndex={-1}
-            value={fields.date}
-            onChange={(event) => patchStartDate(event.currentTarget.value)}
-          />
-
-          <div
-            className="temporal-create-u2-date-field"
-            data-create-path="date"
-          >
-            <TemporalCreateDatePicker
-              label={italian ? 'Data inizio' : 'Start date'}
-              value={fields.date}
-              locale={locale}
-              onChange={patchStartDate}
-            />
-            {renderError('date')}
-          </div>
-
-          <TimeControl
-            label={italian ? 'Inizio' : 'Start'}
-            value={fields.startTime}
-            dataPath="startTime"
-            onChange={patchStartTime}
-            helper={renderError('startTime')}
-          />
-
-          <div
-            ref={timeBandRootRef}
-            className="temporal-create-time-band-control"
-          >
-            <button
-              type="button"
-              className="temporal-create-time-band-trigger"
-              aria-label="Fasce orarie"
-              aria-expanded={timeBandOpen}
-              onClick={() => setTimeBandOpen((current) => !current)}
-            >
-              <span aria-hidden="true">→</span>
-              <small aria-hidden="true">⌄</small>
-            </button>
-            {timeBandOpen ? (
-              <div
-                className="temporal-create-time-band-panel"
-                role="dialog"
-                aria-label="Fasce orarie"
+            <legend className="temporal-create-visually-hidden">
+              Collocazione
+            </legend>
+            <div className="temporal-create-choice-row">
+              <button
+                type="button"
+                role="radio"
+                aria-checked={fields.timeSemantics === 'timed'}
+                className={fields.timeSemantics === 'timed' ? 'is-active' : ''}
+                onClick={() => changeTimeSemantics('timed')}
               >
-                {TIME_BANDS.map((band) => (
+                Orario
+              </button>
+              <button
+                type="button"
+                role="radio"
+                aria-checked={fields.timeSemantics === 'all-day'}
+                className={
+                  fields.timeSemantics === 'all-day' ? 'is-active' : ''
+                }
+                onClick={() => changeTimeSemantics('all-day')}
+              >
+                Tutto il giorno
+              </button>
+            </div>
+          </fieldset>
+          {fields.timeSemantics === 'timed' ? (
+            <TemporalTimeZoneControl
+              zoneId={fields.timeMode === 'floating' ? null : fields.timeZoneId}
+              italian={italian}
+              onChange={(zoneId) =>
+                onPatch(
+                  zoneId === null
+                    ? { timeMode: 'floating' }
+                    : { timeMode: 'zoned', timeZoneId: zoneId },
+                )
+              }
+            />
+          ) : null}
+        </div>
+        {renderError('timeSemantics')}
+        {fields.timeSemantics === 'timed' ? renderError('timeZoneId') : null}
+
+        {fields.timeSemantics === 'timed' ? (
+          <div className="temporal-create-u2-when">
+            {fields.kind === 'activity' ? (
+              <span className="temporal-create-primary-interval-label">
+                {italian ? 'Intervallo 1' : 'Interval 1'}
+              </span>
+            ) : null}
+
+            <input
+              className="temporal-create-u2-date-bridge"
+              aria-hidden="true"
+              tabIndex={-1}
+              value={fields.date}
+              onChange={(event) => patchStartDate(event.currentTarget.value)}
+            />
+
+            <div
+              className="temporal-create-u2-date-field"
+              data-create-path="date"
+            >
+              <TemporalCreateDatePicker
+                label={italian ? 'Data inizio' : 'Start date'}
+                value={fields.date}
+                locale={locale}
+                onChange={patchStartDate}
+              />
+              {renderError('date')}
+            </div>
+
+            <TimeControl
+              label={italian ? 'Inizio' : 'Start'}
+              value={fields.startTime}
+              dataPath="startTime"
+              onChange={patchStartTime}
+              helper={renderError('startTime')}
+            />
+
+            <div
+              ref={timeBandRootRef}
+              className="temporal-create-time-band-control"
+            >
+              <button
+                type="button"
+                className="temporal-create-time-band-trigger"
+                aria-label="Fasce orarie"
+                aria-expanded={timeBandOpen}
+                onClick={() => setTimeBandOpen((current) => !current)}
+              >
+                <span aria-hidden="true">→</span>
+                <small aria-hidden="true">⌄</small>
+              </button>
+              {timeBandOpen ? (
+                <div
+                  className="temporal-create-time-band-panel"
+                  role="dialog"
+                  aria-label="Fasce orarie"
+                >
+                  {TIME_BANDS.map((band) => (
+                    <button
+                      key={band.key}
+                      type="button"
+                      onClick={() => applyTimeBand(band)}
+                    >
+                      <strong>{bandLabels[band.key]}</strong>
+                      <small>{`${band.start}–${band.end}`}</small>
+                    </button>
+                  ))}
+                </div>
+              ) : null}
+            </div>
+
+            <TimeControl
+              label={italian ? 'Fine' : 'End'}
+              value={calculatedEnd.time}
+              dataPath="endTime"
+              onChange={(endTime) => patchEnd(visibleEndDate, endTime)}
+              helper={
+                <>
+                  {temporalCreateDurationLabel(fields.durationMinutes)}
+                  {renderError('durationMinutes')}
+                </>
+              }
+            />
+
+            <TemporalCreateDatePicker
+              label={italian ? 'Data fine' : 'End date'}
+              align="end"
+              value={visibleEndDate}
+              min={fields.date}
+              locale={locale}
+              onChange={(date) => {
+                autoRolledEndDateRef.current = false;
+                patchEnd(date, calculatedEnd.time);
+              }}
+            />
+
+            {fields.kind === 'activity' &&
+            (!showCompactTimezone ||
+              authoringDraft.activityStructure.activityIntervals.length > 0) ? (
+              <div
+                className="temporal-create-activity-intervals"
+                data-create-activity-intervals
+                data-create-path="activityIntervals"
+              >
+                {authoringDraft.activityStructure.activityIntervals.map(
+                  (interval, index) => (
+                    <div
+                      className="temporal-create-activity-interval"
+                      key={interval.id}
+                    >
+                      <span className="temporal-create-activity-interval__label">
+                        {italian
+                          ? `Intervallo ${index + 2}`
+                          : `Interval ${index + 2}`}
+                      </span>
+                      <div className="temporal-create-activity-interval__fields">
+                        <TemporalCreateDatePicker
+                          label={italian ? 'Data inizio' : 'Start date'}
+                          value={interval.date}
+                          locale={locale}
+                          onChange={(date) =>
+                            updateActivityInterval(interval.id, { date })
+                          }
+                        />
+                        <TimeControl
+                          label={italian ? 'Inizio' : 'Start'}
+                          value={interval.startTime}
+                          dataPath={`activityIntervals.${interval.id}.startTime`}
+                          onChange={(startTime) =>
+                            updateActivityInterval(interval.id, { startTime })
+                          }
+                        />
+                        <span
+                          className="temporal-create-activity-interval__arrow"
+                          aria-hidden="true"
+                        >
+                          →
+                        </span>
+                        <TimeControl
+                          label={italian ? 'Fine' : 'End'}
+                          value={interval.endTime}
+                          dataPath={`activityIntervals.${interval.id}.endTime`}
+                          onChange={(endTime) =>
+                            updateActivityInterval(interval.id, { endTime })
+                          }
+                        />
+                        <TemporalCreateDatePicker
+                          label={italian ? 'Data fine' : 'End date'}
+                          align="end"
+                          value={interval.endDate}
+                          locale={locale}
+                          onChange={(endDate) =>
+                            updateActivityInterval(interval.id, { endDate })
+                          }
+                        />
+                        <button
+                          type="button"
+                          className="temporal-create-activity-interval__remove"
+                          aria-label={
+                            italian
+                              ? `Rimuovi intervallo ${index + 2}`
+                              : `Remove interval ${index + 2}`
+                          }
+                          onClick={() =>
+                            patchActivityIntervals(
+                              authoringDraft.activityStructure.activityIntervals.filter(
+                                (item) => item.id !== interval.id,
+                              ),
+                            )
+                          }
+                        >
+                          ×
+                        </button>
+                      </div>
+                    </div>
+                  ),
+                )}
+                {authoringDraft.activityStructure.activityIntervals.length <
+                99 ? (
                   <button
-                    key={band.key}
                     type="button"
-                    onClick={() => applyTimeBand(band)}
+                    className="temporal-create-activity-intervals__add"
+                    onClick={addActivityInterval}
                   >
-                    <strong>{bandLabels[band.key]}</strong>
-                    <small>{`${band.start}–${band.end}`}</small>
+                    <span aria-hidden="true">＋</span>{' '}
+                    {italian ? 'Aggiungi intervallo' : 'Add interval'}
                   </button>
-                ))}
+                ) : null}
               </div>
             ) : null}
           </div>
+        ) : null}
 
-          <TimeControl
-            label={italian ? 'Fine' : 'End'}
-            value={calculatedEnd.time}
-            dataPath="endTime"
-            onChange={(endTime) => patchEnd(visibleEndDate, endTime)}
-            helper={
-              <>
-                {temporalCreateDurationLabel(fields.durationMinutes)}
-                {renderError('durationMinutes')}
-              </>
-            }
-          />
-
-          <TemporalCreateDatePicker
-            label={italian ? 'Data fine' : 'End date'}
-            align="end"
-            value={visibleEndDate}
-            min={fields.date}
-            locale={locale}
-            onChange={(date) => {
-              autoRolledEndDateRef.current = false;
-              patchEnd(date, calculatedEnd.time);
-            }}
-          />
-
-          {fields.kind === 'activity' &&
-          (!showCompactTimezone ||
-            authoringDraft.activityStructure.activityIntervals.length > 0) ? (
+        {fields.timeSemantics === 'all-day' ? (
+          <div className="temporal-create-u2-all-day">
             <div
-              className="temporal-create-activity-intervals"
-              data-create-activity-intervals
-              data-create-path="activityIntervals"
+              className="temporal-create-u2-date-field"
+              data-create-path="date"
             >
-              {authoringDraft.activityStructure.activityIntervals.map(
-                (interval, index) => (
-                  <div
-                    className="temporal-create-activity-interval"
-                    key={interval.id}
-                  >
-                    <span className="temporal-create-activity-interval__label">
-                      {italian
-                        ? `Intervallo ${index + 2}`
-                        : `Interval ${index + 2}`}
-                    </span>
-                    <div className="temporal-create-activity-interval__fields">
-                      <TemporalCreateDatePicker
-                        label={italian ? 'Data inizio' : 'Start date'}
-                        value={interval.date}
-                        locale={locale}
-                        onChange={(date) =>
-                          updateActivityInterval(interval.id, { date })
-                        }
-                      />
-                      <TimeControl
-                        label={italian ? 'Inizio' : 'Start'}
-                        value={interval.startTime}
-                        dataPath={`activityIntervals.${interval.id}.startTime`}
-                        onChange={(startTime) =>
-                          updateActivityInterval(interval.id, { startTime })
-                        }
-                      />
-                      <span
-                        className="temporal-create-activity-interval__arrow"
-                        aria-hidden="true"
-                      >
-                        →
-                      </span>
-                      <TimeControl
-                        label={italian ? 'Fine' : 'End'}
-                        value={interval.endTime}
-                        dataPath={`activityIntervals.${interval.id}.endTime`}
-                        onChange={(endTime) =>
-                          updateActivityInterval(interval.id, { endTime })
-                        }
-                      />
-                      <TemporalCreateDatePicker
-                        label={italian ? 'Data fine' : 'End date'}
-                        align="end"
-                        value={interval.endDate}
-                        locale={locale}
-                        onChange={(endDate) =>
-                          updateActivityInterval(interval.id, { endDate })
-                        }
-                      />
-                      <button
-                        type="button"
-                        className="temporal-create-activity-interval__remove"
-                        aria-label={
-                          italian
-                            ? `Rimuovi intervallo ${index + 2}`
-                            : `Remove interval ${index + 2}`
-                        }
-                        onClick={() =>
-                          patchActivityIntervals(
-                            authoringDraft.activityStructure.activityIntervals.filter(
-                              (item) => item.id !== interval.id,
-                            ),
-                          )
-                        }
-                      >
-                        ×
-                      </button>
-                    </div>
-                  </div>
-                ),
-              )}
-              {authoringDraft.activityStructure.activityIntervals.length <
-              99 ? (
-                <button
-                  type="button"
-                  className="temporal-create-activity-intervals__add"
-                  onClick={addActivityInterval}
-                >
-                  <span aria-hidden="true">＋</span>{' '}
-                  {italian ? 'Aggiungi intervallo' : 'Add interval'}
-                </button>
-              ) : null}
+              <TemporalCreateDatePicker
+                label="Data inizio"
+                value={fields.date}
+                locale={locale}
+                onChange={patchAllDayStartDate}
+              />
+              {renderError('date')}
             </div>
-          ) : null}
-        </div>
-      ) : null}
-
-      {fields.timeSemantics === 'all-day' ? (
-        <div className="temporal-create-u2-all-day">
-          <div
-            className="temporal-create-u2-date-field"
-            data-create-path="date"
-          >
-            <TemporalCreateDatePicker
-              label="Data inizio"
-              value={fields.date}
-              locale={locale}
-              onChange={patchAllDayStartDate}
-            />
-            {renderError('date')}
+            <div
+              className="temporal-create-u2-date-field"
+              data-create-path="event.allDayEndDate"
+            >
+              <TemporalCreateDatePicker
+                label="Data fine"
+                align="end"
+                value={visibleAllDayEndDate}
+                min={fields.date}
+                locale={locale}
+                onChange={patchAllDayEndDate}
+              />
+              {renderError('event.allDayEndDate')}
+            </div>
           </div>
-          <div
-            className="temporal-create-u2-date-field"
-            data-create-path="event.allDayEndDate"
-          >
-            <TemporalCreateDatePicker
-              label="Data fine"
-              align="end"
-              value={visibleAllDayEndDate}
-              min={fields.date}
-              locale={locale}
-              onChange={patchAllDayEndDate}
-            />
-            {renderError('event.allDayEndDate')}
-          </div>
-        </div>
-      ) : null}
+        ) : null}
+      </div>
 
       {showRecurrence && fields.timeSemantics !== 'unscheduled' ? (
         <TemporalRecurrencePanel

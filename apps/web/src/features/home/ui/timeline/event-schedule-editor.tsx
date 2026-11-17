@@ -185,31 +185,35 @@ export function EventScheduleEditor({
       data-edit-invalid={!!error}
       disabled={disabled}
     >
-      <div className="timeline-event-schedule-editor__modes">
-        <button
-          type="button"
-          disabled={disabled}
-          className={draft.kind === 'timed' ? 'is-active' : ''}
-          onClick={() => update({ kind: 'timed' })}
-        >
-          Orario
-        </button>
-        <button
-          type="button"
-          disabled={disabled}
-          className={draft.kind === 'all-day' ? 'is-active' : ''}
-          onClick={() => update({ kind: 'all-day' })}
-        >
-          Tutto il giorno
-        </button>
-      </div>
-      {draft.kind === 'timed' ? (
-        <>
+      <div className="temporal-time-mode-toolbar">
+        <div className="timeline-event-schedule-editor__modes">
+          <button
+            type="button"
+            disabled={disabled}
+            className={draft.kind === 'timed' ? 'is-active' : ''}
+            onClick={() => update({ kind: 'timed' })}
+          >
+            Orario
+          </button>
+          <button
+            type="button"
+            disabled={disabled}
+            className={draft.kind === 'all-day' ? 'is-active' : ''}
+            onClick={() => update({ kind: 'all-day' })}
+          >
+            Tutto il giorno
+          </button>
+        </div>
+        {draft.kind === 'timed' ? (
           <TemporalTimeZoneControl
             zoneId={draft.zoneId}
             disabled={disabled}
             onChange={(zoneId) => update({ zoneId })}
           />
+        ) : null}
+      </div>
+      {draft.kind === 'timed' ? (
+        <>
           <div className="temporal-create-activity-interval__fields timeline-activity-editor__interval-fields">
             <TemporalCreateDatePicker
               label="Data inizio"

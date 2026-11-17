@@ -7,9 +7,12 @@ all 103 V2 cases were observed green in separate runs. The owner defers the
 expensive 142-case same-SHA run and proceeds to a manual product/layout review.
 This is sufficient to continue the current review, **not** a single-run E2E
 acceptance claim. The first approved layout pass standardizes full-width,
-editable time-zone controls and a configurable Create/Edit text/action scale;
-interval layout follows separately. Focused verification for this new pass is
-pending. The unfiltered Chromium inventory can be revisited after changes
+editable time-zone controls and a configurable Create/Edit text/action scale.
+The owner's subsequent visual review approved one bordered Activity timing
+section, a compact shared time-zone menu and aligned, numbered Activity
+intervals. Focused Web checks passed in scratch; owner-local real-app visual
+acceptance of this later layout is pending. The unfiltered Chromium inventory
+can be revisited after changes
 stabilize.
 
 This dated plan supersedes older `CURRENT`/ `NEXT` pointers below for the active candidate. Historical gates remain historical evidence. The user approves product behavior and any UI changes before implementation; this section schedules reviews, not new product semantics.

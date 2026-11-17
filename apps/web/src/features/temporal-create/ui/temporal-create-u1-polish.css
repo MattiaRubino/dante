@@ -150,16 +150,6 @@
   box-shadow: none;
 }
 
-.temporal-create-composer .temporal-create-timezone-trigger svg circle,
-.temporal-create-composer .temporal-create-timezone-current svg circle {
-  stroke: #35d5ff;
-}
-
-.temporal-create-composer .temporal-create-timezone-trigger svg path,
-.temporal-create-composer .temporal-create-timezone-current svg path {
-  stroke: #a78bfa;
-}
-
 .temporal-create-composer
   .temporal-create-time-band-trigger.temporal-create-time-band-trigger {
   width: 28px;

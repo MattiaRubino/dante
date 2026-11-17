@@ -438,7 +438,19 @@ describe('Temporal Create U1 top controls', () => {
     fireEvent.click(
       screen.getByRole('button', { name: /Fuso orario: Ora locale/ }),
     );
-    fireEvent.click(screen.getByRole('button', { name: 'Europe/Rome' }));
+    const zoneMenu = screen.getByRole('dialog', {
+      name: 'Scegli fuso orario',
+    });
+    fireEvent.change(
+      within(zoneMenu).getByRole('searchbox', { name: 'Cerca fuso orario' }),
+      { target: { value: 'Europe/Rome' } },
+    );
+    expect(
+      within(zoneMenu).queryByRole('button', { name: 'Africa/Abidjan' }),
+    ).toBeNull();
+    fireEvent.click(
+      within(zoneMenu).getByRole('button', { name: 'Europe/Rome' }),
+    );
     expect(
       screen.getByRole('button', { name: /Fuso orario: Europe\/Rome/ }),
     ).toBeTruthy();
@@ -523,9 +535,23 @@ describe('Temporal Create U1 top controls', () => {
       ).value,
     ).toBe('Nuova Area');
 
-    // Advanced owns the full timezone field and continues to edit the same
-    // timeMode/timeZoneId values as Quick.
-    expect(screen.getByRole('button', { name: /Fuso orario:/ })).toBeTruthy();
+    const timing = advancedComposer?.querySelector<HTMLElement>(
+      '.temporal-create-timing-section.is-activity',
+    );
+    if (!timing) throw new Error('Expected the Activity timing section.');
+    const zone = within(timing).getByRole('button', {
+      name: /Fuso orario:/,
+    });
+    expect(zone.closest('.temporal-time-mode-toolbar')).toBeTruthy();
+    expect(
+      zone.querySelector('.temporal-create-timezone-label')?.textContent,
+    ).toBeTruthy();
+    expect(zone.textContent).not.toContain('Fuso orario');
+    expect(within(timing).getByText('Intervallo 1')).toBeTruthy();
+    fireEvent.click(
+      within(timing).getByRole('button', { name: /Aggiungi intervallo/ }),
+    );
+    expect(within(timing).getByText('Intervallo 2')).toBeTruthy();
 
     // Reminder remains one primary Create control, not a second Advanced copy.
     expect(screen.getAllByLabelText('Ricorda')).toHaveLength(1);

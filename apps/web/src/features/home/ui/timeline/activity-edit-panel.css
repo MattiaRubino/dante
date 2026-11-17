@@ -44,6 +44,77 @@
   border: 0;
 }
 
+.timeline-recurring-series-editor__time-block.is-activity {
+  display: grid;
+  gap: 12px;
+  min-width: 0;
+  padding: 16px;
+  border: 1px solid var(--dante-semantic-color-home-border-subtle);
+  border-radius: 12px;
+  background: color-mix(
+    in srgb,
+    var(--dante-semantic-color-home-surface-control, #151f2e) 36%,
+    transparent
+  );
+}
+
+.timeline-recurring-series-editor__time-block:not(.is-activity) {
+  display: contents;
+}
+
+.timeline-event-modal--edit
+  .timeline-activity-editor__readback
+  .timeline-activity-editor__placement,
+.timeline-recurring-series-editor
+  .temporal-time-mode-toolbar
+  .timeline-activity-editor__placement {
+  display: flex;
+  flex: 0 1 auto;
+  gap: 8px;
+  margin: 0;
+}
+
+.timeline-event-modal--edit
+  .timeline-activity-editor__readback
+  .temporal-create-activity-interval__label,
+.timeline-recurring-series-editor
+  .timeline-activity-editor__intervals
+  .temporal-create-activity-interval__label {
+  margin-left: 12px;
+}
+
+.timeline-event-modal--edit
+  .timeline-activity-editor__readback
+  .timeline-activity-editor__interval-fields.timeline-activity-editor__interval-fields,
+.timeline-recurring-series-editor
+  .timeline-activity-editor__intervals
+  .timeline-activity-editor__interval-fields.timeline-activity-editor__interval-fields {
+  grid-template-columns:
+    minmax(110px, 1fr) minmax(150px, 1.4fr) 20px
+    minmax(150px, 1.4fr) minmax(110px, 1fr) 28px;
+  max-width: none;
+}
+
+.timeline-event-modal--edit
+  .timeline-activity-editor__readback
+  .temporal-create-activity-intervals__add,
+.timeline-recurring-series-editor
+  .timeline-activity-editor__intervals
+  .temporal-create-activity-intervals__add {
+  margin-left: 32px;
+}
+
+@media (max-width: 560px) {
+  .timeline-event-modal--edit
+    .timeline-activity-editor__readback
+    .timeline-activity-editor__interval-fields.timeline-activity-editor__interval-fields,
+  .timeline-recurring-series-editor
+    .timeline-activity-editor__intervals
+    .timeline-activity-editor__interval-fields.timeline-activity-editor__interval-fields {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) 28px;
+  }
+}
+
 .timeline-recurring-series-editor__timing {
   display: grid;
   gap: 10px;

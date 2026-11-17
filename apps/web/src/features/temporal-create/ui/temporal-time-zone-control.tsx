@@ -64,8 +64,20 @@ export function TemporalTimeZoneControl({
   allowFloating?: boolean;
 }>) {
   const [open, setOpen] = useState(false);
+  const [query, setQuery] = useState('');
   const rootRef = useRef<HTMLDivElement>(null);
-  const label = zoneId ?? (italian ? 'Ora locale' : 'Local time');
+  const searchRef = useRef<HTMLInputElement>(null);
+  const localLabel = italian ? 'Ora locale' : 'Local time';
+  const label = zoneId ?? localLabel;
+  const search = query.trim().toLocaleLowerCase();
+  const visibleZones = TIME_ZONES.filter(
+    (zone) =>
+      zone.toLocaleLowerCase().includes(search) ||
+      zone.replaceAll('_', ' ').toLocaleLowerCase().includes(search),
+  );
+  const showLocal =
+    allowFloating &&
+    (search === '' || localLabel.toLocaleLowerCase().includes(search));
 
   useEffect(() => {
     if (!open) return;
@@ -80,6 +92,10 @@ export function TemporalTimeZoneControl({
     return () => document.removeEventListener('pointerdown', dismiss, true);
   }, [open]);
 
+  useEffect(() => {
+    if (open) searchRef.current?.focus();
+  }, [open]);
+
   return (
     <div
       ref={rootRef}
@@ -92,26 +108,41 @@ export function TemporalTimeZoneControl({
         disabled={disabled}
         aria-label={`Fuso orario: ${label}`}
         aria-expanded={open}
-        title={label}
-        onClick={() => setOpen((current) => !current)}
+        onClick={() => {
+          setQuery('');
+          setOpen((current) => !current);
+        }}
       >
         <GlobeIcon />
-        <span className="temporal-create-timezone-divider" aria-hidden="true" />
-        <span className="temporal-create-timezone-label">
-          {italian ? 'Fuso orario' : 'Time zone'} · {label}
-        </span>
+        <span className="temporal-create-timezone-label">{label}</span>
         <span className="temporal-create-timezone-chevron" aria-hidden="true">
           {open ? '⌃' : '⌄'}
         </span>
       </button>
       {open ? (
-        <div className="temporal-create-timezone-panel">
-          <div className="temporal-create-timezone-current">
-            <GlobeIcon />
-            <span>{label}</span>
-          </div>
+        <div
+          className="temporal-create-timezone-panel"
+          role="dialog"
+          aria-label={italian ? 'Scegli fuso orario' : 'Choose time zone'}
+          onKeyDown={(event) => {
+            if (event.key === 'Escape') {
+              event.stopPropagation();
+              setOpen(false);
+              rootRef.current?.querySelector('button')?.focus();
+            }
+          }}
+        >
+          <input
+            ref={searchRef}
+            className="temporal-create-timezone-search"
+            type="search"
+            value={query}
+            onChange={(event) => setQuery(event.currentTarget.value)}
+            aria-label={italian ? 'Cerca fuso orario' : 'Search time zone'}
+            placeholder={italian ? 'Cerca fuso orario' : 'Search time zone'}
+          />
           <div className="temporal-create-timezone-list">
-            {allowFloating ? (
+            {showLocal ? (
               <button
                 type="button"
                 className={zoneId === null ? 'is-selected' : ''}
@@ -120,10 +151,10 @@ export function TemporalTimeZoneControl({
                   setOpen(false);
                 }}
               >
-                Ora locale
+                {localLabel}
               </button>
             ) : null}
-            {TIME_ZONES.map((zone) => (
+            {visibleZones.map((zone) => (
               <button
                 key={zone}
                 type="button"
@@ -136,6 +167,11 @@ export function TemporalTimeZoneControl({
                 {zone.replaceAll('_', ' ')}
               </button>
             ))}
+            {visibleZones.length === 0 && !showLocal ? (
+              <p className="temporal-create-timezone-empty">
+                {italian ? 'Nessun fuso trovato' : 'No time zone found'}
+              </p>
+            ) : null}
           </div>
         </div>
       ) : null}

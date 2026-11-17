@@ -922,304 +922,314 @@ export function RecurringSeriesEditor({
                 </div>
               </section>
             ) : null}
-            <section
-              className="timeline-recurring-series-editor__timing"
-              aria-label="Orario della serie"
+            <div
+              className={`timeline-recurring-series-editor__time-block${owner === 'routine' ? ' is-activity' : ''}`}
             >
-              <div
-                className="timeline-activity-editor__placement"
-                role="group"
-                aria-label="Tipo di orario"
+              <section
+                className="timeline-recurring-series-editor__timing"
+                aria-label="Orario della serie"
               >
-                {owner === 'event' ? (
-                  (['timed', 'all_day'] as const).map((kind) => (
-                    <button
-                      key={kind}
-                      type="button"
-                      className={
-                        structure.placement_kind === kind ? 'is-selected' : ''
-                      }
-                      aria-pressed={structure.placement_kind === kind}
-                      onClick={() => {
-                        if (structure.placement_kind === kind) return;
-                        const allDay = kind === 'all_day';
-                        changeStructure({
-                          ...structure,
-                          placement_kind: kind,
-                          duration_minutes: allDay ? null : 60,
-                          duration_days: allDay ? 1 : null,
-                          reminder_lead_minutes: allDay
-                            ? null
-                            : structure.reminder_lead_minutes,
-                        });
-                        changeRecurrence({
-                          ...recurrence,
-                          wall_times: allDay ? [] : ['09:00:00'],
-                        });
-                      }}
-                    >
-                      {kind === 'timed' ? 'Orario' : 'Tutto il giorno'}
-                    </button>
-                  ))
-                ) : (
-                  <>
-                    <button
-                      type="button"
-                      className={
-                        template.placement_kind === 'all_day'
-                          ? ''
-                          : 'is-selected'
-                      }
-                      aria-pressed={template.placement_kind !== 'all_day'}
-                      onClick={() => {
-                        if (template.placement_kind !== 'all_day') return;
-                        changeStructure({
-                          ...structure,
-                          duration_minutes: 60,
-                          activity_template: {
-                            ...template,
-                            placement_kind: undefined,
-                            duration_days: undefined,
-                            root_window: {
-                              start_offset_minutes: 0,
-                              duration_minutes: 60,
-                            },
-                          },
-                        });
-                        changeRecurrence({
-                          ...recurrence,
-                          wall_times: ['09:00:00'],
-                        });
-                      }}
-                    >
-                      Orario
-                    </button>
-                    <button
-                      type="button"
-                      className={
-                        template.placement_kind === 'all_day'
-                          ? 'is-selected'
-                          : ''
-                      }
-                      aria-pressed={template.placement_kind === 'all_day'}
-                      disabled={
-                        intervals.length > 0 ||
-                        asRows(template.children).some(
-                          (child) =>
-                            child.placement !== null ||
-                            asRows(child.planned_slices).length > 0,
-                        )
-                      }
-                      onClick={() => {
-                        if (template.placement_kind === 'all_day') return;
-                        changeStructure({
-                          ...structure,
-                          duration_minutes: 1440,
-                          reminder_lead_minutes: null,
-                          activity_template: {
-                            ...template,
-                            placement_kind: 'all_day',
-                            duration_days: 1,
-                            root_window: null,
-                          },
-                        });
-                        changeRecurrence({ ...recurrence, wall_times: [] });
-                      }}
-                    >
-                      Tutto il giorno
-                    </button>
-                  </>
-                )}
-              </div>
-              <TemporalTimeZoneControl
-                zoneId={asText(recurrence.zone_id) || null}
-                allowFloating={false}
-                onChange={(zoneId) => {
-                  if (zoneId)
-                    changeRecurrence({ ...recurrence, zone_id: zoneId });
-                }}
-              />
-              {owner === 'event' &&
-              structure.placement_kind === 'timed' &&
-              seriesStart &&
-              seriesEnd ? (
-                <div className="temporal-create-activity-interval__fields timeline-activity-editor__interval-fields">
-                  <TemporalCreateDatePicker
-                    label="Data inizio"
-                    locale="it"
-                    value={seriesStartDate}
-                    onChange={(day) =>
-                      changeRecurrence({
-                        ...recurrence,
-                        effective_from: day,
-                        ...(recurrence.pattern_anchor_date
-                          ? { pattern_anchor_date: day }
-                          : {}),
-                      })
-                    }
-                  />
-                  <TimeControl
-                    label="Inizio"
-                    value={seriesStartTime}
-                    dataPath="series.start"
-                    onChange={changeTime}
-                  />
-                  <span
-                    className="temporal-create-activity-interval__arrow"
-                    aria-hidden="true"
+                <div className="temporal-time-mode-toolbar">
+                  <div
+                    className="timeline-activity-editor__placement"
+                    role="group"
+                    aria-label="Tipo di orario"
                   >
-                    →
-                  </span>
-                  <TimeControl
-                    label="Fine"
-                    value={seriesEnd
-                      .toPlainTime()
-                      .toString({ smallestUnit: 'minute' })}
-                    dataPath="series.end"
-                    onChange={(clock) =>
-                      changeSeriesEnd(
-                        seriesEnd.toPlainDate().toString() ===
-                          seriesStartDate && clock <= seriesStartTime
-                          ? dayAfter(seriesStartDate)
-                          : seriesEnd.toPlainDate().toString(),
-                        clock,
-                      )
-                    }
-                  />
-                  <TemporalCreateDatePicker
-                    label="Data fine"
-                    align="end"
-                    locale="it"
-                    value={seriesEnd.toPlainDate().toString()}
-                    onChange={(day) =>
-                      changeSeriesEnd(
-                        day,
-                        seriesEnd
-                          .toPlainTime()
-                          .toString({ smallestUnit: 'minute' }),
-                      )
-                    }
-                  />
-                </div>
-              ) : null}
-              {owner === 'event' && structure.placement_kind === 'all_day' ? (
-                <div className="timeline-event-schedule-editor__dates">
-                  <TemporalCreateDatePicker
-                    label="Data inizio"
-                    locale="it"
-                    value={seriesStartDate}
-                    onChange={(day) =>
-                      changeRecurrence({
-                        ...recurrence,
-                        effective_from: day,
-                        ...(recurrence.pattern_anchor_date
-                          ? { pattern_anchor_date: day }
-                          : {}),
-                      })
-                    }
-                  />
-                  <TemporalCreateDatePicker
-                    label="Data fine"
-                    align="end"
-                    locale="it"
-                    value={seriesLastDay}
-                    onChange={(day) => {
-                      const duration =
-                        Temporal.PlainDate.from(seriesStartDate)
-                          .until(Temporal.PlainDate.from(day))
-                          .total({ unit: 'days' }) + 1;
-                      if (duration > 0)
-                        changeStructure({
-                          ...structure,
-                          duration_days: duration,
-                        });
+                    {owner === 'event' ? (
+                      (['timed', 'all_day'] as const).map((kind) => (
+                        <button
+                          key={kind}
+                          type="button"
+                          className={
+                            structure.placement_kind === kind
+                              ? 'is-selected'
+                              : ''
+                          }
+                          aria-pressed={structure.placement_kind === kind}
+                          onClick={() => {
+                            if (structure.placement_kind === kind) return;
+                            const allDay = kind === 'all_day';
+                            changeStructure({
+                              ...structure,
+                              placement_kind: kind,
+                              duration_minutes: allDay ? null : 60,
+                              duration_days: allDay ? 1 : null,
+                              reminder_lead_minutes: allDay
+                                ? null
+                                : structure.reminder_lead_minutes,
+                            });
+                            changeRecurrence({
+                              ...recurrence,
+                              wall_times: allDay ? [] : ['09:00:00'],
+                            });
+                          }}
+                        >
+                          {kind === 'timed' ? 'Orario' : 'Tutto il giorno'}
+                        </button>
+                      ))
+                    ) : (
+                      <>
+                        <button
+                          type="button"
+                          className={
+                            template.placement_kind === 'all_day'
+                              ? ''
+                              : 'is-selected'
+                          }
+                          aria-pressed={template.placement_kind !== 'all_day'}
+                          onClick={() => {
+                            if (template.placement_kind !== 'all_day') return;
+                            changeStructure({
+                              ...structure,
+                              duration_minutes: 60,
+                              activity_template: {
+                                ...template,
+                                placement_kind: undefined,
+                                duration_days: undefined,
+                                root_window: {
+                                  start_offset_minutes: 0,
+                                  duration_minutes: 60,
+                                },
+                              },
+                            });
+                            changeRecurrence({
+                              ...recurrence,
+                              wall_times: ['09:00:00'],
+                            });
+                          }}
+                        >
+                          Orario
+                        </button>
+                        <button
+                          type="button"
+                          className={
+                            template.placement_kind === 'all_day'
+                              ? 'is-selected'
+                              : ''
+                          }
+                          aria-pressed={template.placement_kind === 'all_day'}
+                          disabled={
+                            intervals.length > 0 ||
+                            asRows(template.children).some(
+                              (child) =>
+                                child.placement !== null ||
+                                asRows(child.planned_slices).length > 0,
+                            )
+                          }
+                          onClick={() => {
+                            if (template.placement_kind === 'all_day') return;
+                            changeStructure({
+                              ...structure,
+                              duration_minutes: 1440,
+                              reminder_lead_minutes: null,
+                              activity_template: {
+                                ...template,
+                                placement_kind: 'all_day',
+                                duration_days: 1,
+                                root_window: null,
+                              },
+                            });
+                            changeRecurrence({ ...recurrence, wall_times: [] });
+                          }}
+                        >
+                          Tutto il giorno
+                        </button>
+                      </>
+                    )}
+                  </div>
+                  <TemporalTimeZoneControl
+                    zoneId={asText(recurrence.zone_id) || null}
+                    allowFloating={false}
+                    onChange={(zoneId) => {
+                      if (zoneId)
+                        changeRecurrence({ ...recurrence, zone_id: zoneId });
                     }}
                   />
                 </div>
-              ) : null}
-            </section>
-            {owner === 'routine' && template.placement_kind === 'all_day' ? (
-              <label>
-                Giorni
-                <input
-                  type="number"
-                  min={1}
-                  max={365}
-                  value={asNumber(template.duration_days) || 1}
-                  onChange={(event) => {
-                    const days = Number(event.target.value);
-                    changeStructure({
-                      ...structure,
-                      duration_minutes: days * 1440,
-                      activity_template: { ...template, duration_days: days },
-                    });
-                  }}
-                />
-              </label>
-            ) : owner === 'routine' ? (
-              <>
-                <section
-                  className="temporal-create-activity-intervals timeline-activity-editor__intervals"
-                  aria-label="Intervalli"
-                >
-                  {(intervals.length ? intervals : [root]).map((row, index) => (
-                    <SeriesIntervalFields
-                      key={index}
-                      selectedDate={source.selectedDate}
-                      wallTime={time}
-                      row={row}
-                      index={index}
-                      onChange={(next) => {
-                        if (intervals.length) {
-                          editIntervals(
-                            intervals.map((item, i) =>
-                              i === index ? next : item,
-                            ),
-                          );
-                        } else {
-                          changeStructure({
-                            ...structure,
-                            duration_minutes: next.duration_minutes,
-                            activity_template: {
-                              ...template,
-                              root_window: next,
-                            },
-                          });
-                        }
-                      }}
-                      onRemove={
-                        intervals.length > 1
-                          ? () =>
-                              editIntervals(
-                                intervals.filter((_, i) => i !== index),
-                              )
-                          : undefined
+                {owner === 'event' &&
+                structure.placement_kind === 'timed' &&
+                seriesStart &&
+                seriesEnd ? (
+                  <div className="temporal-create-activity-interval__fields timeline-activity-editor__interval-fields">
+                    <TemporalCreateDatePicker
+                      label="Data inizio"
+                      locale="it"
+                      value={seriesStartDate}
+                      onChange={(day) =>
+                        changeRecurrence({
+                          ...recurrence,
+                          effective_from: day,
+                          ...(recurrence.pattern_anchor_date
+                            ? { pattern_anchor_date: day }
+                            : {}),
+                        })
                       }
                     />
-                  ))}
-                  <button
-                    type="button"
-                    className="temporal-create-activity-intervals__add"
-                    onClick={() => {
-                      const existing = intervals.length ? intervals : [root];
-                      const last = existing[existing.length - 1] ?? root;
-                      editIntervals([
-                        ...existing,
-                        {
-                          start_offset_minutes:
-                            asNumber(last.start_offset_minutes) +
-                            asNumber(last.duration_minutes) +
-                            15,
-                          duration_minutes: 30,
-                        },
-                      ]);
+                    <TimeControl
+                      label="Inizio"
+                      value={seriesStartTime}
+                      dataPath="series.start"
+                      onChange={changeTime}
+                    />
+                    <span
+                      className="temporal-create-activity-interval__arrow"
+                      aria-hidden="true"
+                    >
+                      →
+                    </span>
+                    <TimeControl
+                      label="Fine"
+                      value={seriesEnd
+                        .toPlainTime()
+                        .toString({ smallestUnit: 'minute' })}
+                      dataPath="series.end"
+                      onChange={(clock) =>
+                        changeSeriesEnd(
+                          seriesEnd.toPlainDate().toString() ===
+                            seriesStartDate && clock <= seriesStartTime
+                            ? dayAfter(seriesStartDate)
+                            : seriesEnd.toPlainDate().toString(),
+                          clock,
+                        )
+                      }
+                    />
+                    <TemporalCreateDatePicker
+                      label="Data fine"
+                      align="end"
+                      locale="it"
+                      value={seriesEnd.toPlainDate().toString()}
+                      onChange={(day) =>
+                        changeSeriesEnd(
+                          day,
+                          seriesEnd
+                            .toPlainTime()
+                            .toString({ smallestUnit: 'minute' }),
+                        )
+                      }
+                    />
+                  </div>
+                ) : null}
+                {owner === 'event' && structure.placement_kind === 'all_day' ? (
+                  <div className="timeline-event-schedule-editor__dates">
+                    <TemporalCreateDatePicker
+                      label="Data inizio"
+                      locale="it"
+                      value={seriesStartDate}
+                      onChange={(day) =>
+                        changeRecurrence({
+                          ...recurrence,
+                          effective_from: day,
+                          ...(recurrence.pattern_anchor_date
+                            ? { pattern_anchor_date: day }
+                            : {}),
+                        })
+                      }
+                    />
+                    <TemporalCreateDatePicker
+                      label="Data fine"
+                      align="end"
+                      locale="it"
+                      value={seriesLastDay}
+                      onChange={(day) => {
+                        const duration =
+                          Temporal.PlainDate.from(seriesStartDate)
+                            .until(Temporal.PlainDate.from(day))
+                            .total({ unit: 'days' }) + 1;
+                        if (duration > 0)
+                          changeStructure({
+                            ...structure,
+                            duration_days: duration,
+                          });
+                      }}
+                    />
+                  </div>
+                ) : null}
+              </section>
+              {owner === 'routine' && template.placement_kind === 'all_day' ? (
+                <label>
+                  Giorni
+                  <input
+                    type="number"
+                    min={1}
+                    max={365}
+                    value={asNumber(template.duration_days) || 1}
+                    onChange={(event) => {
+                      const days = Number(event.target.value);
+                      changeStructure({
+                        ...structure,
+                        duration_minutes: days * 1440,
+                        activity_template: { ...template, duration_days: days },
+                      });
                     }}
+                  />
+                </label>
+              ) : owner === 'routine' ? (
+                <>
+                  <section
+                    className="temporal-create-activity-intervals timeline-activity-editor__intervals"
+                    aria-label="Intervalli"
                   >
-                    + Aggiungi intervallo
-                  </button>
-                </section>
-              </>
-            ) : null}
+                    {(intervals.length ? intervals : [root]).map(
+                      (row, index) => (
+                        <SeriesIntervalFields
+                          key={index}
+                          selectedDate={source.selectedDate}
+                          wallTime={time}
+                          row={row}
+                          index={index}
+                          onChange={(next) => {
+                            if (intervals.length) {
+                              editIntervals(
+                                intervals.map((item, i) =>
+                                  i === index ? next : item,
+                                ),
+                              );
+                            } else {
+                              changeStructure({
+                                ...structure,
+                                duration_minutes: next.duration_minutes,
+                                activity_template: {
+                                  ...template,
+                                  root_window: next,
+                                },
+                              });
+                            }
+                          }}
+                          onRemove={
+                            intervals.length > 1
+                              ? () =>
+                                  editIntervals(
+                                    intervals.filter((_, i) => i !== index),
+                                  )
+                              : undefined
+                          }
+                        />
+                      ),
+                    )}
+                    <button
+                      type="button"
+                      className="temporal-create-activity-intervals__add"
+                      onClick={() => {
+                        const existing = intervals.length ? intervals : [root];
+                        const last = existing[existing.length - 1] ?? root;
+                        editIntervals([
+                          ...existing,
+                          {
+                            start_offset_minutes:
+                              asNumber(last.start_offset_minutes) +
+                              asNumber(last.duration_minutes) +
+                              15,
+                            duration_minutes: 30,
+                          },
+                        ]);
+                      }}
+                    >
+                      + Aggiungi intervallo
+                    </button>
+                  </section>
+                </>
+              ) : null}
+            </div>
             <TemporalRecurrencePanel
               kind={owner === 'routine' ? 'activity' : 'event'}
               className="timeline-recurring-series-editor__repeat-panel"

@@ -8,6 +8,125 @@
   --dante-temporal-action-text-size: 14px;
   --dante-temporal-action-height: 44px;
   --dante-temporal-control-height: 44px;
+  --dante-temporal-zone-menu-width: 340px;
+}
+
+/* The same compact zone picker accompanies the time mode in Create and Edit. */
+.temporal-time-mode-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px 16px;
+  min-width: 0;
+}
+
+.temporal-create-composer:not(.is-advanced) .temporal-create-timing-section {
+  display: contents;
+}
+
+.temporal-create-composer.is-advanced .temporal-create-timing-section {
+  display: grid;
+  gap: 12px;
+  min-width: 0;
+}
+
+:is(
+    .temporal-create-composer,
+    .timeline-activity-editor,
+    .timeline-event-modal--edit,
+    .timeline-recurring-series-editor
+  )
+  .temporal-time-mode-toolbar
+  .temporal-create-timezone-control {
+  position: relative;
+  width: auto;
+  max-width: 100%;
+  margin: 0;
+}
+
+:is(
+    .temporal-create-composer,
+    .timeline-activity-editor,
+    .timeline-event-modal--edit,
+    .timeline-recurring-series-editor
+  )
+  .temporal-time-mode-toolbar
+  .temporal-create-timezone-trigger {
+  display: flex;
+  width: auto !important;
+  max-width: 100%;
+  min-height: var(--dante-temporal-control-height);
+  height: auto !important;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 12px;
+  text-align: left;
+}
+
+:is(
+    .temporal-create-composer,
+    .timeline-activity-editor,
+    .timeline-event-modal--edit,
+    .timeline-recurring-series-editor
+  )
+  .temporal-time-mode-toolbar
+  .temporal-create-timezone-label {
+  flex: 0 1 auto;
+  min-width: 0;
+  overflow: visible;
+  text-overflow: clip;
+  white-space: normal;
+  font-size: var(--dante-temporal-form-text-size);
+}
+
+.temporal-time-mode-toolbar .temporal-create-timezone-trigger svg {
+  flex: none;
+  color: #8bd3ef;
+}
+
+.temporal-time-mode-toolbar .temporal-create-timezone-chevron {
+  flex: none;
+  margin-left: 4px;
+}
+
+:is(
+    .temporal-create-composer,
+    .timeline-activity-editor,
+    .timeline-event-modal--edit,
+    .timeline-recurring-series-editor
+  )
+  .temporal-time-mode-toolbar
+  .temporal-create-timezone-panel {
+  box-sizing: border-box;
+  right: 0;
+  left: auto;
+  width: min(var(--dante-temporal-zone-menu-width), calc(100vw - 32px));
+  max-width: none;
+}
+
+.temporal-create-timezone-search {
+  box-sizing: border-box;
+  width: 100%;
+  min-height: var(--dante-temporal-control-height);
+  padding: 0 12px;
+  border: 1px solid var(--dante-semantic-color-home-border-subtle);
+  border-radius: 8px;
+  color: var(--dante-semantic-color-home-text-primary);
+  background: var(--dante-semantic-color-home-surface-control);
+  font: inherit;
+  font-size: var(--dante-temporal-form-text-size);
+}
+
+.temporal-time-mode-toolbar .temporal-create-timezone-list > button {
+  min-height: var(--dante-temporal-control-height);
+  font-size: var(--dante-temporal-form-text-size);
+}
+
+.temporal-create-timezone-empty {
+  margin: 8px 10px;
+  color: var(--dante-semantic-color-home-text-muted);
+  font-size: var(--dante-temporal-form-helper-size);
 }
 
 .temporal-create-composer.is-advanced,

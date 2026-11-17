@@ -1,5 +1,20 @@
 # Timeline / Temporal-Operational — Live Execution Ledger
 
+## 2026-11-17 — Activity timing layout approved in visual review
+
+The owner chose one bordered timing section for Advanced Create and Activity
+Edit, with Orario/Tutto il giorno on the left and a compact selected-zone
+control on the right. The shared zone picker shows the selected identifier,
+uses the same globe/menu in Create, Event Edit, Activity Edit and series Edit,
+and searches the real available time zones; floating local time remains offered
+only where the authoring contract supports it. Activity intervals have stable
+numbered labels (slightly inset), one aligned date/time grid for the primary
+and additional rows, a reserved remove column, and an inset add button. The
+previous CSS-only first-row shift is removed. No Schedule/Session semantics
+change. Web typecheck, focused ESLint and 144 focused Vitest cases passed in
+the scratch candidate; real-app visual acceptance and full E2E are **NOT_RUN**
+on this layout candidate.
+
 ## 2026-11-17 — Create/Edit typography and time-zone parity candidate
 
 The owner approved a full-width, untruncated time-zone control before the
@@ -7,9 +22,10 @@ date/time row in advanced Create and each relevant Activity/Event/series Edit.
 Where shown, it must be actionable; changing a named-zone Activity preserves
 the displayed local hours and revises its canonical Schedule placement.
 Create/Edit text and action sizes use shared CSS custom properties so a later
-preference can override the scale without changing each component. Interval
-layout is deferred to the next owner review. The focused Web/PostgreSQL checks
-and real-app responsive/visual acceptance are **NOT_RUN** on this candidate.
+preference can override the scale without changing each component. The owner
+then reviewed and approved the interval layout above. The owner-local
+PostgreSQL named-zone regression passed 1/1 at `6db643f`; real-app responsive
+and visual acceptance of the later layout candidate remains **NOT_RUN**.
 
 ## 2026-11-06 — Start recurrence from an existing item candidate
 
