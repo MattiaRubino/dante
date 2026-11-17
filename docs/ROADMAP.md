@@ -1,5 +1,10 @@
 # DANTE Roadmap
 
+## Current execution sequence — 2026-11-17
+
+The active Timeline candidate is in Chromium E2E qualification, followed by the owner's real-app journey, user-directed visual and functional corrections, and a whole-vertical architecture, performance, DevOps and security review. The E2E inventory is 142 Chromium cases; separate green batches do not yet constitute a complete same-SHA gate. The observed slow Timeline reads, sustained-stack failures and high Session request volume are explicit investigation items. See the [active Timeline roadmap](workstreams/timeline-temporal-operational-roadmap.md) for the dated sequence and evidence limits. Older `CURRENT` labels below are historical snapshots.
+
+
 - **Status:** CURRENT REPOSITORY ROADMAP — candidate pointer reconciled 2026-10-11 (historical plan below retained)
 - **Pre-vertical integration merge:** `1ecd58145860aebfaaa3dc78933f4ee42698f33` via PR #66
 - **Protected-main baseline at temporal selection:** PostgreSQL 18.6 / Alembic `20260906_18` / topology `89|5|18|77|173|91|272|0|0|0`
