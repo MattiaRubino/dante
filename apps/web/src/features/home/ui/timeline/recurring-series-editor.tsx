@@ -1031,21 +1031,14 @@ export function RecurringSeriesEditor({
                   </>
                 )}
               </div>
-              {owner === 'event' ? (
-                <TemporalTimeZoneControl
-                  zoneId={asText(recurrence.zone_id) || null}
-                  allowFloating={false}
-                  onChange={(zoneId) => {
-                    if (zoneId)
-                      changeRecurrence({ ...recurrence, zone_id: zoneId });
-                  }}
-                />
-              ) : (
-                <div className="timeline-activity-editor__timezone">
-                  <span aria-hidden="true">◎</span>
-                  Fuso orario · {asText(recurrence.zone_id) || 'della serie'}
-                </div>
-              )}
+              <TemporalTimeZoneControl
+                zoneId={asText(recurrence.zone_id) || null}
+                allowFloating={false}
+                onChange={(zoneId) => {
+                  if (zoneId)
+                    changeRecurrence({ ...recurrence, zone_id: zoneId });
+                }}
+              />
               {owner === 'event' &&
               structure.placement_kind === 'timed' &&
               seriesStart &&

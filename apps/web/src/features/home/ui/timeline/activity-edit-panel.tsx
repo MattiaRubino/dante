@@ -36,6 +36,7 @@ import {
 import { TemporalColorControl } from '../../../temporal-create/ui/temporal-color-control';
 import { TimeControl } from '../../../temporal-create/ui/temporal-create-core-u2';
 import { TemporalCreateDatePicker } from '../../../temporal-create/ui/temporal-create-date-picker';
+import { TemporalTimeZoneControl } from '../../../temporal-create/ui/temporal-time-zone-control';
 import { TemporalAuthoringTitleRow } from '../../../temporal-create/ui/temporal-authoring-title-row';
 import { TemporalCreatePlacementLockButton } from '../../../temporal-create/ui/temporal-create-placement-lock-button';
 import { createRemoteExistingRecurrence } from '../../../temporal/remote-existing-recurrence';
@@ -454,6 +455,7 @@ export function ActivityEditPanel({
     Record<string, ActivityReplanTime>
   >({});
   const [allDay, setAllDay] = useState(false);
+  const [selectedZoneId, setSelectedZoneId] = useState<string | null>(null);
   const [dateSpanDraft, setDateSpanDraft] = useState({ start: '', end: '' });
   const [newPlanned, setNewPlanned] = useState<ActivityNewPlanned[]>([]);
   const [deletedPlanned, setDeletedPlanned] = useState<string[]>([]);
@@ -502,6 +504,13 @@ export function ActivityEditPanel({
     ) ?? [];
   const envelope = settings?.schedules.find((row) => row.role === 'envelope');
   const originalAllDay = envelope?.temporalForm === 'date_span';
+  const originalZoneId = envelope?.zoneId ?? timeZone ?? detectDeviceTimeZone();
+  const zoneDirty =
+    !allDay &&
+    !originalAllDay &&
+    envelope?.temporalForm === 'named_zone_local' &&
+    selectedZoneId !== null &&
+    selectedZoneId !== originalZoneId;
   const metadataDirty =
     draft.title !== profile.title ||
     draft.description !== (profile.description ?? '') ||
@@ -537,7 +546,8 @@ export function ActivityEditPanel({
     );
   const temporalDirty =
     canReplan &&
-    (allDay !== originalAllDay ||
+    (zoneDirty ||
+      allDay !== originalAllDay ||
       (allDay &&
         (dateSpanDraft.start !== envelope?.start ||
           shiftedDate(dateSpanDraft.end, 1) !== envelope?.end)) ||
@@ -562,8 +572,10 @@ export function ActivityEditPanel({
           },
         }
       : originalAllDay
-        ? { targetZoneId: timeZone ?? detectDeviceTimeZone() }
-        : {}),
+        ? { targetZoneId: selectedZoneId ?? originalZoneId }
+        : zoneDirty && selectedZoneId
+          ? { targetZoneId: selectedZoneId }
+          : {}),
     splitEnvelope: !hasIntervals && newIntervals.length > 0,
     removedIntervals,
     newIntervals,
@@ -657,6 +669,7 @@ export function ActivityEditPanel({
           ),
         );
         const root = loaded.schedules.find((row) => row.role === 'envelope');
+        setSelectedZoneId(root?.zoneId ?? timeZone ?? detectDeviceTimeZone());
         setAllDay(root?.temporalForm === 'date_span');
         setDateSpanDraft({
           start: root?.start?.slice(0, 10) ?? '',
@@ -688,6 +701,7 @@ export function ActivityEditPanel({
   }, [
     profile.activityRef,
     settingsSource,
+    timeZone,
     setSettings,
     setObjectiveRows,
     setRemovedObjectives,
@@ -1952,15 +1966,20 @@ export function ActivityEditPanel({
                 Programmazione attuale
               </h3>
               {!allDay &&
-              (settings.schedules.find((schedule) => schedule.zoneId)?.zoneId ||
+              (envelope?.temporalForm === 'named_zone_local' ||
                 originalAllDay) ? (
-                <p className="timeline-activity-editor__timezone">
-                  <span aria-hidden="true">◎</span> Fuso orario ·{' '}
-                  {originalAllDay
-                    ? (timeZone ?? detectDeviceTimeZone())
-                    : settings.schedules.find((schedule) => schedule.zoneId)
-                        ?.zoneId}
-                </p>
+                <TemporalTimeZoneControl
+                  zoneId={selectedZoneId ?? originalZoneId}
+                  allowFloating={false}
+                  disabled={!canReplan || planningLocked || planPending}
+                  onChange={(zoneId) => {
+                    if (zoneId) {
+                      setSelectedZoneId(zoneId);
+                      setPlanOperation(null);
+                      setPlanError('');
+                    }
+                  }}
+                />
               ) : null}
               {planError ? <p role="alert">{planError}</p> : null}
               {nameError ? <p role="alert">{nameError}</p> : null}
@@ -2238,6 +2257,7 @@ export function ActivityEditPanel({
                       setNewIntervals([]);
                       setRemovedIntervals([]);
                       setAllDay(originalAllDay);
+                      setSelectedZoneId(originalZoneId);
                       setDateSpanDraft({
                         start: envelope?.start?.slice(0, 10) ?? '',
                         end: shiftedDate(
@@ -2273,7 +2293,7 @@ export function ActivityEditPanel({
                       ).slice(11, 16) || '09:00'
                 }
                 allDay={allDay}
-                zoneId={envelope.zoneId ?? timeZone ?? detectDeviceTimeZone()}
+                zoneId={selectedZoneId ?? originalZoneId}
                 disambiguation="earlier"
                 onSelectionChange={(selected) => {
                   setRecurrenceSelected(selected);

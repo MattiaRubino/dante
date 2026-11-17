@@ -1,5 +1,16 @@
 # Timeline / Temporal-Operational — Live Execution Ledger
 
+## 2026-11-17 — Create/Edit typography and time-zone parity candidate
+
+The owner approved a full-width, untruncated time-zone control before the
+date/time row in advanced Create and each relevant Activity/Event/series Edit.
+Where shown, it must be actionable; changing a named-zone Activity preserves
+the displayed local hours and revises its canonical Schedule placement.
+Create/Edit text and action sizes use shared CSS custom properties so a later
+preference can override the scale without changing each component. Interval
+layout is deferred to the next owner review. The focused Web/PostgreSQL checks
+and real-app responsive/visual acceptance are **NOT_RUN** on this candidate.
+
 ## 2026-11-06 — Start recurrence from an existing item candidate
 
 Ordinary Activity Edit now offers calendar repetition from its saved plan.

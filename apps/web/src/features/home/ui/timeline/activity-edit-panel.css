@@ -667,7 +667,7 @@
    typography despite the Create adjustments. These are text-only overrides:
    keep editor/panel/button geometry, spacing and responsive grids unchanged. */
 .timeline-event-modal--edit .timeline-activity-editor__body {
-  font-size: 14px;
+  font-size: var(--dante-temporal-form-text-size);
 }
 
 .timeline-event-modal--edit
@@ -687,7 +687,7 @@
     .temporal-create-objectives__add,
     .temporal-create-structure-add
   ) {
-  font-size: 14px;
+  font-size: var(--dante-temporal-form-text-size);
 }
 
 .timeline-event-modal--edit
@@ -697,7 +697,7 @@
     .temporal-create-date-picker__trigger,
     .temporal-create-activity-tree__group-label
   ) {
-  font-size: 13px;
+  font-size: var(--dante-temporal-form-label-size);
 }
 
 .timeline-event-modal--edit

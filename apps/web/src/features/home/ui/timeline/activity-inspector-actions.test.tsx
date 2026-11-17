@@ -1852,6 +1852,45 @@ describe('Activity Inspector', () => {
     expect(onSaved).toHaveBeenCalledWith(profile);
   });
 
+  it('saves an Activity time-zone change with the existing local hours', async () => {
+    const settings = {
+      ...currentSettings,
+      schedules: [{
+        scheduleRef: 'envelope',
+        role: 'envelope',
+        name: null,
+        order: 0,
+        placementStateRef: 'state-0',
+        temporalForm: 'named_zone_local',
+        start: '2026-10-09T09:00:00',
+        end: '2026-10-09T12:00:00',
+        zoneId: 'Europe/Rome',
+      }],
+    };
+    loadSettings.mockResolvedValueOnce(settings);
+    render(
+      <ActivityEditPanel
+        profile={profile}
+        closeRequestRef={createRef()}
+        onSaved={() => undefined}
+        onCancel={() => undefined}
+      />,
+    );
+    const zone = await screen.findByRole('button', {
+      name: 'Fuso orario: Europe/Rome',
+    });
+    fireEvent.click(zone);
+    fireEvent.click(screen.getByRole('button', { name: 'Europe/London' }));
+    await submitEditor();
+    await waitFor(() => expect(applyReplan).toHaveBeenCalledOnce());
+    const draft = requiredRecord(applyReplan.mock.calls[0]?.[2]);
+    expect(draft.targetZoneId).toBe('Europe/London');
+    expect(requiredRecord(draft.times).envelope).toEqual({
+      start: '2026-10-09T09:00:00',
+      end: '2026-10-09T12:00:00',
+    });
+  });
+
   it('saves additions and removals of planned Sessions in one action', async () => {
     const settings = {
       ...currentSettings,

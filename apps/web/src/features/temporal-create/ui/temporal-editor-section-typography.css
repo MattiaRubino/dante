@@ -1,28 +1,28 @@
-/* Shared authoring typography; no impact on Quick Create or Timeline cards.
+/* Shared advanced authoring typography; no impact on Timeline cards.
  * Sessioni attività and Scaletta headings stay conditional on the first row. */
-:is(.temporal-create-composer.is-advanced, .timeline-event-modal--edit)
+:is(.temporal-create-composer.is-advanced, .timeline-activity-editor, .timeline-event-modal--edit)
   .temporal-editor-section-heading.temporal-editor-section-heading,
 .timeline-event-modal--edit
   .timeline-activity-editor__body
   .temporal-editor-section-heading.temporal-editor-section-heading {
   color: var(--dante-semantic-color-home-text-primary, #f1f5f7);
-  font-size: 15px;
+  font-size: var(--dante-temporal-section-title-size);
   font-weight: 650;
   line-height: 1.45;
   letter-spacing: 0;
   text-transform: none;
 }
 
-:is(.temporal-create-composer.is-advanced, .timeline-event-modal--edit)
+:is(.temporal-create-composer.is-advanced, .timeline-activity-editor, .timeline-event-modal--edit)
   .temporal-create-description-section
   h3 {
   color: var(--dante-semantic-color-home-text-primary, #f1f5f7);
-  font-size: 15px;
+  font-size: var(--dante-temporal-section-title-size);
   font-weight: 650;
   line-height: 1.45;
 }
 
-:is(.temporal-create-composer.is-advanced, .timeline-event-modal--edit)
+:is(.temporal-create-composer.is-advanced, .timeline-activity-editor, .timeline-event-modal--edit)
   :is(
     .temporal-create-tree-add,
     .temporal-create-objectives__add,
@@ -30,23 +30,23 @@
     .temporal-create-event-participants__add button,
     .temporal-create-event-participants__new-person button
   ) {
-  min-height: 38px;
+  min-height: var(--dante-temporal-control-height);
   padding-inline: 12px;
-  font-size: 14px;
+  font-size: var(--dante-temporal-action-text-size);
 }
 
-:is(.temporal-create-composer.is-advanced, .timeline-event-modal--edit)
+:is(.temporal-create-composer.is-advanced, .timeline-activity-editor, .timeline-event-modal--edit)
   :is(
     .temporal-create-tree-row__actions button,
     .temporal-create-event-agenda__actions button,
     .temporal-create-objective__actions button
   ) {
-  min-width: 36px;
-  min-height: 36px;
-  font-size: 13px;
+  min-width: var(--dante-temporal-control-height);
+  min-height: var(--dante-temporal-control-height);
+  font-size: var(--dante-temporal-action-text-size);
 }
 
-:is(.temporal-create-composer.is-advanced, .timeline-event-modal--edit)
+:is(.temporal-create-composer.is-advanced, .timeline-activity-editor, .timeline-event-modal--edit)
   :is(
     .temporal-create-event-agenda__part > input,
     .temporal-create-event-participants__row,
@@ -54,18 +54,18 @@
     .temporal-create-event-participants__add select,
     .temporal-create-event-participants__new-person input
   ) {
-  font-size: 14px;
+  font-size: var(--dante-temporal-form-text-size);
 }
 
-:is(.temporal-create-composer.is-advanced, .timeline-event-modal--edit)
+:is(.temporal-create-composer.is-advanced, .timeline-activity-editor, .timeline-event-modal--edit)
   .temporal-create-event-participants__heading
   span {
-  font-size: 12px;
+  font-size: var(--dante-temporal-form-helper-size);
   line-height: 1.5;
 }
 
 @media (max-width: 620px) {
-  :is(.temporal-create-composer.is-advanced, .timeline-event-modal--edit)
+:is(.temporal-create-composer.is-advanced, .timeline-activity-editor, .timeline-event-modal--edit)
     :is(
       .temporal-create-tree-add,
       .temporal-create-objectives__add,

@@ -2,11 +2,21 @@
 
 ## CURRENT 2026-11-17 — Chromium E2E, real-app review, and whole-vertical hardening
 
+**Owner decision, 2026-11-17:** 39/39 legacy Chromium passed in 372.16 seconds;
+all 103 V2 cases were observed green in separate runs. The owner defers the
+expensive 142-case same-SHA run and proceeds to a manual product/layout review.
+This is sufficient to continue the current review, **not** a single-run E2E
+acceptance claim. The first approved layout pass standardizes full-width,
+editable time-zone controls and a configurable Create/Edit text/action scale;
+interval layout follows separately. Focused verification for this new pass is
+pending. The unfiltered Chromium inventory can be revisited after changes
+stabilize.
+
 This dated plan supersedes older `CURRENT`/ `NEXT` pointers below for the active candidate. Historical gates remain historical evidence. The user approves product behavior and any UI changes before implementation; this section schedules reviews, not new product semantics.
 
 **Current phase:** B14 + B07 consolidation has expanded across the Temporal vertical. The E2E and real-app checks qualify this broad candidate; B15 whole-vertical closure remains open until its separate acceptance gates.
 
-1. **Finish the complete Chromium real-stack inventory.** The selected inventory is 142 cases: 39 legacy, 40 V2-P1, 40 V2-P2, 21 V2-P3 and 2 V2 runtime. Across separate runs all 103 V2 cases were observed passing. The 2026-11-17 legacy run executed 39 cases: 38 passed, one failed on an Event recurrence Life Area card color after a following-series revision. This is **not** a same-SHA 142-case acceptance gate. The candidate fix projects the effective Event recurrence segment Life Area in the canonical Timeline window, prioritizes the local instance assignment and reads the shared catalog color for Activity/Event cards. Focused PostgreSQL, frontend and browser checks are pending; only then repeat the legacy inventory and complete Chromium gate. Continue small, exact-inventory batches for diagnosis; then obtain a complete, zero-failure, zero-unreviewed-skip Chromium report on one candidate SHA/worktree fingerprint. Legacy outage/recovery cases must keep their own PostgreSQL stack. Record timing, report and diagnostics; do not combine different revisions into a fictitious green gate.
+1. **Complete Chromium inventory deferred by the owner.** The 142 cases comprise 39 legacy, 40 V2-P1, 40 V2-P2, 21 V2-P3 and 2 V2 runtime. The corrected Life Area case passed focused browser verification and the subsequent legacy inventory passed 39/39; the 103 V2 cases were green in separate runs. There is no same-SHA 142-case acceptance report. Preserve the separate evidence and revisit the unfiltered inventory after the manual layout/product pass; do not combine these results into a fictitious global PASS.
 2. **Owner's real-world Timeline journey.** Exercise creation, recurrence, local and following edits, duplication, deletion, Sessions, Objectives and persistence in the running app. Record actual behavior and screenshots. Correct confirmed functional defects with focused PostgreSQL/API/Web regressions and recheck affected E2E cases. Do not infer visual or untested behavior from a green browser gate.
 3. **User-directed UI refinement.** Review popup layout, copy, typography, sizes, positions, Timeline card density, responsive geometry, keyboard and accessibility with the owner. Define each product change with the owner before editing controls, labels, dimensions, positions or flows; verify it visually and with focused tests.
 4. **Whole-vertical code and architecture review.** Trace call orchestration, ownership/authz, transaction boundaries, concurrency and idempotency across UI, API and PostgreSQL. Review duplication, stale reads, retries, cancellation and series/edit/delete interactions. Refactor only concrete findings with behavior-preserving tests and measured outcomes.

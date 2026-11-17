@@ -706,24 +706,24 @@
 .temporal-create-composer
   .temporal-create-actions.temporal-create-actions
   > button {
-  font-size: 13px;
+  font-size: var(--dante-temporal-action-text-size);
 }
 
 .temporal-create-composer .temporal-create-timezone-current,
 .temporal-create-composer .temporal-create-timezone-label,
 .temporal-create-composer .temporal-create-timezone-list > button {
-  font-size: 13.5px;
+  font-size: var(--dante-temporal-form-text-size);
 }
 
 .temporal-create-composer .temporal-create-control > span,
 .temporal-create-composer .temporal-create-type-fieldset > legend,
 .temporal-create-composer .temporal-create-choice-group > legend,
 .temporal-create-composer .temporal-create-activity-interval__label {
-  font-size: 12.5px;
+  font-size: var(--dante-temporal-form-label-size);
 }
 
 .temporal-create-composer .temporal-create-date-picker__trigger {
-  font-size: 12px;
+  font-size: var(--dante-temporal-form-text-size);
 }
 
 /* Long Italian/English labels must stay inside their unchanged buttons. */
@@ -740,9 +740,7 @@
   text-overflow: ellipsis;
 }
 
-/* Advanced-only readability: target the true authoring surface rather than
-   a generic "font-size" on the container (many controls specify their own).
-   Keep every existing frame, grid, button and text-input dimension. */
+/* Advanced authoring uses the same configurable text scale as Edit. */
 .temporal-create-backdrop.is-advanced
   .temporal-create-composer.is-advanced
   :is(
@@ -759,7 +757,7 @@
     .temporal-create-repeat-summary,
     .temporal-create-advanced-description-label
   ) {
-  font-size: 14px;
+  font-size: var(--dante-temporal-form-text-size);
 }
 
 .temporal-create-backdrop.is-advanced
@@ -776,7 +774,7 @@
     .temporal-create-field-error,
     .temporal-create-reality-objectives__block-copy small
   ) {
-  font-size: 13px;
+  font-size: var(--dante-temporal-form-label-size);
 }
 
 .temporal-create-backdrop.is-advanced
@@ -785,7 +783,8 @@
     .temporal-create-actions > button,
     .temporal-create-actions .temporal-create-advanced-toggle
   ) {
-  font-size: 14px;
+  min-height: var(--dante-temporal-action-height);
+  font-size: var(--dante-temporal-action-text-size);
 }
 
 .temporal-create-backdrop.is-advanced

@@ -1,3 +1,96 @@
+:root {
+  /* One authoring scale for Create and Edit. A future user preference can
+     override these properties without changing the individual controls. */
+  --dante-temporal-form-text-size: 14px;
+  --dante-temporal-form-label-size: 14px;
+  --dante-temporal-form-helper-size: 12px;
+  --dante-temporal-section-title-size: 16px;
+  --dante-temporal-action-text-size: 14px;
+  --dante-temporal-action-height: 44px;
+  --dante-temporal-control-height: 44px;
+}
+
+.temporal-create-composer.is-advanced,
+.timeline-activity-editor,
+.timeline-event-modal--edit,
+.timeline-recurring-series-editor {
+  font-size: var(--dante-temporal-form-text-size);
+}
+
+:is(
+    .temporal-create-composer.is-advanced,
+    .timeline-activity-editor,
+    .timeline-event-modal--edit,
+    .timeline-recurring-series-editor
+  ) .temporal-create-timezone-control {
+  width: 100%;
+  min-width: 0;
+}
+
+:is(
+    .temporal-create-composer.is-advanced,
+    .timeline-activity-editor,
+    .timeline-event-modal--edit,
+    .timeline-recurring-series-editor
+  ) .temporal-create-timezone-trigger {
+  box-sizing: border-box;
+  display: flex;
+  width: 100%;
+  min-height: var(--dante-temporal-control-height);
+  height: auto;
+  align-items: center;
+  justify-content: flex-start;
+  padding: 8px 12px;
+  text-align: left;
+}
+
+:is(
+    .temporal-create-composer.is-advanced,
+    .timeline-activity-editor,
+    .timeline-event-modal--edit,
+    .timeline-recurring-series-editor
+  ) .temporal-create-timezone-label {
+  flex: 1;
+  min-width: 0;
+  overflow: visible;
+  text-overflow: clip;
+  white-space: normal;
+  font-size: var(--dante-temporal-form-text-size);
+}
+
+:is(
+    .temporal-create-composer.is-advanced,
+    .timeline-activity-editor,
+    .timeline-event-modal--edit,
+    .timeline-recurring-series-editor
+  ) .temporal-create-timezone-divider {
+  align-self: stretch;
+  flex: none;
+  width: 1px;
+  margin: 2px 12px;
+  background: var(--dante-semantic-color-home-border-subtle);
+}
+
+:is(
+    .temporal-create-composer.is-advanced,
+    .timeline-activity-editor,
+    .timeline-event-modal--edit,
+    .timeline-recurring-series-editor
+  ) .temporal-create-timezone-chevron {
+  flex: none;
+  margin-left: 12px;
+}
+
+:is(
+    .temporal-create-composer.is-advanced,
+    .timeline-activity-editor,
+    .timeline-event-modal--edit,
+    .timeline-recurring-series-editor
+  ) .temporal-create-timezone-list > button {
+  min-height: var(--dante-temporal-control-height);
+  font-size: var(--dante-temporal-form-text-size);
+}
+
 .dante-temporal-panel-close.dante-temporal-panel-close {
   display: grid;
   width: 34px;
@@ -29,7 +122,7 @@
 }
 
 .dante-temporal-panel-actions > button {
-  min-height: 36px;
+  min-height: var(--dante-temporal-action-height);
   padding: 0 16px;
   border: 1px solid
     var(
@@ -40,7 +133,7 @@
   color: var(--dante-semantic-color-home-text-secondary, #b7c0cf);
   background: var(--dante-semantic-color-home-surface-control, #151f2e);
   font: inherit;
-  font-size: 10px;
+  font-size: var(--dante-temporal-action-text-size);
   font-weight: 650;
   cursor: pointer;
 }

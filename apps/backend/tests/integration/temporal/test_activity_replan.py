@@ -345,6 +345,66 @@ async def test_single_period_can_change_precision_and_split_without_a_second_act
 
 
 @pytest.mark.asyncio
+async def test_replanning_named_zone_keeps_wall_times_and_persists_the_selected_zone(
+    migrated_database: Any,
+) -> None:
+    actor = _seed_self(migrated_database)
+    runtime = create_database_runtime(migrated_database.runtime_settings())
+    try:
+        created = await TemporalAuthoringApplication(runtime.session_factory).create_activity(
+            self_person_ref=actor,
+            operation_id="edit:zone:original",
+            title="Studio",
+            placement=_window(9, 12),
+        )
+        activity = created.item.subject_native_ref
+        before = await _snapshot(runtime, actor, activity)
+        root = next(row for row in before.schedules if row.role_code == "envelope")
+
+        revised = await apply_activity_replan(
+            activity,
+            ActivityReplanCommand(
+                operation_id="edit:zone:london",
+                envelope=_move(root, 9, 12),
+                target_zone_id="Europe/London",
+            ),
+            _context(actor),
+            _request(runtime),
+            Response(),
+        )
+        current = next(row for row in revised.schedules if row.role_code == "envelope")
+        assert current.zone_id == "Europe/London"
+        assert current.starts_local_at == root.starts_local_at
+        assert current.ends_local_at == root.ends_local_at
+        assert current.placement_material_state_ref != root.placement_material_state_ref
+        persisted = next(
+            row for row in (await _snapshot(runtime, actor, activity)).schedules
+            if row.role_code == "envelope"
+        )
+        assert persisted.zone_id == "Europe/London"
+
+        with pytest.raises(ProblemError) as invalid:
+            await apply_activity_replan(
+                activity,
+                ActivityReplanCommand(
+                    operation_id="edit:zone:invalid",
+                    envelope=_move(current, 9, 12),
+                    target_zone_id="Invalid/Zone",
+                ),
+                _context(actor),
+                _request(runtime),
+                Response(),
+            )
+        assert invalid.value.status == 422
+        assert next(
+            row for row in (await _snapshot(runtime, actor, activity)).schedules
+            if row.role_code == "envelope"
+        ).zone_id == "Europe/London"
+    finally:
+        await runtime.dispose()
+
+
+@pytest.mark.asyncio
 async def test_replanning_an_activity_keeps_named_session_configuration_without_retiming_it(
     migrated_database: Any,
 ) -> None:

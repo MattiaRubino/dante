@@ -46,6 +46,7 @@ from dante.modules.temporal.schedule import (
 )
 from dante.platform.database.references import MaterialStateRef, NativeRef, ScopedRecordRef
 from dante.platform.http.problem import ProblemError
+from dante.platform.time import validate_iana_timezone
 
 logger = logging.getLogger(__name__)
 
@@ -494,7 +495,7 @@ def _validated_plan(
             for item in command.new_planned_sessions
         )
         return changes, [(timed_envelope, conversion_placement)]
-    if command.target_zone_id is not None or (
+    if (command.target_zone_id is not None and envelope.temporal_form != "named_zone_local") or (
         command.split_envelope and (intervals or not command.new_intervals)
     ):
         raise _invalid("The requested Activity time frame is inconsistent.")
@@ -596,6 +597,12 @@ def _validated_plan(
 
     if envelope.temporal_form == "named_zone_local" and not envelope.zone_id:
         raise _invalid("The Activity time zone is missing.")
+    if command.target_zone_id is not None:
+        try:
+            validate_iana_timezone(command.target_zone_id)
+        except ValueError as exc:
+            raise _invalid(str(exc)) from exc
+    effective_zone_id = command.target_zone_id or envelope.zone_id
     by_ref = {row.schedule_ref: row for row in retained}
     if envelope.placement_material_state_ref is None:
         raise _invalid("The Activity envelope requires an accepted current placement.")
@@ -626,6 +633,7 @@ def _validated_plan(
         if (
             existing_row.starts_local_at == next_row.starts_local_at
             and existing_row.ends_local_at == next_row.ends_local_at
+            and existing_row.zone_id == effective_zone_id
         ):
             continue
         try:
@@ -633,7 +641,7 @@ def _validated_plan(
                 NamedZoneLocalIntervalPlacement(
                     starts_local_at=next_row.starts_local_at,
                     ends_local_at=next_row.ends_local_at,
-                    zone_id=_checked_zone(envelope),
+                    zone_id=command.target_zone_id or _checked_zone(envelope),
                 )
                 if envelope.temporal_form == "named_zone_local" and envelope.zone_id
                 else FloatingLocalIntervalPlacement(
@@ -1078,7 +1086,7 @@ async def apply_activity_replan_in_session(
                     NamedZoneLocalIntervalPlacement(
                         starts_local_at=starts_local_at,
                         ends_local_at=ends_local_at,
-                        zone_id=_checked_zone(envelope),
+                        zone_id=body.target_zone_id or _checked_zone(envelope),
                     )
                     if envelope.temporal_form == "named_zone_local"
                     else FloatingLocalIntervalPlacement(
