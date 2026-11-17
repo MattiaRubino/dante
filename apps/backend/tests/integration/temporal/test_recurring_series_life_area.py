@@ -233,9 +233,14 @@ async def test_weekly_event_color_edit_after_local_exception_keeps_future_cards(
         assert {first_day, selected_day, last_day} <= current.keys()
         assert current[first_day].occurrence_ref == first_ref
         assert current[selected_day].occurrence_ref != selected_ref
-        assert current[first_day].series_life_area_ref == area_ref
-        assert current[selected_day].series_life_area_ref == area_ref
-        assert current[last_day].series_life_area_ref == area_ref
+        # This is an existing source assignment recolored globally, not a
+        # newly assigned recurrence segment. The protected first instance
+        # retains its local override; clean future instances inherit the
+        # source assignment and the catalog's new color.
+        assert current[first_day].life_area_override_present
+        assert current[first_day].life_area_override_ref == area_ref
+        assert not current[selected_day].life_area_override_present
+        assert not current[last_day].life_area_override_present
         assert (
             next(
                 area
