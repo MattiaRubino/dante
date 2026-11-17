@@ -177,11 +177,9 @@
   gap: 5px;
 }
 
-.timeline-recurring-series-editor [aria-label='Life Area'] {
+.timeline-recurring-series-editor [aria-label='Area'] {
   display: grid;
-  gap: 12px;
-  padding: 0;
-  border: 0;
+  gap: 10px;
 }
 
 .timeline-recurring-series-editor__row {

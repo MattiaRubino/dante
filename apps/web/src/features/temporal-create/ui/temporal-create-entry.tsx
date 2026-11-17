@@ -536,8 +536,8 @@ export function TemporalCreateEntry({
     setFailureTarget('contextId');
     setFailureMessage(
       i18n.language.toLowerCase().startsWith('it')
-        ? 'Il nome della Life Area può contenere al massimo 100 caratteri.'
-        : 'A Life Area name can contain at most 100 characters.',
+        ? 'Il nome dell’area può contenere al massimo 100 caratteri.'
+        : 'An Area name can contain at most 100 characters.',
     );
     setLifecycle('failed');
     return true;
@@ -789,8 +789,8 @@ export function TemporalCreateEntry({
       setLifecycle('failed');
       setFailureMessage(
         i18n.language.toLowerCase().startsWith('en')
-          ? 'These legacy Event-specific options are no longer part of recurring Event Create. Recurrence, Life Area, color, location, description, run of show, participants and Reminder are supported.'
-          : 'Queste vecchie opzioni specifiche dell’Evento non fanno più parte del Create ricorrente. Ricorrenza, Life Area, colore, località, descrizione, Scaletta, partecipanti e promemoria sono supportati.',
+          ? 'These legacy Event-specific options are no longer part of recurring Event Create. Recurrence, Area, color, location, description, run of show, participants and Reminder are supported.'
+          : 'Queste vecchie opzioni specifiche dell’Evento non fanno più parte del Create ricorrente. Ricorrenza, Area, colore, località, descrizione, Scaletta, partecipanti e promemoria sono supportati.',
       );
       return false;
     }

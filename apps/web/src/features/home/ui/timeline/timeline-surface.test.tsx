@@ -105,7 +105,7 @@ describe('TimelineSurface production parity', () => {
         Node.DOCUMENT_POSITION_FOLLOWING,
       ),
     ).toBe(true);
-    expect(meta?.textContent).not.toContain('Senza Life Area');
+    expect(meta?.textContent).not.toContain('Senza Area');
   });
 
   it('renders non-editable card time and an Event agenda indicator beneath its details', () => {

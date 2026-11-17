@@ -142,9 +142,9 @@ describe('Timeline post-create runtime destinations', () => {
     );
     const dialog = screen.getByRole('dialog');
     expect(screen.getByText('Domenica 18 ottobre · 14:30–15:00')).toBeTruthy();
-    expect(
-      screen.getByRole('region', { name: 'Life Area' }).textContent,
-    ).toContain('Creatività');
+    expect(screen.getByRole('region', { name: 'Area' }).textContent).toContain(
+      'Creatività',
+    );
     expect(dialog.style.getPropertyValue('--timeline-inspector-accent')).toBe(
       '#80aaff',
     );

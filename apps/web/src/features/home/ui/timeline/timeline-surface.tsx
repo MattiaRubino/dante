@@ -313,7 +313,7 @@ export function TimelineSurface({
           ...groups,
           {
             id: LEGACY_UNASSIGNED_GROUP,
-            label: 'Senza Life Area',
+            label: 'Senza Area',
             tone: 'personal' as const,
           },
         ]
@@ -1693,7 +1693,7 @@ export function TimelineSurface({
               organization.refresh();
               showScheduleNotice({
                 kind: 'error',
-                message: 'Ordine Life Area cambiato: aggiorna e riprova.',
+                message: 'Ordine delle aree cambiato: aggiorna e riprova.',
               });
             });
         }}

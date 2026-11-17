@@ -1137,14 +1137,19 @@ export function TemporalCreateCoreFieldsU2({
         </TemporalRecurrencePanel>
       ) : null}
 
-      <TemporalCreateLifeAreaField
-        contexts={contexts}
-        draft={authoringDraft}
-        onLifeAreaChange={(lifeArea) => patchAuthoring({ lifeArea })}
-        onItemColorChange={(itemColorCode) => patchAuthoring({ itemColorCode })}
-        onLegacyContextChange={(contextId) => onPatch({ contextId })}
-      />
-      {renderError('contextId')}
+      <section className="temporal-editor-area-section" aria-label="Area">
+        <strong className="temporal-editor-section-heading">Area</strong>
+        <TemporalCreateLifeAreaField
+          contexts={contexts}
+          draft={authoringDraft}
+          onLifeAreaChange={(lifeArea) => patchAuthoring({ lifeArea })}
+          onItemColorChange={(itemColorCode) =>
+            patchAuthoring({ itemColorCode })
+          }
+          onLegacyContextChange={(contextId) => onPatch({ contextId })}
+        />
+        {renderError('contextId')}
+      </section>
 
       {realityObjectives}
 

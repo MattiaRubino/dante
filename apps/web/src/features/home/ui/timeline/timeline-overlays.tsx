@@ -1050,12 +1050,12 @@ export function EventDetailDialog({
             ) : null}
             {detail.groupLabel &&
             detail.groupLabel !== LEGACY_UNASSIGNED_GROUP &&
-            detail.groupLabel !== 'Senza Life Area' ? (
+            detail.groupLabel !== 'Senza Area' ? (
               <section
                 className="timeline-event-modal__life-area"
-                aria-label="Life Area"
+                aria-label="Area"
               >
-                <h4>Life Area</h4>
+                <h4>Area</h4>
                 <p className="timeline-event-modal__group">
                   <span
                     className="timeline-event-modal__life-area-dot"

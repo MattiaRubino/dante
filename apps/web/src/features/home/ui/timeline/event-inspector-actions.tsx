@@ -194,7 +194,8 @@ export function EventInspectorActions({
   );
   const [correctingObjective, setCorrectingObjective] =
     useState<ObjectiveView | null>(null);
-  const [deletingObjective, setDeletingObjective] = useState<ObjectiveView | null>(null);
+  const [deletingObjective, setDeletingObjective] =
+    useState<ObjectiveView | null>(null);
   const [objectiveDeletePending, setObjectiveDeletePending] = useState(false);
   const [correctedValue, setCorrectedValue] = useState('');
   const [correctedBoolean, setCorrectedBoolean] = useState('true');
@@ -592,8 +593,13 @@ export function EventInspectorActions({
   };
 
   const requestRecordedObjectiveDeletion = (objective: ObjectiveView) => {
-    if (busy || objectiveDeletePending || !objective.evaluationStateRef ||
-        !objective.observationRef) return;
+    if (
+      busy ||
+      objectiveDeletePending ||
+      !objective.evaluationStateRef ||
+      !objective.observationRef
+    )
+      return;
     // Recorded-result removal must not destroy or block unrelated
     // unfinished Objective drafts in this Edit form.
     setObjectiveError('');
@@ -601,7 +607,8 @@ export function EventInspectorActions({
   };
 
   const confirmRecordedObjectiveDeletion = () => {
-    if (!deletingObjective?.evaluationStateRef || objectiveDeletePending) return;
+    if (!deletingObjective?.evaluationStateRef || objectiveDeletePending)
+      return;
     const objective = deletingObjective;
     const kind = recurringContext ? 'occurrence' : 'event';
     const subjectRef = recurringContext?.occurrenceRef ?? eventRef;
@@ -610,23 +617,32 @@ export function EventInspectorActions({
     setObjectiveError('');
     void objectiveSource
       .deleteRecordedResult(
-        objective.objectiveRef, objective.evaluationStateRef!,
+        objective.objectiveRef,
+        objective.evaluationStateRef!,
       )
       .then(() => objectiveSource.listObjectives(kind, subjectRef))
       .then((fresh) => {
         const restored = fresh.find(
           (item) => item.objectiveRef === objective.objectiveRef,
         );
-        if (!restored || restored.observationRef || restored.evaluationStateRef) {
-          throw new Error('Registrazione eliminata, ma rilettura non coerente. Riapri Modifica.');
+        if (
+          !restored ||
+          restored.observationRef ||
+          restored.evaluationStateRef
+        ) {
+          throw new Error(
+            'Registrazione eliminata, ma rilettura non coerente. Riapri Modifica.',
+          );
         }
         // Merge the accepted readback into the single affected row only.
         // Existing draft edits, unfinished new Objectives and removals survive.
-        setObjectiveRows((rows) => rows.map((row) =>
-          row.objectiveRef === objective.objectiveRef
-            ? existingObjectiveDraft(restored)
-            : row,
-        ));
+        setObjectiveRows((rows) =>
+          rows.map((row) =>
+            row.objectiveRef === objective.objectiveRef
+              ? existingObjectiveDraft(restored)
+              : row,
+          ),
+        );
         setCorrectingObjective(null);
         setDeletingObjective(null);
         correctionOperation.current = null;
@@ -782,7 +798,7 @@ export function EventInspectorActions({
             areaName.toLocaleLowerCase()) ||
         (creatingLocalArea && (areaName.length > 100 || !areaChoice))
       ) {
-        const message = 'Nome Life Area non valido.';
+        const message = 'Nome dell’area non valido.';
         setAreaError(message);
         throw new Error(message);
       }
@@ -1228,7 +1244,7 @@ export function EventInspectorActions({
             : organization.areas.find((row) => row.ref === event.lifeAreaRef);
         if (event.lifeAreaRef && !area) {
           throw new Error(
-            'Life Area Event non disponibile: la bozza non è stata salvata.',
+            'area dell’evento non disponibile: la bozza non è stata salvata.',
           );
         }
         const selected = area
@@ -1330,10 +1346,7 @@ export function EventInspectorActions({
     setBusy(true);
     setError('');
     try {
-      await hardDelete.deleteConfirmed(
-        preview,
-        deleteReviewLease ?? undefined,
-      );
+      await hardDelete.deleteConfirmed(preview, deleteReviewLease ?? undefined);
       if (onDeleted) onDeleted();
       else window.location.reload();
     } catch (reason) {
@@ -1562,7 +1575,13 @@ export function EventInspectorActions({
                   />
                 ) : null
               ) : null}
-              <div className="timeline-activity-editor__area-color">
+              <section
+                className="timeline-activity-editor__area-color temporal-editor-area-section"
+                aria-label="Area"
+              >
+                <strong className="temporal-editor-section-heading">
+                  Area
+                </strong>
                 <div className="temporal-create-life-area-field">
                   {areaSelection ? (
                     <TemporalAssignedLifeAreaSwatch
@@ -1581,7 +1600,7 @@ export function EventInspectorActions({
                       }
                       label={
                         areaQuery.trim() && !areaSelection
-                          ? 'Colore nuova Life Area'
+                          ? 'Colore della nuova area'
                           : 'Colore attività o evento'
                       }
                       onChange={(colorCode) => {
@@ -1602,7 +1621,7 @@ export function EventInspectorActions({
                     >
                       <TemporalLifeAreaSelect
                         query={areaQuery}
-                        label="Life Area (opzionale)"
+                        label="Area (opzionale)"
                         options={areaChoice.options.map((option) => ({
                           id: option.ref,
                           label: option.name,
@@ -1645,7 +1664,7 @@ export function EventInspectorActions({
                       />
                       {areaQuery.trim() && !areaSelection ? (
                         <small role="status">
-                          La nuova Life Area sarà creata insieme al salvataggio
+                          La nuova area sarà creata insieme al salvataggio
                           dell’Evento.
                         </small>
                       ) : null}
@@ -1660,7 +1679,7 @@ export function EventInspectorActions({
                     </div>
                   ) : null}
                 </div>
-              </div>
+              </section>
               <section
                 className="temporal-create-reality-objectives timeline-activity-editor__outcome"
                 aria-label="Configurazione obiettivi"
@@ -1688,10 +1707,12 @@ export function EventInspectorActions({
                           total={visible.length}
                           disabled={busy || objectiveDeletePending}
                           onCorrectRecorded={() => {
-                            if (row.original) beginResultCorrection(row.original);
+                            if (row.original)
+                              beginResultCorrection(row.original);
                           }}
                           onDeleteRecorded={() => {
-                            if (row.original) requestRecordedObjectiveDeletion(row.original);
+                            if (row.original)
+                              requestRecordedObjectiveDeletion(row.original);
                           }}
                           onChange={(patch) => {
                             setObjectiveRows((rows) =>

@@ -682,7 +682,7 @@ function parseLifeAreaOverride(payload: Record<string, unknown>): Readonly<{
   ) {
     throw new TemporalTimelineRemoteError(
       'protocol',
-      'Timeline Occurrence local Life Area provenance is invalid.',
+      'Timeline Occurrence local Area provenance is invalid.',
     );
   }
   return Object.freeze({
@@ -700,7 +700,7 @@ function parseSeriesLifeArea(payload: Record<string, unknown>): Readonly<{
     if ('series_life_area_ref' in payload) {
       throw new TemporalTimelineRemoteError(
         'protocol',
-        'Incomplete series Life Area.',
+        'Incomplete series Area.',
       );
     }
     return Object.freeze({
@@ -716,10 +716,7 @@ function parseSeriesLifeArea(payload: Record<string, unknown>): Readonly<{
     (ref !== null && typeof ref !== 'string') ||
     (!present && ref !== null)
   ) {
-    throw new TemporalTimelineRemoteError(
-      'protocol',
-      'Invalid series Life Area.',
-    );
+    throw new TemporalTimelineRemoteError('protocol', 'Invalid series Area.');
   }
   return Object.freeze({
     seriesLifeAreaPresent: present,

@@ -16,7 +16,7 @@ export type EventLifeAreaChoice = Readonly<{
 
 function record(value: unknown): Record<string, unknown> {
   if (typeof value !== 'object' || value === null || Array.isArray(value)) {
-    throw new Error('Risposta Life Area Event non valida.');
+    throw new Error('Risposta dell’area dell’evento non valida.');
   }
   return value as Record<string, unknown>;
 }
@@ -29,7 +29,7 @@ export function createRemoteEventLifeAreaSettings(
 
   async function read(path: string): Promise<unknown> {
     const response = await request(path);
-    if (!response.ok) throw new Error('Lettura Life Area non disponibile.');
+    if (!response.ok) throw new Error('Lettura dell’area non disponibile.');
     return response.json();
   }
 
@@ -40,7 +40,7 @@ export function createRemoteEventLifeAreaSettings(
         read(base),
       ]);
       if (!Array.isArray(areas) || !Array.isArray(assignments)) {
-        throw new Error('Catalogo Life Area Event non valido.');
+        throw new Error('Catalogo delle aree non valido.');
       }
       const owned = assignments
         .map(record)
@@ -57,7 +57,7 @@ export function createRemoteEventLifeAreaSettings(
           !Number.isSafeInteger(current.assignment_revision) ||
           Number(current.assignment_revision) < 1)
       )
-        throw new Error('Revisione Life Area Event non valida.');
+        throw new Error('Revisione dell’area dell’evento non valida.');
       const assignedRef =
         current && typeof current.life_area_ref === 'string'
           ? current.life_area_ref
@@ -77,7 +77,7 @@ export function createRemoteEventLifeAreaSettings(
               (typeof r.color_code !== 'string' ||
                 !/^#[0-9A-F]{6}$/i.test(r.color_code)))
           ) {
-            throw new Error('Life Area Event non valida.');
+            throw new Error('Area dell’evento non valida.');
           }
           return {
             ref: r.life_area_ref,
@@ -105,7 +105,7 @@ export function createRemoteEventLifeAreaSettings(
     ): Promise<EventLifeAreaChoice> {
       if (nextRef === current.currentRef) return current;
       if (nextRef && !current.options.some((opt) => opt.ref === nextRef)) {
-        throw new Error('Seleziona una Life Area esistente.');
+        throw new Error('Seleziona un’area esistente.');
       }
       const sessionResponse = await request('/api/v1/auth/session');
       const session = record(await sessionResponse.json());
@@ -135,8 +135,8 @@ export function createRemoteEventLifeAreaSettings(
       if (!response.ok)
         throw new Error(
           response.status === 409
-            ? 'La Life Area Event è cambiata. Ricarica e riprova.'
-            : 'Modifica Life Area Event rifiutata.',
+            ? 'L’area dell’evento è cambiata. Ricarica e riprova.'
+            : 'Modifica dell’area dell’evento rifiutata.',
         );
       const saved = record(await response.json());
       if (
@@ -145,7 +145,7 @@ export function createRemoteEventLifeAreaSettings(
         saved.life_area_ref !== nextRef ||
         saved.assignment_revision !== current.currentRevision + 1
       ) {
-        throw new Error('Conferma Life Area Event non valida.');
+        throw new Error('Conferma dell’area dell’evento non valida.');
       }
       invalidateTemporalPlanningRead();
       invalidateTemporalTimelineRead();

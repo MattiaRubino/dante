@@ -26,7 +26,7 @@ export function TemporalAssignedLifeAreaSwatch({
       <span
         className="temporal-create-life-area-field__color-trigger"
         role="img"
-        aria-label={`Colore della Life Area: ${color}`}
+        aria-label={`Colore dell’area: ${color}`}
       >
         <span aria-hidden="true" style={{ background: color }} />
       </span>
@@ -46,8 +46,8 @@ export function TemporalLifeAreaSelect({
   onChoose,
   onClear,
   disabled = false,
-  label = 'Life Area (opzionale)',
-  placeholder = 'Life Area (opzionale)',
+  label = 'Area (opzionale)',
+  placeholder = 'Area (opzionale)',
 }: Readonly<{
   query: string;
   options: readonly TemporalLifeAreaOption[];
@@ -109,7 +109,7 @@ export function TemporalLifeAreaSelect({
       {query ? (
         <button
           type="button"
-          aria-label="Rimuovi Life Area"
+          aria-label="Rimuovi area"
           disabled={disabled}
           onClick={() => {
             onClear();

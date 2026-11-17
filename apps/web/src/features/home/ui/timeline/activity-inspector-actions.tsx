@@ -350,7 +350,7 @@ export function ActivityInspectorActions({
                       );
                 if (settings.lifeAreaRef !== null && !selected) {
                   throw new Error(
-                    'Life Area non più disponibile: ricarica la scheda.',
+                    'Area non più disponibile: ricarica la scheda.',
                   );
                 }
                 const areaDraft = selected

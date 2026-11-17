@@ -72,7 +72,7 @@ export function canonicalOrganizationGroups(
     );
     groups.push({
       id: LEGACY_UNASSIGNED_GROUP,
-      label: 'Senza Life Area',
+      label: 'Senza Area',
       tone: 'personal',
       itemColorCodes,
     });

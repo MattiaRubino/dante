@@ -219,7 +219,7 @@ export function TemporalCreateLifeAreaField({
   const colorLabel =
     draft.lifeArea.kind === 'none'
       ? 'Colore attività o evento'
-      : 'Colore Life Area';
+      : 'Colore dell’area';
 
   return (
     <>

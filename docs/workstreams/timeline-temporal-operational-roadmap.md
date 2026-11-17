@@ -1,5 +1,15 @@
 # Timeline / Temporal-Operational Vertical — Implementation Roadmap
 
+## 2026-11-17 — Area and typography visual review
+
+The owner approved a bordered Area section in advanced Create and the Edit
+variants, using the existing color/selection controls, and a readable shared
+scale for type choices, footer actions, inputs and section headings. The
+visible Life Area name becomes “Area”; canonical/API/DB identifiers remain
+unchanged. Focused frontend checks pass in scratch; a broader Web run found
+one stale fixture response, corrected and rechecked 13/13. Owner-local
+real-app review must qualify the layout. The full E2E inventory stays deferred.
+
 ## CURRENT 2026-11-17 — Chromium E2E, real-app review, and whole-vertical hardening
 
 **Owner decision, 2026-11-17:** 39/39 legacy Chromium passed in 372.16 seconds;

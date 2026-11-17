@@ -424,7 +424,7 @@ describe('Temporal Create U2 entry', () => {
       },
     ]);
 
-    fireEvent.focus(screen.getByLabelText('Life Area (opzionale)'));
+    fireEvent.focus(screen.getByLabelText('Area (opzionale)'));
 
     expect(screen.getByRole('option', { name: 'Corpo' })).toBeTruthy();
     expect(
@@ -437,7 +437,7 @@ describe('Temporal Create U2 entry', () => {
 
   it('keeps Life Area suggestions limited to existing canonical areas', () => {
     const first = renderEntry();
-    const input = screen.getByLabelText('Life Area (opzionale)');
+    const input = screen.getByLabelText('Area (opzionale)');
 
     fireEvent.focus(input);
     expect(screen.queryByRole('listbox')).toBeNull();
@@ -458,7 +458,7 @@ describe('Temporal Create U2 entry', () => {
       },
     ]);
 
-    const existingInput = screen.getByLabelText('Life Area (opzionale)');
+    const existingInput = screen.getByLabelText('Area (opzionale)');
     fireEvent.focus(existingInput);
     expect(screen.getByRole('listbox')).toBeTruthy();
     expect(screen.getByRole('option', { name: 'Corpo' })).toBeTruthy();
@@ -474,7 +474,7 @@ describe('Temporal Create U2 entry', () => {
     fireEvent.change(screen.getByPlaceholderText('Titolo'), {
       target: { value: 'Studio' },
     });
-    fireEvent.change(screen.getByLabelText('Life Area (opzionale)'), {
+    fireEvent.change(screen.getByLabelText('Area (opzionale)'), {
       target: { value: 'Formazione' },
     });
 
@@ -493,9 +493,7 @@ describe('Temporal Create U2 entry', () => {
     fireEvent.change(screen.getByPlaceholderText('Titolo'), {
       target: { value: 'Studio' },
     });
-    const input = screen.getByLabelText<HTMLInputElement>(
-      'Life Area (opzionale)',
-    );
+    const input = screen.getByLabelText<HTMLInputElement>('Area (opzionale)');
     expect(input.maxLength).toBe(100);
     fireEvent.change(input, { target: { value: 'A'.repeat(101) } });
     fireEvent.click(screen.getByRole('button', { name: 'Aggiungi' }));
@@ -503,7 +501,7 @@ describe('Temporal Create U2 entry', () => {
     expect(activityRequests).toHaveLength(0);
     expect(
       screen.getByText(
-        'Il nome della Life Area può contenere al massimo 100 caratteri.',
+        'Il nome dell’area può contenere al massimo 100 caratteri.',
       ),
     ).toBeTruthy();
   });
@@ -520,7 +518,7 @@ describe('Temporal Create U2 entry', () => {
     fireEvent.change(screen.getByPlaceholderText('Titolo'), {
       target: { value: 'Studio blu' },
     });
-    fireEvent.change(screen.getByLabelText('Life Area (opzionale)'), {
+    fireEvent.change(screen.getByLabelText('Area (opzionale)'), {
       target: { value: 'Formazione blu' },
     });
     fireEvent.click(screen.getByRole('button', { name: 'Aggiungi' }));

@@ -302,7 +302,7 @@ export function RecurringSeriesEditor({
     void Promise.all([
       remote.load(occurrenceRef),
       request('/api/v1/temporal/life-areas').then(async (response) => {
-        if (!response.ok) throw new Error('Life Area non disponibili.');
+        if (!response.ok) throw new Error('Aree non disponibili.');
         return response.json() as Promise<unknown>;
       }),
       owner === 'event'
@@ -650,7 +650,7 @@ export function RecurringSeriesEditor({
       return;
     }
     if (normalizedAreaName && !activeArea && !creatingArea) {
-      setAreaError('Scegli la Life Area già esistente dall’elenco.');
+      setAreaError('Scegli l’area già esistente dall’elenco.');
       return;
     }
     if (
@@ -1695,9 +1695,10 @@ export function RecurringSeriesEditor({
               </section>
             </TemporalRecurrencePanel>
             <section
-              className="timeline-activity-editor__area-color"
-              aria-label="Life Area"
+              className="timeline-activity-editor__area-color temporal-editor-area-section"
+              aria-label="Area"
             >
+              <strong className="temporal-editor-section-heading">Area</strong>
               <TemporalColorControl
                 value={
                   activeAreaOption
@@ -1710,9 +1711,9 @@ export function RecurringSeriesEditor({
                 }
                 label={
                   activeAreaOption
-                    ? 'Colore Life Area'
+                    ? 'Colore dell’area'
                     : creatingArea
-                      ? 'Colore nuova Life Area'
+                      ? 'Colore della nuova area'
                       : 'Colore attività o evento'
                 }
                 onChange={(value) => {
@@ -1769,13 +1770,12 @@ export function RecurringSeriesEditor({
               />
               {creatingArea ? (
                 <small role="status">
-                  La nuova Life Area sarà creata insieme al salvataggio della
-                  serie.
+                  La nuova area sarà creata insieme al salvataggio della serie.
                 </small>
               ) : null}
               {changingAreaColor ? (
                 <small role="status">
-                  Modificare il colore della Life Area aggiorna anche gli altri
+                  Modificare il colore dell’area aggiorna anche gli altri
                   elementi associati, comprese le istanze precedenti.
                 </small>
               ) : null}

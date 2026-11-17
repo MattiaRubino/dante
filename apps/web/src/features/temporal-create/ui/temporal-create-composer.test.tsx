@@ -360,7 +360,7 @@ describe('TemporalCreateComposer', () => {
     );
 
     const lifeArea = screen.getByRole('textbox', {
-      name: 'Life Area (opzionale)',
+      name: 'Area (opzionale)',
     });
     expect(lifeArea.getAttribute('title')).toBeNull();
     expect(lifeArea.getAttribute('maxlength')).toBe('100');

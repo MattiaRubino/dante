@@ -404,8 +404,8 @@ export function TemporalCreateComposer({
         );
       case 'temporal.create.recurrence.life_area_required':
         return i18n.language.toLowerCase().startsWith('en')
-          ? 'Select a Life Area before creating a recurrence.'
-          : 'Per creare una ricorrenza, seleziona una Life Area.';
+          ? 'Select an Area before creating a recurrence.'
+          : 'Per creare una ricorrenza, seleziona un’area.';
       case 'temporal.create.reminder.invalid':
         return t(($) => $.common.home.timeline.create.validation.reminder);
       case 'temporal.create.confirmation.outcome_policy_unavailable':

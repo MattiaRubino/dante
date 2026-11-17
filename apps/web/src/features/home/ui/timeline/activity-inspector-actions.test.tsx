@@ -437,7 +437,7 @@ describe('Recurring Activity profile scope', () => {
       target: { value: 'Dopo' },
     });
     fireEvent.click(
-      await screen.findByRole('button', { name: 'Rimuovi Life Area' }),
+      await screen.findByRole('button', { name: 'Rimuovi area' }),
     );
     await submitEditor();
     await waitFor(() => expect(applyAtomicEdit).toHaveBeenCalledTimes(1));
@@ -483,6 +483,14 @@ describe('Recurring Activity profile scope', () => {
     const select = await screen.findByRole('textbox', {
       name: 'Area assegnata',
     });
+    const areaSection = screen.getByRole('region', { name: 'Area' });
+    expect(areaSection.classList.contains('temporal-editor-area-section')).toBe(
+      true,
+    );
+    expect(within(areaSection).getByText('Area')).toBeTruthy();
+    expect(
+      within(areaSection).getByRole('textbox', { name: 'Area assegnata' }),
+    ).toBe(select);
     fireEvent.focus(select);
     const blue = await screen.findByRole('option', { name: 'test4' });
     const green = await screen.findByRole('option', { name: 'test2' });
@@ -3364,7 +3372,7 @@ describe('Activity Inspector', () => {
       />,
     );
     fireEvent.click(
-      await screen.findByRole('button', { name: 'Rimuovi Life Area' }),
+      await screen.findByRole('button', { name: 'Rimuovi area' }),
     );
     expect(
       screen.queryByRole('group', { name: 'Ambito della modifica' }),
@@ -3410,7 +3418,7 @@ describe('Activity Inspector', () => {
       target: { value: 'Nuovo titolo' },
     });
     fireEvent.click(
-      await screen.findByRole('button', { name: 'Rimuovi Life Area' }),
+      await screen.findByRole('button', { name: 'Rimuovi area' }),
     );
     await submitEditor();
     expect((await screen.findByRole('alert')).textContent).toContain(
@@ -3445,7 +3453,7 @@ describe('Activity Inspector', () => {
       />,
     );
     await screen.findByRole('textbox', { name: 'Area assegnata' });
-    fireEvent.click(screen.getByRole('button', { name: 'Rimuovi Life Area' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Rimuovi area' }));
     await submitEditor();
     await waitFor(() =>
       expect(assignLifeArea).toHaveBeenCalledWith(
@@ -3500,7 +3508,7 @@ describe('Activity Inspector', () => {
       await screen.findByRole('textbox', { name: 'Area assegnata' }),
       { target: { value: 'Studio' } },
     );
-    expect(screen.getByText(/La nuova Life Area verrà creata/)).toBeTruthy();
+    expect(screen.getByText(/La nuova area verrà creata/)).toBeTruthy();
     await submitEditor();
     await waitFor(() =>
       expect(createLifeArea).toHaveBeenCalledWith('Studio', expect.any(String)),
@@ -3573,7 +3581,7 @@ describe('Activity Inspector', () => {
       />,
     );
     fireEvent.click(
-      await screen.findByRole('button', { name: 'Colore Life Area' }),
+      await screen.findByRole('button', { name: 'Colore dell’area' }),
     );
     fireEvent.click(await screen.findByRole('button', { name: 'Verde menta' }));
     await submitEditor();

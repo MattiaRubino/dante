@@ -1,5 +1,24 @@
 # Timeline / Temporal-Operational — Live Execution Ledger
 
+## 2026-11-17 — Area label and authoring hierarchy candidate
+
+The owner selected “Area” as the visible short label for the existing Life
+Area concept. Advanced Create and Activity/Event/series Edit present the
+existing color/selection controls inside one bordered section with a small
+heading, consistent with Objectives; Quick Create keeps its compact field.
+Create/Edit typography uses the shared authoring custom properties (16px
+primary inputs/section and type names, 15px semibold actions, 14px labels,
+13px helpers). Database, API identifiers, canonical assignments and color
+ownership remain unchanged. Scratch Web typecheck, ESLint, Vite build, registry
+integrity and 207 focused Vitest cases passed. A broader Web run exposed one
+pre-existing fixture missing the required nullable
+`preserved_occurrence_ref` response field (1313/1314 initially passed); the
+mock now supplies an explicit null, and its focused recheck passed 13/13
+alongside the updated organization label. The broad run was not rerun after
+that fixture-only correction, so it is not represented as one all-green run.
+Owner-local visual and the whole E2E inventory remain **NOT_RUN** on this new
+candidate.
+
 ## 2026-11-17 — Activity timing layout approved in visual review
 
 The owner chose one bordered timing section for Advanced Create and Activity

@@ -576,7 +576,7 @@ export function createRemoteActivityEditSettings(
         if (response.status === 422) {
           throw new Error(
             'Modifica non salvata: alcuni dati non sono validi. ' +
-            'Controlla le modifiche e riprova.',
+              'Controlla le modifiche e riprova.',
           );
         }
         throw new Error(
@@ -799,7 +799,7 @@ export function createRemoteActivityEditSettings(
         read('/api/v1/temporal/life-area-assignments'),
       ]);
       if (!Array.isArray(rawAreas) || !Array.isArray(rawAssignments)) {
-        throw new Error('Catalogo Life Area non valido.');
+        throw new Error('Catalogo delle aree non valido.');
       }
       const options = rawAreas
         .map(object)
@@ -810,7 +810,7 @@ export function createRemoteActivityEditSettings(
             typeof item.name !== 'string' ||
             !item.name.trim()
           ) {
-            throw new Error('Life Area non valida.');
+            throw new Error('Area non valida.');
           }
           return Object.freeze({
             ref: item.life_area_ref,
@@ -829,7 +829,7 @@ export function createRemoteActivityEditSettings(
             item.subject_kind === 'activity' && item.subject_native_ref === ref,
         );
       if (rows.length > 1) {
-        throw new Error('Assegnazioni Life Area incoerenti.');
+        throw new Error('Assegnazioni delle aree incoerenti.');
       }
       const current = rows[0];
       if (
@@ -840,7 +840,7 @@ export function createRemoteActivityEditSettings(
           !Number.isSafeInteger(current.assignment_revision) ||
           current.assignment_revision < 1)
       ) {
-        throw new Error('Revisione Life Area non valida.');
+        throw new Error('Revisione dell’area non valida.');
       }
       return Object.freeze({
         options: Object.freeze(options),
@@ -865,7 +865,7 @@ export function createRemoteActivityEditSettings(
     > {
       const canonical = name.trim().replace(/\s+/g, ' ');
       if (!canonical || canonical.length > 100)
-        throw new Error('Inserisci un nome Life Area valido.');
+        throw new Error('Inserisci un nome valido per l’area.');
       const response = await request('/api/v1/temporal/life-areas', {
         method: 'POST',
         headers: {
@@ -877,21 +877,21 @@ export function createRemoteActivityEditSettings(
       if (!response.ok)
         throw new Error(
           response.status === 409
-            ? 'Esiste già una Life Area con questo nome. Selezionala dall’elenco.'
-            : 'Impossibile creare la Life Area.',
+            ? 'Esiste già un’area con questo nome. Selezionala dall’elenco.'
+            : 'Impossibile creare l’area.',
         );
       const created = object(await response.json());
       if (
         typeof created.life_area_ref !== 'string' ||
         created.name !== canonical
       ) {
-        throw new Error('Risposta Life Area non valida.');
+        throw new Error('Risposta dell’area non valida.');
       }
       if (
         !Number.isSafeInteger(created.revision) ||
         Number(created.revision) < 1
       ) {
-        throw new Error('Revisione della nuova Life Area non valida.');
+        throw new Error('Revisione della nuova area non valida.');
       }
       return Object.freeze({
         ref: created.life_area_ref,
@@ -927,7 +927,7 @@ export function createRemoteActivityEditSettings(
         !Number.isSafeInteger(area.revision) ||
         (area.revision ?? 0) < 1
       ) {
-        throw new Error('Colore o revisione Life Area non validi.');
+        throw new Error('Colore o revisione dell’area non validi.');
       }
       const canonical = colorCode.toUpperCase();
       const response = await request(
@@ -949,15 +949,15 @@ export function createRemoteActivityEditSettings(
       if (!response.ok)
         throw new Error(
           response.status === 409
-            ? 'Il colore della Life Area è cambiato. Riapri Modifica.'
-            : 'Impossibile salvare il colore della Life Area.',
+            ? 'Il colore dell’area è cambiato. Riapri Modifica.'
+            : 'Impossibile salvare il colore dell’area.',
         );
       const saved = object(await response.json());
       if (
         saved.life_area_ref !== area.ref ||
         !Number.isSafeInteger(saved.accepted_revision)
       ) {
-        throw new Error('Risposta colore Life Area non valida.');
+        throw new Error('Risposta del colore dell’area non valida.');
       }
       invalidateTemporalTimelineRead();
       invalidateTemporalPlanningRead();
@@ -979,7 +979,7 @@ export function createRemoteActivityEditSettings(
         nextRef !== null &&
         !current.options.some((area) => area.ref === nextRef)
       ) {
-        throw new Error('Seleziona una Life Area valida.');
+        throw new Error('Seleziona un’area valida.');
       }
       const response = await request(
         `/api/v1/temporal/life-area-assignments/activities/${encodeURIComponent(ref)}`,
@@ -999,8 +999,8 @@ export function createRemoteActivityEditSettings(
       if (!response.ok) {
         throw new Error(
           response.status === 409
-            ? 'La Life Area è cambiata. Ricarica l’attività e riprova.'
-            : 'Impossibile aggiornare la Life Area.',
+            ? 'L’area è cambiata. Ricarica l’attività e riprova.'
+            : 'Impossibile aggiornare l’area.',
         );
       }
       const saved = object(await response.json());
@@ -1011,7 +1011,7 @@ export function createRemoteActivityEditSettings(
         !Number.isSafeInteger(saved.assignment_revision) ||
         Number(saved.assignment_revision) <= current.currentRevision
       ) {
-        throw new Error('Assegnazione Life Area non valida.');
+        throw new Error('Assegnazione dell’area non valida.');
       }
       invalidateTemporalTimelineRead();
       invalidateTemporalPlanningRead();

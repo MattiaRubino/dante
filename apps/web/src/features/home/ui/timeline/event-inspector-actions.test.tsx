@@ -222,14 +222,22 @@ describe('Event Inspector actions', () => {
     );
     fireEvent.click(await screen.findByRole('button', { name: 'Modifica' }));
     const color = await screen.findByRole('img', {
-      name: 'Colore della Life Area: #4285F4',
+      name: 'Colore dell’area: #4285F4',
     });
     expect(color.querySelector('span')?.style.background).toBe(
       'rgb(66, 133, 244)',
     );
     const select = screen.getByRole('textbox', {
-      name: 'Life Area (opzionale)',
+      name: 'Area (opzionale)',
     });
+    const areaSection = screen.getByRole('region', { name: 'Area' });
+    expect(areaSection.classList.contains('temporal-editor-area-section')).toBe(
+      true,
+    );
+    expect(within(areaSection).getByText('Area')).toBeTruthy();
+    expect(
+      within(areaSection).getByRole('textbox', { name: 'Area (opzionale)' }),
+    ).toBe(select);
     expect(select).toHaveProperty('value', 'Studio');
     fireEvent.focus(select);
     const option = await screen.findByRole('option', { name: 'Studio' });
@@ -649,13 +657,11 @@ describe('Event Inspector actions', () => {
         await screen.findByRole('button', { name: 'Solo questa istanza' }),
       );
       const input = await screen.findByRole('textbox', {
-        name: 'Life Area (opzionale)',
+        name: 'Area (opzionale)',
       });
       expect(input).toHaveProperty('value', 'Studio');
       if (scenario.clear) {
-        fireEvent.click(
-          screen.getByRole('button', { name: 'Rimuovi Life Area' }),
-        );
+        fireEvent.click(screen.getByRole('button', { name: 'Rimuovi area' }));
       } else {
         fireEvent.change(input, { target: { value: scenario.query } });
       }
@@ -841,7 +847,7 @@ describe('Event Inspector actions', () => {
     expect(loadOccurrencePatch).not.toHaveBeenCalled();
     // The color is now an accessible trigger button, not a decorative img.
     const colorTrigger = screen.getByRole('button', {
-      name: 'Colore Life Area',
+      name: 'Colore dell’area',
     });
     expect(
       (colorTrigger.querySelector('span[aria-hidden="true"]') as HTMLElement)
@@ -1596,7 +1602,7 @@ describe('Event Inspector actions', () => {
     // Regression guard: an existing Life Area is selected, not created,
     // and remains part of the same Event atomic Save as title and Agenda.
     fireEvent.change(
-      screen.getByRole('textbox', { name: 'Life Area (opzionale)' }),
+      screen.getByRole('textbox', { name: 'Area (opzionale)' }),
       { target: { value: 'Lavoro' } },
     );
     fireEvent.click(screen.getByRole('button', { name: 'Salva modifiche' }));
@@ -1652,13 +1658,13 @@ describe('Event Inspector actions', () => {
     );
     fireEvent.click(screen.getByRole('button', { name: 'Modifica' }));
     const input = await screen.findByRole('textbox', {
-      name: 'Life Area (opzionale)',
+      name: 'Area (opzionale)',
     });
     expect(input).toHaveProperty('value', 'Studio');
     fireEvent.change(input, { target: { value: 'Nuova area Event' } });
     expect(
       screen.getByText(
-        'La nuova Life Area sarà creata insieme al salvataggio dell’Evento.',
+        'La nuova area sarà creata insieme al salvataggio dell’Evento.',
       ),
     ).toBeTruthy();
     expect(reviseAtomic).not.toHaveBeenCalled();
@@ -2009,9 +2015,7 @@ describe('Event Inspector actions', () => {
         onClose={vi.fn()}
       />,
     );
-    expect(
-      screen.queryByRole('button', { name: 'Modifica Life Area' }),
-    ).toBeNull();
+    expect(screen.queryByRole('button', { name: 'Modifica area' })).toBeNull();
     const toolbar = document.querySelector(
       '.timeline-event-modal__owner-actions .timeline-activity-inspector__toolbar',
     );
@@ -2028,7 +2032,7 @@ describe('Event Inspector actions', () => {
     ).toEqual(['Modifica', 'Duplica', 'Copia in Bozze', 'Elimina Event']);
     expect(
       within(toolbar as HTMLElement).queryByRole('button', {
-        name: 'Modifica Life Area',
+        name: 'Modifica area',
       }),
     ).toBeNull();
     fireEvent.click(screen.getByRole('button', { name: 'Modifica' }));
@@ -2036,7 +2040,7 @@ describe('Event Inspector actions', () => {
       await screen.findByRole('textbox', { name: 'Titolo Event' }),
     ).toBeTruthy();
     expect(
-      screen.getByRole('textbox', { name: 'Life Area (opzionale)' }),
+      screen.getByRole('textbox', { name: 'Area (opzionale)' }),
     ).toBeTruthy();
     const eventForm = document.querySelector('.timeline-event-profile-editor');
     expect(eventForm).not.toBeNull();
@@ -2965,7 +2969,7 @@ describe('Event Inspector actions', () => {
       '[aria-label="Orario della serie"]',
       '.timeline-activity-editor__intervals',
       '.timeline-recurring-series-editor__repeat-panel',
-      '[aria-label="Life Area"]',
+      '[aria-label="Area"]',
       '[aria-label="Configurazione obiettivi"]',
       '.timeline-activity-editor__location',
       '.timeline-activity-editor__description',
@@ -3036,7 +3040,7 @@ describe('Event Inspector actions', () => {
     ).toBeTruthy();
     expect(
       screen
-        .getByRole('region', { name: 'Life Area' })
+        .getByRole('region', { name: 'Area' })
         .compareDocumentPosition(
           screen.getByRole('region', { name: 'Configurazione obiettivi' }),
         ) & Node.DOCUMENT_POSITION_FOLLOWING,

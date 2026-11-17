@@ -222,7 +222,7 @@ describe('Timeline organization groups', () => {
     );
     expect(groups.at(-1)).toMatchObject({
       id: LEGACY_UNASSIGNED_GROUP,
-      label: 'Senza Life Area',
+      label: 'Senza Area',
       itemColorCodes: {
         [`event:${UNASSIGNED_REF}`]: '#EA5C12',
       },

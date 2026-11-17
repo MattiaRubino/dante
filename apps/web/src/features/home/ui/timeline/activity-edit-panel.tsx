@@ -805,9 +805,7 @@ export function ActivityEditPanel({
       .catch((reason: unknown) => {
         if (active)
           setAreaError(
-            reason instanceof Error
-              ? reason.message
-              : 'Life Area non disponibile.',
+            reason instanceof Error ? reason.message : 'Area non disponibile.',
           );
       });
     return () => {
@@ -1252,7 +1250,7 @@ export function ActivityEditPanel({
             reminderLeadMinutes !== settings.reminderLeadMinutes
           ) {
             setError(
-              'La modifica della serie per orari, intervalli, Sessioni, obiettivi, Life Area o promemoria non è ancora disponibile. Scegli «Solo questa istanza» per queste modifiche.',
+              'La modifica della serie per orari, intervalli, Sessioni, obiettivi, Area o promemoria non è ancora disponibile. Scegli «Solo questa istanza» per queste modifiche.',
             );
             return;
           }
@@ -1264,7 +1262,7 @@ export function ActivityEditPanel({
           }
         }
         if (areaDirty && (!areaQueryValid || scopedDomainUnsupported)) {
-          setAreaError('Scegli una Life Area valida per questa attività.');
+          setAreaError('Scegli un’area valida per questa attività.');
           return;
         }
         if (nameDirty && scopedDomainUnsupported) {
@@ -2334,13 +2332,17 @@ export function ActivityEditPanel({
                 Ripeti · Mai
               </div>
             )}
-            <div className="timeline-activity-editor__area-color">
+            <section
+              className="timeline-activity-editor__area-color temporal-editor-area-section"
+              aria-label="Area"
+            >
+              <strong className="temporal-editor-section-heading">Area</strong>
               <div className="temporal-create-life-area-field">
                 <TemporalColorControl
                   value={selectedAreaColor}
                   label={
                     selectedArea || creatingArea
-                      ? 'Colore Life Area'
+                      ? 'Colore dell’area'
                       : 'Colore attività o evento'
                   }
                   onChange={(colorCode) => {
@@ -2362,13 +2364,13 @@ export function ActivityEditPanel({
                     </small>
                   ) : null}
                   {!areaChoice && !areaError ? (
-                    <p role="status">Caricamento Life Area…</p>
+                    <p role="status">Caricamento aree…</p>
                   ) : null}
                   {areaChoice ? (
                     <>
                       {scopedDomainUnsupported && areaDirty ? (
                         <p role="status">
-                          Per modificare la Life Area scegli «Solo questa»: non
+                          Per modificare l’area scegli «Solo questa»: non
                           propaghiamo modifiche parziali alla serie.
                         </p>
                       ) : null}
@@ -2408,18 +2410,16 @@ export function ActivityEditPanel({
                         }}
                       />
                       {creatingArea ? (
-                        <small>
-                          La nuova Life Area verrà creata quando salvi.
-                        </small>
+                        <small>La nuova area verrà creata quando salvi.</small>
                       ) : null}
                       {!areaQueryValid ? (
-                        <small>Scegli una Life Area dall’elenco.</small>
+                        <small>Scegli un’area dall’elenco.</small>
                       ) : null}
                     </>
                   ) : null}
                 </div>
               </div>
-            </div>
+            </section>
             <section
               className="temporal-create-reality-objectives timeline-activity-editor__outcome"
               aria-label="Configurazione obiettivi"

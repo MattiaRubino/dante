@@ -54,7 +54,7 @@ function parseRevision(value: unknown): number | null {
   if (typeof value !== 'number' || !Number.isInteger(value) || value < 1) {
     throw new TemporalPlanningTrayRemoteError(
       'protocol',
-      'Life Area assignment revision must be a positive integer.',
+      'Area assignment revision must be a positive integer.',
     );
   }
   return value;

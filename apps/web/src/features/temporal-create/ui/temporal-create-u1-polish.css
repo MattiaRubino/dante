@@ -787,3 +787,21 @@
   overflow: hidden;
   text-overflow: ellipsis;
 }
+
+/* Emphasize the kind choice and the three footer actions on both Create
+ * surfaces. The scale remains owned by the shared authoring tokens. */
+.temporal-create-composer .temporal-create-type-grid > button strong {
+  font-size: var(--dante-temporal-section-title-size);
+  font-weight: 650;
+}
+
+.temporal-create-composer .temporal-create-type-grid.is-four > button small {
+  font-size: var(--dante-temporal-form-helper-size);
+}
+
+.temporal-create-composer
+  .temporal-create-actions.temporal-create-actions
+  > button {
+  font-size: var(--dante-temporal-action-text-size);
+  font-weight: 650;
+}

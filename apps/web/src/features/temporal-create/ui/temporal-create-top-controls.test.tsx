@@ -508,7 +508,7 @@ describe('Temporal Create U1 top controls', () => {
     fireEvent.change(screen.getByPlaceholderText('Titolo'), {
       target: { value: 'Bozza preservata' },
     });
-    fireEvent.change(screen.getByLabelText('Life Area (opzionale)'), {
+    fireEvent.change(screen.getByLabelText('Area (opzionale)'), {
       target: { value: 'Nuova Area' },
     });
 
@@ -529,10 +529,8 @@ describe('Temporal Create U1 top controls', () => {
       domElement(screen.getByPlaceholderText('Titolo'), HTMLInputElement).value,
     ).toBe('Bozza preservata');
     expect(
-      domElement(
-        screen.getByLabelText('Life Area (opzionale)'),
-        HTMLInputElement,
-      ).value,
+      domElement(screen.getByLabelText('Area (opzionale)'), HTMLInputElement)
+        .value,
     ).toBe('Nuova Area');
 
     const timing = advancedComposer?.querySelector<HTMLElement>(
@@ -548,6 +546,16 @@ describe('Temporal Create U1 top controls', () => {
     ).toBeTruthy();
     expect(zone.textContent).not.toContain('Fuso orario');
     expect(within(timing).getByText('Intervallo 1')).toBeTruthy();
+    const areaSection = within(advancedComposer!).getByRole('region', {
+      name: 'Area',
+    });
+    expect(areaSection.classList.contains('temporal-editor-area-section')).toBe(
+      true,
+    );
+    expect(within(areaSection).getByText('Area')).toBeTruthy();
+    expect(
+      within(areaSection).getByRole('textbox', { name: 'Area (opzionale)' }),
+    ).toBeTruthy();
     fireEvent.click(
       within(timing).getByRole('button', { name: /Aggiungi intervallo/ }),
     );
@@ -580,10 +588,8 @@ describe('Temporal Create U1 top controls', () => {
       domElement(screen.getByPlaceholderText('Titolo'), HTMLInputElement).value,
     ).toBe('Bozza preservata');
     expect(
-      domElement(
-        screen.getByLabelText('Life Area (opzionale)'),
-        HTMLInputElement,
-      ).value,
+      domElement(screen.getByLabelText('Area (opzionale)'), HTMLInputElement)
+        .value,
     ).toBe('Nuova Area');
   });
 });

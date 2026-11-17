@@ -444,7 +444,7 @@ function parsePostponedEvent(payload: unknown): TemporalPostponedEventRecord {
   ) {
     throw new TemporalEventRemoteError(
       'protocol',
-      'Postponed Event Life Area assignment revision must be a positive integer.',
+      'Postponed Event Area assignment revision must be a positive integer.',
     );
   }
   const lifeAreaAssignmentRevision = rawLifeAreaAssignmentRevision;

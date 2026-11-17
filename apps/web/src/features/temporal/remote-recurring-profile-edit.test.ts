@@ -85,6 +85,7 @@ describe('Structural recurring series remote contract', () => {
               recurrence_state_ref: '0199a777-7777-7777-8777-777777777777',
               superseded_count: 1,
               protected_count: 1,
+              preserved_occurrence_ref: null,
             }),
           );
         }
