@@ -714,6 +714,7 @@ export function ActivityEditPanel({
     setPlacementProtected,
     setLockError,
     setPlanDraft,
+    setSelectedZoneId,
     setAllDay,
     setDateSpanDraft,
     setNewPlanned,
