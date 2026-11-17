@@ -556,6 +556,19 @@ describe('Temporal Create U1 top controls', () => {
     expect(
       within(areaSection).getByRole('textbox', { name: 'Area (opzionale)' }),
     ).toBeTruthy();
+    fireEvent.click(screen.getByRole('radio', { name: 'Evento' }));
+    const eventTiming = advancedComposer?.querySelector<HTMLElement>(
+      '.temporal-create-timing-section:not(.is-activity)',
+    );
+    if (!eventTiming) throw new Error('Expected the Event timing section.');
+    expect(
+      within(eventTiming).getByRole('button', { name: /Fuso orario:/ }),
+    ).toBeTruthy();
+    expect(within(eventTiming).queryByText('Intervallo 1')).toBeNull();
+    expect(
+      within(advancedComposer!).getByRole('region', { name: 'Area' }),
+    ).toBe(areaSection);
+    fireEvent.click(screen.getByRole('radio', { name: 'Attività' }));
     fireEvent.click(
       within(timing).getByRole('button', { name: /Aggiungi intervallo/ }),
     );

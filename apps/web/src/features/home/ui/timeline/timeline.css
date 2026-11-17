@@ -1922,12 +1922,19 @@
 }
 
 .timeline-event-schedule-editor {
+  box-sizing: border-box;
   display: grid;
   gap: 12px;
   min-width: 0;
   margin: 0;
-  padding: 0;
-  border: 0;
+  padding: 16px;
+  border: 1px solid var(--dante-semantic-color-home-border-subtle);
+  border-radius: 12px;
+  background: color-mix(
+    in srgb,
+    var(--dante-semantic-color-home-surface-control, #151f2e) 36%,
+    transparent
+  );
 }
 
 .timeline-event-schedule-editor[data-edit-invalid='true'] {

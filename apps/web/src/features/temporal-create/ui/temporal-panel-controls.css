@@ -26,9 +26,18 @@
 }
 
 .temporal-create-composer.is-advanced .temporal-create-timing-section {
+  box-sizing: border-box;
   display: grid;
   gap: 12px;
   min-width: 0;
+  padding: 16px;
+  border: 1px solid var(--dante-semantic-color-home-border-subtle);
+  border-radius: 12px;
+  background: color-mix(
+    in srgb,
+    var(--dante-semantic-color-home-surface-control, #151f2e) 36%,
+    transparent
+  );
 }
 
 :is(

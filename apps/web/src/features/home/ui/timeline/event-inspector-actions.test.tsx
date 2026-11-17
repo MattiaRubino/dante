@@ -239,6 +239,13 @@ describe('Event Inspector actions', () => {
       within(areaSection).getByRole('textbox', { name: 'Area (opzionale)' }),
     ).toBe(select);
     expect(select).toHaveProperty('value', 'Studio');
+    const oneOffSchedule = document.querySelector(
+      '.timeline-event-schedule-editor',
+    );
+    expect(oneOffSchedule).not.toBeNull();
+    expect(
+      oneOffSchedule?.querySelector('.temporal-time-mode-toolbar'),
+    ).toBeTruthy();
     fireEvent.focus(select);
     const option = await screen.findByRole('option', { name: 'Studio' });
     expect(option.getAttribute('aria-selected')).toBe('true');
@@ -891,6 +898,15 @@ describe('Event Inspector actions', () => {
     const seriesTiming = screen.getByRole('region', {
       name: 'Orario della serie',
     });
+    const protectedTimeBlock = seriesTiming.closest(
+      '.timeline-recurring-series-editor__time-block',
+    );
+    expect(protectedTimeBlock).not.toBeNull();
+    expect(
+      protectedTimeBlock?.querySelector('.temporal-time-mode-toolbar'),
+    ).toBeTruthy();
+    expect(screen.queryByText('Intervallo 1')).toBeNull();
+    expect(screen.getByRole('region', { name: 'Area' })).toBeTruthy();
     expect(
       seriesAgenda.querySelector('.temporal-create-activity-tree__spine'),
     ).not.toBeNull();
@@ -2849,6 +2865,15 @@ describe('Event Inspector actions', () => {
 
     const title = await screen.findByRole('textbox', { name: 'Titolo' });
     const savedRepeat = screen.getByRole('region', { name: 'Ripetizione' });
+    const eventTimeBlock = screen
+      .getByRole('region', { name: 'Orario della serie' })
+      .closest('.timeline-recurring-series-editor__time-block');
+    expect(eventTimeBlock).not.toBeNull();
+    expect(
+      eventTimeBlock?.querySelector('.temporal-time-mode-toolbar'),
+    ).toBeTruthy();
+    expect(screen.getByRole('region', { name: 'Area' })).toBeTruthy();
+    expect(screen.queryByText('Intervallo 1')).toBeNull();
     expect(savedRepeat.getAttribute('data-recurrence-expanded')).toBe('true');
     expect(
       within(savedRepeat).getByRole('combobox', { name: 'Ripeti' }),
@@ -2963,6 +2988,13 @@ describe('Event Inspector actions', () => {
       .getByRole('textbox', { name: 'Titolo' })
       .closest('.timeline-activity-editor') as HTMLElement;
     const form = editor.querySelector('.timeline-activity-editor__body')!;
+    const activityTimeBlock = form.querySelector(
+      '.timeline-recurring-series-editor__time-block.is-activity',
+    );
+    expect(activityTimeBlock).not.toBeNull();
+    expect(
+      activityTimeBlock?.querySelector('.temporal-time-mode-toolbar'),
+    ).toBeTruthy();
     const formSections = [
       '.timeline-activity-editor__title-row',
       '.timeline-activity-editor__sessions',

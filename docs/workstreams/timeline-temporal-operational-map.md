@@ -1,5 +1,19 @@
 # Timeline / Temporal-Operational — Live Execution Ledger
 
+## 2026-11-17 — Create/Edit time-section parity follow-up
+
+Advanced Create now applies the approved bordered timing section to both
+Activity and Event. Ordinary Event Edit and the recurring series editor use
+the same section treatment as Activity Edit; the Event series Area section
+no longer has its own narrow color column. Ordinary and selected-instance
+Event edits share their editor; following and protected-from-next edits share
+the recurring editor. Events retain one date/time pair without Activity
+intervals. The time-zone picker remains the shared component where the
+underlying schedule permits an editable named zone. Scratch checks: 65/65
+focused Vitest, Web typecheck, changed-test ESLint, Vite build and bundle
+budget passed. Owner-local visual comparison and the full E2E inventory are
+**NOT_RUN** on this follow-up candidate.
+
 ## 2026-11-17 — Area label and authoring hierarchy candidate
 
 The owner selected “Area” as the visible short label for the existing Life

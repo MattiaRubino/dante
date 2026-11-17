@@ -1,5 +1,15 @@
 # Timeline / Temporal-Operational Vertical — Implementation Roadmap
 
+## 2026-11-17 — Create/Edit parity follow-up
+
+The approved timing section now applies to advanced Event Create, ordinary
+Event Edit and the Event recurring editor as well as the corresponding
+Activity paths. The shared Area section also spans the Event recurring
+editor. Focused Web checks passed in scratch; compare real-app geometry,
+type sizes and control behavior across ordinary, selected-instance, following
+and protected-from-next edit before accepting visual parity. The full 142-case
+E2E run remains deferred by the owner.
+
 ## 2026-11-17 — Area and typography visual review
 
 The owner approved a bordered Area section in advanced Create and the Edit
