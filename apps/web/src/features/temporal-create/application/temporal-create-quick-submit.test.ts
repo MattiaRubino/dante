@@ -632,3 +632,63 @@ describe('U2 Quick Create submit mapping', () => {
     expect(reversed.request.plannedSlices).toEqual([null]);
   });
 });
+
+describe('dual-zone Create authoring boundaries', () => {
+  it.each(['activity', 'event'] as const)(
+    'persists start/end zones and independent original wall clocks for one-off %s',
+    (kind) => {
+      const fields = createTemporalCreateFields({
+        kind,
+        title: 'Due fusi',
+        date: '2026-11-18',
+        startTime: '10:00',
+        durationMinutes: 240,
+        timeMode: 'zoned',
+        timeZoneId: 'Europe/Rome',
+        endTimeZoneId: 'America/New_York',
+      });
+      const result = buildTemporalCreateU2Request(
+        fields,
+        createTemporalCreateU2AuthoringDraft(fields),
+        'dual-zone-test',
+      );
+      expect(result.request.placement).toMatchObject({
+        kind: 'named-zone-local-interval',
+        zoneId: 'Europe/Rome',
+        endZoneId: 'America/New_York',
+      });
+      if (result.request.placement?.kind !== 'named-zone-local-interval') {
+        throw new Error('Expected named-zone placement');
+      }
+      expect(result.request.placement.startsLocalAt.toString())
+        .toBe('2026-11-18T10:00:00');
+      expect(result.request.placement.endsLocalAt.toString())
+        .toBe('2026-11-18T08:00:00');
+    },
+  );
+
+  it('rejects a recurring Event that would silently discard a customized end-zone', () => {
+    const base = createTemporalCreateFields({
+      kind: 'event',
+      title: 'No recurring dual timezone',
+      date: '2026-11-18',
+      startTime: '10:00',
+      durationMinutes: 60,
+      timeMode: 'zoned',
+      timeZoneId: 'Europe/Rome',
+      endTimeZoneId: 'America/New_York',
+    });
+    const fields = createTemporalCreateFields({
+      ...base,
+      eventRecurrence: {
+        ...base.eventRecurrence,
+        owner: 'event',
+        patternKind: 'calendar-wall-clock',
+        calendarFrequency: 'daily',
+      },
+    });
+    expect(() => buildTemporalCreateU2Request(
+      fields, createTemporalCreateU2AuthoringDraft(fields), 'dual-recurring',
+    )).toThrow('doppio fuso');
+  });
+});

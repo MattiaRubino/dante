@@ -921,6 +921,20 @@ export function TemporalCreateEntry({
     }
     setFailureTarget(null);
     if (
+      fields.endTimeZoneId &&
+      fields.endTimeZoneId !== fields.timeZoneId &&
+      (fields.eventRecurrence.patternKind !== 'none' ||
+        (fields.kind === 'activity' &&
+          u2DraftRef.current.activityStructure.activityIntervals.length > 0))
+    ) {
+      setFailureTarget('timeZoneId');
+      setFailureMessage(
+        'Per attivare Ripeti o più intervalli, torna esplicitamente a un fuso unico.',
+      );
+      setLifecycle('failed');
+      return;
+    }
+    if (
       fields.kind === 'activity' &&
       fields.eventRecurrence.patternKind !== 'none'
     ) {

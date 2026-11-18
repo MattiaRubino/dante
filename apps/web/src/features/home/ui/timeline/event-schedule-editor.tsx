@@ -4,7 +4,6 @@ import {
   moveAllDayRangePreservingDays,
   projectElapsedEndToZone,
   elapsedMinutesBetweenZonedBounds,
-  resolveCivilNamedInstant,
 } from '@dante/time';
 
 import { TimeControl } from '../../../temporal-create/ui/temporal-create-core-u2';
@@ -375,7 +374,7 @@ export function EventScheduleEditor({
               label="Data fine"
               locale="it"
               value={draft.endDate}
-              min={draft.startDate}
+              min={customZone ? undefined : draft.startDate}
               invalid={timingInvalid}
               align="end"
               onChange={(endDate) => update({ endDate })}

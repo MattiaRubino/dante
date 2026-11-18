@@ -501,6 +501,9 @@ export function TemporalCreateCoreFieldsU2({
     });
 
   const addActivityInterval = () => {
+    // A split Activity must never silently discard a customized end-zone.
+    if (fields.endTimeZoneId &&
+        fields.endTimeZoneId !== fields.timeZoneId) return;
     const last = authoringDraft.activityStructure.activityIntervals.at(-1);
     const after = last
       ? Temporal.PlainDateTime.from(`${last.endDate}T${last.endTime}`).add({
@@ -595,6 +598,10 @@ export function TemporalCreateCoreFieldsU2({
   };
 
   const changeTimeSemantics = (semantics: TemporalCreateTimeSemantics) => {
+    // Date spans cannot represent two IANA boundaries; let the user reset
+    // the customized zone explicitly via the global timezone chooser.
+    if (semantics === 'all-day' && fields.endTimeZoneId &&
+        fields.endTimeZoneId !== fields.timeZoneId) return;
     setInvalidEnd(null);
     if (
       semantics === 'all-day' &&
@@ -958,6 +965,10 @@ export function TemporalCreateCoreFieldsU2({
                   fields.timeSemantics === 'all-day' ? 'is-active' : ''
                 }
                 onClick={() => changeTimeSemantics('all-day')}
+                disabled={isCustomZone}
+                title={isCustomZone
+                  ? 'Ripristina prima un fuso unico per Tutto il giorno'
+                  : undefined}
               >
                 Tutto il giorno
               </button>
@@ -1174,6 +1185,10 @@ export function TemporalCreateCoreFieldsU2({
                   <button
                     type="button"
                     className="temporal-create-activity-intervals__add"
+                    disabled={isCustomZone}
+                    title={isCustomZone
+                      ? 'Ripristina prima un fuso unico per aggiungere intervalli'
+                      : undefined}
                     onClick={addActivityInterval}
                   >
                     <span aria-hidden="true">＋</span>{' '}

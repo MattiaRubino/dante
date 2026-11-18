@@ -894,6 +894,19 @@ export function buildTemporalCreateU2Request(
   draft: TemporalCreateU2AuthoringDraft,
   operationId: string,
 ): TemporalCreateU2Request {
+  // Do not let the multi-interval envelope bypass placementInput and drop
+  // a second end-zone silently. Only one-off single Schedule owns this option.
+  if (
+    fields.endTimeZoneId &&
+    fields.endTimeZoneId !== fields.timeZoneId &&
+    (fields.eventRecurrence.patternKind !== 'none' ||
+      (fields.kind === 'activity' &&
+        draft.activityStructure.activityIntervals.length > 0))
+  ) {
+    throw new RangeError(
+      'Il doppio fuso è disponibile solo per elementi singoli con un intervallo.',
+    );
+  }
   const lifeArea = buildTemporalCreateLifeAreaInput(draft);
   const description = optionalText(fields.notes);
   const location = optionalText(fields.event.location);
