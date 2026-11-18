@@ -99,3 +99,47 @@ export function resolveEffectiveTimeZone(
   }
   return validateNamedTimeZone(deviceTimeZone);
 }
+
+/** Local wall-clock start movement. The accepted duration is kept unchanged. */
+export function moveCivilStartPreservingDuration(
+  originalStart: string,
+  originalEnd: string,
+  newStart: string,
+): string {
+  const start = Temporal.PlainDateTime.from(originalStart);
+  const end = Temporal.PlainDateTime.from(originalEnd);
+  if (Temporal.PlainDateTime.compare(end, start) <= 0) {
+    throw new RangeError('An interval must have a positive duration.');
+  }
+  const duration = start.until(end, { largestUnit: 'minutes' });
+  return Temporal.PlainDateTime.from(newStart)
+    .add(duration)
+    .toString({ smallestUnit: 'minute' });
+}
+
+/** Inclusive civil-date range movement; never treat all-day as a UTC duration. */
+export function moveAllDayRangePreservingDays(
+  originalStart: string,
+  originalEndInclusive: string,
+  newStart: string,
+): string {
+  const start = Temporal.PlainDate.from(originalStart);
+  const end = Temporal.PlainDate.from(originalEndInclusive);
+  if (Temporal.PlainDate.compare(end, start) < 0) {
+    throw new RangeError('All-day end must not precede start.');
+  }
+  const days = start.until(end).days;
+  return Temporal.PlainDate.from(newStart).add({ days }).toString();
+}
+
+/** Strict local end ordering; an overnight end must name the next calendar date. */
+export function isValidCivilInterval(start: string, end: string): boolean {
+  try {
+    return Temporal.PlainDateTime.compare(
+      Temporal.PlainDateTime.from(end),
+      Temporal.PlainDateTime.from(start),
+    ) > 0;
+  } catch {
+    return false;
+  }
+}

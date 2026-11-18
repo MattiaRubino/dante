@@ -14,6 +14,10 @@ For current **Domain Atlas / kernel terminology**, use [`../domain/README.md`](.
 - [`phase-3-product-definition-review.md`](phase-3-product-definition-review.md) — Phase 3 review and completeness check
 - [`v1-scope.md`](v1-scope.md) — detailed V1 scope
 
+## Current Temporal Product Behavior
+
+- [Date, clock, intervals and timezones](temporal/timezone-and-time-editing.md) — approved behavior contract; implementation status tracked separately.
+
 ## V1 product concepts and execution behavior
 
 - [`v1-core-domain-glossary.md`](v1-core-domain-glossary.md) — preserved V1 product glossary; use the Domain Atlas / Language Map for current kernel terminology where later reviews differ

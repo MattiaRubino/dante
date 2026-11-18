@@ -11,6 +11,9 @@ import {
   parseZonedDateTime,
   resolveEffectiveTimeZone,
   validateNamedTimeZone,
+  moveCivilStartPreservingDuration,
+  moveAllDayRangePreservingDays,
+  isValidCivilInterval,
   zonedDateTimeToInstant,
 } from './index';
 
@@ -131,5 +134,31 @@ describe('@dante/time', () => {
     expect(() =>
       resolveEffectiveTimeZone({ mode: 'follow_device' }, undefined),
     ).toThrow(RangeError);
+  });
+});
+
+describe('approved Temporal clock editing contract', () => {
+  it('preserves duration when moving the start in the same day', () => {
+    expect(moveCivilStartPreservingDuration(
+      '2026-11-18T09:00', '2026-11-18T12:00', '2026-11-18T10:00',
+    )).toBe('2026-11-18T13:00');
+  });
+
+  it('preserves duration across midnight without silently creating a 23-hour span', () => {
+    expect(moveCivilStartPreservingDuration(
+      '2026-11-18T21:30', '2026-11-18T23:00', '2026-11-18T23:30',
+    )).toBe('2026-11-19T01:00');
+  });
+
+  it('rejects inverted and equal local-clock intervals and allows an explicit overnight end', () => {
+    expect(isValidCivilInterval('2026-11-18T10:45', '2026-11-18T05:15')).toBe(false);
+    expect(isValidCivilInterval('2026-11-18T10:45', '2026-11-18T10:45')).toBe(false);
+    expect(isValidCivilInterval('2026-11-18T23:30', '2026-11-19T00:30')).toBe(true);
+  });
+
+  it('moves inclusive all-day ranges in calendar days', () => {
+    expect(moveAllDayRangePreservingDays(
+      '2026-11-18', '2026-11-20', '2026-11-21',
+    )).toBe('2026-11-23');
   });
 });
