@@ -61,7 +61,7 @@ describe('Event Edit uses the single shared timezone dialog', () => {
     const reopened = screen.getByRole('dialog', { name: 'Imposta fuso orario' });
     expect(within(reopened).getByRole('checkbox', {
       name: 'Utilizza fusi orari diversi per inizio e fine',
-    })).toBeChecked();
+    })).toHaveProperty('checked', true);
     fireEvent.click(within(reopened).getByRole('button', { name: 'Annulla' }));
     expect(onChange).toHaveBeenCalledTimes(1);
   });
