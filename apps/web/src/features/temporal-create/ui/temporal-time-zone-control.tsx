@@ -60,7 +60,7 @@ function positionClockSidecar(anchor: DOMRect): ClockSidecarPosition {
     : anchor.left - gap - width;
   return {
     left: Math.max(margin, Math.min(requestedLeft, window.innerWidth - width - margin)),
-    top: Math.max(margin, Math.min(anchor.top, window.innerHeight - 342 - margin)),
+    top: Math.max(margin, Math.min(anchor.top, window.innerHeight - 380 - margin)),
     width,
   };
 }
@@ -228,7 +228,7 @@ export function TemporalTimeZoneControl({
         type="button"
         disabled={disabled}
         aria-label={sidecar && clockBoundary
-          ? `${clockBoundary}: Fuso orario: ${label}`
+          ? `${clockBoundary}: ${italian ? 'Fuso orario' : 'Time zone'}: ${label}`
           : `Fuso orario: ${label}`}
         aria-expanded={open}
         onClick={() => {
