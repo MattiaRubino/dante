@@ -163,6 +163,7 @@ export function TemporalTimeZoneControl({
           className={`temporal-create-timezone-panel${sidecar ? ' is-clock-sidecar' : ''}`}
           style={sidecar ? sidecarPosition ?? undefined : undefined}
           data-temporal-clock-timezone={sidecar ? clockBoundary : undefined}
+          data-temporal-create-portal={sidecar ? '' : undefined}
           role="dialog"
           aria-label={italian ? 'Scegli fuso orario' : 'Choose time zone'}
           onKeyDown={(event) => {
