@@ -96,6 +96,7 @@ function canonicalPlacement(
         startsLocalAt: item.startsLocalAt,
         endsLocalAt: item.endsLocalAt,
         zoneId: item.zoneId,
+        ...(item.endZoneId ? { endZoneId: item.endZoneId } : {}),
         resolvedStartAt: item.resolvedStartAt,
         resolvedEndAt: item.resolvedEndAt,
       });

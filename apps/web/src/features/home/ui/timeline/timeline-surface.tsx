@@ -207,7 +207,7 @@ function formatReplannedPeriod(
         .withTimeZone(zoneId)
         .toPlainDateTime();
       end = placement.endsLocalAt
-        .toZonedDateTime(placement.zoneId, {
+        .toZonedDateTime(placement.endZoneId ?? placement.zoneId, {
           disambiguation: placement.disambiguation,
         })
         .withTimeZone(zoneId)

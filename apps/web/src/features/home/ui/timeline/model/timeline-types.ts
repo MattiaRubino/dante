@@ -37,6 +37,7 @@ export type TimelineCanonicalSchedulePlacement =
       startsLocalAt: PlainDateTime;
       endsLocalAt: PlainDateTime;
       zoneId: string;
+      endZoneId?: string;
       resolvedStartAt: Instant;
       resolvedEndAt: Instant;
     }>

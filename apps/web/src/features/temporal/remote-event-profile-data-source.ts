@@ -34,6 +34,7 @@ export type EventSchedulePlacementInput =
       starts_local_at: string;
       ends_local_at: string;
       zone_id: string;
+      end_zone_id?: string;
       disambiguation: 'reject' | 'earlier' | 'later';
     }>;
 

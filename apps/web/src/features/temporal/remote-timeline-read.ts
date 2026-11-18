@@ -47,10 +47,11 @@ function isRecord(value: unknown): value is Record<string, unknown> {
 
 function requireExactKeys(
   payload: Record<string, unknown>,
-  allowed: readonly string[],
+  required: readonly string[],
   label: string,
+  optional: readonly string[] = [],
 ): void {
-  const allowedKeys = new Set(allowed);
+  const allowedKeys = new Set([...required, ...optional]);
   for (const key of Object.keys(payload)) {
     if (!allowedKeys.has(key)) {
       throw new TemporalTimelineRemoteError(
@@ -59,7 +60,7 @@ function requireExactKeys(
       );
     }
   }
-  for (const key of allowed) {
+  for (const key of required) {
     if (!(key in payload)) {
       throw new TemporalTimelineRemoteError(
         'protocol',
@@ -549,6 +550,7 @@ function parseScheduledItem(payload: unknown): TemporalTimelineScheduledItem {
           'display_ends_local_at',
         ],
         `Temporal Timeline named-zone ${ownerLabel}`,
+        ['end_zone_id'],
       );
       const startsLocalAt = parseLocalDateTime(
         payload.starts_local_at,
@@ -567,7 +569,8 @@ function parseScheduledItem(payload: unknown): TemporalTimelineScheduledItem {
         'resolved_end_at',
       );
       if (
-        Temporal.PlainDateTime.compare(startsLocalAt, endsLocalAt) >= 0 ||
+        (payload.end_zone_id == null &&
+          Temporal.PlainDateTime.compare(startsLocalAt, endsLocalAt) >= 0) ||
         Temporal.Instant.compare(resolvedStartAt, resolvedEndAt) >= 0
       ) {
         throw new TemporalTimelineRemoteError(
@@ -581,6 +584,9 @@ function parseScheduledItem(payload: unknown): TemporalTimelineScheduledItem {
         startsLocalAt,
         endsLocalAt,
         zoneId: parseZoneId(payload.zone_id, 'zone_id'),
+        ...(payload.end_zone_id == null ? {} : {
+          endZoneId: parseZoneId(payload.end_zone_id, 'end_zone_id'),
+        }),
         resolvedStartAt,
         resolvedEndAt,
         displayStartsLocalAt: parseLocalDateTime(
@@ -859,6 +865,7 @@ function parseScheduledOccurrence(
           'display_ends_local_at',
         ],
         'Scheduled Timeline Occurrence named-zone placement',
+        ['end_zone_id'],
       );
       const startsLocalAt = parseLocalDateTime(
         placement.starts_local_at,
@@ -877,7 +884,8 @@ function parseScheduledOccurrence(
         'resolved_end_at',
       );
       if (
-        Temporal.PlainDateTime.compare(startsLocalAt, endsLocalAt) >= 0 ||
+        (placement.end_zone_id == null &&
+          Temporal.PlainDateTime.compare(startsLocalAt, endsLocalAt) >= 0) ||
         Temporal.Instant.compare(resolvedStartAt, resolvedEndAt) >= 0
       ) {
         throw new TemporalTimelineRemoteError(
@@ -891,6 +899,9 @@ function parseScheduledOccurrence(
         startsLocalAt,
         endsLocalAt,
         zoneId: parseZoneId(placement.zone_id, 'zone_id'),
+        ...(placement.end_zone_id == null ? {} : {
+          endZoneId: parseZoneId(placement.end_zone_id, 'end_zone_id'),
+        }),
         resolvedStartAt,
         resolvedEndAt,
         displayStartsLocalAt: parseLocalDateTime(

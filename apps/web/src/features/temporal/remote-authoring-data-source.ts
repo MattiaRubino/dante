@@ -236,7 +236,7 @@ function acceptedPlacement(
         'disambiguation',
         'resolved_start_at',
         'resolved_end_at',
-      ]);
+      ], ['end_zone_id']);
       const startsLocalAt = localDateTime(
         payload.starts_local_at,
         'starts_local_at',
@@ -248,7 +248,8 @@ function acceptedPlacement(
       );
       const resolvedEndAt = instant(payload.resolved_end_at, 'resolved_end_at');
       if (
-        Temporal.PlainDateTime.compare(startsLocalAt, endsLocalAt) >= 0 ||
+        (payload.end_zone_id == null &&
+          Temporal.PlainDateTime.compare(startsLocalAt, endsLocalAt) >= 0) ||
         Temporal.Instant.compare(resolvedStartAt, resolvedEndAt) >= 0
       ) {
         throw new TemporalAuthoringRemoteError(
@@ -273,11 +274,17 @@ function acceptedPlacement(
         );
       }
       const zoneId = validateNamedTimeZone(payload.zone_id);
+      const endZoneId = payload.end_zone_id == null
+        ? null : validateNamedTimeZone(payload.end_zone_id);
+      if (endZoneId === zoneId) {
+        throw new TemporalAuthoringRemoteError('protocol', 'Redundant end timezone override.');
+      }
       return Object.freeze({
         kind: 'named-zone-local-interval' as const,
         startsLocalAt,
         endsLocalAt,
         zoneId,
+        ...(endZoneId ? { endZoneId } : {}),
         disambiguation: payload.disambiguation,
         resolvedStartAt,
         resolvedEndAt,
@@ -626,6 +633,7 @@ function serializePlacement(placement: TemporalSchedulePlacementInput) {
         starts_local_at: placement.startsLocalAt.toString(),
         ends_local_at: placement.endsLocalAt.toString(),
         zone_id: placement.zoneId,
+        ...(placement.endZoneId ? { end_zone_id: placement.endZoneId } : {}),
         disambiguation: placement.disambiguation,
       } as const;
     case 'absolute-interval':

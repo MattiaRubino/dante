@@ -65,6 +65,7 @@ type TemporalTimelineNamedZoneLocalFields = Readonly<{
   startsLocalAt: PlainDateTime;
   endsLocalAt: PlainDateTime;
   zoneId: string;
+  endZoneId?: string;
   resolvedStartAt: Instant;
   resolvedEndAt: Instant;
   displayStartsLocalAt: PlainDateTime;

@@ -19,6 +19,8 @@ export type TemporalSchedulePlacementInput =
       startsLocalAt: PlainDateTime;
       endsLocalAt: PlainDateTime;
       zoneId: string;
+      /** Optional distinct end boundary timezone; omitted for a single-zone Schedule. */
+      endZoneId?: string;
       disambiguation: TemporalScheduleDisambiguation;
     }>
   | Readonly<{
@@ -42,6 +44,7 @@ export type TemporalAcceptedSchedulePlacement =
       startsLocalAt: PlainDateTime;
       endsLocalAt: PlainDateTime;
       zoneId: string;
+      endZoneId?: string;
       resolvedStartAt: Instant;
       resolvedEndAt: Instant;
     }>;
