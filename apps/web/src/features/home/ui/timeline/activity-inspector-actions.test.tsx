@@ -1954,6 +1954,7 @@ describe('Activity Inspector', () => {
     expect(timingSection?.classList.contains('temporal-create-timing-section')).toBe(true);
     expect(timingSection?.querySelector('.timeline-activity-editor__interval-fields'))
       .toBeTruthy();
+    expect(zone.querySelector('svg.temporal-create-timezone-globe')).toBeTruthy();
     expect(zone.textContent).not.toContain('Fuso orario');
     expect(screen.queryByText('Intervallo 1')).toBeNull();
     fireEvent.click(zone);

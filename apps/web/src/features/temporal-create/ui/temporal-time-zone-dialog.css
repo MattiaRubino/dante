@@ -241,7 +241,7 @@
 
 /* One recognizable, colored globe for Quick/Advanced Create and all Edit
    surfaces; preserve the shared trigger geometry and accessible button label. */
-.temporal-create-timezone-trigger > svg.temporal-create-timezone-globe {
+.temporal-time-mode-toolbar .temporal-create-timezone-trigger > svg.temporal-create-timezone-globe {
   flex: none;
   width: 18px;
   height: 18px;
