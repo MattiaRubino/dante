@@ -23,10 +23,10 @@ test('Create stages Life Area color and keeps the 45-minute interval without fab
   await dialog.getByRole('textbox', { name: 'Inizio: minuti' }).fill('00');
   await setTimedDuration(dialog, 45);
 
-  const area = dialog.getByRole('textbox', { name: 'Life Area (opzionale)' });
+  const area = dialog.getByRole('textbox', { name: 'Area (opzionale)' });
   await area.fill('Studio');
   await expect(area).toHaveValue('Studio');
-  const color = dialog.getByRole('button', { name: 'Colore Life Area' });
+  const color = dialog.getByRole('button', { name: 'Colore dell’area' });
   await color.click();
   await page
     .getByRole('dialog', { name: 'Scegli colore' })
@@ -64,7 +64,7 @@ test('Create stages Life Area color and keeps the 45-minute interval without fab
 
   dialog = await openCreate(page);
   const secondArea = dialog.getByRole('textbox', {
-    name: 'Life Area (opzionale)',
+    name: 'Area (opzionale)',
   });
   await secondArea.fill('studio');
   // A case-insensitive exact match must select the existing Life Area
