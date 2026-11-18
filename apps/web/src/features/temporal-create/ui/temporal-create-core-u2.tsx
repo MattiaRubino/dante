@@ -62,7 +62,7 @@ type Props = Readonly<{
   onClockInvalidChange?: (invalid: boolean) => void;
 }>;
 
-type TimeBand = Readonly<{
+export type TimeBand = Readonly<{
   key: 'morning' | 'afternoon' | 'evening' | 'night';
   start: string;
   end: string;
@@ -98,7 +98,7 @@ const TIME_OPTIONS = Object.freeze(
   }),
 );
 
-const TIME_BANDS: readonly TimeBand[] = Object.freeze([
+export const TIME_BANDS: readonly TimeBand[] = Object.freeze([
   Object.freeze({ key: 'morning', start: '06:00', end: '12:00' }),
   Object.freeze({ key: 'afternoon', start: '12:00', end: '18:00' }),
   Object.freeze({ key: 'evening', start: '18:00', end: '23:00' }),
