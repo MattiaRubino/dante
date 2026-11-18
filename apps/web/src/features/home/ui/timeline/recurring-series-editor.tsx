@@ -139,7 +139,7 @@ function SeriesIntervalFields({
     onChange({
       ...row,
       start_offset_minutes: anchor.until(next).total({ unit: 'minutes' }),
-      duration_minutes: next.until(end).total({ unit: 'minutes' }),
+      duration_minutes: asNumber(row.duration_minutes),
     });
   };
   const changeEnd = (day: string, time: string) => {
@@ -150,7 +150,10 @@ function SeriesIntervalFields({
     });
   };
   return (
-    <div className="temporal-create-activity-interval">
+    <div
+      className="temporal-create-activity-interval"
+      data-edit-invalid={asNumber(row.duration_minutes) <= 0}
+    >
       <span className="temporal-create-activity-interval__label">
         {kind === 'interval' ? 'Intervallo' : 'Orario Sessione'} {index + 1}
       </span>
@@ -191,6 +194,7 @@ function SeriesIntervalFields({
           align="end"
           locale="it"
           value={end.toPlainDate().toString()}
+          min={start.toPlainDate().toString()}
           onChange={(day) =>
             changeEnd(
               day,

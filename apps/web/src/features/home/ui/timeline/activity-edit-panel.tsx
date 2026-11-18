@@ -5,7 +5,7 @@ import {
   useState,
   type RefObject,
 } from 'react';
-import { Temporal, detectDeviceTimeZone } from '@dante/time';
+import { Temporal, detectDeviceTimeZone, moveCivilStartPreservingDuration, moveAllDayRangePreservingDays } from '@dante/time';
 
 import {
   createRemoteActivityInspector,
@@ -234,6 +234,7 @@ function ActivityIntervalFields({
         align="end"
         locale="it"
         value={value.end.slice(0, 10)}
+        min={value.start.slice(0, 10)}
         onChange={(date) =>
           onChange('end', `${date}T${value.end.slice(11, 16)}`)
         }
@@ -503,6 +504,12 @@ export function ActivityEditPanel({
         schedule.role === 'interval' ||
         (schedule.role === 'envelope' && !hasIntervals),
     ) ?? [];
+  const visibleIntervalCount = hasIntervals
+    ? settings?.schedules.filter(
+        (row) => row.role === 'interval' && !removedIntervals.includes(row.scheduleRef),
+      ).length ?? 0
+    : 1;
+  const showIntervalLabels = !allDay && visibleIntervalCount + newIntervals.length > 1;
   const envelope = settings?.schedules.find((row) => row.role === 'envelope');
   const originalAllDay = envelope?.temporalForm === 'date_span';
   const originalZoneId = envelope?.zoneId ?? timeZone ?? detectDeviceTimeZone();
@@ -1138,14 +1145,18 @@ export function ActivityEditPanel({
     field: keyof ActivityReplanTime,
     value: string,
   ) => {
-    setPlanDraft((current) => ({
-      ...current,
-      [ref]: {
-        start: current[ref]?.start ?? '',
-        end: current[ref]?.end ?? '',
-        [field]: value,
-      },
-    }));
+    setPlanDraft((current) => {
+      const saved = settings?.schedules.find((row) => row.scheduleRef === ref);
+      const currentRow = current[ref] ?? {
+        start: saved?.start ?? '',
+        end: saved?.end ?? '',
+      };
+      if (!currentRow.start || !currentRow.end) return current;
+      const nextEnd = field === 'start'
+        ? moveCivilStartPreservingDuration(currentRow.start, currentRow.end, value)
+        : value;
+      return { ...current, [ref]: { ...currentRow, [field]: value, end: nextEnd } };
+    });
     setPlanOperation(null);
     setPlanError('');
   };
@@ -1156,9 +1167,13 @@ export function ActivityEditPanel({
     value: string,
   ) => {
     setNewIntervals((current) =>
-      current.map((item) =>
-        item.clientRef === ref ? { ...item, [field]: value } : item,
-      ),
+      current.map((item) => {
+        if (item.clientRef !== ref) return item;
+        const nextEnd = field === 'start'
+          ? moveCivilStartPreservingDuration(item.start, item.end, value)
+          : value;
+        return { ...item, [field]: value, end: nextEnd };
+      }),
     );
     setPlanOperation(null);
     setPlanError('');
@@ -2023,7 +2038,10 @@ export function ActivityEditPanel({
                     locale="it"
                     value={dateSpanDraft.start}
                     onChange={(start) => {
-                      setDateSpanDraft((current) => ({ ...current, start }));
+                      setDateSpanDraft((current) => ({
+                        start,
+                        end: moveAllDayRangePreservingDays(current.start, current.end, start),
+                      }));
                       setPlanOperation(null);
                       setPlanError('');
                     }}
@@ -2034,6 +2052,7 @@ export function ActivityEditPanel({
                     align="end"
                     locale="it"
                     value={dateSpanDraft.end}
+                    min={dateSpanDraft.start}
                     onChange={(end) => {
                       setDateSpanDraft((current) => ({ ...current, end }));
                       setPlanOperation(null);
@@ -2058,8 +2077,9 @@ export function ActivityEditPanel({
                       <li
                         key={schedule.scheduleRef}
                         className="temporal-create-activity-interval"
+                        data-edit-invalid={!!planErrors[schedule.scheduleRef]}
                       >
-                        {!allDay ? (
+                        {showIntervalLabels ? (
                           <span className="temporal-create-activity-interval__label">
                             Intervallo {index + 1}
                           </span>
@@ -2168,6 +2188,7 @@ export function ActivityEditPanel({
                     <div
                       key={item.clientRef}
                       className="temporal-create-activity-interval"
+                      data-edit-invalid={!!planErrors[item.clientRef]}
                     >
                       <span className="temporal-create-activity-interval__label">
                         Intervallo{' '}
@@ -2715,7 +2736,8 @@ export function ActivityEditPanel({
             !!sessionAttemptsError ||
             !captureMode ||
             !realityMode ||
-            !draft.title.trim()
+            !draft.title.trim() ||
+            (planDirty && Object.keys(planErrors).length > 0)
           }
         >
           {pending ? 'Salvataggio…' : 'Salva modifiche'}

@@ -1,4 +1,4 @@
-import { Temporal } from '@dante/time';
+import { Temporal, moveCivilStartPreservingDuration, moveAllDayRangePreservingDays } from '@dante/time';
 
 import { TimeControl } from '../../../temporal-create/ui/temporal-create-core-u2';
 import { TemporalCreateDatePicker } from '../../../temporal-create/ui/temporal-create-date-picker';
@@ -165,6 +165,15 @@ export function eventSchedulePlacementFromDraft(
   };
 }
 
+export function isValidEventScheduleDraft(draft: EventScheduleDraft): boolean {
+  try {
+    eventSchedulePlacementFromDraft(draft);
+    return true;
+  } catch {
+    return false;
+  }
+}
+
 export function EventScheduleEditor({
   draft,
   onChange,
@@ -178,11 +187,38 @@ export function EventScheduleEditor({
 }>) {
   const update = (change: Partial<EventScheduleDraft>) =>
     onChange({ ...draft, ...change });
+  const moveStart = (nextDate: string, nextTime: string) => {
+    if (draft.kind === 'all-day') {
+      update({
+        startDate: nextDate,
+        endDate: moveAllDayRangePreservingDays(draft.startDate, draft.endDate, nextDate),
+      });
+      return;
+    }
+    try {
+      const movedEnd = moveCivilStartPreservingDuration(
+        `${draft.startDate}T${draft.startTime}`,
+        `${draft.endDate}T${draft.endTime}`,
+        `${nextDate}T${nextTime}`,
+      );
+      update({
+        startDate: nextDate, startTime: nextTime,
+        endDate: movedEnd.slice(0, 10),
+        endTime: movedEnd.slice(11, 16),
+      });
+    } catch {
+      // Keep an already-invalid draft editable without synthesizing an end.
+      update({ startDate: nextDate, startTime: nextTime });
+    }
+  };
+  const timingInvalid = draft.kind === 'timed'
+    ? `${draft.endDate}T${draft.endTime}` <= `${draft.startDate}T${draft.startTime}`
+    : draft.endDate < draft.startDate;
   return (
     <fieldset
       className="timeline-event-schedule-editor"
       aria-label="Orario Evento"
-      data-edit-invalid={!!error}
+      data-edit-invalid={!!error || timingInvalid}
       disabled={disabled}
     >
       <div className="temporal-time-mode-toolbar">
@@ -219,13 +255,13 @@ export function EventScheduleEditor({
               label="Data inizio"
               locale="it"
               value={draft.startDate}
-              onChange={(startDate) => update({ startDate })}
+              onChange={(startDate) => moveStart(startDate, draft.startTime)}
             />
             <TimeControl
               label="Inizio"
               value={draft.startTime}
               dataPath="event.edit.start"
-              onChange={(startTime) => update({ startTime })}
+              onChange={(startTime) => moveStart(draft.startDate, startTime)}
             />
             <span
               className="temporal-create-activity-interval__arrow"
@@ -236,6 +272,7 @@ export function EventScheduleEditor({
             <TimeControl
               label="Fine"
               value={draft.endTime}
+              invalid={timingInvalid}
               dataPath="event.edit.end"
               onChange={(endTime) => update({ endTime })}
             />
@@ -243,6 +280,8 @@ export function EventScheduleEditor({
               label="Data fine"
               locale="it"
               value={draft.endDate}
+              min={draft.startDate}
+              invalid={timingInvalid}
               align="end"
               onChange={(endDate) => update({ endDate })}
             />
@@ -254,12 +293,14 @@ export function EventScheduleEditor({
             label="Data inizio"
             locale="it"
             value={draft.startDate}
-            onChange={(startDate) => update({ startDate })}
+            onChange={(startDate) => moveStart(startDate, draft.startTime)}
           />
           <TemporalCreateDatePicker
             label="Data fine"
             locale="it"
             value={draft.endDate}
+            min={draft.startDate}
+            invalid={timingInvalid}
             onChange={(endDate) => update({ endDate })}
           />
         </div>

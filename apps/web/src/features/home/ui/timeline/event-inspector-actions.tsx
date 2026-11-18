@@ -81,6 +81,7 @@ import {
   EventScheduleEditor,
   eventScheduleDraftFromPlacement,
   eventSchedulePlacementFromDraft,
+  isValidEventScheduleDraft,
   type EventScheduleDraft,
 } from './event-schedule-editor';
 import {
@@ -1941,7 +1942,10 @@ export function EventInspectorActions({
             <button
               type="button"
               className="is-primary"
-              disabled={busy || !profileDraft.title.trim()}
+              disabled={
+                busy || !profileDraft.title.trim() ||
+                (scheduleDraft !== null && !isValidEventScheduleDraft(scheduleDraft))
+              }
               onClick={() => void saveProfile()}
             >
               Salva modifiche
