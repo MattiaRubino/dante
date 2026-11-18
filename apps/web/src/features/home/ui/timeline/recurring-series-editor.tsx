@@ -20,7 +20,7 @@ import type { TemporalOccurrenceInventoryReviewLease } from '../../../temporal/t
 import { initialRecurrenceForScope } from './recurring-series-bounds';
 import { TemporalCreatePlacementLockButton } from '../../../temporal-create/ui/temporal-create-placement-lock-button';
 import { TemporalAuthoringTitleRow } from '../../../temporal-create/ui/temporal-authoring-title-row';
-import { TimeControl } from '../../../temporal-create/ui/temporal-create-core-u2';
+import { TIME_BANDS, TimeControl, type TimeBand } from '../../../temporal-create/ui/temporal-create-core-u2';
 import { TemporalColorControl } from '../../../temporal-create/ui/temporal-color-control';
 import { TemporalCreateDatePicker } from '../../../temporal-create/ui/temporal-create-date-picker';
 import { TemporalRecurrencePanel } from '../../../temporal-create/ui/temporal-recurrence-panel';
@@ -112,13 +112,72 @@ function writeRows(
   };
 }
 
-function SeriesIntervalFields({
+/** The same four time bands and side menu used by Advanced Create. */
+function SeriesTimeBandPicker({
+  onSelect,
+}: Readonly<{ onSelect: (band: TimeBand) => void }>) {
+  const [open, setOpen] = useState(false);
+  const rootRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!open) return;
+    const dismiss = (event: PointerEvent) => {
+      if (event.target instanceof Node && !rootRef.current?.contains(event.target))
+        setOpen(false);
+    };
+    document.addEventListener('pointerdown', dismiss, true);
+    return () => document.removeEventListener('pointerdown', dismiss, true);
+  }, [open]);
+
+  const labels = {
+    morning: 'Mattina',
+    afternoon: 'Pomeriggio',
+    evening: 'Sera',
+    night: 'Notte',
+  } as const;
+
+  return (
+    <div ref={rootRef} className="temporal-create-time-band-control">
+      <button
+        type="button"
+        className="temporal-create-time-band-trigger"
+        aria-label="Fasce orarie"
+        aria-expanded={open}
+        onClick={() => setOpen((current) => !current)}
+      >
+        <span aria-hidden="true">→</span>
+        <small aria-hidden="true">⌄</small>
+      </button>
+      {open ? (
+        <div className="temporal-create-time-band-panel" role="dialog" aria-label="Fasce orarie">
+          {TIME_BANDS.map((band) => (
+            <button
+              key={band.key}
+              type="button"
+              onClick={() => {
+                onSelect(band);
+                setOpen(false);
+              }}
+            >
+              <strong>{labels[band.key]}</strong>
+              <small>{band.start}–{band.end}</small>
+            </button>
+          ))}
+        </div>
+      ) : null}
+    </div>
+  );
+}
+
+export function SeriesIntervalFields({
   selectedDate,
   wallTime,
   row,
   index,
   onChange,
   onRemove,
+  zoneId,
+  onTimeZoneChange,
   kind = 'interval',
   invalid = false,
   showLabel = true,
@@ -129,6 +188,8 @@ function SeriesIntervalFields({
   index: number;
   onChange: (row: Entry) => void;
   onRemove?: (() => void) | undefined;
+  zoneId?: string | undefined;
+  onTimeZoneChange?: (zoneId: string) => void;
   kind?: 'interval' | 'session';
   invalid?: boolean;
   showLabel?: boolean;
@@ -151,6 +212,19 @@ function SeriesIntervalFields({
     onChange({
       ...row,
       duration_minutes: start.until(next).total({ unit: 'minutes' }),
+    });
+  };
+  const changeBand = (band: TimeBand) => {
+    const startAt = Temporal.PlainDateTime.from(
+      `${start.toPlainDate().toString()}T${band.start}`,
+    );
+    const endAt = startAt.add({ minutes: band.key === 'night' ? 420 :
+      Temporal.PlainTime.from(band.start).until(Temporal.PlainTime.from(band.end))
+        .total({ unit: 'minutes' }) });
+    onChange({
+      ...row,
+      start_offset_minutes: anchor.until(startAt).total({ unit: 'minutes' }),
+      duration_minutes: startAt.until(endAt).total({ unit: 'minutes' }),
     });
   };
   return (
@@ -179,21 +253,24 @@ function SeriesIntervalFields({
           label="Inizio"
           value={start.toPlainTime().toString({ smallestUnit: 'minute' })}
           dataPath={`series.${kind}.${index}.start`}
+          zoneId={zoneId}
+          onZoneChange={onTimeZoneChange ? (zone) => {
+            if (zone) onTimeZoneChange(zone);
+          } : undefined}
           onChange={(value) =>
             changeStart(start.toPlainDate().toString(), value)
           }
         />
-        <span
-          className="temporal-create-activity-interval__arrow"
-          aria-hidden="true"
-        >
-          →
-        </span>
+        <SeriesTimeBandPicker onSelect={changeBand} />
         <TimeControl
           label="Fine"
           value={end.toPlainTime().toString({ smallestUnit: 'minute' })}
           invalid={invalid || asNumber(row.duration_minutes) <= 0}
           dataPath={`series.${kind}.${index}.end`}
+          zoneId={zoneId}
+          onZoneChange={onTimeZoneChange ? (zone) => {
+            if (zone) onTimeZoneChange(zone);
+          } : undefined}
           onChange={(value) => changeEnd(end.toPlainDate().toString(), value)}
         />
         <TemporalCreateDatePicker
@@ -1209,6 +1286,10 @@ export function RecurringSeriesEditor({
                           index={index}
                           invalid={invalidSeriesIntervals.has(index)}
                           showLabel={intervals.length > 1}
+                          zoneId={asText(recurrence.zone_id) || undefined}
+                          onTimeZoneChange={(zoneId) =>
+                            changeRecurrence({ ...recurrence, zone_id: zoneId })
+                          }
                           onChange={(next) => {
                             setLastEditedInterval(index);
                             if (intervals.length) {
