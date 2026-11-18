@@ -124,7 +124,7 @@ describe('Temporal Create U1 top controls', () => {
       expect(panel.hasAttribute('data-temporal-create-portal')).toBe(true);
       expect(within(panel).getByRole('checkbox', {
         name: 'Utilizza fusi orari diversi per inizio e fine',
-      })).not.toBeChecked();
+      })).toHaveProperty('checked', false);
       fireEvent.click(within(panel).getByRole('button', { name: /GMT/ }));
       fireEvent.change(within(panel).getByRole('searchbox', { name: 'Cerca fuso orario' }), {
         target: { value: 'Europe/Rome' },
@@ -159,7 +159,7 @@ describe('Temporal Create U1 top controls', () => {
       const reopened = screen.getByRole('dialog', { name: 'Imposta fuso orario' });
       expect(within(reopened).getByRole('checkbox', {
         name: 'Utilizza fusi orari diversi per inizio e fine',
-      })).toBeChecked();
+      })).toHaveProperty('checked', true);
       expect(within(reopened).getByText(/GMT\+09:00.*Asia\/Tokyo/)).toBeTruthy();
       fireEvent.click(within(reopened).getByRole('button', { name: 'Annulla' }));
       expect(screen.getByRole('button', {
