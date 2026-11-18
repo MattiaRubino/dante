@@ -437,6 +437,7 @@ export function createTemporalCreateFields(
       durationMinutes: options.durationMinutes ?? 30,
       timeMode: options.timeMode ?? 'floating',
       timeZoneId,
+      endTimeZoneId: options.endTimeZoneId ?? null,
       timeDisambiguation: options.timeDisambiguation ?? 'reject',
       coarsePeriod: options.coarsePeriod ?? 'afternoon',
       contextId: options.contextId ?? 'personale',
@@ -494,6 +495,7 @@ function temporalCreateFieldsEqual(
     left.durationMinutes === right.durationMinutes &&
     left.timeMode === right.timeMode &&
     left.timeZoneId === right.timeZoneId &&
+    (left.endTimeZoneId ?? null) === (right.endTimeZoneId ?? null) &&
     left.timeDisambiguation === right.timeDisambiguation &&
     left.coarsePeriod === right.coarsePeriod &&
     left.contextId === right.contextId &&
