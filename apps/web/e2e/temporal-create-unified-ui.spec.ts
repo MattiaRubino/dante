@@ -483,7 +483,7 @@ test('Activity Edit keeps Create clock controls contained and the series recurre
           </div></div>
         </section>
       </details>
-      <section class="timeline-activity-editor__area-color" aria-label="Life Area"><input placeholder="Life Area (opzionale)" /></section>
+      <section class="timeline-activity-editor__area-color" aria-label="Life Area"><input placeholder="Area (opzionale)" /></section>
       <section class="temporal-create-reality-objectives timeline-activity-editor__outcome" aria-label="Configurazione obiettivi"><div class="timeline-activity-editor__objectives">Obiettivo</div></section>
       </div></div>`;
     document.body.append(modal);
