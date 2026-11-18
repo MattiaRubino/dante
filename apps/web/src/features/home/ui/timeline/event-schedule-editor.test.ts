@@ -63,6 +63,36 @@ describe('Event Schedule edit conversion', () => {
     })).toBe(false);
   });
 
+  it('round-trips two original IANA zones without losing local hours', () => {
+    const start = Temporal.PlainDateTime.from('2026-11-18T10:00');
+    const end = Temporal.PlainDateTime.from('2026-11-18T08:00');
+    const placement = {
+      kind: 'named-zone-local' as const,
+      startsLocalAt: start, endsLocalAt: end,
+      zoneId: 'Europe/Rome', endZoneId: 'America/New_York',
+      resolvedStartAt: start.toZonedDateTime('Europe/Rome').toInstant(),
+      resolvedEndAt: end.toZonedDateTime('America/New_York').toInstant(),
+    };
+    const draft = eventScheduleDraftFromPlacement(placement);
+    expect(draft?.endZoneId).toBe('America/New_York');
+    expect(isValidEventScheduleDraft(draft!)).toBe(true);
+    expect(eventSchedulePlacementFromDraft(draft!)).toMatchObject({
+      kind: 'named_zone_local_interval',
+      zone_id: 'Europe/Rome', end_zone_id: 'America/New_York',
+      starts_local_at: '2026-11-18T10:00:00',
+      ends_local_at: '2026-11-18T08:00:00',
+    });
+  });
+
+  it('rejects resolved end before start even if two civil clocks look valid', () => {
+    expect(isValidEventScheduleDraft({
+      kind: 'timed', startDate: '2026-11-18', endDate: '2026-11-18',
+      startTime: '10:00', endTime: '03:00',
+      zoneId: 'Europe/Rome', endZoneId: 'America/New_York',
+      disambiguation: 'earlier',
+    })).toBe(false);
+  });
+
   it('automatically chooses one fold and never exposes a DST selector', () => {
     const repeatedHour = {
       kind: 'timed' as const,

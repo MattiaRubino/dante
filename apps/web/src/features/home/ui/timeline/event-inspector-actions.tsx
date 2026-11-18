@@ -1535,6 +1535,7 @@ export function EventInspectorActions({
                 <EventScheduleEditor
                   draft={scheduleDraft}
                   disabled={busy}
+                  allowBoundaryZones={!recurringContext && occurrenceRef === null}
                   error={scheduleError}
                   onChange={(next) => {
                     setScheduleDraft(next);

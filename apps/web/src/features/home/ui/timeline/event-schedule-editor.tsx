@@ -1,4 +1,11 @@
-import { Temporal, moveCivilStartPreservingDuration, moveAllDayRangePreservingDays } from '@dante/time';
+import {
+  Temporal,
+  moveCivilStartPreservingDuration,
+  moveAllDayRangePreservingDays,
+  projectElapsedEndToZone,
+  elapsedMinutesBetweenZonedBounds,
+  resolveCivilNamedInstant,
+} from '@dante/time';
 
 import { TimeControl } from '../../../temporal-create/ui/temporal-create-core-u2';
 import { TemporalCreateDatePicker } from '../../../temporal-create/ui/temporal-create-date-picker';
@@ -13,8 +20,11 @@ export type EventScheduleDraft = Readonly<{
   startTime: string;
   endTime: string;
   zoneId: string | null;
+  endZoneId?: string | null;
   disambiguation: 'reject' | 'earlier' | 'later';
-  original?: Readonly<{ start: string; end: string; zoneId: string }>;
+  original?: Readonly<{
+    start: string; end: string; zoneId: string; endZoneId?: string | null;
+  }>;
 }>;
 
 function savedEventDisambiguation(
@@ -28,7 +38,8 @@ function savedEventDisambiguation(
       const start = placement.startsLocalAt.toZonedDateTime(placement.zoneId, {
         disambiguation,
       });
-      const end = placement.endsLocalAt.toZonedDateTime(placement.zoneId, {
+      const end = placement.endsLocalAt.toZonedDateTime(
+        placement.endZoneId ?? placement.zoneId, {
         disambiguation,
       });
       if (
@@ -90,6 +101,8 @@ export function eventScheduleDraftFromPlacement(
     startTime: start.toPlainTime().toString({ smallestUnit: 'minute' }),
     endTime: end.toPlainTime().toString({ smallestUnit: 'minute' }),
     zoneId: placement.kind === 'named-zone-local' ? placement.zoneId : null,
+    endZoneId: placement.kind === 'named-zone-local'
+      ? placement.endZoneId ?? null : null,
     disambiguation,
     ...(placement.kind === 'named-zone-local'
       ? {
@@ -97,6 +110,7 @@ export function eventScheduleDraftFromPlacement(
             start: start.toString(),
             end: end.toString(),
             zoneId: placement.zoneId,
+            endZoneId: placement.endZoneId ?? null,
           },
         }
       : {}),
@@ -124,7 +138,9 @@ export function eventSchedulePlacementFromDraft(
     `${draft.startDate}T${draft.startTime}`,
   );
   const end = Temporal.PlainDateTime.from(`${draft.endDate}T${draft.endTime}`);
-  if (Temporal.PlainDateTime.compare(end, start) <= 0) {
+  const customZone = !!draft.zoneId &&
+    !!draft.endZoneId && draft.endZoneId !== draft.zoneId;
+  if (!customZone && Temporal.PlainDateTime.compare(end, start) <= 0) {
     throw new Error('La fine deve essere successiva all’inizio.');
   }
   if (!draft.zoneId) {
@@ -134,17 +150,17 @@ export function eventSchedulePlacementFromDraft(
       ends_local_at: end.toString(),
     };
   }
-  for (const [local, originalValue] of [
-    [start, draft.original?.start],
-    [end, draft.original?.end],
+  for (const [local, originalValue, boundaryZone, originalZone] of [
+    [start, draft.original?.start, draft.zoneId, draft.original?.zoneId],
+    [end, draft.original?.end, draft.endZoneId ?? draft.zoneId,
+      draft.original?.endZoneId ?? draft.original?.zoneId],
   ] as const) {
-    const original = draft.original;
-    if (original?.zoneId === draft.zoneId && local.toString() === originalValue)
+    if (originalZone === boundaryZone && local.toString() === originalValue)
       continue;
-    const earlier = local.toZonedDateTime(draft.zoneId, {
+    const earlier = local.toZonedDateTime(boundaryZone, {
       disambiguation: 'earlier',
     });
-    const later = local.toZonedDateTime(draft.zoneId, {
+    const later = local.toZonedDateTime(boundaryZone, {
       disambiguation: 'later',
     });
     if (
@@ -156,11 +172,20 @@ export function eventSchedulePlacementFromDraft(
       );
     }
   }
+  if (customZone) {
+    // The local end may be numerically before the local start.
+    elapsedMinutesBetweenZonedBounds(
+      start.toString(), draft.zoneId,
+      end.toString(), draft.endZoneId!,
+      draft.disambiguation === 'reject' ? 'earlier' : draft.disambiguation,
+    );
+  }
   return {
     kind: 'named_zone_local_interval',
     starts_local_at: start.toString(),
     ends_local_at: end.toString(),
     zone_id: draft.zoneId,
+    ...(customZone ? { end_zone_id: draft.endZoneId! } : {}),
     disambiguation: draft.disambiguation,
   };
 }
@@ -179,14 +204,72 @@ export function EventScheduleEditor({
   onChange,
   disabled,
   error,
+  allowBoundaryZones = true,
 }: Readonly<{
   draft: EventScheduleDraft;
   onChange: (draft: EventScheduleDraft) => void;
   disabled: boolean;
   error: string;
+  allowBoundaryZones?: boolean;
 }>) {
   const update = (change: Partial<EventScheduleDraft>) =>
     onChange({ ...draft, ...change });
+  const endZone = draft.endZoneId ?? draft.zoneId;
+  const customZone = draft.kind === 'timed' && !!draft.zoneId &&
+    !!draft.endZoneId && draft.endZoneId !== draft.zoneId;
+  const previousDuration = (): number => {
+    if (draft.kind !== 'timed') return 0;
+    if (draft.zoneId && endZone) {
+      return elapsedMinutesBetweenZonedBounds(
+        `${draft.startDate}T${draft.startTime}`, draft.zoneId,
+        `${draft.endDate}T${draft.endTime}`, endZone,
+        draft.disambiguation === 'reject' ? 'earlier' : draft.disambiguation,
+      );
+    }
+    return Temporal.PlainDateTime.from(`${draft.startDate}T${draft.startTime}`)
+      .until(Temporal.PlainDateTime.from(`${draft.endDate}T${draft.endTime}`))
+      .total({ unit: 'minutes' });
+  };
+  const changeBoundaryZone = (which: 'start' | 'end', zone: string | null) => {
+    if (!zone || !draft.zoneId || draft.kind !== 'timed') return;
+    if (which === 'end') {
+      update({ endZoneId: zone === draft.zoneId ? null : zone });
+      return;
+    }
+    const previousEndZone = draft.endZoneId ?? draft.zoneId;
+    let movedEnd: string | null = null;
+    try {
+      movedEnd = projectElapsedEndToZone(
+        `${draft.startDate}T${draft.startTime}`, zone, previousDuration(),
+        previousEndZone,
+        draft.disambiguation === 'reject' ? 'earlier' : draft.disambiguation,
+      );
+    } catch { /* invalid drafts remain correctable in the form */ }
+    update({
+      zoneId: zone,
+      endZoneId: previousEndZone === zone ? null : previousEndZone,
+      ...(movedEnd ? {
+        endDate: movedEnd.slice(0, 10), endTime: movedEnd.slice(11, 16),
+      } : {}),
+    });
+  };
+  const changeGeneralZone = (zone: string | null) => {
+    let movedEnd: string | null = null;
+    if (zone && draft.zoneId && draft.kind === 'timed') {
+      try {
+        movedEnd = projectElapsedEndToZone(
+          `${draft.startDate}T${draft.startTime}`, zone, previousDuration(), zone,
+          draft.disambiguation === 'reject' ? 'earlier' : draft.disambiguation,
+        );
+      } catch { /* invalid drafts remain correctable */ }
+    }
+    update({
+      zoneId: zone, endZoneId: null,
+      ...(movedEnd ? {
+        endDate: movedEnd.slice(0, 10), endTime: movedEnd.slice(11, 16),
+      } : {}),
+    });
+  };
   const moveStart = (nextDate: string, nextTime: string) => {
     if (draft.kind === 'all-day') {
       update({
@@ -196,11 +279,17 @@ export function EventScheduleEditor({
       return;
     }
     try {
-      const movedEnd = moveCivilStartPreservingDuration(
-        `${draft.startDate}T${draft.startTime}`,
-        `${draft.endDate}T${draft.endTime}`,
-        `${nextDate}T${nextTime}`,
-      );
+      const movedEnd = customZone
+        ? projectElapsedEndToZone(
+            `${nextDate}T${nextTime}`, draft.zoneId!,
+            previousDuration(), draft.endZoneId!,
+            draft.disambiguation === 'reject' ? 'earlier' : draft.disambiguation,
+          )
+        : moveCivilStartPreservingDuration(
+            `${draft.startDate}T${draft.startTime}`,
+            `${draft.endDate}T${draft.endTime}`,
+            `${nextDate}T${nextTime}`,
+          );
       update({
         startDate: nextDate, startTime: nextTime,
         endDate: movedEnd.slice(0, 10),
@@ -211,9 +300,7 @@ export function EventScheduleEditor({
       update({ startDate: nextDate, startTime: nextTime });
     }
   };
-  const timingInvalid = draft.kind === 'timed'
-    ? `${draft.endDate}T${draft.endTime}` <= `${draft.startDate}T${draft.startTime}`
-    : draft.endDate < draft.startDate;
+  const timingInvalid = !isValidEventScheduleDraft(draft);
   return (
     <fieldset
       className="timeline-event-schedule-editor"
@@ -243,8 +330,9 @@ export function EventScheduleEditor({
         {draft.kind === 'timed' ? (
           <TemporalTimeZoneControl
             zoneId={draft.zoneId}
+            displayLabel={customZone ? 'Personalizzato' : undefined}
             disabled={disabled}
-            onChange={(zoneId) => update({ zoneId })}
+            onChange={changeGeneralZone}
           />
         ) : null}
       </div>
@@ -261,6 +349,9 @@ export function EventScheduleEditor({
               label="Inizio"
               value={draft.startTime}
               dataPath="event.edit.start"
+              zoneId={allowBoundaryZones && draft.zoneId ? draft.zoneId : undefined}
+              onZoneChange={allowBoundaryZones && draft.zoneId
+                ? (zone) => changeBoundaryZone('start', zone) : undefined}
               onChange={(startTime) => moveStart(draft.startDate, startTime)}
             />
             <span
@@ -274,6 +365,10 @@ export function EventScheduleEditor({
               value={draft.endTime}
               invalid={timingInvalid}
               dataPath="event.edit.end"
+              zoneId={allowBoundaryZones && draft.zoneId
+                ? draft.endZoneId ?? draft.zoneId : undefined}
+              onZoneChange={allowBoundaryZones && draft.zoneId
+                ? (zone) => changeBoundaryZone('end', zone) : undefined}
               onChange={(endTime) => update({ endTime })}
             />
             <TemporalCreateDatePicker
