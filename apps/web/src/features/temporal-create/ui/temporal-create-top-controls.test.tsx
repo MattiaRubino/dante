@@ -495,34 +495,30 @@ describe('Temporal Create U1 top controls', () => {
     expect(startRaw.value).toBe('06:00');
     expect(endRaw.value).toBe('12:00');
 
-    const zoneTrigger = screen.getByRole('button', {
-      name: /Fuso orario:/,
-    });
+    const zoneTrigger = screen.getByRole('button', { name: /Fuso orario:/ });
     fireEvent.click(zoneTrigger);
-    fireEvent.click(screen.getByRole('button', { name: 'Ora locale' }));
-    expect(
-      screen.getByRole('button', { name: /Fuso orario: Ora locale/ }),
-    ).toBeTruthy();
+    const localDialog = screen.getByRole('dialog', { name: 'Imposta fuso orario' });
+    fireEvent.click(within(localDialog).getByRole('button', { name: /GMT/ }));
+    fireEvent.click(within(localDialog).getByRole('option', { name: /Ora locale/ }));
+    fireEvent.click(within(localDialog).getByRole('button', { name: 'OK' }));
     expect(
       domElement(screen.getByLabelText('Ricorda'), HTMLSelectElement).disabled,
     ).toBe(true);
 
-    fireEvent.click(
-      screen.getByRole('button', { name: /Fuso orario: Ora locale/ }),
-    );
-    const zoneMenu = screen.getByRole('dialog', {
-      name: 'Scegli fuso orario',
-    });
+    fireEvent.click(screen.getByRole('button', { name: /Fuso orario:/ }));
+    const zoneDialog = screen.getByRole('dialog', { name: 'Imposta fuso orario' });
+    fireEvent.click(within(zoneDialog).getByRole('button', { name: /GMT/ }));
     fireEvent.change(
-      within(zoneMenu).getByRole('searchbox', { name: 'Cerca fuso orario' }),
+      within(zoneDialog).getByRole('searchbox', { name: 'Cerca fuso orario' }),
       { target: { value: 'Europe/Rome' } },
     );
     expect(
-      within(zoneMenu).queryByRole('button', { name: 'Africa/Abidjan' }),
+      within(zoneDialog).queryByRole('option', { name: /Africa\/Abidjan/ }),
     ).toBeNull();
     fireEvent.click(
-      within(zoneMenu).getByRole('button', { name: 'Europe/Rome' }),
+      within(zoneDialog).getByRole('option', { name: /Europe\/Rome/ }),
     );
+    fireEvent.click(within(zoneDialog).getByRole('button', { name: 'OK' }));
     expect(
       screen.getByRole('button', { name: /Fuso orario: Europe\/Rome/ }),
     ).toBeTruthy();
