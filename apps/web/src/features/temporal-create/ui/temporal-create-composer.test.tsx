@@ -217,7 +217,7 @@ describe('TemporalCreateComposer', () => {
       // Same-zone recurring Activity/Event must remain submittable: the
       // dual-zone validity guard is restricted to genuinely custom end-zones.
       expect(
-        screen.getByRole('button', { name: 'Aggiungi', exact: true })
+        screen.getByRole('button', { name: 'Aggiungi' })
           .hasAttribute('disabled'),
       ).toBe(false);
       expect(
