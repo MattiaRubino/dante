@@ -291,6 +291,91 @@ describe('Temporal Create U2 entry', () => {
     expect(screen.getByDisplayValue('Event duplicato')).toBeTruthy();
   });
 
+  it('resets abandoned Activity Sessions, intervals and settings when switching to Event and back', async () => {
+    const { activityRequests, eventRequests } = renderEntry(
+      [],
+      false,
+      '2132-03-06',
+    );
+    fireEvent.change(screen.getByPlaceholderText('Titolo'), {
+      target: { value: 'Titolo comune' },
+    });
+    fireEvent.click(screen.getByRole('button', { name: /Opzioni avanzate/ }));
+
+    const addSession = screen.getByLabelText('Aggiungi Sessione pianificata');
+    fireEvent.click(within(addSession).getByRole('button', { name: 'Sessione' }));
+    expect(document.querySelectorAll('[data-create-planned-session]')).toHaveLength(1);
+    // Keep the Session blank: this used to block Event Create with
+    // "Le Sessioni pianificate richiedono un'attività".
+    fireEvent.click(screen.getByRole('button', { name: 'Aggiungi intervallo' }));
+    expect(document.querySelectorAll('.temporal-create-activity-interval')).toHaveLength(1);
+    fireEvent.change(screen.getByLabelText('Area (opzionale)'), {
+      target: { value: 'Area da scartare' },
+    });
+    fireEvent.change(screen.getByRole('textbox', { name: 'Descrizione avanzata' }), {
+      target: { value: 'Descrizione da scartare' },
+    });
+
+    const event = screen.getByRole('radio', { name: 'Evento' });
+    expect(event.hasAttribute('disabled')).toBe(false);
+    fireEvent.click(event);
+    expect(event.getAttribute('aria-checked')).toBe('true');
+    expect(document.querySelectorAll('[data-create-planned-session]')).toHaveLength(0);
+    expect(document.querySelectorAll('.temporal-create-activity-interval')).toHaveLength(0);
+    expect(screen.getByPlaceholderText('Titolo')).toHaveProperty('value', 'Titolo comune');
+    expect(screen.getByLabelText('Area (opzionale)')).toHaveProperty('value', '');
+    expect(screen.getByRole('textbox', { name: 'Descrizione avanzata' })).toHaveProperty('value', '');
+    expect(screen.getByRole('combobox', { name: 'Ripeti' })).toHaveProperty('value', 'none');
+
+    fireEvent.click(screen.getByRole('radio', { name: 'Attività' }));
+    expect(document.querySelectorAll('[data-create-planned-session]')).toHaveLength(0);
+    expect(document.querySelectorAll('.temporal-create-activity-interval')).toHaveLength(0);
+    expect(screen.getByPlaceholderText('Titolo')).toHaveProperty('value', 'Titolo comune');
+
+    fireEvent.click(screen.getByRole('radio', { name: 'Evento' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Aggiungi' }));
+    await waitFor(() => expect(eventRequests).toHaveLength(1));
+    expect(eventRequests[0]?.title).toBe('Titolo comune');
+    expect(activityRequests).toHaveLength(0);
+    expect(screen.queryByText('Le Sessioni pianificate richiedono un’attività.')).toBeNull();
+  });
+
+  it('resets Event agenda, all-day, recurrence and objectives when switching to Activity', async () => {
+    const { activityRequests, eventRequests } = renderEntry(
+      [],
+      false,
+      '2132-03-06',
+    );
+    fireEvent.change(screen.getByPlaceholderText('Titolo'), {
+      target: { value: 'Identità mantenuta' },
+    });
+    fireEvent.click(screen.getByRole('button', { name: /Opzioni avanzate/ }));
+    fireEvent.click(screen.getByRole('radio', { name: 'Evento' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Aggiungi punto alla scaletta' }));
+    fireEvent.change(screen.getByRole('textbox', { name: 'Punto scaletta 1' }), {
+      target: { value: 'Da scartare' },
+    });
+    fireEvent.click(screen.getByRole('button', { name: '+ Obiettivo' }));
+    fireEvent.change(screen.getByRole('textbox', { name: 'Obiettivo 1' }), {
+      target: { value: 'Obiettivo da scartare' },
+    });
+    fireEvent.click(screen.getByRole('radio', { name: 'Tutto il giorno' }));
+    expect(screen.getByRole('radio', { name: 'Tutto il giorno' }).getAttribute('aria-checked')).toBe('true');
+
+    fireEvent.click(screen.getByRole('radio', { name: 'Attività' }));
+    expect(screen.getByPlaceholderText('Titolo')).toHaveProperty('value', 'Identità mantenuta');
+    expect(screen.getByRole('radio', { name: 'Orario' }).getAttribute('aria-checked')).toBe('true');
+    expect(screen.queryByRole('textbox', { name: 'Obiettivo 1' })).toBeNull();
+    expect(screen.getByRole('combobox', { name: 'Ripeti' })).toHaveProperty('value', 'none');
+    expect(document.querySelectorAll('[data-temporal-create-agenda-part]')).toHaveLength(0);
+
+    fireEvent.click(screen.getByRole('button', { name: 'Aggiungi' }));
+    await waitFor(() => expect(activityRequests).toHaveLength(1));
+    expect(activityRequests[0]?.title).toBe('Identità mantenuta');
+    expect(activityRequests[0]?.plannedSlices).toEqual([]);
+    expect(eventRequests).toHaveLength(0);
+  });
+
   it('submits a named Session without a child clock or Sub-Activities', async () => {
     const { activityRequests } = renderEntry([], false, '2132-03-06');
     fireEvent.change(screen.getByPlaceholderText('Titolo'), {
