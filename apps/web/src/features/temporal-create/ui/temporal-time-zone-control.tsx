@@ -92,9 +92,19 @@ function placeDialog(anchor: DOMRect): DialogPlacement {
 
 function GlobeIcon() {
   return (
-    <svg viewBox="0 0 24 24" aria-hidden="true">
-      <circle cx="12" cy="12" r="8" />
-      <path d="M4 12h16M12 4c2.2 2.1 3.3 4.8 3.3 8S14.2 17.9 12 20M12 4c-2.2 2.1-3.3 4.8-3.3 8S9.8 17.9 12 20" />
+    <svg
+      className="temporal-create-timezone-globe"
+      viewBox="0 0 24 24"
+      fill="none"
+      aria-hidden="true"
+      focusable="false"
+    >
+      <circle className="temporal-create-timezone-globe__sphere" cx="12" cy="12" r="9" />
+      <path className="temporal-create-timezone-globe__grid"
+        d="M3 12h18M12 3c-2.7 2.5-4 5.5-4 9s1.3 6.5 4 9M12 3c2.7 2.5 4 5.5 4 9s-1.3 6.5-4 9" />
+      <path className="temporal-create-timezone-globe__grid"
+        d="M5.6 6.7c3.7 1.7 9.1 1.7 12.8 0M5.6 17.3c3.7-1.7 9.1-1.7 12.8 0" />
+      <circle className="temporal-create-timezone-globe__accent" cx="17.4" cy="7.2" r="1.7" />
     </svg>
   );
 }

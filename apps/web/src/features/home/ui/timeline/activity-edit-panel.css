@@ -417,9 +417,52 @@
 
 .timeline-event-modal--edit
   .timeline-activity-editor__readback[aria-label='Programmazione attuale'] {
-  padding: 0;
-  border: 0;
-  background: transparent;
+  /* Keep the same bounded timing section as Advanced Create, including
+     ordinary Activity Edit and recurring selected-instance Edit. */
+  box-sizing: border-box;
+  display: grid;
+  gap: 12px;
+  min-width: 0;
+  width: 100%;
+  padding: 16px;
+  border: 1px solid var(--dante-semantic-color-home-border-subtle);
+  border-radius: 12px;
+  background: color-mix(
+    in srgb,
+    var(--dante-semantic-color-home-surface-control, #151f2e) 36%,
+    transparent
+  );
+}
+
+.timeline-event-modal--edit
+  .timeline-activity-editor__readback[aria-label='Programmazione attuale']
+  > .temporal-time-mode-toolbar {
+  width: 100%;
+  min-width: 0;
+}
+
+.timeline-event-modal--edit
+  .timeline-activity-editor__readback[aria-label='Programmazione attuale']
+  .temporal-time-mode-toolbar
+  > .timeline-activity-editor__placement {
+  /* The legacy bottom margin was stretching the toolbar's first grid row,
+     making the time-mode buttons sit higher than the globe selector. */
+  margin: 0;
+  align-items: center;
+}
+
+.timeline-event-modal--edit
+  .timeline-activity-editor__readback[aria-label='Programmazione attuale']
+  > ul {
+  width: 100%;
+  min-width: 0;
+  margin: 0;
+}
+
+.timeline-event-modal--edit
+  .timeline-activity-editor__readback[aria-label='Programmazione attuale']
+  > ul > li {
+  min-width: 0;
 }
 
 .timeline-event-modal--edit .timeline-activity-editor__placement {

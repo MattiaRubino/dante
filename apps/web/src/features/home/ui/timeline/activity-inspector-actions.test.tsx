@@ -1948,7 +1948,12 @@ describe('Activity Inspector', () => {
     const zone = await screen.findByRole('button', {
       name: 'Fuso orario: Europe/Rome',
     });
-    expect(zone.closest('.temporal-time-mode-toolbar')).toBeTruthy();
+    const toolbar = zone.closest('.temporal-time-mode-toolbar');
+    expect(toolbar).toBeTruthy();
+    const timingSection = toolbar?.closest('.timeline-activity-editor__readback');
+    expect(timingSection?.classList.contains('temporal-create-timing-section')).toBe(true);
+    expect(timingSection?.querySelector('.timeline-activity-editor__interval-fields'))
+      .toBeTruthy();
     expect(zone.textContent).not.toContain('Fuso orario');
     expect(screen.queryByText('Intervallo 1')).toBeNull();
     fireEvent.click(zone);

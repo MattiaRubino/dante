@@ -2051,7 +2051,7 @@ export function ActivityEditPanel({
         {settings ? (
           <>
             <section
-              className="timeline-activity-editor__readback"
+              className="timeline-activity-editor__readback temporal-create-timing-section"
               aria-label="Programmazione attuale"
             >
               <div className="temporal-time-mode-toolbar">
