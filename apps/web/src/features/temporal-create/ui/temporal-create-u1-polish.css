@@ -204,7 +204,7 @@
 }
 
 .temporal-create-composer .temporal-create-time-picker {
-  max-width: min(148px, calc(100vw - 32px));
+  max-width: min(182px, calc(100vw - 32px));
 }
 
 /* Title owns one border only. The generic input focus outline used to stack with
