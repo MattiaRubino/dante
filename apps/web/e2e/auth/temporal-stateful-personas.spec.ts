@@ -1041,7 +1041,7 @@ async function seriesRevision(
   ).toHaveValue(areaName);
   await expect(
     inspector.getByText(
-      'La nuova Life Area sarà creata insieme al salvataggio della serie.',
+      'La nuova area sarà creata insieme al salvataggio della serie.',
     ),
   ).toBeVisible();
   await inspector.getByRole('button', { name: 'Salva modifiche' }).click();
@@ -1124,7 +1124,7 @@ async function recolorExistingSeriesArea(
     })
     .click();
   await expect(
-    editor.getByText(/Modificare il colore della Life Area aggiorna/),
+    editor.getByText(/Modificare il colore dell’area aggiorna/),
   ).toBeVisible();
   await editor.getByRole('button', { name: 'Salva modifiche' }).click();
   const review = page.getByRole('dialog', {
