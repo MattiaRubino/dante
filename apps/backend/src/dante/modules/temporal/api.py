@@ -7,7 +7,7 @@ from datetime import date, datetime, time
 from typing import Annotated, Any, Literal, cast
 from uuid import UUID
 
-from fastapi import APIRouter, Depends, Request, Response
+from fastapi import APIRouter, Depends, Query, Request, Response
 from pydantic import BaseModel, ConfigDict, Field
 
 from dante.context.contracts import DanteContext
@@ -1311,7 +1311,9 @@ async def get_timeline_window(
     response: Response,
     start_date: date,
     end_date_exclusive: date,
-    view_zone_id: str | None = None,
+    # UI-only view projection: the general generated API client does not consume
+    # this transport parameter; the specialized Timeline transport does.
+    view_zone_id: Annotated[str | None, Query(include_in_schema=False)] = None,
 ) -> TimelineWindowResponse:
     response.headers["Cache-Control"] = "no-store"
     try:
