@@ -27,6 +27,12 @@ export const ActivityChildrenResponse = /*#__PURE__*/ zod.object({
               /*#__PURE__*/ zod.iso.date(),
               /*#__PURE__*/ zod.null(),
             ]),
+            end_zone_id: /*#__PURE__*/ zod.optional(
+              /*#__PURE__*/ zod.union([
+                /*#__PURE__*/ zod.string(),
+                /*#__PURE__*/ zod.null(),
+              ]),
+            ),
             ends_at: /*#__PURE__*/ zod.union([
               /*#__PURE__*/ zod.iso.datetime({ offset: true }),
               /*#__PURE__*/ zod.null(),
@@ -118,6 +124,12 @@ export const ActivityChildrenResponse = /*#__PURE__*/ zod.object({
           /*#__PURE__*/ zod.iso.date(),
           /*#__PURE__*/ zod.null(),
         ]),
+        end_zone_id: /*#__PURE__*/ zod.optional(
+          /*#__PURE__*/ zod.union([
+            /*#__PURE__*/ zod.string(),
+            /*#__PURE__*/ zod.null(),
+          ]),
+        ),
         ends_at: /*#__PURE__*/ zod.union([
           /*#__PURE__*/ zod.iso.datetime({ offset: true }),
           /*#__PURE__*/ zod.null(),

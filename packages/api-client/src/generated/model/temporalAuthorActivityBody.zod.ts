@@ -9,6 +9,8 @@ import * as zod from 'zod/mini';
 export const temporalAuthorActivityBodyActivityIntervalsItemOneKindDefault = `date_span`;
 export const temporalAuthorActivityBodyActivityIntervalsItemTwoKindDefault = `floating_local_interval`;
 export const temporalAuthorActivityBodyActivityIntervalsItemThreeDisambiguationDefault = `reject`;
+export const temporalAuthorActivityBodyActivityIntervalsItemThreeEndZoneIdOneMax = 200;
+
 export const temporalAuthorActivityBodyActivityIntervalsItemThreeKindDefault = `named_zone_local_interval`;
 export const temporalAuthorActivityBodyActivityIntervalsItemThreeZoneIdMax = 200;
 
@@ -19,6 +21,8 @@ export const temporalAuthorActivityBodyActivityIntervalsMax = 100;
 export const temporalAuthorActivityBodyChildrenItemPlacementOneOneKindDefault = `date_span`;
 export const temporalAuthorActivityBodyChildrenItemPlacementOneTwoKindDefault = `floating_local_interval`;
 export const temporalAuthorActivityBodyChildrenItemPlacementOneThreeDisambiguationDefault = `reject`;
+export const temporalAuthorActivityBodyChildrenItemPlacementOneThreeEndZoneIdOneMax = 200;
+
 export const temporalAuthorActivityBodyChildrenItemPlacementOneThreeKindDefault = `named_zone_local_interval`;
 export const temporalAuthorActivityBodyChildrenItemPlacementOneThreeZoneIdMax = 200;
 
@@ -29,6 +33,8 @@ export const temporalAuthorActivityBodyChildrenItemPlannedSliceNamesMax = 100;
 export const temporalAuthorActivityBodyChildrenItemPlannedSlicesItemOneKindDefault = `date_span`;
 export const temporalAuthorActivityBodyChildrenItemPlannedSlicesItemTwoKindDefault = `floating_local_interval`;
 export const temporalAuthorActivityBodyChildrenItemPlannedSlicesItemThreeDisambiguationDefault = `reject`;
+export const temporalAuthorActivityBodyChildrenItemPlannedSlicesItemThreeEndZoneIdOneMax = 200;
+
 export const temporalAuthorActivityBodyChildrenItemPlannedSlicesItemThreeKindDefault = `named_zone_local_interval`;
 export const temporalAuthorActivityBodyChildrenItemPlannedSlicesItemThreeZoneIdMax = 200;
 
@@ -58,6 +64,8 @@ export const temporalAuthorActivityBodyOperationIdMax = 200;
 export const temporalAuthorActivityBodyPlacementOneOneKindDefault = `date_span`;
 export const temporalAuthorActivityBodyPlacementOneTwoKindDefault = `floating_local_interval`;
 export const temporalAuthorActivityBodyPlacementOneThreeDisambiguationDefault = `reject`;
+export const temporalAuthorActivityBodyPlacementOneThreeEndZoneIdOneMax = 200;
+
 export const temporalAuthorActivityBodyPlacementOneThreeKindDefault = `named_zone_local_interval`;
 export const temporalAuthorActivityBodyPlacementOneThreeZoneIdMax = 200;
 
@@ -68,6 +76,8 @@ export const temporalAuthorActivityBodyPlannedSliceNamesMax = 100;
 export const temporalAuthorActivityBodyPlannedSlicesItemOneOneKindDefault = `date_span`;
 export const temporalAuthorActivityBodyPlannedSlicesItemOneTwoKindDefault = `floating_local_interval`;
 export const temporalAuthorActivityBodyPlannedSlicesItemOneThreeDisambiguationDefault = `reject`;
+export const temporalAuthorActivityBodyPlannedSlicesItemOneThreeEndZoneIdOneMax = 200;
+
 export const temporalAuthorActivityBodyPlannedSlicesItemOneThreeKindDefault = `named_zone_local_interval`;
 export const temporalAuthorActivityBodyPlannedSlicesItemOneThreeZoneIdMax = 200;
 
@@ -107,6 +117,19 @@ export const TemporalAuthorActivityBody = /*#__PURE__*/ zod
               disambiguation: /*#__PURE__*/ zod._default(
                 /*#__PURE__*/ zod.enum(['reject', 'earlier', 'later']),
                 temporalAuthorActivityBodyActivityIntervalsItemThreeDisambiguationDefault,
+              ),
+              end_zone_id: /*#__PURE__*/ zod.optional(
+                /*#__PURE__*/ zod.union([
+                  /*#__PURE__*/ zod
+                    .string()
+                    .check(/*#__PURE__*/ zod.minLength(1))
+                    .check(
+                      /*#__PURE__*/ zod.maxLength(
+                        temporalAuthorActivityBodyActivityIntervalsItemThreeEndZoneIdOneMax,
+                      ),
+                    ),
+                  /*#__PURE__*/ zod.null(),
+                ]),
               ),
               ends_local_at: /*#__PURE__*/ zod.iso.datetime({ offset: true }),
               kind: /*#__PURE__*/ zod
@@ -205,6 +228,19 @@ export const TemporalAuthorActivityBody = /*#__PURE__*/ zod
                       /*#__PURE__*/ zod.enum(['reject', 'earlier', 'later']),
                       temporalAuthorActivityBodyChildrenItemPlacementOneThreeDisambiguationDefault,
                     ),
+                    end_zone_id: /*#__PURE__*/ zod.optional(
+                      /*#__PURE__*/ zod.union([
+                        /*#__PURE__*/ zod
+                          .string()
+                          .check(/*#__PURE__*/ zod.minLength(1))
+                          .check(
+                            /*#__PURE__*/ zod.maxLength(
+                              temporalAuthorActivityBodyChildrenItemPlacementOneThreeEndZoneIdOneMax,
+                            ),
+                          ),
+                        /*#__PURE__*/ zod.null(),
+                      ]),
+                    ),
                     ends_local_at: /*#__PURE__*/ zod.iso.datetime({
                       offset: true,
                     }),
@@ -295,6 +331,19 @@ export const TemporalAuthorActivityBody = /*#__PURE__*/ zod
                       disambiguation: /*#__PURE__*/ zod._default(
                         /*#__PURE__*/ zod.enum(['reject', 'earlier', 'later']),
                         temporalAuthorActivityBodyChildrenItemPlannedSlicesItemThreeDisambiguationDefault,
+                      ),
+                      end_zone_id: /*#__PURE__*/ zod.optional(
+                        /*#__PURE__*/ zod.union([
+                          /*#__PURE__*/ zod
+                            .string()
+                            .check(/*#__PURE__*/ zod.minLength(1))
+                            .check(
+                              /*#__PURE__*/ zod.maxLength(
+                                temporalAuthorActivityBodyChildrenItemPlannedSlicesItemThreeEndZoneIdOneMax,
+                              ),
+                            ),
+                          /*#__PURE__*/ zod.null(),
+                        ]),
                       ),
                       ends_local_at: /*#__PURE__*/ zod.iso.datetime({
                         offset: true,
@@ -507,6 +556,19 @@ export const TemporalAuthorActivityBody = /*#__PURE__*/ zod
               /*#__PURE__*/ zod.enum(['reject', 'earlier', 'later']),
               temporalAuthorActivityBodyPlacementOneThreeDisambiguationDefault,
             ),
+            end_zone_id: /*#__PURE__*/ zod.optional(
+              /*#__PURE__*/ zod.union([
+                /*#__PURE__*/ zod
+                  .string()
+                  .check(/*#__PURE__*/ zod.minLength(1))
+                  .check(
+                    /*#__PURE__*/ zod.maxLength(
+                      temporalAuthorActivityBodyPlacementOneThreeEndZoneIdOneMax,
+                    ),
+                  ),
+                /*#__PURE__*/ zod.null(),
+              ]),
+            ),
             ends_local_at: /*#__PURE__*/ zod.iso.datetime({ offset: true }),
             kind: /*#__PURE__*/ zod
               ._default(
@@ -588,6 +650,19 @@ export const TemporalAuthorActivityBody = /*#__PURE__*/ zod
                 disambiguation: /*#__PURE__*/ zod._default(
                   /*#__PURE__*/ zod.enum(['reject', 'earlier', 'later']),
                   temporalAuthorActivityBodyPlannedSlicesItemOneThreeDisambiguationDefault,
+                ),
+                end_zone_id: /*#__PURE__*/ zod.optional(
+                  /*#__PURE__*/ zod.union([
+                    /*#__PURE__*/ zod
+                      .string()
+                      .check(/*#__PURE__*/ zod.minLength(1))
+                      .check(
+                        /*#__PURE__*/ zod.maxLength(
+                          temporalAuthorActivityBodyPlannedSlicesItemOneThreeEndZoneIdOneMax,
+                        ),
+                      ),
+                    /*#__PURE__*/ zod.null(),
+                  ]),
                 ),
                 ends_local_at: /*#__PURE__*/ zod.iso.datetime({ offset: true }),
                 kind: /*#__PURE__*/ zod

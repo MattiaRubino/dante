@@ -209,6 +209,12 @@ export const TimelineWindowItemsResponse = /*#__PURE__*/ zod
                     timelineWindowItemsResponseItemsItemOneThreeDisplayStartsLocalAtRegExp,
                   ),
                 ),
+              end_zone_id: /*#__PURE__*/ zod.optional(
+                /*#__PURE__*/ zod.union([
+                  /*#__PURE__*/ zod.string(),
+                  /*#__PURE__*/ zod.null(),
+                ]),
+              ),
               ends_local_at: /*#__PURE__*/ zod
                 .string()
                 .check(
@@ -453,6 +459,12 @@ export const TimelineWindowItemsResponse = /*#__PURE__*/ zod
                     timelineWindowItemsResponseItemsItemTwoThreeDisplayStartsLocalAtRegExp,
                   ),
                 ),
+              end_zone_id: /*#__PURE__*/ zod.optional(
+                /*#__PURE__*/ zod.union([
+                  /*#__PURE__*/ zod.string(),
+                  /*#__PURE__*/ zod.null(),
+                ]),
+              ),
               ends_local_at: /*#__PURE__*/ zod
                 .string()
                 .check(
@@ -766,6 +778,12 @@ export const TimelineWindowItemsResponse = /*#__PURE__*/ zod
                     timelineWindowItemsResponseItemsItemThreePlacementThreeDisplayStartsLocalAtRegExp,
                   ),
                 ),
+              end_zone_id: /*#__PURE__*/ zod.optional(
+                /*#__PURE__*/ zod.union([
+                  /*#__PURE__*/ zod.string(),
+                  /*#__PURE__*/ zod.null(),
+                ]),
+              ),
               ends_local_at: /*#__PURE__*/ zod
                 .string()
                 .check(

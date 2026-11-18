@@ -22,6 +22,8 @@ export const temporalAuthorEventBodyOperationIdMax = 200;
 export const temporalAuthorEventBodyPlacementOneOneKindDefault = `date_span`;
 export const temporalAuthorEventBodyPlacementOneTwoKindDefault = `floating_local_interval`;
 export const temporalAuthorEventBodyPlacementOneThreeDisambiguationDefault = `reject`;
+export const temporalAuthorEventBodyPlacementOneThreeEndZoneIdOneMax = 200;
+
 export const temporalAuthorEventBodyPlacementOneThreeKindDefault = `named_zone_local_interval`;
 export const temporalAuthorEventBodyPlacementOneThreeZoneIdMax = 200;
 
@@ -146,6 +148,19 @@ export const TemporalAuthorEventBody = /*#__PURE__*/ zod
             disambiguation: /*#__PURE__*/ zod._default(
               /*#__PURE__*/ zod.enum(['reject', 'earlier', 'later']),
               temporalAuthorEventBodyPlacementOneThreeDisambiguationDefault,
+            ),
+            end_zone_id: /*#__PURE__*/ zod.optional(
+              /*#__PURE__*/ zod.union([
+                /*#__PURE__*/ zod
+                  .string()
+                  .check(/*#__PURE__*/ zod.minLength(1))
+                  .check(
+                    /*#__PURE__*/ zod.maxLength(
+                      temporalAuthorEventBodyPlacementOneThreeEndZoneIdOneMax,
+                    ),
+                  ),
+                /*#__PURE__*/ zod.null(),
+              ]),
             ),
             ends_local_at: /*#__PURE__*/ zod.iso.datetime({ offset: true }),
             kind: /*#__PURE__*/ zod

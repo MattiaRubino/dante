@@ -11,6 +11,8 @@ export const temporalReplanPostponedEventBodyOperationIdMax = 200;
 export const temporalReplanPostponedEventBodyPlacementOneKindDefault = `date_span`;
 export const temporalReplanPostponedEventBodyPlacementTwoKindDefault = `floating_local_interval`;
 export const temporalReplanPostponedEventBodyPlacementThreeDisambiguationDefault = `reject`;
+export const temporalReplanPostponedEventBodyPlacementThreeEndZoneIdOneMax = 200;
+
 export const temporalReplanPostponedEventBodyPlacementThreeKindDefault = `named_zone_local_interval`;
 export const temporalReplanPostponedEventBodyPlacementThreeZoneIdMax = 200;
 
@@ -52,6 +54,19 @@ export const TemporalReplanPostponedEventBody = /*#__PURE__*/ zod.object({
       disambiguation: /*#__PURE__*/ zod._default(
         /*#__PURE__*/ zod.enum(['reject', 'earlier', 'later']),
         temporalReplanPostponedEventBodyPlacementThreeDisambiguationDefault,
+      ),
+      end_zone_id: /*#__PURE__*/ zod.optional(
+        /*#__PURE__*/ zod.union([
+          /*#__PURE__*/ zod
+            .string()
+            .check(/*#__PURE__*/ zod.minLength(1))
+            .check(
+              /*#__PURE__*/ zod.maxLength(
+                temporalReplanPostponedEventBodyPlacementThreeEndZoneIdOneMax,
+              ),
+            ),
+          /*#__PURE__*/ zod.null(),
+        ]),
       ),
       ends_local_at: /*#__PURE__*/ zod.iso.datetime({ offset: true }),
       kind: /*#__PURE__*/ zod

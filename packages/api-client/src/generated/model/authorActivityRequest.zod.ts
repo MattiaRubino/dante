@@ -9,6 +9,8 @@ import * as zod from 'zod/mini';
 export const authorActivityRequestActivityIntervalsItemOneKindDefault = `date_span`;
 export const authorActivityRequestActivityIntervalsItemTwoKindDefault = `floating_local_interval`;
 export const authorActivityRequestActivityIntervalsItemThreeDisambiguationDefault = `reject`;
+export const authorActivityRequestActivityIntervalsItemThreeEndZoneIdOneMax = 200;
+
 export const authorActivityRequestActivityIntervalsItemThreeKindDefault = `named_zone_local_interval`;
 export const authorActivityRequestActivityIntervalsItemThreeZoneIdMax = 200;
 
@@ -19,6 +21,8 @@ export const authorActivityRequestActivityIntervalsMax = 100;
 export const authorActivityRequestChildrenItemPlacementOneOneKindDefault = `date_span`;
 export const authorActivityRequestChildrenItemPlacementOneTwoKindDefault = `floating_local_interval`;
 export const authorActivityRequestChildrenItemPlacementOneThreeDisambiguationDefault = `reject`;
+export const authorActivityRequestChildrenItemPlacementOneThreeEndZoneIdOneMax = 200;
+
 export const authorActivityRequestChildrenItemPlacementOneThreeKindDefault = `named_zone_local_interval`;
 export const authorActivityRequestChildrenItemPlacementOneThreeZoneIdMax = 200;
 
@@ -29,6 +33,8 @@ export const authorActivityRequestChildrenItemPlannedSliceNamesMax = 100;
 export const authorActivityRequestChildrenItemPlannedSlicesItemOneKindDefault = `date_span`;
 export const authorActivityRequestChildrenItemPlannedSlicesItemTwoKindDefault = `floating_local_interval`;
 export const authorActivityRequestChildrenItemPlannedSlicesItemThreeDisambiguationDefault = `reject`;
+export const authorActivityRequestChildrenItemPlannedSlicesItemThreeEndZoneIdOneMax = 200;
+
 export const authorActivityRequestChildrenItemPlannedSlicesItemThreeKindDefault = `named_zone_local_interval`;
 export const authorActivityRequestChildrenItemPlannedSlicesItemThreeZoneIdMax = 200;
 
@@ -59,6 +65,8 @@ export const authorActivityRequestOperationIdMax = 200;
 export const authorActivityRequestPlacementOneOneKindDefault = `date_span`;
 export const authorActivityRequestPlacementOneTwoKindDefault = `floating_local_interval`;
 export const authorActivityRequestPlacementOneThreeDisambiguationDefault = `reject`;
+export const authorActivityRequestPlacementOneThreeEndZoneIdOneMax = 200;
+
 export const authorActivityRequestPlacementOneThreeKindDefault = `named_zone_local_interval`;
 export const authorActivityRequestPlacementOneThreeZoneIdMax = 200;
 
@@ -69,6 +77,8 @@ export const authorActivityRequestPlannedSliceNamesMax = 100;
 export const authorActivityRequestPlannedSlicesItemOneOneKindDefault = `date_span`;
 export const authorActivityRequestPlannedSlicesItemOneTwoKindDefault = `floating_local_interval`;
 export const authorActivityRequestPlannedSlicesItemOneThreeDisambiguationDefault = `reject`;
+export const authorActivityRequestPlannedSlicesItemOneThreeEndZoneIdOneMax = 200;
+
 export const authorActivityRequestPlannedSlicesItemOneThreeKindDefault = `named_zone_local_interval`;
 export const authorActivityRequestPlannedSlicesItemOneThreeZoneIdMax = 200;
 
@@ -108,6 +118,19 @@ export const AuthorActivityRequest = /*#__PURE__*/ zod
               disambiguation: /*#__PURE__*/ zod._default(
                 /*#__PURE__*/ zod.enum(['reject', 'earlier', 'later']),
                 authorActivityRequestActivityIntervalsItemThreeDisambiguationDefault,
+              ),
+              end_zone_id: /*#__PURE__*/ zod.optional(
+                /*#__PURE__*/ zod.union([
+                  /*#__PURE__*/ zod
+                    .string()
+                    .check(/*#__PURE__*/ zod.minLength(1))
+                    .check(
+                      /*#__PURE__*/ zod.maxLength(
+                        authorActivityRequestActivityIntervalsItemThreeEndZoneIdOneMax,
+                      ),
+                    ),
+                  /*#__PURE__*/ zod.null(),
+                ]),
               ),
               ends_local_at: /*#__PURE__*/ zod.iso.datetime({ offset: true }),
               kind: /*#__PURE__*/ zod
@@ -206,6 +229,19 @@ export const AuthorActivityRequest = /*#__PURE__*/ zod
                       /*#__PURE__*/ zod.enum(['reject', 'earlier', 'later']),
                       authorActivityRequestChildrenItemPlacementOneThreeDisambiguationDefault,
                     ),
+                    end_zone_id: /*#__PURE__*/ zod.optional(
+                      /*#__PURE__*/ zod.union([
+                        /*#__PURE__*/ zod
+                          .string()
+                          .check(/*#__PURE__*/ zod.minLength(1))
+                          .check(
+                            /*#__PURE__*/ zod.maxLength(
+                              authorActivityRequestChildrenItemPlacementOneThreeEndZoneIdOneMax,
+                            ),
+                          ),
+                        /*#__PURE__*/ zod.null(),
+                      ]),
+                    ),
                     ends_local_at: /*#__PURE__*/ zod.iso.datetime({
                       offset: true,
                     }),
@@ -296,6 +332,19 @@ export const AuthorActivityRequest = /*#__PURE__*/ zod
                       disambiguation: /*#__PURE__*/ zod._default(
                         /*#__PURE__*/ zod.enum(['reject', 'earlier', 'later']),
                         authorActivityRequestChildrenItemPlannedSlicesItemThreeDisambiguationDefault,
+                      ),
+                      end_zone_id: /*#__PURE__*/ zod.optional(
+                        /*#__PURE__*/ zod.union([
+                          /*#__PURE__*/ zod
+                            .string()
+                            .check(/*#__PURE__*/ zod.minLength(1))
+                            .check(
+                              /*#__PURE__*/ zod.maxLength(
+                                authorActivityRequestChildrenItemPlannedSlicesItemThreeEndZoneIdOneMax,
+                              ),
+                            ),
+                          /*#__PURE__*/ zod.null(),
+                        ]),
                       ),
                       ends_local_at: /*#__PURE__*/ zod.iso.datetime({
                         offset: true,
@@ -504,6 +553,19 @@ export const AuthorActivityRequest = /*#__PURE__*/ zod
               /*#__PURE__*/ zod.enum(['reject', 'earlier', 'later']),
               authorActivityRequestPlacementOneThreeDisambiguationDefault,
             ),
+            end_zone_id: /*#__PURE__*/ zod.optional(
+              /*#__PURE__*/ zod.union([
+                /*#__PURE__*/ zod
+                  .string()
+                  .check(/*#__PURE__*/ zod.minLength(1))
+                  .check(
+                    /*#__PURE__*/ zod.maxLength(
+                      authorActivityRequestPlacementOneThreeEndZoneIdOneMax,
+                    ),
+                  ),
+                /*#__PURE__*/ zod.null(),
+              ]),
+            ),
             ends_local_at: /*#__PURE__*/ zod.iso.datetime({ offset: true }),
             kind: /*#__PURE__*/ zod
               ._default(
@@ -585,6 +647,19 @@ export const AuthorActivityRequest = /*#__PURE__*/ zod
                 disambiguation: /*#__PURE__*/ zod._default(
                   /*#__PURE__*/ zod.enum(['reject', 'earlier', 'later']),
                   authorActivityRequestPlannedSlicesItemOneThreeDisambiguationDefault,
+                ),
+                end_zone_id: /*#__PURE__*/ zod.optional(
+                  /*#__PURE__*/ zod.union([
+                    /*#__PURE__*/ zod
+                      .string()
+                      .check(/*#__PURE__*/ zod.minLength(1))
+                      .check(
+                        /*#__PURE__*/ zod.maxLength(
+                          authorActivityRequestPlannedSlicesItemOneThreeEndZoneIdOneMax,
+                        ),
+                      ),
+                    /*#__PURE__*/ zod.null(),
+                  ]),
                 ),
                 ends_local_at: /*#__PURE__*/ zod.iso.datetime({ offset: true }),
                 kind: /*#__PURE__*/ zod

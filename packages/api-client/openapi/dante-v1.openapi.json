@@ -844,6 +844,17 @@
             "title": "Disambiguation",
             "type": "string"
           },
+          "end_zone_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "End Zone Id"
+          },
           "ends_local_at": {
             "format": "date-time",
             "title": "Ends Local At",
@@ -1547,6 +1558,17 @@
             "title": "Split Envelope",
             "type": "boolean"
           },
+          "target_end_zone_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Target End Zone Id"
+          },
           "target_zone_id": {
             "anyOf": [
               {
@@ -1690,6 +1712,17 @@
               }
             ],
             "title": "End Date Exclusive"
+          },
+          "end_zone_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "End Zone Id"
           },
           "ends_at": {
             "anyOf": [
@@ -7431,6 +7464,19 @@
             "title": "Disambiguation",
             "type": "string"
           },
+          "end_zone_id": {
+            "anyOf": [
+              {
+                "maxLength": 200,
+                "minLength": 1,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "End Zone Id"
+          },
           "ends_local_at": {
             "format": "date-time",
             "title": "Ends Local At",
@@ -8420,6 +8466,19 @@
             "enum": ["reject", "earlier", "later"],
             "title": "Disambiguation",
             "type": "string"
+          },
+          "end_zone_id": {
+            "anyOf": [
+              {
+                "maxLength": 200,
+                "minLength": 1,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "End Zone Id"
           },
           "ends_local_at": {
             "format": "date-time",
@@ -14528,6 +14587,17 @@
       "RestoredScheduleNamedZoneResponse": {
         "additionalProperties": false,
         "properties": {
+          "end_zone_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "End Zone Id"
+          },
           "ends_local_at": {
             "format": "date-time",
             "title": "Ends Local At",
@@ -15222,6 +15292,17 @@
       "RevisedScheduleNamedZoneResponse": {
         "additionalProperties": false,
         "properties": {
+          "end_zone_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "End Zone Id"
+          },
           "ends_local_at": {
             "format": "date-time",
             "title": "Ends Local At",
@@ -16014,6 +16095,17 @@
             "title": "Created At",
             "type": "string"
           },
+          "end_zone_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "End Zone Id"
+          },
           "ends_local_at": {
             "format": "date-time",
             "title": "Ends Local At",
@@ -16603,6 +16695,17 @@
             "format": "date-time",
             "title": "Created At",
             "type": "string"
+          },
+          "end_zone_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "End Zone Id"
           },
           "ends_local_at": {
             "format": "date-time",
@@ -19236,6 +19339,17 @@
             "title": "Display Starts Local At",
             "type": "string"
           },
+          "end_zone_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "End Zone Id"
+          },
           "ends_local_at": {
             "examples": ["2026-03-29T01:50:00"],
             "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d{1,6})?$",
@@ -19325,6 +19439,17 @@
             "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d{1,6})?$",
             "title": "Display Starts Local At",
             "type": "string"
+          },
+          "end_zone_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "End Zone Id"
           },
           "ends_local_at": {
             "examples": ["2026-03-29T01:50:00"],
@@ -19448,6 +19573,17 @@
             "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d{1,6})?$",
             "title": "Display Starts Local At",
             "type": "string"
+          },
+          "end_zone_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "End Zone Id"
           },
           "ends_local_at": {
             "examples": ["2026-03-29T01:50:00"],

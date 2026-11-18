@@ -15,6 +15,8 @@ export const createScheduledEventApiV1TemporalEventsScheduledPostBodyOperationId
 export const createScheduledEventApiV1TemporalEventsScheduledPostBodyPlacementOneKindDefault = `date_span`;
 export const createScheduledEventApiV1TemporalEventsScheduledPostBodyPlacementTwoKindDefault = `floating_local_interval`;
 export const createScheduledEventApiV1TemporalEventsScheduledPostBodyPlacementThreeDisambiguationDefault = `reject`;
+export const createScheduledEventApiV1TemporalEventsScheduledPostBodyPlacementThreeEndZoneIdOneMax = 200;
+
 export const createScheduledEventApiV1TemporalEventsScheduledPostBodyPlacementThreeKindDefault = `named_zone_local_interval`;
 export const createScheduledEventApiV1TemporalEventsScheduledPostBodyPlacementThreeZoneIdMax = 200;
 
@@ -76,6 +78,19 @@ export const CreateScheduledEventApiV1TemporalEventsScheduledPostBody =
         disambiguation: /*#__PURE__*/ zod._default(
           /*#__PURE__*/ zod.enum(['reject', 'earlier', 'later']),
           createScheduledEventApiV1TemporalEventsScheduledPostBodyPlacementThreeDisambiguationDefault,
+        ),
+        end_zone_id: /*#__PURE__*/ zod.optional(
+          /*#__PURE__*/ zod.union([
+            /*#__PURE__*/ zod
+              .string()
+              .check(/*#__PURE__*/ zod.minLength(1))
+              .check(
+                /*#__PURE__*/ zod.maxLength(
+                  createScheduledEventApiV1TemporalEventsScheduledPostBodyPlacementThreeEndZoneIdOneMax,
+                ),
+              ),
+            /*#__PURE__*/ zod.null(),
+          ]),
         ),
         ends_local_at: /*#__PURE__*/ zod.iso.datetime({ offset: true }),
         kind: /*#__PURE__*/ zod

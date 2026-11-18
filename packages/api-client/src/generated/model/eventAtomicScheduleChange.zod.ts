@@ -9,6 +9,8 @@ import * as zod from 'zod/mini';
 export const eventAtomicScheduleChangePlacementOneKindDefault = `date_span`;
 export const eventAtomicScheduleChangePlacementTwoKindDefault = `floating_local_interval`;
 export const eventAtomicScheduleChangePlacementThreeDisambiguationDefault = `reject`;
+export const eventAtomicScheduleChangePlacementThreeEndZoneIdOneMax = 200;
+
 export const eventAtomicScheduleChangePlacementThreeKindDefault = `named_zone_local_interval`;
 export const eventAtomicScheduleChangePlacementThreeZoneIdMax = 200;
 
@@ -41,6 +43,19 @@ export const EventAtomicScheduleChange = /*#__PURE__*/ zod.object({
       disambiguation: /*#__PURE__*/ zod._default(
         /*#__PURE__*/ zod.enum(['reject', 'earlier', 'later']),
         eventAtomicScheduleChangePlacementThreeDisambiguationDefault,
+      ),
+      end_zone_id: /*#__PURE__*/ zod.optional(
+        /*#__PURE__*/ zod.union([
+          /*#__PURE__*/ zod
+            .string()
+            .check(/*#__PURE__*/ zod.minLength(1))
+            .check(
+              /*#__PURE__*/ zod.maxLength(
+                eventAtomicScheduleChangePlacementThreeEndZoneIdOneMax,
+              ),
+            ),
+          /*#__PURE__*/ zod.null(),
+        ]),
       ),
       ends_local_at: /*#__PURE__*/ zod.iso.datetime({ offset: true }),
       kind: /*#__PURE__*/ zod

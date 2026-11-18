@@ -11,6 +11,8 @@ export const establishActivityScheduleRequestOperationIdMax = 200;
 export const establishActivityScheduleRequestPlacementOneKindDefault = `date_span`;
 export const establishActivityScheduleRequestPlacementTwoKindDefault = `floating_local_interval`;
 export const establishActivityScheduleRequestPlacementThreeDisambiguationDefault = `reject`;
+export const establishActivityScheduleRequestPlacementThreeEndZoneIdOneMax = 200;
+
 export const establishActivityScheduleRequestPlacementThreeKindDefault = `named_zone_local_interval`;
 export const establishActivityScheduleRequestPlacementThreeZoneIdMax = 200;
 
@@ -51,6 +53,19 @@ export const EstablishActivityScheduleRequest = /*#__PURE__*/ zod
         disambiguation: /*#__PURE__*/ zod._default(
           /*#__PURE__*/ zod.enum(['reject', 'earlier', 'later']),
           establishActivityScheduleRequestPlacementThreeDisambiguationDefault,
+        ),
+        end_zone_id: /*#__PURE__*/ zod.optional(
+          /*#__PURE__*/ zod.union([
+            /*#__PURE__*/ zod
+              .string()
+              .check(/*#__PURE__*/ zod.minLength(1))
+              .check(
+                /*#__PURE__*/ zod.maxLength(
+                  establishActivityScheduleRequestPlacementThreeEndZoneIdOneMax,
+                ),
+              ),
+            /*#__PURE__*/ zod.null(),
+          ]),
         ),
         ends_local_at: /*#__PURE__*/ zod.iso.datetime({ offset: true }),
         kind: /*#__PURE__*/ zod

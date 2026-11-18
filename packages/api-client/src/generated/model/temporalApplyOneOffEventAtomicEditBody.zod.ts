@@ -86,6 +86,8 @@ export const temporalApplyOneOffEventAtomicEditBodyReminderOneLeadMinutesMax = 1
 export const temporalApplyOneOffEventAtomicEditBodyScheduleOnePlacementOneKindDefault = `date_span`;
 export const temporalApplyOneOffEventAtomicEditBodyScheduleOnePlacementTwoKindDefault = `floating_local_interval`;
 export const temporalApplyOneOffEventAtomicEditBodyScheduleOnePlacementThreeDisambiguationDefault = `reject`;
+export const temporalApplyOneOffEventAtomicEditBodyScheduleOnePlacementThreeEndZoneIdOneMax = 200;
+
 export const temporalApplyOneOffEventAtomicEditBodyScheduleOnePlacementThreeKindDefault = `named_zone_local_interval`;
 export const temporalApplyOneOffEventAtomicEditBodyScheduleOnePlacementThreeZoneIdMax = 200;
 
@@ -680,6 +682,19 @@ export const TemporalApplyOneOffEventAtomicEditBody = /*#__PURE__*/ zod
               disambiguation: /*#__PURE__*/ zod._default(
                 /*#__PURE__*/ zod.enum(['reject', 'earlier', 'later']),
                 temporalApplyOneOffEventAtomicEditBodyScheduleOnePlacementThreeDisambiguationDefault,
+              ),
+              end_zone_id: /*#__PURE__*/ zod.optional(
+                /*#__PURE__*/ zod.union([
+                  /*#__PURE__*/ zod
+                    .string()
+                    .check(/*#__PURE__*/ zod.minLength(1))
+                    .check(
+                      /*#__PURE__*/ zod.maxLength(
+                        temporalApplyOneOffEventAtomicEditBodyScheduleOnePlacementThreeEndZoneIdOneMax,
+                      ),
+                    ),
+                  /*#__PURE__*/ zod.null(),
+                ]),
               ),
               ends_local_at: /*#__PURE__*/ zod.iso.datetime({ offset: true }),
               kind: /*#__PURE__*/ zod

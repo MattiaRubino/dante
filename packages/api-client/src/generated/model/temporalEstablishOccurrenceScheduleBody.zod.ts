@@ -11,6 +11,8 @@ export const temporalEstablishOccurrenceScheduleBodyOperationIdMax = 200;
 export const temporalEstablishOccurrenceScheduleBodyPlacementOneKindDefault = `date_span`;
 export const temporalEstablishOccurrenceScheduleBodyPlacementTwoKindDefault = `floating_local_interval`;
 export const temporalEstablishOccurrenceScheduleBodyPlacementThreeDisambiguationDefault = `reject`;
+export const temporalEstablishOccurrenceScheduleBodyPlacementThreeEndZoneIdOneMax = 200;
+
 export const temporalEstablishOccurrenceScheduleBodyPlacementThreeKindDefault = `named_zone_local_interval`;
 export const temporalEstablishOccurrenceScheduleBodyPlacementThreeZoneIdMax = 200;
 
@@ -51,6 +53,19 @@ export const TemporalEstablishOccurrenceScheduleBody = /*#__PURE__*/ zod.object(
         disambiguation: /*#__PURE__*/ zod._default(
           /*#__PURE__*/ zod.enum(['reject', 'earlier', 'later']),
           temporalEstablishOccurrenceScheduleBodyPlacementThreeDisambiguationDefault,
+        ),
+        end_zone_id: /*#__PURE__*/ zod.optional(
+          /*#__PURE__*/ zod.union([
+            /*#__PURE__*/ zod
+              .string()
+              .check(/*#__PURE__*/ zod.minLength(1))
+              .check(
+                /*#__PURE__*/ zod.maxLength(
+                  temporalEstablishOccurrenceScheduleBodyPlacementThreeEndZoneIdOneMax,
+                ),
+              ),
+            /*#__PURE__*/ zod.null(),
+          ]),
         ),
         ends_local_at: /*#__PURE__*/ zod.iso.datetime({ offset: true }),
         kind: /*#__PURE__*/ zod

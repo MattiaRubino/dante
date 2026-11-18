@@ -199,6 +199,12 @@ export const ActivityReplanCommand = /*#__PURE__*/ zod.object({
     /*#__PURE__*/ zod.boolean(),
     activityReplanCommandSplitEnvelopeDefault,
   ),
+  target_end_zone_id: /*#__PURE__*/ zod.optional(
+    /*#__PURE__*/ zod.union([
+      /*#__PURE__*/ zod.string(),
+      /*#__PURE__*/ zod.null(),
+    ]),
+  ),
   target_zone_id: /*#__PURE__*/ zod.optional(
     /*#__PURE__*/ zod.union([
       /*#__PURE__*/ zod.string(),

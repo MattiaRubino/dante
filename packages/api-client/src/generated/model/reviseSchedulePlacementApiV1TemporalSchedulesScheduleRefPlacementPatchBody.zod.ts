@@ -11,6 +11,8 @@ export const reviseSchedulePlacementApiV1TemporalSchedulesScheduleRefPlacementPa
 export const reviseSchedulePlacementApiV1TemporalSchedulesScheduleRefPlacementPatchBodyPlacementOneKindDefault = `date_span`;
 export const reviseSchedulePlacementApiV1TemporalSchedulesScheduleRefPlacementPatchBodyPlacementTwoKindDefault = `floating_local_interval`;
 export const reviseSchedulePlacementApiV1TemporalSchedulesScheduleRefPlacementPatchBodyPlacementThreeDisambiguationDefault = `reject`;
+export const reviseSchedulePlacementApiV1TemporalSchedulesScheduleRefPlacementPatchBodyPlacementThreeEndZoneIdOneMax = 200;
+
 export const reviseSchedulePlacementApiV1TemporalSchedulesScheduleRefPlacementPatchBodyPlacementThreeKindDefault = `named_zone_local_interval`;
 export const reviseSchedulePlacementApiV1TemporalSchedulesScheduleRefPlacementPatchBodyPlacementThreeZoneIdMax = 200;
 
@@ -53,6 +55,19 @@ export const ReviseSchedulePlacementApiV1TemporalSchedulesScheduleRefPlacementPa
           disambiguation: /*#__PURE__*/ zod._default(
             /*#__PURE__*/ zod.enum(['reject', 'earlier', 'later']),
             reviseSchedulePlacementApiV1TemporalSchedulesScheduleRefPlacementPatchBodyPlacementThreeDisambiguationDefault,
+          ),
+          end_zone_id: /*#__PURE__*/ zod.optional(
+            /*#__PURE__*/ zod.union([
+              /*#__PURE__*/ zod
+                .string()
+                .check(/*#__PURE__*/ zod.minLength(1))
+                .check(
+                  /*#__PURE__*/ zod.maxLength(
+                    reviseSchedulePlacementApiV1TemporalSchedulesScheduleRefPlacementPatchBodyPlacementThreeEndZoneIdOneMax,
+                  ),
+                ),
+              /*#__PURE__*/ zod.null(),
+            ]),
           ),
           ends_local_at: /*#__PURE__*/ zod.iso.datetime({ offset: true }),
           kind: /*#__PURE__*/ zod

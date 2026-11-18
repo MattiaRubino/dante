@@ -18,6 +18,12 @@ export const ScheduledEventNamedZoneResponse = /*#__PURE__*/ zod.object({
       /*#__PURE__*/ zod.gte(scheduledEventNamedZoneResponseAgendaRevisionMin),
     ),
   created_at: /*#__PURE__*/ zod.iso.datetime({ offset: true }),
+  end_zone_id: /*#__PURE__*/ zod.optional(
+    /*#__PURE__*/ zod.union([
+      /*#__PURE__*/ zod.string(),
+      /*#__PURE__*/ zod.null(),
+    ]),
+  ),
   ends_local_at: /*#__PURE__*/ zod.iso.datetime({ offset: true }),
   event_ref: /*#__PURE__*/ zod.uuid(),
   life_area_assignment_revision: /*#__PURE__*/ zod.optional(

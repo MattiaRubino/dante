@@ -177,6 +177,12 @@ export const TimelineScheduledOccurrenceResponse = /*#__PURE__*/ zod.object({
             timelineScheduledOccurrenceResponsePlacementThreeDisplayStartsLocalAtRegExp,
           ),
         ),
+      end_zone_id: /*#__PURE__*/ zod.optional(
+        /*#__PURE__*/ zod.union([
+          /*#__PURE__*/ zod.string(),
+          /*#__PURE__*/ zod.null(),
+        ]),
+      ),
       ends_local_at: /*#__PURE__*/ zod
         .string()
         .check(

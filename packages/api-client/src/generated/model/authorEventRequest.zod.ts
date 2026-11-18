@@ -22,6 +22,8 @@ export const authorEventRequestOperationIdMax = 200;
 export const authorEventRequestPlacementOneOneKindDefault = `date_span`;
 export const authorEventRequestPlacementOneTwoKindDefault = `floating_local_interval`;
 export const authorEventRequestPlacementOneThreeDisambiguationDefault = `reject`;
+export const authorEventRequestPlacementOneThreeEndZoneIdOneMax = 200;
+
 export const authorEventRequestPlacementOneThreeKindDefault = `named_zone_local_interval`;
 export const authorEventRequestPlacementOneThreeZoneIdMax = 200;
 
@@ -140,6 +142,19 @@ export const AuthorEventRequest = /*#__PURE__*/ zod
             disambiguation: /*#__PURE__*/ zod._default(
               /*#__PURE__*/ zod.enum(['reject', 'earlier', 'later']),
               authorEventRequestPlacementOneThreeDisambiguationDefault,
+            ),
+            end_zone_id: /*#__PURE__*/ zod.optional(
+              /*#__PURE__*/ zod.union([
+                /*#__PURE__*/ zod
+                  .string()
+                  .check(/*#__PURE__*/ zod.minLength(1))
+                  .check(
+                    /*#__PURE__*/ zod.maxLength(
+                      authorEventRequestPlacementOneThreeEndZoneIdOneMax,
+                    ),
+                  ),
+                /*#__PURE__*/ zod.null(),
+              ]),
             ),
             ends_local_at: /*#__PURE__*/ zod.iso.datetime({ offset: true }),
             kind: /*#__PURE__*/ zod

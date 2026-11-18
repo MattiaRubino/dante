@@ -15,6 +15,8 @@ export const createScheduledEventRequestOperationIdMax = 200;
 export const createScheduledEventRequestPlacementOneKindDefault = `date_span`;
 export const createScheduledEventRequestPlacementTwoKindDefault = `floating_local_interval`;
 export const createScheduledEventRequestPlacementThreeDisambiguationDefault = `reject`;
+export const createScheduledEventRequestPlacementThreeEndZoneIdOneMax = 200;
+
 export const createScheduledEventRequestPlacementThreeKindDefault = `named_zone_local_interval`;
 export const createScheduledEventRequestPlacementThreeZoneIdMax = 200;
 
@@ -71,6 +73,19 @@ export const CreateScheduledEventRequest = /*#__PURE__*/ zod.object({
       disambiguation: /*#__PURE__*/ zod._default(
         /*#__PURE__*/ zod.enum(['reject', 'earlier', 'later']),
         createScheduledEventRequestPlacementThreeDisambiguationDefault,
+      ),
+      end_zone_id: /*#__PURE__*/ zod.optional(
+        /*#__PURE__*/ zod.union([
+          /*#__PURE__*/ zod
+            .string()
+            .check(/*#__PURE__*/ zod.minLength(1))
+            .check(
+              /*#__PURE__*/ zod.maxLength(
+                createScheduledEventRequestPlacementThreeEndZoneIdOneMax,
+              ),
+            ),
+          /*#__PURE__*/ zod.null(),
+        ]),
       ),
       ends_local_at: /*#__PURE__*/ zod.iso.datetime({ offset: true }),
       kind: /*#__PURE__*/ zod

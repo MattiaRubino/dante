@@ -9,6 +9,12 @@ import * as zod from 'zod/mini';
 export const restoredScheduleNamedZoneResponseReplayedDefault = false;
 export const restoredScheduleNamedZoneResponseTemporalFormDefault = `named_zone_local`;
 export const RestoredScheduleNamedZoneResponse = /*#__PURE__*/ zod.object({
+  end_zone_id: /*#__PURE__*/ zod.optional(
+    /*#__PURE__*/ zod.union([
+      /*#__PURE__*/ zod.string(),
+      /*#__PURE__*/ zod.null(),
+    ]),
+  ),
   ends_local_at: /*#__PURE__*/ zod.iso.datetime({ offset: true }),
   placement_material_state_ref: /*#__PURE__*/ zod.uuid(),
   replayed: /*#__PURE__*/ zod._default(

@@ -11,6 +11,8 @@ export const establishOccurrenceScheduleRequestOperationIdMax = 200;
 export const establishOccurrenceScheduleRequestPlacementOneKindDefault = `date_span`;
 export const establishOccurrenceScheduleRequestPlacementTwoKindDefault = `floating_local_interval`;
 export const establishOccurrenceScheduleRequestPlacementThreeDisambiguationDefault = `reject`;
+export const establishOccurrenceScheduleRequestPlacementThreeEndZoneIdOneMax = 200;
+
 export const establishOccurrenceScheduleRequestPlacementThreeKindDefault = `named_zone_local_interval`;
 export const establishOccurrenceScheduleRequestPlacementThreeZoneIdMax = 200;
 
@@ -50,6 +52,19 @@ export const EstablishOccurrenceScheduleRequest = /*#__PURE__*/ zod.object({
       disambiguation: /*#__PURE__*/ zod._default(
         /*#__PURE__*/ zod.enum(['reject', 'earlier', 'later']),
         establishOccurrenceScheduleRequestPlacementThreeDisambiguationDefault,
+      ),
+      end_zone_id: /*#__PURE__*/ zod.optional(
+        /*#__PURE__*/ zod.union([
+          /*#__PURE__*/ zod
+            .string()
+            .check(/*#__PURE__*/ zod.minLength(1))
+            .check(
+              /*#__PURE__*/ zod.maxLength(
+                establishOccurrenceScheduleRequestPlacementThreeEndZoneIdOneMax,
+              ),
+            ),
+          /*#__PURE__*/ zod.null(),
+        ]),
       ),
       ends_local_at: /*#__PURE__*/ zod.iso.datetime({ offset: true }),
       kind: /*#__PURE__*/ zod
