@@ -902,7 +902,9 @@ test.describe('Timeline — real user Activity/Event lifecycle matrix', () => {
         .getByRole('button', { name: 'Blu', exact: true })
         .click();
       await expect(
-        inspector.getByText('La nuova area sarà creata insieme al salvataggio della serie.'),
+        inspector.getByText(
+          'La nuova area sarà creata insieme al salvataggio della serie.',
+        ),
       ).toBeVisible();
       await inspector.getByRole('button', { name: 'Salva modifiche' }).click();
       const confirmation = page.getByRole('dialog', {
@@ -1196,7 +1198,9 @@ test.describe('Timeline — real user Activity/Event lifecycle matrix', () => {
         .getByRole('button', { name: 'Verde menta', exact: true })
         .click();
       await expect(
-        inspector.getByText('La nuova area sarà creata insieme al salvataggio della serie.'),
+        inspector.getByText(
+          'La nuova area sarà creata insieme al salvataggio della serie.',
+        ),
       ).toBeVisible();
       await inspector.getByRole('button', { name: 'Salva modifiche' }).click();
       const review = page.getByRole('dialog', {
