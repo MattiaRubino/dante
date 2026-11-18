@@ -442,7 +442,7 @@ export function TemporalCreateComposer({
     onSurfaceChange(advanced ? 'quick' : 'full');
   };
 
-  const resetKey = `${session.draft.baseline.date}|${session.draft.baseline.startTime}|${session.draft.baseline.title}`;
+  const resetKey = `${session.draft.baseline.date}|${session.draft.baseline.startTime}|${session.draft.baseline.title}|${fields.kind}`;
   const [validationDOM, setValidationDOM] = useState<Readonly<{
     surface: TemporalCreateSurface;
     target: string | null;
@@ -676,6 +676,7 @@ export function TemporalCreateComposer({
               ) : null}
               <TemporalCreateCoreFields
                 fields={fields}
+                baselineFields={session.draft.baseline}
                 contexts={contexts}
                 showCompactTimezone={!advanced}
                 showRecurrence={advanced}
