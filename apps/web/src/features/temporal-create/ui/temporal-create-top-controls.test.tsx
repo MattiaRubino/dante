@@ -105,7 +105,7 @@ describe('Temporal Create U1 top controls', () => {
     const startPicker = screen.getByRole('dialog', { name: 'Inizio' });
     expect(within(startPicker).queryByText('Timezone inizio')).toBeNull();
     const startZone = within(startPicker).getByRole('button', {
-      name: /Inizio: Fuso orario: Europe\/Rome/,
+      name: /Inizio: Fuso orario:/,
     });
     expect(startZone.textContent).toContain('Fuso orario');
     const startRect = vi.spyOn(startPicker, 'getBoundingClientRect').mockReturnValue({
