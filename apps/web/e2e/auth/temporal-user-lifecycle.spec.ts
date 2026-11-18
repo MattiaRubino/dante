@@ -895,7 +895,7 @@ test.describe('Timeline — real user Activity/Event lifecycle matrix', () => {
       const futureArea = uniqueTitle('area serie attività');
       await inspector.getByRole('textbox', { name: 'Area assegnata' }).fill(futureArea);
       await inspector
-        .getByRole('button', { name: 'Colore nuova Life Area' })
+        .getByRole('button', { name: 'Colore della nuova area' })
         .click();
       await page
         .getByRole('dialog', { name: 'Scegli colore' })
@@ -975,7 +975,7 @@ test.describe('Timeline — real user Activity/Event lifecycle matrix', () => {
         .getByRole('dialog', { name: 'Modifica ricorrenza' })
         .getByRole('button', { name: 'Questa e le successive' })
         .click();
-      await inspector.getByRole('button', { name: 'Colore Life Area' }).click();
+      await inspector.getByRole('button', { name: 'Colore dell’area' }).click();
       const colorPicker = page.getByRole('dialog', { name: 'Scegli colore' });
       await expect(colorPicker).toBeVisible();
       await colorPicker.getByRole('button', { name: 'Giallo', exact: true }).click();
@@ -1098,10 +1098,10 @@ test.describe('Timeline — real user Activity/Event lifecycle matrix', () => {
       // Drive the real UI and assert DB-backed area name and card color.
       const localAreaName = uniqueTitle('area solo istanza');
       await inspector
-        .getByRole('textbox', { name: 'Life Area (opzionale)' })
+        .getByRole('textbox', { name: 'Area (opzionale)' })
         .fill(localAreaName);
       await inspector
-        .getByRole('button', { name: 'Colore nuova Life Area' })
+        .getByRole('button', { name: 'Colore della nuova area' })
         .click();
       await page
         .getByRole('dialog', { name: 'Scegli colore' })
@@ -1189,7 +1189,7 @@ test.describe('Timeline — real user Activity/Event lifecycle matrix', () => {
       const futureArea = uniqueTitle('area serie eventi');
       await inspector.getByRole('textbox', { name: 'Area assegnata' }).fill(futureArea);
       await inspector
-        .getByRole('button', { name: 'Colore nuova Life Area' })
+        .getByRole('button', { name: 'Colore della nuova area' })
         .click();
       await page
         .getByRole('dialog', { name: 'Scegli colore' })
