@@ -1,6 +1,8 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 
+import './temporal-time-zone-dialog.css';
+
 const FALLBACK_TIME_ZONES = Object.freeze([
   'Europe/Rome', 'Europe/London', 'Europe/Paris', 'Europe/Berlin',
   'Europe/Madrid', 'Europe/Athens', 'America/New_York', 'America/Chicago',
@@ -237,7 +239,7 @@ export function TemporalTimeZoneControl({
     setOpen(true);
   };
   const apply = () => {
-    const start = zoneId === null && draftStart === local && allowFloating
+    const start = !distinct && zoneId === null && draftStart === local && allowFloating
       ? null : draftStart;
     const end = distinct && draftEnd !== draftStart ? draftEnd : null;
     if (onZonesChange) onZonesChange(start, end);
