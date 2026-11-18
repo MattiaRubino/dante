@@ -1973,6 +1973,66 @@ describe('Activity Inspector', () => {
     });
   });
 
+  it('saves Activity start/end timezones together from the shared dialog', async () => {
+    const settings = {
+      ...currentSettings,
+      schedules: [
+        {
+          scheduleRef: 'envelope',
+          role: 'envelope',
+          name: null,
+          order: 0,
+          placementStateRef: 'state-0',
+          temporalForm: 'named_zone_local',
+          start: '2026-10-09T09:00:00',
+          end: '2026-10-09T12:00:00',
+          zoneId: 'Europe/Rome',
+        },
+      ],
+    };
+    loadSettings.mockResolvedValueOnce(settings);
+    render(
+      <ActivityEditPanel
+        profile={profile}
+        closeRequestRef={createRef()}
+        onSaved={() => undefined}
+        onCancel={() => undefined}
+      />,
+    );
+    const zone = await screen.findByRole('button', {
+      name: 'Fuso orario: Europe/Rome',
+    });
+    fireEvent.click(zone);
+    const panel = screen.getByRole('dialog', { name: 'Imposta fuso orario' });
+    fireEvent.click(within(panel).getByRole('checkbox', {
+      name: 'Utilizza fusi orari diversi per inizio e fine',
+    }));
+    const endPicker = within(panel).getByText('Fuso orario di fine')
+      .closest('.temporal-zone-dialog__picker');
+    if (!endPicker) throw new Error('Expected Activity end timezone field');
+    fireEvent.click(within(endPicker as HTMLElement).getByRole('button'));
+    fireEvent.change(within(endPicker as HTMLElement).getByRole('searchbox', {
+      name: 'Cerca fuso orario',
+    }), { target: { value: 'Asia/Tokyo' } });
+    fireEvent.click(within(endPicker as HTMLElement).getByRole('option', {
+      name: /Asia\/Tokyo/,
+    }));
+    expect(applyReplan).not.toHaveBeenCalled();
+    fireEvent.click(within(panel).getByRole('button', { name: 'OK' }));
+    expect(screen.getByRole('button', {
+      name: 'Fuso orario: Personalizzato',
+    })).toBeTruthy();
+
+    await submitEditor();
+    await waitFor(() => expect(applyReplan).toHaveBeenCalledOnce());
+    const draft = requiredRecord(applyReplan.mock.calls[0]?.[2]);
+    expect(draft.targetEndZoneId).toBe('Asia/Tokyo');
+    expect(requiredRecord(draft.times).envelope).toMatchObject({
+      start: '2026-10-09T09:00:00',
+      end: expect.stringMatching(/T20:00/),
+    });
+  });
+
   it('saves additions and removals of planned Sessions in one action', async () => {
     const settings = {
       ...currentSettings,
