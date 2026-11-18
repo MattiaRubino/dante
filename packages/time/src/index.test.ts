@@ -180,6 +180,26 @@ describe('optional distinct end timezone contract', () => {
     )).toBe('2026-11-18T09:00');
   });
 
+  it.each([
+    ['2026-10-09', '19:00'],
+    ['2026-11-09', '20:00'],
+  ])('keeps Rome to Tokyo real elapsed duration across DST on %s', (date, endTime) => {
+    const start = `${date}T09:00`;
+    const originalEnd = `${date}T12:00`;
+    const minutes = elapsedMinutesBetweenZonedBounds(
+      start, 'Europe/Rome', originalEnd, 'Europe/Rome',
+    );
+    expect(minutes).toBe(180);
+
+    const projected = projectElapsedEndToZone(
+      start, 'Europe/Rome', minutes, 'Asia/Tokyo',
+    );
+    expect(projected).toBe(`${date}T${endTime}`);
+    expect(elapsedMinutesBetweenZonedBounds(
+      start, 'Europe/Rome', projected, 'Asia/Tokyo',
+    )).toBe(180);
+  });
+
   it('does not silently adjust a nonexistent spring DST time', () => {
     expect(() => resolveCivilNamedInstant(
       '2026-03-29T02:30', 'Europe/Rome',

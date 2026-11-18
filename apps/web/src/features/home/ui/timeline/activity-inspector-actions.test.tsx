@@ -2029,7 +2029,9 @@ describe('Activity Inspector', () => {
     expect(draft.targetEndZoneId).toBe('Asia/Tokyo');
     expect(requiredRecord(draft.times).envelope).toMatchObject({
       start: '2026-10-09T09:00:00',
-      end: expect.stringMatching(/T20:00/),
+      // 2026-10-09: Rome is UTC+02 while Tokyo is UTC+09.
+      // Retaining the original three-hour elapsed duration ends at 19:00.
+      end: '2026-10-09T19:00',
     });
   });
 
