@@ -653,7 +653,12 @@ export function TemporalCreateCoreFieldsU2({
         fields.durationMinutes, fields.endTimeZoneId!,
         fields.timeDisambiguation === 'later' ? 'later' : 'earlier',
       );
-      calculatedEnd = { date: end.slice(0, 10), time: end.slice(11, 16) };
+      calculatedEnd = {
+        date: end.slice(0, 10),
+        time: end.slice(11, 16),
+        dayOffset: Temporal.PlainDate.from(fields.date)
+          .until(Temporal.PlainDate.from(end.slice(0, 10))).days,
+      };
     } catch {
       zoneResolutionInvalid = true;
     }

@@ -88,11 +88,11 @@ class TimelineNamedZoneLocalActivityItem(_TimelineScheduledActivityBase):
     starts_local_at: datetime
     ends_local_at: datetime
     zone_id: str
-    end_zone_id: str | None
     resolved_start_at: datetime
     resolved_end_at: datetime
     display_starts_local_at: datetime
     display_ends_local_at: datetime
+    end_zone_id: str | None = None
 
 
 @dataclass(frozen=True, slots=True)
@@ -136,11 +136,11 @@ class TimelineNamedZoneLocalEventItem(_TimelineScheduledEventBase):
     starts_local_at: datetime
     ends_local_at: datetime
     zone_id: str
-    end_zone_id: str | None
     resolved_start_at: datetime
     resolved_end_at: datetime
     display_starts_local_at: datetime
     display_ends_local_at: datetime
+    end_zone_id: str | None = None
 
 
 @dataclass(frozen=True, slots=True)
@@ -437,6 +437,7 @@ def _item_from_row(
                 starts_local_at=row["named_starts_local_at"],
                 ends_local_at=row["named_ends_local_at"],
                 zone_id=str(row["schedule_zone_id"]),
+                end_zone_id=row["schedule_end_zone_id"],
                 resolved_start_at=resolved_start_at,
                 resolved_end_at=resolved_end_at,
                 display_starts_local_at=_view_local(
@@ -499,6 +500,7 @@ def _item_from_row(
                 starts_local_at=row["named_starts_local_at"],
                 ends_local_at=row["named_ends_local_at"],
                 zone_id=str(row["schedule_zone_id"]),
+                end_zone_id=row["schedule_end_zone_id"],
                 resolved_start_at=resolved_start_at,
                 resolved_end_at=resolved_end_at,
                 display_starts_local_at=_view_local(
