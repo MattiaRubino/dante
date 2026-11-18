@@ -2120,9 +2120,7 @@ export function ActivityEditPanel({
                     Tutto il giorno
                   </button>
                 </div>
-                {!allDay &&
-                (envelope?.temporalForm === 'named_zone_local' ||
-                  originalAllDay) ? (
+                {!allDay && envelope ? (
                   <TemporalTimeZoneControl
                     zoneId={effectiveZoneId}
                     endZoneId={effectiveEndZoneId}
@@ -2131,7 +2129,11 @@ export function ActivityEditPanel({
                     displayLabel={customZone ? 'Personalizzato' : undefined}
                     allowFloating={false}
                     allowDistinctZones={allowBoundaryZones}
-                    disabled={!canReplan || planningLocked || planPending}
+                    disabled={!canReplan || planningLocked || planPending ||
+                      (envelope.temporalForm !== 'named_zone_local' && !originalAllDay)}
+                    disabledReason={envelope.temporalForm === 'floating_local'
+                      ? 'Le attività con orario locale non supportano la conversione del fuso in Modifica.'
+                      : undefined}
                     onChange={(zoneId) => applyTimeZones(zoneId, null)}
                     onZonesChange={applyTimeZones}
                   />
