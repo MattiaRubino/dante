@@ -176,8 +176,6 @@ export function SeriesIntervalFields({
   index,
   onChange,
   onRemove,
-  zoneId,
-  onTimeZoneChange,
   kind = 'interval',
   invalid = false,
   showLabel = true,
@@ -188,8 +186,6 @@ export function SeriesIntervalFields({
   index: number;
   onChange: (row: Entry) => void;
   onRemove?: (() => void) | undefined;
-  zoneId?: string | undefined;
-  onTimeZoneChange?: (zoneId: string) => void;
   kind?: 'interval' | 'session';
   invalid?: boolean;
   showLabel?: boolean;
@@ -253,10 +249,6 @@ export function SeriesIntervalFields({
           label="Inizio"
           value={start.toPlainTime().toString({ smallestUnit: 'minute' })}
           dataPath={`series.${kind}.${index}.start`}
-          zoneId={zoneId}
-          onZoneChange={onTimeZoneChange ? (zone) => {
-            if (zone) onTimeZoneChange(zone);
-          } : undefined}
           onChange={(value) =>
             changeStart(start.toPlainDate().toString(), value)
           }
@@ -267,10 +259,6 @@ export function SeriesIntervalFields({
           value={end.toPlainTime().toString({ smallestUnit: 'minute' })}
           invalid={invalid || asNumber(row.duration_minutes) <= 0}
           dataPath={`series.${kind}.${index}.end`}
-          zoneId={zoneId}
-          onZoneChange={onTimeZoneChange ? (zone) => {
-            if (zone) onTimeZoneChange(zone);
-          } : undefined}
           onChange={(value) => changeEnd(end.toPlainDate().toString(), value)}
         />
         <TemporalCreateDatePicker
@@ -1147,6 +1135,8 @@ export function RecurringSeriesEditor({
                   <TemporalTimeZoneControl
                     zoneId={asText(recurrence.zone_id) || null}
                     allowFloating={false}
+                    allowDistinctZones={false}
+                    date={seriesStartDate}
                     onChange={(zoneId) => {
                       if (zoneId)
                         changeRecurrence({ ...recurrence, zone_id: zoneId });
@@ -1286,10 +1276,6 @@ export function RecurringSeriesEditor({
                           index={index}
                           invalid={invalidSeriesIntervals.has(index)}
                           showLabel={intervals.length > 1}
-                          zoneId={asText(recurrence.zone_id) || undefined}
-                          onTimeZoneChange={(zoneId) =>
-                            changeRecurrence({ ...recurrence, zone_id: zoneId })
-                          }
                           onChange={(next) => {
                             setLastEditedInterval(index);
                             if (intervals.length) {
