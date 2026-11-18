@@ -65,6 +65,8 @@ type TimeControlProps = Readonly<{
   onChange: (value: string) => void;
   helper?: ReactNode;
   invalid?: boolean;
+  zoneId?: string | null;
+  onZoneChange?: (zoneId: string | null) => void;
 }>;
 
 const WEEKDAYS: readonly TemporalCreateWeekday[] = Object.freeze([
@@ -165,6 +167,8 @@ export function TimeControl({
   onChange,
   helper,
   invalid = false,
+  zoneId,
+  onZoneChange,
 }: TimeControlProps) {
   const parsedValue = timeToMinute(value);
   const normalizedValue =
@@ -401,6 +405,17 @@ export function TimeControl({
           role="dialog"
           aria-label={label}
         >
+          {onZoneChange ? (
+            <div className="temporal-create-time-picker__zone">
+              <label>{label === 'Inizio' || label === 'Start'
+                ? 'Timezone inizio' : 'Timezone fine'}</label>
+              <TemporalTimeZoneControl
+                zoneId={zoneId ?? null}
+                onChange={(next) => onZoneChange(next)}
+                allowFloating={false}
+              />
+            </div>
+          ) : null}
           <div ref={listRef} className="temporal-create-time-list">
             {!TIME_OPTIONS.includes(committedValue) ? (
               <button

@@ -335,3 +335,32 @@
 .temporal-create-primary-interval-label[data-primary-invalid='true'] {
   color: var(--dante-timeline-tone-urgent, #ff5b64);
 }
+
+/* The optional boundary timezone is inside the existing clock popover. */
+.temporal-create-time-picker__zone {
+  position: relative;
+  z-index: 3;
+  display: grid;
+  gap: 6px;
+  padding: 10px 10px 8px;
+  border-bottom: 1px solid var(--dante-semantic-color-home-border-subtle);
+}
+.temporal-create-time-picker__zone > label {
+  color: var(--dante-semantic-color-home-text-secondary);
+  font-size: 12px;
+  font-weight: 600;
+}
+.temporal-create-time-picker__zone .temporal-create-timezone-control {
+  width: 100%;
+  min-width: 0;
+}
+.temporal-create-time-picker__zone .temporal-create-timezone-trigger {
+  width: 100%;
+  min-height: 34px;
+}
+.temporal-create-time-picker__zone .temporal-create-timezone-panel {
+  position: absolute;
+  z-index: 5;
+  width: min(340px, calc(100vw - 32px));
+  max-width: none;
+}

@@ -143,3 +143,52 @@ export function isValidCivilInterval(start: string, end: string): boolean {
     return false;
   }
 }
+
+/** Resolve a named-zone wall time without ever accepting a spring DST gap. */
+export function resolveCivilNamedInstant(
+  local: string,
+  zoneId: string,
+  disambiguation: 'earlier' | 'later' | 'reject' = 'earlier',
+): Temporal.Instant {
+  const wall = Temporal.PlainDateTime.from(local);
+  const zoned = wall.toZonedDateTime(zoneId, { disambiguation });
+  if (!zoned.toPlainDateTime().equals(wall)) {
+    throw new RangeError('This local time does not exist in the selected timezone.');
+  }
+  return zoned.toInstant();
+}
+
+/** Calculate an end displayed in its own zone from one elapsed duration. */
+export function projectElapsedEndToZone(
+  startLocal: string,
+  startZone: string,
+  elapsedMinutes: number,
+  endZone: string,
+  disambiguation: 'earlier' | 'later' | 'reject' = 'earlier',
+): string {
+  if (!Number.isInteger(elapsedMinutes) || elapsedMinutes <= 0) {
+    throw new RangeError('An elapsed duration must be positive whole minutes.');
+  }
+  const end = resolveCivilNamedInstant(startLocal, startZone, disambiguation)
+    .add({ minutes: elapsedMinutes })
+    .toZonedDateTimeISO(endZone)
+    .toPlainDateTime();
+  return end.toString({ smallestUnit: 'minute' });
+}
+
+/** Real elapsed minutes, never a subtraction of unrelated wall-clock numbers. */
+export function elapsedMinutesBetweenZonedBounds(
+  startLocal: string,
+  startZone: string,
+  endLocal: string,
+  endZone: string,
+  disambiguation: 'earlier' | 'later' | 'reject' = 'earlier',
+): number {
+  const start = resolveCivilNamedInstant(startLocal, startZone, disambiguation);
+  const end = resolveCivilNamedInstant(endLocal, endZone, disambiguation);
+  const minutes = start.until(end).total({ unit: 'minutes' });
+  if (!Number.isInteger(minutes) || minutes <= 0) {
+    throw new RangeError('The resolved end must follow the resolved start.');
+  }
+  return minutes;
+}

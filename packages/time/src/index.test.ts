@@ -14,6 +14,9 @@ import {
   moveCivilStartPreservingDuration,
   moveAllDayRangePreservingDays,
   isValidCivilInterval,
+  resolveCivilNamedInstant,
+  projectElapsedEndToZone,
+  elapsedMinutesBetweenZonedBounds,
   zonedDateTimeToInstant,
 } from './index';
 
@@ -160,5 +163,33 @@ describe('approved Temporal clock editing contract', () => {
     expect(moveAllDayRangePreservingDays(
       '2026-11-18', '2026-11-20', '2026-11-21',
     )).toBe('2026-11-23');
+  });
+});
+
+describe('optional distinct end timezone contract', () => {
+  it('compares absolute instants instead of unrelated civil wall clocks', () => {
+    expect(elapsedMinutesBetweenZonedBounds(
+      '2026-11-18T10:00', 'Europe/Rome',
+      '2026-11-18T08:00', 'America/New_York',
+    )).toBe(240);
+  });
+
+  it('projects unchanged elapsed duration when the start changes', () => {
+    expect(projectElapsedEndToZone(
+      '2026-11-18T11:00', 'Europe/Rome', 240, 'America/New_York',
+    )).toBe('2026-11-18T09:00');
+  });
+
+  it('does not silently adjust a nonexistent spring DST time', () => {
+    expect(() => resolveCivilNamedInstant(
+      '2026-03-29T02:30', 'Europe/Rome',
+    )).toThrow();
+  });
+
+  it('rejects an end whose instant precedes the start', () => {
+    expect(() => elapsedMinutesBetweenZonedBounds(
+      '2026-11-18T10:00', 'Europe/Rome',
+      '2026-11-18T03:00', 'America/New_York',
+    )).toThrow();
   });
 });

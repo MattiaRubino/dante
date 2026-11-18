@@ -56,19 +56,21 @@ export function TemporalTimeZoneControl({
   disabled = false,
   italian = true,
   allowFloating = true,
+  displayLabel,
 }: Readonly<{
   zoneId: string | null;
   onChange: (zoneId: string | null) => void;
   disabled?: boolean;
   italian?: boolean;
   allowFloating?: boolean;
+  displayLabel?: string;
 }>) {
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState('');
   const rootRef = useRef<HTMLDivElement>(null);
   const searchRef = useRef<HTMLInputElement>(null);
   const localLabel = italian ? 'Ora locale' : 'Local time';
-  const label = zoneId ?? localLabel;
+  const label = displayLabel ?? zoneId ?? localLabel;
   const search = query.trim().toLocaleLowerCase();
   const visibleZones = TIME_ZONES.filter(
     (zone) =>
