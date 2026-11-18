@@ -902,7 +902,7 @@ test.describe('Timeline — real user Activity/Event lifecycle matrix', () => {
         .getByRole('button', { name: 'Blu', exact: true })
         .click();
       await expect(
-        inspector.getByText('La nuova Life Area sarà creata insieme al salvataggio della serie.'),
+        inspector.getByText('La nuova area sarà creata insieme al salvataggio della serie.'),
       ).toBeVisible();
       await inspector.getByRole('button', { name: 'Salva modifiche' }).click();
       const confirmation = page.getByRole('dialog', {
@@ -980,7 +980,7 @@ test.describe('Timeline — real user Activity/Event lifecycle matrix', () => {
       await expect(colorPicker).toBeVisible();
       await colorPicker.getByRole('button', { name: 'Giallo', exact: true }).click();
       await expect(
-        inspector.getByText(/Modificare il colore della Life Area aggiorna/),
+        inspector.getByText(/Modificare il colore dell’area aggiorna/),
       ).toBeVisible();
       await inspector.getByRole('button', { name: 'Annulla' }).click();
       await expect(inspector.getByRole('button', { name: 'Elimina' })).toBeVisible();
@@ -1195,7 +1195,9 @@ test.describe('Timeline — real user Activity/Event lifecycle matrix', () => {
         .getByRole('dialog', { name: 'Scegli colore' })
         .getByRole('button', { name: 'Verde menta', exact: true })
         .click();
-      await expect(inspector.getByText('Scegli una Life Area dall’elenco.')).toHaveCount(0);
+      await expect(
+        inspector.getByText('La nuova area sarà creata insieme al salvataggio della serie.'),
+      ).toBeVisible();
       await inspector.getByRole('button', { name: 'Salva modifiche' }).click();
       const review = page.getByRole('dialog', {
         name: 'Controlla prima di salvare',
