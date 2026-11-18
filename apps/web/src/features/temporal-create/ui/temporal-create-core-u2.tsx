@@ -22,12 +22,14 @@ import type {
   TemporalCreateRecurrenceOwner,
   TemporalCreateTimeSemantics,
   TemporalCreateWeekday,
+  createTemporalCreateFields,
 } from '../model/temporal-create-session';
 import {
   temporalCreateDurationFromEndDateTime,
   temporalCreateDurationLabel,
   temporalCreateEndDateTime,
 } from './temporal-create-field-shared';
+import { createTemporalCreateU2AuthoringDraft } from '../model/temporal-create-u2-authoring';
 import { TemporalCreateDatePicker } from './temporal-create-date-picker';
 import { TemporalCreateLifeAreaField } from './temporal-create-life-area-field';
 import { temporalCreateProductCopy } from './temporal-create-product-copy';
@@ -47,6 +49,7 @@ import './temporal-create-time-visual-parity.css';
 
 type Props = Readonly<{
   fields: TemporalCreateFields;
+  baselineFields: TemporalCreateFields;
   contexts: readonly TemporalCreateContextOption[];
   showCompactTimezone?: boolean;
   showRecurrence?: boolean;
@@ -460,6 +463,7 @@ export function TimeControl({
 
 export function TemporalCreateCoreFieldsU2({
   fields,
+  baselineFields,
   contexts,
   showCompactTimezone = true,
   showRecurrence = true,
@@ -570,31 +574,31 @@ export function TemporalCreateCoreFieldsU2({
 
   const changeKind = (kind: TemporalCreateKind) => {
     if (kind === fields.kind) return;
-    if (
-      kind !== 'activity' &&
-      authoringDraft.activityStructure.activityIntervals.length > 0
-    )
-      return;
-    const targetOwner = kind === 'event' ? 'event' : 'routine';
-    const eventRecurrence = {
-      ...fields.eventRecurrence,
-      owner: fields.eventRecurrence.patternKind === 'none' ? null : targetOwner,
-    } as const;
-    if (kind === 'event') {
-      onPatch({
-        kind,
-        timeSemantics:
-          fields.timeSemantics === 'coarse' ? 'timed' : fields.timeSemantics,
-        scheduling: {
-          ...fields.scheduling,
-          constraintKind: 'none',
-          fallbackPolicy: 'inherit',
-        },
-        eventRecurrence,
-      });
-      return;
-    }
-    onPatch({ kind, eventRecurrence });
+    // Type switching starts a genuinely fresh item. Preserve only the title;
+    // use the original Create invocation's date/clock/zone as defaults, not
+    // values edited while authoring the previous type.
+    const freshFields = createTemporalCreateFields({
+      kind,
+      title: fields.title,
+      date: baselineFields.date,
+      startTime: baselineFields.startTime,
+      durationMinutes: baselineFields.durationMinutes,
+      timeSemantics:
+        baselineFields.timeSemantics === 'coarse'
+          ? 'timed'
+          : baselineFields.timeSemantics,
+      timeMode: baselineFields.timeMode,
+      timeZoneId: baselineFields.timeZoneId,
+      contextId: '',
+    });
+    setInvalidEnd(null);
+    setLastIntervalEdited(null);
+    setTimeBandOpen(false);
+    // Reset U2 as well as canonical fields: planned Sessions, intervals,
+    // objectives, Life Area, participants and event options must never leak
+    // across Activity ↔ Event transitions.
+    patchAuthoring(createTemporalCreateU2AuthoringDraft(freshFields));
+    onPatch(freshFields);
   };
 
   const changeTimeSemantics = (semantics: TemporalCreateTimeSemantics) => {
@@ -910,18 +914,6 @@ export function TemporalCreateCoreFieldsU2({
               type="button"
               role="radio"
               aria-checked={fields.kind === descriptor.kind}
-              disabled={
-                descriptor.kind !== 'activity' &&
-                authoringDraft.activityStructure.activityIntervals.length > 0
-              }
-              title={
-                descriptor.kind !== 'activity' &&
-                authoringDraft.activityStructure.activityIntervals.length > 0
-                  ? italian
-                    ? 'Rimuovi prima gli intervalli aggiuntivi'
-                    : 'Remove the additional intervals first'
-                  : undefined
-              }
               className={fields.kind === descriptor.kind ? 'is-active' : ''}
               onClick={() => changeKind(descriptor.kind)}
             >
