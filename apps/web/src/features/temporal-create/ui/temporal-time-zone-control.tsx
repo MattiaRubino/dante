@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 
 import './temporal-time-zone-dialog.css';
@@ -76,31 +76,6 @@ type DialogPlacement = Readonly<{
   width: number;
 }>;
 
-type EditorBounds = Readonly<{
-  top: number;
-  left: number;
-  width: number;
-  height: number;
-  borderRadius: string;
-}>;
-
-function editorForZonePicker(trigger: HTMLElement | null): HTMLElement | null {
-  // Prefer the actual surrounding modal over a nested series form.
-  return trigger?.closest<HTMLElement>(
-    '.temporal-create-composer, .timeline-event-modal--edit',
-  ) ?? trigger?.closest<HTMLElement>('.timeline-recurring-series-editor') ?? null;
-}
-
-function timezoneFocusable(panel: HTMLElement): HTMLElement[] {
-  return Array.from(
-    panel.querySelectorAll<HTMLElement>(
-      'button:not([disabled]), input:not([disabled]), select:not([disabled]), ' +
-      'textarea:not([disabled]), [tabindex]:not([tabindex="-1"])',
-    ),
-  ).filter((element) => !element.hasAttribute('hidden') &&
-    element.getAttribute('aria-hidden') !== 'true');
-}
-
 function placeDialog(anchor: DOMRect): DialogPlacement {
   const gutter = 14;
   const width = Math.min(440, Math.max(0, window.innerWidth - gutter * 2));
@@ -153,7 +128,6 @@ function ZonePicker({
 }: ZonePickerProps) {
   const [query, setQuery] = useState('');
   const searchRef = useRef<HTMLInputElement>(null);
-  const choiceRef = useRef<HTMLButtonElement>(null);
   const offset = useCallback(
     (entry: string) => timeZoneGmtOffset(entry, date),
     [date],
@@ -181,7 +155,6 @@ function ZonePicker({
     <div className="temporal-zone-dialog__picker">
       <label>{label}</label>
       <button
-        ref={choiceRef}
         type="button"
         className="temporal-zone-dialog__choice"
         aria-expanded={expanded}
@@ -214,7 +187,6 @@ function ZonePicker({
                 onClick={() => {
                   onChooseLocal?.();
                   onExpand();
-                  choiceRef.current?.focus({ preventScroll: true });
                 }}
               >
                 <span className="temporal-zone-dialog__offset">
@@ -236,7 +208,6 @@ function ZonePicker({
                 onClick={() => {
                   onChange(entry);
                   onExpand();
-                  choiceRef.current?.focus({ preventScroll: true });
                 }}
               >
                 <span className="temporal-zone-dialog__offset">{'(' + offset(entry) + ')'}</span>
@@ -285,11 +256,8 @@ export function TemporalTimeZoneControl({
 }: Props) {
   const [open, setOpen] = useState(false);
   const rootRef = useRef<HTMLDivElement>(null);
-  const triggerRef = useRef<HTMLButtonElement>(null);
   const panelRef = useRef<HTMLDivElement>(null);
-  const restoreFocusRef = useRef(false);
   const [position, setPosition] = useState<DialogPlacement | null>(null);
-  const [editorBounds, setEditorBounds] = useState<EditorBounds | null>(null);
   const [draftStart, setDraftStart] = useState(localTimeZone());
   const [draftEnd, setDraftEnd] = useState(localTimeZone());
   const [distinct, setDistinct] = useState(false);
@@ -307,33 +275,13 @@ export function TemporalTimeZoneControl({
       old?.top === next.top && old.left === next.left && old.width === next.width
         ? old : next,
     );
-    const editor = editorForZonePicker(rootRef.current);
-    if (!editor) {
-      setEditorBounds(null);
-      return;
-    }
-    const rect = editor.getBoundingClientRect();
-    const nextBounds: EditorBounds = {
-      top: rect.top,
-      left: rect.left,
-      width: rect.width,
-      height: rect.height,
-      borderRadius: window.getComputedStyle(editor).borderRadius,
-    };
-    setEditorBounds((old) =>
-      old?.top === nextBounds.top && old.left === nextBounds.left &&
-      old.width === nextBounds.width && old.height === nextBounds.height &&
-      old.borderRadius === nextBounds.borderRadius ? old : nextBounds,
-    );
-  }, []);
-  const closeDialog = useCallback(() => {
-    restoreFocusRef.current = true;
-    setOpen(false);
   }, []);
   const openDialog = () => {
     if (disabled) return;
-    // The shield keeps the anchor inaccessible while this dialog is open.
-    if (open) return;
+    if (open) {
+      setOpen(false);
+      return;
+    }
     setDraftStart(zoneId ?? local);
     setDraftEnd(endZoneId ?? zoneId ?? local);
     setDistinct(isDistinct && allowDistinctZones);
@@ -348,99 +296,24 @@ export function TemporalTimeZoneControl({
     const end = distinct && draftEnd !== draftStart ? draftEnd : null;
     if (onZonesChange) onZonesChange(start, end);
     else onChange(start);
-    closeDialog();
+    setOpen(false);
   };
-
-  // One modal contract for Quick/Advanced and every Activity/Event/series Edit.
-  // The editor is inert while this body-portaled panel owns interaction.
-  useLayoutEffect(() => {
-    if (!open) {
-      if (restoreFocusRef.current) {
-        restoreFocusRef.current = false;
-        triggerRef.current?.focus({ preventScroll: true });
-      }
-      return;
-    }
-    const panel = panelRef.current;
-    if (!panel) return;
-    const editor = editorForZonePicker(rootRef.current);
-    const wasInert = editor?.inert ?? false;
-    if (editor) editor.inert = true;
-
-    const firstControl = () => timezoneFocusable(panel)[0] ?? panel;
-    const initialFocus = panel.querySelector<HTMLElement>(
-      '.temporal-zone-dialog__choice',
-    ) ?? firstControl();
-    initialFocus.focus({ preventScroll: true });
-
-    const keepFocusInside = (event: FocusEvent) => {
-      if (event.target instanceof Node && !panel.contains(event.target)) {
-        firstControl().focus({ preventScroll: true });
-      }
-    };
-    const onKeyDown = (event: KeyboardEvent) => {
-      if (event.key === 'Escape') {
-        event.preventDefault();
-        event.stopPropagation();
-        closeDialog();
-        return;
-      }
-      if (event.key !== 'Tab') return;
-      const focusables = timezoneFocusable(panel);
-      const first = focusables[0];
-      const last = focusables.at(-1);
-      if (!first || !last) {
-        event.preventDefault();
-        panel.focus({ preventScroll: true });
-        return;
-      }
-      if (event.shiftKey && (document.activeElement === first ||
-          !panel.contains(document.activeElement))) {
-        event.preventDefault();
-        last.focus({ preventScroll: true });
-      } else if (!event.shiftKey && (document.activeElement === last ||
-          !panel.contains(document.activeElement))) {
-        event.preventDefault();
-        first.focus({ preventScroll: true });
-      }
-    };
-    const blockOutsidePointer = (event: MouseEvent | PointerEvent) => {
-      if (event.target instanceof Node && panel.contains(event.target)) return;
-      event.preventDefault();
-      event.stopPropagation();
-    };
-    const blockOutsideScroll = (event: WheelEvent | TouchEvent) => {
-      if (event.target instanceof Node && panel.contains(event.target)) return;
-      event.preventDefault();
-      event.stopPropagation();
-    };
-
-    document.addEventListener('focusin', keepFocusInside, true);
-    document.addEventListener('keydown', onKeyDown, true);
-    document.addEventListener('pointerdown', blockOutsidePointer, true);
-    document.addEventListener('mousedown', blockOutsidePointer, true);
-    document.addEventListener('click', blockOutsidePointer, true);
-    document.addEventListener('wheel', blockOutsideScroll, { capture: true, passive: false });
-    document.addEventListener('touchmove', blockOutsideScroll, { capture: true, passive: false });
-
-    return () => {
-      document.removeEventListener('focusin', keepFocusInside, true);
-      document.removeEventListener('keydown', onKeyDown, true);
-      document.removeEventListener('pointerdown', blockOutsidePointer, true);
-      document.removeEventListener('mousedown', blockOutsidePointer, true);
-      document.removeEventListener('click', blockOutsidePointer, true);
-      document.removeEventListener('wheel', blockOutsideScroll, true);
-      document.removeEventListener('touchmove', blockOutsideScroll, true);
-      if (editor) editor.inert = wasInert;
-    };
-  }, [open, closeDialog]);
 
   useEffect(() => {
     if (!open) return;
+    const dismiss = (event: PointerEvent) => {
+      if (
+        event.target instanceof Node &&
+        !rootRef.current?.contains(event.target) &&
+        !panelRef.current?.contains(event.target)
+      ) setOpen(false);
+    };
     const reposition = () => updatePosition();
+    document.addEventListener('pointerdown', dismiss, true);
     window.addEventListener('resize', reposition);
     window.addEventListener('scroll', reposition, true);
     return () => {
+      document.removeEventListener('pointerdown', dismiss, true);
       window.removeEventListener('resize', reposition);
       window.removeEventListener('scroll', reposition, true);
     };
@@ -450,13 +323,16 @@ export function TemporalTimeZoneControl({
     <div
       ref={panelRef}
       role="dialog"
-      aria-modal="true"
-      tabIndex={-1}
       aria-label={italian ? 'Imposta fuso orario' : 'Set time zone'}
       className="temporal-create-timezone-panel is-config-dialog"
       data-temporal-create-portal=""
       style={position ?? undefined}
-      onKeyDown={(event) => event.stopPropagation()}
+      onKeyDown={(event) => {
+        if (event.key === 'Escape') {
+          event.stopPropagation();
+          setOpen(false);
+        }
+      }}
     >
       <h3>{italian ? 'Fuso orario' : 'Time zone'}</h3>
       {allowDistinctZones ? (
@@ -523,7 +399,7 @@ export function TemporalTimeZoneControl({
         />
       )}
       <div className="temporal-zone-dialog__actions">
-        <button type="button" onClick={closeDialog}>
+        <button type="button" onClick={() => setOpen(false)}>
           {italian ? 'Annulla' : 'Cancel'}
         </button>
         <button type="button" className="is-primary" onClick={apply}>
@@ -537,7 +413,6 @@ export function TemporalTimeZoneControl({
     <div ref={rootRef} className="temporal-create-timezone-control" data-create-path="timeZoneId"
       title={disabled ? disabledReason : undefined}>
       <button
-        ref={triggerRef}
         type="button"
         className={'temporal-create-timezone-trigger' + (open ? ' is-open' : '')}
         disabled={disabled}
@@ -552,17 +427,7 @@ export function TemporalTimeZoneControl({
         </span>
       </button>
       {panel && typeof document !== 'undefined'
-        ? createPortal(
-            <>
-              <div className="temporal-create-timezone-interaction-shield"
-                aria-hidden="true" />
-              <div className="temporal-create-timezone-editor-dimmer"
-                aria-hidden="true" style={editorBounds ?? undefined} />
-              {panel}
-            </>,
-            document.body,
-          )
-        : panel}
+        ? createPortal(panel, document.body) : panel}
     </div>
   );
 }

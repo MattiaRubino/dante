@@ -1962,8 +1962,6 @@ describe('Activity Inspector', () => {
     const timezoneDialog = screen.getByRole('dialog', {
       name: 'Imposta fuso orario',
     });
-    expect(timezoneDialog.getAttribute('aria-modal')).toBe('true');
-    expect(document.querySelector('.temporal-create-timezone-interaction-shield')).toBeTruthy();
     fireEvent.click(within(timezoneDialog).getByRole('button', { name: /GMT.*Europe\/Rome/ }));
     fireEvent.change(within(timezoneDialog).getByRole('searchbox', {
       name: 'Cerca fuso orario',

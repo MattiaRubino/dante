@@ -216,18 +216,6 @@ export function HomeCreateInteractionBridge() {
         return;
       }
 
-      // The shared timezone dialog is portaled outside the Create composer.
-      // This Home listener is registered before the dialog's capture blocker:
-      // without this guard a pointer on the modal shield synthesizes Escape
-      // and unmounts Create (and the uncommitted timezone draft).
-      // While a nested modal owns the interaction, do not dismiss or reseed
-      // the parent composer, regardless of the pointer target.
-      if (document.querySelector(
-        '[data-temporal-create-portal][aria-modal="true"]',
-      )) {
-        return;
-      }
-
       const target = event.target;
       if (!(target instanceof Node) || composer.contains(target)) {
         return;

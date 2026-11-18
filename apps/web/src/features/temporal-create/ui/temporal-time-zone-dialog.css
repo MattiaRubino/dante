@@ -261,27 +261,3 @@
   stroke: #f8b07d;
   stroke-width: 0.7;
 }
-
-/* Local lightweight modal: pointer shield covers the viewport, but only the
-   currently edited Create/Edit surface is visually attenuated (no blur).
-   The shared popover remains anchored and above both layers. */
-.temporal-create-timezone-interaction-shield {
-  position: fixed;
-  inset: 0;
-  z-index: 10038;
-  background: transparent;
-  cursor: default;
-}
-
-.temporal-create-timezone-editor-dimmer {
-  position: fixed;
-  inset: 0;
-  z-index: 10039;
-  pointer-events: none;
-  border-radius: 14px;
-  background: rgb(7 13 20 / 20%);
-}
-
-.temporal-create-timezone-panel.is-config-dialog {
-  z-index: 10040;
-}

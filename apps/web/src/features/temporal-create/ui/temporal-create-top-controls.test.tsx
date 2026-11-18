@@ -767,40 +767,4 @@ describe('Temporal Create U1 top controls', () => {
       name: 'Utilizza fusi orari diversi per inizio e fine',
     })).toBeNull();
   });
-
-  it.each([
-    ['Quick', 'Attività'],
-    ['Quick', 'Evento'],
-    ['Advanced', 'Attività'],
-    ['Advanced', 'Evento'],
-  ] as const)('keeps timezone interaction modal in %s %s', (surface, kind) => {
-    renderEntry();
-    if (kind === 'Evento') fireEvent.click(screen.getByRole('radio', { name: 'Evento' }));
-    if (surface === 'Advanced')
-      fireEvent.click(screen.getByRole('button', { name: /Opzioni avanzate/ }));
-    const trigger = screen.getByRole('button', { name: /^Fuso orario:/ });
-    trigger.focus();
-    fireEvent.click(trigger);
-    const panel = screen.getByRole('dialog', { name: 'Imposta fuso orario' });
-    const owner = trigger.closest<HTMLElement>('.temporal-create-composer');
-    expect(panel.getAttribute('aria-modal')).toBe('true');
-    expect(owner?.inert).toBe(true);
-    expect(document.querySelector('.temporal-create-timezone-interaction-shield')).toBeTruthy();
-    fireEvent.pointerDown(document.querySelector('.temporal-create-timezone-interaction-shield')!);
-    expect(panel.isConnected).toBe(true);
-    // The global Home bridge must not dismiss Create from its earlier
-    // document capture listener, even for a programmatic outside target.
-    const outside = document.createElement('div');
-    document.body.append(outside);
-    try {
-      fireEvent.pointerDown(outside);
-      expect(panel.isConnected).toBe(true);
-      expect(document.querySelector('[data-temporal-create="composer"]')).toBe(owner);
-    } finally {
-      outside.remove();
-    }
-    fireEvent.keyDown(panel, { key: 'Escape' });
-    expect(owner?.inert).toBe(false);
-    expect(document.activeElement).toBe(trigger);
-  });
 });
