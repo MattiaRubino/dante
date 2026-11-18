@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from datetime import UTC, date, datetime
+from datetime import UTC, date, datetime, timedelta
 from typing import Any
 from uuid import UUID, uuid7
 
@@ -21,6 +21,7 @@ from dante.modules.temporal.application import (
     TimelineFloatingLocalActivityItem,
     TimelineFloatingLocalEventItem,
     TimelineNamedZoneLocalActivityItem,
+    TimelineNamedZoneLocalEventItem,
 )
 from dante.modules.temporal.contracts import TimelineWindowQuery
 from dante.modules.temporal.event import TemporalEventApplication
@@ -766,3 +767,85 @@ async def test_timeline_uses_real_dst_day_bounds_and_effective_display_zone(
         )
         assert item.display_starts_local_at == _local(2026, 10, 24, 21, 10)
         assert item.display_ends_local_at == _local(2026, 10, 24, 21, 40)
+
+
+@pytest.mark.postgres
+@pytest.mark.asyncio
+async def test_one_off_dual_zone_activity_and_event_survive_postgresql_and_timeline(
+    migrated_database: Any,
+) -> None:
+    """Two original wall clocks are retained while Timeline uses its view zone."""
+    owner = _seed_self_person(migrated_database)
+    area_ref = ensure_test_life_area(migrated_database, owner)
+    runtime = create_database_runtime(migrated_database.runtime_settings())
+    activities = TemporalActivityApplication(runtime.session_factory)
+    events = TemporalEventApplication(runtime.session_factory)
+    timeline = TemporalTimelineApplication(runtime.session_factory)
+    placement = NamedZoneLocalIntervalPlacement(
+        starts_local_at=_local(2026, 11, 18, 10, 0),
+        ends_local_at=_local(2026, 11, 18, 8, 0),
+        zone_id="Europe/Rome",
+        end_zone_id="America/New_York",
+    )
+    try:
+        activity = await activities.create_activity_with_schedule(
+            self_person_ref=owner,
+            life_area_ref=area_ref,
+            operation_id="dual:activity:create",
+            title="Dual IANA Activity",
+            placement=placement,
+        )
+        event = await events.create_event_with_schedule(
+            self_person_ref=owner,
+            life_area_ref=area_ref,
+            operation_id="dual:event:create",
+            title="Dual IANA Event",
+            placement=placement,
+        )
+        with psycopg.connect(
+            **migrated_database.connection_kwargs(
+                "dante_migrator",
+                migrated_database.cluster.migrator_password,
+            )
+        ) as connection:
+            connection.execute("SET ROLE dante_owner")
+            for accepted in (activity.schedule, event.schedule):
+                row = connection.execute(
+                    """SELECT starts_local_at, ends_local_at, zone_id, end_zone_id,
+                              resolved_start_at, resolved_end_at
+                         FROM dante.schedule_placement_named_zone_state
+                        WHERE material_state_ref = %s""",
+                    (accepted.material_state_ref.value,),
+                ).fetchone()
+                assert row is not None
+                assert row[:4] == (
+                    _local(2026, 11, 18, 10, 0),
+                    _local(2026, 11, 18, 8, 0),
+                    "Europe/Rome",
+                    "America/New_York",
+                )
+                assert row[5] - row[4] == timedelta(hours=4)
+
+        query = TimelineWindowQuery(
+            start_date=date(2026, 11, 18),
+            end_date_exclusive=date(2026, 11, 19),
+        )
+        rome = await timeline.read_window(query=query, context=_context(owner))
+        ny = await timeline.read_window(
+            query=query,
+            context=_context(owner, effective_zone_id="America/New_York"),
+        )
+        for frame, start_hour, end_hour in ((rome, 10, 14), (ny, 4, 8)):
+            items = {item.title: item for item in frame.items}
+            assert set(items) == {"Dual IANA Activity", "Dual IANA Event"}
+            assert isinstance(items["Dual IANA Activity"], TimelineNamedZoneLocalActivityItem)
+            assert isinstance(items["Dual IANA Event"], TimelineNamedZoneLocalEventItem)
+            for item in items.values():
+                assert item.zone_id == "Europe/Rome"
+                assert item.end_zone_id == "America/New_York"
+                assert item.starts_local_at == _local(2026, 11, 18, 10, 0)
+                assert item.ends_local_at == _local(2026, 11, 18, 8, 0)
+                assert item.display_starts_local_at == _local(2026, 11, 18, start_hour, 0)
+                assert item.display_ends_local_at == _local(2026, 11, 18, end_hour, 0)
+    finally:
+        await runtime.dispose()
