@@ -224,6 +224,7 @@ type Props = Readonly<{
   allowDistinctZones?: boolean;
   date?: string;
   disabled?: boolean;
+  disabledReason?: string;
   italian?: boolean;
   allowFloating?: boolean;
   displayLabel?: string;
@@ -238,6 +239,7 @@ export function TemporalTimeZoneControl({
   allowDistinctZones = false,
   date,
   disabled = false,
+  disabledReason,
   italian = true,
   allowFloating = true,
   displayLabel,
@@ -404,7 +406,8 @@ export function TemporalTimeZoneControl({
   ) : null;
 
   return (
-    <div ref={rootRef} className="temporal-create-timezone-control" data-create-path="timeZoneId">
+    <div ref={rootRef} className="temporal-create-timezone-control" data-create-path="timeZoneId"
+      title={disabled ? disabledReason : undefined}>
       <button
         type="button"
         className={'temporal-create-timezone-trigger' + (open ? ' is-open' : '')}
