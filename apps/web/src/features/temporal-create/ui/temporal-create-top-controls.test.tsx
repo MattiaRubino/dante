@@ -116,6 +116,7 @@ describe('Temporal Create U1 top controls', () => {
     const startMenu = screen.getByRole('dialog', { name: 'Scegli fuso orario' });
     expect(startMenu.parentElement).toBe(document.body);
     expect(startMenu.classList.contains('is-clock-sidecar')).toBe(true);
+    expect(startMenu.hasAttribute('data-temporal-create-portal')).toBe(true);
     expect(startMenu.getAttribute('data-temporal-clock-timezone')).toBe('Inizio');
     expect((startMenu as HTMLElement).style.left).toBe('290px');
     const search = within(startMenu).getByRole('searchbox', {
