@@ -1,4 +1,11 @@
-import { Temporal, moveCivilStartPreservingDuration, moveAllDayRangePreservingDays, isValidCivilInterval } from '@dante/time';
+import {
+  Temporal,
+  moveCivilStartPreservingDuration,
+  moveAllDayRangePreservingDays,
+  isValidCivilInterval,
+  projectElapsedEndToZone,
+  elapsedMinutesBetweenZonedBounds,
+} from '@dante/time';
 import {
   useEffect,
   useRef,
@@ -619,13 +626,31 @@ export function TemporalCreateCoreFieldsU2({
     });
   };
 
-  const calculatedEnd = temporalCreateEndDateTime(
-    fields.date,
-    fields.startTime,
-    fields.durationMinutes,
-    fields.timeMode,
-    fields.timeZoneId,
+  const multiIntervals = authoringDraft.activityStructure.activityIntervals.length > 0;
+  const isCustomZone = fields.timeSemantics === 'timed' &&
+    fields.timeMode === 'zoned' && !!fields.endTimeZoneId &&
+    fields.endTimeZoneId !== fields.timeZoneId;
+  const canPickBoundaryZones =
+    fields.timeSemantics === 'timed' && fields.timeMode === 'zoned' &&
+    fields.eventRecurrence.patternKind === 'none' && !multiIntervals;
+  const singleZoneEnd = temporalCreateEndDateTime(
+    fields.date, fields.startTime, fields.durationMinutes,
+    fields.timeMode, fields.timeZoneId,
   );
+  let calculatedEnd = singleZoneEnd;
+  let zoneResolutionInvalid = false;
+  if (isCustomZone) {
+    try {
+      const end = projectElapsedEndToZone(
+        `${fields.date}T${fields.startTime}`, fields.timeZoneId,
+        fields.durationMinutes, fields.endTimeZoneId!,
+        fields.timeDisambiguation === 'later' ? 'later' : 'earlier',
+      );
+      calculatedEnd = { date: end.slice(0, 10), time: end.slice(11, 16) };
+    } catch {
+      zoneResolutionInvalid = true;
+    }
+  }
   const visibleEndDate = invalidEnd?.date ?? calculatedEnd.date;
   const visibleEndTime = invalidEnd?.time ?? calculatedEnd.time;
   const visibleAllDayEndDate =
@@ -648,6 +673,7 @@ export function TemporalCreateCoreFieldsU2({
       })),
     ];
     const valid = rows.filter((row) => {
+      if (row.id === 'primary' && isCustomZone) return true;
       if (isValidCivilInterval(row.start, row.end)) return true;
       invalidIntervalIds.add(row.id);
       return false;
@@ -663,15 +689,28 @@ export function TemporalCreateCoreFieldsU2({
       }
     }
   }
-  const clockInvalid = invalidEnd !== null || invalidIntervalIds.size > 0;
+  const clockInvalid = invalidEnd !== null ||
+    invalidIntervalIds.size > 0 || zoneResolutionInvalid ||
+    (isCustomZone && !canPickBoundaryZones);
   useEffect(() => onClockInvalidChange?.(clockInvalid), [onClockInvalidChange, clockInvalid]);
 
   const patchEnd = (endDate: string, endTime: string) => {
     setLastIntervalEdited('primary');
-    const duration = temporalCreateDurationFromEndDateTime(
-      fields.date, fields.startTime, endDate, endTime,
-      fields.timeMode, fields.timeZoneId,
-    );
+    let duration: number | null = null;
+    try {
+      duration = isCustomZone
+        ? elapsedMinutesBetweenZonedBounds(
+            `${fields.date}T${fields.startTime}`, fields.timeZoneId,
+            `${endDate}T${endTime}`, fields.endTimeZoneId!,
+            fields.timeDisambiguation === 'later' ? 'later' : 'earlier',
+          )
+        : temporalCreateDurationFromEndDateTime(
+            fields.date, fields.startTime, endDate, endTime,
+            fields.timeMode, fields.timeZoneId,
+          );
+    } catch {
+      duration = null;
+    }
     if (duration === null) {
       setInvalidEnd({ date: endDate, time: endTime });
       return;
@@ -684,6 +723,10 @@ export function TemporalCreateCoreFieldsU2({
   const patchStartDate = (date: string) => {
     setLastIntervalEdited('primary');
     setInvalidEnd(null);
+    if (isCustomZone) {
+      onPatch({ date });
+      return;
+    }
     const movedEnd = moveCivilStartPreservingDuration(
       `${fields.date}T${fields.startTime}`,
       `${calculatedEnd.date}T${calculatedEnd.time}`,
@@ -717,6 +760,10 @@ export function TemporalCreateCoreFieldsU2({
   const patchStartTime = (startTime: string) => {
     setLastIntervalEdited('primary');
     setInvalidEnd(null);
+    if (isCustomZone) {
+      onPatch({ startTime });
+      return;
+    }
     const movedEnd = moveCivilStartPreservingDuration(
       `${fields.date}T${fields.startTime}`,
       `${calculatedEnd.date}T${calculatedEnd.time}`,
@@ -724,6 +771,38 @@ export function TemporalCreateCoreFieldsU2({
     );
     patchAuthoring({ endDate: movedEnd.slice(0, 10) });
     onPatch({ startTime });
+  };
+
+  const changeStartZone = (zoneId: string | null) => {
+    if (!zoneId) return;
+    const oldEndZone = fields.endTimeZoneId ?? fields.timeZoneId;
+    setInvalidEnd(null);
+    onPatch({
+      timeMode: 'zoned',
+      timeZoneId: zoneId,
+      endTimeZoneId: oldEndZone === zoneId ? null : oldEndZone,
+    });
+  };
+
+  const changeEndZone = (zoneId: string | null) => {
+    if (!zoneId) return;
+    const nextEndZone = zoneId === fields.timeZoneId ? null : zoneId;
+    let duration: number | null;
+    try {
+      duration = elapsedMinutesBetweenZonedBounds(
+        `${fields.date}T${fields.startTime}`, fields.timeZoneId,
+        `${visibleEndDate}T${visibleEndTime}`, zoneId,
+        fields.timeDisambiguation === 'later' ? 'later' : 'earlier',
+      );
+    } catch {
+      duration = null;
+    }
+    setInvalidEnd(duration === null
+      ? { date: visibleEndDate, time: visibleEndTime } : null);
+    onPatch({
+      endTimeZoneId: nextEndZone,
+      ...(duration === null ? {} : { durationMinutes: duration }),
+    });
   };
 
   const bandLabels: Readonly<Record<TimeBand['key'], string>> = italian
@@ -887,14 +966,16 @@ export function TemporalCreateCoreFieldsU2({
           {fields.timeSemantics === 'timed' ? (
             <TemporalTimeZoneControl
               zoneId={fields.timeMode === 'floating' ? null : fields.timeZoneId}
+              displayLabel={isCustomZone ? 'Personalizzato' : undefined}
               italian={italian}
-              onChange={(zoneId) =>
+              onChange={(zoneId) => {
+                setInvalidEnd(null);
                 onPatch(
                   zoneId === null
-                    ? { timeMode: 'floating' }
-                    : { timeMode: 'zoned', timeZoneId: zoneId },
-                )
-              }
+                    ? { timeMode: 'floating', endTimeZoneId: null }
+                    : { timeMode: 'zoned', timeZoneId: zoneId, endTimeZoneId: null },
+                );
+              }}
             />
           ) : null}
         </div>
@@ -938,6 +1019,8 @@ export function TemporalCreateCoreFieldsU2({
               label={italian ? 'Inizio' : 'Start'}
               value={fields.startTime}
               dataPath="startTime"
+              zoneId={canPickBoundaryZones ? fields.timeZoneId : undefined}
+              onZoneChange={canPickBoundaryZones ? changeStartZone : undefined}
               onChange={patchStartTime}
               helper={renderError('startTime')}
             />
@@ -981,6 +1064,9 @@ export function TemporalCreateCoreFieldsU2({
               value={visibleEndTime}
               invalid={invalidEnd !== null || invalidIntervalIds.has('primary')}
               dataPath="endTime"
+              zoneId={canPickBoundaryZones
+                ? fields.endTimeZoneId ?? fields.timeZoneId : undefined}
+              onZoneChange={canPickBoundaryZones ? changeEndZone : undefined}
               onChange={(endTime) => patchEnd(visibleEndDate, endTime)}
               helper={
                 <>

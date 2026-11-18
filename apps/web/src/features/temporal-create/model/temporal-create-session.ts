@@ -146,6 +146,8 @@ export type TemporalCreateFields = Readonly<{
   durationMinutes: number;
   timeMode: TemporalCreateTimeMode;
   timeZoneId: string;
+  /** Only non-recurring one-off items without split intervals may set a second zone. */
+  endTimeZoneId?: string | null;
   timeDisambiguation: TemporalCreateTimeDisambiguation;
   coarsePeriod: TemporalCoarsePeriod;
   contextId: string;

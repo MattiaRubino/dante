@@ -1,4 +1,4 @@
-import { Temporal } from '@dante/time';
+import { Temporal, projectElapsedEndToZone } from '@dante/time';
 
 import type {
   RecurringActivityTemplate,
@@ -668,6 +668,29 @@ function placementInput(
       kind: 'date-span' as const,
       startDate,
       endDateExclusive: inclusiveEnd.add({ days: 1 }),
+    });
+  }
+
+  if (fields.timeSemantics === 'timed' &&
+      fields.timeMode === 'zoned' && fields.endTimeZoneId &&
+      fields.endTimeZoneId !== fields.timeZoneId) {
+    if (fields.eventRecurrence.patternKind !== 'none' ||
+        (fields.kind === 'activity' &&
+         draft.activityStructure.activityIntervals.length > 0)) {
+      throw new Error('Il doppio fuso richiede un elemento singolo e un solo intervallo.');
+    }
+    const start = `${fields.date}T${fields.startTime}`;
+    const end = projectElapsedEndToZone(
+      start, fields.timeZoneId, fields.durationMinutes, fields.endTimeZoneId,
+      temporalCreateEffectiveDisambiguation(fields),
+    );
+    return Object.freeze({
+      kind: 'named-zone-local-interval' as const,
+      startsLocalAt: Temporal.PlainDateTime.from(start),
+      endsLocalAt: Temporal.PlainDateTime.from(end),
+      zoneId: fields.timeZoneId,
+      endZoneId: fields.endTimeZoneId,
+      disambiguation: temporalCreateEffectiveDisambiguation(fields),
     });
   }
 
