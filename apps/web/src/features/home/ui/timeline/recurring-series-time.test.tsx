@@ -19,7 +19,7 @@ afterEach(() => {
   vi.restoreAllMocks();
 });
 
-function renderInterval(onChange = vi.fn(), onTimeZoneChange = vi.fn()) {
+function renderInterval(onChange = vi.fn()) {
   render(
     <SeriesIntervalFields
       selectedDate="2026-11-18"
@@ -27,12 +27,10 @@ function renderInterval(onChange = vi.fn(), onTimeZoneChange = vi.fn()) {
       row={{ start_offset_minutes: 0, duration_minutes: 30 }}
       index={0}
       showLabel={false}
-      zoneId="Europe/Rome"
-      onTimeZoneChange={onTimeZoneChange}
       onChange={onChange}
     />,
   );
-  return { onChange, onTimeZoneChange };
+  return { onChange };
 }
 
 it('uses the same time bands as Create, including a night that crosses midnight', () => {
@@ -65,20 +63,10 @@ it('preserves duration when editing start and resizes the interval when editing 
   });
 });
 
-it('opens the common timezone sidecar while retaining the series-wide zone contract', () => {
-  const { onTimeZoneChange } = renderInterval();
+it('keeps recurring Activity clocks free of timezone controls', () => {
+  renderInterval();
   fireEvent.click(screen.getByRole('button', { name: 'Inizio: scegli orario' }));
   const picker = screen.getByRole('dialog', { name: 'Inizio' });
-  fireEvent.click(within(picker).getByRole('button', { name: /Inizio: Fuso orario:/ }));
-  const zones = screen.getByRole('dialog', { name: 'Scegli fuso orario' });
-  expect(zones.hasAttribute('data-temporal-create-portal')).toBe(true);
-  fireEvent.change(within(zones).getByRole('searchbox', { name: 'Cerca fuso orario' }), {
-    target: { value: 'Europe/Paris' },
-  });
-  const paris = within(zones).getByRole('button', { name: 'Europe/Paris' });
-  fireEvent.pointerDown(paris);
-  expect(zones.isConnected).toBe(true);
-  fireEvent.click(paris);
-  expect(onTimeZoneChange).toHaveBeenCalledTimes(1);
-  expect(onTimeZoneChange).toHaveBeenCalledWith('Europe/Paris');
+  expect(within(picker).queryByRole('button', { name: /Fuso orario/ })).toBeNull();
+  expect(within(picker).getByRole('button', { name: '09:00' })).toBeTruthy();
 });
