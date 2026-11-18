@@ -1,0 +1,182 @@
+/* The sole timezone configuration surface, shared by all Create and Edit flows.
+   The body portal prevents the Create/Inspector scroll containers clipping it. */
+.temporal-create-timezone-panel.is-config-dialog {
+  position: fixed;
+  z-index: 10040;
+  box-sizing: border-box;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  align-content: start;
+  gap: 14px;
+  max-width: calc(100vw - 28px);
+  max-height: calc(100dvh - 28px);
+  overflow-x: hidden;
+  overflow-y: auto;
+  padding: 18px;
+  transform: none;
+  color: var(--dante-semantic-color-home-text-primary, #edf2f8);
+  border-radius: 14px;
+}
+
+.temporal-create-timezone-panel.is-config-dialog h3 {
+  margin: 0;
+  font-size: 17px;
+  font-weight: 700;
+  line-height: 1.3;
+}
+
+.temporal-zone-dialog__toggle {
+  display: flex;
+  align-items: flex-start;
+  gap: 11px;
+  min-height: 28px;
+  cursor: pointer;
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.temporal-zone-dialog__toggle input {
+  flex: none;
+  width: 17px;
+  height: 17px;
+  margin: 1px 0 0;
+  accent-color: var(--dante-semantic-color-home-chrome-active, #ea5c12);
+}
+
+.temporal-zone-dialog__toggle:has(input:disabled) {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.temporal-zone-dialog__hint {
+  margin-top: -10px;
+  color: var(--dante-semantic-color-home-text-muted, #8f9bad);
+  font-size: 11px;
+  line-height: 1.4;
+}
+
+.temporal-zone-dialog__picker {
+  display: grid;
+  min-width: 0;
+  gap: 7px;
+}
+
+.temporal-zone-dialog__picker > label {
+  color: var(--dante-semantic-color-home-text-secondary, #b7c0cf);
+  font-size: 12px;
+  font-weight: 650;
+}
+
+.temporal-zone-dialog__choice {
+  box-sizing: border-box;
+  display: flex;
+  width: 100%;
+  min-height: 41px;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 9px 11px;
+  border: 1px solid var(--dante-semantic-color-home-border-subtle, #526071);
+  border-radius: 9px;
+  color: var(--dante-semantic-color-home-text-primary, #edf2f8);
+  background: var(--dante-semantic-color-home-surface-control, #202b30);
+  text-align: left;
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.temporal-zone-dialog__choice > span:first-child {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.temporal-zone-dialog__choice:hover,
+.temporal-zone-dialog__choice[aria-expanded='true'] {
+  border-color: var(--dante-semantic-color-home-chrome-active, #ea5c12);
+}
+
+.temporal-zone-dialog__options {
+  display: grid;
+  gap: 7px;
+  min-width: 0;
+  padding: 8px;
+  border: 1px solid var(--dante-semantic-color-home-border-subtle, #526071);
+  border-radius: 9px;
+  background: var(--dante-semantic-color-home-surface-control, #202b30);
+}
+
+.temporal-zone-dialog__options .temporal-create-timezone-search {
+  box-sizing: border-box;
+  width: 100%;
+  min-height: 39px;
+  font-size: 14px;
+}
+
+.temporal-zone-dialog__options .temporal-create-timezone-list {
+  max-height: min(200px, 30dvh);
+  min-height: 0;
+}
+
+.temporal-zone-dialog__options .temporal-create-timezone-list > button {
+  display: grid;
+  grid-template-columns: 106px minmax(0, 1fr);
+  align-items: center;
+  gap: 10px;
+  min-height: 37px;
+  padding: 7px 9px;
+  font-size: 13px;
+  line-height: 1.3;
+}
+
+.temporal-zone-dialog__offset {
+  font-variant-numeric: tabular-nums;
+  color: var(--dante-semantic-color-home-text-muted, #8f9bad);
+  white-space: nowrap;
+}
+
+.temporal-zone-dialog__actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  padding-top: 12px;
+  border-top: 1px solid var(--dante-semantic-color-home-border-subtle, #526071);
+}
+
+.temporal-zone-dialog__actions button {
+  min-height: 35px;
+  min-width: 78px;
+  padding: 7px 15px;
+  border: 1px solid var(--dante-semantic-color-home-border-subtle, #526071);
+  border-radius: 9px;
+  color: var(--dante-semantic-color-home-text-secondary, #b7c0cf);
+  background: transparent;
+  font-size: 13px;
+  font-weight: 650;
+  cursor: pointer;
+}
+
+.temporal-zone-dialog__actions .is-primary {
+  color: #fff;
+  border-color: var(--dante-semantic-color-home-chrome-active, #ea5c12);
+  background: color-mix(
+    in srgb,
+    var(--dante-semantic-color-home-chrome-active, #ea5c12) 79%,
+    black
+  );
+}
+
+.temporal-zone-dialog__actions button:hover {
+  border-color: var(--dante-semantic-color-home-chrome-active, #ea5c12);
+}
+
+@media (max-width: 440px) {
+  .temporal-create-timezone-panel.is-config-dialog {
+    padding: 13px;
+    gap: 10px;
+  }
+  .temporal-zone-dialog__options .temporal-create-timezone-list > button {
+    grid-template-columns: 94px minmax(0, 1fr);
+    gap: 6px;
+    font-size: 12px;
+  }
+}
