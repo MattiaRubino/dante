@@ -1242,38 +1242,35 @@ export function ActivityEditPanel({
     setPlanError('');
   };
 
-  const changeBoundaryZone = (
-    which: 'start' | 'end', zoneId: string | null,
-  ) => {
-    if (!zoneId || !envelope || !allowBoundaryZones) return;
-    const current = planDraft[envelope.scheduleRef] ?? {
-      start: envelope.start ?? '',
-      end: envelope.end ?? '',
-    };
-    if (which === 'end') {
-      setSelectedEndZoneId(zoneId === effectiveZoneId ? null : zoneId);
-    } else {
-      const oldEndZone = effectiveEndZoneId ?? effectiveZoneId;
-      let nextEnd: string | null = null;
+  const applyTimeZones = (startZone: string | null, endZone: string | null) => {
+    if (!startZone) return;
+    const nextEndZone =
+      endZone && endZone !== startZone ? endZone : null;
+    // Change both zones as a single operation. Existing real durations are
+    // maintained by projecting the end into the chosen destination zone.
+    if (envelope && !allDay) {
+      const current = planDraft[envelope.scheduleRef] ?? {
+        start: envelope.start ?? '',
+        end: envelope.end ?? '',
+      };
       try {
         const duration = elapsedMinutesBetweenZonedBounds(
-          current.start, effectiveZoneId, current.end, oldEndZone,
+          current.start, effectiveZoneId, current.end,
+          effectiveEndZoneId ?? effectiveZoneId,
         );
-        nextEnd = projectElapsedEndToZone(
-          current.start, zoneId, duration, oldEndZone,
+        const end = projectElapsedEndToZone(
+          current.start, startZone, duration, nextEndZone ?? startZone,
         );
-      } catch {
-        // Invalid drafts stay editable. Preview/Save validation remains authoritative.
-      }
-      setSelectedZoneId(zoneId);
-      setSelectedEndZoneId(oldEndZone === zoneId ? null : oldEndZone);
-      if (nextEnd !== null) {
-        setPlanDraft((prev) => ({
-          ...prev,
-          [envelope.scheduleRef]: { ...current, end: nextEnd },
+        setPlanDraft((previous) => ({
+          ...previous,
+          [envelope.scheduleRef]: { ...current, end },
         }));
+      } catch {
+        // Invalid schedule stays editable; planValidation is authoritative.
       }
     }
+    setSelectedZoneId(startZone);
+    setSelectedEndZoneId(nextEndZone);
     setPlanOperation(null);
     setPlanError('');
   };
@@ -2128,42 +2125,15 @@ export function ActivityEditPanel({
                   originalAllDay) ? (
                   <TemporalTimeZoneControl
                     zoneId={effectiveZoneId}
+                    endZoneId={effectiveEndZoneId}
+                    date={(planDraft[envelope?.scheduleRef ?? '']?.start ??
+                      envelope?.start ?? '').slice(0, 10)}
                     displayLabel={customZone ? 'Personalizzato' : undefined}
                     allowFloating={false}
+                    allowDistinctZones={allowBoundaryZones}
                     disabled={!canReplan || planningLocked || planPending}
-                    onChange={(zoneId) => {
-                      if (!zoneId) return;
-                      // Explicit conversion to a shared frame retains actual
-                      // elapsed duration. Never just reinterpret the old end
-                      // clock in the new timezone.
-                      if (customZone && envelope) {
-                        const current = planDraft[envelope.scheduleRef] ?? {
-                          start: envelope.start ?? '',
-                          end: envelope.end ?? '',
-                        };
-                        try {
-                          const minutes = elapsedMinutesBetweenZonedBounds(
-                            current.start,
-                            effectiveZoneId,
-                            current.end,
-                            effectiveEndZoneId!,
-                          );
-                          const end = projectElapsedEndToZone(
-                            current.start, zoneId, minutes, zoneId,
-                          );
-                          setPlanDraft((previous) => ({
-                            ...previous,
-                            [envelope.scheduleRef]: { ...current, end },
-                          }));
-                        } catch {
-                          // Keep invalid values editable; Save stays blocked.
-                        }
-                      }
-                      setSelectedZoneId(zoneId);
-                      setSelectedEndZoneId(null);
-                      setPlanOperation(null);
-                      setPlanError('');
-                    }}
+                    onChange={(zoneId) => applyTimeZones(zoneId, null)}
+                    onZonesChange={applyTimeZones}
                   />
                 ) : null}
               </div>
@@ -2293,10 +2263,6 @@ export function ActivityEditPanel({
                               ? {
                                   startZoneId: effectiveZoneId,
                                   endZoneId: effectiveEndZoneId ?? effectiveZoneId,
-                                  onStartZoneChange: (zoneId: string | null) =>
-                                    changeBoundaryZone('start', zoneId),
-                                  onEndZoneChange: (zoneId: string | null) =>
-                                    changeBoundaryZone('end', zoneId),
                                 }
                               : {})}
                             {...(schedule.role === 'interval'
