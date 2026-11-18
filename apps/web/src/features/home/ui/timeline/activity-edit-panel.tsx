@@ -1248,7 +1248,7 @@ export function ActivityEditPanel({
       endZone && endZone !== startZone ? endZone : null;
     // Change both zones as a single operation. Existing real durations are
     // maintained by projecting the end into the chosen destination zone.
-    if (envelope && !allDay) {
+    if (envelope && !allDay && (customZone || nextEndZone)) {
       const current = planDraft[envelope.scheduleRef] ?? {
         start: envelope.start ?? '',
         end: envelope.end ?? '',
