@@ -104,6 +104,7 @@ class NamedZoneLocalIntervalPlacement:
     # Acceptance policy participates in operation fingerprints, while canonical
     # material equality is carried by local values, zone, and resolved instants.
     disambiguation: LocalTimeDisambiguation = field(default="reject", compare=False)
+    end_zone_id: str | None = None
     resolved_start_at: datetime | None = None
     resolved_end_at: datetime | None = None
 
@@ -112,12 +113,16 @@ class NamedZoneLocalIntervalPlacement:
             raise ScheduleInputError(
                 "Named-zone Schedule local timestamps must not contain an offset."
             )
-        if self.ends_local_at <= self.starts_local_at:
+        if self.end_zone_id is None and self.ends_local_at <= self.starts_local_at:
             raise ScheduleInputError("Schedule end must be after Schedule start.")
         if self.disambiguation not in {"reject", "earlier", "later"}:
             raise ScheduleInputError("Named-zone disambiguation policy is not supported.")
         try:
             validate_iana_timezone(self.zone_id)
+            if self.end_zone_id is not None:
+                validate_iana_timezone(self.end_zone_id)
+                if self.end_zone_id == self.zone_id:
+                    raise ValueError("End timezone override must differ from start timezone.")
         except ValueError as exc:
             raise ScheduleInputError(str(exc)) from exc
         resolved_start = self.resolved_start_at
@@ -135,7 +140,7 @@ class NamedZoneLocalIntervalPlacement:
                 )
                 resolved_end = resolve_local_time(
                     self.ends_local_at,
-                    self.zone_id,
+                    self.end_zone_id or self.zone_id,
                     disambiguation=self.disambiguation,
                 )
             except ValueError as exc:
@@ -148,7 +153,7 @@ class NamedZoneLocalIntervalPlacement:
                 self.zone_id,
             ) or resolved_end not in _accepted_named_zone_resolutions(
                 self.ends_local_at,
-                self.zone_id,
+                self.end_zone_id or self.zone_id,
             ):
                 raise ScheduleInputError(
                     "Named-zone resolved instants must match an accepted explicit "
@@ -287,6 +292,8 @@ def _placement_payload(placement: SchedulePlacement) -> dict[str, str]:
             "starts_local_at": placement.starts_local_at.isoformat(timespec="microseconds"),
             "ends_local_at": placement.ends_local_at.isoformat(timespec="microseconds"),
             "zone_id": placement.zone_id,
+            **({"end_zone_id": placement.end_zone_id}
+               if placement.end_zone_id is not None else {}),
             "resolved_start_at": resolved_start_at.isoformat(timespec="microseconds"),
             "resolved_end_at": resolved_end_at.isoformat(timespec="microseconds"),
         }
@@ -401,6 +408,9 @@ def _placement_from_payload(payload: Mapping[str, object]) -> SchedulePlacement:
             starts_local_at=datetime.fromisoformat(str(payload["starts_local_at"])),
             ends_local_at=datetime.fromisoformat(str(payload["ends_local_at"])),
             zone_id=str(payload["zone_id"]),
+            end_zone_id=(
+                str(payload["end_zone_id"]) if payload.get("end_zone_id") is not None else None
+            ),
             resolved_start_at=datetime.fromisoformat(str(payload["resolved_start_at"])),
             resolved_end_at=datetime.fromisoformat(str(payload["resolved_end_at"])),
         )

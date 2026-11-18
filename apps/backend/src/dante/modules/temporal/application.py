@@ -88,6 +88,7 @@ class TimelineNamedZoneLocalActivityItem(_TimelineScheduledActivityBase):
     starts_local_at: datetime
     ends_local_at: datetime
     zone_id: str
+    end_zone_id: str | None
     resolved_start_at: datetime
     resolved_end_at: datetime
     display_starts_local_at: datetime
@@ -135,6 +136,7 @@ class TimelineNamedZoneLocalEventItem(_TimelineScheduledEventBase):
     starts_local_at: datetime
     ends_local_at: datetime
     zone_id: str
+    end_zone_id: str | None
     resolved_start_at: datetime
     resolved_end_at: datetime
     display_starts_local_at: datetime
@@ -314,6 +316,7 @@ def _schedule_placement(row: RowMapping) -> SchedulePlacement:
             starts_local_at=row["named_starts_local_at"],
             ends_local_at=row["named_ends_local_at"],
             zone_id=str(row["schedule_zone_id"]),
+            end_zone_id=row["schedule_end_zone_id"],
             resolved_start_at=row["resolved_start_at"],
             resolved_end_at=row["resolved_end_at"],
         )
@@ -745,6 +748,7 @@ class TemporalTimelineApplication:
                    named_payload.starts_local_at AS named_starts_local_at,
                    named_payload.ends_local_at AS named_ends_local_at,
                    named_payload.zone_id AS schedule_zone_id,
+                   named_payload.end_zone_id AS schedule_end_zone_id,
                    named_payload.resolved_start_at,
                    named_payload.resolved_end_at,
                    absolute_payload.starts_at,

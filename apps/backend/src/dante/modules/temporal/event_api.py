@@ -131,6 +131,7 @@ class EventNamedZoneLocalIntervalPlacementRequest(BaseModel):
     starts_local_at: datetime
     ends_local_at: datetime
     zone_id: str = Field(min_length=1, max_length=200)
+    end_zone_id: str | None = Field(default=None, min_length=1, max_length=200)
     disambiguation: Literal["reject", "earlier", "later"] = "reject"
 
 
@@ -268,6 +269,7 @@ class ScheduledEventNamedZoneResponse(BaseModel):
     starts_local_at: datetime
     ends_local_at: datetime
     zone_id: str
+    end_zone_id: str | None = None
     resolved_start_at: datetime
     resolved_end_at: datetime
     replayed: bool = False
@@ -375,6 +377,7 @@ def _placement_from_request(payload: EventSchedulePlacementRequest) -> ScheduleP
             starts_local_at=payload.starts_local_at,
             ends_local_at=payload.ends_local_at,
             zone_id=payload.zone_id,
+            end_zone_id=payload.end_zone_id,
             disambiguation=payload.disambiguation,
         )
     if isinstance(payload, EventAbsoluteIntervalPlacementRequest):
@@ -428,6 +431,7 @@ def _scheduled_event_response(
             starts_local_at=placement.starts_local_at,
             ends_local_at=placement.ends_local_at,
             zone_id=placement.zone_id,
+            end_zone_id=placement.end_zone_id,
             resolved_start_at=cast(datetime, placement.resolved_start_at),
             resolved_end_at=cast(datetime, placement.resolved_end_at),
         )

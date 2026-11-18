@@ -652,6 +652,10 @@ class TemporalAuthoringApplication:
         if activity_intervals and placement is None:
             raise TemporalAuthoringInputError("Activity intervals require a parent placement.")
         if activity_intervals:
+            if isinstance(placement, NamedZoneLocalIntervalPlacement) and placement.end_zone_id:
+                raise TemporalAuthoringInputError(
+                    "Multiple Activity intervals require a single shared timezone."
+                )
             if not isinstance(
                 placement, (FloatingLocalIntervalPlacement, NamedZoneLocalIntervalPlacement)
             ):
@@ -667,7 +671,9 @@ class TemporalAuthoringApplication:
                 if (
                     isinstance(interval, NamedZoneLocalIntervalPlacement)
                     and isinstance(placement, NamedZoneLocalIntervalPlacement)
-                    and interval.zone_id != placement.zone_id
+                    and (
+                        interval.zone_id != placement.zone_id or interval.end_zone_id is not None
+                    )
                 ):
                     raise TemporalAuthoringInputError(
                         "Activity intervals must use the Activity time zone."

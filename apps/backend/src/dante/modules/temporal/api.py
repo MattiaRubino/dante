@@ -154,6 +154,7 @@ class TimelineNamedZoneLocalActivityResponse(BaseModel):
     starts_local_at: LocalDateTimeText
     ends_local_at: LocalDateTimeText
     zone_id: str
+    end_zone_id: str | None = None
     resolved_start_at: datetime
     resolved_end_at: datetime
     display_starts_local_at: LocalDateTimeText
@@ -260,6 +261,7 @@ class TimelineNamedZoneLocalEventResponse(BaseModel):
     starts_local_at: LocalDateTimeText
     ends_local_at: LocalDateTimeText
     zone_id: str
+    end_zone_id: str | None = None
     resolved_start_at: datetime
     resolved_end_at: datetime
     display_starts_local_at: LocalDateTimeText
@@ -384,6 +386,7 @@ class TimelineNamedZoneOccurrencePlacementResponse(BaseModel):
     starts_local_at: LocalDateTimeText
     ends_local_at: LocalDateTimeText
     zone_id: str
+    end_zone_id: str | None = None
     resolved_start_at: datetime
     resolved_end_at: datetime
     display_starts_local_at: LocalDateTimeText
@@ -507,6 +510,7 @@ class NamedZoneLocalIntervalPlacementRequest(BaseModel):
     starts_local_at: datetime
     ends_local_at: datetime
     zone_id: str = Field(min_length=1, max_length=200)
+    end_zone_id: str | None = Field(default=None, min_length=1, max_length=200)
     disambiguation: Literal["reject", "earlier", "later"] = "reject"
 
 
@@ -643,6 +647,7 @@ class ScheduledActivityNamedZoneResponse(BaseModel):
     starts_local_at: datetime
     ends_local_at: datetime
     zone_id: str
+    end_zone_id: str | None = None
     resolved_start_at: datetime
     resolved_end_at: datetime
     replayed: bool = False
@@ -724,6 +729,7 @@ class RevisedScheduleNamedZoneResponse(BaseModel):
     starts_local_at: datetime
     ends_local_at: datetime
     zone_id: str
+    end_zone_id: str | None = None
     resolved_start_at: datetime
     resolved_end_at: datetime
     replayed: bool = False
@@ -808,6 +814,7 @@ class RestoredScheduleNamedZoneResponse(BaseModel):
     starts_local_at: datetime
     ends_local_at: datetime
     zone_id: str
+    end_zone_id: str | None = None
     resolved_start_at: datetime
     resolved_end_at: datetime
     replayed: bool = False
@@ -928,6 +935,7 @@ def _timeline_activity_item_response(
             starts_local_at=_local_datetime_text(item.starts_local_at),
             ends_local_at=_local_datetime_text(item.ends_local_at),
             zone_id=item.zone_id,
+            end_zone_id=item.end_zone_id,
             resolved_start_at=item.resolved_start_at,
             resolved_end_at=item.resolved_end_at,
             display_starts_local_at=_local_datetime_text(item.display_starts_local_at),
@@ -981,6 +989,7 @@ def _timeline_event_item_response(
             starts_local_at=_local_datetime_text(item.starts_local_at),
             ends_local_at=_local_datetime_text(item.ends_local_at),
             zone_id=item.zone_id,
+            end_zone_id=item.end_zone_id,
             resolved_start_at=item.resolved_start_at,
             resolved_end_at=item.resolved_end_at,
             display_starts_local_at=_local_datetime_text(item.display_starts_local_at),
@@ -1055,6 +1064,7 @@ def _timeline_occurrence_placement_response(
             starts_local_at=_local_datetime_text(placement.starts_local_at),
             ends_local_at=_local_datetime_text(placement.ends_local_at),
             zone_id=placement.zone_id,
+            end_zone_id=placement.end_zone_id,
             resolved_start_at=placement.resolved_start_at,
             resolved_end_at=placement.resolved_end_at,
             display_starts_local_at=_local_datetime_text(item.display_starts_local_at),
@@ -1137,6 +1147,7 @@ def _placement_from_request(payload: SchedulePlacementRequest) -> SchedulePlacem
             starts_local_at=payload.starts_local_at,
             ends_local_at=payload.ends_local_at,
             zone_id=payload.zone_id,
+            end_zone_id=payload.end_zone_id,
             disambiguation=payload.disambiguation,
         )
     if isinstance(payload, AbsoluteIntervalPlacementRequest):
@@ -1186,6 +1197,7 @@ def _scheduled_activity_response(
             starts_local_at=placement.starts_local_at,
             ends_local_at=placement.ends_local_at,
             zone_id=placement.zone_id,
+            end_zone_id=placement.end_zone_id,
             resolved_start_at=cast(datetime, placement.resolved_start_at),
             resolved_end_at=cast(datetime, placement.resolved_end_at),
         )
@@ -1228,6 +1240,7 @@ def _revised_schedule_response(result: RevisedScheduleView) -> RevisedScheduleMu
             starts_local_at=placement.starts_local_at,
             ends_local_at=placement.ends_local_at,
             zone_id=placement.zone_id,
+            end_zone_id=placement.end_zone_id,
             resolved_start_at=cast(datetime, placement.resolved_start_at),
             resolved_end_at=cast(datetime, placement.resolved_end_at),
         )
@@ -1272,6 +1285,7 @@ def _restored_schedule_response(
             starts_local_at=placement.starts_local_at,
             ends_local_at=placement.ends_local_at,
             zone_id=placement.zone_id,
+            end_zone_id=placement.end_zone_id,
             resolved_start_at=cast(datetime, placement.resolved_start_at),
             resolved_end_at=cast(datetime, placement.resolved_end_at),
         )

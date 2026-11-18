@@ -137,6 +137,7 @@ class AcceptedNamedZonePlacementResponse(BaseModel):
     starts_local_at: datetime
     ends_local_at: datetime
     zone_id: str
+    end_zone_id: str | None = None
     disambiguation: Literal["reject", "earlier", "later"]
     resolved_start_at: datetime
     resolved_end_at: datetime
@@ -268,6 +269,7 @@ def _accepted_placement(placement: SchedulePlacement) -> AcceptedAuthoringPlacem
             starts_local_at=placement.starts_local_at,
             ends_local_at=placement.ends_local_at,
             zone_id=placement.zone_id,
+            end_zone_id=placement.end_zone_id,
             disambiguation=placement.disambiguation,
             resolved_start_at=placement.resolved_start_at,
             resolved_end_at=placement.resolved_end_at,
