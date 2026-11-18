@@ -291,7 +291,7 @@ test.describe('Temporal Create Life Area golden gate', () => {
       await fillTimedWindow(dialog, '09:10', '09:40');
       await chooseBlue(dialog);
 
-      const lifeAreaInput = dialog.getByLabel('Life Area (opzionale)');
+      const lifeAreaInput = dialog.getByLabel('Area (opzionale)');
       await lifeAreaInput.fill(areaName);
       await expect(dialog.getByRole('listbox')).toHaveCount(0);
       await expect(dialog.getByText(/quando premi Aggiungi/i)).toHaveCount(0);
@@ -344,7 +344,7 @@ test.describe('Temporal Create Life Area golden gate', () => {
       dialog = await openCreate(page, 'event');
       await dialog.getByRole('textbox', { name: 'Titolo' }).fill(eventTitle);
       await fillTimedWindow(dialog, '11:10', '11:40');
-      const eventLifeArea = dialog.getByLabel('Life Area (opzionale)');
+      const eventLifeArea = dialog.getByLabel('Area (opzionale)');
       await eventLifeArea.focus();
       await expect(dialog.getByRole('listbox')).toBeVisible();
       await dialog.getByRole('option', { name: areaName }).click();
@@ -382,7 +382,7 @@ test.describe('Temporal Create Life Area golden gate', () => {
         .getByRole('textbox', { name: 'Titolo' })
         .fill(noAreaActivityTitle);
       await fillTimedWindow(dialog, '13:10', '13:40');
-      await expect(dialog.getByLabel('Life Area (opzionale)')).toHaveValue('');
+      await expect(dialog.getByLabel('Area (opzionale)')).toHaveValue('');
 
       const noAreaActivityResponsePromise = page.waitForResponse(
         (response) =>
@@ -501,7 +501,7 @@ test.describe('Temporal Create Life Area golden gate', () => {
       await dialog.getByRole('textbox', { name: 'Titolo' }).fill(routineTitle);
       await fillTimedWindow(dialog, '08:20', '08:50');
       await chooseBlue(dialog);
-      await dialog.getByLabel('Life Area (opzionale)').fill(areaName);
+      await dialog.getByLabel('Area (opzionale)').fill(areaName);
       await expect(dialog.getByRole('listbox')).toHaveCount(0);
       await dialog.getByRole('button', { name: 'Opzioni avanzate' }).click();
       await dialog
@@ -587,7 +587,7 @@ test.describe('Temporal Create Life Area golden gate', () => {
         .getByRole('textbox', { name: 'Titolo' })
         .fill(recurringEventTitle);
       await fillTimedWindow(dialog, '10:20', '10:50');
-      const eventArea = dialog.getByLabel('Life Area (opzionale)');
+      const eventArea = dialog.getByLabel('Area (opzionale)');
       await eventArea.focus();
       await dialog.getByRole('option', { name: areaName }).click();
       await dialog.getByRole('button', { name: 'Opzioni avanzate' }).click();
