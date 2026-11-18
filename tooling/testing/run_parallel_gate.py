@@ -87,6 +87,15 @@ def inventory() -> dict[str, Task]:
     return tasks
 
 
+def selected_inventory(*, without_browser: bool) -> dict[str, Task]:
+    """Run the canonical gate inventory while optionally excluding browser E2E."""
+    tasks = inventory()
+    return (
+        {name: task for name, task in tasks.items() if name not in BROWSER}
+        if without_browser else tasks
+    )
+
+
 def git(*args: str) -> str:
     return subprocess.check_output(["git", *args], cwd=ROOT, text=True).strip()
 
@@ -367,6 +376,10 @@ def self_test_scheduler() -> None:
                 case_nodes = [n for n in chunk if n.startswith(module + "::")]
                 assert case_nodes == [n for n in nodes if n.startswith(module + "::")]
         assert len(owners) == 24
+    normal = selected_inventory(without_browser=True)
+    assert len(normal) == 24
+    assert not set(normal).intersection(BROWSER)
+    assert len(selected_inventory(without_browser=False)) == 27
     # Duration estimates rebalance jobs but never alter module ownership.
     profiled = shard_modules(nodes, 3, timings={
         "tests/integration/database/test_module_00.py": 1_000.0,
@@ -539,7 +552,7 @@ def keep_browser_evidence(name: str, folder: Path) -> None:
 
 def final_report(
     tasks: dict[str, Task], outcomes: list[Result], folder: Path,
-    sha: str, start: float,
+    sha: str, start: float, *, without_browser: bool = False,
 ) -> int:
     by_name = {result.name: result for result in outcomes}
     stable = git("rev-parse", "HEAD") == sha and not git("status", "--porcelain")
@@ -547,7 +560,8 @@ def final_report(
         r.code == 0 for r in outcomes
     )
     lines = [
-        "# DANTE full parallel gate", "",
+        ("# DANTE normal parallel gate (no browser/E2E)" if without_browser
+         else "# DANTE full parallel gate"), "",
         f"- SHA: {sha}",
         f"- Captured (UTC): {datetime.now(UTC).isoformat()}",
         f"- Groups: {len(by_name)}/{len(tasks)}",
@@ -581,6 +595,8 @@ def final_report(
     (ROOT / "temp/LATEST_GATE_DIR.txt").write_text(str(folder) + "\n")
     manifest = {
         "sha": sha, "source_stable": stable, "exit_code": int(not success),
+        "mode": "non-browser" if without_browser else "full",
+        "excluded_groups": list(BROWSER) if without_browser else [],
         "groups": [
             {"name": name, "exit_code": by_name[name].code if name in by_name else None,
              "seconds": by_name[name].seconds if name in by_name else None}
@@ -600,6 +616,7 @@ def final_report(
         for file in sorted(folder.rglob("*")):
             if file.is_file() and file != archive:
                 out.add(file, arcname=file.relative_to(folder))
+    print(f"GATE_MODE={'non-browser' if without_browser else 'full'}", flush=True)
     print(f"GROUPS={len(by_name)}/{len(tasks)}", flush=True)
     print(f"SOURCE_STABILITY={int(not stable)}", flush=True)
     print(f"FULL_GATE_EXIT={int(not success)}", flush=True)
@@ -644,6 +661,10 @@ def main() -> int:
         "--realstack-workers", type=int, default=3,
         help="Isolated real-stack browser projects (1-3; 1 is legacy fallback)",
     )
+    parser.add_argument(
+        "--without-browser", action="store_true",
+        help="Run the 24 normal test/quality groups; skip all three Playwright/browser groups",
+    )
     parser.add_argument("--dry-run", action="store_true")
     parser.add_argument("--self-test", action="store_true")
     args = parser.parse_args()
@@ -664,7 +685,7 @@ def main() -> int:
             flush=True,
         )
 
-    tasks = inventory()
+    tasks = selected_inventory(without_browser=args.without_browser)
     if args.self_test:
         self_test_scheduler()
         return 0
@@ -673,18 +694,19 @@ def main() -> int:
         ("Build and generated sources", SERIAL_BUILD, 1),
         ("Package tests", PACKAGE_TESTS, args.group_workers),
         ("Isolated PostgreSQL work queue", (POSTGRES,), args.postgres_workers),
-        ("Browser shared outputs", BROWSER, 1),
+        *((("Browser shared outputs", BROWSER, 1),) if not args.without_browser else ()),
     ]
     if args.dry_run:
         for label, names, count in stages:
             print(f"{label}: groups={len(names)}, concurrency={count}")
             for name in names:
                 print(f"  {name}: {' '.join(tasks[name].command)}")
-        print(f"NONAUTH_BROWSER_WORKERS={args.nonauth_workers}")
-        print(
-            f"REAL_STACK_BROWSER_WORKERS={args.realstack_workers} "
-            "(independent disposable PostgreSQL per browser)"
-        )
+        if not args.without_browser:
+            print(f"NONAUTH_BROWSER_WORKERS={args.nonauth_workers}")
+            print(
+                f"REAL_STACK_BROWSER_WORKERS={args.realstack_workers} "
+                "(independent disposable PostgreSQL per browser)"
+            )
         print(f"TOTAL={len(tasks)}; original sequential gate untouched")
         return 0
 
@@ -720,7 +742,7 @@ def main() -> int:
                 # ports and no PostgreSQL cluster. Overlap them with the
                 # bounded PG queue. Keep both browser groups serialized with
                 # each other, because they share test-results outputs.
-                for name in BROWSER[:2]:
+                for name in (() if args.without_browser else BROWSER[:2]):
                     environment = (
                         {"DANTE_E2E_NONAUTH_WORKERS": str(args.nonauth_workers)}
                         if name == "WEB_BROWSER_NONAUTH" else None
@@ -750,6 +772,11 @@ def main() -> int:
                         encoding="utf-8",
                     )
                     outcomes.append(Result(POSTGRES, 2, 0.0))
+
+            if args.without_browser:
+                return final_report(
+                    tasks, outcomes, folder, sha, started, without_browser=True,
+                )
 
             # One real-stack webServer and one Playwright worker remain
             # isolated from PostgreSQL jobs and the other browser gates.
