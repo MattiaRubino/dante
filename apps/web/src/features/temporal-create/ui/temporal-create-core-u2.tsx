@@ -189,6 +189,8 @@ export function TimeControl({
   const [previousValue, setPreviousValue] = useState(value);
   const [pickerOpen, setPickerOpen] = useState(false);
   const rootRef = useRef<HTMLDivElement | null>(null);
+  const pickerRef = useRef<HTMLDivElement | null>(null);
+  const zonePanelRef = useRef<HTMLDivElement | null>(null);
   const listRef = useRef<HTMLDivElement | null>(null);
   const minuteRef = useRef<HTMLInputElement | null>(null);
   const lastValidRef = useRef(normalizedValue);
@@ -216,7 +218,8 @@ export function TimeControl({
     const dismiss = (event: PointerEvent) => {
       if (
         event.target instanceof Node &&
-        !rootRef.current?.contains(event.target)
+        !rootRef.current?.contains(event.target) &&
+        !zonePanelRef.current?.contains(event.target)
       ) {
         setPickerOpen(false);
       }
@@ -411,18 +414,21 @@ export function TimeControl({
       {helper ? <small>{helper}</small> : null}
       {pickerOpen ? (
         <div
+          ref={pickerRef}
           className="temporal-create-time-picker"
           role="dialog"
           aria-label={label}
         >
           {onZoneChange ? (
             <div className="temporal-create-time-picker__zone">
-              <label>{label === 'Inizio' || label === 'Start'
-                ? 'Timezone inizio' : 'Timezone fine'}</label>
               <TemporalTimeZoneControl
                 zoneId={zoneId ?? null}
-                onChange={(next) => onZoneChange(next)}
+                onChange={onZoneChange}
                 allowFloating={false}
+                italian={label === 'Inizio' || label === 'Fine'}
+                clockBoundary={label}
+                clockAnchorRef={pickerRef}
+                clockPanelRef={zonePanelRef}
               />
             </div>
           ) : null}
