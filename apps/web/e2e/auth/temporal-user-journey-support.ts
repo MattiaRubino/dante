@@ -259,9 +259,16 @@ export async function configureCreate(
 ): Promise<void> {
   await composer.getByRole('textbox', { name: 'Titolo' }).fill(options.title);
   if (options.lifeArea) {
-    await composer
-      .getByRole('textbox', { name: 'Life Area (opzionale)' })
-      .fill(options.lifeArea);
+    // The production Create field is labelled "Area (opzionale)" in both
+    // quick and advanced layouts. Fail at this boundary instead of timing
+    // out the entire five-minute recurring journey on an obsolete locator.
+    const areaInput = composer.getByRole('textbox', {
+      name: 'Area (opzionale)',
+      exact: true,
+    });
+    await expect(areaInput).toBeVisible({ timeout: 10_000 });
+    await areaInput.fill(options.lifeArea);
+    await expect(areaInput).toHaveValue(options.lifeArea);
   }
   if (options.allDay) {
     await composer.getByRole('radio', { name: 'Tutto il giorno' }).click();
