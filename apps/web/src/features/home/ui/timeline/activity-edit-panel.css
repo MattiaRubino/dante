@@ -118,6 +118,34 @@
   min-width: 0;
 }
 
+/* Recurring Activity Edit uses the same clock/quarter-hour menu and arrow
+   action as Create. Keep the arrow inside the existing 20px middle track. */
+.timeline-recurring-series-editor
+  .timeline-activity-editor__interval-fields
+  .temporal-create-time-band-control {
+  position: relative;
+  align-self: center;
+  justify-self: center;
+}
+
+.timeline-recurring-series-editor
+  .timeline-activity-editor__interval-fields
+  .temporal-create-time-band-trigger {
+  width: 20px;
+  min-width: 20px;
+  height: 46px;
+  border-radius: 8px;
+}
+
+@media (max-width: 560px) {
+  .timeline-recurring-series-editor
+    .timeline-activity-editor__interval-fields
+    .temporal-create-time-band-trigger {
+    width: 26px;
+    min-width: 26px;
+  }
+}
+
 .timeline-recurring-series-editor__timing > h3 {
   margin: 0;
   font-size: 13px;
