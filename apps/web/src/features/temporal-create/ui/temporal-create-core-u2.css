@@ -499,5 +499,5 @@
 .temporal-create-timezone-panel.is-clock-sidecar
   .temporal-create-timezone-list {
   min-height: 0;
-  max-height: min(300px, calc(100dvh - 100px));
+  max-height: min(238px, calc(100dvh - 100px));
 }
