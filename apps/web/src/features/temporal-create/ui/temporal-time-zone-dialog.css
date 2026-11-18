@@ -180,3 +180,61 @@
     font-size: 12px;
   }
 }
+
+/* Same compact globe button in Quick, Advanced and every edit surface.
+   Override earlier editor-specific flex/width rules, not their layouts. */
+:is(.temporal-create-composer, .timeline-event-modal--edit, .timeline-recurring-series-editor)
+  .temporal-time-mode-toolbar
+  > .temporal-create-timezone-control {
+  flex: 0 0 auto;
+  width: auto;
+  min-width: 0;
+  margin-left: auto;
+}
+
+:is(.temporal-create-composer, .timeline-event-modal--edit, .timeline-recurring-series-editor)
+  .temporal-time-mode-toolbar
+  > .temporal-create-timezone-control
+  > .temporal-create-timezone-trigger {
+  box-sizing: border-box;
+  display: flex;
+  width: auto;
+  min-width: 135px;
+  min-height: 36px;
+  height: 36px;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 8px;
+  padding: 0 11px;
+  border-radius: 9px;
+  font-size: 12px;
+  text-align: left;
+}
+
+:is(.temporal-create-composer, .timeline-event-modal--edit, .timeline-recurring-series-editor)
+  .temporal-time-mode-toolbar
+  .temporal-create-timezone-trigger
+  > svg {
+  flex: none;
+  width: 15px;
+  height: 15px;
+  color: currentColor;
+}
+
+:is(.temporal-create-composer, .timeline-event-modal--edit, .timeline-recurring-series-editor)
+  .temporal-time-mode-toolbar
+  .temporal-create-timezone-label {
+  flex: 1 1 auto;
+  min-width: 0;
+  overflow: visible;
+  white-space: nowrap;
+  text-overflow: clip;
+  font-size: 12px;
+}
+
+:is(.temporal-create-composer, .timeline-event-modal--edit, .timeline-recurring-series-editor)
+  .temporal-time-mode-toolbar
+  .temporal-create-timezone-chevron {
+  flex: none;
+  margin-left: 4px;
+}
