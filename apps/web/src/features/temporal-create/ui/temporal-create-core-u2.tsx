@@ -15,9 +15,9 @@ import {
 } from 'react';
 import { useTranslation } from 'react-i18next';
 
-import {
-  createTemporalCreateFields,
-  type TemporalCreateEventCalendarFrequency,
+import { createTemporalCreateFields } from '../model/temporal-create-session';
+import type {
+  TemporalCreateEventCalendarFrequency,
   TemporalCreateFields,
   TemporalCreateKind,
   TemporalCreateRecurrenceOwner,
