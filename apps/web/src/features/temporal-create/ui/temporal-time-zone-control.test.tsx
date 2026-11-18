@@ -27,9 +27,9 @@ describe('shared temporal timezone configuration dialog', () => {
     );
     fireEvent.click(screen.getByRole('button', { name: 'Fuso orario: Europe/Rome' }));
     const panel = screen.getByRole('dialog', { name: 'Imposta fuso orario' });
-    expect(within(panel).getByRole('checkbox', {
+    expect(within(panel).queryByRole('checkbox', {
       name: 'Utilizza fusi orari diversi per inizio e fine',
-    })).toHaveProperty('disabled', true);
+    })).toBeNull();
     expect(within(panel).queryByText('Per questa programmazione è disponibile un solo fuso orario.')).toBeNull();
     fireEvent.click(within(panel).getByRole('button', { name: /GMT\+01:00.*Europe\/Rome/ }));
     fireEvent.change(within(panel).getByRole('searchbox', { name: 'Cerca fuso orario' }), {
@@ -97,5 +97,30 @@ describe('shared temporal timezone configuration dialog', () => {
     fireEvent.click(checkbox);
     fireEvent.click(within(reopened).getByRole('button', { name: 'OK' }));
     expect(onZonesChange).toHaveBeenLastCalledWith('Europe/Rome', null);
+  });
+
+  it('shows only one picker when distinct end zones are disallowed, even for a legacy custom selection', () => {
+    const onZonesChange = vi.fn();
+    render(
+      <TemporalTimeZoneControl
+        zoneId="Europe/Rome"
+        endZoneId="Asia/Tokyo"
+        allowDistinctZones={false}
+        allowFloating={false}
+        date="2026-11-18"
+        onChange={vi.fn()}
+        onZonesChange={onZonesChange}
+      />,
+    );
+    fireEvent.click(screen.getByRole('button', { name: 'Fuso orario: Personalizzato' }));
+    const panel = screen.getByRole('dialog', { name: 'Imposta fuso orario' });
+    expect(within(panel).queryByRole('checkbox', {
+      name: 'Utilizza fusi orari diversi per inizio e fine',
+    })).toBeNull();
+    expect(within(panel).queryByText('Fuso orario di fine')).toBeNull();
+    expect(within(panel).getByRole('heading', { name: 'Fuso orario' })).toBeTruthy();
+    fireEvent.click(within(panel).getByRole('button', { name: 'OK' }));
+    expect(onZonesChange).toHaveBeenCalledTimes(1);
+    expect(onZonesChange).toHaveBeenCalledWith('Europe/Rome', null);
   });
 });

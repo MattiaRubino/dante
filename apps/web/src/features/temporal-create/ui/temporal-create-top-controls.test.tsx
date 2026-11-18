@@ -702,4 +702,69 @@ describe('Temporal Create U1 top controls', () => {
         .value,
     ).toBe('');
   });
+
+  it('adds an Activity interval from Personalizzato, restoring the start zone and preserving duration', () => {
+    renderEntry();
+    fireEvent.click(screen.getByRole('button', { name: /Opzioni avanzate/ }));
+    const timing = document.querySelector<HTMLElement>(
+      '.temporal-create-timing-section.is-activity',
+    );
+    if (!timing) throw new Error('Expected Advanced Activity timing.');
+
+    fireEvent.click(within(timing).getByRole('button', { name: /^Fuso orario:/ }));
+    const baseZonePanel = screen.getByRole('dialog', { name: 'Imposta fuso orario' });
+    fireEvent.click(within(baseZonePanel).getByRole('button', { name: /GMT/ }));
+    fireEvent.change(
+      within(baseZonePanel).getByRole('searchbox', { name: 'Cerca fuso orario' }),
+      { target: { value: 'Europe/Rome' } },
+    );
+    fireEvent.click(within(baseZonePanel).getByRole('option', { name: /Europe\/Rome/ }));
+    fireEvent.click(within(baseZonePanel).getByRole('button', { name: 'OK' }));
+    const originalEnd = clockValues().end.value;
+
+    fireEvent.click(within(timing).getByRole('button', { name: /^Fuso orario:/ }));
+    const distinctPanel = screen.getByRole('dialog', { name: 'Imposta fuso orario' });
+    fireEvent.click(within(distinctPanel).getByRole('checkbox', {
+      name: 'Utilizza fusi orari diversi per inizio e fine',
+    }));
+    const endPicker = within(distinctPanel).getByText('Fuso orario di fine')
+      .closest('.temporal-zone-dialog__picker');
+    if (!endPicker) throw new Error('Expected end timezone field.');
+    fireEvent.click(within(endPicker as HTMLElement).getByRole('button'));
+    fireEvent.change(
+      within(endPicker as HTMLElement).getByRole('searchbox', {
+        name: 'Cerca fuso orario',
+      }),
+      { target: { value: 'Asia/Tokyo' } },
+    );
+    fireEvent.click(within(endPicker as HTMLElement).getByRole('option', {
+      name: /Asia\/Tokyo/,
+    }));
+    fireEvent.click(within(distinctPanel).getByRole('button', { name: 'OK' }));
+    expect(within(timing).getByRole('button', {
+      name: 'Fuso orario: Personalizzato',
+    })).toBeTruthy();
+
+    const add = within(timing).getByRole('button', { name: /Aggiungi intervallo/ });
+    expect(add).toHaveProperty('disabled', false);
+    fireEvent.click(add);
+
+    expect(within(timing).getByRole('button', {
+      name: 'Fuso orario: Europe/Rome',
+    })).toBeTruthy();
+    expect(clockValues().end.value).toBe(originalEnd);
+    expect(within(timing).getByText('Intervallo 1')).toBeTruthy();
+    expect(within(timing).getByText('Intervallo 2')).toBeTruthy();
+    expect(within(timing).getByRole('button', {
+      name: 'Rimuovi intervallo 2',
+    })).toBeTruthy();
+
+    fireEvent.click(within(timing).getByRole('button', {
+      name: 'Fuso orario: Europe/Rome',
+    }));
+    const singlePanel = screen.getByRole('dialog', { name: 'Imposta fuso orario' });
+    expect(within(singlePanel).queryByRole('checkbox', {
+      name: 'Utilizza fusi orari diversi per inizio e fine',
+    })).toBeNull();
+  });
 });

@@ -492,9 +492,15 @@ export function TemporalCreateCoreFieldsU2({
     });
 
   const addActivityInterval = () => {
-    // A split Activity must never silently discard a customized end-zone.
+    // Split Activity schedules use one zone. Explicitly selecting Add is the
+    // user's choice to collapse a customized end-zone back to the start zone.
+    // Keep the original elapsed duration; the displayed end is recalculated
+    // through the existing single-zone projection.
     if (fields.endTimeZoneId &&
-        fields.endTimeZoneId !== fields.timeZoneId) return;
+        fields.endTimeZoneId !== fields.timeZoneId) {
+      setInvalidEnd(null);
+      onPatch({ endTimeZoneId: null });
+    }
     const last = authoringDraft.activityStructure.activityIntervals.at(-1);
     const after = last
       ? Temporal.PlainDateTime.from(`${last.endDate}T${last.endTime}`).add({
@@ -1147,10 +1153,6 @@ export function TemporalCreateCoreFieldsU2({
                   <button
                     type="button"
                     className="temporal-create-activity-intervals__add"
-                    disabled={isCustomZone}
-                    title={isCustomZone
-                      ? 'Ripristina prima un fuso unico per aggiungere intervalli'
-                      : undefined}
                     onClick={addActivityInterval}
                   >
                     <span aria-hidden="true">＋</span>{' '}

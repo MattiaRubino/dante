@@ -284,7 +284,7 @@ export function TemporalTimeZoneControl({
     }
     setDraftStart(zoneId ?? local);
     setDraftEnd(endZoneId ?? zoneId ?? local);
-    setDistinct(isDistinct);
+    setDistinct(isDistinct && allowDistinctZones);
     setDraftFloating(zoneId === null);
     setExpanded(null);
     updatePosition();
@@ -335,24 +335,25 @@ export function TemporalTimeZoneControl({
       }}
     >
       <h3>{italian ? 'Fuso orario' : 'Time zone'}</h3>
-      <label className="temporal-zone-dialog__toggle">
-        <input
-          type="checkbox"
-          checked={distinct}
-          disabled={!allowDistinctZones && !distinct}
-          onChange={(event) => {
-            setDistinct(event.currentTarget.checked);
-            setDraftEnd(draftStart);
-            if (event.currentTarget.checked) setDraftFloating(false);
-            setExpanded(null);
-          }}
-        />
-        <span>
-          {italian
-            ? 'Utilizza fusi orari diversi per inizio e fine'
-            : 'Use different time zones for start and end'}
-        </span>
-      </label>
+      {allowDistinctZones ? (
+        <label className="temporal-zone-dialog__toggle">
+          <input
+            type="checkbox"
+            checked={distinct}
+            onChange={(event) => {
+              setDistinct(event.currentTarget.checked);
+              setDraftEnd(draftStart);
+              if (event.currentTarget.checked) setDraftFloating(false);
+              setExpanded(null);
+            }}
+          />
+          <span>
+            {italian
+              ? 'Utilizza fusi orari diversi per inizio e fine'
+              : 'Use different time zones for start and end'}
+          </span>
+        </label>
+      ) : null}
       {distinct ? (
         <>
           <ZonePicker
