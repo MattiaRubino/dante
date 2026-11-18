@@ -1952,7 +1952,7 @@ describe('Activity Inspector', () => {
     });
     expect(zone.closest('.temporal-time-mode-toolbar')).toBeTruthy();
     expect(zone.textContent).not.toContain('Fuso orario');
-    expect(screen.getByText('Intervallo 1')).toBeTruthy();
+    expect(screen.queryByText('Intervallo 1')).toBeNull();
     fireEvent.click(zone);
     fireEvent.click(screen.getByRole('button', { name: 'Europe/London' }));
     await submitEditor();
@@ -2203,7 +2203,7 @@ describe('Activity Inspector', () => {
     fireEvent.click(
       await screen.findByRole('button', { name: 'Inizio: aumenta ora' }),
     );
-    fireEvent.click(screen.getByRole('button', { name: 'Fine: aumenta ora' }));
+    // Start movement keeps the original three-hour duration.
     await submitEditor();
     await waitFor(() =>
       expect(applyReplan).toHaveBeenCalledWith(
@@ -2432,7 +2432,7 @@ describe('Activity Inspector', () => {
     );
   });
 
-  it('marks the incorrect time and leaves Save usable while the interval is invalid', async () => {
+  it('marks an invalid interval and disables Save until the time is corrected', async () => {
     const settings = {
       ...currentSettings,
       schedules: [
@@ -2466,18 +2466,18 @@ describe('Activity Inspector', () => {
     );
     expect(
       screen.getByRole('button', { name: 'Salva modifiche' }),
-    ).toHaveProperty('disabled', false);
+    ).toHaveProperty('disabled', true);
     const time = document.querySelector(
       '.timeline-activity-editor__interval-fields',
     )!;
     expect(time.getAttribute('data-edit-invalid')).toBe('true');
-    expect(time.textContent).toContain('La fine deve seguire l’inizio.');
-    await submitEditor();
     expect(applyReplan).not.toHaveBeenCalled();
     fireEvent.click(screen.getByRole('button', { name: 'Fine: aumenta ora' }));
     fireEvent.click(screen.getByRole('button', { name: 'Fine: aumenta ora' }));
     fireEvent.click(screen.getByRole('button', { name: 'Fine: aumenta ora' }));
     expect(time.getAttribute('data-edit-invalid')).toBe('false');
+    expect(screen.getByRole('button', { name: 'Salva modifiche' }))
+      .toHaveProperty('disabled', false);
     await submitEditor();
     await waitFor(() => expect(applyReplan).toHaveBeenCalledOnce());
   });

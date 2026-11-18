@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 
 import { Temporal } from '@dante/time';
-import { render, screen } from '@testing-library/react';
+import { fireEvent, render, screen } from '@testing-library/react';
 import { createElement } from 'react';
 import { describe, expect, it, vi } from 'vitest';
 
@@ -9,6 +9,7 @@ import {
   EventScheduleEditor,
   eventScheduleDraftFromPlacement,
   eventSchedulePlacementFromDraft,
+  isValidEventScheduleDraft,
 } from './event-schedule-editor';
 
 describe('Event Schedule edit conversion', () => {
@@ -35,6 +36,31 @@ describe('Event Schedule edit conversion', () => {
     expect(() =>
       eventSchedulePlacementFromDraft({ ...draft!, endTime: '18:30' }),
     ).toThrow('successiva');
+  });
+
+  it('moves the Event end with the edited start and preserves duration', () => {
+    const onChange = vi.fn();
+    render(createElement(EventScheduleEditor, {
+      draft: {
+        kind: 'timed', startDate: '2026-11-18', endDate: '2026-11-18',
+        startTime: '10:00', endTime: '11:00', zoneId: 'Europe/Rome',
+        disambiguation: 'reject',
+      },
+      onChange, disabled: false, error: '',
+    }));
+    fireEvent.click(screen.getByRole('button', { name: 'Inizio: aumenta ora' }));
+    expect(onChange).toHaveBeenCalledWith(expect.objectContaining({
+      startTime: '11:00', endTime: '12:00',
+      startDate: '2026-11-18', endDate: '2026-11-18',
+    }));
+  });
+
+  it('rejects an inverted Event end before mutation', () => {
+    expect(isValidEventScheduleDraft({
+      kind: 'timed', startDate: '2026-11-18', endDate: '2026-11-18',
+      startTime: '10:45', endTime: '05:15', zoneId: 'Europe/Rome',
+      disambiguation: 'reject',
+    })).toBe(false);
   });
 
   it('automatically chooses one fold and never exposes a DST selector', () => {

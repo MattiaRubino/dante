@@ -120,6 +120,8 @@ function SeriesIntervalFields({
   onChange,
   onRemove,
   kind = 'interval',
+  invalid = false,
+  showLabel = true,
 }: Readonly<{
   selectedDate: string;
   wallTime: string;
@@ -128,6 +130,8 @@ function SeriesIntervalFields({
   onChange: (row: Entry) => void;
   onRemove?: (() => void) | undefined;
   kind?: 'interval' | 'session';
+  invalid?: boolean;
+  showLabel?: boolean;
 }>) {
   const anchor = Temporal.PlainDateTime.from(
     `${selectedDate}T${wallTime.slice(0, 5) || '09:00'}`,
@@ -152,11 +156,13 @@ function SeriesIntervalFields({
   return (
     <div
       className="temporal-create-activity-interval"
-      data-edit-invalid={asNumber(row.duration_minutes) <= 0}
+      data-edit-invalid={invalid || asNumber(row.duration_minutes) <= 0}
     >
-      <span className="temporal-create-activity-interval__label">
-        {kind === 'interval' ? 'Intervallo' : 'Orario Sessione'} {index + 1}
-      </span>
+      {showLabel ? (
+        <span className="temporal-create-activity-interval__label">
+          {kind === 'interval' ? 'Intervallo' : 'Orario Sessione'} {index + 1}
+        </span>
+      ) : null}
       <div className="temporal-create-activity-interval__fields timeline-activity-editor__interval-fields">
         <TemporalCreateDatePicker
           label="Data inizio"
@@ -186,6 +192,7 @@ function SeriesIntervalFields({
         <TimeControl
           label="Fine"
           value={end.toPlainTime().toString({ smallestUnit: 'minute' })}
+          invalid={invalid || asNumber(row.duration_minutes) <= 0}
           dataPath={`series.${kind}.${index}.end`}
           onChange={(value) => changeEnd(end.toPlainDate().toString(), value)}
         />
@@ -266,6 +273,7 @@ export function RecurringSeriesEditor({
     Parameters<typeof remote.preview>[0] | null
   >(null);
   const [busy, setBusy] = useState(false);
+  const [lastEditedInterval, setLastEditedInterval] = useState<number | null>(null);
   const [error, setError] = useState('');
   const operation = useRef(crypto.randomUUID());
   const reviewDialogRef = useRef<HTMLDivElement>(null);
@@ -536,6 +544,23 @@ export function RecurringSeriesEditor({
       },
     });
   };
+  const invalidSeriesIntervals = new Set<number>();
+  const orderedSeriesIntervals = intervals.map((row, index) => {
+    const start = asNumber(row.start_offset_minutes);
+    const duration = asNumber(row.duration_minutes);
+    if (duration <= 0) invalidSeriesIntervals.add(index);
+    return { index, start, end: start + duration, duration };
+  }).sort((a, b) => a.start - b.start);
+  for (let index = 1; index < orderedSeriesIntervals.length; index++) {
+    const previous = orderedSeriesIntervals[index - 1]!;
+    const current = orderedSeriesIntervals[index]!;
+    if (previous.duration > 0 && current.duration > 0 && previous.end > current.start) {
+      invalidSeriesIntervals.add(
+        lastEditedInterval === previous.index || lastEditedInterval === current.index
+          ? lastEditedInterval : current.index,
+      );
+    }
+  }
   const sessions = asRows(template.planned_slices);
   const agenda = Array.isArray(structure.agenda_parts)
     ? structure.agenda_parts.map(asText)
@@ -668,6 +693,7 @@ export function RecurringSeriesEditor({
       setError('La fine di ogni intervallo deve seguire l’inizio.');
       return;
     }
+    if (invalidSeriesIntervals.size > 0) return;
     const previewEpoch = ++previewEpochRef.current;
     setBusy(true);
     try {
@@ -1181,7 +1207,10 @@ export function RecurringSeriesEditor({
                           wallTime={time}
                           row={row}
                           index={index}
+                          invalid={invalidSeriesIntervals.has(index)}
+                          showLabel={intervals.length > 1}
                           onChange={(next) => {
+                            setLastEditedInterval(index);
                             if (intervals.length) {
                               editIntervals(
                                 intervals.map((item, i) =>
@@ -1931,7 +1960,17 @@ export function RecurringSeriesEditor({
           type="button"
           ref={previewButtonRef}
           className="is-primary"
-          disabled={busy || !source}
+          disabled={
+            busy || !source ||
+            invalidSeriesIntervals.size > 0 ||
+            (owner === 'routine' && [
+              root,
+              ...intervals,
+              ...sessions.filter((row) => row.time_enabled !== false),
+            ].some((row) => asNumber(row.duration_minutes) <= 0)) ||
+            (owner === 'event' && structure.placement_kind === 'timed' &&
+              asNumber(structure.duration_minutes) <= 0)
+          }
           onClick={() => void prepare()}
         >
           {busy ? 'Attendi…' : 'Salva modifiche'}
