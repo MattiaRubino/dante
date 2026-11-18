@@ -815,7 +815,7 @@ async def test_one_off_dual_zone_activity_and_event_survive_postgresql_and_timel
                               resolved_start_at, resolved_end_at
                          FROM dante.schedule_placement_named_zone_state
                         WHERE material_state_ref = %s""",
-                    (accepted.material_state_ref.value,),
+                    (accepted.material_state_ref,),
                 ).fetchone()
                 assert row is not None
                 assert row[:4] == (
