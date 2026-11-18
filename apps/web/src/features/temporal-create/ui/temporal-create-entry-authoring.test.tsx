@@ -319,7 +319,9 @@ describe('Temporal Create U2 entry', () => {
     const event = screen.getByRole('radio', { name: 'Evento' });
     expect(event.hasAttribute('disabled')).toBe(false);
     fireEvent.click(event);
-    expect(event.getAttribute('aria-checked')).toBe('true');
+    expect(
+      screen.getByRole('radio', { name: 'Evento' }).getAttribute('aria-checked'),
+    ).toBe('true');
     expect(document.querySelectorAll('[data-create-planned-session]')).toHaveLength(0);
     expect(document.querySelectorAll('.temporal-create-activity-interval')).toHaveLength(0);
     expect(screen.getByPlaceholderText('Titolo')).toHaveProperty('value', 'Titolo comune');
