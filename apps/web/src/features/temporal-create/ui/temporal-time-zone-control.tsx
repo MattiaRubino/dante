@@ -60,7 +60,7 @@ function positionClockSidecar(anchor: DOMRect): ClockSidecarPosition {
     : anchor.left - gap - width;
   return {
     left: Math.max(margin, Math.min(requestedLeft, window.innerWidth - width - margin)),
-    top: Math.max(margin, Math.min(anchor.top, window.innerHeight - 380 - margin)),
+    top: Math.max(margin, Math.min(anchor.top, window.innerHeight - 326 - margin)),
     width,
   };
 }
