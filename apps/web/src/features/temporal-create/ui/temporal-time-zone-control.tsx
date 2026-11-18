@@ -1,25 +1,12 @@
-import { useCallback, useEffect, useRef, useState, type RefObject } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 
 const FALLBACK_TIME_ZONES = Object.freeze([
-  'Europe/Rome',
-  'Europe/London',
-  'Europe/Paris',
-  'Europe/Berlin',
-  'Europe/Madrid',
-  'Europe/Athens',
-  'America/New_York',
-  'America/Chicago',
-  'America/Denver',
-  'America/Los_Angeles',
-  'America/Sao_Paulo',
-  'Asia/Dubai',
-  'Asia/Kolkata',
-  'Asia/Singapore',
-  'Asia/Tokyo',
-  'Australia/Sydney',
-  'Pacific/Auckland',
-  'UTC',
+  'Europe/Rome', 'Europe/London', 'Europe/Paris', 'Europe/Berlin',
+  'Europe/Madrid', 'Europe/Athens', 'America/New_York', 'America/Chicago',
+  'America/Denver', 'America/Los_Angeles', 'America/Sao_Paulo',
+  'Asia/Dubai', 'Asia/Kolkata', 'Asia/Singapore', 'Asia/Tokyo',
+  'Australia/Sydney', 'Pacific/Auckland', 'UTC',
 ]);
 
 function supportedTimeZones(): readonly string[] {
@@ -27,42 +14,69 @@ function supportedTimeZones(): readonly string[] {
     supportedValuesOf?: (key: string) => string[];
   };
   try {
-    const values = intl.supportedValuesOf?.('timeZone') ?? [];
-    if (values.length > 0)
+    const available = intl.supportedValuesOf?.('timeZone') ?? [];
+    if (available.length) {
       return Object.freeze(
-        Array.from(new Set(['UTC', ...values])).sort((a, b) =>
-          a.localeCompare(b),
-        ),
+        Array.from(new Set(['UTC', ...FALLBACK_TIME_ZONES, ...available]))
+          .sort((a, b) => a.localeCompare(b)),
       );
+    }
   } catch {
-    // The same deterministic choices remain available without Intl.supportedValuesOf.
+    // Older runtimes use the deterministic subset above.
   }
   return FALLBACK_TIME_ZONES;
 }
 
 const TIME_ZONES = supportedTimeZones();
 
-type ClockSidecarPosition = Readonly<{
-  left: number;
+export function localTimeZone(): string {
+  try {
+    return Intl.DateTimeFormat().resolvedOptions().timeZone || 'UTC';
+  } catch {
+    return 'UTC';
+  }
+}
+
+export function timeZoneGmtOffset(zoneId: string, day: string): string {
+  // Offset is computed for the event's date, not the current system date.
+  // In particular, Europe/Rome changes between GMT+01 and GMT+02.
+  const validDate = /^\d{4}-\d{2}-\d{2}$/.test(day) ? day : '2026-01-01';
+  try {
+    const parts = new Intl.DateTimeFormat('en-US', {
+      timeZone: zoneId,
+      timeZoneName: 'shortOffset',
+    }).formatToParts(new Date(validDate + 'T12:00:00Z'));
+    const raw = parts.find((part) => part.type === 'timeZoneName')?.value ?? '';
+    if (raw === 'GMT' || raw === 'UTC') return 'GMT+00:00';
+    const match = /^GMT([+-])(\d{1,2})(?::(\d{2}))?$/.exec(raw);
+    if (match) {
+      return 'GMT' + match[1] + String(match[2]).padStart(2, '0') +
+        ':' + (match[3] ?? '00');
+    }
+  } catch {
+    // Keep a stable label even when a runtime lacks shortOffset support.
+  }
+  return 'GMT';
+}
+
+type DialogPlacement = Readonly<{
   top: number;
+  left: number;
   width: number;
 }>;
 
-function positionClockSidecar(anchor: DOMRect): ClockSidecarPosition {
-  const margin = 12;
-  const gap = 8;
-  const width = Math.min(330, Math.max(0, window.innerWidth - 2 * margin));
-  const rightRoom = window.innerWidth - anchor.right - gap - margin;
-  const leftRoom = anchor.left - gap - margin;
-  const toRight = rightRoom >= width || (leftRoom < width && rightRoom >= leftRoom);
-  const requestedLeft = toRight
-    ? anchor.right + gap
-    : anchor.left - gap - width;
-  return {
-    left: Math.max(margin, Math.min(requestedLeft, window.innerWidth - width - margin)),
-    top: Math.max(margin, Math.min(anchor.top, window.innerHeight - 326 - margin)),
-    width,
-  };
+function placeDialog(anchor: DOMRect): DialogPlacement {
+  const gutter = 14;
+  const width = Math.min(440, Math.max(260, window.innerWidth - gutter * 2));
+  const left = Math.max(
+    gutter, Math.min(anchor.right - width, window.innerWidth - width - gutter),
+  );
+  const available = window.innerHeight - gutter * 2;
+  const desired = Math.min(490, available);
+  const top = anchor.bottom + 8 + desired <= window.innerHeight - gutter
+    ? anchor.bottom + 8
+    : Math.max(gutter, Math.min(anchor.top - desired - 8, window.innerHeight - desired - gutter));
+  return { top, left, width };
 }
 
 function GlobeIcon() {
@@ -74,56 +88,162 @@ function GlobeIcon() {
   );
 }
 
+type ZonePickerProps = Readonly<{
+  label: string;
+  zone: string;
+  date: string;
+  onChange: (zone: string) => void;
+  italian: boolean;
+  expanded: boolean;
+  onExpand: () => void;
+}>;
+
+function ZonePicker({
+  label, zone, date, onChange, italian, expanded, onExpand,
+}: ZonePickerProps) {
+  const [query, setQuery] = useState('');
+  const searchRef = useRef<HTMLInputElement>(null);
+  const offset = useCallback(
+    (entry: string) => timeZoneGmtOffset(entry, date),
+    [date],
+  );
+  const zones = useMemo(() => {
+    if (!expanded) return [];
+    const search = query.trim().toLocaleLowerCase();
+    const filtered = TIME_ZONES.filter((entry) =>
+      !search ||
+      entry.toLocaleLowerCase().includes(search) ||
+      entry.replaceAll('_', ' ').toLocaleLowerCase().includes(search) ||
+      offset(entry).toLocaleLowerCase().includes(search),
+    );
+    return filtered;
+  }, [expanded, query, offset]);
+
+  useEffect(() => {
+    if (expanded) searchRef.current?.focus();
+    else setQuery('');
+  }, [expanded]);
+
+  return (
+    <div className="temporal-zone-dialog__picker">
+      <label>{label}</label>
+      <button
+        type="button"
+        className="temporal-zone-dialog__choice"
+        aria-expanded={expanded}
+        onClick={onExpand}
+      >
+        <span>{'(' + offset(zone) + ') ' + zone.replaceAll('_', ' ')}</span>
+        <span aria-hidden="true">{expanded ? '⌃' : '⌄'}</span>
+      </button>
+      {expanded ? (
+        <div className="temporal-zone-dialog__options">
+          <input
+            ref={searchRef}
+            type="search"
+            className="temporal-create-timezone-search"
+            aria-label={italian ? 'Cerca fuso orario' : 'Search time zone'}
+            placeholder={italian ? 'Cerca fuso orario o GMT' : 'Search time zone or GMT'}
+            value={query}
+            onChange={(event) => setQuery(event.currentTarget.value)}
+          />
+          <div className="temporal-create-timezone-list" role="listbox" aria-label={label}>
+            {zones.map((entry) => (
+              <button
+                type="button"
+                role="option"
+                aria-selected={entry === zone}
+                key={entry}
+                className={entry === zone ? 'is-selected' : ''}
+                onClick={() => {
+                  onChange(entry);
+                  onExpand();
+                }}
+              >
+                <span className="temporal-zone-dialog__offset">{'(' + offset(entry) + ')'}</span>
+                <span>{entry.replaceAll('_', ' ')}</span>
+              </button>
+            ))}
+            {!zones.length ? (
+              <p className="temporal-create-timezone-empty">
+                {italian ? 'Nessun fuso trovato' : 'No time zone found'}
+              </p>
+            ) : null}
+          </div>
+        </div>
+      ) : null}
+    </div>
+  );
+}
+
+type Props = Readonly<{
+  zoneId: string | null;
+  onChange: (zoneId: string | null) => void;
+  endZoneId?: string | null;
+  onZonesChange?: (startZone: string | null, endZone: string | null) => void;
+  allowDistinctZones?: boolean;
+  date?: string;
+  disabled?: boolean;
+  italian?: boolean;
+  allowFloating?: boolean;
+  displayLabel?: string;
+}>;
+
+/** The one timezone UI for Quick, Advanced, Activity/Event and series edits. */
 export function TemporalTimeZoneControl({
   zoneId,
   onChange,
+  endZoneId = null,
+  onZonesChange,
+  allowDistinctZones = false,
+  date,
   disabled = false,
   italian = true,
   allowFloating = true,
   displayLabel,
-  clockAnchorRef,
-  clockPanelRef,
-  clockBoundary,
-}: Readonly<{
-  zoneId: string | null;
-  onChange: (zoneId: string | null) => void;
-  disabled?: boolean;
-  italian?: boolean;
-  allowFloating?: boolean;
-  displayLabel?: string | undefined;
-  clockAnchorRef?: RefObject<HTMLDivElement | null>;
-  clockPanelRef?: RefObject<HTMLDivElement | null>;
-  clockBoundary?: string;
-}>) {
+}: Props) {
   const [open, setOpen] = useState(false);
-  const [query, setQuery] = useState('');
   const rootRef = useRef<HTMLDivElement>(null);
   const panelRef = useRef<HTMLDivElement>(null);
-  const searchRef = useRef<HTMLInputElement>(null);
-  const sidecar = clockAnchorRef !== undefined;
-  const [sidecarPosition, setSidecarPosition] = useState<ClockSidecarPosition | null>(null);
-  const updateSidecarPosition = useCallback(() => {
-    if (!clockAnchorRef?.current) return;
-    const next = positionClockSidecar(clockAnchorRef.current.getBoundingClientRect());
-    setSidecarPosition((previous) =>
-      previous?.left === next.left &&
-      previous.top === next.top &&
-      previous.width === next.width
-        ? previous
-        : next,
+  const [position, setPosition] = useState<DialogPlacement | null>(null);
+  const [draftStart, setDraftStart] = useState(localTimeZone());
+  const [draftEnd, setDraftEnd] = useState(localTimeZone());
+  const [distinct, setDistinct] = useState(false);
+  const [expanded, setExpanded] = useState<'single' | 'start' | 'end' | null>(null);
+  const local = localTimeZone();
+  const activeDate = date ?? new Date().toISOString().slice(0, 10);
+  const isDistinct = !!endZoneId && !!zoneId && endZoneId !== zoneId;
+  const mainLabel = displayLabel ??
+    (isDistinct ? (italian ? 'Personalizzato' : 'Custom') : (zoneId ?? local));
+  const updatePosition = useCallback(() => {
+    if (!rootRef.current) return;
+    const next = placeDialog(rootRef.current.getBoundingClientRect());
+    setPosition((old) =>
+      old?.top === next.top && old.left === next.left && old.width === next.width
+        ? old : next,
     );
-  }, [clockAnchorRef]);
-  const localLabel = italian ? 'Ora locale' : 'Local time';
-  const label = displayLabel ?? zoneId ?? localLabel;
-  const search = query.trim().toLocaleLowerCase();
-  const visibleZones = TIME_ZONES.filter(
-    (zone) =>
-      zone.toLocaleLowerCase().includes(search) ||
-      zone.replaceAll('_', ' ').toLocaleLowerCase().includes(search),
-  );
-  const showLocal =
-    allowFloating &&
-    (search === '' || localLabel.toLocaleLowerCase().includes(search));
+  }, []);
+  const openDialog = () => {
+    if (disabled) return;
+    if (open) {
+      setOpen(false);
+      return;
+    }
+    setDraftStart(zoneId ?? local);
+    setDraftEnd(endZoneId ?? zoneId ?? local);
+    setDistinct(isDistinct);
+    setExpanded(null);
+    updatePosition();
+    setOpen(true);
+  };
+  const apply = () => {
+    const start = zoneId === null && draftStart === local && allowFloating
+      ? null : draftStart;
+    const end = distinct && draftEnd !== draftStart ? draftEnd : null;
+    if (onZonesChange) onZonesChange(start, end);
+    else onChange(start);
+    setOpen(false);
+  };
 
   useEffect(() => {
     if (!open) return;
@@ -132,123 +252,120 @@ export function TemporalTimeZoneControl({
         event.target instanceof Node &&
         !rootRef.current?.contains(event.target) &&
         !panelRef.current?.contains(event.target)
-      )
-        setOpen(false);
+      ) setOpen(false);
     };
+    const reposition = () => updatePosition();
     document.addEventListener('pointerdown', dismiss, true);
-    return () => document.removeEventListener('pointerdown', dismiss, true);
-  }, [open]);
-
-  useEffect(() => {
-    if (open) searchRef.current?.focus();
-  }, [open]);
-
-  useEffect(() => {
-    if (!open || !sidecar) return;
-    const update = () => updateSidecarPosition();
-    window.addEventListener('resize', update);
-    window.addEventListener('scroll', update, true);
+    window.addEventListener('resize', reposition);
+    window.addEventListener('scroll', reposition, true);
     return () => {
-      window.removeEventListener('resize', update);
-      window.removeEventListener('scroll', update, true);
+      document.removeEventListener('pointerdown', dismiss, true);
+      window.removeEventListener('resize', reposition);
+      window.removeEventListener('scroll', reposition, true);
     };
-  }, [open, sidecar, updateSidecarPosition]);
+  }, [open, updatePosition]);
 
-  const zonePanel = open ? (
-        <div
-          ref={(element) => {
-            panelRef.current = element;
-            if (clockPanelRef) clockPanelRef.current = element;
+  const panel = open ? (
+    <div
+      ref={panelRef}
+      role="dialog"
+      aria-label={italian ? 'Imposta fuso orario' : 'Set time zone'}
+      className="temporal-create-timezone-panel is-config-dialog"
+      data-temporal-create-portal=""
+      style={position ?? undefined}
+      onKeyDown={(event) => {
+        if (event.key === 'Escape') {
+          event.stopPropagation();
+          setOpen(false);
+        }
+      }}
+    >
+      <h3>{italian ? 'Fuso orario' : 'Time zone'}</h3>
+      <label className="temporal-zone-dialog__toggle">
+        <input
+          type="checkbox"
+          checked={distinct}
+          disabled={!allowDistinctZones && !distinct}
+          onChange={(event) => {
+            setDistinct(event.currentTarget.checked);
+            setDraftEnd(draftStart);
+            setExpanded(null);
           }}
-          className={`temporal-create-timezone-panel${sidecar ? ' is-clock-sidecar' : ''}`}
-          style={sidecar ? sidecarPosition ?? undefined : undefined}
-          data-temporal-clock-timezone={sidecar ? clockBoundary : undefined}
-          data-temporal-create-portal={sidecar ? '' : undefined}
-          role="dialog"
-          aria-label={italian ? 'Scegli fuso orario' : 'Choose time zone'}
-          onKeyDown={(event) => {
-            if (event.key === 'Escape') {
-              event.stopPropagation();
-              setOpen(false);
-              rootRef.current?.querySelector('button')?.focus();
-            }
-          }}
-        >
-          <input
-            ref={searchRef}
-            className="temporal-create-timezone-search"
-            type="search"
-            value={query}
-            onChange={(event) => setQuery(event.currentTarget.value)}
-            aria-label={italian ? 'Cerca fuso orario' : 'Search time zone'}
-            placeholder={italian ? 'Cerca fuso orario' : 'Search time zone'}
+        />
+        <span>
+          {italian
+            ? 'Utilizza fusi orari diversi per inizio e fine'
+            : 'Use different time zones for start and end'}
+        </span>
+      </label>
+      {!allowDistinctZones ? (
+        <small className="temporal-zone-dialog__hint">
+          {italian
+            ? 'Per questa programmazione è disponibile un solo fuso orario.'
+            : 'Only one time zone is available for this schedule.'}
+        </small>
+      ) : null}
+      {distinct ? (
+        <>
+          <ZonePicker
+            label={italian ? 'Fuso orario di inizio' : 'Start time zone'}
+            zone={draftStart}
+            date={activeDate}
+            italian={italian}
+            expanded={expanded === 'start'}
+            onExpand={() => setExpanded((current) => current === 'start' ? null : 'start')}
+            onChange={setDraftStart}
           />
-          <div className="temporal-create-timezone-list">
-            {showLocal ? (
-              <button
-                type="button"
-                className={zoneId === null ? 'is-selected' : ''}
-                onClick={() => {
-                  onChange(null);
-                  setOpen(false);
-                }}
-              >
-                {localLabel}
-              </button>
-            ) : null}
-            {visibleZones.map((zone) => (
-              <button
-                key={zone}
-                type="button"
-                className={zoneId === zone ? 'is-selected' : ''}
-                onClick={() => {
-                  onChange(zone);
-                  setOpen(false);
-                }}
-              >
-                {zone.replaceAll('_', ' ')}
-              </button>
-            ))}
-            {visibleZones.length === 0 && !showLocal ? (
-              <p className="temporal-create-timezone-empty">
-                {italian ? 'Nessun fuso trovato' : 'No time zone found'}
-              </p>
-            ) : null}
-          </div>
-        </div>
+          <ZonePicker
+            label={italian ? 'Fuso orario di fine' : 'End time zone'}
+            zone={draftEnd}
+            date={activeDate}
+            italian={italian}
+            expanded={expanded === 'end'}
+            onExpand={() => setExpanded((current) => current === 'end' ? null : 'end')}
+            onChange={setDraftEnd}
+          />
+        </>
+      ) : (
+        <ZonePicker
+          label={italian ? 'Fuso orario' : 'Time zone'}
+          zone={draftStart}
+          date={activeDate}
+          italian={italian}
+          expanded={expanded === 'single'}
+          onExpand={() => setExpanded((current) => current === 'single' ? null : 'single')}
+          onChange={setDraftStart}
+        />
+      )}
+      <div className="temporal-zone-dialog__actions">
+        <button type="button" onClick={() => setOpen(false)}>
+          {italian ? 'Annulla' : 'Cancel'}
+        </button>
+        <button type="button" className="is-primary" onClick={apply}>
+          OK
+        </button>
+      </div>
+    </div>
   ) : null;
 
   return (
-    <div
-      ref={rootRef}
-      className="temporal-create-timezone-control"
-      data-create-path="timeZoneId"
-    >
+    <div ref={rootRef} className="temporal-create-timezone-control" data-create-path="timeZoneId">
       <button
-        className={`temporal-create-timezone-trigger${open ? ' is-open' : ''}`}
         type="button"
+        className={'temporal-create-timezone-trigger' + (open ? ' is-open' : '')}
         disabled={disabled}
-        aria-label={sidecar && clockBoundary
-          ? `${clockBoundary}: ${italian ? 'Fuso orario' : 'Time zone'}: ${label}`
-          : `Fuso orario: ${label}`}
         aria-expanded={open}
-        onClick={() => {
-          setQuery('');
-          if (sidecar) updateSidecarPosition();
-          setOpen((current) => !current);
-        }}
+        aria-label={(italian ? 'Fuso orario: ' : 'Time zone: ') + mainLabel}
+        onClick={openDialog}
       >
         <GlobeIcon />
-        <span className="temporal-create-timezone-label">
-          {sidecar ? (italian ? 'Fuso orario' : 'Time zone') : label}
-        </span>
+        <span className="temporal-create-timezone-label">{mainLabel}</span>
         <span className="temporal-create-timezone-chevron" aria-hidden="true">
           {open ? '⌃' : '⌄'}
         </span>
       </button>
-      {zonePanel && (sidecar && typeof document !== 'undefined'
-        ? createPortal(zonePanel, document.body)
-        : zonePanel)}
+      {panel && typeof document !== 'undefined'
+        ? createPortal(panel, document.body) : panel}
     </div>
   );
 }
