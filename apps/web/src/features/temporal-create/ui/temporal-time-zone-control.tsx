@@ -229,15 +229,15 @@ function ZonePicker({
 type Props = Readonly<{
   zoneId: string | null;
   onChange: (zoneId: string | null) => void;
-  endZoneId?: string | null;
+  endZoneId?: string | null | undefined;
   onZonesChange?: (startZone: string | null, endZone: string | null) => void;
   allowDistinctZones?: boolean;
   date?: string;
   disabled?: boolean;
-  disabledReason?: string;
+  disabledReason?: string | undefined;
   italian?: boolean;
   allowFloating?: boolean;
-  displayLabel?: string;
+  displayLabel?: string | undefined;
 }>;
 
 /** The one timezone UI for Quick, Advanced, Activity/Event and series edits. */
