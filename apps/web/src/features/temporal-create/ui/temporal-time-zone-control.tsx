@@ -30,6 +30,7 @@ function supportedTimeZones(): readonly string[] {
 }
 
 const TIME_ZONES = supportedTimeZones();
+const offsetCache = new Map<string, string>();
 
 export function localTimeZone(): string {
   try {
@@ -43,17 +44,25 @@ export function timeZoneGmtOffset(zoneId: string, day: string): string {
   // Offset is computed for the event's date, not the current system date.
   // In particular, Europe/Rome changes between GMT+01 and GMT+02.
   const validDate = /^\d{4}-\d{2}-\d{2}$/.test(day) ? day : '2026-01-01';
+  const key = zoneId + '|' + validDate;
+  const saved = offsetCache.get(key);
+  if (saved) return saved;
   try {
     const parts = new Intl.DateTimeFormat('en-US', {
       timeZone: zoneId,
       timeZoneName: 'shortOffset',
     }).formatToParts(new Date(validDate + 'T12:00:00Z'));
     const raw = parts.find((part) => part.type === 'timeZoneName')?.value ?? '';
-    if (raw === 'GMT' || raw === 'UTC') return 'GMT+00:00';
+    if (raw === 'GMT' || raw === 'UTC') {
+      offsetCache.set(key, 'GMT+00:00');
+      return 'GMT+00:00';
+    }
     const match = /^GMT([+-])(\d{1,2})(?::(\d{2}))?$/.exec(raw);
     if (match) {
-      return 'GMT' + match[1] + String(match[2]).padStart(2, '0') +
+      const formatted = 'GMT' + match[1] + String(match[2]).padStart(2, '0') +
         ':' + (match[3] ?? '00');
+      offsetCache.set(key, formatted);
+      return formatted;
     }
   } catch {
     // Keep a stable label even when a runtime lacks shortOffset support.
@@ -69,7 +78,7 @@ type DialogPlacement = Readonly<{
 
 function placeDialog(anchor: DOMRect): DialogPlacement {
   const gutter = 14;
-  const width = Math.min(440, Math.max(260, window.innerWidth - gutter * 2));
+  const width = Math.min(440, Math.max(0, window.innerWidth - gutter * 2));
   const left = Math.max(
     gutter, Math.min(anchor.right - width, window.innerWidth - width - gutter),
   );
@@ -130,7 +139,6 @@ function ZonePicker({
 
   useEffect(() => {
     if (expanded) searchRef.current?.focus();
-    else setQuery('');
   }, [expanded]);
 
   return (
@@ -140,7 +148,10 @@ function ZonePicker({
         type="button"
         className="temporal-zone-dialog__choice"
         aria-expanded={expanded}
-        onClick={onExpand}
+        onClick={() => {
+          setQuery('');
+          onExpand();
+        }}
       >
         <span>{'(' + offset(zone) + ') ' + zone.replaceAll('_', ' ')}</span>
         <span aria-hidden="true">{expanded ? '⌃' : '⌄'}</span>
