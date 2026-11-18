@@ -92,7 +92,8 @@ def selected_inventory(*, without_browser: bool) -> dict[str, Task]:
     tasks = inventory()
     return (
         {name: task for name, task in tasks.items() if name not in BROWSER}
-        if without_browser else tasks
+        if without_browser
+        else tasks
     )
 
 
@@ -559,9 +560,14 @@ def final_report(
     success = stable and len(by_name) == len(tasks) and all(
         r.code == 0 for r in outcomes
     )
+    report_prefix = "NORMAL_GATE" if without_browser else "FULL_GATE"
     lines = [
-        ("# DANTE normal parallel gate (no browser/E2E)" if without_browser
-         else "# DANTE full parallel gate"), "",
+        (
+            "# DANTE normal parallel gate (no browser/E2E)"
+            if without_browser
+            else "# DANTE full parallel gate"
+        ),
+        "",
         f"- SHA: {sha}",
         f"- Captured (UTC): {datetime.now(UTC).isoformat()}",
         f"- Groups: {len(by_name)}/{len(tasks)}",
@@ -590,9 +596,15 @@ def final_report(
             lines += [f"### {name}", "~~~text", *(signals[:25] or log[-15:]),
                       "~~~", ""]
     text = "\n".join(lines) + "\n"
-    (folder / "FULL_GATE_SUMMARY.md").write_text(text, encoding="utf-8")
-    (ROOT / "temp/LATEST_GATE_SUMMARY.md").write_text(text, encoding="utf-8")
-    (ROOT / "temp/LATEST_GATE_DIR.txt").write_text(str(folder) + "\n")
+    (folder / f"{report_prefix}_SUMMARY.md").write_text(text, encoding="utf-8")
+    latest_summary = (
+        ROOT / "temp/LATEST_NORMAL_GATE_SUMMARY.md"
+        if without_browser
+        else ROOT / "temp/LATEST_GATE_SUMMARY.md"
+    )
+    latest_summary.write_text(text, encoding="utf-8")
+    if not without_browser:
+        (ROOT / "temp/LATEST_GATE_DIR.txt").write_text(str(folder) + "\n")
     manifest = {
         "sha": sha, "source_stable": stable, "exit_code": int(not success),
         "mode": "non-browser" if without_browser else "full",
@@ -603,7 +615,7 @@ def final_report(
             for name in tasks
         ],
     }
-    (folder / "FULL_GATE_REPORT.json").write_text(
+    (folder / f"{report_prefix}_REPORT.json").write_text(
         json.dumps(manifest, indent=2) + "\n", encoding="utf-8",
     )
     GROUP_TIMINGS.write_text(
@@ -611,7 +623,7 @@ def final_report(
         encoding="utf-8",
     )
     sys.stdout.flush()
-    archive = folder / "FULL_GATE_LOGS.tar.gz"
+    archive = folder / f"{report_prefix}_LOGS.tar.gz"
     with tarfile.open(archive, "w:gz") as out:
         for file in sorted(folder.rglob("*")):
             if file.is_file() and file != archive:
@@ -619,8 +631,8 @@ def final_report(
     print(f"GATE_MODE={'non-browser' if without_browser else 'full'}", flush=True)
     print(f"GROUPS={len(by_name)}/{len(tasks)}", flush=True)
     print(f"SOURCE_STABILITY={int(not stable)}", flush=True)
-    print(f"FULL_GATE_EXIT={int(not success)}", flush=True)
-    print(f"SUMMARY={folder / 'FULL_GATE_SUMMARY.md'}", flush=True)
+    print(f"{report_prefix}_EXIT={int(not success)}", flush=True)
+    print(f"SUMMARY={folder / f'{report_prefix}_SUMMARY.md'}", flush=True)
     print(f"ARCHIVE={archive}", flush=True)
     return int(not success)
 
@@ -694,8 +706,9 @@ def main() -> int:
         ("Build and generated sources", SERIAL_BUILD, 1),
         ("Package tests", PACKAGE_TESTS, args.group_workers),
         ("Isolated PostgreSQL work queue", (POSTGRES,), args.postgres_workers),
-        *((("Browser shared outputs", BROWSER, 1),) if not args.without_browser else ()),
     ]
+    if not args.without_browser:
+        stages.append(("Browser shared outputs", BROWSER, 1))
     if args.dry_run:
         for label, names, count in stages:
             print(f"{label}: groups={len(names)}, concurrency={count}")
@@ -738,6 +751,7 @@ def main() -> int:
                 outcomes.extend(phase(SERIAL_BUILD, tasks, folder, 1))
                 outcomes.extend(phase(PACKAGE_TESTS, tasks, folder, args.group_workers))
 
+                # Browser groups are entirely omitted from --without-browser.
                 # Fixture and non-auth Chromium use independent frontend
                 # ports and no PostgreSQL cluster. Overlap them with the
                 # bounded PG queue. Keep both browser groups serialized with
