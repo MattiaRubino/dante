@@ -192,9 +192,9 @@ function ZonePicker({
               <button
                 type="button"
                 role="option"
-                aria-selected={entry === zone}
+                aria-selected={entry === zone && !floating}
                 key={entry}
-                className={entry === zone ? 'is-selected' : ''}
+                className={entry === zone && !floating ? 'is-selected' : ''}
                 onClick={() => {
                   onChange(entry);
                   onExpand();
