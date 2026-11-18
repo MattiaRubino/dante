@@ -399,13 +399,13 @@ async function reassignAreaAndCancel(
   const nextArea = uniqueTitle('nuova area dopo modifica');
   await editor
     .getByRole('textbox', {
-      name: item.kind === 'event' ? 'Life Area (opzionale)' : 'Area assegnata',
+      name: item.kind === 'event' ? 'Area (opzionale)' : 'Area assegnata',
     })
     .fill(nextArea);
   await editor
     .getByRole('button', {
       name:
-        item.kind === 'event' ? 'Colore nuova Life Area' : 'Colore Life Area',
+        item.kind === 'event' ? 'Colore della nuova area' : 'Colore dell’area',
     })
     .click();
   await page
@@ -1111,7 +1111,7 @@ async function recolorExistingSeriesArea(
     .getByRole('button', { name: 'Questa e le successive' })
     .click();
   const areaColorButton = editor.getByRole('button', {
-    name: 'Colore Life Area',
+    name: 'Colore dell’area',
   });
   await expect(areaColorButton).toBeEnabled();
   await areaColorButton.click();
