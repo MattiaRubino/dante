@@ -2480,6 +2480,53 @@ describe('Activity Inspector', () => {
     await waitFor(() => expect(applyReplan).toHaveBeenCalledOnce());
   });
 
+
+  it('keeps invalid Activity timing editable when changing start after an invalid end', async () => {
+    loadSettings.mockResolvedValueOnce({
+      ...currentSettings,
+      schedules: [
+        {
+          scheduleRef: 'envelope',
+          role: 'envelope',
+          name: null,
+          order: 0,
+          placementStateRef: 'state-0',
+          temporalForm: 'named_zone_local',
+          start: '2026-10-09T21:30:00',
+          end: '2026-10-09T22:30:00',
+          zoneId: 'Europe/Rome',
+        },
+      ],
+    });
+    render(
+      <ActivityEditPanel
+        profile={profile}
+        closeRequestRef={createRef()}
+        onSaved={() => undefined}
+        onCancel={() => undefined}
+      />,
+    );
+    fireEvent.click(
+      await screen.findByRole('button', { name: 'Fine: diminuisci ora' }),
+    );
+    fireEvent.click(
+      screen.getByRole('button', { name: 'Fine: diminuisci ora' }),
+    );
+    const save = screen.getByRole('button', { name: 'Salva modifiche' });
+    expect(save).toHaveProperty('disabled', true);
+
+    // A second edit must not throw just because the prior end was invalid.
+    fireEvent.click(screen.getByRole('button', { name: 'Inizio: diminuisci ora' }));
+    expect(save).toHaveProperty('disabled', true);
+    fireEvent.click(screen.getByRole('button', { name: 'Inizio: diminuisci ora' }));
+    expect(save).toHaveProperty('disabled', false);
+    expect(document.querySelector<HTMLInputElement>(
+      '.timeline-activity-editor__interval-fields .temporal-create-time-raw-input[data-create-path="editInterval.startTime"]',
+    )?.value).toBe('19:30');
+    await submitEditor();
+    await waitFor(() => expect(applyReplan).toHaveBeenCalledOnce());
+  });
+
   it('keeps a legacy named Session free from its old time when editing the Activity', async () => {
     loadSettings.mockResolvedValueOnce({
       ...currentSettings,

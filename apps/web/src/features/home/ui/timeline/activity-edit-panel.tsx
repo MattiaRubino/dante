@@ -1152,10 +1152,23 @@ export function ActivityEditPanel({
         end: saved?.end ?? '',
       };
       if (!currentRow.start || !currentRow.end) return current;
-      const nextEnd = field === 'start'
-        ? moveCivilStartPreservingDuration(currentRow.start, currentRow.end, value)
-        : value;
-      return { ...current, [ref]: { ...currentRow, [field]: value, end: nextEnd } };
+      let nextEnd = field === 'end' ? value : currentRow.end;
+      if (field === 'start') {
+        try {
+          nextEnd = moveCivilStartPreservingDuration(
+            currentRow.start,
+            currentRow.end,
+            value,
+          );
+        } catch {
+          // The existing draft may already be invalid. Keep both fields
+          // editable; planValidation blocks Save until the user fixes it.
+        }
+      }
+      return {
+        ...current,
+        [ref]: { ...currentRow, [field]: value, end: nextEnd },
+      };
     });
     setPlanOperation(null);
     setPlanError('');
@@ -1169,9 +1182,18 @@ export function ActivityEditPanel({
     setNewIntervals((current) =>
       current.map((item) => {
         if (item.clientRef !== ref) return item;
-        const nextEnd = field === 'start'
-          ? moveCivilStartPreservingDuration(item.start, item.end, value)
-          : value;
+        let nextEnd = field === 'end' ? value : item.end;
+        if (field === 'start') {
+          try {
+            nextEnd = moveCivilStartPreservingDuration(
+              item.start,
+              item.end,
+              value,
+            );
+          } catch {
+            // Allow correction of an invalid new interval without throwing.
+          }
+        }
         return { ...item, [field]: value, end: nextEnd };
       }),
     );
