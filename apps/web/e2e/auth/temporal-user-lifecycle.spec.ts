@@ -69,6 +69,125 @@ test.describe('Timeline — real user Activity/Event lifecycle matrix', () => {
       .filter({ hasText: title });
   }
 
+  // Fast, independent full-stack probes for recurring Create. Keep these
+  // separate from the multi-frequency matrix: one failing case must identify
+  // its UI step, validation errors and HTTP status without a 5-minute wait.
+  for (const kind of ['activity', 'event'] as const) {
+    test(
+      'V2-SERIES-SMOKE-' + kind.toUpperCase() +
+        ' creates a daily series from UI and reloads next occurrence',
+      async ({ browser }, testInfo) => {
+        test.setTimeout(120_000);
+        const user = await signedInPage(browser, testInfo, kind === 'activity' ? 3 : 4);
+        const { page } = user;
+        const apiResponses: Array<{
+          method: string;
+          path: string;
+          status: number;
+        }> = [];
+        const pageErrors: string[] = [];
+        page.on('pageerror', (error) => pageErrors.push(error.message));
+        page.on('response', (response) => {
+          const url = new URL(response.url());
+          if (url.pathname.startsWith('/api/v1/temporal/')) {
+            apiResponses.push({
+              method: response.request().method(),
+              path: url.pathname,
+              status: response.status(),
+            });
+          }
+        });
+
+        let phase = 'load Timeline';
+        try {
+          const day = scenarioDate();
+          const title = uniqueTitle(kind + ' daily smoke');
+          await test.step('load Timeline', () => openHome(page, day));
+
+          phase = 'open Create';
+          const composer = await test.step('open Create', () => openCreate(page, kind));
+
+          phase = 'configure dates, time, Life Area and daily recurrence';
+          await test.step(phase, async () => {
+            await configureCreate(composer, {
+              kind,
+              title,
+              date: day,
+              clock: kind === 'activity' ? '09:10' : '11:20',
+              lifeArea: uniqueTitle(kind + ' daily smoke area'),
+              recurrence: 'daily',
+            });
+            const repeat = composer.getByRole('region', {
+              name: 'Ripetizione',
+              exact: true,
+            });
+            await expect(repeat).toHaveAttribute('data-recurrence-expanded', 'true');
+            await expect(
+              repeat.getByRole('combobox', { name: 'Ripeti', exact: true }),
+            ).toHaveValue('daily');
+            await expect(
+              composer.getByRole('button', { name: 'Aggiungi', exact: true }),
+            ).toBeEnabled();
+          });
+
+          phase = 'submit recurring Create to real API';
+          const created = await test.step(phase, () =>
+            submitCreate(page, composer, {
+              kind,
+              title,
+              recurring: true,
+            }),
+          );
+          expect(created.sourceRef).toMatch(/^[\da-f-]{36}$/i);
+
+          phase = 'reload and check the first occurrence';
+          await test.step(phase, async () => {
+            await openHome(page, day);
+            await expect(onDay(page, day, title)).toHaveCount(1);
+          });
+
+          phase = 'reload and check tomorrow occurrence';
+          await test.step(phase, async () => {
+            const tomorrow = dateAfter(day, 1);
+            await openHome(page, tomorrow);
+            await expect(onDay(page, tomorrow, title)).toHaveCount(1);
+          });
+        } catch (error) {
+          const composer = page.locator('[data-temporal-create="composer"]');
+          await testInfo.attach('series-smoke-diagnostics.json', {
+            body: JSON.stringify({
+              kind,
+              phase,
+              currentUrl: page.url(),
+              composerOpen: await composer.isVisible().catch(() => false),
+              validationAlerts: await composer.getByRole('alert')
+                .allTextContents().catch(() => []),
+              otherAlerts: await page.getByRole('alert')
+                .allTextContents().catch(() => []),
+              invalidFields: await composer.locator('[aria-invalid="true"]')
+                .evaluateAll((elements) => elements.map((element) => ({
+                  role: element.getAttribute('role'),
+                  path: element.getAttribute('data-create-path'),
+                  label: element.getAttribute('aria-label'),
+                }))).catch(() => []),
+              pageErrors,
+              apiResponses: apiResponses.slice(-25),
+              error: error instanceof Error ? error.message : String(error),
+            }, null, 2),
+            contentType: 'application/json',
+          });
+          await page.screenshot({
+            path: testInfo.outputPath('series-smoke-failure.png'),
+            fullPage: true,
+          }).catch(() => undefined);
+          throw error;
+        } finally {
+          await user.close();
+        }
+      },
+    );
+  }
+
   function scheduleOnDay(
     page: Page,
     day: string,
