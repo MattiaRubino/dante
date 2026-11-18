@@ -13,7 +13,7 @@ async function openCreate(page: Page) {
 }
 
 async function selectCreateContext(dialog: Locator, label: string) {
-  const search = dialog.getByRole('textbox', { name: 'Life Area (opzionale)' });
+  const search = dialog.getByRole('textbox', { name: 'Area (opzionale)' });
   await search.fill(label);
   await dialog.getByRole('option', { name: label, exact: true }).click();
   await expect(search).toHaveValue(label);
@@ -52,9 +52,9 @@ test('Life Area selection and its colour survive Advanced round trips and Timeli
     'data-temporal-create-surface',
     'advanced',
   );
-  const area = dialog.getByRole('textbox', { name: 'Life Area (opzionale)' });
+  const area = dialog.getByRole('textbox', { name: 'Area (opzionale)' });
   await expect(area).toHaveValue('Focus / lavoro profondo');
-  const color = dialog.getByRole('button', { name: 'Colore Life Area' });
+  const color = dialog.getByRole('button', { name: 'Colore dell’area' });
   await color.click();
   const palette = page.getByRole('dialog', { name: 'Scegli colore' });
   await expect(palette).toBeVisible();
