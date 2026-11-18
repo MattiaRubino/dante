@@ -98,10 +98,14 @@ type ZonePickerProps = Readonly<{
   italian: boolean;
   expanded: boolean;
   onExpand: () => void;
+  allowLocal?: boolean;
+  floating?: boolean;
+  onChooseLocal?: () => void;
 }>;
 
 function ZonePicker({
   label, zone, date, onChange, italian, expanded, onExpand,
+  allowLocal = false, floating = false, onChooseLocal,
 }: ZonePickerProps) {
   const [query, setQuery] = useState('');
   const searchRef = useRef<HTMLInputElement>(null);
@@ -109,6 +113,9 @@ function ZonePicker({
     (entry: string) => timeZoneGmtOffset(entry, date),
     [date],
   );
+  const showLocal = allowLocal &&
+    (!query.trim() || (italian ? 'ora locale' : 'local time')
+      .includes(query.trim().toLocaleLowerCase()));
   const zones = useMemo(() => {
     if (!expanded) return [];
     const search = query.trim().toLocaleLowerCase();
@@ -150,6 +157,26 @@ function ZonePicker({
             onChange={(event) => setQuery(event.currentTarget.value)}
           />
           <div className="temporal-create-timezone-list" role="listbox" aria-label={label}>
+            {showLocal ? (
+              <button
+                type="button"
+                role="option"
+                aria-selected={floating}
+                className={floating ? 'is-selected' : ''}
+                onClick={() => {
+                  onChooseLocal?.();
+                  onExpand();
+                }}
+              >
+                <span className="temporal-zone-dialog__offset">
+                  {'(' + offset(localTimeZone()) + ')'}
+                </span>
+                <span>
+                  {italian ? 'Ora locale' : 'Local time'}
+                  {' (' + localTimeZone().replaceAll('_', ' ') + ')'}
+                </span>
+              </button>
+            ) : null}
             {zones.map((entry) => (
               <button
                 type="button"
@@ -166,7 +193,7 @@ function ZonePicker({
                 <span>{entry.replaceAll('_', ' ')}</span>
               </button>
             ))}
-            {!zones.length ? (
+            {!zones.length && !showLocal ? (
               <p className="temporal-create-timezone-empty">
                 {italian ? 'Nessun fuso trovato' : 'No time zone found'}
               </p>
@@ -211,6 +238,7 @@ export function TemporalTimeZoneControl({
   const [draftStart, setDraftStart] = useState(localTimeZone());
   const [draftEnd, setDraftEnd] = useState(localTimeZone());
   const [distinct, setDistinct] = useState(false);
+  const [draftFloating, setDraftFloating] = useState(false);
   const [expanded, setExpanded] = useState<'single' | 'start' | 'end' | null>(null);
   const local = localTimeZone();
   const activeDate = date ?? new Date().toISOString().slice(0, 10);
@@ -234,12 +262,13 @@ export function TemporalTimeZoneControl({
     setDraftStart(zoneId ?? local);
     setDraftEnd(endZoneId ?? zoneId ?? local);
     setDistinct(isDistinct);
+    setDraftFloating(zoneId === null);
     setExpanded(null);
     updatePosition();
     setOpen(true);
   };
   const apply = () => {
-    const start = !distinct && zoneId === null && draftStart === local && allowFloating
+    const start = !distinct && draftFloating && allowFloating
       ? null : draftStart;
     const end = distinct && draftEnd !== draftStart ? draftEnd : null;
     if (onZonesChange) onZonesChange(start, end);
@@ -291,6 +320,7 @@ export function TemporalTimeZoneControl({
           onChange={(event) => {
             setDistinct(event.currentTarget.checked);
             setDraftEnd(draftStart);
+            if (event.currentTarget.checked) setDraftFloating(false);
             setExpanded(null);
           }}
         />
@@ -316,7 +346,10 @@ export function TemporalTimeZoneControl({
             italian={italian}
             expanded={expanded === 'start'}
             onExpand={() => setExpanded((current) => current === 'start' ? null : 'start')}
-            onChange={setDraftStart}
+            onChange={(zone) => {
+              setDraftStart(zone);
+              setDraftFloating(false);
+            }}
           />
           <ZonePicker
             label={italian ? 'Fuso orario di fine' : 'End time zone'}
@@ -336,7 +369,16 @@ export function TemporalTimeZoneControl({
           italian={italian}
           expanded={expanded === 'single'}
           onExpand={() => setExpanded((current) => current === 'single' ? null : 'single')}
-          onChange={setDraftStart}
+          onChange={(zone) => {
+            setDraftStart(zone);
+            setDraftFloating(false);
+          }}
+          allowLocal={allowFloating}
+          floating={draftFloating}
+          onChooseLocal={() => {
+            setDraftStart(local);
+            setDraftFloating(true);
+          }}
         />
       )}
       <div className="temporal-zone-dialog__actions">
