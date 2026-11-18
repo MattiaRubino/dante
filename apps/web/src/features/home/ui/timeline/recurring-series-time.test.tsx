@@ -3,7 +3,7 @@
 import { cleanup, fireEvent, render, screen, within } from '@testing-library/react';
 import { afterEach, beforeAll, expect, it, vi } from 'vitest';
 
-import { i18n } from '../../../bootstrap/i18n';
+import { i18n } from '../../../../bootstrap/i18n';
 import { SeriesIntervalFields } from './recurring-series-editor';
 
 beforeAll(async () => {
