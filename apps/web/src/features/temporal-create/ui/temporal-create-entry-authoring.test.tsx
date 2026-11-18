@@ -302,6 +302,13 @@ describe('Temporal Create U2 entry', () => {
     });
     fireEvent.click(screen.getByRole('button', { name: /Opzioni avanzate/ }));
 
+    const startHour = screen.getByRole('textbox', { name: 'Inizio: ore' });
+    fireEvent.change(startHour, { target: { value: '14' } });
+    fireEvent.blur(startHour);
+    expect(screen.getByRole('textbox', { name: 'Inizio: ore' })).toHaveProperty(
+      'value', '14',
+    );
+
     const addSession = screen.getByLabelText('Aggiungi Sessione pianificata');
     fireEvent.click(within(addSession).getByRole('button', { name: 'Sessione' }));
     expect(document.querySelectorAll('[data-create-planned-session]')).toHaveLength(1);
@@ -325,6 +332,9 @@ describe('Temporal Create U2 entry', () => {
     expect(document.querySelectorAll('[data-create-planned-session]')).toHaveLength(0);
     expect(document.querySelectorAll('.temporal-create-activity-interval')).toHaveLength(0);
     expect(screen.getByPlaceholderText('Titolo')).toHaveProperty('value', 'Titolo comune');
+    expect(screen.getByRole('textbox', { name: 'Inizio: ore' })).toHaveProperty(
+      'value', '09',
+    );
     expect(screen.getByLabelText('Area (opzionale)')).toHaveProperty('value', '');
     expect(screen.getByRole('textbox', { name: 'Descrizione avanzata' })).toHaveProperty('value', '');
     expect(screen.getByRole('combobox', { name: 'Ripeti' })).toHaveProperty('value', 'none');
@@ -361,6 +371,12 @@ describe('Temporal Create U2 entry', () => {
     fireEvent.change(screen.getByRole('textbox', { name: 'Obiettivo 1' }), {
       target: { value: 'Obiettivo da scartare' },
     });
+    fireEvent.change(screen.getByRole('combobox', { name: 'Ripeti' }), {
+      target: { value: 'daily' },
+    });
+    expect(screen.getByRole('combobox', { name: 'Ripeti' })).toHaveProperty(
+      'value', 'daily',
+    );
     fireEvent.click(screen.getByRole('radio', { name: 'Tutto il giorno' }));
     expect(screen.getByRole('radio', { name: 'Tutto il giorno' }).getAttribute('aria-checked')).toBe('true');
 
