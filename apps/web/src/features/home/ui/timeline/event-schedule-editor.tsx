@@ -120,6 +120,9 @@ export function eventSchedulePlacementFromDraft(
   draft: EventScheduleDraft,
 ): EventSchedulePlacementInput {
   if (draft.kind === 'all-day') {
+    if (draft.endZoneId && draft.endZoneId !== draft.zoneId) {
+      throw new Error('Seleziona un fuso unico prima di passare a Tutto il giorno.');
+    }
     const start = Temporal.PlainDate.from(draft.startDate);
     const end = Temporal.PlainDate.from(draft.endDate);
     if (Temporal.PlainDate.compare(end, start) < 0) {
@@ -326,6 +329,10 @@ export function EventScheduleEditor({
             type="button"
             disabled={disabled}
             className={draft.kind === 'all-day' ? 'is-active' : ''}
+            disabled={disabled || customZone}
+            title={customZone
+              ? 'Seleziona un fuso unico prima di passare a Tutto il giorno'
+              : undefined}
             onClick={() => update({ kind: 'all-day' })}
           >
             Tutto il giorno
