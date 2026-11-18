@@ -134,6 +134,7 @@ export function TemporalCreateComposer({
   const closeAttemptFocusRef = useRef<HTMLElement | null>(null);
   const advancedTargetRef = useRef<'recurrence' | null>(null);
   const [pinned, setPinned] = useState(false);
+  const [clockInvalid, setClockInvalid] = useState(false);
   const fields = session.draft.current;
   const pending = lifecycle === 'pending';
   const discardPending = session.closeDecision === 'confirm-discard';
@@ -428,7 +429,7 @@ export function TemporalCreateComposer({
 
   const submitForm = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    onSubmit();
+    if (!clockInvalid) onSubmit();
   };
 
   const showAdvanced = (target?: 'recurrence') => {
@@ -698,6 +699,7 @@ export function TemporalCreateComposer({
                 }
                 onPatch={onPatch}
                 onRequestAdvanced={showAdvanced}
+                onClockInvalidChange={setClockInvalid}
                 renderError={renderError}
               />
 
@@ -729,10 +731,10 @@ export function TemporalCreateComposer({
                 <span>{advanced ? copy.hideAdvanced : copy.advanced}</span>
                 <span aria-hidden="true">{advanced ? '⌃' : '⌄'}</span>
               </button>
-              <button type="button" disabled={pending} onClick={onSaveDraft}>
+              <button type="button" disabled={pending || clockInvalid} onClick={onSaveDraft}>
                 Salva bozza
               </button>
-              <button className="is-primary" type="submit" disabled={pending}>
+              <button className="is-primary" type="submit" disabled={pending || clockInvalid}>
                 {pending
                   ? t(($) => $.common.home.timeline.create.creating)
                   : t(($) => $.common.home.timeline.create.submit)}

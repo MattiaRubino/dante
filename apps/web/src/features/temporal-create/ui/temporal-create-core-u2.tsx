@@ -1,4 +1,4 @@
-import { Temporal } from '@dante/time';
+import { Temporal, moveCivilStartPreservingDuration, moveAllDayRangePreservingDays, isValidCivilInterval } from '@dante/time';
 import {
   useEffect,
   useRef,
@@ -16,7 +16,6 @@ import type {
   TemporalCreateTimeSemantics,
   TemporalCreateWeekday,
 } from '../model/temporal-create-session';
-import { normalizeTemporalCreateU2EndDate } from '../model/temporal-create-u2-authoring';
 import {
   temporalCreateDurationFromEndDateTime,
   temporalCreateDurationLabel,
@@ -50,6 +49,7 @@ type Props = Readonly<{
   onPatch: (patch: Partial<TemporalCreateFields>) => void;
   onRequestAdvanced: (target?: 'recurrence') => void;
   renderError: (path: string) => ReactNode;
+  onClockInvalidChange?: (invalid: boolean) => void;
 }>;
 
 type TimeBand = Readonly<{
@@ -64,6 +64,7 @@ type TimeControlProps = Readonly<{
   dataPath: string;
   onChange: (value: string) => void;
   helper?: ReactNode;
+  invalid?: boolean;
 }>;
 
 const WEEKDAYS: readonly TemporalCreateWeekday[] = Object.freeze([
@@ -163,6 +164,7 @@ export function TimeControl({
   dataPath,
   onChange,
   helper,
+  invalid = false,
 }: TimeControlProps) {
   const parsedValue = timeToMinute(value);
   const normalizedValue =
@@ -273,6 +275,8 @@ export function TimeControl({
     <div
       ref={rootRef}
       className="temporal-create-time-control"
+      data-time-invalid={invalid || undefined}
+      aria-invalid={invalid || undefined}
       role="group"
       aria-label={label}
     >
@@ -443,6 +447,7 @@ export function TemporalCreateCoreFieldsU2({
   onPatch,
   onRequestAdvanced,
   renderError,
+  onClockInvalidChange,
 }: Props) {
   const { i18n } = useTranslation('common');
   const { draft: authoringDraft, patch: patchAuthoring } =
@@ -455,7 +460,8 @@ export function TemporalCreateCoreFieldsU2({
   const typeRegistry = temporalCreateTypeRegistry();
   const [timeBandOpen, setTimeBandOpen] = useState(false);
   const timeBandRootRef = useRef<HTMLDivElement | null>(null);
-  const autoRolledEndDateRef = useRef(false);
+  const [invalidEnd, setInvalidEnd] = useState<Readonly<{ date: string; time: string }> | null>(null);
+  const [lastIntervalEdited, setLastIntervalEdited] = useState<string | null>(null);
   const recurrenceOwner: Exclude<TemporalCreateRecurrenceOwner, null> =
     fields.kind === 'event' ? 'event' : 'routine';
 
@@ -499,14 +505,29 @@ export function TemporalCreateCoreFieldsU2({
     changes: Partial<
       (typeof authoringDraft.activityStructure.activityIntervals)[number]
     >,
-  ) =>
+  ) => {
+    setLastIntervalEdited(id);
     patchActivityIntervals(
-      authoringDraft.activityStructure.activityIntervals.map((interval) =>
-        interval.id === id
-          ? Object.freeze({ ...interval, ...changes })
-          : interval,
-      ),
+      authoringDraft.activityStructure.activityIntervals.map((interval) => {
+        if (interval.id !== id) return interval;
+        const next = { ...interval, ...changes };
+        if (changes.date !== undefined || changes.startTime !== undefined) {
+          try {
+            const movedEnd = moveCivilStartPreservingDuration(
+              `${interval.date}T${interval.startTime}`,
+              `${interval.endDate}T${interval.endTime}`,
+              `${next.date}T${next.startTime}`,
+            );
+            next.endDate = movedEnd.slice(0, 10);
+            next.endTime = movedEnd.slice(11, 16);
+          } catch {
+            // Invalid input stays editable; Save remains blocked.
+          }
+        }
+        return Object.freeze(next);
+      }),
     );
+  };
 
   useEffect(() => {
     if (!timeBandOpen) return;
@@ -552,6 +573,7 @@ export function TemporalCreateCoreFieldsU2({
   };
 
   const changeTimeSemantics = (semantics: TemporalCreateTimeSemantics) => {
+    setInvalidEnd(null);
     if (
       semantics === 'all-day' &&
       fields.kind === 'activity' &&
@@ -589,129 +611,104 @@ export function TemporalCreateCoreFieldsU2({
     fields.timeMode,
     fields.timeZoneId,
   );
-  const visibleEndDate = normalizeTemporalCreateU2EndDate(
-    fields.date,
-    authoringDraft.endDate,
-  );
+  const visibleEndDate = invalidEnd?.date ?? calculatedEnd.date;
+  const visibleEndTime = invalidEnd?.time ?? calculatedEnd.time;
   const visibleAllDayEndDate =
     fields.kind === 'event'
       ? safeAllDayEndDate(fields.date, fields.event.allDayEndDate)
       : safeAllDayEndDate(fields.date, authoringDraft.endDate);
 
-  const patchEnd = (endDate: string, endTime: string) => {
-    let normalizedEndDate = normalizeTemporalCreateU2EndDate(
-      fields.date,
-      endDate,
-    );
-    // Editing the start may temporarily move the old end clock to tomorrow.
-    // Once the user supplies an end clock after the new start, that temporary
-    // rollover must not turn an intraday event into a 24-hour event.
-    if (autoRolledEndDateRef.current && endTime > fields.startTime) {
-      normalizedEndDate = fields.date;
-      autoRolledEndDateRef.current = false;
+  const invalidIntervalIds = new Set<string>();
+  if (fields.kind === 'activity' && fields.timeSemantics === 'timed') {
+    const rows = [
+      {
+        id: 'primary',
+        start: `${fields.date}T${fields.startTime}`,
+        end: `${calculatedEnd.date}T${calculatedEnd.time}`,
+      },
+      ...authoringDraft.activityStructure.activityIntervals.map((row) => ({
+        id: row.id,
+        start: `${row.date}T${row.startTime}`,
+        end: `${row.endDate}T${row.endTime}`,
+      })),
+    ];
+    const valid = rows.filter((row) => {
+      if (isValidCivilInterval(row.start, row.end)) return true;
+      invalidIntervalIds.add(row.id);
+      return false;
+    }).sort((a, b) => a.start.localeCompare(b.start));
+    for (let index = 1; index < valid.length; index++) {
+      const previous = valid[index - 1]!;
+      const current = valid[index]!;
+      if (previous.end > current.start) {
+        invalidIntervalIds.add(
+          lastIntervalEdited === previous.id || lastIntervalEdited === current.id
+            ? lastIntervalEdited : current.id,
+        );
+      }
     }
+  }
+  const clockInvalid = invalidEnd !== null || invalidIntervalIds.size > 0;
+  useEffect(() => onClockInvalidChange?.(clockInvalid), [onClockInvalidChange, clockInvalid]);
+
+  const patchEnd = (endDate: string, endTime: string) => {
+    setLastIntervalEdited('primary');
     const duration = temporalCreateDurationFromEndDateTime(
-      fields.date,
-      fields.startTime,
-      normalizedEndDate,
-      endTime,
-      fields.timeMode,
-      fields.timeZoneId,
+      fields.date, fields.startTime, endDate, endTime,
+      fields.timeMode, fields.timeZoneId,
     );
-    patchAuthoring({ endDate: normalizedEndDate });
-    if (duration !== null) onPatch({ durationMinutes: duration });
+    if (duration === null) {
+      setInvalidEnd({ date: endDate, time: endTime });
+      return;
+    }
+    setInvalidEnd(null);
+    patchAuthoring({ endDate });
+    onPatch({ durationMinutes: duration });
   };
 
   const patchStartDate = (date: string) => {
-    autoRolledEndDateRef.current = false;
-    const endDate = normalizeTemporalCreateU2EndDate(date, visibleEndDate);
-    const duration = temporalCreateDurationFromEndDateTime(
-      date,
-      fields.startTime,
-      endDate,
-      calculatedEnd.time,
-      fields.timeMode,
-      fields.timeZoneId,
+    setLastIntervalEdited('primary');
+    setInvalidEnd(null);
+    const movedEnd = moveCivilStartPreservingDuration(
+      `${fields.date}T${fields.startTime}`,
+      `${calculatedEnd.date}T${calculatedEnd.time}`,
+      `${date}T${fields.startTime}`,
     );
-    patchAuthoring({ endDate });
-    onPatch({
-      date,
-      ...(duration === null ? {} : { durationMinutes: duration }),
-    });
+    patchAuthoring({ endDate: movedEnd.slice(0, 10) });
+    onPatch({ date });
   };
 
   const patchAllDayStartDate = (date: string) => {
-    const endDate = safeAllDayEndDate(date, visibleAllDayEndDate);
+    const endDate = moveAllDayRangePreservingDays(
+      fields.date, visibleAllDayEndDate, date,
+    );
     if (fields.kind === 'event') {
-      onPatch({
-        date,
-        event: { ...fields.event, allDayEndDate: endDate },
-      });
-      return;
+      onPatch({ date, event: { ...fields.event, allDayEndDate: endDate } });
+    } else {
+      patchAuthoring({ endDate });
+      onPatch({ date });
     }
-    patchAuthoring({ endDate });
-    onPatch({ date });
   };
 
   const patchAllDayEndDate = (date: string) => {
     const endDate = safeAllDayEndDate(fields.date, date);
     if (fields.kind === 'event') {
       patchEvent({ allDayEndDate: endDate });
-      return;
+    } else {
+      patchAuthoring({ endDate });
     }
-    patchAuthoring({ endDate });
   };
 
   const patchStartTime = (startTime: string) => {
-    // The end displayed in the form is an explicit choice. Moving the start
-    // changes the duration, not the end clock (including overnight ranges).
-    let endDate = visibleEndDate;
-    if (autoRolledEndDateRef.current && calculatedEnd.time > startTime) {
-      endDate = fields.date;
-      autoRolledEndDateRef.current = false;
-    }
-    const duration = temporalCreateDurationFromEndDateTime(
-      fields.date,
-      startTime,
-      endDate,
-      calculatedEnd.time,
-      fields.timeMode,
-      fields.timeZoneId,
+    setLastIntervalEdited('primary');
+    setInvalidEnd(null);
+    const movedEnd = moveCivilStartPreservingDuration(
+      `${fields.date}T${fields.startTime}`,
+      `${calculatedEnd.date}T${calculatedEnd.time}`,
+      `${fields.date}T${startTime}`,
     );
-    if (duration === null && endDate === fields.date) {
-      // The end clock is explicitly authored, and its date is the only
-      // dimension that may advance when the start crosses that clock.
-      // This preserves both 21:30..23:00 -> 23:30..23:00 (+1 day) and
-      // 09:00..09:30 -> 23:30..09:30 (+1 day), without silently
-      // rewriting the user's end time to a rounded/default clock.
-      const nextDay = Temporal.PlainDate.from(fields.date)
-        .add({ days: 1 })
-        .toString();
-      const overnight = temporalCreateDurationFromEndDateTime(
-        fields.date,
-        startTime,
-        nextDay,
-        calculatedEnd.time,
-        fields.timeMode,
-        fields.timeZoneId,
-      );
-      if (overnight !== null) {
-        autoRolledEndDateRef.current = true;
-        patchAuthoring({ endDate: nextDay });
-        onPatch({ startTime, durationMinutes: overnight });
-        return;
-      }
-      // An invalid/ambiguous local-time combination must not manufacture
-      // a duration. Keep the existing duration and require an explicit
-      // end-time correction rather than showing an invalid interval.
-      onPatch({ startTime });
-      return;
-    }
-    if (endDate !== visibleEndDate) patchAuthoring({ endDate });
-    onPatch({
-      startTime,
-      ...(duration === null ? {} : { durationMinutes: duration }),
-    });
+    patchAuthoring({ endDate: movedEnd.slice(0, 10) });
+    onPatch({ startTime });
   };
 
   const bandLabels: Readonly<Record<TimeBand['key'], string>> = italian
@@ -729,7 +726,7 @@ export function TemporalCreateCoreFieldsU2({
       };
 
   const applyTimeBand = (band: TimeBand) => {
-    autoRolledEndDateRef.current = false;
+    setInvalidEnd(null);
     const startMinute = timeToMinute(band.start) ?? 0;
     const endMinute = timeToMinute(band.end) ?? 0;
     const endDate =
@@ -891,8 +888,12 @@ export function TemporalCreateCoreFieldsU2({
 
         {fields.timeSemantics === 'timed' ? (
           <div className="temporal-create-u2-when">
-            {fields.kind === 'activity' ? (
-              <span className="temporal-create-primary-interval-label">
+            {fields.kind === 'activity' &&
+            authoringDraft.activityStructure.activityIntervals.length > 0 ? (
+              <span
+                className="temporal-create-primary-interval-label"
+                data-primary-invalid={invalidIntervalIds.has('primary') || undefined}
+              >
                 {italian ? 'Intervallo 1' : 'Interval 1'}
               </span>
             ) : null}
@@ -962,7 +963,8 @@ export function TemporalCreateCoreFieldsU2({
 
             <TimeControl
               label={italian ? 'Fine' : 'End'}
-              value={calculatedEnd.time}
+              value={visibleEndTime}
+              invalid={invalidEnd !== null || invalidIntervalIds.has('primary')}
               dataPath="endTime"
               onChange={(endTime) => patchEnd(visibleEndDate, endTime)}
               helper={
@@ -978,11 +980,9 @@ export function TemporalCreateCoreFieldsU2({
               align="end"
               value={visibleEndDate}
               min={fields.date}
+              invalid={invalidEnd !== null}
               locale={locale}
-              onChange={(date) => {
-                autoRolledEndDateRef.current = false;
-                patchEnd(date, calculatedEnd.time);
-              }}
+              onChange={(date) => patchEnd(date, visibleEndTime)}
             />
 
             {fields.kind === 'activity' &&
@@ -998,6 +998,7 @@ export function TemporalCreateCoreFieldsU2({
                     <div
                       className="temporal-create-activity-interval"
                       key={interval.id}
+                      data-create-invalid={invalidIntervalIds.has(interval.id) || undefined}
                     >
                       <span className="temporal-create-activity-interval__label">
                         {italian
@@ -1039,6 +1040,7 @@ export function TemporalCreateCoreFieldsU2({
                           label={italian ? 'Data fine' : 'End date'}
                           align="end"
                           value={interval.endDate}
+                          min={interval.date}
                           locale={locale}
                           onChange={(endDate) =>
                             updateActivityInterval(interval.id, { endDate })

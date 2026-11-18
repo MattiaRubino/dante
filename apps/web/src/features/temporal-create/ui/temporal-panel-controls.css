@@ -13,12 +13,17 @@
 
 /* The same compact zone picker accompanies the time mode in Create and Edit. */
 .temporal-time-mode-toolbar {
-  display: flex;
-  flex-wrap: wrap;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) max-content;
   align-items: center;
-  justify-content: space-between;
-  gap: 10px 16px;
+  gap: 10px 12px;
   min-width: 0;
+}
+.temporal-time-mode-toolbar > :first-child { min-width: 0; }
+.temporal-time-mode-toolbar > .temporal-create-timezone-control { justify-self: end; }
+@media (max-width: 420px) {
+  .temporal-time-mode-toolbar { grid-template-columns: minmax(0, 1fr); }
+  .temporal-time-mode-toolbar > .temporal-create-timezone-control { justify-self: end; }
 }
 
 .temporal-create-composer:not(.is-advanced) .temporal-create-timing-section {
@@ -289,4 +294,44 @@
 .dante-temporal-panel-actions > button:disabled {
   cursor: wait;
   opacity: 0.55;
+}
+
+/* Temporal errors: visually red borders/labels only, but keep descriptions accessible. */
+.temporal-create-timing-section .temporal-create-field-error,
+.timeline-event-schedule-editor .temporal-create-field-error,
+.timeline-activity-editor__interval-fields > .temporal-create-field-error {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+:is(.temporal-create-timing-section,.timeline-event-schedule-editor)
+  .temporal-create-time-control[data-time-invalid='true']
+  .temporal-create-time-control__field {
+  outline: 2px solid var(--dante-timeline-tone-urgent, #ff5b64);
+  outline-offset: -2px;
+  border-radius: 10px;
+}
+.temporal-create-date-picker__trigger[data-date-invalid='true'] {
+  outline: 2px solid var(--dante-timeline-tone-urgent, #ff5b64);
+  outline-offset: -2px;
+}
+.temporal-create-timing-section .temporal-create-activity-interval[data-create-invalid='true']
+  .temporal-create-activity-interval__fields,
+.timeline-activity-editor .temporal-create-activity-interval[data-edit-invalid='true']
+  .temporal-create-activity-interval__fields,
+.timeline-recurring-series-editor .temporal-create-activity-interval[data-edit-invalid='true']
+  .temporal-create-activity-interval__fields {
+  outline: 2px solid var(--dante-timeline-tone-urgent, #ff5b64);
+  outline-offset: 2px;
+  border-radius: 10px;
+}
+.temporal-create-timing-section .temporal-create-activity-interval[data-create-invalid='true'] > .temporal-create-activity-interval__label,
+.timeline-activity-editor .temporal-create-activity-interval[data-edit-invalid='true'] > .temporal-create-activity-interval__label,
+.timeline-recurring-series-editor .temporal-create-activity-interval[data-edit-invalid='true'] > .temporal-create-activity-interval__label,
+.temporal-create-primary-interval-label[data-primary-invalid='true'] {
+  color: var(--dante-timeline-tone-urgent, #ff5b64);
 }

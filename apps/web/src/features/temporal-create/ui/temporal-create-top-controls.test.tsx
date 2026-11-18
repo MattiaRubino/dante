@@ -132,7 +132,7 @@ describe('Temporal Create U1 top controls', () => {
     ['Advanced', 'Attività'],
     ['Advanced', 'Evento'],
   ] as const)(
-    'golden clock contract: %s %s arrows and manual edits change only their own endpoint',
+    'golden clock contract: %s %s start changes preserve duration and end changes resize',
     (surface, kind) => {
       renderEntry();
       if (kind === 'Evento') {
@@ -159,10 +159,10 @@ describe('Temporal Create U1 top controls', () => {
       );
       expect([clockValues().start.value, clockValues().end.value]).toEqual([
         '10:00',
-        '12:00',
+        '13:00',
       ]);
       expect(
-        within(screen.getByRole('group', { name: 'Fine' })).getByText('2 h'),
+        within(screen.getByRole('group', { name: 'Fine' })).getByText('3 h'),
       ).toBeTruthy();
 
       fireEvent.click(
@@ -170,11 +170,11 @@ describe('Temporal Create U1 top controls', () => {
       );
       expect([clockValues().start.value, clockValues().end.value]).toEqual([
         '09:59',
-        '12:00',
+        '12:59',
       ]);
       expect(
         within(screen.getByRole('group', { name: 'Fine' })).getByText(
-          '2 h 1 min',
+          '3 h',
         ),
       ).toBeTruthy();
 
@@ -183,22 +183,22 @@ describe('Temporal Create U1 top controls', () => {
       );
       expect([clockValues().start.value, clockValues().end.value]).toEqual([
         '09:59',
-        '11:00',
+        '11:59',
       ]);
       expect(
         within(screen.getByRole('group', { name: 'Fine' })).getByText(
-          '1 h 1 min',
+          '2 h',
         ),
       ).toBeTruthy();
 
       setClock('Inizio', '08:30');
       expect([clockValues().start.value, clockValues().end.value]).toEqual([
         '08:30',
-        '11:00',
+        '10:30',
       ]);
       expect(
         within(screen.getByRole('group', { name: 'Fine' })).getByText(
-          '2 h 30 min',
+          '2 h',
         ),
       ).toBeTruthy();
     },
@@ -267,7 +267,7 @@ describe('Temporal Create U1 top controls', () => {
   );
 
   it.each(['Quick', 'Advanced'] as const)(
-    'golden overnight contract: %s preserves the end clock when start crosses it',
+    'golden overnight contract: %s start moves across midnight preserving duration',
     (surface) => {
       renderEntry();
       if (surface === 'Advanced') {
@@ -282,21 +282,21 @@ describe('Temporal Create U1 top controls', () => {
       );
       expect([clockValues().start.value, clockValues().end.value]).toEqual([
         '22:30',
-        '23:00',
+        '00:00',
       ]);
       fireEvent.click(
         screen.getByRole('button', { name: 'Inizio: aumenta ora' }),
       );
       expect([clockValues().start.value, clockValues().end.value]).toEqual([
         '23:30',
-        '23:00',
+        '01:00',
       ]);
       expect(
         screen.getByRole('button', { name: /Data fine:.*1 ott/i }),
       ).toBeTruthy();
       expect(
         within(screen.getByRole('group', { name: 'Fine' })).getByText(
-          '23 h 30 min',
+          '1 h 30 min',
         ),
       ).toBeTruthy();
     },
@@ -343,7 +343,7 @@ describe('Temporal Create U1 top controls', () => {
     expect(within(calendar).queryByText('Cancella')).toBeNull();
   });
 
-  it('keeps the end clock stable when start time changes and rejects invalid manual time', () => {
+  it('moves the end with the start while rejecting invalid manual time', () => {
     renderEntry();
 
     const startRaw = document.querySelector<HTMLInputElement>(
@@ -371,12 +371,12 @@ describe('Temporal Create U1 top controls', () => {
       screen.getByRole('button', { name: 'Inizio: aumenta 1 minuto' }),
     );
     expect(startRaw.value).toBe(addMinutes(before, 1));
-    expect(endRaw.value).toBe(endBefore);
+    expect(endRaw.value).toBe(addMinutes(endBefore, 1));
 
     fireEvent.change(hour, { target: { value: '23' } });
     fireEvent.blur(hour);
     expect(startRaw.value).toMatch(/^23:/);
-    expect(endRaw.value).toBe(endBefore);
+    expect(endRaw.value).not.toBe(endBefore);
 
     const validHour = hour.value;
     fireEvent.change(hour, { target: { value: 'ab' } });
@@ -545,7 +545,7 @@ describe('Temporal Create U1 top controls', () => {
       zone.querySelector('.temporal-create-timezone-label')?.textContent,
     ).toBeTruthy();
     expect(zone.textContent).not.toContain('Fuso orario');
-    expect(within(timing).getByText('Intervallo 1')).toBeTruthy();
+    expect(within(timing).queryByText('Intervallo 1')).toBeNull();
     const areaSection = within(advancedComposer!).getByRole('region', {
       name: 'Area',
     });
@@ -572,6 +572,7 @@ describe('Temporal Create U1 top controls', () => {
     fireEvent.click(
       within(timing).getByRole('button', { name: /Aggiungi intervallo/ }),
     );
+    expect(within(timing).getByText('Intervallo 1')).toBeTruthy();
     expect(within(timing).getByText('Intervallo 2')).toBeTruthy();
 
     // Reminder remains one primary Create control, not a second Advanced copy.

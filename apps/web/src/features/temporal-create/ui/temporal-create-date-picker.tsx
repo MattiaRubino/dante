@@ -8,6 +8,7 @@ type TemporalCreateDatePickerProps = Readonly<{
   value: string;
   locale: string;
   min?: string;
+  invalid?: boolean;
   align?: 'start' | 'end';
   onChange: (value: string) => void;
 }>;
@@ -71,6 +72,7 @@ export function TemporalCreateDatePicker({
   value,
   locale,
   min,
+  invalid = false,
   align = 'start',
   onChange,
 }: TemporalCreateDatePickerProps) {
@@ -110,6 +112,8 @@ export function TemporalCreateDatePicker({
         type="button"
         aria-label={`${label}: ${compactLabel(selected, locale)}`}
         data-temporal-date={value}
+        data-date-invalid={invalid || undefined}
+        aria-invalid={invalid || undefined}
         aria-expanded={open}
         onClick={() => {
           if (!open) setMonth(firstDayOfMonth(selected));
