@@ -390,7 +390,9 @@ describe('Temporal Create U2 entry', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Aggiungi' }));
     await waitFor(() => expect(activityRequests).toHaveLength(1));
     expect(activityRequests[0]?.title).toBe('Identità mantenuta');
-    expect(activityRequests[0]?.plannedSlices).toEqual([]);
+    // Empty Sessions are omitted from the authoring request (not []); either
+    // representation means the previous Event state was completely cleared.
+    expect(activityRequests[0]?.plannedSlices ?? []).toEqual([]);
     expect(eventRequests).toHaveLength(0);
   });
 
