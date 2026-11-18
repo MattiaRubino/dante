@@ -214,6 +214,12 @@ describe('TemporalCreateComposer', () => {
       renderWith(repeatFields);
       panel = screen.getByRole('region', { name: 'Ripetizione' });
       expect(panel.getAttribute('data-recurrence-expanded')).toBe('true');
+      // Same-zone recurring Activity/Event must remain submittable: the
+      // dual-zone validity guard is restricted to genuinely custom end-zones.
+      expect(
+        screen.getByRole('button', { name: 'Aggiungi', exact: true })
+          .hasAttribute('disabled'),
+      ).toBe(false);
       expect(
         within(panel).getAllByRole('heading', { name: 'Ripetizione' }),
       ).toHaveLength(1);
