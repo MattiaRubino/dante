@@ -1839,9 +1839,12 @@ describe('Event Inspector actions', () => {
         name: /Fuso orario: Europe\/Rome/,
       }),
     );
-    fireEvent.click(
-      within(schedule).getByRole('button', { name: 'Ora locale' }),
-    );
+    const timezoneDialog = screen.getByRole('dialog', {
+      name: 'Imposta fuso orario',
+    });
+    fireEvent.click(within(timezoneDialog).getByRole('button', { name: /GMT/ }));
+    fireEvent.click(within(timezoneDialog).getByRole('option', { name: /Ora locale/ }));
+    fireEvent.click(within(timezoneDialog).getByRole('button', { name: 'OK' }));
     const time = within(schedule).getByRole('textbox', { name: 'Fine: ore' });
     fireEvent.change(time, { target: { value: '11' } });
     fireEvent.blur(time);
