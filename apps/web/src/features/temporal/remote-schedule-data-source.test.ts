@@ -391,4 +391,50 @@ describe('remote Schedule data source', () => {
       code: 'temporal.schedule.undo_conflict',
     } satisfies Partial<TemporalScheduleRemoteError>);
   });
+  it('serializes and accepts independent IANA end boundaries with a preserved real-time interval', async () => {
+    const request: TemporalScheduleRevisionRequest = {
+      ...revisionRequest(),
+      operationId: 'dual:revision:two-boundaries',
+      placement: {
+        kind: 'named-zone-local-interval',
+        startsLocalAt: Temporal.PlainDateTime.from('2026-11-18T10:00'),
+        endsLocalAt: Temporal.PlainDateTime.from('2026-11-18T08:00'),
+        zoneId: 'Europe/Rome',
+        endZoneId: 'America/New_York',
+        disambiguation: 'earlier',
+      },
+    };
+    const fetchFn = vi.fn<typeof globalThis.fetch>()
+      .mockResolvedValueOnce(jsonResponse({
+        authenticated: true, csrf_token: 'csrf-token',
+      }))
+      .mockResolvedValueOnce(jsonResponse({
+        schedule_ref: SCHEDULE_REF,
+        previous_placement_material_state_ref: CURRENT_STATE_REF,
+        placement_material_state_ref: NEXT_STATE_REF,
+        temporal_form: 'named_zone_local',
+        starts_local_at: '2026-11-18T10:00:00',
+        ends_local_at: '2026-11-18T08:00:00',
+        zone_id: 'Europe/Rome',
+        end_zone_id: 'America/New_York',
+        resolved_start_at: '2026-11-18T09:00:00Z',
+        resolved_end_at: '2026-11-18T13:00:00Z',
+        replayed: false,
+      }));
+    const result = await createRemoteTemporalScheduleDataSource(fetchFn)
+      .reviseSchedule(request);
+    expect(result.placement).toMatchObject({
+      kind: 'named-zone-local-interval',
+      zoneId: 'Europe/Rome',
+      endZoneId: 'America/New_York',
+    });
+    expect(requestJsonBody(fetchFn.mock.calls[1]?.[1]).placement).toMatchObject({
+      zone_id: 'Europe/Rome',
+      end_zone_id: 'America/New_York',
+      starts_local_at: '2026-11-18T10:00:00',
+      ends_local_at: '2026-11-18T08:00:00',
+    });
+  });
+
+
 });

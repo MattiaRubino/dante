@@ -97,6 +97,16 @@ function setClock(label: 'Inizio' | 'Fine', value: string) {
 }
 
 describe('Temporal Create U1 top controls', () => {
+
+  it('exposes two independently accessible timezone selectors inside the existing clock popovers', () => {
+    renderEntry();
+    fireEvent.click(screen.getByRole('button', { name: 'Inizio: scegli orario' }));
+    expect(screen.getByText('Timezone inizio')).toBeTruthy();
+    fireEvent.click(screen.getByRole('button', { name: 'Inizio: scegli orario' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Fine: scegli orario' }));
+    expect(screen.getByText('Timezone fine')).toBeTruthy();
+  });
+
   it('keeps the selected same-day end date after an explicit valid end edit', () => {
     renderEntry();
     fireEvent.click(screen.getByRole('radio', { name: 'Evento' }));

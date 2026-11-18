@@ -577,4 +577,36 @@ describe('remote temporal Timeline data source', () => {
     ).rejects.toBeInstanceOf(RangeError);
     expect(fetchFn).not.toHaveBeenCalled();
   });
+  it('preserves the two original IANA boundaries while honoring the viewing zone projection', async () => {
+    const source = createRemoteTemporalTimelineDataSource(
+      vi.fn<typeof globalThis.fetch>(() =>
+        Promise.resolve(jsonResponse(populated([{
+          ...BASE_ITEM,
+          temporal_form: 'named_zone_local',
+          starts_local_at: '2026-11-18T10:00:00',
+          ends_local_at: '2026-11-18T08:00:00',
+          zone_id: 'Europe/Rome',
+          end_zone_id: 'America/New_York',
+          resolved_start_at: '2026-11-18T09:00:00Z',
+          resolved_end_at: '2026-11-18T13:00:00Z',
+          display_starts_local_at: '2026-11-18T10:00:00',
+          display_ends_local_at: '2026-11-18T14:00:00',
+        }]))),
+      ),
+      () => 'Europe/Rome',
+    );
+    const result = await source.loadWindow(WINDOW_REQUEST);
+    if (result.kind !== 'window') throw new Error('Expected populated window');
+    const [item] = result.items;
+    if (item?.temporalForm !== 'named-zone-local') {
+      throw new Error('Expected named-zone interval.');
+    }
+    expect(item.zoneId).toBe('Europe/Rome');
+    expect(item.endZoneId).toBe('America/New_York');
+    expect(item.endsLocalAt.toString()).toBe('2026-11-18T08:00:00');
+    expect(item.displayEndsLocalAt.toString()).toBe('2026-11-18T14:00:00');
+    expect(item.resolvedEndAt.toString()).toBe('2026-11-18T13:00:00Z');
+  });
+
+
 });
