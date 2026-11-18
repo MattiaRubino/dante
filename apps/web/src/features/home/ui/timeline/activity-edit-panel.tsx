@@ -230,7 +230,7 @@ function ActivityIntervalFields({
 }>) {
   return (
     <div
-      className="temporal-create-activity-interval__fields timeline-activity-editor__interval-fields"
+      className={`temporal-create-activity-interval__fields timeline-activity-editor__interval-fields temporal-schedule-time-grid${onRemove ? ' has-remove-track' : ''}`}
       data-edit-invalid={!!error}
       inert={disabled || undefined}
     >
@@ -2215,7 +2215,7 @@ export function ActivityEditPanel({
                         ) : null}
                         {schedule.start && schedule.end && !canReplan ? (
                           <div
-                            className="timeline-activity-editor__schedule-time"
+                            className="timeline-activity-editor__schedule-time temporal-schedule-time-grid"
                             role="group"
                             aria-label="Orario programmato"
                           >

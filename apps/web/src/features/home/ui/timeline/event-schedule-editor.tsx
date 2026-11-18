@@ -341,7 +341,7 @@ export function EventScheduleEditor({
       </div>
       {draft.kind === 'timed' ? (
         <>
-          <div className="temporal-create-activity-interval__fields timeline-activity-editor__interval-fields">
+          <div className="temporal-create-activity-interval__fields timeline-activity-editor__interval-fields temporal-schedule-time-grid">
             <TemporalCreateDatePicker
               label="Data inizio"
               locale="it"

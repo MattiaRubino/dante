@@ -614,6 +614,9 @@ describe('Temporal Create U1 top controls', () => {
     ).toBeTruthy();
     expect(zone.textContent).not.toContain('Fuso orario');
     expect(within(timing).queryByText('Intervallo 1')).toBeNull();
+    const primaryGrid = timing.querySelector('.temporal-create-u2-when');
+    expect(primaryGrid?.classList.contains('temporal-schedule-time-grid')).toBe(true);
+    expect(primaryGrid?.classList.contains('has-remove-track')).toBe(false);
     const areaSection = within(advancedComposer!).getByRole('region', {
       name: 'Area',
     });
@@ -633,6 +636,10 @@ describe('Temporal Create U1 top controls', () => {
       within(eventTiming).getByRole('button', { name: /Fuso orario:/ }),
     ).toBeTruthy();
     expect(within(eventTiming).queryByText('Intervallo 1')).toBeNull();
+    expect(eventTiming.querySelector('.temporal-create-u2-when')?.classList
+      .contains('temporal-schedule-time-grid')).toBe(true);
+    expect(eventTiming.querySelector('.temporal-create-u2-when')?.classList
+      .contains('has-remove-track')).toBe(false);
     const eventAreaSection = within(advancedComposer!).getByRole('region', {
       name: 'Area',
     });
@@ -659,6 +666,10 @@ describe('Temporal Create U1 top controls', () => {
     );
     expect(within(resetActivityTiming).getByText('Intervallo 1')).toBeTruthy();
     expect(within(resetActivityTiming).getByText('Intervallo 2')).toBeTruthy();
+    expect(resetActivityTiming.querySelector('.temporal-create-u2-when')?.classList
+      .contains('has-remove-track')).toBe(true);
+    expect(resetActivityTiming.querySelector('.temporal-create-activity-interval__fields')
+      ?.classList.contains('has-remove-track')).toBe(true);
 
     // Reminder remains one primary Create control, not a second Advanced copy.
     expect(screen.getAllByLabelText('Ricorda')).toHaveLength(1);

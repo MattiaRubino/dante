@@ -954,7 +954,7 @@ export function TemporalCreateCoreFieldsU2({
         {fields.timeSemantics === 'timed' ? renderError('timeZoneId') : null}
 
         {fields.timeSemantics === 'timed' ? (
-          <div className="temporal-create-u2-when">
+          <div className={`temporal-create-u2-when temporal-schedule-time-grid${fields.kind === 'activity' && authoringDraft.activityStructure.activityIntervals.length > 0 ? ' has-remove-track' : ''}`}>
             {fields.kind === 'activity' &&
             authoringDraft.activityStructure.activityIntervals.length > 0 ? (
               <span
@@ -1072,7 +1072,7 @@ export function TemporalCreateCoreFieldsU2({
                           ? `Intervallo ${index + 2}`
                           : `Interval ${index + 2}`}
                       </span>
-                      <div className="temporal-create-activity-interval__fields">
+                      <div className="temporal-create-activity-interval__fields temporal-schedule-time-grid has-remove-track">
                         <TemporalCreateDatePicker
                           label={italian ? 'Data inizio' : 'Start date'}
                           value={interval.date}

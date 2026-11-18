@@ -1952,8 +1952,9 @@ describe('Activity Inspector', () => {
     expect(toolbar).toBeTruthy();
     const timingSection = toolbar?.closest('.timeline-activity-editor__readback');
     expect(timingSection?.classList.contains('temporal-create-timing-section')).toBe(true);
-    expect(timingSection?.querySelector('.timeline-activity-editor__interval-fields'))
-      .toBeTruthy();
+    const timeGrid = timingSection?.querySelector('.timeline-activity-editor__interval-fields');
+    expect(timeGrid?.classList.contains('temporal-schedule-time-grid')).toBe(true);
+    expect(timeGrid?.classList.contains('has-remove-track')).toBe(false);
     expect(zone.querySelector('svg.temporal-create-timezone-globe')).toBeTruthy();
     expect(zone.textContent).not.toContain('Fuso orario');
     expect(screen.queryByText('Intervallo 1')).toBeNull();

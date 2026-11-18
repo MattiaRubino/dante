@@ -353,13 +353,6 @@ export function TemporalTimeZoneControl({
             : 'Use different time zones for start and end'}
         </span>
       </label>
-      {!allowDistinctZones ? (
-        <small className="temporal-zone-dialog__hint">
-          {italian
-            ? 'Per questa programmazione è disponibile un solo fuso orario.'
-            : 'Only one time zone is available for this schedule.'}
-        </small>
-      ) : null}
       {distinct ? (
         <>
           <ZonePicker

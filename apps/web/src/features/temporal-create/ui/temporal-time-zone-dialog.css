@@ -48,13 +48,6 @@
   opacity: 0.6;
 }
 
-.temporal-zone-dialog__hint {
-  margin-top: -10px;
-  color: var(--dante-semantic-color-home-text-muted, #8f9bad);
-  font-size: 11px;
-  line-height: 1.4;
-}
-
 .temporal-zone-dialog__picker {
   display: grid;
   min-width: 0;

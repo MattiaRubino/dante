@@ -30,6 +30,7 @@ describe('shared temporal timezone configuration dialog', () => {
     expect(within(panel).getByRole('checkbox', {
       name: 'Utilizza fusi orari diversi per inizio e fine',
     })).toHaveProperty('disabled', true);
+    expect(within(panel).queryByText('Per questa programmazione è disponibile un solo fuso orario.')).toBeNull();
     fireEvent.click(within(panel).getByRole('button', { name: /GMT\+01:00.*Europe\/Rome/ }));
     fireEvent.change(within(panel).getByRole('searchbox', { name: 'Cerca fuso orario' }), {
       target: { value: 'Europe/Paris' },

@@ -364,3 +364,151 @@
   width: min(340px, calc(100vw - 32px));
   max-width: none;
 }
+
+/* Single/dual interval layout is shared across Advanced Create and every Edit.
+   The sixth remove column is present only for removable interval rows.
+   Quick Create keeps its existing compact geometry. */
+:is(.temporal-create-composer.is-advanced, .timeline-event-modal--edit, .timeline-recurring-series-editor)
+  .temporal-schedule-time-grid.temporal-schedule-time-grid {
+  box-sizing: border-box;
+  display: grid;
+  grid-template-columns:
+    minmax(92px, 0.8fr) minmax(132px, 1.2fr) 22px
+    minmax(132px, 1.2fr) minmax(92px, 0.8fr) !important;
+  width: 100%;
+  max-width: none;
+  min-width: 0;
+  gap: 6px 8px;
+  align-items: center;
+}
+:is(.temporal-create-composer.is-advanced, .timeline-event-modal--edit, .timeline-recurring-series-editor)
+  .temporal-schedule-time-grid.temporal-schedule-time-grid.has-remove-track {
+  grid-template-columns:
+    minmax(92px, 0.8fr) minmax(132px, 1.2fr) 22px
+    minmax(132px, 1.2fr) minmax(92px, 0.8fr) 28px !important;
+}
+:is(.temporal-create-composer.is-advanced, .timeline-event-modal--edit, .timeline-recurring-series-editor)
+  .temporal-schedule-time-grid :is(.temporal-create-date-picker__trigger, .temporal-create-time-control__field) {
+  box-sizing: border-box;
+  min-height: 46px;
+}
+
+/* The time mode and zone selector share one 40px visual rhythm. */
+:is(.temporal-create-composer.is-advanced, .timeline-event-modal--edit, .timeline-recurring-series-editor)
+  .temporal-time-mode-toolbar
+  :is(.temporal-create-choice-row, .timeline-activity-editor__placement, .timeline-event-schedule-editor__modes) > button {
+  box-sizing: border-box;
+  min-height: 40px;
+  height: 40px;
+  padding: 0 14px;
+  font-size: 14px;
+}
+:is(.temporal-create-composer.is-advanced, .timeline-event-modal--edit, .timeline-recurring-series-editor)
+  .temporal-time-mode-toolbar > .temporal-create-timezone-control > .temporal-create-timezone-trigger {
+  box-sizing: border-box;
+  width: auto !important;
+  min-width: 156px;
+  min-height: 40px;
+  height: 40px !important;
+  padding: 0 14px;
+  gap: 9px;
+  font-size: 14px;
+}
+:is(.temporal-create-composer.is-advanced, .timeline-event-modal--edit, .timeline-recurring-series-editor)
+  .temporal-time-mode-toolbar .temporal-create-timezone-label {
+  font-size: 14px;
+}
+
+/* Keep Aggiungi intervallo inset without moving the actual date/time grid. */
+:is(.temporal-create-composer.is-advanced, .timeline-event-modal--edit, .timeline-recurring-series-editor)
+  .temporal-create-activity-intervals > .temporal-create-activity-intervals__add {
+  margin-left: 24px !important;
+}
+
+@media (max-width: 720px) and (min-width: 561px) {
+  :is(.temporal-create-composer.is-advanced, .timeline-event-modal--edit, .timeline-recurring-series-editor)
+    .temporal-schedule-time-grid.temporal-schedule-time-grid {
+    grid-template-columns:
+      minmax(74px, 0.8fr) minmax(104px, 1fr) 18px
+      minmax(104px, 1fr) minmax(74px, 0.8fr) !important;
+    gap: 4px;
+  }
+  :is(.temporal-create-composer.is-advanced, .timeline-event-modal--edit, .timeline-recurring-series-editor)
+    .temporal-schedule-time-grid.temporal-schedule-time-grid.has-remove-track {
+    grid-template-columns:
+      minmax(74px, 0.8fr) minmax(104px, 1fr) 18px
+      minmax(104px, 1fr) minmax(74px, 0.8fr) 28px !important;
+  }
+}
+@media (max-width: 560px) {
+  :is(.temporal-create-composer.is-advanced, .timeline-event-modal--edit, .timeline-recurring-series-editor)
+    .temporal-schedule-time-grid.temporal-schedule-time-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    gap: 6px;
+  }
+  :is(.temporal-create-composer.is-advanced, .timeline-event-modal--edit, .timeline-recurring-series-editor)
+    .temporal-schedule-time-grid.temporal-schedule-time-grid.has-remove-track {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) 28px !important;
+  }
+  .temporal-create-composer.is-advanced
+    .temporal-create-u2-when.temporal-schedule-time-grid > .temporal-create-u2-date-field {
+    grid-column: 1;
+    grid-row: 1;
+  }
+  .temporal-create-composer.is-advanced
+    .temporal-create-u2-when.temporal-schedule-time-grid > .temporal-create-u2-date-field + .temporal-create-time-control {
+    grid-column: 2;
+    grid-row: 1;
+  }
+  .temporal-create-composer.is-advanced
+    .temporal-create-u2-when.temporal-schedule-time-grid > .temporal-create-time-control:has([data-create-path='endTime']) {
+    grid-column: 1;
+    grid-row: 2;
+  }
+  .temporal-create-composer.is-advanced
+    .temporal-create-u2-when.temporal-schedule-time-grid > .temporal-create-date-picker {
+    grid-column: 2;
+    grid-row: 2;
+  }
+  .temporal-create-composer.is-advanced
+    .temporal-create-u2-when.temporal-schedule-time-grid > .temporal-create-time-band-control {
+    grid-column: 1 / -1;
+    grid-row: 3;
+    justify-self: start;
+  }
+  :is(.timeline-event-modal--edit, .timeline-recurring-series-editor)
+    .temporal-schedule-time-grid > .temporal-create-activity-interval__arrow {
+    display: none;
+  }
+  :is(.temporal-create-composer.is-advanced, .timeline-event-modal--edit, .timeline-recurring-series-editor)
+    .temporal-schedule-time-grid > .temporal-create-date-picker:first-child {
+    grid-column: 1;
+    grid-row: 1;
+  }
+  :is(.temporal-create-composer.is-advanced, .timeline-event-modal--edit, .timeline-recurring-series-editor)
+    .temporal-schedule-time-grid > .temporal-create-time-control:nth-child(2) {
+    grid-column: 2;
+    grid-row: 1;
+  }
+  :is(.temporal-create-composer.is-advanced, .timeline-event-modal--edit, .timeline-recurring-series-editor)
+    .temporal-schedule-time-grid > .temporal-create-time-control:nth-child(4) {
+    grid-column: 1;
+    grid-row: 2;
+  }
+  :is(.temporal-create-composer.is-advanced, .timeline-event-modal--edit, .timeline-recurring-series-editor)
+    .temporal-schedule-time-grid > .temporal-create-date-picker:nth-child(5) {
+    grid-column: 2;
+    grid-row: 2;
+  }
+  :is(.timeline-event-modal--edit, .timeline-recurring-series-editor)
+    .temporal-schedule-time-grid > .temporal-create-time-band-control {
+    grid-column: 1 / -1;
+    grid-row: 3;
+    justify-self: start;
+  }
+  :is(.temporal-create-composer.is-advanced, .timeline-event-modal--edit, .timeline-recurring-series-editor)
+    .temporal-schedule-time-grid > .temporal-create-activity-interval__remove {
+    grid-column: 3;
+    grid-row: 2;
+  }
+}
