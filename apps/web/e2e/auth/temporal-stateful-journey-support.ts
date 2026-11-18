@@ -167,7 +167,7 @@ async function pickColor(
   composer: Locator,
   index: number,
 ): Promise<void> {
-  await composer.getByRole('button', { name: 'Colore Life Area' }).click();
+  await composer.getByRole('button', { name: 'Colore dell’area', exact: true }).click();
   const picker = page.getByRole('dialog', { name: 'Scegli colore' });
   await expect(picker).toBeVisible();
   await picker
