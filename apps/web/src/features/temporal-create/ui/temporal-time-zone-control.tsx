@@ -63,7 +63,7 @@ export function TemporalTimeZoneControl({
   disabled?: boolean;
   italian?: boolean;
   allowFloating?: boolean;
-  displayLabel?: string;
+  displayLabel?: string | undefined;
 }>) {
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState('');

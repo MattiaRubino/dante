@@ -274,6 +274,15 @@ function acceptedPlacement(
         );
       }
       const zoneId = validateNamedTimeZone(payload.zone_id);
+      if (
+        payload.end_zone_id != null &&
+        typeof payload.end_zone_id !== 'string'
+      ) {
+        throw new TemporalAuthoringRemoteError(
+          'protocol',
+          'Authoring end_zone_id must be text.',
+        );
+      }
       const endZoneId = payload.end_zone_id == null
         ? null : validateNamedTimeZone(payload.end_zone_id);
       if (endZoneId === zoneId) {

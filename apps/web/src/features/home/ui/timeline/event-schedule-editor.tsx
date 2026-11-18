@@ -327,7 +327,6 @@ export function EventScheduleEditor({
           </button>
           <button
             type="button"
-            disabled={disabled}
             className={draft.kind === 'all-day' ? 'is-active' : ''}
             disabled={disabled || customZone}
             title={customZone

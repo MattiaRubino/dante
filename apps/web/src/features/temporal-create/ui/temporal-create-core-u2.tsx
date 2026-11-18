@@ -72,8 +72,8 @@ type TimeControlProps = Readonly<{
   onChange: (value: string) => void;
   helper?: ReactNode;
   invalid?: boolean;
-  zoneId?: string | null;
-  onZoneChange?: (zoneId: string | null) => void;
+  zoneId?: string | null | undefined;
+  onZoneChange?: ((zoneId: string | null) => void) | undefined;
 }>;
 
 const WEEKDAYS: readonly TemporalCreateWeekday[] = Object.freeze([

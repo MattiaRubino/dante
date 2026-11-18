@@ -7,7 +7,7 @@ type TemporalCreateDatePickerProps = Readonly<{
   label: string;
   value: string;
   locale: string;
-  min?: string;
+  min?: string | undefined;
   invalid?: boolean;
   align?: 'start' | 'end';
   onChange: (value: string) => void;
