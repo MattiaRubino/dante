@@ -1952,7 +1952,17 @@ describe('Activity Inspector', () => {
     expect(zone.textContent).not.toContain('Fuso orario');
     expect(screen.queryByText('Intervallo 1')).toBeNull();
     fireEvent.click(zone);
-    fireEvent.click(screen.getByRole('button', { name: 'Europe/London' }));
+    const timezoneDialog = screen.getByRole('dialog', {
+      name: 'Imposta fuso orario',
+    });
+    fireEvent.click(within(timezoneDialog).getByRole('button', { name: /GMT.*Europe\/Rome/ }));
+    fireEvent.change(within(timezoneDialog).getByRole('searchbox', {
+      name: 'Cerca fuso orario',
+    }), { target: { value: 'Europe/London' } });
+    fireEvent.click(within(timezoneDialog).getByRole('option', {
+      name: /Europe\/London/,
+    }));
+    fireEvent.click(within(timezoneDialog).getByRole('button', { name: 'OK' }));
     await submitEditor();
     await waitFor(() => expect(applyReplan).toHaveBeenCalledOnce());
     const draft = requiredRecord(applyReplan.mock.calls[0]?.[2]);
