@@ -29,7 +29,7 @@ describe('shared temporal timezone configuration dialog', () => {
     const panel = screen.getByRole('dialog', { name: 'Imposta fuso orario' });
     expect(within(panel).getByRole('checkbox', {
       name: 'Utilizza fusi orari diversi per inizio e fine',
-    })).toBeDisabled();
+    })).toHaveProperty('disabled', true);
     fireEvent.click(within(panel).getByRole('button', { name: /GMT\+01:00.*Europe\/Rome/ }));
     fireEvent.change(within(panel).getByRole('searchbox', { name: 'Cerca fuso orario' }), {
       target: { value: 'Europe/Paris' },
@@ -91,7 +91,7 @@ describe('shared temporal timezone configuration dialog', () => {
     const checkbox = within(reopened).getByRole('checkbox', {
       name: 'Utilizza fusi orari diversi per inizio e fine',
     });
-    expect(checkbox).toBeChecked();
+    expect(checkbox).toHaveProperty('checked', true);
     expect(within(reopened).getByText(/GMT\+09:00.*Asia\/Tokyo/)).toBeTruthy();
     fireEvent.click(checkbox);
     fireEvent.click(within(reopened).getByRole('button', { name: 'OK' }));
