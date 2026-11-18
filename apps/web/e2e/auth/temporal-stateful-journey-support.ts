@@ -336,7 +336,7 @@ export async function authorPersona(
     // textbox fill. Selecting the actual catalog option is required: plain
     // text could otherwise stage a duplicate "new" area with the same name.
     await dialog
-      .getByRole('textbox', { name: 'Life Area (opzionale)' })
+      .getByRole('textbox', { name: 'Area (opzionale)', exact: true })
       .click();
     const option = dialog.getByRole('option', {
       name: areaName,
