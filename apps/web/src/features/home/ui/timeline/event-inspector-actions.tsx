@@ -1557,6 +1557,14 @@ export function EventInspectorActions({
                   >
                     Ripeti · Serie attiva
                   </div>
+                ) : scheduleDraft.kind === 'timed' &&
+                  scheduleDraft.endZoneId &&
+                  scheduleDraft.endZoneId !== scheduleDraft.zoneId ? (
+                  <div className="timeline-activity-editor__repeat"
+                    role="group" aria-label="Ripeti"
+                    title="Seleziona un fuso unico prima di aggiungere una ripetizione">
+                    Ripeti · Fuso personalizzato
+                  </div>
                 ) : scheduleRef && placementMaterialStateRef ? (
                   <ExistingRecurrenceControl
                     ref={recurrenceControl}

@@ -254,12 +254,17 @@ export function EventScheduleEditor({
   };
   const changeGeneralZone = (zone: string | null) => {
     let movedEnd: string | null = null;
-    if (zone && draft.zoneId && draft.kind === 'timed') {
+    if (draft.zoneId && draft.kind === 'timed') {
       try {
-        movedEnd = projectElapsedEndToZone(
-          `${draft.startDate}T${draft.startTime}`, zone, previousDuration(), zone,
-          draft.disambiguation === 'reject' ? 'earlier' : draft.disambiguation,
-        );
+        const start = `${draft.startDate}T${draft.startTime}`;
+        const duration = previousDuration();
+        movedEnd = zone
+          ? projectElapsedEndToZone(
+              start, zone, duration, zone,
+              draft.disambiguation === 'reject' ? 'earlier' : draft.disambiguation,
+            )
+          : Temporal.PlainDateTime.from(start).add({ minutes: duration })
+              .toString({ smallestUnit: 'minute' });
       } catch { /* invalid drafts remain correctable */ }
     }
     update({

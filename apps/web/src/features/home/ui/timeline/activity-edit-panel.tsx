@@ -2093,8 +2093,12 @@ export function ActivityEditPanel({
                       !canReplan ||
                       planningLocked ||
                       hasIntervals ||
+                      customZone ||
                       planPending
                     }
+                    title={customZone
+                      ? 'Seleziona un fuso unico prima di passare a Tutto il giorno'
+                      : undefined}
                     onClick={() => {
                       if (envelope) {
                         setDateSpanDraft({
@@ -2128,14 +2132,37 @@ export function ActivityEditPanel({
                     allowFloating={false}
                     disabled={!canReplan || planningLocked || planPending}
                     onChange={(zoneId) => {
-                      if (zoneId) {
-                        setSelectedZoneId(zoneId);
-                        // Choosing the general timezone explicitly reverts
-                        // both boundaries to one shared IANA frame.
-                        setSelectedEndZoneId(null);
-                        setPlanOperation(null);
-                        setPlanError('');
+                      if (!zoneId) return;
+                      // Explicit conversion to a shared frame retains actual
+                      // elapsed duration. Never just reinterpret the old end
+                      // clock in the new timezone.
+                      if (customZone && envelope) {
+                        const current = planDraft[envelope.scheduleRef] ?? {
+                          start: envelope.start ?? '',
+                          end: envelope.end ?? '',
+                        };
+                        try {
+                          const minutes = elapsedMinutesBetweenZonedBounds(
+                            current.start,
+                            effectiveZoneId,
+                            current.end,
+                            effectiveEndZoneId!,
+                          );
+                          const end = projectElapsedEndToZone(
+                            current.start, zoneId, minutes, zoneId,
+                          );
+                          setPlanDraft((previous) => ({
+                            ...previous,
+                            [envelope.scheduleRef]: { ...current, end },
+                          }));
+                        } catch {
+                          // Keep invalid values editable; Save stays blocked.
+                        }
                       }
+                      setSelectedZoneId(zoneId);
+                      setSelectedEndZoneId(null);
+                      setPlanOperation(null);
+                      setPlanError('');
                     }}
                   />
                 ) : null}
@@ -2374,6 +2401,7 @@ export function ActivityEditPanel({
                       disabled={
                         planningLocked ||
                         planPending ||
+                        customZone ||
                         (hasIntervals
                           ? editablePlan.filter(
                               (row) => row.role === 'interval',
@@ -2383,6 +2411,9 @@ export function ActivityEditPanel({
                           newIntervals.length >=
                           100
                       }
+                      title={customZone
+                        ? 'Seleziona un fuso unico prima di aggiungere intervalli'
+                        : undefined}
                       onClick={() => {
                         setNewIntervals((current) => {
                           const lastEnd =
@@ -2459,8 +2490,13 @@ export function ActivityEditPanel({
                 </div>
               ) : null}
             </section>
-            {recurringContext ? null : envelope?.start &&
-              envelope.placementStateRef ? (
+            {recurringContext ? null : customZone ? (
+              <div className="timeline-activity-editor__repeat"
+                role="group" aria-label="Ripeti"
+                title="Seleziona un fuso unico prima di aggiungere una ripetizione">
+                Ripeti · Fuso personalizzato
+              </div>
+            ) : envelope?.start && envelope.placementStateRef ? (
               <ExistingRecurrenceControl
                 ref={recurrenceControl}
                 kind="activity"
