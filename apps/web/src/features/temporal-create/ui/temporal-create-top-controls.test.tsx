@@ -98,57 +98,75 @@ function setClock(label: 'Inizio' | 'Fine', value: string) {
 
 describe('Temporal Create U1 top controls', () => {
 
-  it('opens the shared timezone menu beside the clock, on the free side of the viewport', () => {
-    renderEntry();
+  it.each([
+    ['Quick', 'Attività'],
+    ['Quick', 'Evento'],
+    ['Advanced', 'Attività'],
+    ['Advanced', 'Evento'],
+  ] as const)(
+    'uses one timezone dialog, never a clock sidecar: %s %s',
+    (surface, kind) => {
+      renderEntry();
+      if (kind === 'Evento') {
+        fireEvent.click(screen.getByRole('radio', { name: 'Evento' }));
+      }
+      if (surface === 'Advanced') {
+        fireEvent.click(screen.getByRole('button', { name: /Opzioni avanzate/ }));
+      }
+      fireEvent.click(screen.getByRole('button', { name: 'Inizio: scegli orario' }));
+      const clock = screen.getByRole('dialog', { name: 'Inizio' });
+      expect(within(clock).queryByRole('button', { name: /Fuso orario/ })).toBeNull();
+      fireEvent.click(screen.getByRole('button', { name: 'Inizio: scegli orario' }));
+      expect(screen.getAllByRole('button', { name: /^Fuso orario:/ })).toHaveLength(1);
 
-    fireEvent.click(screen.getByRole('button', { name: 'Inizio: scegli orario' }));
-    const startPicker = screen.getByRole('dialog', { name: 'Inizio' });
-    expect(within(startPicker).queryByText('Timezone inizio')).toBeNull();
-    const startZone = within(startPicker).getByRole('button', {
-      name: /Inizio: Fuso orario:/,
-    });
-    expect(startZone.textContent).toContain('Fuso orario');
-    const startRect = vi.spyOn(startPicker, 'getBoundingClientRect').mockReturnValue({
-      left: 100, right: 282, top: 90, bottom: 425, width: 182, height: 335,
-      x: 100, y: 90, toJSON: () => ({}),
-    });
-    fireEvent.click(startZone);
-    const startMenu = screen.getByRole('dialog', { name: 'Scegli fuso orario' });
-    expect(startMenu.parentElement).toBe(document.body);
-    expect(startMenu.classList.contains('is-clock-sidecar')).toBe(true);
-    expect(startMenu.hasAttribute('data-temporal-create-portal')).toBe(true);
-    expect(startMenu.getAttribute('data-temporal-clock-timezone')).toBe('Inizio');
-    expect((startMenu as HTMLElement).style.left).toBe('290px');
-    const search = within(startMenu).getByRole('searchbox', {
-      name: 'Cerca fuso orario',
-    });
-    fireEvent.change(search, { target: { value: 'Europe/Paris' } });
-    const paris = within(startMenu).getByRole('button', { name: 'Europe/Paris' });
-    fireEvent.pointerDown(paris);
-    expect(startMenu.isConnected).toBe(true);
-    fireEvent.click(paris);
-    expect(within(startPicker).getByRole('button', {
-      name: /Inizio: Fuso orario: Europe\/Paris/,
-    })).toBeTruthy();
-    startRect.mockRestore();
+      fireEvent.click(screen.getByRole('button', { name: /^Fuso orario:/ }));
+      const panel = screen.getByRole('dialog', { name: 'Imposta fuso orario' });
+      expect(panel.hasAttribute('data-temporal-create-portal')).toBe(true);
+      expect(within(panel).getByRole('checkbox', {
+        name: 'Utilizza fusi orari diversi per inizio e fine',
+      })).not.toBeChecked();
+      fireEvent.click(within(panel).getByRole('button', { name: /GMT/ }));
+      fireEvent.change(within(panel).getByRole('searchbox', { name: 'Cerca fuso orario' }), {
+        target: { value: 'Europe/Rome' },
+      });
+      fireEvent.click(within(panel).getByRole('option', { name: /Europe\/Rome/ }));
+      fireEvent.click(within(panel).getByRole('button', { name: 'OK' }));
+      expect(screen.queryByRole('dialog', { name: 'Imposta fuso orario' })).toBeNull();
 
-    fireEvent.click(screen.getByRole('button', { name: 'Inizio: scegli orario' }));
-    fireEvent.click(screen.getByRole('button', { name: 'Fine: scegli orario' }));
-    const endPicker = screen.getByRole('dialog', { name: 'Fine' });
-    expect(within(endPicker).queryByText('Timezone fine')).toBeNull();
-    const endRect = vi.spyOn(endPicker, 'getBoundingClientRect').mockReturnValue({
-      left: 790, right: 972, top: 95, bottom: 430, width: 182, height: 335,
-      x: 790, y: 95, toJSON: () => ({}),
-    });
-    fireEvent.click(within(endPicker).getByRole('button', {
-      name: /Fine: Fuso orario:/,
-    }));
-    const endMenu = screen.getByRole('dialog', { name: 'Scegli fuso orario' });
-    expect(endMenu.getAttribute('data-temporal-clock-timezone')).toBe('Fine');
-    expect((endMenu as HTMLElement).style.left).toBe('452px');
-    expect(endMenu.parentElement).toBe(document.body);
-    endRect.mockRestore();
-  });
+      fireEvent.click(screen.getByRole('button', { name: /^Fuso orario:/ }));
+      const customPanel = screen.getByRole('dialog', { name: 'Imposta fuso orario' });
+      fireEvent.click(within(customPanel).getByRole('checkbox', {
+        name: 'Utilizza fusi orari diversi per inizio e fine',
+      }));
+      const endPicker = within(customPanel).getByText('Fuso orario di fine')
+        .closest('.temporal-zone-dialog__picker');
+      if (!endPicker) throw new Error('Expected the shared end timezone field.');
+      fireEvent.click(within(endPicker as HTMLElement).getByRole('button'));
+      fireEvent.change(within(endPicker as HTMLElement).getByRole('searchbox', {
+        name: 'Cerca fuso orario',
+      }), { target: { value: 'Asia/Tokyo' } });
+      fireEvent.click(within(endPicker as HTMLElement).getByRole('option', {
+        name: /Asia\/Tokyo/,
+      }));
+      fireEvent.click(within(customPanel).getByRole('button', { name: 'OK' }));
+
+      expect(screen.getByRole('button', {
+        name: 'Fuso orario: Personalizzato',
+      })).toBeTruthy();
+      fireEvent.click(screen.getByRole('button', {
+        name: 'Fuso orario: Personalizzato',
+      }));
+      const reopened = screen.getByRole('dialog', { name: 'Imposta fuso orario' });
+      expect(within(reopened).getByRole('checkbox', {
+        name: 'Utilizza fusi orari diversi per inizio e fine',
+      })).toBeChecked();
+      expect(within(reopened).getByText(/GMT\+09:00.*Asia\/Tokyo/)).toBeTruthy();
+      fireEvent.click(within(reopened).getByRole('button', { name: 'Annulla' }));
+      expect(screen.getByRole('button', {
+        name: 'Fuso orario: Personalizzato',
+      })).toBeTruthy();
+    },
+  );
 
   it('keeps the selected same-day end date after an explicit valid end edit', () => {
     renderEntry();
