@@ -1046,7 +1046,7 @@ export function TemporalCreateCoreFieldsU2({
               label={italian ? 'Data fine' : 'End date'}
               align="end"
               value={visibleEndDate}
-              min={fields.date}
+              min={isCustomZone ? undefined : fields.date}
               invalid={invalidEnd !== null}
               locale={locale}
               onChange={(date) => patchEnd(date, visibleEndTime)}
