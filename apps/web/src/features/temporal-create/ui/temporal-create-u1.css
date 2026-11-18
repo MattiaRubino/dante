@@ -366,8 +366,8 @@
   top: calc(100% + 6px);
   left: 50%;
   display: grid;
-  width: 148px;
-  padding: 7px;
+  width: 182px;
+  padding: 8px;
   transform: translateX(-50%);
   border: 1px solid
     var(--dante-semantic-color-home-border-subtle, rgba(255, 255, 255, 0.09));
@@ -382,21 +382,22 @@
 
 .temporal-create-time-list {
   display: grid;
-  max-height: 220px;
+  max-height: 315px;
   overflow-y: auto;
   overscroll-behavior: contain;
   scrollbar-gutter: stable;
 }
 
 .temporal-create-time-list > button {
-  min-height: 29px;
-  padding: 0 10px;
+  min-height: 40px;
+  padding: 0 12px;
   border: 0;
   border-radius: 7px;
   color: var(--dante-semantic-color-home-text-secondary, #b7c0cf);
   background: transparent;
   font: inherit;
-  font-size: 10px;
+  font-size: 15px;
+  font-weight: 600;
   font-variant-numeric: tabular-nums;
   text-align: center;
   cursor: pointer;
