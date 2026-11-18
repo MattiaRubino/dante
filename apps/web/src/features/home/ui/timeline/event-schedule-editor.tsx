@@ -232,48 +232,37 @@ export function EventScheduleEditor({
       .until(Temporal.PlainDateTime.from(`${draft.endDate}T${draft.endTime}`))
       .total({ unit: 'minutes' });
   };
-  const changeBoundaryZone = (which: 'start' | 'end', zone: string | null) => {
-    if (!zone || !draft.zoneId || draft.kind !== 'timed') return;
-    if (which === 'end') {
-      update({ endZoneId: zone === draft.zoneId ? null : zone });
-      return;
-    }
-    const previousEndZone = draft.endZoneId ?? draft.zoneId;
+  const applyTimeZones = (startZone: string | null, endZone: string | null) => {
+    // One atomic change from the shared timezone dialog. Preserve the actual
+    // duration, and never erase a selected end zone between independent clicks.
+    const resolvedEndZone =
+      startZone && endZone && startZone !== endZone ? endZone : null;
     let movedEnd: string | null = null;
-    try {
-      movedEnd = projectElapsedEndToZone(
-        `${draft.startDate}T${draft.startTime}`, zone, previousDuration(),
-        previousEndZone,
-        draft.disambiguation === 'reject' ? 'earlier' : draft.disambiguation,
-      );
-    } catch { /* invalid drafts remain correctable in the form */ }
-    update({
-      zoneId: zone,
-      endZoneId: previousEndZone === zone ? null : previousEndZone,
-      ...(movedEnd ? {
-        endDate: movedEnd.slice(0, 10), endTime: movedEnd.slice(11, 16),
-      } : {}),
-    });
-  };
-  const changeGeneralZone = (zone: string | null) => {
-    let movedEnd: string | null = null;
-    if (draft.zoneId && draft.kind === 'timed') {
+    if (draft.kind === 'timed') {
       try {
         const start = `${draft.startDate}T${draft.startTime}`;
         const duration = previousDuration();
-        movedEnd = zone
+        movedEnd = startZone
           ? projectElapsedEndToZone(
-              start, zone, duration, zone,
+              start,
+              startZone,
+              duration,
+              resolvedEndZone ?? startZone,
               draft.disambiguation === 'reject' ? 'earlier' : draft.disambiguation,
             )
-          : Temporal.PlainDateTime.from(start).add({ minutes: duration })
+          : Temporal.PlainDateTime.from(start)
+              .add({ minutes: duration })
               .toString({ smallestUnit: 'minute' });
-      } catch { /* invalid drafts remain correctable */ }
+      } catch {
+        // Preserve invalid drafts; the existing validation continues to block Save.
+      }
     }
     update({
-      zoneId: zone, endZoneId: null,
+      zoneId: startZone,
+      endZoneId: resolvedEndZone,
       ...(movedEnd ? {
-        endDate: movedEnd.slice(0, 10), endTime: movedEnd.slice(11, 16),
+        endDate: movedEnd.slice(0, 10),
+        endTime: movedEnd.slice(11, 16),
       } : {}),
     });
   };
@@ -340,9 +329,13 @@ export function EventScheduleEditor({
         {draft.kind === 'timed' ? (
           <TemporalTimeZoneControl
             zoneId={draft.zoneId}
+            endZoneId={draft.endZoneId}
+            date={draft.startDate}
             displayLabel={customZone ? 'Personalizzato' : undefined}
+            allowDistinctZones={allowBoundaryZones}
             disabled={disabled}
-            onChange={changeGeneralZone}
+            onChange={(zone) => applyTimeZones(zone, null)}
+            onZonesChange={applyTimeZones}
           />
         ) : null}
       </div>
@@ -359,9 +352,6 @@ export function EventScheduleEditor({
               label="Inizio"
               value={draft.startTime}
               dataPath="event.edit.start"
-              zoneId={allowBoundaryZones && draft.zoneId ? draft.zoneId : undefined}
-              onZoneChange={allowBoundaryZones && draft.zoneId
-                ? (zone) => changeBoundaryZone('start', zone) : undefined}
               onChange={(startTime) => moveStart(draft.startDate, startTime)}
             />
             <span
@@ -375,10 +365,6 @@ export function EventScheduleEditor({
               value={draft.endTime}
               invalid={timingInvalid}
               dataPath="event.edit.end"
-              zoneId={allowBoundaryZones && draft.zoneId
-                ? draft.endZoneId ?? draft.zoneId : undefined}
-              onZoneChange={allowBoundaryZones && draft.zoneId
-                ? (zone) => changeBoundaryZone('end', zone) : undefined}
               onChange={(endTime) => update({ endTime })}
             />
             <TemporalCreateDatePicker
