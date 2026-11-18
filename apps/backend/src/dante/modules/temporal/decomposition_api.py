@@ -72,6 +72,7 @@ class ActivityScheduleResponse(BaseModel):
     starts_local_at: datetime | None
     ends_local_at: datetime | None
     zone_id: str | None
+    end_zone_id: str | None = None
     resolved_start_at: datetime | None
     resolved_end_at: datetime | None
     starts_at: datetime | None
@@ -252,7 +253,8 @@ async def get_activity_children(
                                    AS starts_local_at,
                                COALESCE(floating.ends_local_at,zoned.ends_local_at)
                                    AS ends_local_at,
-                               zoned.zone_id,zoned.resolved_start_at,zoned.resolved_end_at,
+                               zoned.zone_id,zoned.end_zone_id,
+           zoned.resolved_start_at,zoned.resolved_end_at,
                                absolute.starts_at,absolute.ends_at,
                                coarse.local_date,coarse.period_code
                           FROM dante.schedule AS schedule

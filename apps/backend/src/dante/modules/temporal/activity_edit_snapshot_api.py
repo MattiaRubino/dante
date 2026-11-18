@@ -149,7 +149,8 @@ WITH owner AS MATERIALIZED (
            upper(dates.date_span) AS end_date_exclusive,
            COALESCE(floating.starts_local_at,zoned.starts_local_at) AS starts_local_at,
            COALESCE(floating.ends_local_at,zoned.ends_local_at) AS ends_local_at,
-           zoned.zone_id,zoned.resolved_start_at,zoned.resolved_end_at,
+           zoned.zone_id,zoned.end_zone_id,
+           zoned.resolved_start_at,zoned.resolved_end_at,
            absolute.starts_at,absolute.ends_at,coarse.local_date,coarse.period_code,
            role.role_code,role.presentation_order,role.display_name
       FROM owner

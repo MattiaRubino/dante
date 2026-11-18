@@ -68,9 +68,8 @@ class ReplanRow(BaseModel):
         if (
             self.starts_local_at.tzinfo is not None
             or self.ends_local_at.tzinfo is not None
-            or self.ends_local_at <= self.starts_local_at
         ):
-            raise ValueError("Planning requires ordered local timestamps without an offset.")
+            raise ValueError("Planning requires local timestamps without an offset.")
         return self
 
 
@@ -166,6 +165,8 @@ class ActivityReplanCommand(BaseModel):
     envelope: ReplanRow | None = None
     date_span: ReplanDateSpanRow | None = None
     target_zone_id: str | None = None
+    # Explicit NULL clears a previous override; omitted preserves it.
+    target_end_zone_id: str | None = None
     split_envelope: bool = False
     intervals: list[ReplanRow] = Field(default_factory=list, max_length=100)
     new_intervals: list[NewIntervalRow] = Field(default_factory=list, max_length=100)
@@ -407,6 +408,7 @@ def _validated_plan(
             or command.intervals
             or command.split_envelope
             or command.target_zone_id is not None
+            or command.target_end_zone_id is not None
             or envelope.temporal_form not in {"date_span", "floating_local", "named_zone_local"}
         ):
             raise _invalid("All-day placement requires one Activity period.")
@@ -452,6 +454,7 @@ def _validated_plan(
         timed_envelope = command.envelope
         if (
             timed_envelope is None
+            or command.target_end_zone_id is not None
             or intervals
             or command.intervals
             or command.remove_intervals
@@ -495,8 +498,11 @@ def _validated_plan(
             for item in command.new_planned_sessions
         )
         return changes, [(timed_envelope, conversion_placement)]
-    if (command.target_zone_id is not None and envelope.temporal_form != "named_zone_local") or (
-        command.split_envelope and (intervals or not command.new_intervals)
+    if (
+        (command.target_zone_id is not None and envelope.temporal_form != "named_zone_local")
+        or ("target_end_zone_id" in command.model_fields_set
+            and envelope.temporal_form != "named_zone_local")
+        or (command.split_envelope and (intervals or not command.new_intervals))
     ):
         raise _invalid("The requested Activity time frame is inconsistent.")
     if (
@@ -603,6 +609,24 @@ def _validated_plan(
         except ValueError as exc:
             raise _invalid(str(exc)) from exc
     effective_zone_id = command.target_zone_id or envelope.zone_id
+    effective_end_zone_id = (
+        command.target_end_zone_id
+        if "target_end_zone_id" in command.model_fields_set
+        else envelope.end_zone_id
+    )
+    if effective_end_zone_id == effective_zone_id:
+        effective_end_zone_id = None
+    if effective_end_zone_id is not None:
+        if intervals or command.new_intervals or command.split_envelope or command.remove_intervals:
+            raise _invalid("Distinct boundary timezones require one Activity interval.")
+        if not effective_zone_id or envelope.temporal_form != "named_zone_local":
+            raise _invalid("Distinct boundary timezones require a named-zone Activity.")
+        try:
+            validate_iana_timezone(effective_end_zone_id)
+        except ValueError as exc:
+            raise _invalid(str(exc)) from exc
+    elif any(end <= start for start, end in ordered_spans):
+        raise _invalid("Activity local time end must follow start.")
     by_ref = {row.schedule_ref: row for row in retained}
     if envelope.placement_material_state_ref is None:
         raise _invalid("The Activity envelope requires an accepted current placement.")
@@ -634,6 +658,7 @@ def _validated_plan(
             existing_row.starts_local_at == next_row.starts_local_at
             and existing_row.ends_local_at == next_row.ends_local_at
             and existing_row.zone_id == effective_zone_id
+            and existing_row.end_zone_id == effective_end_zone_id
         ):
             continue
         try:
@@ -642,6 +667,7 @@ def _validated_plan(
                     starts_local_at=next_row.starts_local_at,
                     ends_local_at=next_row.ends_local_at,
                     zone_id=command.target_zone_id or _checked_zone(envelope),
+                    end_zone_id=effective_end_zone_id,
                 )
                 if envelope.temporal_form == "named_zone_local" and envelope.zone_id
                 else FloatingLocalIntervalPlacement(
