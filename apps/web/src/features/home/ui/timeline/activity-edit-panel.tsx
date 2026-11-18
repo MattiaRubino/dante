@@ -230,7 +230,9 @@ function ActivityIntervalFields({
 }>) {
   return (
     <div
-      className={`temporal-create-activity-interval__fields timeline-activity-editor__interval-fields temporal-schedule-time-grid${onRemove ? ' has-remove-track' : ''}`}
+      className={`temporal-create-activity-interval__fields timeline-activity-editor__interval-fields temporal-schedule-time-grid${
+        onRemove ? ' has-remove-track' : ''
+      }`}
       data-edit-invalid={!!error}
       inert={disabled || undefined}
     >

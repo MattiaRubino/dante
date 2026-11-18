@@ -954,7 +954,14 @@ export function TemporalCreateCoreFieldsU2({
         {fields.timeSemantics === 'timed' ? renderError('timeZoneId') : null}
 
         {fields.timeSemantics === 'timed' ? (
-          <div className={`temporal-create-u2-when temporal-schedule-time-grid${fields.kind === 'activity' && authoringDraft.activityStructure.activityIntervals.length > 0 ? ' has-remove-track' : ''}`}>
+          <div
+            className={`temporal-create-u2-when temporal-schedule-time-grid${
+              fields.kind === 'activity' &&
+              authoringDraft.activityStructure.activityIntervals.length > 0
+                ? ' has-remove-track'
+                : ''
+            }`}
+          >
             {fields.kind === 'activity' &&
             authoringDraft.activityStructure.activityIntervals.length > 0 ? (
               <span

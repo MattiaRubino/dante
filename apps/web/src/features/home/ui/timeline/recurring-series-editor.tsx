@@ -233,7 +233,9 @@ export function SeriesIntervalFields({
           {kind === 'interval' ? 'Intervallo' : 'Orario Sessione'} {index + 1}
         </span>
       ) : null}
-      <div className={`temporal-create-activity-interval__fields timeline-activity-editor__interval-fields temporal-schedule-time-grid${onRemove ? ' has-remove-track' : ''}`}>
+      <div className={`temporal-create-activity-interval__fields timeline-activity-editor__interval-fields temporal-schedule-time-grid${
+          onRemove ? ' has-remove-track' : ''
+        }`}>
         <TemporalCreateDatePicker
           label="Data inizio"
           locale="it"

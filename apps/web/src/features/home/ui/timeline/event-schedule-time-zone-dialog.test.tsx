@@ -70,6 +70,11 @@ describe('Event Edit uses the single shared timezone dialog', () => {
     render(
       <EventScheduleEditor draft={savedDraft} onChange={vi.fn()} disabled={false} error="" />,
     );
+    const grid = document.querySelector(
+      '.timeline-event-schedule-editor .temporal-schedule-time-grid',
+    );
+    expect(grid).toBeTruthy();
+    expect(grid?.classList.contains('has-remove-track')).toBe(false);
     fireEvent.click(screen.getByRole('button', { name: 'Fine: scegli orario' }));
     const clock = screen.getByRole('dialog', { name: 'Fine' });
     expect(within(clock).queryByRole('button', { name: /Fuso orario/ })).toBeNull();
