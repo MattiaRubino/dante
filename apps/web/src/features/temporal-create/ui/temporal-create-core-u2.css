@@ -432,3 +432,72 @@
     gap: 4px;
   }
 }
+
+/* Clock popup: show a short globe/zone action, never a separate timezone
+   caption. The existing full timezone menu is portaled as a sidecar so the
+   scrollable Advanced Create panel cannot crop or shrink its contents. */
+.temporal-create-time-picker__zone {
+  min-width: 0;
+  margin-bottom: 6px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid
+    var(--dante-semantic-color-home-border-subtle, rgba(255, 255, 255, 0.09));
+}
+
+.temporal-create-time-picker__zone .temporal-create-timezone-control {
+  min-width: 0;
+  width: 100%;
+}
+
+.temporal-create-composer
+  .temporal-create-time-picker__zone
+  .temporal-create-timezone-trigger {
+  box-sizing: border-box;
+  display: flex;
+  width: 100% !important;
+  min-height: 38px;
+  height: 38px !important;
+  justify-content: center;
+  gap: 8px;
+  padding: 0 10px !important;
+  border-radius: 9px !important;
+  font-size: 12px;
+}
+
+.temporal-create-composer
+  .temporal-create-time-picker__zone
+  .temporal-create-timezone-label {
+  flex: none;
+  font-size: 12px;
+  overflow: visible;
+  white-space: nowrap;
+}
+
+.temporal-create-composer
+  .temporal-create-time-picker__zone
+  .temporal-create-timezone-chevron {
+  margin-left: auto;
+}
+
+.temporal-create-timezone-panel.is-clock-sidecar {
+  position: fixed;
+  z-index: 10030;
+  box-sizing: border-box;
+  max-height: calc(100dvh - 24px);
+  grid-template-rows: minmax(0, auto) minmax(0, 1fr);
+  overflow: hidden;
+  color: var(--dante-semantic-color-home-text-primary, #edf2f8);
+}
+
+.temporal-create-timezone-panel.is-clock-sidecar
+  .temporal-create-timezone-search {
+  box-sizing: border-box;
+  width: 100%;
+  min-height: 38px;
+}
+
+.temporal-create-timezone-panel.is-clock-sidecar
+  .temporal-create-timezone-list {
+  min-height: 0;
+  max-height: min(300px, calc(100dvh - 100px));
+}
