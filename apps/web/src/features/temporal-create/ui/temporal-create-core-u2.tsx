@@ -15,14 +15,14 @@ import {
 } from 'react';
 import { useTranslation } from 'react-i18next';
 
-import type {
-  TemporalCreateEventCalendarFrequency,
+import {
+  createTemporalCreateFields,
+  type TemporalCreateEventCalendarFrequency,
   TemporalCreateFields,
   TemporalCreateKind,
   TemporalCreateRecurrenceOwner,
   TemporalCreateTimeSemantics,
   TemporalCreateWeekday,
-  createTemporalCreateFields,
 } from '../model/temporal-create-session';
 import {
   temporalCreateDurationFromEndDateTime,
