@@ -218,9 +218,9 @@ export function SeriesIntervalFields({
     const startAt = Temporal.PlainDateTime.from(
       `${start.toPlainDate().toString()}T${band.start}`,
     );
-    const endAt = startAt.add({ minutes: band.key === 'night' ? 420 :
-      Temporal.PlainTime.from(band.start).until(Temporal.PlainTime.from(band.end))
-        .total({ unit: 'minutes' }) });
+    const endAt = Temporal.PlainDateTime.from(
+      `${start.toPlainDate().toString()}T${band.end}`,
+    ).add({ days: band.end <= band.start ? 1 : 0 });
     onChange({
       ...row,
       start_offset_minutes: anchor.until(startAt).total({ unit: 'minutes' }),
