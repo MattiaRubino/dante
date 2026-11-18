@@ -97,7 +97,7 @@ function setClock(label: 'Inizio' | 'Fine', value: string) {
 }
 
 describe('Temporal Create U1 top controls', () => {
-  it('returns an automatically rolled end date to today when the user enters a later end clock', () => {
+  it('keeps the selected same-day end date after an explicit valid end edit', () => {
     renderEntry();
     fireEvent.click(screen.getByRole('radio', { name: 'Evento' }));
 
@@ -255,13 +255,14 @@ describe('Temporal Create U1 top controls', () => {
       );
       expect(clockValues().end.value).toBe('10:31');
 
+      // Moving start keeps the precise 1-minute span instead of freezing end.
       setClock('Inizio', '10:29');
       expect([clockValues().start.value, clockValues().end.value]).toEqual([
         '10:29',
-        '10:31',
+        '10:30',
       ]);
       expect(
-        within(screen.getByRole('group', { name: 'Fine' })).getByText('2 min'),
+        within(screen.getByRole('group', { name: 'Fine' })).getByText('1 min'),
       ).toBeTruthy();
     },
   );

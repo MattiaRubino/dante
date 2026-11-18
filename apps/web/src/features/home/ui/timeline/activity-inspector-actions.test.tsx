@@ -1901,10 +1901,8 @@ describe('Activity Inspector', () => {
       screen
         .getAllByRole('group', { name: 'Fine' })[0]!
         .querySelector('.temporal-create-time-raw-input'),
-    ).toHaveProperty('value', '10:00');
-    fireEvent.click(
-      screen.getAllByRole('button', { name: 'Fine: aumenta ora' })[0]!,
-    );
+    ).toHaveProperty('value', '11:00');
+    // The start change alone moves the end to 11:00: no second edit needed.
     expect(
       screen.queryByRole('button', { name: 'Verifica spostamento' }),
     ).toBeNull();
