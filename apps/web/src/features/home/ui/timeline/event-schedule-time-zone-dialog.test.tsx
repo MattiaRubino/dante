@@ -28,6 +28,8 @@ describe('Event Edit uses the single shared timezone dialog', () => {
       name: 'Fuso orario: Europe/Rome',
     }));
     const dialog = screen.getByRole('dialog', { name: 'Imposta fuso orario' });
+    expect(dialog.getAttribute('aria-modal')).toBe('true');
+    expect(document.querySelector('.temporal-create-timezone-interaction-shield')).toBeTruthy();
     fireEvent.click(within(dialog).getByRole('checkbox', {
       name: 'Utilizza fusi orari diversi per inizio e fine',
     }));
