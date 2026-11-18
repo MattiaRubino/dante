@@ -505,7 +505,7 @@ describe('Temporal Create U1 top controls', () => {
     ).toBeNull();
   });
 
-  it('promotes Advanced to a central viewport surface without losing the Quick draft', () => {
+  it('preserves the Quick draft on Advanced, then resets everything but title on Activity/Event switch', () => {
     renderEntry();
 
     const quickComposer = document.querySelector<HTMLElement>(
@@ -576,15 +576,32 @@ describe('Temporal Create U1 top controls', () => {
       within(eventTiming).getByRole('button', { name: /Fuso orario:/ }),
     ).toBeTruthy();
     expect(within(eventTiming).queryByText('Intervallo 1')).toBeNull();
+    const eventAreaSection = within(advancedComposer!).getByRole('region', {
+      name: 'Area',
+    });
+    expect(eventAreaSection).not.toBe(areaSection);
     expect(
-      within(advancedComposer!).getByRole('region', { name: 'Area' }),
-    ).toBe(areaSection);
-    fireEvent.click(screen.getByRole('radio', { name: 'Attività' }));
-    fireEvent.click(
-      within(timing).getByRole('button', { name: /Aggiungi intervallo/ }),
+      within(eventAreaSection).getByRole('textbox', {
+        name: 'Area (opzionale)',
+      }),
+    ).toHaveProperty('value', '');
+    expect(screen.getByPlaceholderText('Titolo')).toHaveProperty(
+      'value',
+      'Bozza preservata',
     );
-    expect(within(timing).getByText('Intervallo 1')).toBeTruthy();
-    expect(within(timing).getByText('Intervallo 2')).toBeTruthy();
+
+    fireEvent.click(screen.getByRole('radio', { name: 'Attività' }));
+    const resetActivityTiming = advancedComposer?.querySelector<HTMLElement>(
+      '.temporal-create-timing-section.is-activity',
+    );
+    if (!resetActivityTiming) throw new Error('Expected fresh Activity timing.');
+    fireEvent.click(
+      within(resetActivityTiming).getByRole('button', {
+        name: /Aggiungi intervallo/,
+      }),
+    );
+    expect(within(resetActivityTiming).getByText('Intervallo 1')).toBeTruthy();
+    expect(within(resetActivityTiming).getByText('Intervallo 2')).toBeTruthy();
 
     // Reminder remains one primary Create control, not a second Advanced copy.
     expect(screen.getAllByLabelText('Ricorda')).toHaveLength(1);
@@ -615,6 +632,6 @@ describe('Temporal Create U1 top controls', () => {
     expect(
       domElement(screen.getByLabelText('Area (opzionale)'), HTMLInputElement)
         .value,
-    ).toBe('Nuova Area');
+    ).toBe('');
   });
 });
