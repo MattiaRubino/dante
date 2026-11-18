@@ -122,6 +122,56 @@ def test_empty_projection_binds_authenticated_self_and_effective_zone() -> None:
     assert result.items == ()
 
 
+
+@pytest.mark.asyncio
+async def test_timeline_view_timezone_is_read_only_and_does_not_mutate_account_context() -> None:
+    context = _context(effective_zone_id="Europe/Rome")
+    query = TimelineWindowQuery(
+        start_date=date(2026, 11, 18),
+        end_date_exclusive=date(2026, 11, 20),
+    )
+
+    class CaptureTimelineView:
+        async def read_window(
+            self, *, query: TimelineWindowQuery, context: DanteContext,
+        ) -> TimelineWindowResult:
+            assert context.effective_zone_id == "Asia/Tokyo"
+            return empty_timeline_window_result(query=query, context=context)
+
+    response = await get_timeline_window(
+        context=context,
+        application=cast(TemporalTimelineApplication, CaptureTimelineView()),
+        response=Response(),
+        start_date=query.start_date,
+        end_date_exclusive=query.end_date_exclusive,
+        view_zone_id="Asia/Tokyo",
+    )
+    assert response.effective_zone_id == "Asia/Tokyo"
+    assert context.effective_zone_id == "Europe/Rome"
+    assert context.timezone_policy.mode == TimeZoneMode.FOLLOW_DEVICE
+
+
+@pytest.mark.asyncio
+async def test_timeline_view_timezone_rejects_offsets_and_invalid_iana_zone() -> None:
+    context = _context()
+    query = TimelineWindowQuery(
+        start_date=date(2026, 11, 18),
+        end_date_exclusive=date(2026, 11, 20),
+    )
+    result = empty_timeline_window_result(query=query, context=context)
+    for invalid in ("GMT+09:00", "Not/A_Timezone", " Europe/Rome "):
+        with pytest.raises(ProblemError) as caught:
+            await get_timeline_window(
+                context=context,
+                application=_application(result),
+                response=Response(),
+                start_date=query.start_date,
+                end_date_exclusive=query.end_date_exclusive,
+                view_zone_id=invalid,
+            )
+        assert caught.value.status == 400
+        assert caught.value.code == "temporal.timeline.invalid_view_zone"
+
 def test_local_wall_clock_transport_forbids_fabricated_offsets() -> None:
     floating_schema = TimelineScheduledActivityResponse.model_json_schema()
     named_schema = TimelineNamedZoneLocalActivityResponse.model_json_schema()

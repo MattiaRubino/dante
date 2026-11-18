@@ -5761,6 +5761,16 @@
       "invariant": "Legacy single-zone behavior remains unchanged and two-zone end is validated using real instants, not local string ordering.",
       "status": "UNREVIEWED",
       "audit_note": "New regression tests submitted for user-run local verification; no passing result claimed."
+    },
+    {
+      "path": "apps/web/src/features/temporal/timeline-view-zone.test.ts",
+      "suite": "web-unit-component",
+      "contract_id": "T05",
+      "candidate_behavior": "IANA Timeline display zone, local instant projection, browser preference and DST",
+      "purpose": "Verify canonical named-zone and absolute instants project into selected display zone without rewriting original temporal values, floating-local stays floating, stored choices are IANA IDs and spring-forward retains factual duration.",
+      "invariant": "Changing the Timeline viewing timezone does not mutate canonical Schedule/Session data or coerce IANA zones to fixed numeric offsets.",
+      "status": "QUALIFIED",
+      "audit_note": "New focused regression; user local Vitest, visual and real-stack acceptance still NOT_RUN."
     }
   ]
 }

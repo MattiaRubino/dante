@@ -11,6 +11,7 @@ import { afterEach, beforeAll, describe, expect, it, vi } from 'vitest';
 
 import { i18n } from '../../bootstrap/i18n';
 import { createDeterministicTemporalIdFactory } from './model';
+import { TIMELINE_VIEW_ZONE_STORAGE_KEY } from './timeline-view-zone';
 import type {
   TemporalScheduleDataSource,
   TemporalScheduleRevisionRequest,
@@ -32,6 +33,7 @@ beforeAll(async () => {
 
 afterEach(() => {
   cleanup();
+  window.localStorage.removeItem(TIMELINE_VIEW_ZONE_STORAGE_KEY);
 });
 
 function deferred<T>() {
@@ -98,6 +100,19 @@ function UnscheduleProbe() {
       >
         undo-unschedule
       </button>
+    </>
+  );
+}
+
+function ZoneProbe() {
+  const { state, viewZoneId, setViewZoneId } = useTemporalTimelineRuntime();
+  return (
+    <>
+      <span data-testid="view-zone">{state.status === 'ready' ? state.effectiveZoneId : state.status}</span>
+      <span data-testid="stored-view-zone">{viewZoneId ?? 'auto'}</span>
+      <button type="button" onClick={() => setViewZoneId('Asia/Tokyo')}>Tokyo</button>
+      <button type="button" onClick={() => setViewZoneId('America/New_York')}>New York</button>
+      <button type="button" onClick={() => setViewZoneId(null)}>Automatic</button>
     </>
   );
 }
@@ -708,4 +723,108 @@ describe('TemporalTimelineRuntimeBoundary', () => {
     });
     unsubscribe();
   });
+
+  it('updates the rendered timezone synchronously and performs read-only reconciliation without another checkpoint', async () => {
+    const pending = deferred<TemporalTimelineWindow>();
+    const checkpointWindow = vi.fn<NonNullable<TemporalTimelineDataSource['checkpointWindow']>>(
+      (request) => Promise.resolve({
+        startDate: request.startDate,
+        endDateExclusive: request.endDateExclusive,
+        effectiveZoneId: 'Europe/Rome',
+        sourceCount: 0, occurrenceCount: 0, replayedSourceCount: 0,
+      }),
+    );
+    const loadWindow = vi.fn<TemporalTimelineDataSource['loadWindow']>(
+      (request) => request.viewZoneId === 'Asia/Tokyo'
+        ? pending.promise : Promise.resolve(emptyWindow()),
+    );
+    render(
+      <TemporalTimelineRuntimeBoundary
+        dataSource={{ checkpointWindow, loadWindow }}
+        viewedDateIso="2026-09-04" mode="production"
+      >
+        <ZoneProbe />
+      </TemporalTimelineRuntimeBoundary>,
+    );
+    await waitFor(() => {
+      expect(checkpointWindow).toHaveBeenCalledTimes(2);
+      expect(screen.getByTestId('view-zone').textContent).toBe('Europe/Rome');
+    });
+    fireEvent.click(screen.getByRole('button', { name: 'Tokyo' }));
+    expect(screen.getByTestId('view-zone').textContent).toBe('Asia/Tokyo');
+    expect(screen.getByTestId('stored-view-zone').textContent).toBe('Asia/Tokyo');
+    expect(window.localStorage.getItem(TIMELINE_VIEW_ZONE_STORAGE_KEY)).toBe('Asia/Tokyo');
+    await waitFor(() => {
+      expect(loadWindow.mock.calls.some(([request]) => request.viewZoneId === 'Asia/Tokyo')).toBe(true);
+    });
+    expect(checkpointWindow).toHaveBeenCalledTimes(2);
+
+    await act(async () => {
+      pending.resolve({ ...emptyWindow(), effectiveZoneId: 'Asia/Tokyo' });
+      await pending.promise;
+    });
+    expect(screen.getByTestId('view-zone').textContent).toBe('Asia/Tokyo');
+
+    fireEvent.click(screen.getByRole('button', { name: 'Automatic' }));
+    expect(screen.getByTestId('stored-view-zone').textContent).toBe('auto');
+    expect(window.localStorage.getItem(TIMELINE_VIEW_ZONE_STORAGE_KEY)).toBeNull();
+  });
+
+  it('ignores a delayed earlier timezone response after a later selection wins', async () => {
+    const tokyo = deferred<TemporalTimelineWindow>();
+    const newYork = deferred<TemporalTimelineWindow>();
+    const loadWindow = vi.fn<TemporalTimelineDataSource['loadWindow']>(
+      (request) => request.viewZoneId === 'Asia/Tokyo' ? tokyo.promise
+        : request.viewZoneId === 'America/New_York' ? newYork.promise
+          : Promise.resolve(emptyWindow()),
+    );
+    render(
+      <TemporalTimelineRuntimeBoundary
+        dataSource={{ loadWindow }}
+        viewedDateIso="2026-09-04" mode="production"
+      >
+        <ZoneProbe />
+      </TemporalTimelineRuntimeBoundary>,
+    );
+    await waitFor(() => expect(screen.getByTestId('view-zone').textContent).toBe('Europe/Rome'));
+    fireEvent.click(screen.getByRole('button', { name: 'Tokyo' }));
+    await waitFor(() => expect(loadWindow.mock.calls.some(([request]) =>
+      request.viewZoneId === 'Asia/Tokyo')).toBe(true));
+    fireEvent.click(screen.getByRole('button', { name: 'New York' }));
+    expect(screen.getByTestId('view-zone').textContent).toBe('America/New_York');
+    await waitFor(() => expect(loadWindow.mock.calls.some(([request]) =>
+      request.viewZoneId === 'America/New_York')).toBe(true));
+    await act(async () => {
+      tokyo.resolve({ ...emptyWindow(), effectiveZoneId: 'Asia/Tokyo' });
+      await tokyo.promise;
+    });
+    expect(screen.getByTestId('view-zone').textContent).toBe('America/New_York');
+    await act(async () => {
+      newYork.resolve({ ...emptyWindow(), effectiveZoneId: 'America/New_York' });
+      await newYork.promise;
+    });
+    expect(screen.getByTestId('view-zone').textContent).toBe('America/New_York');
+  });
+
+  it('restores the previously selected IANA viewing zone immediately on a new mount', async () => {
+    window.localStorage.setItem(TIMELINE_VIEW_ZONE_STORAGE_KEY, 'Asia/Tokyo');
+    const loadWindow = vi.fn<TemporalTimelineDataSource['loadWindow']>(
+      () => Promise.resolve({ ...emptyWindow(), effectiveZoneId: 'Asia/Tokyo' }),
+    );
+    render(
+      <TemporalTimelineRuntimeBoundary
+        dataSource={{ loadWindow }} viewedDateIso="2026-09-04"
+        mode="production"
+      >
+        <ZoneProbe />
+      </TemporalTimelineRuntimeBoundary>,
+    );
+    expect(screen.getByTestId('stored-view-zone').textContent).toBe('Asia/Tokyo');
+    await waitFor(() => expect(loadWindow).toHaveBeenCalledWith(
+      expect.objectContaining({ viewZoneId: 'Asia/Tokyo' }),
+      expect.any(AbortSignal),
+    ));
+    await waitFor(() => expect(screen.getByTestId('view-zone').textContent).toBe('Asia/Tokyo'));
+  });
+
 });

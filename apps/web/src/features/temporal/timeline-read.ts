@@ -3,10 +3,12 @@ import type { Instant, PlainDate, PlainDateTime, PlainTime } from '@dante/time';
 export type TemporalTimelineWindowRequest = Readonly<{
   startDate: string;
   endDateExclusive: string;
+  /** Presentation-only zone override for GET /timeline/window; never a checkpoint input. */
+  viewZoneId?: string;
 }>;
 
 export type TemporalTimelineWindowCheckpointRequest =
-  TemporalTimelineWindowRequest &
+  Omit<TemporalTimelineWindowRequest, 'viewZoneId'> &
     Readonly<{
       operationId: string;
     }>;

@@ -609,4 +609,30 @@ describe('remote temporal Timeline data source', () => {
   });
 
 
+
+  it('sends a viewing zone only to the Timeline GET, not to the account timezone header', async () => {
+    const fetchFn = vi.fn<typeof globalThis.fetch>((input, init) => {
+      expect(input).toBe(
+        '/api/v1/temporal/timeline/window?start_date=2026-09-07&end_date_exclusive=2026-09-14&view_zone_id=Asia%2FTokyo',
+      );
+      expect(new Headers(init?.headers).get('X-Dante-Time-Zone')).toBe('Europe/Rome');
+      return Promise.resolve(jsonResponse({
+        kind: 'empty',
+        start_date: WINDOW_REQUEST.startDate,
+        end_date_exclusive: WINDOW_REQUEST.endDateExclusive,
+        effective_zone_id: 'Asia/Tokyo',
+      }));
+    });
+    const source = createRemoteTemporalTimelineDataSource(fetchFn, () => 'Europe/Rome');
+    await expect(source.loadWindow({
+      ...WINDOW_REQUEST,
+      viewZoneId: 'Asia/Tokyo',
+    })).resolves.toMatchObject({ effectiveZoneId: 'Asia/Tokyo' });
+    expect(fetchFn).toHaveBeenCalledTimes(1);
+    await expect(source.loadWindow({
+      ...WINDOW_REQUEST,
+      viewZoneId: '+09:00',
+    })).rejects.toBeTruthy();
+    expect(fetchFn).toHaveBeenCalledTimes(1);
+  });
 });

@@ -7,6 +7,7 @@ import { TIMELINE_PROTOTYPE_TODAY } from './model/timeline-fixtures';
 import { timelineCardIdentity } from './model/timeline-card-identity';
 import type { TimelineEvent } from './model/timeline-types';
 import { timelineCardPlannedIntervalLabel } from './timeline-day-stream';
+import { TIMELINE_VIEW_ZONE_STORAGE_KEY } from '../../../temporal/timeline-view-zone';
 import {
   timelineCardTitlePreview,
   timelineDragSnapMinutes,
@@ -25,6 +26,7 @@ beforeAll(async () => {
 afterEach(() => {
   cleanup();
   document.body.innerHTML = '';
+  window.localStorage.removeItem(TIMELINE_VIEW_ZONE_STORAGE_KEY);
 });
 
 type RenderTimelineOptions = Readonly<{
@@ -530,5 +532,34 @@ describe('TimelineSurface production parity', () => {
 
     expect(onExpandedChange).toHaveBeenCalledWith(true);
     expect(onExpansionProgress).toHaveBeenCalledWith(1);
+  });
+
+  it('places the timezone selector under the + and keeps the choice across views', () => {
+    const { container } = renderTimeline();
+    const trigger = screen.getByRole('button', { name: /Fuso orario della Timeline:/ });
+    expect(trigger.closest('.dante-timeline-group-row')).toBeTruthy();
+    fireEvent.click(trigger);
+    const panel = screen.getByRole('dialog', { name: 'Fuso orario della Timeline' });
+    expect(panel).toBeTruthy();
+    fireEvent.change(screen.getByRole('searchbox', { name: 'Cerca fuso o GMT' }), {
+      target: { value: 'Asia/Tokyo' },
+    });
+    fireEvent.click(screen.getByRole('option', { name: /Asia\/Tokyo/ }));
+    expect(screen.queryByRole('dialog', { name: 'Fuso orario della Timeline' })).toBeNull();
+    expect(screen.getByRole('button', {
+      name: 'Fuso orario della Timeline: Asia/Tokyo',
+    })).toBeTruthy();
+    expect(container.querySelector('.dante-timeline-zone__trigger')?.textContent).toContain('GMT+9');
+
+    fireEvent.click(screen.getByRole('button', { name: 'Scegli vista Timeline' }));
+    fireEvent.click(screen.getByRole('menuitemradio', { name: 'Giorno' }));
+    expect(screen.getByRole('button', {
+      name: 'Fuso orario della Timeline: Asia/Tokyo',
+    })).toBeTruthy();
+    fireEvent.click(screen.getByRole('button', { name: 'Scegli vista Timeline' }));
+    fireEvent.click(screen.getByRole('menuitemradio', { name: 'Settimana' }));
+    expect(screen.getByRole('button', {
+      name: 'Fuso orario della Timeline: Asia/Tokyo',
+    })).toBeTruthy();
   });
 });

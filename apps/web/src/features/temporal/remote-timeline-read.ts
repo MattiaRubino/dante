@@ -1297,6 +1297,9 @@ export function createRemoteTemporalTimelineDataSource(
       const query = new URLSearchParams({
         start_date: request.startDate,
         end_date_exclusive: request.endDateExclusive,
+        ...(request.viewZoneId === undefined
+          ? {}
+          : { view_zone_id: validateNamedTimeZone(request.viewZoneId) }),
       });
 
       const response = await fetchTimelineResponse(

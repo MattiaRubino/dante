@@ -1,5 +1,5 @@
 import { Temporal, type PlainDateTime } from '@dante/time';
-import { useEffect, useRef } from 'react';
+import { useEffect, useLayoutEffect, useRef } from 'react';
 
 import { useTemporalTimelineRuntime } from '../../../temporal/timeline-runtime-boundary';
 import type {
@@ -472,7 +472,8 @@ export function useAuthoritativeTimelineHydration(
     reconcileDateLaneRef.current = onReconcileDateLane;
   }, [onReconcileDateLane]);
 
-  useEffect(() => {
+  // Apply the new projection before paint, keeping cards and ruler in sync.
+  useLayoutEffect(() => {
     if (state.status !== 'ready' || state.window === null) {
       return;
     }

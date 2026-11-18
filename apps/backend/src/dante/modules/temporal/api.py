@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from dataclasses import replace
 from datetime import date, datetime, time
 from typing import Annotated, Any, Literal, cast
 from uuid import UUID
@@ -80,6 +81,7 @@ from dante.platform.database.references import (
 )
 from dante.platform.database.runtime import DatabaseRuntime
 from dante.platform.http.problem import ProblemError
+from dante.platform.time import InvalidTimeZoneError, validate_iana_timezone
 
 router = APIRouter(prefix="/api/v1/temporal", tags=["temporal"])
 DanteContextDependency = Annotated[DanteContext, Depends(require_dante_context)]
@@ -1309,8 +1311,25 @@ async def get_timeline_window(
     response: Response,
     start_date: date,
     end_date_exclusive: date,
+    view_zone_id: str | None = None,
 ) -> TimelineWindowResponse:
     response.headers["Cache-Control"] = "no-store"
+    try:
+        if view_zone_id is not None:
+            validate_iana_timezone(view_zone_id)
+        view_context = (
+            context if view_zone_id is None
+            else replace(context, effective_zone_id=view_zone_id)
+        )
+    except InvalidTimeZoneError as exc:
+        raise ProblemError(
+            status=400,
+            code="temporal.timeline.invalid_view_zone",
+            category="validation",
+            title="Invalid Timeline viewing timezone",
+            detail="Choose an accepted named IANA timezone.",
+            retryable=False,
+        ) from exc
     try:
         query = TimelineWindowQuery(
             start_date=start_date,
@@ -1326,7 +1345,7 @@ async def get_timeline_window(
             retryable=False,
         ) from exc
     try:
-        result = await application.read_window(query=query, context=context)
+        result = await application.read_window(query=query, context=view_context)
     except TimelinePersistenceError as exc:
         raise ProblemError(
             status=503,

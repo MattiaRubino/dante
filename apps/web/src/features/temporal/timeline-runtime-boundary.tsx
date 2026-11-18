@@ -1,4 +1,4 @@
-import { Temporal, detectDeviceTimeZone, type PlainDate } from '@dante/time';
+import { Temporal, detectDeviceTimeZone, validateNamedTimeZone, type PlainDate } from '@dante/time';
 import {
   createContext,
   useCallback,
@@ -29,6 +29,11 @@ import {
   invalidateTemporalTimelineRead,
   subscribeTemporalTimelineInvalidation,
 } from './timeline-invalidation';
+import {
+  projectTimelineWindowInZone,
+  readTimelineViewZonePreference,
+  saveTimelineViewZonePreference,
+} from './timeline-view-zone';
 import type {
   TemporalTimelineDataSource,
   TemporalTimelineWindow,
@@ -53,6 +58,9 @@ export type TemporalTimelineRuntimeState =
 export type TemporalTimelineRuntimeContextValue = Readonly<{
   state: TemporalTimelineRuntimeState;
   refresh: () => void;
+  /** null means automatic; a named zone affects presentation only. */
+  viewZoneId: string | null;
+  setViewZoneId: (zoneId: string | null) => void;
   reviseSchedule: (
     request: Omit<TemporalScheduleRevisionRequest, 'operationId'>,
   ) => Promise<TemporalScheduleRevisionResult>;
@@ -124,9 +132,10 @@ function resolveRuntimeState(
   testMode: boolean,
   attempt: TemporalTimelineReadAttempt | null,
   settledState: TemporalTimelineSettledState | null,
+  viewZoneId: string | null,
 ): TemporalTimelineRuntimeState {
   if (testMode) {
-    return { status: 'ready', effectiveZoneId: 'Etc/UTC', window: null };
+    return { status: 'ready', effectiveZoneId: viewZoneId ?? 'Etc/UTC', window: null };
   }
   if (settledState?.attempt !== attempt) {
     // Refreshes of the same window keep the last accepted Timeline visible
@@ -144,10 +153,20 @@ function resolveRuntimeState(
     }
   }
   if (settledState.status === 'ready') {
+    // A new view zone is visible synchronously from the already loaded
+    // canonical instants. The authoritative read reconciles afterward.
+    const displayZone = viewZoneId ?? (
+      settledState.attempt.request.viewZoneId
+        ? detectDeviceTimeZone()
+        : settledState.window.effectiveZoneId
+    );
+    const window = projectTimelineWindowInZone(
+      settledState.window, displayZone,
+    );
     return {
       status: 'ready',
-      effectiveZoneId: settledState.window.effectiveZoneId,
-      window: settledState.window,
+      effectiveZoneId: window.effectiveZoneId,
+      window,
     };
   }
   return { status: 'error' };
@@ -198,6 +217,9 @@ export function TemporalTimelineRuntimeBoundary({
 }: TemporalTimelineRuntimeBoundaryProps) {
   const { t } = useTranslation('common');
   const testMode = mode === 'test';
+  const [viewZoneId, setStoredViewZoneId] = useState<string | null>(() =>
+    testMode ? null : readTimelineViewZonePreference(),
+  );
   const source = useMemo(
     () => dataSource ?? createRemoteTemporalTimelineDataSource(),
     [dataSource],
@@ -221,6 +243,12 @@ export function TemporalTimelineRuntimeBoundary({
       : temporalTimelineWindowForView(viewedDateIso, request);
     setWindowSelection({ viewedDateIso, testMode, request });
   }
+  const viewedRequest = useMemo<TemporalTimelineWindowRequest | null>(
+    () => request === null || viewZoneId === null
+      ? request
+      : { ...request, viewZoneId },
+    [request, viewZoneId],
+  );
   const priorityRequest = useMemo(() => {
     if (request === null) return null;
     const anchor = Temporal.PlainDate.from(request.startDate).add({
@@ -236,21 +264,39 @@ export function TemporalTimelineRuntimeBoundary({
     };
   }, [request]);
   const [retryRevision, setRetryRevision] = useState(0);
+  // A view-only zone switch must not run occurrence checkpoint/mutations.
+  // Normal navigation, refresh and initial loading retain their checkpoints.
+  const [viewOnlyRequestKey, setViewOnlyRequestKey] = useState<string | null>(null);
+  const setViewZoneId = useCallback((zoneId: string | null) => {
+    const next = zoneId === null ? null : validateNamedTimeZone(zoneId);
+    saveTimelineViewZonePreference(next);
+    setViewOnlyRequestKey(
+      request === null ? null
+        : `${request.startDate}/${request.endDateExclusive}/${retryRevision}`,
+    );
+    setStoredViewZoneId(next);
+  }, [request, retryRevision]);
+  const readKey = request === null ? null
+    : `${request.startDate}/${request.endDateExclusive}/${retryRevision}`;
+  const viewOnly = viewOnlyRequestKey !== null &&
+    viewOnlyRequestKey === readKey;
   const attempt = useMemo<TemporalTimelineReadAttempt | null>(
     () =>
-      testMode || request === null || priorityRequest === null
+      testMode || viewedRequest === null || priorityRequest === null
         ? null
         : Object.freeze({
-            request,
+            request: viewedRequest,
             priorityRequest,
             source,
             priorityOperationId:
-              source.checkpointWindow === undefined ? null : ids.operationId(),
+              source.checkpointWindow === undefined || viewOnly
+                ? null : ids.operationId(),
             fullOperationId:
-              source.checkpointWindow === undefined ? null : ids.operationId(),
+              source.checkpointWindow === undefined || viewOnly
+                ? null : ids.operationId(),
             retryRevision,
           }),
-    [ids, priorityRequest, request, retryRevision, source, testMode],
+    [ids, priorityRequest, viewedRequest, retryRevision, source, testMode, viewOnly],
   );
   const [settledState, setSettledState] =
     useState<TemporalTimelineSettledState | null>(null);
@@ -267,7 +313,8 @@ export function TemporalTimelineRuntimeBoundary({
     // Timeline days before completing the full window, with a canonical read
     // after each stage. No browser-generated occurrence enters Timeline.
     let checkpointSettled = false;
-    if (attempt.source.checkpointWindow !== undefined) {
+    if (attempt.source.checkpointWindow !== undefined &&
+        attempt.priorityOperationId !== null) {
       void attempt.source.loadWindow(attempt.request, controller.signal).then(
         (window) => {
           if (active && !checkpointSettled) {
@@ -388,12 +435,17 @@ export function TemporalTimelineRuntimeBoundary({
     [ids, mutationSource, refresh],
   );
 
-  const state = resolveRuntimeState(testMode, attempt, settledState);
+  const state = useMemo(
+    () => resolveRuntimeState(testMode, attempt, settledState, viewZoneId),
+    [testMode, attempt, settledState, viewZoneId],
+  );
   const contextValue = useMemo<TemporalTimelineRuntimeContextValue>(
     () =>
       Object.freeze({
         state,
         refresh,
+        viewZoneId,
+        setViewZoneId,
         reviseSchedule,
         unscheduleSchedule,
         undoScheduleUnschedule,
@@ -401,7 +453,9 @@ export function TemporalTimelineRuntimeBoundary({
     [
       refresh,
       reviseSchedule,
+      setViewZoneId,
       state,
+      viewZoneId,
       undoScheduleUnschedule,
       unscheduleSchedule,
     ],

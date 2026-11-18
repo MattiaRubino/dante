@@ -892,4 +892,41 @@ describe('one-card Activity actual Session projection', () => {
     );
     expect(next?.offsetTop).toBe(projected?.height);
   });
+
+  it('reprojects an active Session without ending it or changing its factual start instant', () => {
+    const visual = {
+      ...ended,
+      started_at: '2026-10-10T09:08:50Z',
+      ended_at: null,
+      pause_ranges: [],
+    };
+    const clockAt = Date.parse('2026-10-10T09:30:00Z');
+    const [rome] = applyTimelineSessionReality(
+      [day(activity('same-activity', 11 * 60, 11 * 60 + 30))],
+      [visual], 'Europe/Rome', '2026-10-10T09:30:00Z',
+      clockAt, groups, zoom, expanded,
+    );
+    const [tokyo] = applyTimelineSessionReality(
+      [day(activity('same-activity', 18 * 60, 18 * 60 + 30))],
+      [visual], 'Asia/Tokyo', '2026-10-10T09:30:00Z',
+      clockAt, groups, zoom, expanded,
+    );
+    const first = rome?.layouts[0]?.sessionReality;
+    const second = tokyo?.layouts[0]?.sessionReality;
+    expect(first).toMatchObject({
+      state: 'running',
+      startedAt: '2026-10-10T09:08:50.000Z',
+      endedAt: null,
+      actualLabel: '11:08–ora',
+    });
+    expect(second).toMatchObject({
+      state: 'running',
+      startedAt: '2026-10-10T09:08:50.000Z',
+      endedAt: null,
+      actualLabel: '18:08–ora',
+    });
+    expect(second?.sessionRefs).toEqual(first?.sessionRefs);
+    expect(visual.started_at).toBe('2026-10-10T09:08:50Z');
+    expect(visual.ended_at).toBeNull();
+  });
 });

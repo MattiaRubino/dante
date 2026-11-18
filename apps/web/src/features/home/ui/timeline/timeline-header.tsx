@@ -13,6 +13,7 @@ import { useTranslation } from 'react-i18next';
 
 import './timeline-material.css';
 import './timeline-reference-lock.css';
+import { TimelineZoneControl } from './timeline-zone-control';
 
 import {
   addTimelineDays,
@@ -106,6 +107,9 @@ type TimelineHeaderProps = Readonly<{
   locale: string;
   today: PlainDate;
   viewDate: PlainDate;
+  effectiveZoneId: string;
+  selectedViewZoneId: string | null;
+  onViewZoneChange: (zoneId: string | null) => void;
   timelineView: 'timeline' | 'day' | 'week';
   onTimelineViewChange: (view: 'timeline' | 'day' | 'week') => void;
   groups: readonly TimelineGroup[];
@@ -139,6 +143,9 @@ export function TimelineHeader({
   locale,
   today,
   viewDate,
+  effectiveZoneId,
+  selectedViewZoneId,
+  onViewZoneChange,
   timelineView,
   onTimelineViewChange,
   groups,
@@ -451,6 +458,12 @@ export function TimelineHeader({
       </div>
 
       <div className="dante-timeline-group-row">
+        <TimelineZoneControl
+          effectiveZoneId={effectiveZoneId}
+          selectedZoneId={selectedViewZoneId}
+          date={viewDate.toString()}
+          onSelect={onViewZoneChange}
+        />
         <button
           className={`dante-timeline-group-reset${hasGroupFocus ? ' is-active' : ''}`}
           type="button"

@@ -248,15 +248,19 @@ export function TimelineSurface({
   const [recurringEditSource] = useState(createRemoteRecurringProfileEdit);
   const [pendingActivityReplan, setPendingActivityReplan] =
     useState<PendingActivityReplan | null>(null);
-  const { state: temporalRuntimeState, reviseSchedule } =
-    useTemporalTimelineRuntime();
+  const {
+    state: temporalRuntimeState,
+    reviseSchedule,
+    viewZoneId,
+    setViewZoneId,
+  } = useTemporalTimelineRuntime();
   const effectiveZoneId =
     temporalRuntimeState.status === 'ready'
       ? temporalRuntimeState.effectiveZoneId
       : null;
   const locale = i18n.resolvedLanguage ?? i18n.language;
   const prototypeMode = import.meta.env.MODE === 'test';
-  const clockZone = effectiveZoneId ?? detectDeviceTimeZone();
+  const clockZone = viewZoneId ?? effectiveZoneId ?? detectDeviceTimeZone();
   const now = Temporal.Now.zonedDateTimeISO(clockZone);
   const timelineToday = prototypeMode
     ? TIMELINE_PROTOTYPE_TODAY
@@ -1620,6 +1624,42 @@ export function TimelineSurface({
         locale={locale}
         today={timelineToday}
         viewDate={viewDate}
+        effectiveZoneId={clockZone}
+        selectedViewZoneId={viewZoneId}
+        onViewZoneChange={(nextZone) => {
+          if (nextZone === viewZoneId) return;
+          // Preserve the observed INSTANT, not the old local hour,
+          // when the currently viewed Timeline crosses a timezone boundary.
+          const grid = gridRef.current;
+          const anchor = grid && captureTimelineViewportAnchor(
+            renderedDaysRef.current,
+            grid.scrollTop,
+            grid.clientHeight * TIMELINE_POLICY.viewport.contextProbeRatio,
+          );
+          const zone = nextZone ?? detectDeviceTimeZone();
+          if (anchor) {
+            const boundedMinute = Math.min(
+              1439, Math.max(0, Math.floor(anchor.minute)),
+            );
+            const originalLocal = Temporal.PlainDateTime.from(
+              `${anchor.dateKey}T${String(Math.floor(boundedMinute / 60)).padStart(2, '0')}:${String(boundedMinute % 60).padStart(2, '0')}`,
+            );
+            const shifted = originalLocal.toZonedDateTime(
+              clockZone, { disambiguation: 'compatible' },
+            ).withTimeZone(zone);
+            const newDate = shifted.toPlainDate();
+            pendingScrollTargetRef.current = {
+              dateKey: newDate.toString(),
+              minute: shifted.hour * 60 + shifted.minute,
+              viewportOffset: anchor.viewportOffset,
+              behavior: 'auto',
+            };
+            setAnchor(newDate);
+            setViewDate(newDate);
+            publishViewportDate(newDate);
+          }
+          setViewZoneId(nextZone);
+        }}
         timelineView={timelineView}
         onTimelineViewChange={(nextView) => {
           if (nextView === timelineView) return;
