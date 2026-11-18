@@ -253,7 +253,8 @@ function parseAcceptedPlacement(
         'resolved_end_at',
       );
       if (
-        Temporal.PlainDateTime.compare(startsLocalAt, endsLocalAt) >= 0 ||
+        (payload.end_zone_id == null &&
+          Temporal.PlainDateTime.compare(startsLocalAt, endsLocalAt) >= 0) ||
         Temporal.Instant.compare(resolvedStartAt, resolvedEndAt) >= 0
       ) {
         throw new TemporalEventRemoteError(
@@ -266,6 +267,9 @@ function parseAcceptedPlacement(
         startsLocalAt,
         endsLocalAt,
         zoneId: parseZoneId(payload.zone_id, 'zone_id'),
+        ...(payload.end_zone_id == null ? {} : {
+          endZoneId: parseZoneId(payload.end_zone_id, 'end_zone_id'),
+        }),
         resolvedStartAt,
         resolvedEndAt,
       });
@@ -358,7 +362,10 @@ function parseScheduledEvent(
     payload,
     scheduledResponseKeys(payload.temporal_form),
     'Scheduled Event response',
-    ['life_area_ref', 'life_area_assignment_revision'],
+    [
+      'life_area_ref', 'life_area_assignment_revision',
+      ...(payload.temporal_form === 'named_zone_local' ? ['end_zone_id'] : []),
+    ],
   );
   if (typeof payload.title !== 'string' || payload.title.trim().length === 0) {
     throw new TemporalEventRemoteError(
@@ -483,6 +490,7 @@ function validatePlacement(placement: TemporalSchedulePlacementInput): void {
       return;
     case 'named-zone-local-interval':
       if (
+        !placement.endZoneId &&
         Temporal.PlainDateTime.compare(
           placement.startsLocalAt,
           placement.endsLocalAt,
@@ -491,6 +499,7 @@ function validatePlacement(placement: TemporalSchedulePlacementInput): void {
         throw new RangeError('Event named-zone interval must be positive.');
       }
       validateNamedTimeZone(placement.zoneId);
+      if (placement.endZoneId) validateNamedTimeZone(placement.endZoneId);
       return;
     case 'absolute-interval':
       if (Temporal.Instant.compare(placement.startsAt, placement.endsAt) >= 0) {
@@ -522,6 +531,7 @@ function serializePlacement(placement: TemporalSchedulePlacementInput) {
         starts_local_at: placement.startsLocalAt.toString(),
         ends_local_at: placement.endsLocalAt.toString(),
         zone_id: placement.zoneId,
+        ...(placement.endZoneId ? { end_zone_id: placement.endZoneId } : {}),
         disambiguation: placement.disambiguation,
       } as const;
     case 'absolute-interval':

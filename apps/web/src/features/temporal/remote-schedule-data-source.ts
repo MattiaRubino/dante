@@ -182,6 +182,7 @@ function validatePlacement(placement: TemporalSchedulePlacementInput): void {
       return;
     case 'named-zone-local-interval':
       if (
+        !placement.endZoneId &&
         Temporal.PlainDateTime.compare(
           placement.startsLocalAt,
           placement.endsLocalAt,
@@ -190,6 +191,7 @@ function validatePlacement(placement: TemporalSchedulePlacementInput): void {
         throw new RangeError('Named-zone Schedule interval must be positive.');
       }
       validateNamedTimeZone(placement.zoneId);
+      if (placement.endZoneId) validateNamedTimeZone(placement.endZoneId);
       return;
     case 'absolute-interval':
       if (Temporal.Instant.compare(placement.startsAt, placement.endsAt) >= 0) {
@@ -221,6 +223,7 @@ function serializePlacement(placement: TemporalSchedulePlacementInput) {
         starts_local_at: placement.startsLocalAt.toString(),
         ends_local_at: placement.endsLocalAt.toString(),
         zone_id: placement.zoneId,
+        ...(placement.endZoneId ? { end_zone_id: placement.endZoneId } : {}),
         disambiguation: placement.disambiguation,
       } as const;
     case 'absolute-interval':
@@ -313,7 +316,8 @@ function parseAcceptedPlacement(
       );
       const resolvedEndAt = instant(payload.resolved_end_at, 'resolved_end_at');
       if (
-        Temporal.PlainDateTime.compare(startsLocalAt, endsLocalAt) >= 0 ||
+        (payload.end_zone_id == null &&
+          Temporal.PlainDateTime.compare(startsLocalAt, endsLocalAt) >= 0) ||
         Temporal.Instant.compare(resolvedStartAt, resolvedEndAt) >= 0
       ) {
         throw new TemporalScheduleRemoteError(
@@ -326,6 +330,9 @@ function parseAcceptedPlacement(
         startsLocalAt,
         endsLocalAt,
         zoneId: zoneId(payload.zone_id, 'zone_id'),
+        ...(payload.end_zone_id == null ? {} : {
+          endZoneId: zoneId(payload.end_zone_id, 'end_zone_id'),
+        }),
         resolvedStartAt,
         resolvedEndAt,
       });
@@ -394,7 +401,8 @@ function acceptedMatchesInput(
         accepted.kind === 'named-zone-local-interval' &&
         accepted.startsLocalAt.equals(requested.startsLocalAt) &&
         accepted.endsLocalAt.equals(requested.endsLocalAt) &&
-        accepted.zoneId === requested.zoneId
+        accepted.zoneId === requested.zoneId &&
+        (accepted.endZoneId ?? null) === (requested.endZoneId ?? null)
       );
     case 'absolute-interval':
       return (
@@ -568,6 +576,8 @@ function parseRevision(
       'placement_material_state_ref',
       'temporal_form',
       ...responsePlacementKeys(payload.temporal_form),
+      ...(payload.temporal_form === 'named_zone_local' && 'end_zone_id' in payload
+        ? ['end_zone_id'] : []),
       'replayed',
     ],
     'Schedule revision response',
@@ -689,6 +699,8 @@ function parseUnscheduleUndo(
       'placement_material_state_ref',
       'temporal_form',
       ...responsePlacementKeys(payload.temporal_form),
+      ...(payload.temporal_form === 'named_zone_local' && 'end_zone_id' in payload
+        ? ['end_zone_id'] : []),
       'replayed',
     ],
     'Schedule Undo response',
