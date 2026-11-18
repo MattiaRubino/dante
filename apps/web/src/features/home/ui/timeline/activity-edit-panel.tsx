@@ -5,7 +5,14 @@ import {
   useState,
   type RefObject,
 } from 'react';
-import { Temporal, detectDeviceTimeZone, moveCivilStartPreservingDuration, moveAllDayRangePreservingDays } from '@dante/time';
+import {
+  Temporal,
+  detectDeviceTimeZone,
+  moveCivilStartPreservingDuration,
+  moveAllDayRangePreservingDays,
+  projectElapsedEndToZone,
+  elapsedMinutesBetweenZonedBounds,
+} from '@dante/time';
 
 import {
   createRemoteActivityInspector,
@@ -89,13 +96,29 @@ function planValidation(
     }
     return errors;
   }
+  const rootZone = settings.schedules.find((row) => row.role === 'envelope');
+  const startZone = draft.targetZoneId ?? rootZone?.zoneId;
+  const endZone = draft.targetEndZoneId === undefined
+    ? rootZone?.endZoneId : draft.targetEndZoneId;
+  const distinctZones = !!startZone && !!endZone && startZone !== endZone;
   const spans: { ref: string; start: string; end: string }[] = [];
   const check = (ref: string, start: string, end: string) => {
     start = start.slice(0, 16);
     end = end.slice(0, 16);
-    if (!start || !end) errors[ref] = 'Completa l’orario.';
-    else if (end <= start) errors[ref] = 'La fine deve seguire l’inizio.';
-    else spans.push({ ref, start, end });
+    if (!start || !end) {
+      errors[ref] = 'Completa l’orario.';
+    } else if (distinctZones && ref === rootZone?.scheduleRef) {
+      try {
+        elapsedMinutesBetweenZonedBounds(start, startZone!, end, endZone!);
+        spans.push({ ref, start, end });
+      } catch {
+        errors[ref] = 'La fine deve seguire l’inizio.';
+      }
+    } else if (end <= start) {
+      errors[ref] = 'La fine deve seguire l’inizio.';
+    } else {
+      spans.push({ ref, start, end });
+    }
   };
   const intervals = settings.schedules.filter(
     (row) =>
@@ -133,6 +156,10 @@ function planValidation(
         )
       : [];
   bounds.forEach(({ ref, start, end }) => check(ref, start, end));
+  if (distinctZones && bounds.length !== 1) {
+    errors[rootZone?.scheduleRef ?? 'envelope'] =
+      'I fusi distinti richiedono un solo intervallo.';
+  }
   const orderedBounds = bounds
     .filter((row) => !errors[row.ref])
     .sort((a, b) => a.start.localeCompare(b.start));
@@ -185,6 +212,10 @@ function ActivityIntervalFields({
   removeLabel,
   error,
   disabled,
+  startZoneId,
+  endZoneId,
+  onStartZoneChange,
+  onEndZoneChange,
 }: Readonly<{
   value: ActivityReplanTime;
   onChange: (field: keyof ActivityReplanTime, value: string) => void;
@@ -192,6 +223,10 @@ function ActivityIntervalFields({
   removeLabel?: string;
   error?: string | undefined;
   disabled: boolean;
+  startZoneId?: string;
+  endZoneId?: string;
+  onStartZoneChange?: (zoneId: string | null) => void;
+  onEndZoneChange?: (zoneId: string | null) => void;
 }>) {
   return (
     <div
@@ -211,6 +246,8 @@ function ActivityIntervalFields({
         label="Inizio"
         value={value.start.slice(11, 16)}
         dataPath="editInterval.startTime"
+        zoneId={onStartZoneChange ? startZoneId : undefined}
+        onZoneChange={onStartZoneChange}
         onChange={(time) =>
           onChange('start', `${value.start.slice(0, 10)}T${time}`)
         }
@@ -225,6 +262,9 @@ function ActivityIntervalFields({
         label="Fine"
         value={value.end.slice(11, 16)}
         dataPath="editInterval.endTime"
+        invalid={!!error}
+        zoneId={onEndZoneChange ? endZoneId : undefined}
+        onZoneChange={onEndZoneChange}
         onChange={(time) =>
           onChange('end', `${value.end.slice(0, 10)}T${time}`)
         }
@@ -234,7 +274,9 @@ function ActivityIntervalFields({
         align="end"
         locale="it"
         value={value.end.slice(0, 10)}
-        min={value.start.slice(0, 10)}
+        min={startZoneId && endZoneId && startZoneId !== endZoneId
+          ? undefined : value.start.slice(0, 10)}
+        invalid={!!error}
         onChange={(date) =>
           onChange('end', `${date}T${value.end.slice(11, 16)}`)
         }
@@ -457,6 +499,8 @@ export function ActivityEditPanel({
   >({});
   const [allDay, setAllDay] = useState(false);
   const [selectedZoneId, setSelectedZoneId] = useState<string | null>(null);
+  const [selectedEndZoneId, setSelectedEndZoneId] =
+    useState<string | null | undefined>(undefined);
   const [dateSpanDraft, setDateSpanDraft] = useState({ start: '', end: '' });
   const [newPlanned, setNewPlanned] = useState<ActivityNewPlanned[]>([]);
   const [deletedPlanned, setDeletedPlanned] = useState<string[]>([]);
@@ -513,6 +557,18 @@ export function ActivityEditPanel({
   const envelope = settings?.schedules.find((row) => row.role === 'envelope');
   const originalAllDay = envelope?.temporalForm === 'date_span';
   const originalZoneId = envelope?.zoneId ?? timeZone ?? detectDeviceTimeZone();
+  const originalEndZoneId = envelope?.endZoneId ?? null;
+  const effectiveZoneId = selectedZoneId ?? originalZoneId;
+  const effectiveEndZoneId = selectedEndZoneId === undefined
+    ? originalEndZoneId : selectedEndZoneId;
+  const customZone = !allDay && !!effectiveEndZoneId &&
+    effectiveEndZoneId !== effectiveZoneId;
+  const endZoneDirty = !allDay &&
+    selectedEndZoneId !== undefined &&
+    selectedEndZoneId !== originalEndZoneId;
+  const allowBoundaryZones =
+    !allDay && !hasIntervals && !recurringContext && !recurringLoading &&
+    envelope?.temporalForm === 'named_zone_local';
   const zoneDirty =
     !allDay &&
     !originalAllDay &&
@@ -555,6 +611,7 @@ export function ActivityEditPanel({
   const temporalDirty =
     canReplan &&
     (zoneDirty ||
+      endZoneDirty ||
       allDay !== originalAllDay ||
       (allDay &&
         (dateSpanDraft.start !== envelope?.start ||
@@ -584,6 +641,7 @@ export function ActivityEditPanel({
         : zoneDirty && selectedZoneId
           ? { targetZoneId: selectedZoneId }
           : {}),
+    ...(endZoneDirty ? { targetEndZoneId: effectiveEndZoneId } : {}),
     splitEnvelope: !hasIntervals && newIntervals.length > 0,
     removedIntervals,
     newIntervals,
@@ -678,6 +736,7 @@ export function ActivityEditPanel({
         );
         const root = loaded.schedules.find((row) => row.role === 'envelope');
         setSelectedZoneId(root?.zoneId ?? timeZone ?? detectDeviceTimeZone());
+        setSelectedEndZoneId(undefined);
         setAllDay(root?.temporalForm === 'date_span');
         setDateSpanDraft({
           start: root?.start?.slice(0, 10) ?? '',
@@ -722,6 +781,7 @@ export function ActivityEditPanel({
     setLockError,
     setPlanDraft,
     setSelectedZoneId,
+    setSelectedEndZoneId,
     setAllDay,
     setDateSpanDraft,
     setNewPlanned,
@@ -1155,11 +1215,19 @@ export function ActivityEditPanel({
       let nextEnd = field === 'end' ? value : currentRow.end;
       if (field === 'start') {
         try {
-          nextEnd = moveCivilStartPreservingDuration(
-            currentRow.start,
-            currentRow.end,
-            value,
-          );
+          nextEnd = customZone && saved?.role === 'envelope'
+            ? projectElapsedEndToZone(
+                value, effectiveZoneId,
+                elapsedMinutesBetweenZonedBounds(
+                  currentRow.start, effectiveZoneId,
+                  currentRow.end, effectiveEndZoneId!,
+                ), effectiveEndZoneId!,
+              )
+            : moveCivilStartPreservingDuration(
+                currentRow.start,
+                currentRow.end,
+                value,
+              );
         } catch {
           // The existing draft may already be invalid. Keep both fields
           // editable; planValidation blocks Save until the user fixes it.
@@ -1170,6 +1238,42 @@ export function ActivityEditPanel({
         [ref]: { ...currentRow, [field]: value, end: nextEnd },
       };
     });
+    setPlanOperation(null);
+    setPlanError('');
+  };
+
+  const changeBoundaryZone = (
+    which: 'start' | 'end', zoneId: string | null,
+  ) => {
+    if (!zoneId || !envelope || !allowBoundaryZones) return;
+    const current = planDraft[envelope.scheduleRef] ?? {
+      start: envelope.start ?? '',
+      end: envelope.end ?? '',
+    };
+    if (which === 'end') {
+      setSelectedEndZoneId(zoneId === effectiveZoneId ? null : zoneId);
+    } else {
+      const oldEndZone = effectiveEndZoneId ?? effectiveZoneId;
+      let nextEnd: string | null = null;
+      try {
+        const duration = elapsedMinutesBetweenZonedBounds(
+          current.start, effectiveZoneId, current.end, oldEndZone,
+        );
+        nextEnd = projectElapsedEndToZone(
+          current.start, zoneId, duration, oldEndZone,
+        );
+      } catch {
+        // Invalid drafts stay editable. Preview/Save validation remains authoritative.
+      }
+      setSelectedZoneId(zoneId);
+      setSelectedEndZoneId(oldEndZone === zoneId ? null : oldEndZone);
+      if (nextEnd !== null) {
+        setPlanDraft((prev) => ({
+          ...prev,
+          [envelope.scheduleRef]: { ...current, end: nextEnd },
+        }));
+      }
+    }
     setPlanOperation(null);
     setPlanError('');
   };
@@ -2019,12 +2123,16 @@ export function ActivityEditPanel({
                 (envelope?.temporalForm === 'named_zone_local' ||
                   originalAllDay) ? (
                   <TemporalTimeZoneControl
-                    zoneId={selectedZoneId ?? originalZoneId}
+                    zoneId={effectiveZoneId}
+                    displayLabel={customZone ? 'Personalizzato' : undefined}
                     allowFloating={false}
                     disabled={!canReplan || planningLocked || planPending}
                     onChange={(zoneId) => {
                       if (zoneId) {
                         setSelectedZoneId(zoneId);
+                        // Choosing the general timezone explicitly reverts
+                        // both boundaries to one shared IANA frame.
+                        setSelectedEndZoneId(null);
                         setPlanOperation(null);
                         setPlanError('');
                       }
@@ -2153,6 +2261,17 @@ export function ActivityEditPanel({
                             }
                             error={planErrors[schedule.scheduleRef]}
                             disabled={planningLocked || planPending}
+                            {...(allowBoundaryZones &&
+                              schedule.role === 'envelope'
+                              ? {
+                                  startZoneId: effectiveZoneId,
+                                  endZoneId: effectiveEndZoneId ?? effectiveZoneId,
+                                  onStartZoneChange: (zoneId: string | null) =>
+                                    changeBoundaryZone('start', zoneId),
+                                  onEndZoneChange: (zoneId: string | null) =>
+                                    changeBoundaryZone('end', zoneId),
+                                }
+                              : {})}
                             {...(schedule.role === 'interval'
                               ? {
                                   removeLabel: `Rimuovi intervallo ${index + 1}`,
@@ -2324,6 +2443,7 @@ export function ActivityEditPanel({
                       setRemovedIntervals([]);
                       setAllDay(originalAllDay);
                       setSelectedZoneId(originalZoneId);
+                      setSelectedEndZoneId(undefined);
                       setDateSpanDraft({
                         start: envelope?.start?.slice(0, 10) ?? '',
                         end: shiftedDate(

@@ -36,6 +36,7 @@ export type ActivityEditSchedule = Readonly<{
   start: string | null;
   end: string | null;
   zoneId: string | null;
+  endZoneId?: string | null;
 }>;
 
 export type ActivityEditSettings = Readonly<{
@@ -75,6 +76,8 @@ export type ActivityReplanDraft = Readonly<{
   times: Record<string, ActivityReplanTime>;
   dateSpan?: Readonly<{ startDate: string; endDateExclusive: string }>;
   targetZoneId?: string;
+  /** undefined = retain, null = clear, string = distinct end zone */
+  targetEndZoneId?: string | null;
   splitEnvelope?: boolean;
   removedIntervals: readonly string[];
   newIntervals: readonly ActivityNewInterval[];
@@ -191,6 +194,7 @@ function schedules(
           row.ends_local_at ?? row.ends_at ?? row.end_date_exclusive,
         ),
         zoneId: optionalText(row.zone_id),
+        endZoneId: optionalText(row.end_zone_id),
       });
     }),
   );
@@ -314,6 +318,8 @@ export function createRemoteActivityEditSettings(
           }
         : {}),
       ...(draft.targetZoneId ? { target_zone_id: draft.targetZoneId } : {}),
+      ...(draft.targetEndZoneId === undefined
+        ? {} : { target_end_zone_id: draft.targetEndZoneId }),
       ...(draft.splitEnvelope ? { split_envelope: true } : {}),
       ...(settings.schedules.some((item) => item.role === 'interval')
         ? {}
