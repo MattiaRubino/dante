@@ -177,8 +177,6 @@ export function TimeControl({
   onChange,
   helper,
   invalid = false,
-  zoneId,
-  onZoneChange,
 }: TimeControlProps) {
   const parsedValue = timeToMinute(value);
   const normalizedValue =
@@ -189,8 +187,6 @@ export function TimeControl({
   const [previousValue, setPreviousValue] = useState(value);
   const [pickerOpen, setPickerOpen] = useState(false);
   const rootRef = useRef<HTMLDivElement | null>(null);
-  const pickerRef = useRef<HTMLDivElement | null>(null);
-  const zonePanelRef = useRef<HTMLDivElement | null>(null);
   const listRef = useRef<HTMLDivElement | null>(null);
   const minuteRef = useRef<HTMLInputElement | null>(null);
   const lastValidRef = useRef(normalizedValue);
@@ -218,8 +214,7 @@ export function TimeControl({
     const dismiss = (event: PointerEvent) => {
       if (
         event.target instanceof Node &&
-        !rootRef.current?.contains(event.target) &&
-        !zonePanelRef.current?.contains(event.target)
+        !rootRef.current?.contains(event.target)
       ) {
         setPickerOpen(false);
       }
@@ -414,24 +409,10 @@ export function TimeControl({
       {helper ? <small>{helper}</small> : null}
       {pickerOpen ? (
         <div
-          ref={pickerRef}
           className="temporal-create-time-picker"
           role="dialog"
           aria-label={label}
         >
-          {onZoneChange ? (
-            <div className="temporal-create-time-picker__zone">
-              <TemporalTimeZoneControl
-                zoneId={zoneId ?? null}
-                onChange={onZoneChange}
-                allowFloating={false}
-                italian={label === 'Inizio' || label === 'Fine'}
-                clockBoundary={label}
-                clockAnchorRef={pickerRef}
-                clockPanelRef={zonePanelRef}
-              />
-            </div>
-          ) : null}
           <div ref={listRef} className="temporal-create-time-list">
             {!TIME_OPTIONS.includes(committedValue) ? (
               <button
@@ -795,36 +776,15 @@ export function TemporalCreateCoreFieldsU2({
     onPatch({ startTime });
   };
 
-  const changeStartZone = (zoneId: string | null) => {
-    if (!zoneId) return;
-    const oldEndZone = fields.endTimeZoneId ?? fields.timeZoneId;
+  const changeZones = (startZone: string | null, endZone: string | null) => {
     setInvalidEnd(null);
-    onPatch({
-      timeMode: 'zoned',
-      timeZoneId: zoneId,
-      endTimeZoneId: oldEndZone === zoneId ? null : oldEndZone,
-    });
-  };
-
-  const changeEndZone = (zoneId: string | null) => {
-    if (!zoneId) return;
-    const nextEndZone = zoneId === fields.timeZoneId ? null : zoneId;
-    let duration: number | null;
-    try {
-      duration = elapsedMinutesBetweenZonedBounds(
-        `${fields.date}T${fields.startTime}`, fields.timeZoneId,
-        `${visibleEndDate}T${visibleEndTime}`, zoneId,
-        fields.timeDisambiguation === 'later' ? 'later' : 'earlier',
-      );
-    } catch {
-      duration = null;
-    }
-    setInvalidEnd(duration === null
-      ? { date: visibleEndDate, time: visibleEndTime } : null);
-    onPatch({
-      endTimeZoneId: nextEndZone,
-      ...(duration === null ? {} : { durationMinutes: duration }),
-    });
+    onPatch(startZone === null
+      ? { timeMode: 'floating', endTimeZoneId: null }
+      : {
+          timeMode: 'zoned',
+          timeZoneId: startZone,
+          endTimeZoneId: endZone && endZone !== startZone ? endZone : null,
+        });
   };
 
   const bandLabels: Readonly<Record<TimeBand['key'], string>> = italian
@@ -980,16 +940,13 @@ export function TemporalCreateCoreFieldsU2({
           {fields.timeSemantics === 'timed' ? (
             <TemporalTimeZoneControl
               zoneId={fields.timeMode === 'floating' ? null : fields.timeZoneId}
+              endZoneId={fields.endTimeZoneId}
+              date={fields.date}
               displayLabel={isCustomZone ? 'Personalizzato' : undefined}
               italian={italian}
-              onChange={(zoneId) => {
-                setInvalidEnd(null);
-                onPatch(
-                  zoneId === null
-                    ? { timeMode: 'floating', endTimeZoneId: null }
-                    : { timeMode: 'zoned', timeZoneId: zoneId, endTimeZoneId: null },
-                );
-              }}
+              allowDistinctZones={canPickBoundaryZones}
+              onChange={(zoneId) => changeZones(zoneId, null)}
+              onZonesChange={changeZones}
             />
           ) : null}
         </div>
@@ -1033,8 +990,6 @@ export function TemporalCreateCoreFieldsU2({
               label={italian ? 'Inizio' : 'Start'}
               value={fields.startTime}
               dataPath="startTime"
-              zoneId={canPickBoundaryZones ? fields.timeZoneId : undefined}
-              onZoneChange={canPickBoundaryZones ? changeStartZone : undefined}
               onChange={patchStartTime}
               helper={renderError('startTime')}
             />
@@ -1078,9 +1033,6 @@ export function TemporalCreateCoreFieldsU2({
               value={visibleEndTime}
               invalid={invalidEnd !== null || invalidIntervalIds.has('primary')}
               dataPath="endTime"
-              zoneId={canPickBoundaryZones
-                ? fields.endTimeZoneId ?? fields.timeZoneId : undefined}
-              onZoneChange={canPickBoundaryZones ? changeEndZone : undefined}
               onChange={(endTime) => patchEnd(visibleEndDate, endTime)}
               helper={
                 <>
