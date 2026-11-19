@@ -18,8 +18,12 @@
   --timeline-expansion-progress: 0;
   --timeline-grid-height: 570px;
   /* One shared geometry for group header, ruler and operational canvas. */
+  --dante-timeline-single-ruler-width: 84px;
   --dante-timeline-ruler-width:
-    calc(84px + var(--dante-timeline-extra-ruler-width, 0px));
+    calc(
+      var(--dante-timeline-single-ruler-width) +
+      var(--dante-timeline-extra-ruler-width, 0px)
+    );
 
   min-height: 694px;
   overflow: visible;
@@ -555,20 +559,26 @@
 .timeline-ruler-column {
   position: relative;
   box-sizing: border-box;
-  flex: 0 0 84px;
+  flex: 0 0 var(--dante-timeline-single-ruler-width, 84px);
   min-width: 0;
 }
 
 .timeline-ruler-column--secondary {
-  flex-basis: 62px;
   border-right: 1px solid rgba(143, 166, 185, 0.1);
 }
 
 .home-m1 .home-timeline--production
 .timeline-ruler-column--secondary .timeline-ruler-label {
-  right: 5px;
-  color: #819bac;
-  font-size: 9px;
+  /* Match the primary ruler exactly: same font, weight, inset and elastic Y. */
+  right: 12px;
+  color: var(--dante-timeline-ruler-text);
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.home-m1 .home-timeline--production
+.timeline-ruler-column--secondary .timeline-ruler-label.is-minor {
+  font-size: 11px;
 }
 
 .timeline-ruler-label__day-shift {

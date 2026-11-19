@@ -1638,7 +1638,7 @@ export function TimelineSurface({
       data-timeline-card-dragging={dragSnapshot === null ? 'false' : 'true'}
       style={{
         '--dante-timeline-extra-ruler-width':
-          String(visibleSecondaryZones.length * 62) + 'px',
+          String(visibleSecondaryZones.length * 84) + 'px',
       } as CSSProperties}
       aria-label={t(($) => $.common.home.timeline.label)}
     >

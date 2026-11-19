@@ -552,12 +552,13 @@
 .home-m1 .home-timeline--production .timeline-ruler-label {
   right: 12px;
   color: var(--dante-timeline-ruler-text);
-  font-size: 11px;
+  font-size: 12px;
+  font-weight: 600;
   line-height: 1;
 }
 
 .home-m1 .home-timeline--production .timeline-ruler-label.is-minor {
-  font-size: 10px;
+  font-size: 11px;
 }
 
 .home-m1 .home-timeline--production .timeline-event-card,

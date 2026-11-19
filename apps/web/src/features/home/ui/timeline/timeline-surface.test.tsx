@@ -557,6 +557,8 @@ describe('TimelineSurface production parity', () => {
     }));
     expect(screen.getByRole('dialog', { name: 'Fuso orario della Timeline' })).toBeTruthy();
     expect(container.querySelectorAll('.timeline-ruler-column--secondary')).toHaveLength(1);
+    expect(container.querySelector('.home-timeline--production')?.getAttribute('style'))
+      .toContain('84px');
     fireEvent.change(screen.getByRole('searchbox', { name: 'Cerca fuso o GMT' }), {
       target: { value: 'Asia/Tokyo' },
     });
@@ -566,7 +568,7 @@ describe('TimelineSurface production parity', () => {
     expect(container.querySelectorAll('.timeline-ruler-column--secondary')).toHaveLength(2);
     expect(container.querySelectorAll('.timeline-ruler-column--primary')).toHaveLength(1);
     expect(container.querySelector('.home-timeline--production')?.getAttribute('style'))
-      .toContain('124px');
+      .toContain('168px');
     expect(screen.getByText('3 di 3 fusi')).toBeTruthy();
     fireEvent.change(screen.getByRole('searchbox', { name: 'Cerca fuso o GMT' }), {
       target: { value: 'America/New_York' },

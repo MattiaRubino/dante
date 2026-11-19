@@ -13,28 +13,30 @@
 
 .dante-timeline-zone__secondary-rail {
   display: flex;
-  flex: 0 0 62px;
+  flex: 0 0 var(--dante-timeline-single-ruler-width, 84px);
   min-width: 0;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   gap: 1px;
-  color: #9caebe;
-  font-size: 9px;
+  color: #a9becc;
+  font-size: 10px;
+  font-weight: 600;
   line-height: 1.1;
   overflow: hidden;
   white-space: nowrap;
 }
 
 .dante-timeline-zone__secondary-rail > span {
-  max-width: 58px;
+  max-width: calc(var(--dante-timeline-single-ruler-width, 84px) - 8px);
   overflow: hidden;
   text-overflow: ellipsis;
 }
 
 .dante-timeline-zone__secondary-rail > small {
-  color: #7894a6;
-  font-size: 9px;
+  color: #9bb6c7;
+  font-size: 10px;
+  font-weight: 600;
 }
 
 .dante-timeline-zone__trigger {
@@ -106,6 +108,23 @@
 .dante-timeline-zone__options {
   max-height: min(310px, 55vh);
   overflow-y: auto;
+  scrollbar-gutter: stable;
+  scrollbar-width: thin;
+  scrollbar-color: #566a76 transparent;
+  padding-right: 8px;
+}
+
+.dante-timeline-zone__options::-webkit-scrollbar {
+  width: 8px;
+}
+
+.dante-timeline-zone__options::-webkit-scrollbar-thumb {
+  border-radius: 8px;
+  background: #566a76;
+}
+
+.dante-timeline-zone__options::-webkit-scrollbar-track {
+  background: transparent;
 }
 .dante-timeline-zone__options button {
   display: flex;
@@ -126,6 +145,7 @@
   display: flex;
   align-items: center;
   min-width: 0;
+  padding-right: 2px;
 }
 .dante-timeline-zone__option-name {
   flex: 1 1 auto;
@@ -138,8 +158,9 @@
   white-space: nowrap;
 }
 .dante-timeline-zone__options .dante-timeline-zone__option-action {
-  flex: 0 0 32px;
+  flex: 0 0 36px;
   justify-content: center;
+  min-height: 36px;
   padding: 0;
   color: #c4dae7;
   font-size: 18px;
