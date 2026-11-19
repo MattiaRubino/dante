@@ -47,12 +47,12 @@ test('Create stages Life Area color and keeps the 45-minute interval without fab
   await expect(card).toBeVisible();
   // Editing start time must not silently roll the end to tomorrow.
   await expect(card.locator('.timeline-event-card__time')).toContainText(
-    '15:00 – 15:45 (4 ago)',
+    '15:00 – 15:45 (4 Ago)',
   );
   // The fixture runtime has no PostgreSQL Life Area catalog. Canonical
   // Life Area persistence is asserted by authenticated U2 E2E; a preview-only
   // typed label must not masquerade as an accepted persisted group here.
-  await expect(card).toContainText('15:00 – 15:45 (4 ago)');
+  await expect(card).toContainText('15:00 – 15:45 (4 Ago)');
 
   await card.locator('.timeline-event-card__time').click();
   expect(

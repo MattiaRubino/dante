@@ -1,6 +1,8 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
+import { formatDateWithCapitalizedMonth } from '../../../../platform/format-localized-date';
+
 import { ActualRealizationControls } from '../../../temporal/actual-realization-controls';
 import { ObjectiveControls } from '../../../temporal/objective-controls';
 import { ReconciliationControls } from '../../../temporal/reconciliation-controls';
@@ -323,12 +325,15 @@ export function ContextRail() {
                         {label}
                       </span>
                       <time dateTime={item.effectiveAt}>
-                        {new Intl.DateTimeFormat('it-IT', {
-                          day: 'numeric',
-                          month: 'short',
-                          hour: '2-digit',
-                          minute: '2-digit',
-                        }).format(new Date(item.effectiveAt))}
+                        {formatDateWithCapitalizedMonth(
+                          new Intl.DateTimeFormat('it-IT', {
+                            day: 'numeric',
+                            month: 'short',
+                            hour: '2-digit',
+                            minute: '2-digit',
+                          }),
+                          new Date(item.effectiveAt),
+                        )}
                       </time>
                     </div>
                     <strong>{item.title}</strong>
@@ -431,12 +436,15 @@ export function ContextRail() {
                         : 'Realtà registrata'}
                     </span>
                     <time dateTime={item.ended_at}>
-                      {new Intl.DateTimeFormat('it-IT', {
-                        day: 'numeric',
-                        month: 'short',
-                        hour: '2-digit',
-                        minute: '2-digit',
-                      }).format(new Date(item.ended_at))}
+                      {formatDateWithCapitalizedMonth(
+                        new Intl.DateTimeFormat('it-IT', {
+                          day: 'numeric',
+                          month: 'short',
+                          hour: '2-digit',
+                          minute: '2-digit',
+                        }),
+                        new Date(item.ended_at),
+                      )}
                     </time>
                   </div>
                   <strong>{item.title}</strong>

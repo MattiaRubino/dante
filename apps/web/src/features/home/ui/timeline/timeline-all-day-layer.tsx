@@ -2,6 +2,8 @@ import { Temporal } from '@dante/time';
 import { type CSSProperties, useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
+import { formatDateWithCapitalizedMonth } from '../../../../platform/format-localized-date';
+
 import { createRemoteTemporalOccurrenceScheduleDataSource } from '../../../temporal/remote-occurrence-schedule-data-source';
 import { ActivitySessionCardControls } from '../../../temporal/activity-session-card-controls';
 import { SessionSubjectControls } from '../../../temporal/session-subject-controls';
@@ -178,11 +180,14 @@ export function TimelineAllDayLane({
   const laneLabel = [...laneLabels].join(' · ');
   const laneHeight = timelineAllDayLaneHeightPx(visibleItems.length);
   const formatDay = (value: string) =>
-    new Intl.DateTimeFormat(language, {
-      day: 'numeric',
-      month: 'short',
-      timeZone: 'UTC',
-    }).format(new Date(`${value}T12:00:00Z`));
+    formatDateWithCapitalizedMonth(
+      new Intl.DateTimeFormat(language, {
+        day: 'numeric',
+        month: 'short',
+        timeZone: 'UTC',
+      }),
+      new Date(`${value}T12:00:00Z`),
+    );
   const formatDuration = (seconds: number) => {
     const value = Math.max(0, Math.floor(seconds));
     return `${Math.floor(value / 3600)}:${String(Math.floor((value % 3600) / 60)).padStart(2, '0')}:${String(value % 60).padStart(2, '0')}`;

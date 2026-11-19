@@ -11,6 +11,8 @@ import {
 } from 'react';
 import { useTranslation } from 'react-i18next';
 
+import { formatDateWithCapitalizedMonth } from '../../../../platform/format-localized-date';
+
 import './timeline-material.css';
 import './timeline-reference-lock.css';
 import { TimelineZoneControl } from './timeline-zone-control';
@@ -37,10 +39,10 @@ function displayDate(date: PlainDate): Date {
 }
 
 function monthLabel(date: PlainDate, locale: string): string {
-  return new Intl.DateTimeFormat(locale, {
-    month: 'long',
-    timeZone: 'UTC',
-  }).format(displayDate(date));
+  return formatDateWithCapitalizedMonth(
+    new Intl.DateTimeFormat(locale, { month: 'long', timeZone: 'UTC' }),
+    displayDate(date),
+  );
 }
 
 function weekdayLabel(date: PlainDate, locale: string): string {
@@ -368,13 +370,14 @@ export function TimelineHeader({
             className="dante-timeline-week-step"
             type="button"
             onClick={() => onDateSelect(previousWeekDate)}
-            aria-label={`${t(($) => $.common.home.timeline.calendar.previousPeriod)} · ${previousWeekDate.toLocaleString(
-              locale,
-              {
+            aria-label={`${t(($) => $.common.home.timeline.calendar.previousPeriod)} · ${formatDateWithCapitalizedMonth(
+              new Intl.DateTimeFormat(locale, {
                 day: 'numeric',
                 month: 'long',
                 year: 'numeric',
-              },
+                timeZone: 'UTC',
+              }),
+              displayDate(previousWeekDate),
             )}`}
           >
             ‹
@@ -394,12 +397,16 @@ export function TimelineHeader({
                   type="button"
                   onClick={() => onDateSelect(date)}
                   aria-current={viewing ? 'date' : undefined}
-                  aria-label={date.toLocaleString(locale, {
-                    weekday: 'long',
-                    day: 'numeric',
-                    month: 'long',
-                    year: 'numeric',
-                  })}
+                  aria-label={formatDateWithCapitalizedMonth(
+                    new Intl.DateTimeFormat(locale, {
+                      weekday: 'long',
+                      day: 'numeric',
+                      month: 'long',
+                      year: 'numeric',
+                      timeZone: 'UTC',
+                    }),
+                    displayDate(date),
+                  )}
                 >
                   <b>{weekdayLabel(date, locale)}</b>
                   <strong>{date.day}</strong>
@@ -415,13 +422,14 @@ export function TimelineHeader({
             className="dante-timeline-week-step"
             type="button"
             onClick={() => onDateSelect(nextWeekDate)}
-            aria-label={`${t(($) => $.common.home.timeline.calendar.nextPeriod)} · ${nextWeekDate.toLocaleString(
-              locale,
-              {
+            aria-label={`${t(($) => $.common.home.timeline.calendar.nextPeriod)} · ${formatDateWithCapitalizedMonth(
+              new Intl.DateTimeFormat(locale, {
                 day: 'numeric',
                 month: 'long',
                 year: 'numeric',
-              },
+                timeZone: 'UTC',
+              }),
+              displayDate(nextWeekDate),
             )}`}
           >
             ›

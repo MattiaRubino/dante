@@ -2,6 +2,8 @@ import { Temporal } from '@dante/time';
 import { useEffect, useId, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
+import { formatDateWithCapitalizedMonth } from '../../../../platform/format-localized-date';
+
 import {
   createDayContextSnapshot,
   createPrototypeWeeklyForecast,
@@ -35,11 +37,15 @@ function formatTime(now: Temporal.ZonedDateTime): string {
 
 function formatLongDate(date: Temporal.PlainDate, locale: string): string {
   return capitalize(
-    date.toLocaleString(locale, {
-      weekday: 'long',
-      day: 'numeric',
-      month: 'long',
-    }),
+    formatDateWithCapitalizedMonth(
+      new Intl.DateTimeFormat(locale, {
+        weekday: 'long',
+        day: 'numeric',
+        month: 'long',
+        timeZone: 'UTC',
+      }),
+      new Date(Date.UTC(date.year, date.month - 1, date.day, 12)),
+    ),
     locale,
   );
 }

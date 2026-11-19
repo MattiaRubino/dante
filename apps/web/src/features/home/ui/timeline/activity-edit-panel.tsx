@@ -15,6 +15,8 @@ import {
   elapsedMinutesBetweenZonedBounds,
 } from '@dante/time';
 
+import { formatDateWithCapitalizedMonth } from '../../../../platform/format-localized-date';
+
 import {
   createRemoteActivityInspector,
   type ActivityProfile,
@@ -2848,10 +2850,13 @@ export function ActivityEditPanel({
                         .slice(0, 10)
                         .map((item) => (
                           <li key={item.occurrenceRef}>
-                            {new Intl.DateTimeFormat('it-IT', {
-                              dateStyle: 'medium',
-                              timeStyle: 'short',
-                            }).format(new Date(item.expectedAt))}{' '}
+                            {formatDateWithCapitalizedMonth(
+                              new Intl.DateTimeFormat('it-IT', {
+                                dateStyle: 'medium',
+                                timeStyle: 'short',
+                              }),
+                              new Date(item.expectedAt),
+                            )}{' '}
                             ·{' '}
                             {item.reason === 'registration'
                               ? 'registrazione'

@@ -14,6 +14,8 @@ import {
 import { createPortal } from 'react-dom';
 import { useTranslation } from 'react-i18next';
 
+import { formatDateWithCapitalizedMonth } from '../../../../platform/format-localized-date';
+
 import { ResponsibilityControls } from '../../../temporal/responsibility-controls';
 import { ActivitySessionCardControls } from '../../../temporal/activity-session-card-controls';
 import { ActivityPlannedSessionsCardDetail } from '../../../temporal/activity-planned-sessions-card-detail';
@@ -253,10 +255,10 @@ export function CalendarPopover({
     return null;
   }
 
-  const monthName = new Intl.DateTimeFormat(locale, {
-    month: 'long',
-    timeZone: 'UTC',
-  }).format(new Date(Date.UTC(cursor.year, cursor.month - 1, 1, 12)));
+  const monthName = formatDateWithCapitalizedMonth(
+    new Intl.DateTimeFormat(locale, { month: 'long', timeZone: 'UTC' }),
+    new Date(Date.UTC(cursor.year, cursor.month - 1, 1, 12)),
+  );
   const monthShort = new Intl.DateTimeFormat(locale, {
     month: 'short',
     timeZone: 'UTC',
@@ -390,12 +392,16 @@ export function CalendarPopover({
                     onClose(false);
                   }}
                   aria-current={selected ? 'date' : undefined}
-                  aria-label={date.toLocaleString(locale, {
-                    weekday: 'long',
-                    day: 'numeric',
-                    month: 'long',
-                    year: 'numeric',
-                  })}
+                  aria-label={formatDateWithCapitalizedMonth(
+                    new Intl.DateTimeFormat(locale, {
+                      weekday: 'long',
+                      day: 'numeric',
+                      month: 'long',
+                      year: 'numeric',
+                      timeZone: 'UTC',
+                    }),
+                    new Date(Date.UTC(date.year, date.month - 1, date.day, 12)),
+                  )}
                 >
                   {date.day}
                 </button>
@@ -409,7 +415,8 @@ export function CalendarPopover({
             const selected =
               viewDate.year === cursor.year && viewDate.month === month;
             const current = today.year === cursor.year && today.month === month;
-            const label = monthShort.format(
+            const label = formatDateWithCapitalizedMonth(
+              monthShort,
               new Date(Date.UTC(cursor.year, month - 1, 1, 12)),
             );
             return (
@@ -619,12 +626,15 @@ function detailScheduleLabel(
     dateKey: string,
     options: Intl.DateTimeFormatOptions = {},
   ) =>
-    new Intl.DateTimeFormat(locale, {
-      day: 'numeric',
-      month: 'short',
-      timeZone: 'UTC',
-      ...options,
-    }).format(new Date(`${dateKey}T12:00:00Z`));
+    formatDateWithCapitalizedMonth(
+      new Intl.DateTimeFormat(locale, {
+        day: 'numeric',
+        month: 'short',
+        timeZone: 'UTC',
+        ...options,
+      }),
+      new Date(`${dateKey}T12:00:00Z`),
+    );
   const placement = detail.schedulePlacement;
   if (placement?.kind === 'date-span') {
     return `${dateLabel(placement.startDate.toString())}–${dateLabel(placement.endDateExclusive.subtract({ days: 1 }).toString())} · ${locale.startsWith('it') ? 'Tutto il giorno' : 'All day'}`;
@@ -652,17 +662,18 @@ function detailScheduleLabel(
     return `${boundary(start)} → ${boundary(end)}`;
   }
   const day = detail.dateKey
-    ? `${new Intl.DateTimeFormat(locale, {
-        weekday: 'long',
-        day: 'numeric',
-        month: 'long',
-        ...(Number(detail.dateKey.slice(0, 4)) !== new Date().getFullYear()
-          ? { year: 'numeric' }
-          : {}),
-        timeZone: 'UTC',
-      })
-        .format(new Date(`${detail.dateKey}T12:00:00Z`))
-        .replace(/^./, (letter) => letter.toLocaleUpperCase(locale))} · `
+    ? `${formatDateWithCapitalizedMonth(
+        new Intl.DateTimeFormat(locale, {
+          weekday: 'long',
+          day: 'numeric',
+          month: 'long',
+          ...(Number(detail.dateKey.slice(0, 4)) !== new Date().getFullYear()
+            ? { year: 'numeric' }
+            : {}),
+          timeZone: 'UTC',
+        }),
+        new Date(`${detail.dateKey}T12:00:00Z`),
+      ).replace(/^./, (letter) => letter.toLocaleUpperCase(locale))} · `
     : '';
   return `${day}${formatTimelineMinute(detail.startMinute)}–${formatTimelineMinute(detail.endMinute)}`;
 }

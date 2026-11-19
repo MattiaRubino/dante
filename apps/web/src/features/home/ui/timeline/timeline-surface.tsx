@@ -17,6 +17,8 @@ import {
   useState,
 } from 'react';
 import { useTranslation } from 'react-i18next';
+
+import { formatDateWithCapitalizedMonth } from '../../../../platform/format-localized-date';
 import { createPortal } from 'react-dom';
 
 import './timeline.css';
@@ -229,11 +231,14 @@ function formatReplannedPeriod(
       return '';
   }
   const date = (value: PlainDateTime) =>
-    new Intl.DateTimeFormat(locale, {
-      day: 'numeric',
-      month: 'short',
-      timeZone: 'UTC',
-    }).format(new Date(Date.UTC(value.year, value.month - 1, value.day, 12)));
+    formatDateWithCapitalizedMonth(
+      new Intl.DateTimeFormat(locale, {
+        day: 'numeric',
+        month: 'short',
+        timeZone: 'UTC',
+      }),
+      new Date(Date.UTC(value.year, value.month - 1, value.day, 12)),
+    );
   const startTime = formatTimelineMinute(start.hour * 60 + start.minute);
   const endTime = formatTimelineMinute(end.hour * 60 + end.minute);
   return start.toPlainDate().equals(end.toPlainDate())

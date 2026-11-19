@@ -1,5 +1,7 @@
 import { useMemo, useState } from 'react';
 
+import { formatDateWithCapitalizedMonth } from '../../platform/format-localized-date';
+
 import type { PlanWork } from './remote-plan-work-data-source';
 import {
   createRemotePlanCandidateDataSource,
@@ -27,10 +29,13 @@ const REASONS: Record<string, string> = {
 };
 
 function format(iso: string): string {
-  return new Intl.DateTimeFormat('it-IT', {
-    dateStyle: 'medium',
-    timeStyle: 'short',
-  }).format(new Date(iso));
+  return formatDateWithCapitalizedMonth(
+    new Intl.DateTimeFormat('it-IT', {
+      dateStyle: 'medium',
+      timeStyle: 'short',
+    }),
+    new Date(iso),
+  );
 }
 
 export function PlanCandidatePanel({

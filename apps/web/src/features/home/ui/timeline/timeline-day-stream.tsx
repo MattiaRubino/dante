@@ -13,6 +13,8 @@ import {
 } from 'react';
 import { useTranslation } from 'react-i18next';
 
+import { formatDateWithCapitalizedMonth } from '../../../../platform/format-localized-date';
+
 import { ActivitySessionCardControls } from '../../../temporal/activity-session-card-controls';
 import { ActivityPlannedSessionsCardDetail } from '../../../temporal/activity-planned-sessions-card-detail';
 import { timelineSecondaryRulerTick } from '../../../temporal/timeline-view-zone';
@@ -168,7 +170,7 @@ export function timelineCardPlannedIntervalLabel(
       Date.UTC(endpointDay.year, endpointDay.month - 1, endpointDay.day, 12),
     );
     return {
-      date: formatter.format(date),
+      date: formatDateWithCapitalizedMonth(formatter, date),
       clock: formatTimelineMinute(clock),
       dayKey: endpointDay.toString(),
     };
@@ -576,11 +578,15 @@ function TimelineDay({
 }>) {
   const { t, i18n } = useTranslation('common');
   const isToday = day.date.equals(today);
-  const label = day.date.toLocaleString(i18n.language, {
-    weekday: 'short',
-    day: 'numeric',
-    month: 'long',
-  });
+  const label = formatDateWithCapitalizedMonth(
+    new Intl.DateTimeFormat(i18n.language, {
+      weekday: 'short',
+      day: 'numeric',
+      month: 'long',
+      timeZone: 'UTC',
+    }),
+    new Date(Date.UTC(day.date.year, day.date.month - 1, day.date.day, 12)),
+  );
   const fullLabel = isToday
     ? `${t(($) => $.common.home.timeline.todayPrefix)} · ${label}`
     : label;
@@ -708,12 +714,10 @@ function TimelineDay({
 
 function formatRulerLocalDate(dateKey: string, locale: string): string {
   const date = Temporal.PlainDate.from(dateKey);
-  const month = new Intl.DateTimeFormat(locale, {
-    month: 'short',
-    timeZone: 'UTC',
-  }).format(new Date(Date.UTC(date.year, date.month - 1, date.day)))
-    .replace(/\.$/, '')
-    .toLocaleLowerCase(locale);
+  const month = formatDateWithCapitalizedMonth(
+    new Intl.DateTimeFormat(locale, { month: 'short', timeZone: 'UTC' }),
+    new Date(Date.UTC(date.year, date.month - 1, date.day)),
+  ).replace(/\.$/, '');
   return `${month}-${date.day}`;
 }
 

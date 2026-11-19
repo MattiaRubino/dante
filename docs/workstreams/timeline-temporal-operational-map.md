@@ -1,5 +1,21 @@
 # Timeline / Temporal-Operational — Live Execution Ledger
 
+## 2026-11-19 — Month initials in visible date labels
+
+The owner requested capitalized Italian month initials throughout the Web
+date presentation. A shared Intl part formatter now capitalizes only the
+month token in Timeline cards, inspector, ruler day annotation, calendar,
+header, context rail, recurrence configuration, and the remaining named-month
+date labels. Clock, weekday, numeric date, timezone projection, stored ISO
+values and API payloads are unchanged. Existing component and browser
+expectations are updated for the new display, with all twelve Italian months
+checked in the focused Web regression. On an isolated scratch worktree,
+Web typecheck passed and focused Vitest had 76/77 passing. The one failing
+Activity replan assertion expects the old clock after the UI has already
+received the new clock; it fails identically on the unmodified parent
+10b345e. This unrelated RED is left unchanged. Owner-local tests, browser
+tests and visual review on this revision are **NOT_RUN**.
+
 ## 2026-11-19 — Narrow Quick Activity timing order
 
 Owner-local typecheck passed and the focused unit tests passed 24/24 for the

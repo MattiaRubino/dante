@@ -1,6 +1,8 @@
 import type { ReactNode } from 'react';
 import { useTranslation } from 'react-i18next';
 
+import { formatDateWithCapitalizedMonth } from '../../../platform/format-localized-date';
+
 import {
   temporalCreateWeekdays,
   type TemporalCreateFields,
@@ -146,11 +148,14 @@ export function TemporalCreateCalendarRecurrenceFields({
     day: 'numeric',
     timeZone: 'UTC',
   }).format(anchorDate);
-  const anchorDayMonth = new Intl.DateTimeFormat(locale, {
-    day: 'numeric',
-    month: 'long',
-    timeZone: 'UTC',
-  }).format(anchorDate);
+  const anchorDayMonth = formatDateWithCapitalizedMonth(
+    new Intl.DateTimeFormat(locale, {
+      day: 'numeric',
+      month: 'long',
+      timeZone: 'UTC',
+    }),
+    anchorDate,
+  );
 
   const endChoice = (mode: EndMode, label: string) => (
     <button

@@ -258,7 +258,7 @@ describe('Timeline rulers at a continuous day boundary', () => {
         for (const label of labels(rulerDay)) {
           const date = label.querySelector('.timeline-ruler-label__day-shift');
           if (label.firstChild?.textContent === '00:00') {
-            expect(date?.textContent).toMatch(/^nov-(19|20)$/);
+            expect(date?.textContent).toMatch(/^Nov-(19|20)$/);
           } else {
             expect(date).toBeNull();
           }

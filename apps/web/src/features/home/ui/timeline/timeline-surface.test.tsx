@@ -2,6 +2,7 @@ import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, beforeAll, describe, expect, it, vi } from 'vitest';
 
 import { i18n } from '../../../../bootstrap/i18n';
+import { formatDateWithCapitalizedMonth } from '../../../../platform/format-localized-date';
 import { TemporalTimelineRuntimeBoundary } from '../../../temporal/timeline-runtime-boundary';
 import { TIMELINE_PROTOTYPE_TODAY } from './model/timeline-fixtures';
 import { timelineCardIdentity } from './model/timeline-card-identity';
@@ -66,6 +67,35 @@ function renderTimeline(options: RenderTimelineOptions = {}) {
 }
 
 describe('TimelineSurface production parity', () => {
+  it('capitalizes every Italian month in abbreviated and full date labels', () => {
+    const short = new Intl.DateTimeFormat('it-IT', {
+      day: 'numeric',
+      month: 'short',
+      timeZone: 'UTC',
+    });
+    const full = new Intl.DateTimeFormat('it-IT', {
+      weekday: 'long',
+      day: 'numeric',
+      month: 'long',
+      timeZone: 'UTC',
+    });
+    for (let month = 0; month < 12; month += 1) {
+      const date = new Date(Date.UTC(2026, month, 19, 12));
+      const monthPart = (formatter: Intl.DateTimeFormat) =>
+        formatter.formatToParts(date).find((part) => part.type === 'month')!.value;
+      for (const formatter of [short, full]) {
+        expect(formatDateWithCapitalizedMonth(formatter, date)).toContain(
+          monthPart(formatter).replace(/\p{L}/u, (letter) =>
+            letter.toLocaleUpperCase('it-IT'),
+          ),
+        );
+      }
+      expect(formatDateWithCapitalizedMonth(full, date)).toContain(
+        full.formatToParts(date).find((part) => part.type === 'weekday')!.value,
+      );
+    }
+  });
+
   it('uses one-minute drag slots only after zooming into precision', () => {
     expect(timelineDragSnapMinutes(0.75)).toBe(15);
     expect(timelineDragSnapMinutes(1)).toBe(15);
@@ -126,7 +156,7 @@ describe('TimelineSurface production parity', () => {
     expect(card?.dataset.recurringInstance).toBe('false');
     expect(card?.querySelector('.timeline-event-card__kind-mark')).toBeNull();
     expect(card?.querySelector('.timeline-event-card__time')?.textContent).toBe(
-      '09:00 – 11:00 (4 ago)',
+      '09:00 – 11:00 (4 Ago)',
     );
     const indicator = card?.querySelector('.timeline-event-card__indicator');
     expect(indicator?.textContent).toBe('Scaletta3');
@@ -150,10 +180,10 @@ describe('TimelineSurface production parity', () => {
   it('labels both planned endpoints across midnight without marking a one-off as recurring', () => {
     expect(
       timelineCardPlannedIntervalLabel('2026-12-31', 23 * 60 + 30, 1440, 'it'),
-    ).toBe('23:30 (31 dic) – 00:00 (1 gen)');
+    ).toBe('23:30 (31 Dic) – 00:00 (1 Gen)');
     expect(
       timelineCardPlannedIntervalLabel('2026-11-07', 20 * 60, 21 * 60, 'it'),
-    ).toBe('20:00 – 21:00 (7 nov)');
+    ).toBe('20:00 – 21:00 (7 Nov)');
     const { container } = renderTimeline();
     expect(
       container.querySelector(
@@ -408,7 +438,7 @@ describe('TimelineSurface production parity', () => {
     );
     const time = card?.querySelector<HTMLElement>('.timeline-event-card__time');
     expect(time?.tagName).toBe('DIV');
-    expect(time?.textContent).toContain('09:00 – 11:00 (4 ago)');
+    expect(time?.textContent).toContain('09:00 – 11:00 (4 Ago)');
     fireEvent.click(time as HTMLElement);
     expect(card?.classList.contains('is-focused')).toBe(true);
     expect(
@@ -496,13 +526,13 @@ describe('TimelineSurface production parity', () => {
     // Keyboard placement moves in visible 15-minute slots, independent
     // of focus and elastic Timeline density.
     expect(getReminder()?.getAttribute('aria-label')).toContain(
-      '16:00 – 16:15 (4 ago)',
+      '16:00 – 16:15 (4 Ago)',
     );
 
     for (let cycle = 0; cycle < 8; cycle += 1) {
       moveReminder('ArrowDown');
       expect(getReminder()?.getAttribute('aria-label')).toContain(
-        '16:15 – 16:30 (4 ago)',
+        '16:15 – 16:30 (4 Ago)',
       );
 
       const isolatedReminder = getReminder();
@@ -513,7 +543,7 @@ describe('TimelineSurface production parity', () => {
 
       moveReminder('ArrowUp');
       expect(getReminder()?.getAttribute('aria-label')).toContain(
-        '16:00 – 16:15 (4 ago)',
+        '16:00 – 16:15 (4 Ago)',
       );
     }
 
@@ -522,7 +552,7 @@ describe('TimelineSurface production parity', () => {
     }
 
     expect(getReminder()?.getAttribute('aria-label')).toContain(
-      '14:45 – 15:00 (4 ago)',
+      '14:45 – 15:00 (4 Ago)',
     );
     expect(
       container.querySelectorAll('[data-timeline-event="12"]'),

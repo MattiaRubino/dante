@@ -354,7 +354,7 @@ test('keyboard next-day move preserves identity and Undo restores the original d
     )
     .toBe('2026-08-05');
   await expect(card).not.toHaveAttribute('aria-label', originalLabel ?? '');
-  await expect(card).toHaveAttribute('aria-label', /5 ago/);
+  await expect(card).toHaveAttribute('aria-label', /5 Ago/);
 
   const undoButton = page.locator('.timeline-move-toast.is-on button');
   await expect(undoButton).toBeVisible();

@@ -119,9 +119,9 @@ describe('B02-E3 Schedule form rendering', () => {
       />,
     );
 
-    expect(screen.getByText('16 set · Fascia')).toBeTruthy();
+    expect(screen.getByText('16 Set · Fascia')).toBeTruthy();
     expect(screen.getByText('Scrivere relazione')).toBeTruthy();
-    expect(screen.getByText(/Pomeriggio · 16 set · Personale/)).toBeTruthy();
+    expect(screen.getByText(/Pomeriggio · 16 Set · Personale/)).toBeTruthy();
     const coarseButton = screen.getByRole('button', {
       name: 'Attività: Scrivere relazione · Pomeriggio · Personale',
     });

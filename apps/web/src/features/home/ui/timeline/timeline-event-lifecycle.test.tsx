@@ -227,10 +227,10 @@ describe('B03-C Event placement lifecycle from Timeline', () => {
     expect(request.placement.endsLocalAt.toString()).toBe(
       '2026-09-09T11:15:00',
     );
-    expect(card.getAttribute('aria-label')).toContain('10:00 – 11:00 (9 set)');
+    expect(card.getAttribute('aria-label')).toContain('10:00 – 11:00 (9 Set)');
     await waitFor(() => expect(loadWindow).toHaveBeenCalledTimes(2));
     const confirmation = await screen.findByText(
-      'Evento riprogrammato per 9 set, 10:15–11:15',
+      'Evento riprogrammato per 9 Set, 10:15–11:15',
     );
     expect(confirmation.parentElement?.getAttribute('role')).toBe('status');
     expect(
@@ -246,7 +246,7 @@ describe('B03-C Event placement lifecycle from Timeline', () => {
         container
           .querySelector<HTMLElement>(`[data-timeline-event="${SCHEDULE_REF}"]`)
           ?.getAttribute('aria-label'),
-      ).toContain('10:15 – 11:15 (9 set)');
+      ).toContain('10:15 – 11:15 (9 Set)');
     });
   });
 });
