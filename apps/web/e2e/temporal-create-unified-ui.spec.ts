@@ -806,4 +806,57 @@ test('Activity and Event repeat selectors stay inside one shared panel in Create
       contained: true,
     },
   ]);
+
+  // Series Edit has different recurrence families, but the same visual scale
+  // and native dropdown palette as Create and ordinary Edit.
+  const seriesStyle = await page.evaluate(() => {
+    const modal = document.createElement('div');
+    modal.className = 'timeline-event-modal timeline-event-modal--edit';
+    modal.style.position = 'absolute';
+    modal.style.left = '-2000px';
+    modal.innerHTML = `<div class="timeline-activity-editor timeline-recurring-series-editor">
+      <div class="timeline-activity-editor__body">
+        <section class="temporal-recurrence-panel">
+          <h3 class="temporal-recurrence-panel__heading">Ripetizione</h3>
+          <div class="temporal-recurrence-panel__choice">
+            <div class="temporal-recurrence-panel__frequency">
+              <select aria-label="Ripeti"><option>Ogni giorno</option></select>
+            </div>
+          </div>
+          <div class="temporal-recurrence-panel__details">
+            <section class="temporal-create-repeat timeline-recurring-series-editor__recurrence">
+              <div class="temporal-create-repeat__row">
+                <span class="temporal-create-repeat__row-label">Ripeti ogni</span>
+                <input class="temporal-create-repeat__interval" type="number" value="1" />
+              </div>
+            </section>
+          </div>
+        </section>
+      </div>
+    </div>`;
+    document.body.append(modal);
+    try {
+      const select = modal.querySelector<HTMLSelectElement>('select')!;
+      const label = modal.querySelector<HTMLElement>(
+        '.temporal-create-repeat__row-label',
+      )!;
+      const input = modal.querySelector<HTMLInputElement>('input')!;
+      return {
+        selectorFont: getComputedStyle(select).fontSize,
+        selectorBackground: getComputedStyle(select).backgroundColor,
+        optionBackground: getComputedStyle(select.options[0]!).backgroundColor,
+        settingFont: getComputedStyle(label).fontSize,
+        inputFont: getComputedStyle(input).fontSize,
+      };
+    } finally {
+      modal.remove();
+    }
+  });
+  expect(seriesStyle).toEqual({
+    selectorFont: '17px',
+    selectorBackground: 'rgb(25, 35, 40)',
+    optionBackground: 'rgb(25, 35, 40)',
+    settingFont: '17px',
+    inputFont: '17px',
+  });
 });
