@@ -58,8 +58,8 @@ describe('Temporal Create Advanced Activity IA', () => {
     openAdvanced();
     const startPath = (suffix: string) =>
       '.temporal-create-time-raw-input[data-create-path="' + suffix + '"]';
-    const valueOf = (element: Element | null): string =>
-      (element as HTMLInputElement | null)?.value ?? '';
+    const valueOf = (element: Element | null | undefined): string =>
+      (element as HTMLInputElement | null | undefined)?.value ?? '';
     const rootStart = () => valueOf(document.querySelector(startPath('startTime')));
     const rootEnd = () => valueOf(document.querySelector(startPath('endTime')));
     const additionalRows = () => Array.from(document.querySelectorAll<HTMLElement>(

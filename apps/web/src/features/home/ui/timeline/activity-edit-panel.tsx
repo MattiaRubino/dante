@@ -2342,15 +2342,19 @@ export function ActivityEditPanel({
                         error={planErrors[item.clientRef]}
                         disabled={planningLocked || planPending}
                         removeLabel={`Rimuovi intervallo ${visibleIntervalCount + index + 1}`}
-                        onRemove={shownIntervalsCount > 1 ? () => {
-                          setNewIntervals((current) =>
-                            current.filter(
-                              (row) => row.clientRef !== item.clientRef,
-                            ),
-                          );
-                          setPlanOperation(null);
-                          setPlanError('');
-                        } : undefined}
+                        {...(shownIntervalsCount > 1
+                          ? {
+                              onRemove: () => {
+                                setNewIntervals((current) =>
+                                  current.filter(
+                                    (row) => row.clientRef !== item.clientRef,
+                                  ),
+                                );
+                                setPlanOperation(null);
+                                setPlanError('');
+                              },
+                            }
+                          : {})}
                       />
                     </div>
                   ))}
