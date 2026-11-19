@@ -54,6 +54,47 @@ function openAdvanced() {
 }
 
 describe('Temporal Create Advanced Activity IA', () => {
+  it('promotes the next interval when removing interval 1 and keeps compact continuous numbering', () => {
+    openAdvanced();
+    const startPath = (suffix: string) =>
+      '.temporal-create-time-raw-input[data-create-path="' + suffix + '"]';
+    const valueOf = (element: Element | null): string =>
+      (element as HTMLInputElement | null)?.value ?? '';
+    const rootStart = () => valueOf(document.querySelector(startPath('startTime')));
+    const rootEnd = () => valueOf(document.querySelector(startPath('endTime')));
+    const additionalRows = () => Array.from(document.querySelectorAll<HTMLElement>(
+      '.temporal-create-activity-intervals .temporal-create-activity-interval',
+    ));
+    expect(screen.queryByRole('button', { name: 'Rimuovi intervallo 1' }))
+      .toBeNull();
+    expect(screen.queryByText('Intervallo 1')).toBeNull();
+
+    fireEvent.click(screen.getByRole('button', { name: 'Aggiungi intervallo' }));
+    expect(screen.getByRole('button', { name: 'Rimuovi intervallo 1' })).toBeTruthy();
+    expect(screen.getByRole('button', { name: 'Rimuovi intervallo 2' })).toBeTruthy();
+    const promotedStart = valueOf(additionalRows()[0]?.querySelector(
+      '.temporal-create-time-raw-input[data-create-path$=".startTime"]',
+    ));
+    const promotedEnd = valueOf(additionalRows()[0]?.querySelector(
+      '.temporal-create-time-raw-input[data-create-path$=".endTime"]',
+    ));
+    expect(promotedStart).not.toBe(rootStart());
+
+    fireEvent.click(screen.getByRole('button', { name: 'Aggiungi intervallo' }));
+    expect(screen.getByRole('button', { name: 'Rimuovi intervallo 3' })).toBeTruthy();
+    fireEvent.click(screen.getByRole('button', { name: 'Rimuovi intervallo 1' }));
+    expect(rootStart()).toBe(promotedStart);
+    expect(rootEnd()).toBe(promotedEnd);
+    expect(screen.getByText('Intervallo 1')).toBeTruthy();
+    expect(screen.getByText('Intervallo 2')).toBeTruthy();
+    expect(screen.queryByText('Intervallo 3')).toBeNull();
+
+    fireEvent.click(screen.getByRole('button', { name: 'Rimuovi intervallo 2' }));
+    expect(additionalRows()).toHaveLength(0);
+    expect(screen.queryByText('Intervallo 1')).toBeNull();
+    expect(screen.queryByRole('button', { name: /Rimuovi intervallo/ })).toBeNull();
+  });
+
   it('keeps title and header actions aligned when an empty title is rejected', () => {
     openAdvanced();
     const title = screen.getByPlaceholderText('Titolo');

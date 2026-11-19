@@ -21,6 +21,9 @@
 - **TMP-INTERVAL-003:** muovere un intervallo conserva la sua durata e non sposta automaticamente gli altri.
 - **TMP-INTERVAL-004:** errore di sovrapposizione: bordo dell'intervallo da correggere e relativa etichetta rossi, senza spiegazioni testuali sotto i campi.
 - **TMP-INTERVAL-005:** un Event non espone intervalli multipli; tutti gli intervalli di una Activity restano una sola Activity con Schedule distinti e envelope coerente.
+- **TMP-INTERVAL-006 (rimozione uniforme):** Create avanzato, Activity Edit ordinario, Edit della singola occorrenza e modifica della serie mostrano **× anche sul primo intervallo quando ce ne sono almeno due**. Se resta un solo intervallo, non mostrare **×** né l'etichetta «Intervallo 1»; non permettere la rimozione dell'ultimo periodo tramite il controllo inline. Dopo una rimozione, le righe visibili si ricompattano e vengono rinumerate senza spazi vuoti.
+- **TMP-INTERVAL-007 (preservare dati):** in Create avanzato la rimozione del primo promuove il secondo a orario primario mantenendo data inizio/fine, ora e durata, e preservando le altre righe. In Edit di Activity con sola envelope, il primo nuovo intervallo sostituisce in bozza l'orario della envelope originale senza cancellarla né lasciare due periodi involontari; in Edit con Schedule `interval` già persistiti, la rimozione del primo segna solo il corrispondente interval come rimosso e mantiene intatto il successivo. «Ripristina orari» rimane l'azione per annullare le rimozioni in Edit. I blocchi con Sessioni registrate e le validazioni correnti restano invariati.
+- **TMP-INTERVAL-008 (parità):** layout temporale compatto e stessa colonna azione `×` in Create avanzato ed Edit ordinario/istanza/serie; controllo di regressione su eliminazione di primo/ultimo, rinumerazione, validazione e salvataggio. L'accettazione E2E con backend reale e rilettura della Timeline è distinta dalla copertura Vitest di questi componenti.
 
 ## Errori e salvataggio
 

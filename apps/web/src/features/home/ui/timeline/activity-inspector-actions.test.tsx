@@ -2347,6 +2347,143 @@ describe('Activity Inspector', () => {
     );
   });
 
+  it.each([
+    ['ordinary', false],
+    ['recurring single instance', true],
+  ] as const)('keeps Activity Edit intervals compact and promotes interval 2 after removing interval 1 (%s)', async (_label, recurring) => {
+    const settings = {
+      ...currentSettings,
+      schedules: [{
+        scheduleRef: 'envelope',
+        role: 'envelope' as const,
+        name: null,
+        order: 0,
+        placementStateRef: 'state-0',
+        temporalForm: 'named_zone_local' as const,
+        start: '2026-10-09T09:00:00',
+        end: '2026-10-09T12:00:00',
+        zoneId: 'Europe/Rome',
+      }],
+    };
+    loadSettings.mockResolvedValueOnce(settings);
+    if (recurring) {
+      loadRecurringContext.mockResolvedValueOnce({
+        occurrenceRef: '0199a222-2222-7222-8222-222222222222',
+        sourceRef: '0199a444-4444-7444-8444-444444444444',
+        editRevision: 3,
+        recurrenceStateRef: null,
+      });
+    }
+    render(
+      <ActivityEditPanel
+        profile={profile}
+        closeRequestRef={createRef()}
+        onSaved={() => undefined}
+        onCancel={() => undefined}
+      />,
+    );
+    expect(screen.queryByRole('button', { name: 'Rimuovi intervallo 1' })).toBeNull();
+    fireEvent.click(await screen.findByRole('button', { name: 'Aggiungi intervallo' }));
+    const first = document.querySelector<HTMLElement>(
+      '.timeline-activity-editor__readback > ul .temporal-create-activity-interval',
+    );
+    const second = newIntervalRow();
+    expect(first?.querySelector('.timeline-activity-editor__interval-fields.has-remove-track'))
+      .toBeTruthy();
+    expect(second.querySelector('.timeline-activity-editor__interval-fields.has-remove-track'))
+      .toBeTruthy();
+    const firstAfterAdding = screen.getByRole('button', { name: 'Rimuovi intervallo 1' });
+    expect(firstAfterAdding).toBeTruthy();
+    const replacementStart = (within(second).getByRole('group', { name: 'Inizio' })
+      .querySelector('.temporal-create-time-raw-input') as HTMLInputElement).value;
+    const replacementEnd = (within(second).getByRole('group', { name: 'Fine' })
+      .querySelector('.temporal-create-time-raw-input') as HTMLInputElement).value;
+    fireEvent.click(firstAfterAdding);
+    expect(document.querySelectorAll(
+      '.timeline-activity-editor__intervals .temporal-create-activity-interval',
+    )).toHaveLength(0);
+    expect(screen.queryByText('Intervallo 1')).toBeNull();
+    expect(screen.queryByRole('button', { name: /Rimuovi intervallo/ })).toBeNull();
+    const primary = document.querySelector<HTMLElement>(
+      '.timeline-activity-editor__readback > ul .temporal-create-activity-interval',
+    );
+    expect((within(primary!).getByRole('group', { name: 'Inizio' })
+      .querySelector('.temporal-create-time-raw-input') as HTMLInputElement).value)
+      .toBe(replacementStart);
+    expect((within(primary!).getByRole('group', { name: 'Fine' })
+      .querySelector('.temporal-create-time-raw-input') as HTMLInputElement).value)
+      .toBe(replacementEnd);
+    expect(settings.schedules[0]!.start).toBe('2026-10-09T09:00:00');
+  });
+
+  it('removes the first persisted interval with immediate renumbering, never leaving an empty Activity', async () => {
+    const settings = {
+      ...currentSettings,
+      schedules: [
+        {
+          scheduleRef: 'envelope',
+          role: 'envelope' as const,
+          name: null,
+          order: 0,
+          placementStateRef: 'state-0',
+          temporalForm: 'named_zone_local' as const,
+          start: '2026-10-09T09:00:00',
+          end: '2026-10-09T12:00:00',
+          zoneId: 'Europe/Rome',
+        },
+        {
+          scheduleRef: 'interval-a',
+          role: 'interval' as const,
+          name: null,
+          order: 1,
+          placementStateRef: 'state-a',
+          temporalForm: 'named_zone_local' as const,
+          start: '2026-10-09T09:00:00',
+          end: '2026-10-09T10:00:00',
+          zoneId: 'Europe/Rome',
+        },
+        {
+          scheduleRef: 'interval-b',
+          role: 'interval' as const,
+          name: null,
+          order: 2,
+          placementStateRef: 'state-b',
+          temporalForm: 'named_zone_local' as const,
+          start: '2026-10-09T10:30:00',
+          end: '2026-10-09T11:30:00',
+          zoneId: 'Europe/Rome',
+        },
+      ],
+    };
+    loadSettings.mockResolvedValueOnce(settings);
+    applyReplan.mockResolvedValueOnce(settings);
+    render(
+      <ActivityEditPanel
+        profile={profile}
+        closeRequestRef={createRef()}
+        onSaved={() => undefined}
+        onCancel={() => undefined}
+      />,
+    );
+    fireEvent.click(await screen.findByRole('button', {
+      name: 'Rimuovi intervallo 1',
+    }));
+    expect(screen.queryByRole('button', { name: /Rimuovi intervallo/ })).toBeNull();
+    expect(screen.queryByText('Intervallo 1')).toBeNull();
+    expect(screen.queryByText('Intervallo 2')).toBeNull();
+    expect(screen.queryByText(/Mantieni intervallo/)).toBeNull();
+    expect(document.querySelectorAll(
+      '.timeline-activity-editor__readback > ul .temporal-create-activity-interval',
+    )).toHaveLength(1);
+    await submitEditor();
+    await waitFor(() => expect(applyReplan).toHaveBeenCalledWith(
+      ref,
+      settings,
+      containing({ removedIntervals: ['interval-a'], newIntervals: [] }),
+      expect.any(String),
+    ));
+  });
+
   it('splits an existing single period when adding a second interval', async () => {
     const settings = {
       ...currentSettings,
@@ -2836,11 +2973,15 @@ describe('Activity Inspector', () => {
         onCancel={() => undefined}
       />,
     );
+    // Removing the only existing interval is unsafe until a replacement
+    // has been added. Once two rows exist, either may be removed.
+    expect(screen.queryByRole('button', { name: 'Rimuovi intervallo 1' }))
+      .toBeNull();
     fireEvent.click(
-      await screen.findByRole('button', { name: 'Rimuovi intervallo 1' }),
+      await screen.findByRole('button', { name: 'Aggiungi intervallo' }),
     );
     fireEvent.click(
-      screen.getByRole('button', { name: 'Aggiungi intervallo' }),
+      screen.getByRole('button', { name: 'Rimuovi intervallo 1' }),
     );
     setNewIntervalTime('Inizio', '10');
     setNewIntervalTime('Fine', '11');

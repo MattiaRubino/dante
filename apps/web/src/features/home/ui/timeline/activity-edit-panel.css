@@ -585,8 +585,19 @@
 .timeline-event-modal--edit .timeline-activity-editor__readback ul {
   display: grid;
   gap: 6px;
+  margin: 0;
   padding: 0;
   list-style: none;
+}
+
+/* Original Schedules and newly added intervals must have the same compact
+ * row spacing after a remove/promote; the extra list is not a second block. */
+.timeline-event-modal--edit
+  .timeline-activity-editor__readback
+  > .timeline-activity-editor__intervals {
+  gap: 6px;
+  margin: 0;
+  padding: 0;
 }
 
 .timeline-event-modal--edit .timeline-activity-editor__interval-fields {

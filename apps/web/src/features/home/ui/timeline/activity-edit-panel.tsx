@@ -555,7 +555,8 @@ export function ActivityEditPanel({
         (row) => row.role === 'interval' && !removedIntervals.includes(row.scheduleRef),
       ).length ?? 0
     : 1;
-  const showIntervalLabels = !allDay && visibleIntervalCount + newIntervals.length > 1;
+  const shownIntervalsCount = visibleIntervalCount + newIntervals.length;
+  const showIntervalLabels = !allDay && shownIntervalsCount > 1;
   const envelope = settings?.schedules.find((row) => row.role === 'envelope');
   const originalAllDay = envelope?.temporalForm === 'date_span';
   const originalZoneId = envelope?.zoneId ?? timeZone ?? detectDeviceTimeZone();
@@ -2202,7 +2203,8 @@ export function ActivityEditPanel({
                     .filter(
                       (schedule) =>
                         schedule.role !== 'planned' &&
-                        (schedule.role !== 'envelope' || !hasIntervals),
+                        (schedule.role !== 'envelope' || !hasIntervals) &&
+                        !removedIntervals.includes(schedule.scheduleRef),
                     )
                     .map((schedule, index) => (
                       <li
@@ -2248,8 +2250,7 @@ export function ActivityEditPanel({
                             </span>
                           </div>
                         ) : null}
-                        {canReplan &&
-                        !removedIntervals.includes(schedule.scheduleRef) ? (
+                        {canReplan ? (
                           <ActivityIntervalFields
                             value={
                               planDraft[schedule.scheduleRef] ?? {
@@ -2269,14 +2270,31 @@ export function ActivityEditPanel({
                                   endZoneId: effectiveEndZoneId ?? effectiveZoneId,
                                 }
                               : {})}
-                            {...(schedule.role === 'interval'
+                            {...(shownIntervalsCount > 1
                               ? {
                                   removeLabel: `Rimuovi intervallo ${index + 1}`,
                                   onRemove: () => {
-                                    setRemovedIntervals((current) => [
-                                      ...current,
-                                      schedule.scheduleRef,
-                                    ]);
+                                    if (schedule.role === 'envelope') {
+                                      // Existing single-period Activities own an
+                                      // envelope, not an interval Schedule.
+                                      // Promote the next added row rather than
+                                      // hard-deleting the source placement.
+                                      const [replacement, ...remaining] = newIntervals;
+                                      if (!replacement) return;
+                                      setPlanDraft((current) => ({
+                                        ...current,
+                                        [schedule.scheduleRef]: {
+                                          start: replacement.start,
+                                          end: replacement.end,
+                                        },
+                                      }));
+                                      setNewIntervals(remaining);
+                                    } else {
+                                      setRemovedIntervals((current) => [
+                                        ...current,
+                                        schedule.scheduleRef,
+                                      ]);
+                                    }
                                     setPlanOperation(null);
                                     setPlanError('');
                                   },
@@ -2284,24 +2302,7 @@ export function ActivityEditPanel({
                               : {})}
                           />
                         ) : null}
-                        {canReplan &&
-                        removedIntervals.includes(schedule.scheduleRef) ? (
-                          <button
-                            type="button"
-                            disabled={planningLocked || planPending}
-                            onClick={() => {
-                              setRemovedIntervals((current) =>
-                                current.filter(
-                                  (ref) => ref !== schedule.scheduleRef,
-                                ),
-                              );
-                              setPlanOperation(null);
-                              setPlanError('');
-                            }}
-                          >
-                            Mantieni intervallo {index + 1}
-                          </button>
-                        ) : null}
+
                       </li>
                     ))}
                 </ul>
@@ -2328,15 +2329,11 @@ export function ActivityEditPanel({
                       className="temporal-create-activity-interval"
                       data-edit-invalid={!!planErrors[item.clientRef]}
                     >
-                      <span className="temporal-create-activity-interval__label">
-                        Intervallo{' '}
-                        {editablePlan.filter((row) => row.role === 'interval')
-                          .length -
-                          removedIntervals.length +
-                          (hasIntervals ? 0 : 1) +
-                          index +
-                          1}
-                      </span>
+                      {showIntervalLabels ? (
+                        <span className="temporal-create-activity-interval__label">
+                          Intervallo {visibleIntervalCount + index + 1}
+                        </span>
+                      ) : null}
                       <ActivityIntervalFields
                         value={item}
                         onChange={(field, value) =>
@@ -2344,15 +2341,8 @@ export function ActivityEditPanel({
                         }
                         error={planErrors[item.clientRef]}
                         disabled={planningLocked || planPending}
-                        removeLabel={`Rimuovi intervallo ${
-                          editablePlan.filter((row) => row.role === 'interval')
-                            .length -
-                          removedIntervals.length +
-                          (hasIntervals ? 0 : 1) +
-                          index +
-                          1
-                        }`}
-                        onRemove={() => {
+                        removeLabel={`Rimuovi intervallo ${visibleIntervalCount + index + 1}`}
+                        onRemove={shownIntervalsCount > 1 ? () => {
                           setNewIntervals((current) =>
                             current.filter(
                               (row) => row.clientRef !== item.clientRef,
@@ -2360,7 +2350,7 @@ export function ActivityEditPanel({
                           );
                           setPlanOperation(null);
                           setPlanError('');
-                        }}
+                        } : undefined}
                       />
                     </div>
                   ))}

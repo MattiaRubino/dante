@@ -522,6 +522,34 @@ export function TemporalCreateCoreFieldsU2({
     ]);
   };
 
+  /** Remove the first visual interval without deleting the Activity itself.
+   * Promote the next row to the canonical primary placement so serialized
+   * ordering, date, start, end and duration all remain consistent. */
+  const removePrimaryActivityInterval = () => {
+    const [promoted, ...remaining] = authoringDraft.activityStructure.activityIntervals;
+    if (!promoted || fields.kind !== 'activity' ||
+        fields.timeSemantics !== 'timed') return;
+    const duration = temporalCreateDurationFromEndDateTime(
+      promoted.date, promoted.startTime, promoted.endDate, promoted.endTime,
+      fields.timeMode, fields.timeZoneId,
+    );
+    setLastIntervalEdited('primary');
+    setInvalidEnd(duration === null
+      ? { date: promoted.endDate, time: promoted.endTime } : null);
+    patchAuthoring({
+      endDate: promoted.endDate,
+      activityStructure: Object.freeze({
+        ...authoringDraft.activityStructure,
+        activityIntervals: remaining,
+      }),
+    });
+    onPatch({
+      date: promoted.date,
+      startTime: promoted.startTime,
+      durationMinutes: duration ?? fields.durationMinutes,
+    });
+  };
+
   const updateActivityInterval = (
     id: string,
     changes: Partial<
@@ -1064,6 +1092,19 @@ export function TemporalCreateCoreFieldsU2({
               locale={locale}
               onChange={(date) => patchEnd(date, visibleEndTime)}
             />
+
+            {fields.kind === 'activity' &&
+            authoringDraft.activityStructure.activityIntervals.length > 0 ? (
+              <button
+                type="button"
+                className="temporal-create-activity-interval__remove"
+                aria-label={italian ? 'Rimuovi intervallo 1' : 'Remove interval 1'}
+                title={italian ? 'Rimuovi intervallo 1' : 'Remove interval 1'}
+                onClick={removePrimaryActivityInterval}
+              >
+                ×
+              </button>
+            ) : null}
 
             {fields.kind === 'activity' &&
             (!showCompactTimezone ||
