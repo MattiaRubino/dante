@@ -2,6 +2,80 @@ import { expect, test } from '@playwright/test';
 
 test.use({ locale: 'it-IT' });
 
+test('Timeline multi-zone ruler preserves 84px elastic geometry and stored preferences across reload', async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await page.goto('/home');
+  const trigger = page.getByRole('button', { name: /^Fuso orario della Timeline:/ });
+  await expect(trigger).toBeVisible();
+  await expect(page.locator('.timeline-ruler-column--secondary')).toHaveCount(0);
+
+  const openPanel = async () => {
+    await trigger.click();
+    const panel = page.getByRole('dialog', { name: 'Fuso orario della Timeline' });
+    await expect(panel).toBeVisible();
+    return panel;
+  };
+  const addSecondary = async (zone: string) => {
+    const panel = await openPanel();
+    await panel.getByRole('searchbox', { name: 'Cerca fuso o GMT' }).fill(zone);
+    await panel.getByRole('button', {
+      name: 'Aggiungi fuso secondario: ' + zone,
+    }).click();
+    await expect(panel).toBeVisible();
+    await trigger.click();
+  };
+  await addSecondary('America/New_York');
+  await addSecondary('Asia/Tokyo');
+  const rulers = page.locator('.timeline-ruler-column');
+  await expect(rulers).toHaveCount(3);
+  await expect(page.locator('.timeline-ruler-column--secondary')).toHaveCount(2);
+
+  const geometry = await page.locator('.timeline-frame--production').evaluate((frame) => {
+    const columns = Array.from(frame.querySelectorAll<HTMLElement>(
+      '.timeline-ruler-column',
+    ));
+    return columns.map((column) => ({
+      width: column.getBoundingClientRect().width,
+      labelPositions: Array.from(column.querySelectorAll<HTMLElement>(
+        '.timeline-ruler-day:first-child .timeline-ruler-label',
+      )).slice(0, 8).map((label) => label.style.top),
+      labelFont: getComputedStyle(column.querySelector<HTMLElement>(
+        '.timeline-ruler-label:not(.is-minor)',
+      )!).fontSize,
+    }));
+  });
+  expect(geometry).toHaveLength(3);
+  for (const column of geometry) {
+    expect(column.width).toBeCloseTo(84, 0);
+    expect(column.labelPositions.length).toBeGreaterThan(2);
+    expect(column.labelPositions).toEqual(geometry[2]!.labelPositions);
+    expect(column.labelFont).toBe('14px');
+  }
+
+  const panel = await openPanel();
+  await expect(panel).toContainText('3 di 3 fusi');
+  await panel.getByRole('searchbox', { name: 'Cerca fuso o GMT' })
+    .fill('Europe/London');
+  await expect(panel.getByRole('button', {
+    name: /^Aggiungi fuso secondario:/,
+  })).toHaveCount(0);
+  await trigger.click();
+  await page.reload();
+  await expect(page.locator('.timeline-ruler-column--secondary')).toHaveCount(2);
+  await expect(trigger).toBeVisible();
+
+  const remove = await openPanel();
+  await remove.getByRole('searchbox', { name: 'Cerca fuso o GMT' })
+    .fill('Asia/Tokyo');
+  await remove.getByRole('button', {
+    name: 'Rimuovi fuso secondario: Asia/Tokyo',
+  }).click();
+  await expect(page.locator('.timeline-ruler-column--secondary')).toHaveCount(1);
+  await trigger.click();
+});
+
 test('group filters and reset preserve the accepted focus grammar', async ({
   page,
 }) => {

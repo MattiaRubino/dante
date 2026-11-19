@@ -79,6 +79,149 @@ function nextOccurrence(
   }
 }
 
+/** Existing full-stack journeys chosen for high-value timezone checks.
+ * They already exercise real multi-attribute Create, Edit, duplicate,
+ * deletion and API readback; no second fixture or login is required. */
+type TimezoneRichMode = 'dual' | 'single' | 'all-day' | 'cancel' | 'single-only';
+const TIMEZONE_RICH_CASES: ReadonlyMap<string, TimezoneRichMode> =
+  new Map<string, TimezoneRichMode>([
+  ['E02', 'cancel'],
+  ['E04', 'cancel'],
+  ['E06', 'all-day'],
+  ['E07', 'cancel'],
+  ['E08', 'dual'],
+  ['E10', 'cancel'],
+  ['A02', 'single-only'],
+  ['A04', 'dual'],
+  ['A07', 'single-only'],
+  ['A10', 'single-only'],
+]);
+
+async function chooseEditorZone(dialog: Locator, label: string, zone: string): Promise<void> {
+  const picker = dialog.locator('.temporal-zone-dialog__picker')
+    .filter({ hasText: label });
+  await expect(picker).toHaveCount(1);
+  await picker.locator('.temporal-zone-dialog__choice').click();
+  await picker.getByRole('searchbox', { name: 'Cerca fuso orario' }).fill(zone);
+  await picker.getByRole('option')
+    .filter({ hasText: zone.replaceAll('_', ' ') }).click();
+}
+
+/** Single independent continuation of a previously accepted rich journey.
+ * Save only when the schedule is legitimately mutable; prove DB-backed
+ * reload and that objectives, Life Area, agenda and planned Sessions survive. */
+async function auditRichTimezone(
+  page: Page,
+  day: string,
+  authored: AuthoredPersona,
+  mode: TimezoneRichMode,
+): Promise<void> {
+  const { item, truth } = authored;
+  const objectivePath = '/api/v1/temporal/' +
+    (item.kind === 'event' ? 'events/' : 'activities/') +
+    item.sourceRef + '/objectives';
+  const beforeGoals = (await serverRead(page, objectivePath)) as
+    readonly Record<string, unknown>[];
+  const beforeRefs = beforeGoals.map((row) => row.objective_ref);
+  const beforeSettings = item.kind === 'activity'
+    ? (await serverRead(page,
+        '/api/v1/temporal/activities/' + item.sourceRef + '/edit-snapshot',
+      )) as Record<string, unknown>
+    : null;
+  const beforeSchedules = (beforeSettings?.schedules ?? []) as
+    readonly Record<string, unknown>[];
+  const plannedBefore = beforeSchedules
+    .filter((row) => row.role_code === 'planned')
+    .map((row) => row.schedule_ref);
+  const editor = await openEdit(page, day, truth.title);
+  const trigger = editor.getByRole('button', { name: /^Fuso orario:/ });
+  const selectDialog = page.getByRole('dialog', { name: 'Imposta fuso orario' });
+  if (mode === 'all-day') {
+    await expect(trigger, 'All-day Event must not have a timed zone editor')
+      .toHaveCount(0);
+    await editor.getByRole('button', { name: 'Annulla' }).click();
+    return;
+  }
+  await expect(trigger).toBeVisible();
+  const originalLabel = await trigger.getAttribute('aria-label');
+  await trigger.click();
+  await expect(selectDialog).toBeVisible();
+  const dual = selectDialog.getByRole('checkbox', {
+    name: 'Utilizza fusi orari diversi per inizio e fine',
+  });
+  if (mode === 'single-only') {
+    await expect(dual, 'Multiple Activity intervals must use one IANA zone')
+      .toHaveCount(0);
+  } else {
+    await expect(dual).toHaveCount(1);
+  }
+  // Actually change the pending dialog draft before cancelling.
+  // A mere open/close would not detect accidental eager application.
+  if (mode === 'single-only') {
+    await chooseEditorZone(selectDialog, 'Fuso orario', 'America/New_York');
+  } else {
+    await dual.check();
+    await chooseEditorZone(selectDialog, 'Fuso orario di fine', 'America/New_York');
+  }
+  await selectDialog.getByRole('button', { name: 'Annulla' }).click();
+  await expect(trigger).toHaveAttribute('aria-label', originalLabel ?? '');
+  if (mode === 'cancel' || mode === 'single-only') {
+    await editor.getByRole('button', { name: 'Annulla' }).click();
+    // Reload from the actual backend so a mistakenly eager timezone change
+    // cannot pass merely because the button kept its previous local label.
+    await openHome(page, day);
+    const restored = await openEdit(page, day, truth.title);
+    await expect(restored.getByRole('button', { name: /^Fuso orario:/ }))
+      .toHaveAttribute('aria-label', originalLabel ?? '');
+    await restored.getByRole('button', { name: 'Annulla' }).click();
+  } else {
+    await trigger.click();
+    if (mode === 'dual') {
+      await dual.check();
+      await chooseEditorZone(selectDialog, 'Fuso orario di fine', 'America/New_York');
+    } else {
+      await chooseEditorZone(selectDialog, 'Fuso orario', 'America/New_York');
+    }
+    await selectDialog.getByRole('button', { name: 'OK' }).click();
+    await expect(trigger).toHaveAttribute(
+      'aria-label', mode === 'dual' ? /Personalizzato/ : /America\/New_York/,
+    );
+    await saveOneOffEditor(page, editor, item);
+    await openHome(page, day);
+    const restored = await openEdit(page, day, truth.title);
+    await expect(restored.getByRole('button', { name: /^Fuso orario:/ }))
+      .toHaveAttribute(
+        'aria-label', mode === 'dual' ? /Personalizzato/ : /America\/New_York/,
+      );
+    await restored.getByRole('button', { name: 'Annulla' }).click();
+  }
+  await assertOneOffTruth(page, authored);
+  const afterGoals = (await serverRead(page, objectivePath)) as
+    readonly Record<string, unknown>[];
+  expect(afterGoals.map((row) => row.objective_ref),
+    'timezone operations never replace Objective identities').toEqual(beforeRefs);
+  if (beforeSettings) {
+    const after = (await serverRead(page,
+      '/api/v1/temporal/activities/' + item.sourceRef + '/edit-snapshot',
+    )) as Record<string, unknown>;
+    const schedules = after.schedules as readonly Record<string, unknown>[];
+    expect(after.life_area_ref ?? null, 'Life Area unchanged by timezone')
+      .toBe(beforeSettings.life_area_ref ?? null);
+    expect(schedules.filter((row) => row.role_code === 'planned')
+      .map((row) => row.schedule_ref),
+    'named Session identities unchanged by timezone').toEqual(plannedBefore);
+    if (mode === 'dual' || mode === 'single') {
+      const envelope = schedules.find((row) => row.role_code === 'envelope');
+      expect(envelope?.zone_id, 'Activity start IANA zone persists')
+        .toBe('Europe/Rome');
+      if (mode === 'dual') {
+        expect(envelope?.end_zone_id, 'Activity distinct end IANA persists')
+          .toBe('America/New_York');
+      }
+    }
+  }
+}
+
 // Per-test browser Pages have an immutable expected number of physical
 // placements. An Activity with 2 intervals has 2 real cards but 1 logical
 // Activity. Counting a single card would produce a false duplicate failure.
@@ -948,6 +1091,22 @@ async function seriesRevision(
       name: fromNext ? 'Dalla prossima istanza' : 'Questa e le successive',
     })
     .click();
+  // Existing rich native and converted series already go through this editor.
+  // Assert the scoped IANA picker never exposes dual-zone authoring, and
+  // closing a draft never changes the accepted series before other mutations.
+  if (!fromNext && ['A01', 'A02', 'E01', 'E02'].includes(persona.id)) {
+    const zoneTrigger = inspector.getByRole('button', { name: /^Fuso orario:/ });
+    await expect(zoneTrigger).toBeVisible();
+    const originalZone = await zoneTrigger.getAttribute('aria-label');
+    await zoneTrigger.click();
+    const dialog = page.getByRole('dialog', { name: 'Imposta fuso orario' });
+    await expect(dialog).toBeVisible();
+    await expect(dialog.getByRole('checkbox', {
+      name: 'Utilizza fusi orari diversi per inizio e fine',
+    }), 'series editor must never expose two boundary timezones').toHaveCount(0);
+    await dialog.getByRole('button', { name: 'Annulla' }).click();
+    await expect(zoneTrigger).toHaveAttribute('aria-label', originalZone ?? '');
+  }
   await inspector.getByRole('textbox', { name: 'Titolo' }).fill(nextTitle);
   const changedGoals = [...originalTruth.objectives];
   const revisedGoal = {
@@ -1414,6 +1573,17 @@ test.describe('Temporal v2 — real stateful user personas', () => {
                   ...reassigned.truth,
                   title: copy.title,
                 }),
+            );
+          }
+          const zoneMode = TIMEZONE_RICH_CASES.get(persona.id);
+          if (zoneMode) {
+            await test.step(
+              persona.id + '/9 Timezone draft, eligibility, atomic Save and canonical readback',
+              async () => auditRichTimezone(page, day, {
+                ...reassigned,
+                item: copy,
+                truth: { ...reassigned.truth, title: copy.title },
+              }, zoneMode),
             );
           }
         } finally {

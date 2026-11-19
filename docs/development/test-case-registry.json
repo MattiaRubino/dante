@@ -3049,20 +3049,20 @@
       "suite": "browser-fixture",
       "contract_id": "T01",
       "candidate_behavior": "Create and Activity Edit shared authoring geometry",
-      "purpose": "Verify shared timing controls and title-header geometry in a real browser fixture.",
-      "invariant": "An empty-title validation error cannot stretch the Advanced title row or displace its header actions.",
+      "purpose": "Verify shared timing controls and title-header geometry in a real browser fixture, Advanced Create interval-1 removal and timezone draft Cancel.",
+      "invariant": "An empty-title validation error cannot stretch the Advanced title row or displace its header actions. Advanced Create exposes removal of interval 1 only when a second interval exists, and cancelling dual timezone intent never changes the accepted form.",
       "status": "QUALIFIED",
       "audit_note": "Covers the browser geometry boundary for the unified Create/Edit authoring surface."
     },
     {
       "path": "apps/web/e2e/timeline-controls.spec.ts",
       "suite": "browser-fixture",
-      "contract_id": "P-OTHER",
-      "candidate_behavior": "timeline controls",
-      "purpose": "",
-      "invariant": "",
+      "contract_id": "T11",
+      "candidate_behavior": "Timeline controls, zone-ruler layout and view preferences",
+      "purpose": "Verify Timeline group controls and add a real browser check of three same-width 84px elastic timezone rulers, limit of three zones, removal and localStorage readback.",
+      "invariant": "All three ruler columns inherit identical tick coordinates and 14px major labels; only two secondary IANA zones can coexist and they survive refresh without duplicating physical Timeline items.",
       "status": "UNREVIEWED",
-      "audit_note": "Needs contract/assertion review, rejection cases, and executable evidence; filename alone is not proof."
+      "audit_note": "Timezone ruler case source reviewed as candidate 2026-11-19, NOT_RUN. Legacy group-control cases not yet qualified; retain UNREVIEWED rather than claiming a full audit."
     },
     {
       "path": "apps/web/e2e/timeline-hardening.spec.ts",
@@ -5597,8 +5597,8 @@
       "suite": "web-browser-real-stack",
       "contract_id": "T05",
       "candidate_behavior": "stateful Activity/Event ordinary, recurring and one-off-conversion journeys",
-      "purpose": "100 authenticated user journeys per browser: P1 rich one-offs, P2 native series with explicit edits of physical first, middle and bounded last, and P3 converted sources with preserved first identity, nested objectives/sessions/agenda/areas and canonical no-duplicate Schedule readback.",
-      "invariant": "Recurrence source/local/future boundaries protect first and final edited instances, finite series never materialize a sixth item, each Event occurrence has one correct placement, and each multi-interval Activity intentionally renders N distinct Schedule cards sharing one Activity ref.",
+      "purpose": "100 authenticated user journeys per browser: P1 rich one-offs, P2 native series with explicit edits of physical first, middle and bounded last, and P3 converted sources with preserved first identity, nested objectives/sessions/agenda/areas and canonical no-duplicate Schedule readback. Selected P1 rich journeys additionally exercise real timezone Edit eligibility, single/dual zone drafts, Cancel and atomic timezone persistence; selected P2/P3 series check the single-zone scope policy.",
+      "invariant": "Recurrence source/local/future boundaries protect first and final edited instances, finite series never materialize a sixth item, each Event occurrence has one correct placement, and each multi-interval Activity intentionally renders N distinct Schedule cards sharing one Activity ref. Timezone authoring does not alter unrelated Objective/Session/Area identities; dual-zone selection is prohibited for multi-interval Activities and series; real Edit readback preserves the accepted IANA zone after reload.",
       "status": "QUALIFIED",
       "audit_note": "Static source reviewed for per-step truth and accepted UI selectors, 2026-11-09. New bounded-last and nested Event SchedulePlacement assertions not yet executed; PASS remains unclaimed."
     },
@@ -5607,8 +5607,8 @@
       "suite": "web-browser-real-stack",
       "contract_id": "T09",
       "candidate_behavior": "recorded Objective and factual Session lifecycle through real UI",
-      "purpose": "Exercise RT-01 registered Event Objective read-only Edit, correction/deletion confirmation, CAS readback and reload, plus RT-02 Activity live Session Pause/Stop and replan protection.",
-      "invariant": "A recorded Objective cannot be modified as a normal definition, must survive cancel, and can be permanently removed only via explicit confirmation; Session factual truth protects temporal edits and persists through reload.",
+      "purpose": "Exercise RT-01 registered Event Objective read-only Edit, correction/deletion confirmation, CAS readback and reload, plus RT-02 Activity live Session Pause/Stop, Schedule timezone/replan protection, view-only Timeline zone switching during execution, and post-Stop recorded-main lock.",
+      "invariant": "A recorded Objective cannot be modified as a normal definition, must survive cancel, and can be permanently removed only via explicit confirmation; live and completed main Session truth lock Schedule timezone/replan but permit view-only Timeline timezone changes without interruption, identity loss or rewriting started_at, and persist through reload.",
       "status": "QUALIFIED",
       "audit_note": "Scenario assertions and API/readback reviewed 2026-11-09; new deletion flow and session scenario require fresh local browser evidence; no PASS claimed."
     },

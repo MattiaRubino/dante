@@ -238,6 +238,35 @@ test('Quick keeps its compact clock field while Advanced uses the Edit interval 
   await expect(
     dialog.getByRole('combobox', { name: 'Verifica obiettivo 1' }),
   ).toBeVisible();
+
+  // The same browser test already owns the Advanced form; check the
+  // newly standardized remove-first behavior without another fixture run.
+  await dialog.getByRole('button', { name: 'Aggiungi intervallo' }).click();
+  await expect(dialog.getByRole('button', {
+    name: 'Rimuovi intervallo 1',
+  })).toBeVisible();
+  await expect(dialog.getByRole('button', {
+    name: 'Rimuovi intervallo 2',
+  })).toBeVisible();
+  await dialog.getByRole('button', { name: 'Rimuovi intervallo 1' }).click();
+  await expect(dialog.getByRole('button', {
+    name: /^Rimuovi intervallo/,
+  })).toHaveCount(0);
+  await expect(dialog.getByText('Intervallo 1', { exact: true }))
+    .toHaveCount(0);
+
+  // Once back to a single interval, dual-boundary timezone editing is
+  // eligible. Cancel must discard the unsaved zone configuration.
+  const zoneTrigger = dialog.getByRole('button', { name: /^Fuso orario:/ });
+  await zoneTrigger.click();
+  const zoneDialog = page.getByRole('dialog', { name: 'Imposta fuso orario' });
+  await zoneDialog.getByRole('checkbox', {
+    name: 'Utilizza fusi orari diversi per inizio e fine',
+  }).check();
+  await expect(zoneDialog.getByText('Fuso orario di fine', { exact: true }))
+    .toBeVisible();
+  await zoneDialog.getByRole('button', { name: 'Annulla' }).click();
+  await expect(zoneTrigger).not.toHaveAttribute('aria-label', /Personalizzato/);
 });
 
 test('Activity Edit applies readable font sizes rather than inherited tiny labels', async ({

@@ -1,3 +1,14 @@
+## 2026-11-19 — Timezone/intervalli: E2E incrociati sugli scenari esistenti (CANDIDATO, NON ESEGUITO)
+
+**Obiettivo:** riutilizzare account, browser e storie ricche dei test E2E esistenti senza duplicare journey già molto costose. Nessuna modifica alla produzione, agli schemi o al runner; nessun nuovo account o spec real-stack.
+
+- **Dieci estensioni della fase P1:** `V2-P1-(E02|E04|E06|E07|E08|E10|A02|A04|A07|A10)`. Dopo Create + Edit/Obiettivi/Scaletta o Sessioni + Area + duplicazione + cancellazione originale, il test apre la copia sopravvissuta: fuso doppio dove consentito (E08/A04), controllo di annullamento senza PUT, checkbox assente per Activity multi-intervallo, selettore temporizzato assente per Tutto il giorno, salvataggio atomico e nuova lettura canonica quando modifica davvero il fuso; identità Objective, Area e Sessioni pianificate intatte.
+- **Serie native e convertite:** in `seriesRevision`, per `A01/A02/E01/E02` della fase P2 e P3, verifica bozza/Annulla del popover di timezone e che non compaia l'opzione dei due fusi nelle modifiche di serie. Le stesse journey continuano con modifica locale, «Questa e le successive» e rilettura delle istanze protette, oltre agli attributi già multipli.
+- **Registrazioni reali:** `V2-RT-02` verifica timezone Schedule disabilitata con Sessione principale in esecuzione, cambio timezone della sola Timeline senza fermare/duplicare la Sessione o alterare `started_at`, Pausa/Riprendi/Stop e stesso blocco dopo la registrazione conclusa; usa la stessa Activity a più intervalli, Obiettivi e Aree del test originale.
+- **Browser reale non-auth:** `temporal-create-unified-ui.spec.ts` amplia il test Advanced Create con rimozione di «Intervallo 1» e annullamento del doppio fuso; `timeline-controls.spec.ts` aggiunge una prova delle tre colonne da 84px, allineamento delle tacche elastiche, preferenza browser dopo reload, limite di tre e rimozione del secondario. Queste sono prove di geometria browser, **non** prova PostgreSQL.
+- **Limiti della prima estensione:** le serie con registrazioni reali sulle singole occorrenze e la geometria dell'ora ripetuta nel giorno DST da 25 ore restano casi ulteriori, non dichiarati verdi. Non confondere un controllo di blocco UI con prova di rifiuto HTTP: i casi di mutazione passano dalla risposta API e da una nuova lettura.
+- **Qualifica:** gli spec esistenti sono già registrati e QUALIFIED in `docs/development/test-case-registry.json`; purpose/invariant aggiornati. Le nuove asserzioni sono candidate, **NOT_RUN** fino all'esecuzione locale sullo stesso SHA, con i risultati e il fingerprint della worktree.
+
 ## 2026-11-16 — three-stack Event P2 startup blocker
 
 Owner archive `E2E_DIAGNOSTICS.tar(20261116-083301).gz` contains **zero

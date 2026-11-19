@@ -262,15 +262,52 @@ test.describe('Temporal v2 — recorded facts survive Edit', () => {
       await expect(
         inspector.getByRole('button', { name: 'Aggiungi intervallo' }),
       ).toBeDisabled();
+      await expect(inspector.getByRole('button', { name: /^Fuso orario:/ }),
+        'an open main Session must also lock Schedule timezone edits')
+        .toBeDisabled();
       await inspector.getByRole('button', { name: 'Annulla' }).click();
       await inspector.getByRole('button', { name: 'Chiudi Inspector' }).click();
 
-      await controls.getByRole('button', { name: 'Pausa' }).click();
+      // View-only timezone switching must remain usable during active work.
+      // It must not interrupt this real Session, rewrite its canonical start,
+      // or create a duplicate record. Switch back before continuing Play/Pause.
+      const chooseViewZone = async (zone: string) => {
+        const trigger = page.getByRole('button', {
+          name: /^Fuso orario della Timeline:/,
+        });
+        await trigger.click();
+        const panel = page.getByRole('dialog', {
+          name: 'Fuso orario della Timeline',
+        });
+        await panel.getByRole('searchbox', { name: 'Cerca fuso o GMT' })
+          .fill(zone);
+        await panel.getByRole('option')
+          .filter({ hasText: zone.replaceAll('_', ' ') }).click();
+        await expect(trigger).toHaveAttribute('aria-label', new RegExp(zone));
+      };
+      await chooseViewZone('America/New_York');
+      const afterProjection = await list();
+      expect(afterProjection.filter((row) => row.session_ref === sessionRef))
+        .toHaveLength(1);
+      expect(afterProjection.find((row) => row.session_ref === sessionRef)?.open)
+        .toBe(true);
+      expect(afterProjection.find((row) => row.session_ref === sessionRef)?.started_at)
+        .toEqual(open[0]!.started_at);
+      await chooseViewZone('Europe/Rome');
+      await openHome(page, day);
+      const resumedCard = cardOn(page, day, title).first();
+      const resumedControls = resumedCard.locator(
+        '[data-timeline-session-subject="' + authored.item.sourceRef + '"]',
+      );
+      await expect(resumedControls.getByRole('button', { name: 'Pausa' }))
+        .toBeEnabled();
+
+      await resumedControls.getByRole('button', { name: 'Pausa' }).click();
       await expect.poll(async () => {
         const rows = await list();
         return rows.find((session) => session.session_ref === sessionRef)?.paused;
       }).toBe(true);
-      await controls.getByRole('button', { name: 'Riprendi' }).click();
+      await resumedControls.getByRole('button', { name: 'Riprendi' }).click();
       await expect.poll(async () => {
         const rows = await list();
         return rows.find((session) => session.session_ref === sessionRef)?.paused;
@@ -281,7 +318,7 @@ test.describe('Temporal v2 — recorded facts survive Edit', () => {
         response.request().method() === 'POST' &&
         response.url().endsWith('/api/v1/temporal/sessions/' + sessionRef + '/end'),
       );
-      await controls.getByRole('button', { name: 'Termina' }).click();
+      await resumedControls.getByRole('button', { name: 'Termina' }).click();
       const endedResponse = await ending;
       expect(endedResponse.ok(), 'Session end must be accepted by the API').toBe(true);
       await expect.poll(async () => {
@@ -305,6 +342,19 @@ test.describe('Temporal v2 — recorded facts survive Edit', () => {
       expect(persisted.filter((session) =>
         session.session_ref === sessionRef,
       )).toHaveLength(1);
+      const completedCard = cardOn(page, day, title).first();
+      await completedCard.getByRole('button', { name: title, exact: true })
+        .click();
+      const completedInspector = page.locator('.timeline-event-modal[role="dialog"]');
+      await completedInspector.getByRole('button', { name: 'Modifica' }).click();
+      await expect(completedInspector.getByRole('button', {
+        name: /^Fuso orario:/,
+      }), 'completed main Session recording still locks Schedule timezone')
+        .toBeDisabled();
+      await expect(completedInspector.getByRole('button', {
+        name: 'Aggiungi intervallo',
+      })).toBeDisabled();
+      await completedInspector.getByRole('button', { name: 'Annulla' }).click();
     } finally {
       await user.close();
     }
