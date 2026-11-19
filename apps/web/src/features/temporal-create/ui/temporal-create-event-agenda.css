@@ -42,11 +42,11 @@
 
 .temporal-create-event-agenda__group-label {
   margin-left: 34px;
-  color: var(--dante-semantic-color-home-text-muted, #8f9bad);
-  font-size: 10px;
-  font-weight: 720;
-  letter-spacing: 0.055em;
-  text-transform: uppercase;
+  color: var(--dante-semantic-color-home-text-primary, #edf2f8);
+  font-size: var(--dante-temporal-section-title-size);
+  font-weight: 650;
+  letter-spacing: 0;
+  text-transform: none;
 }
 
 .temporal-create-event-agenda__part {
