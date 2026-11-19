@@ -1,5 +1,15 @@
 # Timeline / Temporal-Operational — Live Execution Ledger
 
+## 2026-11-19 — Quick Create date layout candidate
+
+The narrow Quick composer now places start and end date/time pairs on separate
+rows, keeping all four controls within the panel. The displayed dates use
+day and abbreviated month (plus two-digit year outside the current year);
+calendar values and full accessible date labels are unchanged. Advanced Create
+and Edit retain their original date presentation and interval grid. The
+existing focused Quick browser case checks both dates fit and exposes the
+complete accessible labels. Owner-local E2E and visual review are **NOT_RUN**.
+
 ## 2026-11-19 — Authoring palette audit follow-up
 
 The five top-level timing, recurrence, Area, Objectives and Description panels
