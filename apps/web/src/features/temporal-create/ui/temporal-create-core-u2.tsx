@@ -52,6 +52,7 @@ type Props = Readonly<{
   baselineFields: TemporalCreateFields;
   contexts: readonly TemporalCreateContextOption[];
   showCompactTimezone?: boolean;
+  quickDateRows?: boolean;
   showRecurrence?: boolean;
   showDescription?: boolean;
   repeatDetails?: ReactNode;
@@ -287,6 +288,7 @@ export function TimeControl({
     <div
       ref={rootRef}
       className="temporal-create-time-control"
+      data-time-field={dataPath}
       data-time-invalid={invalid || undefined}
       aria-invalid={invalid || undefined}
       role="group"
@@ -453,6 +455,7 @@ export function TemporalCreateCoreFieldsU2({
   baselineFields,
   contexts,
   showCompactTimezone = true,
+  quickDateRows = false,
   showRecurrence = true,
   showDescription = true,
   repeatDetails,
@@ -989,7 +992,7 @@ export function TemporalCreateCoreFieldsU2({
 
         {fields.timeSemantics === 'timed' ? (
           <div
-            className={`temporal-create-u2-when temporal-schedule-time-grid${
+            className={`temporal-create-u2-when temporal-schedule-time-grid${quickDateRows ? ' is-quick-date-rows' : ''}${
               fields.kind === 'activity' &&
               authoringDraft.activityStructure.activityIntervals.length > 0
                 ? ' has-remove-track'
@@ -1022,6 +1025,7 @@ export function TemporalCreateCoreFieldsU2({
                 label={italian ? 'Data inizio' : 'Start date'}
                 value={fields.date}
                 locale={locale}
+                visibleCaption={quickDateRows ? (italian ? 'Inizio' : 'Start') : undefined}
                 onChange={patchStartDate}
               />
               {renderError('date')}
@@ -1087,6 +1091,7 @@ export function TemporalCreateCoreFieldsU2({
               label={italian ? 'Data fine' : 'End date'}
               align="end"
               value={visibleEndDate}
+              visibleCaption={quickDateRows ? (italian ? 'Fine' : 'End') : undefined}
               min={isCustomZone ? undefined : fields.date}
               invalid={invalidEnd !== null}
               locale={locale}

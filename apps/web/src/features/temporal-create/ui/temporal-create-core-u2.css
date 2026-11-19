@@ -402,6 +402,105 @@
   color: color-mix(in srgb, currentColor 58%, transparent);
 }
 
+/* Quick Create has one complete start pair and one complete end pair. The
+   time-band action remains on the grid; a primary-interval remove action
+   occupies its own slot when an Advanced draft is folded back to Quick. */
+.temporal-create-composer:not(.is-full)
+  .temporal-create-u2-when.is-quick-date-rows {
+  grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr) 18px;
+  gap: 6px 4px;
+}
+
+.temporal-create-u2-when.is-quick-date-rows > .temporal-create-u2-date-field {
+  grid-column: 1;
+  grid-row: 1;
+}
+
+.temporal-create-u2-when.is-quick-date-rows
+  > .temporal-create-time-control[data-time-field='startTime'] {
+  grid-column: 2;
+  grid-row: 1;
+}
+
+.temporal-create-u2-when.is-quick-date-rows
+  > .temporal-create-date-picker--end {
+  grid-column: 1;
+  grid-row: 2;
+}
+
+.temporal-create-u2-when.is-quick-date-rows
+  > .temporal-create-time-control[data-time-field='endTime'] {
+  grid-column: 2;
+  grid-row: 2;
+}
+
+.temporal-create-u2-when.is-quick-date-rows
+  > .temporal-create-time-band-control {
+  grid-column: 3;
+  grid-row: 1 / 3;
+  align-self: center;
+}
+
+.temporal-create-u2-when.is-quick-date-rows
+  .temporal-create-date-picker__trigger {
+  min-height: 48px;
+  flex-direction: column;
+  gap: 2px;
+  font-size: 0.875rem;
+}
+
+.temporal-create-u2-when.is-quick-date-rows
+  .temporal-create-date-picker__caption {
+  color: var(--dante-semantic-color-home-text-secondary, #b7c0cf);
+  font-size: 0.72rem;
+  font-weight: 650;
+  line-height: 1;
+}
+
+.temporal-create-u2-when.is-quick-date-rows
+  .temporal-create-date-picker__value {
+  max-width: 100%;
+  white-space: normal;
+  font-size: 0.875rem;
+  line-height: 1.2;
+}
+
+.temporal-create-u2-when.is-quick-date-rows.has-remove-track
+  > .temporal-create-primary-interval-label {
+  grid-column: 1 / -1;
+  grid-row: 1;
+}
+
+.temporal-create-u2-when.is-quick-date-rows.has-remove-track
+  > .temporal-create-u2-date-field,
+.temporal-create-u2-when.is-quick-date-rows.has-remove-track
+  > .temporal-create-time-control[data-time-field='startTime'] {
+  grid-row: 2;
+}
+
+.temporal-create-u2-when.is-quick-date-rows.has-remove-track
+  > .temporal-create-date-picker--end,
+.temporal-create-u2-when.is-quick-date-rows.has-remove-track
+  > .temporal-create-time-control[data-time-field='endTime'] {
+  grid-row: 3;
+}
+
+.temporal-create-u2-when.is-quick-date-rows.has-remove-track
+  > .temporal-create-time-band-control {
+  grid-row: 2;
+}
+
+.temporal-create-u2-when.is-quick-date-rows.has-remove-track
+  > .temporal-create-activity-interval__remove {
+  grid-column: 3;
+  grid-row: 3;
+}
+
+.temporal-create-u2-when.is-quick-date-rows
+  > .temporal-create-activity-intervals {
+  grid-column: 1 / -1;
+}
+
 /* Quick footer intentionally has only the two actions that still carry unique
    meaning: open Advanced and accept Add. Closing lives in the header X. */
 .temporal-create-composer:not(.is-full)

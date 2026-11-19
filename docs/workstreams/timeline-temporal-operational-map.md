@@ -1,5 +1,15 @@
 # Timeline / Temporal-Operational — Live Execution Ledger
 
+## 2026-11-19 — Quick Create two-row date layout
+
+After owner review, Quick Create places the complete weekday/day/month date and
+editable time on an Inizio row and a Fine row. The time-band action remains
+available; folded Advanced drafts preserve interval controls. Advanced Create
+and Edit keep their five-column timing scale. Calendar values, full accessible
+labels and existing date/time change handlers are unchanged. The focused Quick
+browser case checks both rows for clipping at a regular and a narrow viewport.
+Owner-local execution and visual review are **NOT_RUN**.
+
 ## 2026-11-19 — Authoring palette audit follow-up
 
 The five top-level timing, recurrence, Area, Objectives and Description panels

@@ -716,6 +716,7 @@ export function TemporalCreateComposer({
                 baselineFields={session.draft.baseline}
                 contexts={contexts}
                 showCompactTimezone={!advanced}
+                quickDateRows={!advanced}
                 showRecurrence={advanced}
                 showDescription={!advanced}
                 repeatDetails={
