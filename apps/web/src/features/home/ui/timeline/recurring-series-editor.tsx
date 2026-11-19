@@ -1361,8 +1361,7 @@ export function RecurringSeriesEditor({
               className="timeline-recurring-series-editor__repeat-panel"
               expanded
               choice={
-                <label className="temporal-recurrence-panel__frequency">
-                  <span>Ripeti</span>
+                <div className="temporal-recurrence-panel__frequency">
                   <select
                     aria-label="Ripeti"
                     value={asText(recurrence.pattern_code)}
@@ -1379,7 +1378,7 @@ export function RecurringSeriesEditor({
                     <option value="yearly_month_days">Giorni dell’anno</option>
                     <option value="anchor_step">Passo fisso</option>
                   </select>
-                </label>
+                </div>
               }
             >
               <section
