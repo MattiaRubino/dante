@@ -238,3 +238,13 @@
     animation: none;
   }
 }
+
+/* Activity title actions use the same configurable action scale in Advanced
+   Create, ordinary Edit and recurring-series Edit. */
+.temporal-authoring-title-row--activity.has-tools
+  > .temporal-create-title-row__tools
+  > :is(.temporal-create-placement-lock, .temporal-create-structure-session-toggle) {
+  color: var(--dante-semantic-color-home-text-primary, #edf2f8);
+  font-size: var(--dante-temporal-action-text-size, 15px) !important;
+  font-weight: 650;
+}
