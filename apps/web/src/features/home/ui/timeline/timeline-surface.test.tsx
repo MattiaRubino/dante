@@ -557,6 +557,10 @@ describe('TimelineSurface production parity', () => {
     }));
     expect(screen.getByRole('dialog', { name: 'Fuso orario della Timeline' })).toBeTruthy();
     expect(container.querySelectorAll('.timeline-ruler-column--secondary')).toHaveLength(1);
+    expect(container.querySelector('.dante-timeline-zone__trigger svg')).toBeNull();
+    expect(container.querySelectorAll('.dante-timeline-zone__secondary-rail')).toHaveLength(1);
+    expect(container.querySelector('.dante-timeline-zone__secondary-rail')?.textContent)
+      .toContain('New York');
     expect(container.querySelector('.home-timeline--production')?.getAttribute('style'))
       .toContain('84px');
     fireEvent.change(screen.getByRole('searchbox', { name: 'Cerca fuso o GMT' }), {

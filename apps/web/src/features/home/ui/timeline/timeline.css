@@ -567,24 +567,13 @@
   border-right: 1px solid rgba(143, 166, 185, 0.1);
 }
 
-.home-m1 .home-timeline--production
-.timeline-ruler-column--secondary .timeline-ruler-label {
-  /* Match the primary ruler exactly: same font, weight, inset and elastic Y. */
-  right: 12px;
-  color: var(--dante-timeline-ruler-text);
-  font-size: 12px;
-  font-weight: 600;
-}
-
-.home-m1 .home-timeline--production
-.timeline-ruler-column--secondary .timeline-ruler-label.is-minor {
-  font-size: 11px;
-}
-
+/* The primary and both comparison rulers inherit the same label typography,
+ * placement and elastic mapper. No per-zone font overrides are permitted. */
 .timeline-ruler-label__day-shift {
   display: block;
-  font-size: 8px;
-  color: #c6a47e;
+  font-size: 9px;
+  font-weight: 600;
+  color: #d3b08a;
   white-space: nowrap;
   text-align: right;
 }
@@ -608,7 +597,8 @@
     var(--dante-semantic-color-home-text-muted) 80%,
     transparent
   );
-  font-size: 8px;
+  font-size: 14px;
+  font-weight: 650;
   font-variant-numeric: tabular-nums;
   line-height: 1;
   white-space: nowrap;
@@ -620,7 +610,8 @@
     var(--dante-timeline-ruler-text, #a3b1c1) 68%,
     transparent
   );
-  font-size: 8px;
+  font-size: 12px;
+  font-weight: 600;
 }
 
 .timeline-grid {

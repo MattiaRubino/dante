@@ -150,14 +150,8 @@ export function TimelineZoneControl({
           setOpen((prev) => !prev);
         }}
       >
-        <svg className="dante-timeline-zone__globe" width="12" height="12"
-          viewBox="0 0 24 24" fill="none" aria-hidden="true">
-          <circle cx="12" cy="12" r="9" />
-          <path d="M3 12h18M12 3c-2.7 2.5-4 5.5-4 9s1.3 6.5 4 9M12 3c2.7 2.5 4 5.5 4 9s-1.3 6.5-4 9" />
-          <circle cx="17.5" cy="7" r="1.5" fill="currentColor" stroke="none" />
-        </svg>
-        <span>{offset}</span>
-        <span aria-hidden="true">⌄</span>
+        <span className="dante-timeline-zone__trigger-offset">{offset}</span>
+        <span className="dante-timeline-zone__trigger-chevron" aria-hidden="true">⌄</span>
       </button>
       {open && typeof document !== 'undefined' ? createPortal(
         <div ref={panelRef} className="dante-timeline-zone__panel" role="dialog"

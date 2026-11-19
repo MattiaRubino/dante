@@ -551,14 +551,16 @@
  * Timeline cannot win on specificity. */
 .home-m1 .home-timeline--production .timeline-ruler-label {
   right: 12px;
-  color: var(--dante-timeline-ruler-text);
-  font-size: 12px;
-  font-weight: 600;
+  color: #c2d2e1;
+  font-size: 14px;
+  font-weight: 650;
   line-height: 1;
 }
 
 .home-m1 .home-timeline--production .timeline-ruler-label.is-minor {
-  font-size: 11px;
+  color: #aec1d1;
+  font-size: 12px;
+  font-weight: 600;
 }
 
 .home-m1 .home-timeline--production .timeline-event-card,
