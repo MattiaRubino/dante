@@ -25,7 +25,10 @@ import { useTemporalRequiredTitle } from '../../../temporal-create/ui/temporal-r
 import { TIME_BANDS, TimeControl, type TimeBand } from '../../../temporal-create/ui/temporal-create-core-u2';
 import { TemporalColorControl } from '../../../temporal-create/ui/temporal-color-control';
 import { TemporalCreateDatePicker } from '../../../temporal-create/ui/temporal-create-date-picker';
-import { TemporalRecurrencePanel } from '../../../temporal-create/ui/temporal-recurrence-panel';
+import {
+  TemporalRecurrenceChoice,
+  TemporalRecurrencePanel,
+} from '../../../temporal-create/ui/temporal-recurrence-panel';
 import { TemporalLifeAreaSelect } from '../../../temporal-create/ui/temporal-life-area-select';
 import { TemporalCreateEventAgenda } from '../../../temporal-create/ui/temporal-create-event-agenda';
 import { TemporalEventParticipantsFields } from '../../../temporal-create/ui/temporal-create-event-participants';
@@ -1362,22 +1365,19 @@ export function RecurringSeriesEditor({
               expanded
               choice={
                 <div className="temporal-recurrence-panel__frequency">
-                  <select
-                    aria-label="Ripeti"
+                  <TemporalRecurrenceChoice
+                    label="Ripeti"
                     value={asText(recurrence.pattern_code)}
-                    onChange={(e) => changePattern(e.target.value)}
-                  >
-                    <option value="daily">Ogni giorno</option>
-                    <option value="weekly_weekdays">
-                      Giorni della settimana
-                    </option>
-                    <option value="monthly_month_days">Giorni del mese</option>
-                    <option value="monthly_ordinal_weekdays">
-                      Settimana del mese
-                    </option>
-                    <option value="yearly_month_days">Giorni dell’anno</option>
-                    <option value="anchor_step">Passo fisso</option>
-                  </select>
+                    onChange={changePattern}
+                    options={[
+                      { value: 'daily', label: 'Ogni giorno' },
+                      { value: 'weekly_weekdays', label: 'Giorni della settimana' },
+                      { value: 'monthly_month_days', label: 'Giorni del mese' },
+                      { value: 'monthly_ordinal_weekdays', label: 'Settimana del mese' },
+                      { value: 'yearly_month_days', label: 'Giorni dell’anno' },
+                      { value: 'anchor_step', label: 'Passo fisso' },
+                    ]}
+                  />
                 </div>
               }
             >
