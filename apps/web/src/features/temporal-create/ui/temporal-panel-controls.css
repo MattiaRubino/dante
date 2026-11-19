@@ -9,6 +9,10 @@
   --dante-temporal-action-text-size: 16px;
   --dante-temporal-action-height: 44px;
   --dante-temporal-control-height: 44px;
+  --dante-temporal-recurrence-setting-size: 17px;
+  --dante-temporal-recurrence-menu-surface: #192328;
+  --dante-temporal-recurrence-menu-selected: #2c3a40;
+  --dante-temporal-recurrence-menu-text: #edf2f8;
   --dante-temporal-zone-menu-width: 340px;
 }
 
