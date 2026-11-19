@@ -33,11 +33,7 @@
     var(--dante-semantic-color-home-border-subtle, rgba(255, 255, 255, 0.09));
   border-radius: 9px;
   color: var(--dante-semantic-color-home-text-primary, #edf2f8);
-  background: color-mix(
-    in srgb,
-    var(--dante-semantic-color-home-surface-control, #151f2e) 82%,
-    black
-  );
+  background: var(--dante-temporal-editor-field-surface);
   font: inherit;
 }
 
@@ -63,11 +59,7 @@
     var(--dante-semantic-color-home-border-subtle, rgba(255, 255, 255, 0.07));
   border-radius: 9px;
   color: var(--dante-semantic-color-home-text-primary, #edf2f8);
-  background: color-mix(
-    in srgb,
-    var(--dante-semantic-color-home-surface-control, #151f2e) 58%,
-    transparent
-  );
+  background: var(--dante-temporal-editor-field-surface);
   font-size: 12px;
 }
 
@@ -120,11 +112,7 @@
   border: 1px solid
     var(--dante-semantic-color-home-border-subtle, rgba(255, 255, 255, 0.09));
   border-radius: 9px;
-  background: color-mix(
-    in srgb,
-    var(--dante-semantic-color-home-surface-control, #151f2e) 74%,
-    black
-  );
+  background: var(--dante-temporal-editor-field-surface);
 }
 
 .temporal-create-repeat__segmented button {
@@ -192,11 +180,7 @@
   border: 1px solid
     var(--dante-semantic-color-home-border-subtle, rgba(255, 255, 255, 0.08));
   border-radius: 10px;
-  background: color-mix(
-    in srgb,
-    var(--dante-semantic-color-home-surface-control, #151f2e) 52%,
-    transparent
-  );
+  background: var(--dante-temporal-editor-field-surface);
 }
 
 .temporal-create-repeat__end-option:first-child {

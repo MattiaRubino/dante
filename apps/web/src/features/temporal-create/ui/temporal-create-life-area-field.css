@@ -91,7 +91,7 @@
 .temporal-create-life-area-field__options {
   border: 1px solid color-mix(in srgb, currentColor 14%, transparent);
   border-radius: 13px;
-  background: var(--dante-surface, #171923);
+  background: var(--dante-temporal-menu-surface);
   box-shadow: 0 16px 42px rgb(0 0 0 / 30%);
 }
 

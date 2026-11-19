@@ -138,7 +138,7 @@
   border: 1px solid var(--dante-semantic-color-home-border-subtle);
   border-radius: 8px;
   color: var(--dante-semantic-color-home-text-primary);
-  background: var(--dante-semantic-color-home-surface-control);
+  background: var(--dante-temporal-editor-field-surface);
   font: inherit;
   font-size: var(--dante-temporal-form-text-size);
 }

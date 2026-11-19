@@ -902,6 +902,16 @@ test('Advanced Activity and Event headings, Objectives and native menus share on
       await expect(heading).toHaveCSS('font-size', '18px');
     }
 
+    for (const section of [
+      dialog.locator('.temporal-create-timing-section'),
+      dialog.locator('.temporal-recurrence-panel'),
+      dialog.locator('.temporal-editor-area-section'),
+      dialog.locator('.temporal-create-reality-objectives'),
+      dialog.locator('.temporal-create-description-section'),
+    ]) {
+      await expect(section).toHaveCSS('background-color', 'rgb(27, 37, 42)');
+    }
+
     const location = dialog.getByRole('textbox', { name: 'Località' });
     const reminderFrame = dialog.locator('.temporal-create-quick-reminder');
     const description = dialog.locator('.temporal-create-description-section');
@@ -938,6 +948,12 @@ test('Advanced Activity and Event headings, Objectives and native menus share on
     await expect(
       objective.locator('.temporal-create-objective__verification select'),
     ).toHaveCSS('font-size', '16px');
+    await expect(
+      objective.locator('.temporal-create-objective__definition'),
+    ).toHaveCSS('background-color', 'rgb(27, 37, 42)');
+    await expect(
+      objective.locator('.temporal-create-objective__verification'),
+    ).toHaveCSS('background-color', 'rgb(27, 37, 42)');
     const reminder = dialog.locator('.temporal-create-quick-reminder select');
     await expect(reminder).toHaveCSS('font-size', '16px');
     for (const menu of [result, reminder]) {
@@ -999,6 +1015,15 @@ test('Advanced Activity and Event headings, Objectives and native menus share on
         description: style('.temporal-create-description-section h3'),
         result: style('.temporal-create-objective__definition select'),
         reminder: style('.temporal-create-quick-reminder select'),
+        areaSurface: getComputedStyle(
+          modal.querySelector<HTMLElement>('.temporal-editor-area-section')!,
+        ).backgroundColor,
+        objectiveSurface: getComputedStyle(
+          modal.querySelector<HTMLElement>('.temporal-create-reality-objectives')!,
+        ).backgroundColor,
+        descriptionSurface: getComputedStyle(
+          modal.querySelector<HTMLElement>('.temporal-create-description-section')!,
+        ).backgroundColor,
         location: style('.temporal-create-u2-location'),
         descriptionInput: style(
           '.temporal-create-description-section textarea',
@@ -1023,6 +1048,9 @@ test('Advanced Activity and Event headings, Objectives and native menus share on
     description: '18px',
     result: '16px',
     reminder: '16px',
+    areaSurface: 'rgb(27, 37, 42)',
+    objectiveSurface: 'rgb(27, 37, 42)',
+    descriptionSurface: 'rgb(27, 37, 42)',
     location: '16px',
     descriptionInput: '16px',
     locationHeight: '44px',

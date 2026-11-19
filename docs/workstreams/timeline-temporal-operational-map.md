@@ -1,5 +1,19 @@
 # Timeline / Temporal-Operational — Live Execution Ledger
 
+## 2026-11-19 — Authoring palette audit follow-up
+
+The five top-level timing, recurrence, Area, Objectives and Description panels
+already shared the section token. A CSS audit found remaining divergent
+ordinary surfaces inside those panels: recurrence controls, Objective detail
+cards, Event participant rows and controls, Session/agenda action controls,
+and the Area picker overlay. Those now use the existing section, field and
+menu tokens respectively; selected/focus/error states retain their distinct
+accents. The existing focused browser case now asserts all five section
+surfaces in real Activity/Event Create and the shared Edit style, plus the
+Objective detail cards. The previously run focused browser case passed 1/1
+before this follow-up; owner-local execution and visual review of this
+revision are **NOT_RUN**. No domain handlers or data shape changed.
+
 ## 2026-11-19 — Location, Reminder and Description field parity candidate
 
 Advanced Activity/Event Create and ordinary, selected-instance and series Edit

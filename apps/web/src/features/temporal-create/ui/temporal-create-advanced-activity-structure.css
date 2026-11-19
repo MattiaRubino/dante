@@ -161,7 +161,7 @@
   border: 1px solid rgba(255, 255, 255, 0.105);
   border-radius: 8px;
   color: var(--dante-semantic-color-home-text-secondary, #b7c0cf);
-  background: rgba(255, 255, 255, 0.028);
+  background: var(--dante-temporal-editor-field-surface);
   font: inherit;
   font-size: 11px;
 }
@@ -423,14 +423,14 @@
   border: 1px solid rgba(255, 255, 255, 0.105);
   border-radius: 8px;
   color: var(--dante-semantic-color-home-text-secondary, #b7c0cf);
-  background: rgba(255, 255, 255, 0.028);
+  background: var(--dante-temporal-editor-field-surface);
   font-size: 11px;
   white-space: nowrap;
 }
 
 .temporal-create-tree-confirmation.is-enabled {
   border-color: color-mix(in srgb, #ea5c12 34%, rgba(255, 255, 255, 0.105));
-  background: color-mix(in srgb, #ea5c12 6%, rgba(255, 255, 255, 0.028));
+  background: color-mix(in srgb, #ea5c12 6%, var(--dante-temporal-editor-field-surface));
 }
 
 .temporal-create-tree-confirmation__toggle {
