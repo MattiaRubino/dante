@@ -82,6 +82,8 @@ describe('Timeline timezone projection and browser preference', () => {
     expect(window.localStorage.getItem(TIMELINE_VIEW_ZONE_STORAGE_KEY)).toBe('Asia/Tokyo');
     expect(readTimelineViewZonePreference()).toBe('Asia/Tokyo');
     expect(() => saveTimelineViewZonePreference('+09:00')).toThrow();
+    expect(window.localStorage.getItem(TIMELINE_VIEW_ZONE_STORAGE_KEY))
+      .toBe('Asia/Tokyo');
     saveTimelineViewZonePreference(null);
     expect(readTimelineViewZonePreference()).toBeNull();
     window.localStorage.setItem(TIMELINE_VIEW_ZONE_STORAGE_KEY, 'Unknown/Zone');

@@ -16,13 +16,15 @@ export function readTimelineViewZonePreference(): string | null {
 }
 
 export function saveTimelineViewZonePreference(zoneId: string | null): void {
+  // Invalid named zones are a contract error, not a browser storage failure.
+  const validatedZoneId = zoneId === null ? null : validateNamedTimeZone(zoneId);
   if (typeof window === 'undefined') return;
   try {
-    if (zoneId === null) {
+    if (validatedZoneId === null) {
       window.localStorage.removeItem(TIMELINE_VIEW_ZONE_STORAGE_KEY);
     } else {
       window.localStorage.setItem(
-        TIMELINE_VIEW_ZONE_STORAGE_KEY, validateNamedTimeZone(zoneId),
+        TIMELINE_VIEW_ZONE_STORAGE_KEY, validatedZoneId,
       );
     }
   } catch {

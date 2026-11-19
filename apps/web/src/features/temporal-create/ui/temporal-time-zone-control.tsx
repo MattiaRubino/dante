@@ -40,7 +40,7 @@ export function localTimeZone(): string {
   }
 }
 
-export export function timeZoneGmtOffset(zoneId: string, day: string): string {
+export function timeZoneGmtOffset(zoneId: string, day: string): string {
   // Offset is computed for the event's date, not the current system date.
   // In particular, Europe/Rome changes between GMT+01 and GMT+02.
   const validDate = /^\d{4}-\d{2}-\d{2}$/.test(day) ? day : '2026-01-01';
