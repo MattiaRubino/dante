@@ -706,6 +706,17 @@ function TimelineDay({
   );
 }
 
+function formatRulerLocalDate(dateKey: string, locale: string): string {
+  const date = Temporal.PlainDate.from(dateKey);
+  const month = new Intl.DateTimeFormat(locale, {
+    month: 'short',
+    timeZone: 'UTC',
+  }).format(new Date(Date.UTC(date.year, date.month - 1, date.day)))
+    .replace(/\.$/, '')
+    .toLocaleLowerCase(locale);
+  return `${month}-${date.day}`;
+}
+
 export function TimelineDayStream({
   days,
   view = 'timeline',
@@ -727,7 +738,8 @@ export function TimelineDayStream({
   onMoveFeedback,
   onDragActiveChange,
 }: TimelineDayStreamProps) {
-  const { t } = useTranslation('common');
+  const { t, i18n } = useTranslation('common');
+  const rulerLocale = i18n.resolvedLanguage ?? i18n.language;
   const rulerStreamRef = useRef<HTMLDivElement | null>(null);
   const runtimeRef = useRef<DragRuntime | null>(null);
   const scrubberRef = useRef<HTMLDivElement | null>(null);
@@ -746,16 +758,12 @@ export function TimelineDayStream({
   const displayedDays = dragGeometry?.days ?? days;
   const rulerDays = useMemo(() => {
     const visibleDays = view === 'week' ? displayedDays.slice(0, 1) : displayedDays;
-    return visibleDays.map((day, index) => {
-      const nextDay = visibleDays[index + 1];
-      // A continuous day boundary has one clock label, owned by the following
-      // day's 00:00. Apply this to every ruler so their ticks stay identical.
-      const hasNextDayAtBoundary =
-        view === 'timeline' &&
-        nextDay?.dateKey === timelineDateKey(addTimelineDays(day.date, 1));
+    return visibleDays.map((day) => {
+      // Timeline midnight belongs to the following day's 00:00. A standalone
+      // Day ends after 23:00 without a terminal clock label. Keep Week as is.
       const ticks = timelineRulerLabels(day.mapper, state.zoom)
         .filter(({ minute }) =>
-          !hasNextDayAtBoundary || minute < TIMELINE_MINUTES_PER_DAY,
+          view === 'week' || minute < TIMELINE_MINUTES_PER_DAY,
         );
       return { day, ticks };
     });
@@ -764,14 +772,11 @@ export function TimelineDayStream({
     secondaryZoneIds.map((zone) => ({
       zone,
       days: rulerDays.map(({ day, ticks: primaryTicks }) => {
-        let previousDate: string | null = null;
         const ticks = primaryTicks.map(({ minute, minor }) => {
           const tick = timelineSecondaryRulerTick(
             day.dateKey, minute, primaryZoneId, zone,
           );
-          const showDate = previousDate !== tick.date;
-          previousDate = tick.date;
-          return { minute, minor, ...tick, showDate };
+          return { minute, minor, ...tick, showDate: tick.time === '00:00' };
         });
         return { dateKey: day.dateKey, height: day.height, mapper: day.mapper, ticks };
       }),
@@ -1539,7 +1544,7 @@ export function TimelineDayStream({
                       {tick.time}
                       {tick.showDate ? (
                         <small className="timeline-ruler-label__day-shift">
-                          {tick.date.slice(5)}
+                          {formatRulerLocalDate(tick.date, rulerLocale)}
                         </small>
                       ) : null}
                     </span>

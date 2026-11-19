@@ -179,7 +179,7 @@ describe('Timeline pointer drag geometry stability', () => {
 });
 
 describe('Timeline rulers at a continuous day boundary', () => {
-  it('shows one label in every zone at midnight while preserving Day mode', () => {
+  it('shows one midnight label in Timeline, no terminal label in Day, and dates only at local midnight', () => {
     const state = createInitialTimelineState();
     const anchor = Temporal.PlainDate.from('2026-11-19');
     const days = buildTimelineRenderedDays(anchor, 0, 1, {
@@ -230,6 +230,7 @@ describe('Timeline rulers at a continuous day boundary', () => {
     const primaryMidnight = at(primaryDays[1], next.mapper.map(0));
     expect(primaryMidnight).toHaveLength(1);
     expect(primaryMidnight[0]?.textContent).toBe('00:00');
+    expect(at(primaryDays[1], next.mapper.map(1440))).toHaveLength(0);
 
     for (const [zone, expectedClock] of [
       ['Europe/London', '23:00'],
@@ -251,23 +252,41 @@ describe('Timeline rulers at a continuous day boundary', () => {
       expect(nextMidnight).toHaveLength(1);
       expect(nextMidnight[0]?.textContent).toContain(expectedClock);
       expect(nextMidnight[0]?.className).toBe(primaryMidnight[0]?.className);
+      expect(nextMidnight[0]?.querySelector('.timeline-ruler-label__day-shift'))
+        .toBeNull();
+      for (const rulerDay of rulerDays) {
+        for (const label of labels(rulerDay)) {
+          const date = label.querySelector('.timeline-ruler-label__day-shift');
+          if (label.firstChild?.textContent === '00:00') {
+            expect(date?.textContent).toMatch(/^nov-(19|20)$/);
+          } else {
+            expect(date).toBeNull();
+          }
+        }
+      }
       expect(at(rulerDays[0], first.mapper.map(1380))).toHaveLength(1);
     }
 
-    // Standalone Day keeps its existing terminal tick in both kinds of ruler.
+    // Day ends with the 23:00 label and an unlabeled boundary line.
     rerender(<TimelineDayStream {...props} view="day" days={[first]} />);
-    const singleDaySecondary = container.querySelector<HTMLElement>(
-      '.timeline-ruler-column--secondary .timeline-ruler-day',
-    );
-    const terminalLabels = Array.from(singleDaySecondary?.querySelectorAll<HTMLElement>(
-      '.timeline-ruler-label',
-    ) ?? []).filter((label) =>
-      Math.abs(Number.parseFloat(label.style.top) - first.mapper.map(1440)) < 0.001,
-    );
-    expect(terminalLabels).toHaveLength(1);
     const singleDayPrimary = container.querySelector<HTMLElement>(
       '.timeline-ruler-column--primary .timeline-ruler-day',
     );
-    expect(at(singleDayPrimary, first.mapper.map(1440))).toHaveLength(1);
+    for (const column of container.querySelectorAll<HTMLElement>(
+      '.timeline-ruler-column',
+    )) {
+      const rulerDay = column.querySelector<HTMLElement>('.timeline-ruler-day');
+      expect(at(rulerDay, first.mapper.map(1440))).toHaveLength(0);
+      expect(at(rulerDay, first.mapper.map(1380))).toHaveLength(1);
+    }
+    expect(at(singleDayPrimary, first.mapper.map(1380))[0]?.textContent)
+      .toBe('23:00');
+
+    // The auxiliary Week view is not part of the Day presentation change.
+    rerender(<TimelineDayStream {...props} view="week" days={[first]} />);
+    const weekPrimary = container.querySelector<HTMLElement>(
+      '.timeline-ruler-column--primary .timeline-ruler-day',
+    );
+    expect(at(weekPrimary, first.mapper.map(1440))).toHaveLength(1);
   });
 });

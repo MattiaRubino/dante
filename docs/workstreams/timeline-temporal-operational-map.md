@@ -1,5 +1,23 @@
 # Timeline / Temporal-Operational — Live Execution Ledger
 
+## 2026-11-19 — Ruler endpoint and secondary date labels
+
+The owner chose a final visible-clock rule for each mode. The continuous
+multi-day Timeline labels midnight at the following day's 00:00. At the
+loaded window's end it leaves the boundary unlabeled rather than showing
+24:00. The single Day view ends with 23:00 and an unlabeled boundary line; its
+terminal 00:00/24:00 label is not rendered in any ruler. Week tick positions
+remain unchanged. All ruler columns share the same tick positions and hour
+typography.
+
+A secondary time zone's small date annotation now appears only beneath a
+displayed 00:00 in that zone, formatted as a localized abbreviated month and
+day (for Italian, nov-19). This replaces the ambiguous MM-DD annotation on
+the first tick of every primary day. The current instant projection and card
+positions do not change. The focused renderer regression covers Timeline,
+Day, Week, two comparison zones and local-midnight annotations. Owner-local
+test execution and visual review are **NOT_RUN**.
+
 ## 2026-11-19 — Continuous Timeline midnight visual follow-up
 
 Owner screenshots after the secondary-zone fix showed the primary ruler still
