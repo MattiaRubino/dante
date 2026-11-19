@@ -1371,9 +1371,15 @@ export function RecurringSeriesEditor({
                     onChange={changePattern}
                     options={[
                       { value: 'daily', label: 'Ogni giorno' },
-                      { value: 'weekly_weekdays', label: 'Giorni della settimana' },
+                      {
+                        value: 'weekly_weekdays',
+                        label: 'Giorni della settimana',
+                      },
                       { value: 'monthly_month_days', label: 'Giorni del mese' },
-                      { value: 'monthly_ordinal_weekdays', label: 'Settimana del mese' },
+                      {
+                        value: 'monthly_ordinal_weekdays',
+                        label: 'Settimana del mese',
+                      },
                       { value: 'yearly_month_days', label: 'Giorni dell’anno' },
                       { value: 'anchor_step', label: 'Passo fisso' },
                     ]}
