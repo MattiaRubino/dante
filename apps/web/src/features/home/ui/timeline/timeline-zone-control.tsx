@@ -2,6 +2,7 @@ import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 
 import { timeZoneGmtOffset } from '../../../temporal-create/ui/temporal-time-zone-control';
+import { sameTimelineTimeZone } from '../../../temporal/timeline-view-zone';
 
 import './timeline-zone-control.css';
 
@@ -9,7 +10,11 @@ type Props = Readonly<{
   effectiveZoneId: string;
   selectedZoneId: string | null;
   date: string;
+  secondaryZoneIds: readonly string[];
   onSelect: (zoneId: string | null) => void;
+  onAddSecondaryZone: (zoneId: string) => void;
+  onRemoveSecondaryZone: (zoneId: string) => void;
+  onReorderSecondaryZones: () => void;
 }>;
 
 const COMMON_ZONES = ['UTC', 'Europe/Rome', 'Europe/London',
@@ -32,7 +37,9 @@ function compactOffset(offset: string): string {
 }
 
 export function TimelineZoneControl({
-  effectiveZoneId, selectedZoneId, date, onSelect,
+  effectiveZoneId, selectedZoneId, date, secondaryZoneIds,
+  onSelect, onAddSecondaryZone, onRemoveSecondaryZone,
+  onReorderSecondaryZones,
 }: Props) {
   const rootRef = useRef<HTMLDivElement>(null);
   const triggerRef = useRef<HTMLButtonElement>(null);
@@ -46,16 +53,17 @@ export function TimelineZoneControl({
   const offset = compactOffset(timeZoneGmtOffset(effectiveZoneId, date));
   const choices = useMemo(() => {
     const needle = query.trim().toLowerCase();
-    const ordered = [selectedZoneId, ...COMMON_ZONES, ...ALL_ZONES]
+    const ordered = [selectedZoneId, ...secondaryZoneIds, ...COMMON_ZONES, ...ALL_ZONES]
       .filter((zone): zone is string => zone !== null);
     const matching = [...new Set(ordered)].filter((zone) => {
       if (!needle) return true;
       const offset = timeZoneGmtOffset(zone, date).toLowerCase();
-      return zone.toLowerCase().replaceAll('_', ' ').includes(needle) ||
+      return zone.toLowerCase().includes(needle) ||
+        zone.toLowerCase().replaceAll('_', ' ').includes(needle) ||
         offset.includes(needle) || compactOffset(offset).toLowerCase().includes(needle);
     });
     return matching.slice(0, 80);
-  }, [date, query, selectedZoneId]);
+  }, [date, query, selectedZoneId, secondaryZoneIds]);
 
   useLayoutEffect(() => {
     if (!open) return;
@@ -113,8 +121,22 @@ export function TimelineZoneControl({
     triggerRef.current?.focus({ preventScroll: true });
   };
 
+  const atCapacity = secondaryZoneIds.length >= 2;
+  const shortZone = (zone: string) => zone.split('/').at(-1)?.replaceAll('_', ' ') ?? zone;
+
   return (
     <div className="dante-timeline-zone" ref={rootRef}>
+      {secondaryZoneIds.map((zone) => (
+        <span
+          className="dante-timeline-zone__secondary-rail"
+          key={zone}
+          title={'Fuso secondario: ' + zone}
+          aria-label={'Fuso secondario: ' + zone}
+        >
+          <span>{shortZone(zone)}</span>
+          <small>{compactOffset(timeZoneGmtOffset(zone, date))}</small>
+        </span>
+      ))}
       <button
         ref={triggerRef}
         type="button"
@@ -141,7 +163,10 @@ export function TimelineZoneControl({
         <div ref={panelRef} className="dante-timeline-zone__panel" role="dialog"
           aria-label="Fuso orario della Timeline"
           style={position ?? { opacity: 0, pointerEvents: 'none' }}>
-          <strong>Fuso orario della Timeline</strong>
+          <div className="dante-timeline-zone__heading">
+            <strong>Fuso orario della Timeline</strong>
+            <span aria-live="polite">{secondaryZoneIds.length + 1} di 3 fusi</span>
+          </div>
           <input ref={searchRef} type="search"
             aria-label="Cerca fuso o GMT"
             placeholder="Cerca città, fuso o GMT…"
@@ -154,16 +179,49 @@ export function TimelineZoneControl({
               <span>Automatico · dispositivo</span>
               {selectedZoneId === null ? <span aria-hidden="true">✓</span> : null}
             </button>
-            {choices.map((zone) => (
-              <button key={zone} type="button" role="option"
-                aria-selected={selectedZoneId === zone}
-                onClick={() => select(zone)}>
-                <span>{timeZoneGmtOffset(zone, date)} · {zone.replaceAll('_', ' ')}</span>
-                {selectedZoneId === zone ? <span aria-hidden="true">✓</span> : null}
-              </button>
-            ))}
+            {choices.map((zone) => {
+              const isPrimary = sameTimelineTimeZone(zone, effectiveZoneId);
+              const secondary = secondaryZoneIds.find(
+                (stored) => sameTimelineTimeZone(stored, zone),
+              );
+              const isSecondary = secondary !== undefined;
+              return (
+                <div className="dante-timeline-zone__option-row" key={zone}>
+                  <button type="button" role="option"
+                    className="dante-timeline-zone__option-name"
+                    aria-selected={isPrimary}
+                    title={isSecondary ? 'Rendi principale: ' + zone : undefined}
+                    onClick={() => select(zone)}>
+                    <span>{timeZoneGmtOffset(zone, date)} · {zone.replaceAll('_', ' ')}</span>
+                    {isPrimary ? <span aria-hidden="true">✓</span> : null}
+                  </button>
+                  {isSecondary ? (
+                    <>
+                      {secondaryZoneIds.length === 2 ? (
+                        <button type="button" className="dante-timeline-zone__option-action"
+                          aria-label={'Inverti ordine dei fusi secondari: ' + zone}
+                          title="Inverti ordine dei fusi secondari"
+                          onClick={onReorderSecondaryZones}>⇄</button>
+                      ) : null}
+                      <button type="button" className="dante-timeline-zone__option-action"
+                        aria-label={'Rimuovi fuso secondario: ' + zone}
+                        title={'Rimuovi fuso secondario: ' + zone}
+                        onClick={() => onRemoveSecondaryZone(secondary ?? zone)}>×</button>
+                    </>
+                  ) : !isPrimary && !atCapacity ? (
+                    <button type="button" className="dante-timeline-zone__option-action"
+                      aria-label={'Aggiungi fuso secondario: ' + zone}
+                      title={'Aggiungi fuso secondario: ' + zone}
+                      onClick={() => onAddSecondaryZone(zone)}>+</button>
+                  ) : null}
+                </div>
+              );
+            })}
             {choices.length === 0 ? <p>Nessun fuso trovato</p> : null}
           </div>
+          {atCapacity ? <p className="dante-timeline-zone__limit">
+            Massimo 3 fusi. Rimuovine uno per aggiungerne un altro.
+          </p> : null}
         </div>, document.body,
       ) : null}
     </div>

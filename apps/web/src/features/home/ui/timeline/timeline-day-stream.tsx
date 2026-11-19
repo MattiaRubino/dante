@@ -7,6 +7,7 @@ import {
   useCallback,
   useEffect,
   useLayoutEffect,
+  useMemo,
   useRef,
   useState,
 } from 'react';
@@ -14,6 +15,7 @@ import { useTranslation } from 'react-i18next';
 
 import { ActivitySessionCardControls } from '../../../temporal/activity-session-card-controls';
 import { ActivityPlannedSessionsCardDetail } from '../../../temporal/activity-planned-sessions-card-detail';
+import { timelineSecondaryRulerTick } from '../../../temporal/timeline-view-zone';
 import { computeTimelineGaps } from './model/timeline-layout';
 import { timelineCardIdentity } from './model/timeline-card-identity';
 import {
@@ -63,6 +65,9 @@ type TimelineEventMove = Readonly<{
 type TimelineDayStreamProps = Readonly<{
   days: readonly TimelineRenderedDay[];
   view?: 'timeline' | 'day' | 'week';
+  /** View-only comparison rulers. The original drag and Session geometry is unchanged. */
+  primaryZoneId?: string;
+  secondaryZoneIds?: readonly string[];
   today: PlainDate;
   nowMinute: number;
   state: TimelineState;
@@ -704,6 +709,8 @@ function TimelineDay({
 export function TimelineDayStream({
   days,
   view = 'timeline',
+  primaryZoneId = 'Europe/Rome',
+  secondaryZoneIds = [],
   today,
   nowMinute,
   state,
@@ -737,6 +744,26 @@ export function TimelineDayStream({
   } | null>(null);
   const dragGeometryRef = useRef<readonly TimelineRenderedDay[] | null>(null);
   const displayedDays = dragGeometry?.days ?? days;
+  const secondaryRulers = useMemo(() => (
+    secondaryZoneIds.map((zone) => ({
+      zone,
+      days: (view === 'week' ? displayedDays.slice(0, 1) : displayedDays).map(
+        (day) => {
+          const primaryTicks = timelineRulerLabels(day.mapper, state.zoom);
+          let previousDate: string | null = null;
+          const ticks = primaryTicks.map(({ minute, minor }) => {
+            const tick = timelineSecondaryRulerTick(
+              day.dateKey, minute, primaryZoneId, zone,
+            );
+            const showDate = previousDate !== tick.date;
+            previousDate = tick.date;
+            return { minute, minor, ...tick, showDate };
+          });
+          return { dateKey: day.dateKey, height: day.height, mapper: day.mapper, ticks };
+        },
+      ),
+    }))
+  ), [secondaryZoneIds, displayedDays, view, state.zoom, primaryZoneId]);
   const openActivityRefs = new Set(
     displayedDays.flatMap((day) =>
       day.layouts.flatMap((layout) => {
@@ -1479,27 +1506,54 @@ export function TimelineDayStream({
     >
       <div className="timeline-ruler" aria-hidden="true">
         <div ref={rulerStreamRef} className="timeline-ruler-stream">
-          {(view === 'week' ? displayedDays.slice(0, 1) : displayedDays).map(
-            (day) => (
-              <div
-                className="timeline-ruler-day"
-                key={day.dateKey}
-                style={{ height: day.height }}
-              >
-                {timelineRulerLabels(day.mapper, state.zoom).map(
-                  ({ minute, minor }) => (
+          {secondaryRulers.map(({ zone, days: rulerDays }) => (
+            <div className="timeline-ruler-column timeline-ruler-column--secondary"
+              data-secondary-time-zone={zone} key={zone}>
+              {rulerDays.map((day) => (
+                <div className="timeline-ruler-day" key={day.dateKey}
+                  style={{ height: day.height }}>
+                  {day.ticks.map((tick) => (
                     <span
-                      className={`timeline-ruler-label${minor ? ' is-minor' : ''}`}
-                      key={minute}
-                      style={{ top: day.mapper.map(minute) }}
+                      className={`timeline-ruler-label${tick.minor ? ' is-minor' : ''}`}
+                      key={tick.minute}
+                      title={zone + ' · ' + tick.date + ' ' + tick.time}
+                      style={{ top: day.mapper.map(tick.minute) }}
                     >
-                      {formatTimelineMinute(minute)}
+                      {tick.time}
+                      {tick.showDate ? (
+                        <small className="timeline-ruler-label__day-shift">
+                          {tick.date.slice(5)}
+                        </small>
+                      ) : null}
                     </span>
-                  ),
-                )}
-              </div>
-            ),
-          )}
+                  ))}
+                </div>
+              ))}
+            </div>
+          ))}
+          <div className="timeline-ruler-column timeline-ruler-column--primary">
+            {(view === 'week' ? displayedDays.slice(0, 1) : displayedDays).map(
+              (day) => (
+                <div
+                  className="timeline-ruler-day"
+                  key={day.dateKey}
+                  style={{ height: day.height }}
+                >
+                  {timelineRulerLabels(day.mapper, state.zoom).map(
+                    ({ minute, minor }) => (
+                      <span
+                        className={`timeline-ruler-label${minor ? ' is-minor' : ''}`}
+                        key={minute}
+                        style={{ top: day.mapper.map(minute) }}
+                      >
+                        {formatTimelineMinute(minute)}
+                      </span>
+                    ),
+                  )}
+                </div>
+              ),
+            )}
+          </div>
         </div>
       </div>
 

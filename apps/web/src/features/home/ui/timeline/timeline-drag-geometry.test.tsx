@@ -65,8 +65,12 @@ describe('Timeline pointer drag geometry stability', () => {
       onDragActiveChange: vi.fn(),
     };
     const { container, rerender } = render(
-      <TimelineDayStream {...props} days={original} nowMinute={14 * 60 + 20} />,
+      <TimelineDayStream {...props} days={original}
+        primaryZoneId="Europe/Rome"
+        secondaryZoneIds={['America/New_York']}
+        nowMinute={14 * 60 + 20} />,
     );
+    expect(container.querySelectorAll('.timeline-ruler-column--secondary')).toHaveLength(1);
     const section = () =>
       container.querySelector<HTMLElement>('.timeline-day-section');
     const card = container.querySelector<HTMLElement>(
@@ -115,9 +119,13 @@ describe('Timeline pointer drag geometry stability', () => {
       <TimelineDayStream
         {...props}
         days={[stretched]}
+        primaryZoneId="Europe/Rome"
+        secondaryZoneIds={['America/New_York', 'Asia/Tokyo']}
         nowMinute={14 * 60 + 25}
       />,
     );
+    expect(container.querySelectorAll('.timeline-ruler-column--secondary')).toHaveLength(2);
+    expect(container.querySelectorAll('[data-timeline-event="7"]')).toHaveLength(1);
     expect(section()?.style.height).toBe(`${first.height}px`);
     expect(
       container.querySelector('.timeline-ruler-day')?.getAttribute('style'),

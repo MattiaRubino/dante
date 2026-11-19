@@ -4,6 +4,14 @@ import { afterEach, describe, expect, it } from 'vitest';
 import type { TemporalTimelineWindow } from './timeline-read';
 import {
   TIMELINE_VIEW_ZONE_STORAGE_KEY,
+  TIMELINE_SECONDARY_ZONES_STORAGE_KEY,
+  addTimelineSecondaryZone,
+  normalizeTimelineSecondaryZones,
+  readTimelineSecondaryZones,
+  saveTimelineSecondaryZones,
+  sameTimelineTimeZone,
+  swapTimelinePrimaryZone,
+  timelineSecondaryRulerTick,
   projectTimelineWindowInZone,
   readTimelineViewZonePreference,
   saveTimelineViewZonePreference,
@@ -11,8 +19,60 @@ import {
 } from './timeline-view-zone';
 
 afterEach(() => window.localStorage.removeItem(TIMELINE_VIEW_ZONE_STORAGE_KEY));
+// The two view-only preferences must not leak across tests.
+afterEach(() => window.localStorage.removeItem(TIMELINE_SECONDARY_ZONES_STORAGE_KEY));
 
 describe('Timeline timezone projection and browser preference', () => {
+
+  it('adds up to two secondary zones, ignores duplicates and swaps a selected secondary into primary', () => {
+    const first = addTimelineSecondaryZone('Europe/Rome', [], 'America/New_York');
+    expect(first).toEqual(['America/New_York']);
+    expect(addTimelineSecondaryZone('Europe/Rome', first, 'Europe/Rome')).toEqual(first);
+    expect(addTimelineSecondaryZone('Europe/Rome', first, 'America/New_York')).toEqual(first);
+    const both = addTimelineSecondaryZone('Europe/Rome', first, 'Asia/Tokyo');
+    expect(addTimelineSecondaryZone('Europe/Rome', both, 'Asia/Kolkata')).toEqual(both);
+    expect(swapTimelinePrimaryZone('Europe/Rome', 'Asia/Tokyo', both))
+      .toEqual(['America/New_York', 'Europe/Rome']);
+    expect(swapTimelinePrimaryZone('Europe/Rome', 'Europe/London', both))
+      .toEqual(both);
+    expect(() => addTimelineSecondaryZone('Europe/Rome', [], '+09:00')).toThrow();
+    expect(sameTimelineTimeZone('UTC', 'Etc/UTC')).toBe(true);
+    expect(addTimelineSecondaryZone('Etc/UTC', [], 'UTC')).toEqual([]);
+    expect(normalizeTimelineSecondaryZones('Etc/UTC', ['UTC', 'Asia/Tokyo']))
+      .toEqual(['Asia/Tokyo']);
+  });
+
+  it('persists ordered secondary IANA zones, sanitizes bad browser state and rejects invalid writes', () => {
+    saveTimelineSecondaryZones(['America/New_York', 'Asia/Kolkata']);
+    expect(readTimelineSecondaryZones('Europe/Rome'))
+      .toEqual(['America/New_York', 'Asia/Kolkata']);
+    expect(readTimelineSecondaryZones('Asia/Kolkata')).toEqual(['America/New_York']);
+    expect(() => saveTimelineSecondaryZones(['+09:00'])).toThrow();
+    expect(readTimelineSecondaryZones('Europe/Rome'))
+      .toEqual(['America/New_York', 'Asia/Kolkata']);
+    window.localStorage.setItem(TIMELINE_SECONDARY_ZONES_STORAGE_KEY,
+      JSON.stringify(['America/New_York', 'Unknown/Zone', 'America/New_York', 'Asia/Tokyo']));
+    expect(readTimelineSecondaryZones('Europe/Rome'))
+      .toEqual(['America/New_York', 'Asia/Tokyo']);
+    window.localStorage.setItem(TIMELINE_SECONDARY_ZONES_STORAGE_KEY, '{broken');
+    expect(readTimelineSecondaryZones('Europe/Rome')).toEqual([]);
+    expect(normalizeTimelineSecondaryZones('Europe/Rome', ['Europe/Rome', null, 'UTC']))
+      .toEqual(['UTC']);
+  });
+
+  it('aligns fractional-offset and cross-midnight secondary labels by primary instant', () => {
+    expect(timelineSecondaryRulerTick('2026-11-19', 8 * 60, 'Europe/Rome', 'America/New_York'))
+      .toMatchObject({ time: '02:00', date: '2026-11-19', dayDelta: 0 });
+    expect(timelineSecondaryRulerTick('2026-11-19', 30, 'Europe/Rome', 'America/New_York'))
+      .toMatchObject({ time: '18:30', date: '2026-11-18', dayDelta: -1 });
+    expect(timelineSecondaryRulerTick('2026-11-19', 9 * 60, 'Europe/Rome', 'Asia/Kathmandu'))
+      .toMatchObject({ time: '13:45', dayDelta: 0 });
+    expect(timelineSecondaryRulerTick('2026-03-29', 2 * 60 + 30,
+      'Europe/Rome', 'America/New_York'))
+      .toMatchObject({ time: '—', missingPrimaryHour: true });
+    expect(() => timelineSecondaryRulerTick('2026-11-19', 1441,
+      'Europe/Rome', 'Asia/Tokyo')).toThrow();
+  });
   it('converts both boundaries from canonical instants without altering source zones or Schedule identity', () => {
     const source: TemporalTimelineWindow = {
       kind: 'window',

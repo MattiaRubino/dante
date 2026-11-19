@@ -7,7 +7,10 @@ import { TIMELINE_PROTOTYPE_TODAY } from './model/timeline-fixtures';
 import { timelineCardIdentity } from './model/timeline-card-identity';
 import type { TimelineEvent } from './model/timeline-types';
 import { timelineCardPlannedIntervalLabel } from './timeline-day-stream';
-import { TIMELINE_VIEW_ZONE_STORAGE_KEY } from '../../../temporal/timeline-view-zone';
+import {
+  TIMELINE_VIEW_ZONE_STORAGE_KEY,
+  TIMELINE_SECONDARY_ZONES_STORAGE_KEY,
+} from '../../../temporal/timeline-view-zone';
 import {
   timelineCardTitlePreview,
   timelineDragSnapMinutes,
@@ -27,6 +30,7 @@ afterEach(() => {
   cleanup();
   document.body.innerHTML = '';
   window.localStorage.removeItem(TIMELINE_VIEW_ZONE_STORAGE_KEY);
+  window.localStorage.removeItem(TIMELINE_SECONDARY_ZONES_STORAGE_KEY);
 });
 
 type RenderTimelineOptions = Readonly<{
@@ -532,6 +536,81 @@ describe('TimelineSurface production parity', () => {
 
     expect(onExpandedChange).toHaveBeenCalledWith(true);
     expect(onExpansionProgress).toHaveBeenCalledWith(1);
+  });
+
+  it('adds exactly two independent comparison rulers and preserves operational cards and area controls', () => {
+    const { container } = renderTimeline();
+    const zoneButton = () => screen.getByRole('button', {
+      name: /Fuso orario della Timeline:/,
+    });
+    fireEvent.click(zoneButton());
+    fireEvent.change(screen.getByRole('searchbox', { name: 'Cerca fuso o GMT' }), {
+      target: { value: 'Europe/Rome' },
+    });
+    fireEvent.click(screen.getByRole('option', { name: /Europe\/Rome/ }));
+    fireEvent.click(zoneButton());
+    fireEvent.change(screen.getByRole('searchbox', { name: 'Cerca fuso o GMT' }), {
+      target: { value: 'America/New_York' },
+    });
+    fireEvent.click(screen.getByRole('button', {
+      name: 'Aggiungi fuso secondario: America/New_York',
+    }));
+    expect(screen.getByRole('dialog', { name: 'Fuso orario della Timeline' })).toBeTruthy();
+    expect(container.querySelectorAll('.timeline-ruler-column--secondary')).toHaveLength(1);
+    fireEvent.change(screen.getByRole('searchbox', { name: 'Cerca fuso o GMT' }), {
+      target: { value: 'Asia/Tokyo' },
+    });
+    fireEvent.click(screen.getByRole('button', {
+      name: 'Aggiungi fuso secondario: Asia/Tokyo',
+    }));
+    expect(container.querySelectorAll('.timeline-ruler-column--secondary')).toHaveLength(2);
+    expect(container.querySelectorAll('.timeline-ruler-column--primary')).toHaveLength(1);
+    expect(container.querySelector('.home-timeline--production')?.getAttribute('style'))
+      .toContain('124px');
+    expect(screen.getByText('3 di 3 fusi')).toBeTruthy();
+    fireEvent.change(screen.getByRole('searchbox', { name: 'Cerca fuso o GMT' }), {
+      target: { value: 'America/New_York' },
+    });
+    fireEvent.click(screen.getByRole('button', {
+      name: 'Inverti ordine dei fusi secondari: America/New_York',
+    }));
+    expect(JSON.parse(window.localStorage.getItem(TIMELINE_SECONDARY_ZONES_STORAGE_KEY) ?? '[]'))
+      .toEqual(['Asia/Tokyo', 'America/New_York']);
+    fireEvent.click(screen.getByRole('button', {
+      name: 'Inverti ordine dei fusi secondari: America/New_York',
+    }));
+    expect(JSON.parse(window.localStorage.getItem(TIMELINE_SECONDARY_ZONES_STORAGE_KEY) ?? '[]'))
+      .toEqual(['America/New_York', 'Asia/Tokyo']);
+    expect(screen.queryByRole('button', { name: /Aggiungi fuso secondario:/ }))
+      .toBeNull();
+    expect(container.querySelector('.dante-timeline-group-reset')).toBeTruthy();
+    expect(container.querySelectorAll('[data-timeline-event="7"]')).toHaveLength(1);
+    expect(container.querySelectorAll('.timeline-grid')).toHaveLength(1);
+
+    fireEvent.change(screen.getByRole('searchbox', { name: 'Cerca fuso o GMT' }), {
+      target: { value: 'America/New_York' },
+    });
+    fireEvent.click(screen.getByRole('option', { name: /New York/ }));
+    expect(zoneButton().getAttribute('aria-label')).toContain('America/New_York');
+    expect(JSON.parse(window.localStorage.getItem(TIMELINE_SECONDARY_ZONES_STORAGE_KEY) ?? '[]'))
+      .toEqual(['Europe/Rome', 'Asia/Tokyo']);
+    expect(container.querySelectorAll('.timeline-ruler-column--secondary')).toHaveLength(2);
+
+    fireEvent.click(zoneButton());
+    fireEvent.change(screen.getByRole('searchbox', { name: 'Cerca fuso o GMT' }), {
+      target: { value: 'Asia/Tokyo' },
+    });
+    fireEvent.click(screen.getByRole('button', {
+      name: 'Rimuovi fuso secondario: Asia/Tokyo',
+    }));
+    expect(screen.getByText('2 di 3 fusi')).toBeTruthy();
+    expect(screen.getByRole('button', {
+      name: 'Aggiungi fuso secondario: Asia/Tokyo',
+    })).toBeTruthy();
+    expect(container.querySelectorAll('.timeline-ruler-column--secondary')).toHaveLength(1);
+    fireEvent.click(screen.getByRole('button', { name: 'Scegli vista Timeline' }));
+    fireEvent.click(screen.getByRole('menuitemradio', { name: 'Giorno' }));
+    expect(container.querySelectorAll('.timeline-ruler-column--secondary')).toHaveLength(1);
   });
 
   it('places the timezone selector under the + and keeps the choice across views', () => {

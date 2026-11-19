@@ -109,7 +109,11 @@ type TimelineHeaderProps = Readonly<{
   viewDate: PlainDate;
   effectiveZoneId: string;
   selectedViewZoneId: string | null;
+  secondaryZoneIds: readonly string[];
   onViewZoneChange: (zoneId: string | null) => void;
+  onAddSecondaryZone: (zoneId: string) => void;
+  onRemoveSecondaryZone: (zoneId: string) => void;
+  onReorderSecondaryZones: () => void;
   timelineView: 'timeline' | 'day' | 'week';
   onTimelineViewChange: (view: 'timeline' | 'day' | 'week') => void;
   groups: readonly TimelineGroup[];
@@ -145,7 +149,11 @@ export function TimelineHeader({
   viewDate,
   effectiveZoneId,
   selectedViewZoneId,
+  secondaryZoneIds,
   onViewZoneChange,
+  onAddSecondaryZone,
+  onRemoveSecondaryZone,
+  onReorderSecondaryZones,
   timelineView,
   onTimelineViewChange,
   groups,
@@ -461,8 +469,12 @@ export function TimelineHeader({
         <TimelineZoneControl
           effectiveZoneId={effectiveZoneId}
           selectedZoneId={selectedViewZoneId}
+          secondaryZoneIds={secondaryZoneIds}
           date={viewDate.toString()}
           onSelect={onViewZoneChange}
+          onAddSecondaryZone={onAddSecondaryZone}
+          onRemoveSecondaryZone={onRemoveSecondaryZone}
+          onReorderSecondaryZones={onReorderSecondaryZones}
         />
         <button
           className={`dante-timeline-group-reset${hasGroupFocus ? ' is-active' : ''}`}

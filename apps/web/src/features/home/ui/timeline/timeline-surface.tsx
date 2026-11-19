@@ -5,6 +5,7 @@ import {
   type PlainDateTime,
 } from '@dante/time';
 import {
+  type CSSProperties,
   type KeyboardEvent,
   type PointerEvent as ReactPointerEvent,
   useCallback,
@@ -34,6 +35,13 @@ import {
 } from '../../../temporal/remote-session-data-source';
 import { createRemoteRecurringProfileEdit } from '../../../temporal/remote-recurring-profile-edit';
 import { useTemporalTimelineRuntime } from '../../../temporal/timeline-runtime-boundary';
+import {
+  addTimelineSecondaryZone,
+  normalizeTimelineSecondaryZones,
+  readTimelineSecondaryZones,
+  saveTimelineSecondaryZones,
+  swapTimelinePrimaryZone,
+} from '../../../temporal/timeline-view-zone';
 import { REVIEW_QUEUE_INVALIDATED } from '../context-rail/review-events';
 import { useSessionPanel } from '../../../temporal/use-session-panel';
 import { useSessionPanelPresentation } from './timeline-session-panel';
@@ -261,6 +269,17 @@ export function TimelineSurface({
   const locale = i18n.resolvedLanguage ?? i18n.language;
   const prototypeMode = import.meta.env.MODE === 'test';
   const clockZone = viewZoneId ?? effectiveZoneId ?? detectDeviceTimeZone();
+  const [secondaryZones, setSecondaryZones] = useState<readonly string[]>(
+    () => readTimelineSecondaryZones(clockZone),
+  );
+  const visibleSecondaryZones = useMemo(
+    () => normalizeTimelineSecondaryZones(clockZone, secondaryZones),
+    [clockZone, secondaryZones],
+  );
+  const commitSecondaryZones = (next: readonly string[]) => {
+    saveTimelineSecondaryZones(next);
+    setSecondaryZones(next);
+  };
   const now = Temporal.Now.zonedDateTimeISO(clockZone);
   const timelineToday = prototypeMode
     ? TIMELINE_PROTOTYPE_TODAY
@@ -1617,6 +1636,10 @@ export function TimelineSurface({
       data-home-region="timeline"
       data-home-timeline-state={expanded ? 'expanded' : 'normal'}
       data-timeline-card-dragging={dragSnapshot === null ? 'false' : 'true'}
+      style={{
+        '--dante-timeline-extra-ruler-width':
+          String(visibleSecondaryZones.length * 62) + 'px',
+      } as CSSProperties}
       aria-label={t(($) => $.common.home.timeline.label)}
     >
       <TimelineHeader
@@ -1626,6 +1649,22 @@ export function TimelineSurface({
         viewDate={viewDate}
         effectiveZoneId={clockZone}
         selectedViewZoneId={viewZoneId}
+        secondaryZoneIds={visibleSecondaryZones}
+        onAddSecondaryZone={(zoneId) => {
+          commitSecondaryZones(addTimelineSecondaryZone(
+            clockZone, visibleSecondaryZones, zoneId,
+          ));
+        }}
+        onRemoveSecondaryZone={(zoneId) => {
+          commitSecondaryZones(visibleSecondaryZones.filter(
+            (secondary) => secondary !== zoneId,
+          ));
+        }}
+        onReorderSecondaryZones={() => {
+          if (visibleSecondaryZones.length === 2) {
+            commitSecondaryZones([...visibleSecondaryZones].reverse());
+          }
+        }}
         onViewZoneChange={(nextZone) => {
           if (nextZone === viewZoneId) return;
           // Preserve the observed INSTANT, not the old local hour,
@@ -1658,6 +1697,9 @@ export function TimelineSurface({
             setViewDate(newDate);
             publishViewportDate(newDate);
           }
+          commitSecondaryZones(swapTimelinePrimaryZone(
+            clockZone, zone, visibleSecondaryZones,
+          ));
           setViewZoneId(nextZone);
         }}
         timelineView={timelineView}
@@ -1791,6 +1833,8 @@ export function TimelineSurface({
       <TimelineDayStream
         days={visibleRenderedDays}
         view={timelineView}
+        primaryZoneId={clockZone}
+        secondaryZoneIds={visibleSecondaryZones}
         today={timelineToday}
         nowMinute={visibleNowMinute}
         onDragActiveChange={(active) => {
