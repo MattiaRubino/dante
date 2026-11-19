@@ -761,6 +761,14 @@ test('Activity and Event repeat selectors stay inside one shared panel in Create
             noExtraMutationAction:
               root.querySelectorAll('.timeline-existing-recurrence__actions')
                 .length === 0,
+            selectorFont: getComputedStyle(select).fontSize,
+            selectorBackground: getComputedStyle(select).backgroundColor,
+            optionBackground: getComputedStyle(select.options[0]!).backgroundColor,
+            settingFont: getComputedStyle(
+              detail.querySelector<HTMLElement>(
+                '.temporal-create-repeat__row-label',
+              )!,
+            ).fontSize,
             stacked: choiceBox.bottom <= detailBox.top,
             contained:
               choiceBox.left >= box.left - 1 &&
@@ -779,6 +787,10 @@ test('Activity and Event repeat selectors stay inside one shared panel in Create
       kind: 'activity',
       hasSinglePanel: true,
       noExtraMutationAction: true,
+      selectorFont: '17px',
+      selectorBackground: 'rgb(25, 35, 40)',
+      optionBackground: 'rgb(25, 35, 40)',
+      settingFont: '17px',
       stacked: true,
       contained: true,
     },
@@ -786,6 +798,10 @@ test('Activity and Event repeat selectors stay inside one shared panel in Create
       kind: 'event',
       hasSinglePanel: true,
       noExtraMutationAction: true,
+      selectorFont: '17px',
+      selectorBackground: 'rgb(25, 35, 40)',
+      optionBackground: 'rgb(25, 35, 40)',
+      settingFont: '17px',
       stacked: true,
       contained: true,
     },
