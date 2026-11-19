@@ -325,11 +325,9 @@
   box-shadow: none !important;
 }
 
-/* The shared recurrence select uses Create's 13px font independent of
-   stylesheet import order. Edit's scoped override has matching specificity
-   against broader Activity form typography. */
+/* Recurrence uses the shared authoring text scale in Create and Edit. */
 .temporal-create-u2-repeat select {
-  font-size: 13px;
+  font-size: var(--dante-temporal-form-text-size);
 }
 
 .temporal-create-u2-repeat select,
