@@ -1,5 +1,18 @@
 # Timeline / Temporal-Operational — Live Execution Ledger
 
+## 2026-11-19 — Location, Reminder and Description field parity candidate
+
+Advanced Activity/Event Create and ordinary, selected-instance and series Edit
+use one authoring field contract for Location and Reminder: a 44px row, 16px
+text, the shared field surface and no extra top margin. Description uses the
+same section spacing as Area with a 112px, 16px text field. Quick Create keeps
+its compact sizing. The shared styling replaces stale Edit-only 42px and 14px
+overrides; existing value/change handlers, reminder eligibility, focus/error
+feedback and native dropdown behavior are unchanged. The focused browser
+regression checks the rendered Create fields for both kinds and the Edit CSS
+with the same markup; owner-local E2E and visual inspection are **NOT_RUN**.
+Quick date overflow and Timeline ruler work remain separate.
+
 ## 2026-11-19 — Authoring heading and menu parity follow-up
 
 The owner review showed that Area, Objectives and Description headings still

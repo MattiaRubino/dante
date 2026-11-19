@@ -902,6 +902,27 @@ test('Advanced Activity and Event headings, Objectives and native menus share on
       await expect(heading).toHaveCSS('font-size', '18px');
     }
 
+    const location = dialog.getByRole('textbox', { name: 'Località' });
+    const reminderFrame = dialog.locator('.temporal-create-quick-reminder');
+    const description = dialog.locator('.temporal-create-description-section');
+    const descriptionInput = description.locator(
+      'textarea.temporal-create-advanced-description',
+    );
+    await expect(location).toHaveCSS('height', '44px');
+    await expect(location).toHaveCSS('margin-top', '0px');
+    await expect(location).toHaveCSS('font-size', '16px');
+    await expect(location).toHaveCSS('background-color', 'rgb(32, 43, 48)');
+    await expect(reminderFrame).toHaveCSS('min-height', '44px');
+    await expect(reminderFrame).toHaveCSS('margin-top', '0px');
+    await expect(reminderFrame).toHaveCSS('background-color', 'rgb(32, 43, 48)');
+    await expect(description).toHaveCSS('padding-top', '10px');
+    await expect(description).toHaveCSS('margin-top', '0px');
+    await expect(description).toHaveCSS('background-color', 'rgb(27, 37, 42)');
+    await expect(descriptionInput).toHaveCSS('min-height', '112px');
+    await expect(descriptionInput).toHaveCSS('margin-top', '0px');
+    await expect(descriptionInput).toHaveCSS('font-size', '16px');
+    await expect(descriptionInput).toHaveCSS('background-color', 'rgb(32, 43, 48)');
+
     await dialog.getByRole('button', { name: '+ Obiettivo', exact: true }).click();
     const objective = dialog.locator('.temporal-create-objective').last();
     await expect(
@@ -962,6 +983,7 @@ test('Advanced Activity and Event headings, Objectives and native menus share on
       '.temporal-create-reality-objectives',
       '.temporal-create-description-section',
       '.temporal-create-quick-reminder',
+      '.temporal-create-u2-location',
     ]
       .map((selector) => create.querySelector(selector)!.outerHTML)
       .join('')}</div></div>`;
@@ -977,6 +999,19 @@ test('Advanced Activity and Event headings, Objectives and native menus share on
         description: style('.temporal-create-description-section h3'),
         result: style('.temporal-create-objective__definition select'),
         reminder: style('.temporal-create-quick-reminder select'),
+        location: style('.temporal-create-u2-location'),
+        descriptionInput: style(
+          '.temporal-create-description-section textarea',
+        ),
+        locationHeight: getComputedStyle(
+          modal.querySelector<HTMLElement>('.temporal-create-u2-location')!,
+        ).height,
+        reminderHeight: getComputedStyle(
+          modal.querySelector<HTMLElement>('.temporal-create-quick-reminder')!,
+        ).minHeight,
+        descriptionPadding: getComputedStyle(
+          modal.querySelector<HTMLElement>('.temporal-create-description-section')!,
+        ).paddingTop,
       };
     } finally {
       modal.remove();
@@ -988,5 +1023,10 @@ test('Advanced Activity and Event headings, Objectives and native menus share on
     description: '18px',
     result: '16px',
     reminder: '16px',
+    location: '16px',
+    descriptionInput: '16px',
+    locationHeight: '44px',
+    reminderHeight: '44px',
+    descriptionPadding: '10px',
   });
 });

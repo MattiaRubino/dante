@@ -186,3 +186,45 @@
   font-weight: 650;
   line-height: 1.45;
 }
+
+/* Location and Reminder remain single-line fields. Align their frame, text
+ * and spacing in Advanced Create and every Edit without changing Quick. */
+:is(.temporal-create-composer.is-advanced, .timeline-event-modal--edit)
+  .temporal-create-u2-location.temporal-create-u2-location {
+  height: var(--dante-temporal-control-height);
+  min-height: var(--dante-temporal-control-height);
+  margin-top: 0;
+  border-color: var(--dante-temporal-editor-border);
+  color: var(--dante-semantic-color-home-text-primary, #f2f4f2);
+  font-size: var(--dante-temporal-form-text-size);
+}
+
+:is(.temporal-create-composer.is-advanced, .timeline-event-modal--edit)
+  .temporal-create-quick-reminder.temporal-create-quick-reminder {
+  min-height: var(--dante-temporal-control-height);
+  margin-top: 0;
+  color: var(--dante-semantic-color-home-text-primary, #f2f4f2);
+  font-size: var(--dante-temporal-form-text-size);
+}
+
+:is(.temporal-create-composer.is-advanced, .timeline-event-modal--edit)
+  .temporal-create-description-section.temporal-create-description-section {
+  gap: 10px;
+  min-width: 0;
+  margin-top: 0;
+  padding: 10px 16px 14px;
+}
+
+:is(.temporal-create-composer.is-advanced, .timeline-event-modal--edit)
+  textarea.temporal-create-advanced-description.temporal-create-advanced-description {
+  box-sizing: border-box;
+  display: block;
+  width: 100%;
+  min-height: 112px;
+  margin-top: 0;
+  padding: 11px 12px;
+  border-color: var(--dante-temporal-editor-border);
+  border-radius: 11px;
+  font-size: var(--dante-temporal-form-text-size);
+  resize: vertical;
+}

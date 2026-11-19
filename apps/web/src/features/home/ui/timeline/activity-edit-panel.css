@@ -742,35 +742,9 @@
   background: transparent;
 }
 
-.timeline-event-modal--edit
-  .timeline-activity-editor__location
-  .temporal-create-u2-location {
-  height: 42px;
-  min-height: 42px;
-  padding-left: 52px;
-  border-radius: 11px;
-}
-
 .timeline-event-modal--edit .timeline-activity-editor__body > fieldset {
   padding: 14px 16px;
   border-radius: 11px;
-}
-
-.timeline-event-modal--edit .timeline-activity-editor__description {
-  margin-top: 10px;
-  min-width: 0;
-}
-
-.timeline-event-modal--edit
-  .timeline-activity-editor__description
-  .temporal-create-advanced-description {
-  box-sizing: border-box;
-  display: block;
-  width: 100%;
-  min-height: 112px;
-  margin-top: 0;
-  border-radius: 11px;
-  resize: vertical;
 }
 
 @media (max-width: 720px) {
@@ -856,7 +830,9 @@
     .temporal-recurrence-panel .temporal-create-repeat *,
     .temporal-recurrence-panel__frequency select,
     .temporal-create-reality-objectives *,
-    .temporal-create-quick-reminder *
+    .temporal-create-quick-reminder *,
+    .temporal-create-u2-location,
+    .temporal-create-advanced-description
   ) {
   font-size: 14px;
 }
