@@ -820,7 +820,7 @@ test('Activity and Event repeat selectors stay inside one shared panel in Create
           <h3 class="temporal-recurrence-panel__heading">Ripetizione</h3>
           <div class="temporal-recurrence-panel__choice">
             <div class="temporal-recurrence-panel__frequency">
-              <select aria-label="Ripeti"><option>Ogni giorno</option></select>
+              <select aria-label="Ripeti"><option>Ogni giorno</option><option>Ogni settimana</option></select>
             </div>
           </div>
           <div class="temporal-recurrence-panel__details">
@@ -844,7 +844,7 @@ test('Activity and Event repeat selectors stay inside one shared panel in Create
       return {
         selectorFont: getComputedStyle(select).fontSize,
         selectorBackground: getComputedStyle(select).backgroundColor,
-        optionBackground: getComputedStyle(select.options[0]!).backgroundColor,
+        optionBackground: getComputedStyle(select.options[1]!).backgroundColor,
         settingFont: getComputedStyle(label).fontSize,
         inputFont: getComputedStyle(input).fontSize,
       };
