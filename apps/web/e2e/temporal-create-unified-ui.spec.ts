@@ -920,7 +920,7 @@ test('Advanced Activity and Event headings, Objectives and native menus share on
     const reminder = dialog.locator('.temporal-create-quick-reminder select');
     await expect(reminder).toHaveCSS('font-size', '16px');
     for (const menu of [result, reminder]) {
-      await expect(menu.locator('option').first()).toHaveCSS(
+      await expect(menu.locator('option:not(:checked)').first()).toHaveCSS(
         'background-color',
         'rgb(25, 35, 40)',
       );
