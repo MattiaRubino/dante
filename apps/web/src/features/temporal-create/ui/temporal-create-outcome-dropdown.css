@@ -1,6 +1,6 @@
 .temporal-create-backdrop.is-advanced
   .temporal-create-title-row:has(.temporal-create-outcome-control) {
-  grid-template-columns: minmax(0, 1fr) 496px;
+  grid-template-columns: minmax(0, 1fr) 448px;
 }
 
 .temporal-create-backdrop.is-advanced
@@ -8,10 +8,10 @@
   .temporal-create-title-row__tools {
   box-sizing: border-box;
   display: grid;
-  width: 496px;
-  min-width: 496px;
-  max-width: 496px;
-  grid-template-columns: 204px 112px 180px;
+  width: 448px;
+  min-width: 448px;
+  max-width: 448px;
+  grid-template-columns: 172px 96px 180px;
   align-items: stretch;
   justify-content: stretch;
   gap: 0;
@@ -24,9 +24,9 @@
   order: 1;
   box-sizing: border-box;
   display: flex;
-  width: 204px;
-  min-width: 204px;
-  max-width: 204px;
+  width: 172px;
+  min-width: 172px;
+  max-width: 172px;
   align-items: center;
   justify-content: flex-start;
   gap: 8px;
@@ -68,9 +68,9 @@
   .temporal-create-structure-session-toggle {
   order: 2;
   box-sizing: border-box;
-  width: 112px;
-  min-width: 112px;
-  max-width: 112px;
+  width: 96px;
+  min-width: 96px;
+  max-width: 96px;
   justify-content: center;
   gap: 7px;
   border-left: 1px solid
