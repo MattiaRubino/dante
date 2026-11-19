@@ -318,10 +318,10 @@
 .temporal-recurrence-panel__details
   .temporal-create-repeat
   .temporal-create-repeat__interval {
-  flex: 0 0 80px;
-  width: 80px;
-  min-width: 80px;
-  min-height: 42px;
+  flex: 0 0 88px;
+  width: 88px;
+  min-width: 88px;
+  min-height: 44px;
   padding: 0 10px;
 }
 
@@ -329,8 +329,8 @@
   .temporal-create-repeat
   .temporal-create-repeat__count
   input {
-  width: 80px;
-  min-width: 80px;
+  width: 88px;
+  min-width: 88px;
   padding: 0 9px;
 }
 
@@ -343,7 +343,7 @@
 }
 
 .temporal-recurrence-panel .temporal-create-repeat :is(input, select) {
-  font-size: var(--dante-temporal-form-text-size);
+  font-size: var(--dante-temporal-recurrence-setting-size);
 }
 
 .temporal-recurrence-panel
@@ -357,20 +357,27 @@
     .temporal-create-repeat__end-date .temporal-create-date-picker__trigger,
     .temporal-create-repeat__count
   ) {
-  font-size: var(--dante-temporal-form-label-size);
+  font-size: var(--dante-temporal-recurrence-setting-size);
 }
 
 .temporal-recurrence-panel .temporal-create-repeat__weekdays button {
-  width: 40px;
-  height: 40px;
+  width: 44px;
+  height: 44px;
 }
 
 .temporal-recurrence-panel .temporal-create-repeat__unit-label {
-  min-height: 42px;
+  min-height: 44px;
 }
 
 .temporal-recurrence-panel .temporal-create-repeat__end-date
   .temporal-create-date-picker__trigger,
 .temporal-recurrence-panel .temporal-create-repeat__count input {
-  min-height: 40px;
+  min-height: 44px;
+}
+
+/* Series-only recurrence families use the same setting scale. */
+.temporal-recurrence-panel__details
+  .timeline-recurring-series-editor__recurrence
+  :is(fieldset, legend, label, button) {
+  font-size: var(--dante-temporal-recurrence-setting-size);
 }
