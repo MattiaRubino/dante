@@ -178,8 +178,8 @@ describe('Timeline pointer drag geometry stability', () => {
   });
 });
 
-describe('Timeline comparison ruler at a continuous day boundary', () => {
-  it('shows one secondary clock label at midnight in each zone while preserving Day mode', () => {
+describe('Timeline rulers at a continuous day boundary', () => {
+  it('shows one label in every zone at midnight while preserving Day mode', () => {
     const state = createInitialTimelineState();
     const anchor = Temporal.PlainDate.from('2026-11-19');
     const days = buildTimelineRenderedDays(anchor, 0, 1, {
@@ -216,6 +216,20 @@ describe('Timeline comparison ruler at a continuous day boundary', () => {
       onDragActiveChange: vi.fn(),
     };
     const { container, rerender } = render(<TimelineDayStream {...props} />);
+    const primaryDays = Array.from(container.querySelectorAll<HTMLElement>(
+      '.timeline-ruler-column--primary .timeline-ruler-day',
+    ));
+    expect(primaryDays).toHaveLength(2);
+    const labels = (day: HTMLElement | undefined) =>
+      Array.from(day?.querySelectorAll<HTMLElement>('.timeline-ruler-label') ?? []);
+    const at = (day: HTMLElement | undefined, pixel: number) =>
+      labels(day).filter((label) =>
+        Math.abs(Number.parseFloat(label.style.top) - pixel) < 0.001,
+      );
+    expect(at(primaryDays[0], first.mapper.map(1440))).toHaveLength(0);
+    const primaryMidnight = at(primaryDays[1], next.mapper.map(0));
+    expect(primaryMidnight).toHaveLength(1);
+    expect(primaryMidnight[0]?.textContent).toBe('00:00');
 
     for (const [zone, expectedClock] of [
       ['Europe/London', '23:00'],
@@ -228,21 +242,19 @@ describe('Timeline comparison ruler at a continuous day boundary', () => {
         '.timeline-ruler-day',
       ) ?? []);
       expect(rulerDays).toHaveLength(2);
-      const labels = (day: HTMLElement | undefined) =>
-        Array.from(day?.querySelectorAll<HTMLElement>('.timeline-ruler-label') ?? []);
-      const at = (day: HTMLElement | undefined, pixel: number) =>
-        labels(day).filter((label) =>
-          Math.abs(Number.parseFloat(label.style.top) - pixel) < 0.001,
-        );
       expect(at(rulerDays[0], first.mapper.map(1440))).toHaveLength(0);
+      for (const [index, primaryDay] of primaryDays.entries()) {
+        expect(labels(rulerDays[index]).map((label) => label.style.top))
+          .toEqual(labels(primaryDay).map((label) => label.style.top));
+      }
       const nextMidnight = at(rulerDays[1], next.mapper.map(0));
       expect(nextMidnight).toHaveLength(1);
       expect(nextMidnight[0]?.textContent).toContain(expectedClock);
+      expect(nextMidnight[0]?.className).toBe(primaryMidnight[0]?.className);
       expect(at(rulerDays[0], first.mapper.map(1380))).toHaveLength(1);
     }
 
-    // The standalone Day ruler keeps its existing terminal label: this fix
-    // deliberately changes only the continuous multi-day comparison lanes.
+    // Standalone Day keeps its existing terminal tick in both kinds of ruler.
     rerender(<TimelineDayStream {...props} view="day" days={[first]} />);
     const singleDaySecondary = container.querySelector<HTMLElement>(
       '.timeline-ruler-column--secondary .timeline-ruler-day',
@@ -253,5 +265,9 @@ describe('Timeline comparison ruler at a continuous day boundary', () => {
       Math.abs(Number.parseFloat(label.style.top) - first.mapper.map(1440)) < 0.001,
     );
     expect(terminalLabels).toHaveLength(1);
+    const singleDayPrimary = container.querySelector<HTMLElement>(
+      '.timeline-ruler-column--primary .timeline-ruler-day',
+    );
+    expect(at(singleDayPrimary, first.mapper.map(1440))).toHaveLength(1);
   });
 });

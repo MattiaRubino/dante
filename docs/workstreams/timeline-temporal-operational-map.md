@@ -1,5 +1,19 @@
 # Timeline / Temporal-Operational — Live Execution Ledger
 
+## 2026-11-19 — Continuous Timeline midnight visual follow-up
+
+Owner screenshots after the secondary-zone fix showed the primary ruler still
+painting 24:00 underneath the next day's 00:00. Both primary and comparison
+rulers now consume the same visible-tick list: in continuous multi-day mode,
+one 00:00 tick belongs to the following day at each contiguous boundary.
+Standalone Day and Week mode retain their prior tick behavior. No font-size
+rules changed; clock labels in every zone share the same CSS classes. The
+smaller MM-DD annotation below a secondary clock is that zone's local date,
+not an additional hour; its presentation is pending owner review. The
+focused renderer test checks the single boundary label, three-column position
+and clock-class parity, with the Day endpoint unchanged. Owner-local test
+execution and visual review are **NOT_RUN**.
+
 ## 2026-11-19 — Continuous Timeline secondary ruler seam
 
 In the multi-day Timeline only, each secondary time-zone ruler now renders the

@@ -744,22 +744,26 @@ export function TimelineDayStream({
   } | null>(null);
   const dragGeometryRef = useRef<readonly TimelineRenderedDay[] | null>(null);
   const displayedDays = dragGeometry?.days ?? days;
-  const secondaryRulers = useMemo(() => {
-    const rulerDays = view === 'week' ? displayedDays.slice(0, 1) : displayedDays;
-    return secondaryZoneIds.map((zone) => ({
+  const rulerDays = useMemo(() => {
+    const visibleDays = view === 'week' ? displayedDays.slice(0, 1) : displayedDays;
+    return visibleDays.map((day, index) => {
+      const nextDay = visibleDays[index + 1];
+      // A continuous day boundary has one clock label, owned by the following
+      // day's 00:00. Apply this to every ruler so their ticks stay identical.
+      const hasNextDayAtBoundary =
+        view === 'timeline' &&
+        nextDay?.dateKey === timelineDateKey(addTimelineDays(day.date, 1));
+      const ticks = timelineRulerLabels(day.mapper, state.zoom)
+        .filter(({ minute }) =>
+          !hasNextDayAtBoundary || minute < TIMELINE_MINUTES_PER_DAY,
+        );
+      return { day, ticks };
+    });
+  }, [displayedDays, view, state.zoom]);
+  const secondaryRulers = useMemo(() => (
+    secondaryZoneIds.map((zone) => ({
       zone,
-      days: rulerDays.map((day, index) => {
-        const nextDay = rulerDays[index + 1];
-        // In the continuous Timeline, the next day's 00:00 owns the shared
-        // boundary. Rendering this day's 24:00 as well paints the same
-        // secondary clock value twice at exactly the same vertical position.
-        const hasNextDayAtBoundary =
-          view === 'timeline' &&
-          nextDay?.dateKey === timelineDateKey(addTimelineDays(day.date, 1));
-        const primaryTicks = timelineRulerLabels(day.mapper, state.zoom)
-          .filter(({ minute }) =>
-            !hasNextDayAtBoundary || minute < TIMELINE_MINUTES_PER_DAY,
-          );
+      days: rulerDays.map(({ day, ticks: primaryTicks }) => {
         let previousDate: string | null = null;
         const ticks = primaryTicks.map(({ minute, minor }) => {
           const tick = timelineSecondaryRulerTick(
@@ -771,8 +775,8 @@ export function TimelineDayStream({
         });
         return { dateKey: day.dateKey, height: day.height, mapper: day.mapper, ticks };
       }),
-    }));
-  }, [secondaryZoneIds, displayedDays, view, state.zoom, primaryZoneId]);
+    }))
+  ), [secondaryZoneIds, rulerDays, primaryZoneId]);
   const openActivityRefs = new Set(
     displayedDays.flatMap((day) =>
       day.layouts.flatMap((layout) => {
@@ -1545,14 +1549,14 @@ export function TimelineDayStream({
             </div>
           ))}
           <div className="timeline-ruler-column timeline-ruler-column--primary">
-            {(view === 'week' ? displayedDays.slice(0, 1) : displayedDays).map(
-              (day) => (
+            {rulerDays.map(
+              ({ day, ticks }) => (
                 <div
                   className="timeline-ruler-day"
                   key={day.dateKey}
                   style={{ height: day.height }}
                 >
-                  {timelineRulerLabels(day.mapper, state.zoom).map(
+                  {ticks.map(
                     ({ minute, minor }) => (
                       <span
                         className={`timeline-ruler-label${minor ? ' is-minor' : ''}`}
