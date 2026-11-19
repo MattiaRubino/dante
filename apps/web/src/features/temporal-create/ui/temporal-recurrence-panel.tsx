@@ -2,6 +2,38 @@ import type { ReactNode } from 'react';
 
 import './temporal-recurrence-panel.css';
 
+export type TemporalRecurrenceChoiceOption = Readonly<{
+  value: string;
+  label: string;
+}>;
+
+/** One native selector for Create, ordinary Edit and series Edit. */
+export function TemporalRecurrenceChoice({
+  label,
+  value,
+  options,
+  onChange,
+}: Readonly<{
+  label: string;
+  value: string;
+  options: readonly TemporalRecurrenceChoiceOption[];
+  onChange: (value: string) => void;
+}>) {
+  return (
+    <select
+      aria-label={label}
+      value={value}
+      onChange={(event) => onChange(event.currentTarget.value)}
+    >
+      {options.map((option) => (
+        <option key={option.value} value={option.value}>
+          {option.label}
+        </option>
+      ))}
+    </select>
+  );
+}
+
 /**
  * One presentation boundary for all scheduled Activity/Event recurrence editing.
  *
