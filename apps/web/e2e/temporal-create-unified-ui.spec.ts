@@ -242,7 +242,7 @@ test('Quick keeps its compact clock field while Advanced uses the Edit interval 
   }
 
   // A full objective form exists only in Advanced, and uses the shared row.
-  await dialog.getByRole('button', { name: 'Aggiungi obiettivo' }).click();
+  await dialog.getByRole('button', { name: '+ Obiettivo', exact: true }).click();
   await expect(dialog.locator('.temporal-create-objective__row')).toHaveCount(
     1,
   );
