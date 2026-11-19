@@ -650,6 +650,10 @@ test('Activity and Event repeat selectors stay inside one shared panel in Create
       'background-color',
       'rgb(25, 35, 40)',
     );
+    await expect(choice.locator('option:checked')).toHaveCSS(
+      'background-color',
+      'rgb(44, 58, 64)',
+    );
     await expect(
       details.locator('.temporal-create-repeat__row-label').first(),
     ).toHaveCSS('font-size', '17px');
@@ -763,7 +767,12 @@ test('Activity and Event repeat selectors stay inside one shared panel in Create
                 .length === 0,
             selectorFont: getComputedStyle(select).fontSize,
             selectorBackground: getComputedStyle(select).backgroundColor,
-            optionBackground: getComputedStyle(select.options[0]!).backgroundColor,
+            selectedOptionBackground: getComputedStyle(
+              select.selectedOptions[0]!,
+            ).backgroundColor,
+            unselectedOptionBackground: getComputedStyle(
+              select.options[1]!,
+            ).backgroundColor,
             settingFont: getComputedStyle(
               detail.querySelector<HTMLElement>(
                 '.temporal-create-repeat__row-label',
@@ -789,7 +798,8 @@ test('Activity and Event repeat selectors stay inside one shared panel in Create
       noExtraMutationAction: true,
       selectorFont: '17px',
       selectorBackground: 'rgb(25, 35, 40)',
-      optionBackground: 'rgb(25, 35, 40)',
+      selectedOptionBackground: 'rgb(44, 58, 64)',
+      unselectedOptionBackground: 'rgb(25, 35, 40)',
       settingFont: '17px',
       stacked: true,
       contained: true,
@@ -800,7 +810,8 @@ test('Activity and Event repeat selectors stay inside one shared panel in Create
       noExtraMutationAction: true,
       selectorFont: '17px',
       selectorBackground: 'rgb(25, 35, 40)',
-      optionBackground: 'rgb(25, 35, 40)',
+      selectedOptionBackground: 'rgb(44, 58, 64)',
+      unselectedOptionBackground: 'rgb(25, 35, 40)',
       settingFont: '17px',
       stacked: true,
       contained: true,
@@ -844,7 +855,12 @@ test('Activity and Event repeat selectors stay inside one shared panel in Create
       return {
         selectorFont: getComputedStyle(select).fontSize,
         selectorBackground: getComputedStyle(select).backgroundColor,
-        optionBackground: getComputedStyle(select.options[1]!).backgroundColor,
+        selectedOptionBackground: getComputedStyle(
+          select.selectedOptions[0]!,
+        ).backgroundColor,
+        unselectedOptionBackground: getComputedStyle(
+          select.options[1]!,
+        ).backgroundColor,
         settingFont: getComputedStyle(label).fontSize,
         inputFont: getComputedStyle(input).fontSize,
       };
@@ -855,7 +871,8 @@ test('Activity and Event repeat selectors stay inside one shared panel in Create
   expect(seriesStyle).toEqual({
     selectorFont: '17px',
     selectorBackground: 'rgb(25, 35, 40)',
-    optionBackground: 'rgb(25, 35, 40)',
+    selectedOptionBackground: 'rgb(44, 58, 64)',
+    unselectedOptionBackground: 'rgb(25, 35, 40)',
     settingFont: '17px',
     inputFont: '17px',
   });
