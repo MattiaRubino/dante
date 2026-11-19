@@ -466,7 +466,7 @@ describe('Temporal Create U1 top controls', () => {
     expect(minute.value).toBe(validMinute);
   });
 
-  it('uses the clock only for quarter-hour choices and the arrow for day bands', () => {
+  it('keeps Quick clocks focused and offers day bands in Advanced', () => {
     renderEntry();
 
     const startRaw = document.querySelector<HTMLInputElement>(
@@ -487,13 +487,15 @@ describe('Temporal Create U1 top controls', () => {
     fireEvent.click(within(picker).getByRole('button', { name: '17:15' }));
     expect(startRaw.value).toBe('17:15');
 
+    expect(screen.queryByRole('button', { name: 'Fasce orarie' })).toBeNull();
+    fireEvent.click(screen.getByRole('button', { name: /Opzioni avanzate/ }));
     fireEvent.click(screen.getByRole('button', { name: 'Fasce orarie' }));
     const bands = screen.getByRole('dialog', { name: 'Fasce orarie' });
     fireEvent.click(
       within(bands).getByRole('button', { name: /Mattina.*06:00.*12:00/ }),
     );
-    expect(startRaw.value).toBe('06:00');
-    expect(endRaw.value).toBe('12:00');
+    expect(clockValues().start.value).toBe('06:00');
+    expect(clockValues().end.value).toBe('12:00');
 
     const zoneTrigger = screen.getByRole('button', { name: /Fuso orario:/ });
     fireEvent.click(zoneTrigger);

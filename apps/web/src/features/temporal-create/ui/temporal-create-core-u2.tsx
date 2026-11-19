@@ -1009,6 +1009,12 @@ export function TemporalCreateCoreFieldsU2({
               </span>
             ) : null}
 
+            {quickDateRows ? (
+              <span className="temporal-create-quick-timing-label is-start">
+                {italian ? 'Inizio' : 'Start'}
+              </span>
+            ) : null}
+
             <input
               className="temporal-create-u2-date-bridge"
               aria-hidden="true"
@@ -1025,7 +1031,6 @@ export function TemporalCreateCoreFieldsU2({
                 label={italian ? 'Data inizio' : 'Start date'}
                 value={fields.date}
                 locale={locale}
-                visibleCaption={quickDateRows ? (italian ? 'Inizio' : 'Start') : undefined}
                 onChange={patchStartDate}
               />
               {renderError('date')}
@@ -1039,39 +1044,47 @@ export function TemporalCreateCoreFieldsU2({
               helper={renderError('startTime')}
             />
 
-            <div
-              ref={timeBandRootRef}
-              className="temporal-create-time-band-control"
-            >
-              <button
-                type="button"
-                className="temporal-create-time-band-trigger"
-                aria-label="Fasce orarie"
-                aria-expanded={timeBandOpen}
-                onClick={() => setTimeBandOpen((current) => !current)}
+            {!quickDateRows ? (
+              <div
+                ref={timeBandRootRef}
+                className="temporal-create-time-band-control"
               >
-                <span aria-hidden="true">→</span>
-                <small aria-hidden="true">⌄</small>
-              </button>
-              {timeBandOpen ? (
-                <div
-                  className="temporal-create-time-band-panel"
-                  role="dialog"
+                <button
+                  type="button"
+                  className="temporal-create-time-band-trigger"
                   aria-label="Fasce orarie"
+                  aria-expanded={timeBandOpen}
+                  onClick={() => setTimeBandOpen((current) => !current)}
                 >
-                  {TIME_BANDS.map((band) => (
-                    <button
-                      key={band.key}
-                      type="button"
-                      onClick={() => applyTimeBand(band)}
-                    >
-                      <strong>{bandLabels[band.key]}</strong>
-                      <small>{`${band.start}–${band.end}`}</small>
-                    </button>
-                  ))}
-                </div>
-              ) : null}
-            </div>
+                  <span aria-hidden="true">→</span>
+                  <small aria-hidden="true">⌄</small>
+                </button>
+                {timeBandOpen ? (
+                  <div
+                    className="temporal-create-time-band-panel"
+                    role="dialog"
+                    aria-label="Fasce orarie"
+                  >
+                    {TIME_BANDS.map((band) => (
+                      <button
+                        key={band.key}
+                        type="button"
+                        onClick={() => applyTimeBand(band)}
+                      >
+                        <strong>{bandLabels[band.key]}</strong>
+                        <small>{`${band.start}–${band.end}`}</small>
+                      </button>
+                    ))}
+                  </div>
+                ) : null}
+              </div>
+            ) : null}
+
+            {quickDateRows ? (
+              <span className="temporal-create-quick-timing-label is-end">
+                {italian ? 'Fine' : 'End'}
+              </span>
+            ) : null}
 
             <TimeControl
               label={italian ? 'Fine' : 'End'}
@@ -1091,7 +1104,6 @@ export function TemporalCreateCoreFieldsU2({
               label={italian ? 'Data fine' : 'End date'}
               align="end"
               value={visibleEndDate}
-              visibleCaption={quickDateRows ? (italian ? 'Fine' : 'End') : undefined}
               min={isCustomZone ? undefined : fields.date}
               invalid={invalidEnd !== null}
               locale={locale}

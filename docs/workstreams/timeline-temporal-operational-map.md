@@ -1,5 +1,20 @@
 # Timeline / Temporal-Operational — Live Execution Ledger
 
+## 2026-11-19 — Quick timing layout review and typecheck repair
+
+The owner reviewed the two-row Quick timing layout and requested visible
+Inizio/Fine labels outside the date buttons, with each row ordered as time
+then full weekday/day/month date. The two controls now share equal grid
+width and 48px control height. The time-band arrow is removed from Quick;
+the same band menu remains available in Advanced. Date values, clock edits,
+timezone handling and Advanced/Edit layout are unchanged. The focused Quick
+browser case checks both widths, alignment, reading order, full date and no
+overflow at two viewport widths. The existing top-controls test moves its
+band action to Advanced. The four strict-nullability type errors reported in
+the ruler regression test were corrected without changing ruler behavior.
+Owner-local typecheck, unit tests, browser test and visual review of this
+revision are **NOT_RUN**.
+
 ## 2026-11-19 — Ruler endpoint and secondary date labels
 
 The owner chose a final visible-clock rule for each mode. The continuous

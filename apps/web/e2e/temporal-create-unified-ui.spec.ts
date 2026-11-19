@@ -201,34 +201,58 @@ test('Quick keeps its compact clock field while Advanced uses the Edit interval 
     );
   });
   expect(footerFits).toBe(true);
-  const quickRows = async () => dialog.locator('.temporal-create-u2-when').evaluate((element) => {
+  const quickLayout = async () => dialog.locator('.temporal-create-u2-when').evaluate((element) => {
     const frame = element.getBoundingClientRect();
+    const labels = Array.from(element.querySelectorAll<HTMLElement>(
+      ':scope > .temporal-create-quick-timing-label',
+    ));
     const dates = Array.from(element.querySelectorAll<HTMLElement>(
       ':scope > .temporal-create-u2-date-field .temporal-create-date-picker__trigger, :scope > .temporal-create-date-picker .temporal-create-date-picker__trigger',
     ));
-    return dates.map((button) => {
-      const box = button.getBoundingClientRect();
-      const value = button.querySelector('.temporal-create-date-picker__value');
-      return {
-        caption: button.querySelector('.temporal-create-date-picker__caption')?.textContent,
-        date: value?.textContent ?? '',
-        accessible: button.getAttribute('aria-label') ?? '',
-        top: box.top,
-        fits: box.left >= frame.left - 1 && box.right <= frame.right + 1
-          && (!value || value.scrollWidth <= value.clientWidth + 1),
-      };
-    });
+    const clocks = Array.from(element.querySelectorAll<HTMLElement>(
+      ':scope > .temporal-create-time-control .temporal-create-time-control__field',
+    ));
+    return {
+      labels: labels.map((label) => label.textContent?.trim()),
+      bandActions: element.querySelectorAll(':scope > .temporal-create-time-band-control').length,
+      pairs: dates.map((button, index) => {
+        const clock = clocks[index];
+        const label = labels[index];
+        if (!clock || !label) throw new Error('Quick timing pair is missing.');
+        const date = button.getBoundingClientRect();
+        const time = clock.getBoundingClientRect();
+        return {
+          date: button.textContent?.trim() ?? '',
+          accessible: button.getAttribute('aria-label') ?? '',
+          noInnerCaption: button.querySelector('.temporal-create-date-picker__caption') === null,
+          aligned: Math.abs(date.top - time.top) <= 1,
+          sameWidth: Math.abs(date.width - time.width) <= 1,
+          sameHeight: Math.abs(date.height - time.height) <= 1,
+          timeBeforeDate: time.right <= date.left,
+          labelAbove: label.getBoundingClientRect().bottom <= time.top,
+          fits: time.left >= frame.left - 1 && date.right <= frame.right + 1
+            && button.scrollWidth <= button.clientWidth + 1
+            && clock.scrollWidth <= clock.clientWidth + 1,
+        };
+      }),
+    };
   });
   for (const width of [1440, 390]) {
     await page.setViewportSize({ width, height: 900 });
-    const rows = await quickRows();
-    expect(rows).toHaveLength(2);
-    expect(rows.map((row) => row.caption)).toEqual(['Inizio', 'Fine']);
-    expect(rows[0]?.top).toBeLessThan(rows[1]?.top ?? 0);
-    for (const row of rows) {
-      expect(row.date).toMatch(/^[^,]+, \d{1,2} [\p{L}]+(?: \d{4})?$/u);
-      expect(row.accessible).toMatch(/^(Data inizio|Data fine): [^,]+, /);
-      expect(row.fits).toBe(true);
+    const layout = await quickLayout();
+    expect(layout.labels).toEqual(['Inizio', 'Fine']);
+    expect(layout.bandActions).toBe(0);
+    expect(layout.pairs).toHaveLength(2);
+    for (const pair of layout.pairs) {
+      expect(pair.date).toMatch(/^[^,]+, \d{1,2} [\p{L}]+(?: \d{4})?$/u);
+      expect(pair.accessible).toMatch(/^(Data inizio|Data fine): [^,]+, /);
+      expect(pair.noInnerCaption).toBe(true);
+      expect(pair.aligned).toBe(true);
+      expect(pair.sameWidth).toBe(true);
+      expect(pair.sameHeight).toBe(true);
+      expect(pair.timeBeforeDate).toBe(true);
+      expect(pair.labelAbove).toBe(true);
+      expect(pair.fits).toBe(true);
     }
   }
   await page.setViewportSize({ width: 1440, height: 900 });
@@ -237,7 +261,7 @@ test('Quick keeps its compact clock field while Advanced uses the Edit interval 
   );
   await expect(quickClocks).toHaveCount(2);
   for (const clock of await quickClocks.all()) {
-    await expect(clock).toHaveCSS('min-height', '42px');
+    await expect(clock).toHaveCSS('min-height', '48px');
   }
   const quickWhen = dialog.locator('.temporal-create-u2-when');
   await expect(quickWhen).not.toHaveCSS('max-width', '820px');
@@ -249,6 +273,8 @@ test('Quick keeps its compact clock field while Advanced uses the Edit interval 
     'advanced',
   );
   const advancedWhen = dialog.locator('.temporal-create-u2-when');
+  await expect(advancedWhen.locator(':scope > .temporal-create-time-band-control'))
+    .toHaveCount(1);
   await expect(
     dialog.getByRole('region', { name: 'Configurazione obiettivi' }),
   ).toBeVisible();

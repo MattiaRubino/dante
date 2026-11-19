@@ -220,9 +220,9 @@ describe('Timeline rulers at a continuous day boundary', () => {
       '.timeline-ruler-column--primary .timeline-ruler-day',
     ));
     expect(primaryDays).toHaveLength(2);
-    const labels = (day: HTMLElement | undefined) =>
+    const labels = (day: HTMLElement | null | undefined) =>
       Array.from(day?.querySelectorAll<HTMLElement>('.timeline-ruler-label') ?? []);
-    const at = (day: HTMLElement | undefined, pixel: number) =>
+    const at = (day: HTMLElement | null | undefined, pixel: number) =>
       labels(day).filter((label) =>
         Math.abs(Number.parseFloat(label.style.top) - pixel) < 0.001,
       );

@@ -10,7 +10,6 @@ type TemporalCreateDatePickerProps = Readonly<{
   min?: string | undefined;
   invalid?: boolean;
   align?: 'start' | 'end';
-  visibleCaption?: string | undefined;
   onChange: (value: string) => void;
 }>;
 
@@ -75,7 +74,6 @@ export function TemporalCreateDatePicker({
   min,
   invalid = false,
   align = 'start',
-  visibleCaption,
   onChange,
 }: TemporalCreateDatePickerProps) {
   const selected = plainDate(value);
@@ -122,12 +120,7 @@ export function TemporalCreateDatePicker({
           setOpen((current) => !current);
         }}
       >
-        {visibleCaption ? (
-          <>
-            <span className="temporal-create-date-picker__caption">{visibleCaption}</span>
-            <span className="temporal-create-date-picker__value">{compactLabel(selected, locale)}</span>
-          </>
-        ) : compactLabel(selected, locale)}
+        {compactLabel(selected, locale)}
       </button>
 
       {open ? (
