@@ -168,16 +168,25 @@ test('Quick keeps its compact clock field while Advanced uses the Edit interval 
 
   const dialog = page.locator('[data-temporal-create="composer"]');
   await expect(dialog).toHaveAttribute('data-temporal-create-surface', 'base');
-  // Text sizing is independent of the fixed Quick panel dimensions.
+  // Both surfaces use the approved configurable authoring scale. Quick keeps
+  // its compact geometry and smaller mode choices, not the retired tiny text.
+  const authoringScale = await dialog.evaluate((element) => {
+    const css = getComputedStyle(element);
+    return {
+      section: css.getPropertyValue('--dante-temporal-section-title-size').trim(),
+      action: css.getPropertyValue('--dante-temporal-action-text-size').trim(),
+      form: css.getPropertyValue('--dante-temporal-form-text-size').trim(),
+    };
+  });
   await expect(
     dialog.locator('.temporal-create-type-grid strong').first(),
-  ).toHaveCSS('font-size', '14px');
+  ).toHaveCSS('font-size', authoringScale.section);
   await expect(
     dialog.locator('.temporal-create-choice-row > button').first(),
   ).toHaveCSS('font-size', '13.5px');
   const footer = dialog.locator('.temporal-create-actions');
   for (const button of await footer.locator(':scope > button').all()) {
-    await expect(button).toHaveCSS('font-size', '13px');
+    await expect(button).toHaveCSS('font-size', authoringScale.action);
   }
   // The fixed footer and all three actions stay inside the Quick panel.
   const footerFits = await footer.evaluate((element) => {
@@ -213,9 +222,12 @@ test('Quick keeps its compact clock field while Advanced uses the Edit interval 
     dialog.getByRole('region', { name: 'Configurazione obiettivi' }),
   ).toBeVisible();
   await expect(dialog.locator('.temporal-create-reality-mode')).toHaveCount(0);
-  // Advanced intentionally increases the footer labels from Quick's 13px.
+  await expect(
+    dialog.locator('.temporal-create-choice-row > button').first(),
+  ).toHaveCSS('font-size', authoringScale.form);
+  // Both modes share the action scale while their panel geometry differs.
   for (const button of await footer.locator(':scope > button').all()) {
-    await expect(button).toHaveCSS('font-size', '14px');
+    await expect(button).toHaveCSS('font-size', authoringScale.action);
   }
   await expect(advancedWhen).toHaveCSS('max-width', '820px');
   await expectEditStyleChevrons(advancedWhen);
