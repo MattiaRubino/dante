@@ -650,10 +650,9 @@ test('Activity and Event repeat selectors stay inside one shared panel in Create
       'background-color',
       'rgb(25, 35, 40)',
     );
-    await expect(details.locator('.temporal-create-repeat__row-label').first()).toHaveCSS(
-      'font-size',
-      '17px',
-    );
+    await expect(
+      details.locator('.temporal-create-repeat__row-label').first(),
+    ).toHaveCSS('font-size', '17px');
     await expect(
       panel.getByRole('heading', { name: 'Ripetizione' }),
     ).toHaveCount(1);
