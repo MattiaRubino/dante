@@ -315,20 +315,21 @@
 
 /* The recurrence details are shared by Create, ordinary Edit and series Edit.
    Keep their control widths and type scale above generic Create input rules. */
-.temporal-recurrence-panel .temporal-create-repeat__interval {
+.temporal-recurrence-panel__details .temporal-create-repeat .temporal-create-repeat__interval {
   flex: 0 0 80px;
   width: 80px;
   min-width: 80px;
+  min-height: 42px;
   padding: 0 10px;
 }
 
-.temporal-recurrence-panel .temporal-create-repeat__count input {
+.temporal-recurrence-panel__details .temporal-create-repeat .temporal-create-repeat__count input {
   width: 80px;
   min-width: 80px;
   padding: 0 9px;
 }
 
-.temporal-recurrence-panel .temporal-create-repeat__ordinal select {
+.temporal-recurrence-panel__details .temporal-create-repeat .temporal-create-repeat__ordinal select {
   width: 160px;
   max-width: 100%;
 }
@@ -354,6 +355,10 @@
 .temporal-recurrence-panel .temporal-create-repeat__weekdays button {
   width: 40px;
   height: 40px;
+}
+
+.temporal-recurrence-panel .temporal-create-repeat__unit-label {
+  min-height: 42px;
 }
 
 .temporal-recurrence-panel .temporal-create-repeat__end-date
