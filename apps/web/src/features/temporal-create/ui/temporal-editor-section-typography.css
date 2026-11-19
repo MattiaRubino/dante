@@ -168,3 +168,21 @@
   background: var(--dante-temporal-editor-field-surface);
   color: var(--dante-semantic-color-home-text-primary, #f2f4f2);
 }
+
+/* Win over older Create/Edit form-specific headings with one shared scale. */
+.temporal-create-backdrop.is-advanced
+  .temporal-create-composer.is-advanced
+  :is(
+    .temporal-editor-section-heading.temporal-editor-section-heading,
+    .temporal-create-description-section.temporal-create-description-section h3
+  ),
+.timeline-event-modal--edit
+  :is(
+    .temporal-editor-section-heading.temporal-editor-section-heading,
+    .temporal-create-description-section.temporal-create-description-section h3
+  ) {
+  color: var(--dante-semantic-color-home-text-primary, #f1f5f7);
+  font-size: var(--dante-temporal-section-title-size);
+  font-weight: 650;
+  line-height: 1.45;
+}

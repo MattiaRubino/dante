@@ -9,15 +9,20 @@
   --dante-temporal-form-text-size: 16px;
   --dante-temporal-form-label-size: 15px;
   --dante-temporal-form-helper-size: 13px;
-  --dante-temporal-section-title-size: 17px;
+  --dante-temporal-section-title-size: 18px;
   --dante-temporal-kind-title-size: 18px;
   --dante-temporal-action-text-size: 16px;
   --dante-temporal-action-height: 44px;
   --dante-temporal-control-height: 44px;
   --dante-temporal-recurrence-setting-size: 17px;
-  --dante-temporal-recurrence-menu-surface: #192328;
-  --dante-temporal-recurrence-menu-selected: #2c3a40;
-  --dante-temporal-recurrence-menu-text: #edf2f8;
+  --dante-temporal-menu-surface: #192328;
+  --dante-temporal-menu-selected: #2c3a40;
+  --dante-temporal-menu-text: #edf2f8;
+  --dante-temporal-menu-option-size: 17px;
+  /* Preserve older recurrence overrides while all native menus converge. */
+  --dante-temporal-recurrence-menu-surface: var(--dante-temporal-menu-surface);
+  --dante-temporal-recurrence-menu-selected: var(--dante-temporal-menu-selected);
+  --dante-temporal-recurrence-menu-text: var(--dante-temporal-menu-text);
   --dante-temporal-zone-menu-width: 340px;
 }
 
@@ -517,4 +522,19 @@
     grid-column: 3;
     grid-row: 2;
   }
+}
+
+/* Native menus use one popup palette in Quick, Advanced and every Edit. */
+:is(.temporal-create-composer, .timeline-event-modal--edit) select {
+  color-scheme: dark;
+}
+
+:is(.temporal-create-composer, .timeline-event-modal--edit) select option {
+  color: var(--dante-temporal-menu-text);
+  background-color: var(--dante-temporal-menu-surface);
+  font-size: var(--dante-temporal-menu-option-size);
+}
+
+:is(.temporal-create-composer, .timeline-event-modal--edit) select option:checked {
+  background-color: var(--dante-temporal-menu-selected);
 }

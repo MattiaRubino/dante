@@ -21,9 +21,9 @@
 .temporal-create-objectives__group-label {
   margin-left: 34px;
   color: var(--dante-semantic-color-home-text-muted, #8f9bad);
-  font-size: 11px;
-  font-weight: 720;
-  letter-spacing: 0.055em;
+  font-size: var(--dante-temporal-form-helper-size);
+  font-weight: 650;
+  letter-spacing: 0.035em;
   text-transform: uppercase;
 }
 
@@ -65,8 +65,8 @@
   height: 100%;
   place-items: center;
   color: var(--dante-semantic-color-home-chrome-active-text, #f0a06f);
-  font-size: 11px;
-  font-weight: 720;
+  font-size: var(--dante-temporal-form-helper-size);
+  font-weight: 650;
 }
 
 .temporal-create-objective__divider {
@@ -79,7 +79,7 @@
   );
 }
 
-.temporal-create-objective__title {
+.temporal-create-objective__row input.temporal-create-objective__title {
   box-sizing: border-box;
   min-width: 0;
   height: 44px;
@@ -91,7 +91,7 @@
   outline: none !important;
   box-shadow: none !important;
   font: inherit;
-  font-size: 14px;
+  font-size: var(--dante-temporal-form-text-size);
 }
 
 .temporal-create-objective__actions {
@@ -100,16 +100,24 @@
   padding: 5px 6px;
 }
 
-.temporal-create-objective__actions button,
-.temporal-create-objective__definition select,
-.temporal-create-objective__definition input {
+.temporal-create-objective__actions button {
   min-height: 32px;
-  border: 1px solid rgba(255, 255, 255, 0.105);
+  border: 1px solid var(--dante-temporal-editor-border);
   border-radius: 8px;
   color: var(--dante-semantic-color-home-text-secondary, #b7c0cf);
-  background: rgba(255, 255, 255, 0.028);
+  background: var(--dante-temporal-editor-field-surface);
   font: inherit;
-  font-size: 12px;
+  font-size: var(--dante-temporal-form-text-size);
+}
+
+.temporal-create-objective__definition.temporal-create-objective__definition :is(select, input) {
+  min-height: var(--dante-temporal-control-height);
+  border: 1px solid var(--dante-temporal-editor-border);
+  border-radius: 8px;
+  color: var(--dante-semantic-color-home-text-primary, #f2f4f2);
+  background: var(--dante-temporal-editor-field-surface);
+  font: inherit;
+  font-size: var(--dante-temporal-form-text-size);
 }
 
 .temporal-create-objective__actions button {
@@ -163,8 +171,9 @@
   display: grid;
   min-width: 0;
   gap: 4px;
-  color: var(--dante-semantic-color-home-text-muted, #8f9bad);
-  font-size: 10px;
+  color: var(--dante-semantic-color-home-text-secondary, #b7c0cf);
+  font-size: 14px;
+  font-weight: 600;
 }
 
 .temporal-create-objective__definition select,
@@ -178,7 +187,7 @@
 .temporal-create-objective__hint {
   align-self: center;
   color: var(--dante-semantic-color-home-text-muted, #8f9bad);
-  font-size: 10px;
+  font-size: 14px;
 }
 
 .temporal-create-objectives__root-actions {
@@ -279,21 +288,22 @@
 
 .temporal-create-objective__verification > span {
   color: var(--dante-semantic-color-home-text-muted, #8f9bad);
-  font-size: 11px;
+  font-size: 14px;
+  font-weight: 600;
 }
 
-.temporal-create-objective__verification select {
+.temporal-create-objective__verification.temporal-create-objective__verification select {
   box-sizing: border-box;
-  min-height: 32px;
+  min-height: var(--dante-temporal-control-height);
   width: 100%;
   min-width: 0;
   padding: 0 8px;
-  border: 1px solid rgba(255, 255, 255, 0.105);
+  border: 1px solid var(--dante-temporal-editor-border);
   border-radius: 8px;
-  color: var(--dante-semantic-color-home-text-secondary, #b7c0cf);
-  background: var(--dante-semantic-color-home-surface-control, #151f2e);
+  color: var(--dante-semantic-color-home-text-primary, #f2f4f2);
+  background: var(--dante-temporal-editor-field-surface);
   font: inherit;
-  font-size: 12px;
+  font-size: var(--dante-temporal-form-text-size);
 }
 
 @container (max-width: 810px) {

@@ -881,3 +881,112 @@ test('Activity and Event repeat selectors stay inside one shared panel in Create
     inputFont: '17px',
   });
 });
+
+test('Advanced Activity and Event headings, Objectives and native menus share one readable scale', async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await page.goto('/home');
+  await page.getByRole('button', { name: 'Aggiungi alla timeline' }).click();
+  const dialog = page.locator('[data-temporal-create="composer"]');
+  await dialog.getByRole('button', { name: /Opzioni avanzate/ }).click();
+
+  for (const kind of ['Attività', 'Evento']) {
+    await dialog.getByRole('radio', { name: kind, exact: true }).click();
+    for (const heading of [
+      dialog.locator('.temporal-recurrence-panel__heading'),
+      dialog.locator('.temporal-editor-area-section > strong'),
+      dialog.locator('.temporal-create-reality-objectives__block-copy strong'),
+      dialog.locator('.temporal-create-description-section h3'),
+    ]) {
+      await expect(heading).toHaveCSS('font-size', '18px');
+    }
+
+    await dialog.getByRole('button', { name: '+ Obiettivo', exact: true }).click();
+    const objective = dialog.locator('.temporal-create-objective').last();
+    await expect(
+      objective.locator('.temporal-create-objective__title'),
+    ).toHaveCSS('font-size', '16px');
+    const result = objective
+      .locator('.temporal-create-objective__definition select')
+      .first();
+    await expect(result).toHaveCSS('font-size', '16px');
+    await expect(
+      objective.locator('.temporal-create-objective__definition label').first(),
+    ).toHaveCSS('font-size', '14px');
+    await expect(
+      objective.locator('.temporal-create-objective__verification select'),
+    ).toHaveCSS('font-size', '16px');
+    const reminder = dialog.locator('.temporal-create-quick-reminder select');
+    await expect(reminder).toHaveCSS('font-size', '16px');
+    for (const menu of [result, reminder]) {
+      await expect(menu.locator('option').first()).toHaveCSS(
+        'background-color',
+        'rgb(25, 35, 40)',
+      );
+      await expect(menu.locator('option:checked')).toHaveCSS(
+        'background-color',
+        'rgb(44, 58, 64)',
+      );
+    }
+
+    await result.selectOption('quantity');
+    await expect(
+      objective.getByRole('spinbutton', {
+        name: /Target obiettivo|Valore obiettivo/,
+      }),
+    ).toBeVisible();
+    await result.selectOption('range');
+    await expect(
+      objective.getByRole('spinbutton', { name: 'Minimo obiettivo' }),
+    ).toBeVisible();
+    await result.selectOption('qualitative');
+    await expect(
+      objective.locator('.temporal-create-objective__hint'),
+    ).toHaveCSS('font-size', '14px');
+  }
+
+  // Reuse the rendered controls under the Edit CSS without requiring a backend
+  // fixture; this checks presentation, while Save behavior belongs to Edit E2E.
+  await page.addStyleTag({
+    path: 'src/features/home/ui/timeline/activity-edit-panel.css',
+  });
+  const editStyle = await page.evaluate(() => {
+    const create = document.querySelector('[data-temporal-create="composer"]')!;
+    const modal = document.createElement('div');
+    modal.className = 'timeline-event-modal timeline-event-modal--edit';
+    modal.style.position = 'absolute';
+    modal.style.left = '-2000px';
+    modal.innerHTML = `<div class="timeline-activity-editor"><div class="timeline-activity-editor__body">${[
+      '.temporal-editor-area-section',
+      '.temporal-create-reality-objectives',
+      '.temporal-create-description-section',
+      '.temporal-create-quick-reminder',
+    ]
+      .map((selector) => create.querySelector(selector)!.outerHTML)
+      .join('')}</div></div>`;
+    document.body.append(modal);
+    try {
+      const style = (selector: string) =>
+        getComputedStyle(modal.querySelector<HTMLElement>(selector)!).fontSize;
+      return {
+        area: style('.temporal-editor-area-section > strong'),
+        objectives: style(
+          '.temporal-create-reality-objectives__block-copy strong',
+        ),
+        description: style('.temporal-create-description-section h3'),
+        result: style('.temporal-create-objective__definition select'),
+        reminder: style('.temporal-create-quick-reminder select'),
+      };
+    } finally {
+      modal.remove();
+    }
+  });
+  expect(editStyle).toEqual({
+    area: '18px',
+    objectives: '18px',
+    description: '18px',
+    result: '16px',
+    reminder: '16px',
+  });
+});

@@ -854,7 +854,9 @@
   :is(input:not([type='checkbox']):not([type='radio']), textarea, select):not(
     .temporal-create-u2-repeat select,
     .temporal-recurrence-panel .temporal-create-repeat *,
-    .temporal-recurrence-panel__frequency select
+    .temporal-recurrence-panel__frequency select,
+    .temporal-create-reality-objectives *,
+    .temporal-create-quick-reminder *
   ) {
   font-size: 14px;
 }

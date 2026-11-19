@@ -1,5 +1,19 @@
 # Timeline / Temporal-Operational — Live Execution Ledger
 
+## 2026-11-19 — Authoring heading and menu parity follow-up
+
+The owner review showed that Area, Objectives and Description headings still
+rendered smaller than Recurrence because more specific older rules won the
+cascade. They now share an 18px heading token across advanced Activity/Event
+Create and every Edit. Objective names, result controls, verification controls,
+labels and hints use a readable 16/14px scale; control dimensions expand without
+changing objective kinds or handlers. Native dropdown options in Create and Edit
+share the Recurrence dark popup and selected colors, including Reminder and
+Objective controls. Focus and disabled states remain. A focused browser check
+covers both creation kinds, computed heading/menu styles and Objective kind
+switching. Owner-local typecheck, focused E2E and visual inspection are
+**NOT_RUN** for this follow-up candidate.
+
 ## 2026-11-19 — Authoring palette candidate
 
 Advanced Activity/Event Create and ordinary, selected-instance and series Edit

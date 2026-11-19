@@ -7,10 +7,10 @@
   gap: 10px;
   margin-top: 8px;
   padding: 0 11px;
-  border: 1px solid color-mix(in srgb, currentColor 14%, transparent);
+  border: 1px solid var(--dante-temporal-editor-border);
   border-radius: 11px;
   color: inherit;
-  background: color-mix(in srgb, currentColor 4%, transparent);
+  background: var(--dante-temporal-editor-field-surface);
 }
 
 .temporal-create-quick-reminder:focus-within {
@@ -43,7 +43,7 @@
   background: color-mix(in srgb, currentColor 18%, transparent);
 }
 
-.temporal-create-quick-reminder select {
+.temporal-create-quick-reminder.temporal-create-quick-reminder select {
   width: 100%;
   min-width: 0;
   height: 40px;

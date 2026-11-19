@@ -203,10 +203,6 @@
   cursor: pointer;
 }
 
-.temporal-create-tree-row__actions > select option {
-  color: #171717;
-}
-
 .temporal-create-tree-session-toggle {
   display: inline-flex;
   align-items: center;
