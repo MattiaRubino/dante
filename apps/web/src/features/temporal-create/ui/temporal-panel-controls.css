@@ -2,10 +2,11 @@
   /* One authoring scale for Create and Edit. A future user preference can
      override these properties without changing the individual controls. */
   --dante-temporal-form-text-size: 16px;
-  --dante-temporal-form-label-size: 14px;
+  --dante-temporal-form-label-size: 15px;
   --dante-temporal-form-helper-size: 13px;
-  --dante-temporal-section-title-size: 16px;
-  --dante-temporal-action-text-size: 15px;
+  --dante-temporal-section-title-size: 17px;
+  --dante-temporal-kind-title-size: 18px;
+  --dante-temporal-action-text-size: 16px;
   --dante-temporal-action-height: 44px;
   --dante-temporal-control-height: 44px;
   --dante-temporal-zone-menu-width: 340px;
