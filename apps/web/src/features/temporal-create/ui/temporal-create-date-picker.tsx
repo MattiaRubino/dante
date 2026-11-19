@@ -10,7 +10,6 @@ type TemporalCreateDatePickerProps = Readonly<{
   min?: string | undefined;
   invalid?: boolean;
   align?: 'start' | 'end';
-  shortLabel?: boolean;
   onChange: (value: string) => void;
 }>;
 
@@ -58,21 +57,6 @@ function compactLabel(value: Temporal.PlainDate, locale: string): string {
   return `${weekday}, ${day} ${month}${year ? ` ${year}` : ''}`;
 }
 
-function shortDateLabel(value: Temporal.PlainDate, locale: string): string {
-  const date = new Date(Date.UTC(value.year, value.month - 1, value.day));
-  const parts = new Intl.DateTimeFormat(locale, {
-    day: 'numeric',
-    month: 'short',
-    ...(value.year === new Date().getUTCFullYear() ? {} : { year: '2-digit' }),
-    timeZone: 'UTC',
-  }).formatToParts(date);
-  const day = parts.find((part) => part.type === 'day')?.value ?? String(value.day);
-  const month = (parts.find((part) => part.type === 'month')?.value ?? '')
-    .replace('.', '').toLocaleLowerCase(locale);
-  const year = parts.find((part) => part.type === 'year')?.value;
-  return `${day} ${month}${year ? ` '${year}` : ''}`;
-}
-
 function monthLabel(value: Temporal.PlainDate, locale: string): string {
   const date = new Date(Date.UTC(value.year, value.month - 1, 1));
   const label = new Intl.DateTimeFormat(locale, {
@@ -90,7 +74,6 @@ export function TemporalCreateDatePicker({
   min,
   invalid = false,
   align = 'start',
-  shortLabel = false,
   onChange,
 }: TemporalCreateDatePickerProps) {
   const selected = plainDate(value);
@@ -137,7 +120,7 @@ export function TemporalCreateDatePicker({
           setOpen((current) => !current);
         }}
       >
-        {shortLabel ? shortDateLabel(selected, locale) : compactLabel(selected, locale)}
+        {compactLabel(selected, locale)}
       </button>
 
       {open ? (

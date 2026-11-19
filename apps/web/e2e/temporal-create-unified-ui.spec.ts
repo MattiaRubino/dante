@@ -201,25 +201,6 @@ test('Quick keeps its compact clock field while Advanced uses the Edit interval 
     );
   });
   expect(footerFits).toBe(true);
-  const quickDates = dialog.locator('.temporal-create-u2-when > .temporal-create-date-picker, .temporal-create-u2-when > .temporal-create-u2-date-field .temporal-create-date-picker');
-  await expect(quickDates).toHaveCount(2);
-  const dateLayout = await dialog.locator('.temporal-create-u2-when').evaluate((element) => {
-    const buttons = Array.from(element.querySelectorAll<HTMLElement>('.temporal-create-date-picker__trigger'));
-    const bounds = element.getBoundingClientRect();
-    return buttons.map((button) => {
-      const box = button.getBoundingClientRect();
-      return {
-        visible: button.textContent?.trim() ?? '',
-        accessible: button.getAttribute('aria-label') ?? '',
-        fits: box.left >= bounds.left - 1 && box.right <= bounds.right + 1 && button.scrollWidth <= button.clientWidth + 1,
-      };
-    });
-  });
-  for (const date of dateLayout) {
-    expect(date.visible).toMatch(/^\d{1,2} [\p{L}]+(?: '\d{2})?$/u);
-    expect(date.accessible).toMatch(/^(Data inizio|Data fine): [^,]+, /);
-    expect(date.fits).toBe(true);
-  }
   const quickClocks = dialog.locator(
     '.temporal-create-u2-when > .temporal-create-time-control .temporal-create-time-control__field',
   );

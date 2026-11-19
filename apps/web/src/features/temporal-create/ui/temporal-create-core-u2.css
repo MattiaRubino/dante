@@ -402,48 +402,6 @@
   color: color-mix(in srgb, currentColor 58%, transparent);
 }
 
-
-/* The narrow Quick composer needs two complete date/time pairs, not five
-   minimum-width tracks that clip the outer dates. */
-.temporal-create-composer:not(.is-full) .temporal-create-u2-when.is-quick-dates {
-  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
-  gap: 4px 8px;
-}
-
-.temporal-create-u2-when.is-quick-dates .temporal-create-date-picker__trigger {
-  font-size: 0.82rem;
-}
-
-.temporal-create-u2-when.is-quick-dates > .temporal-create-u2-date-field {
-  grid-column: 1;
-}
-
-.temporal-create-u2-when.is-quick-dates
-  > .temporal-create-time-control[data-time-field='startTime'] {
-  grid-column: 2;
-}
-
-.temporal-create-u2-when.is-quick-dates > .temporal-create-time-band-control {
-  grid-column: 1 / -1;
-  justify-self: center;
-}
-
-.temporal-create-u2-when.is-quick-dates > .temporal-create-date-picker--end {
-  grid-column: 1;
-  grid-row: 3;
-}
-
-.temporal-create-u2-when.is-quick-dates
-  > .temporal-create-time-control[data-time-field='endTime'] {
-  grid-column: 2;
-  grid-row: 3;
-}
-
-.temporal-create-u2-when.is-quick-dates > .temporal-create-primary-interval-label,
-.temporal-create-u2-when.is-quick-dates > .temporal-create-activity-intervals {
-  grid-column: 1 / -1;
-}
-
 /* Quick footer intentionally has only the two actions that still carry unique
    meaning: open Advanced and accept Add. Closing lives in the header X. */
 .temporal-create-composer:not(.is-full)

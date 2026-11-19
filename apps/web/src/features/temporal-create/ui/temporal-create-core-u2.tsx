@@ -52,7 +52,6 @@ type Props = Readonly<{
   baselineFields: TemporalCreateFields;
   contexts: readonly TemporalCreateContextOption[];
   showCompactTimezone?: boolean;
-  compactDates?: boolean;
   showRecurrence?: boolean;
   showDescription?: boolean;
   repeatDetails?: ReactNode;
@@ -288,7 +287,6 @@ export function TimeControl({
     <div
       ref={rootRef}
       className="temporal-create-time-control"
-      data-time-field={dataPath}
       data-time-invalid={invalid || undefined}
       aria-invalid={invalid || undefined}
       role="group"
@@ -455,7 +453,6 @@ export function TemporalCreateCoreFieldsU2({
   baselineFields,
   contexts,
   showCompactTimezone = true,
-  compactDates = false,
   showRecurrence = true,
   showDescription = true,
   repeatDetails,
@@ -992,7 +989,7 @@ export function TemporalCreateCoreFieldsU2({
 
         {fields.timeSemantics === 'timed' ? (
           <div
-            className={`temporal-create-u2-when temporal-schedule-time-grid${compactDates ? ' is-quick-dates' : ''}${
+            className={`temporal-create-u2-when temporal-schedule-time-grid${
               fields.kind === 'activity' &&
               authoringDraft.activityStructure.activityIntervals.length > 0
                 ? ' has-remove-track'
@@ -1025,7 +1022,6 @@ export function TemporalCreateCoreFieldsU2({
                 label={italian ? 'Data inizio' : 'Start date'}
                 value={fields.date}
                 locale={locale}
-                shortLabel={compactDates}
                 onChange={patchStartDate}
               />
               {renderError('date')}
@@ -1091,7 +1087,6 @@ export function TemporalCreateCoreFieldsU2({
               label={italian ? 'Data fine' : 'End date'}
               align="end"
               value={visibleEndDate}
-              shortLabel={compactDates}
               min={isCustomZone ? undefined : fields.date}
               invalid={invalidEnd !== null}
               locale={locale}
@@ -1220,7 +1215,6 @@ export function TemporalCreateCoreFieldsU2({
                 label="Data inizio"
                 value={fields.date}
                 locale={locale}
-                shortLabel={compactDates}
                 onChange={patchAllDayStartDate}
               />
               {renderError('date')}
@@ -1233,7 +1227,6 @@ export function TemporalCreateCoreFieldsU2({
                 label="Data fine"
                 align="end"
                 value={visibleAllDayEndDate}
-                shortLabel={compactDates}
                 min={fields.date}
                 locale={locale}
                 onChange={patchAllDayEndDate}
