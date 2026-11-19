@@ -20,7 +20,8 @@
   gap: 8px;
 }
 
-.temporal-recurrence-panel__heading {
+.temporal-recurrence-panel.temporal-recurrence-panel
+  > .temporal-recurrence-panel__heading {
   margin: 0;
   color: var(--dante-semantic-color-home-text-primary, #edf2f8);
   font-size: var(--dante-temporal-section-title-size);
@@ -48,12 +49,22 @@
 .temporal-recurrence-panel__choice .temporal-recurrence-panel__frequency select {
   height: var(--dante-temporal-control-height);
   min-height: var(--dante-temporal-control-height);
-  font-size: var(--dante-temporal-form-text-size);
+  font-size: var(--dante-temporal-recurrence-setting-size);
+  color-scheme: dark;
+  color: var(--dante-temporal-recurrence-menu-text);
+  background: var(--dante-temporal-recurrence-menu-surface);
 }
 
 .temporal-recurrence-panel__choice .temporal-create-u2-repeat select option,
 .temporal-recurrence-panel__choice .temporal-recurrence-panel__frequency select option {
-  font-size: var(--dante-temporal-form-text-size);
+  font-size: var(--dante-temporal-recurrence-setting-size);
+  color: var(--dante-temporal-recurrence-menu-text);
+  background: var(--dante-temporal-recurrence-menu-surface);
+}
+
+.temporal-recurrence-panel__choice .temporal-create-u2-repeat select option:checked,
+.temporal-recurrence-panel__choice .temporal-recurrence-panel__frequency select option:checked {
+  background: var(--dante-temporal-recurrence-menu-selected);
 }
 
 .temporal-recurrence-panel__details {
@@ -91,7 +102,7 @@
   gap: 6px;
   min-width: 0;
   color: var(--dante-semantic-color-home-text-secondary, #b7c0cf);
-  font-size: var(--dante-temporal-form-label-size);
+  font-size: var(--dante-temporal-recurrence-setting-size);
 }
 
 .temporal-recurrence-panel__frequency select {
@@ -105,7 +116,7 @@
   background: var(--dante-semantic-color-home-surface-control, #1c292d);
   color: var(--dante-semantic-color-home-text-primary, #edf2f8);
   font: inherit;
-  font-size: var(--dante-temporal-form-text-size);
+  font-size: var(--dante-temporal-recurrence-setting-size);
 }
 
 .temporal-recurrence-panel__frequency select:focus-visible {
