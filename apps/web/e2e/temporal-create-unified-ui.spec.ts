@@ -229,7 +229,9 @@ test('Quick keeps its compact clock field while Advanced uses the Edit interval 
   for (const button of await footer.locator(':scope > button').all()) {
     await expect(button).toHaveCSS('font-size', authoringScale.action);
   }
-  await expect(advancedWhen).toHaveCSS('max-width', '820px');
+  // The shared bordered timing section now uses its available width instead
+  // of the retired 820px cap, keeping the primary and added interval aligned.
+  await expect(advancedWhen).toHaveCSS('max-width', 'none');
   await expectEditStyleChevrons(advancedWhen);
   const advancedControls = advancedWhen.locator(
     ':scope > .temporal-create-time-control .temporal-create-time-control__field',
