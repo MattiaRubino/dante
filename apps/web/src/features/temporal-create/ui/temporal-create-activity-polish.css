@@ -9,11 +9,7 @@
   padding: 16px;
   border: 1px solid var(--dante-semantic-color-home-border-subtle);
   border-radius: 12px;
-  background: color-mix(
-    in srgb,
-    var(--dante-semantic-color-home-surface-control, #151f2e) 36%,
-    transparent
-  );
+  background: var(--dante-temporal-editor-section-surface);
 }
 
 .temporal-create-composer.is-advanced

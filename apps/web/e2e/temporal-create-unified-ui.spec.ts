@@ -644,6 +644,7 @@ test('Activity and Event repeat selectors stay inside one shared panel in Create
     const details = panel.locator('.temporal-recurrence-panel__details');
     await expect(details).toBeVisible();
     await expect(details.locator('.temporal-create-repeat')).toHaveCount(1);
+    await expect(panel).toHaveCSS('background-color', 'rgb(27, 37, 42)');
     await expect(choice).toHaveCSS('font-size', '17px');
     await expect(choice).toHaveCSS('background-color', 'rgb(25, 35, 40)');
     await expect(choice.locator('option').first()).toHaveCSS(
@@ -765,6 +766,7 @@ test('Activity and Event repeat selectors stay inside one shared panel in Create
             noExtraMutationAction:
               root.querySelectorAll('.timeline-existing-recurrence__actions')
                 .length === 0,
+            sectionBackground: getComputedStyle(root).backgroundColor,
             selectorFont: getComputedStyle(select).fontSize,
             selectorBackground: getComputedStyle(select).backgroundColor,
             selectedOptionBackground: getComputedStyle(
@@ -796,6 +798,7 @@ test('Activity and Event repeat selectors stay inside one shared panel in Create
       kind: 'activity',
       hasSinglePanel: true,
       noExtraMutationAction: true,
+      sectionBackground: 'rgb(27, 37, 42)',
       selectorFont: '17px',
       selectorBackground: 'rgb(25, 35, 40)',
       selectedOptionBackground: 'rgb(44, 58, 64)',
@@ -808,6 +811,7 @@ test('Activity and Event repeat selectors stay inside one shared panel in Create
       kind: 'event',
       hasSinglePanel: true,
       noExtraMutationAction: true,
+      sectionBackground: 'rgb(27, 37, 42)',
       selectorFont: '17px',
       selectorBackground: 'rgb(25, 35, 40)',
       selectedOptionBackground: 'rgb(44, 58, 64)',

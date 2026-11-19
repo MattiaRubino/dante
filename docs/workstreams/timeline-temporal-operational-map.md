@@ -1,5 +1,19 @@
 # Timeline / Temporal-Operational — Live Execution Ledger
 
+## 2026-11-19 — Authoring palette candidate
+
+Advanced Activity/Event Create and ordinary, selected-instance and series Edit
+share four authoring color properties: modal `#151d21`, section `#1b252a`,
+field `#202b30`, and subtle border `rgba(159, 177, 184, 0.125)`.
+Title, Area, Objective, agenda and Session name rows, and Description use the
+field surface. The Area color swatch stays beside its text input and both
+are 44px high. Timing, Recurrence, Area, Objectives and Description use the
+section surface. The recurrence popup colors, focus/error indications and
+field handlers are unchanged. The focused browser regression asserts the
+shared recurrence section surface in Create and simulated Edit. Typecheck,
+focused E2E and owner-local visual inspection are **NOT_RUN** on this candidate.
+Other typography, compact Quick layout and timeline ruler fixes remain separate.
+
 ## 2026-11-19 — Recurrence settings visual parity candidate
 
 The user requested a readable recurrence settings scale and one dark dropdown

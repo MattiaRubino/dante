@@ -52,11 +52,7 @@
   padding: 16px;
   border: 1px solid var(--dante-semantic-color-home-border-subtle);
   border-radius: 12px;
-  background: color-mix(
-    in srgb,
-    var(--dante-semantic-color-home-surface-control, #151f2e) 36%,
-    transparent
-  );
+  background: var(--dante-temporal-editor-section-surface);
 }
 
 .timeline-event-modal--edit
@@ -427,11 +423,7 @@
   padding: 16px;
   border: 1px solid var(--dante-semantic-color-home-border-subtle);
   border-radius: 12px;
-  background: color-mix(
-    in srgb,
-    var(--dante-semantic-color-home-surface-control, #151f2e) 36%,
-    transparent
-  );
+  background: var(--dante-temporal-editor-section-surface);
 }
 
 .timeline-event-modal--edit
@@ -693,7 +685,7 @@
   .timeline-activity-editor__area-color
   .temporal-create-life-area-field__color-trigger {
   width: 54px;
-  min-height: 42px;
+  min-height: var(--dante-temporal-control-height);
   padding: 0;
   border-radius: 11px;
 }
@@ -702,11 +694,7 @@
   display: grid;
   padding: 10px 16px 14px;
   border-radius: 14px;
-  background: color-mix(
-    in srgb,
-    var(--dante-semantic-color-home-surface-control, #151f2e) 55%,
-    transparent
-  );
+  background: var(--dante-temporal-editor-section-surface);
 }
 
 .timeline-event-modal--edit .timeline-activity-editor__section-heading h3 {

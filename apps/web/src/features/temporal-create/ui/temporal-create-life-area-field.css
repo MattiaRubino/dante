@@ -17,11 +17,11 @@
 .temporal-create-life-area-field__area-cell > input[type='text'],
 .temporal-create-life-area-field__area-cell > select {
   box-sizing: border-box;
-  height: 42px;
-  border: 1px solid color-mix(in srgb, currentColor 14%, transparent);
+  height: var(--dante-temporal-control-height);
+  border: 1px solid var(--dante-temporal-editor-border);
   border-radius: 11px;
   color: inherit;
-  background: color-mix(in srgb, currentColor 4%, transparent);
+  background: var(--dante-temporal-editor-field-surface);
   font: inherit;
 }
 

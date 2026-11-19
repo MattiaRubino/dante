@@ -7,11 +7,7 @@
   border: 1px solid
     var(--dante-semantic-color-home-border-subtle, rgba(255, 255, 255, 0.09));
   border-radius: 14px;
-  background: color-mix(
-    in srgb,
-    var(--dante-semantic-color-home-surface-control, #151f2e) 55%,
-    transparent
-  );
+  background: var(--dante-temporal-editor-section-surface);
 }
 
 .temporal-create-reality-objectives.timeline-activity-editor__outcome {

@@ -68,11 +68,7 @@
   border: 1px solid
     var(--dante-semantic-color-home-border-subtle, rgba(255, 255, 255, 0.09));
   border-radius: 10px;
-  background: color-mix(
-    in srgb,
-    var(--dante-semantic-color-home-surface-control, #151f2e) 72%,
-    transparent
-  );
+  background: var(--dante-temporal-editor-field-surface);
 }
 
 .temporal-create-tree-row.is-child-row {

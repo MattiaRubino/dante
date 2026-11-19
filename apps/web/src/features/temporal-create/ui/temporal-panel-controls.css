@@ -1,6 +1,11 @@
 :root {
   /* One authoring scale for Create and Edit. A future user preference can
      override these properties without changing the individual controls. */
+  /* Authoring surfaces shared by Advanced Create and all Edit scopes. */
+  --dante-temporal-editor-modal-surface: #151d21;
+  --dante-temporal-editor-section-surface: #1b252a;
+  --dante-temporal-editor-field-surface: #202b30;
+  --dante-temporal-editor-border: rgba(159, 177, 184, 0.125);
   --dante-temporal-form-text-size: 16px;
   --dante-temporal-form-label-size: 15px;
   --dante-temporal-form-helper-size: 13px;
@@ -43,11 +48,7 @@
   padding: 16px;
   border: 1px solid var(--dante-semantic-color-home-border-subtle);
   border-radius: 12px;
-  background: color-mix(
-    in srgb,
-    var(--dante-semantic-color-home-surface-control, #151f2e) 36%,
-    transparent
-  );
+  background: var(--dante-temporal-editor-section-surface);
 }
 
 :is(

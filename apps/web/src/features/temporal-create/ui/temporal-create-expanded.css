@@ -26,11 +26,7 @@
   padding: 22px 24px 16px;
   border-bottom: 1px solid
     var(--dante-semantic-color-home-border-subtle, rgba(255, 255, 255, 0.08));
-  background: color-mix(
-    in srgb,
-    var(--dante-semantic-color-home-surface-primary, #0d1522) 98%,
-    black
-  );
+  background: var(--dante-temporal-editor-modal-surface);
   backdrop-filter: blur(18px);
 }
 
@@ -208,7 +204,7 @@
   border: 1px solid
     var(--dante-semantic-color-home-border-subtle, rgba(255, 255, 255, 0.08));
   border-radius: 14px;
-  background: rgba(255, 255, 255, 0.014);
+  background: var(--dante-temporal-editor-section-surface);
 }
 
 .temporal-create-section.is-compact {

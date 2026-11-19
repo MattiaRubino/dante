@@ -10,10 +10,7 @@
   border: 1px solid
     var(--dante-semantic-color-home-border-subtle, rgba(255, 255, 255, 0.13));
   border-radius: 12px;
-  background: var(
-    --dante-semantic-color-home-surface-control,
-    rgba(255, 255, 255, 0.025)
-  );
+  background: var(--dante-temporal-editor-section-surface);
 }
 
 .temporal-recurrence-panel.temporal-recurrence-panel {
