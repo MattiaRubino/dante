@@ -71,6 +71,37 @@ describe('Timeline pointer drag geometry stability', () => {
         nowMinute={14 * 60 + 20} />,
     );
     expect(container.querySelectorAll('.timeline-ruler-column--secondary')).toHaveLength(1);
+    // Every secondary must inherit the EXACT same nonlinear positions as the
+    // primary ruler, rather than constructing its own equidistant hour axis.
+    const assertAlignedRulers = (day: TimelineRenderedDay) => {
+      const primary = container.querySelector<HTMLElement>(
+        '.timeline-ruler-column--primary',
+      );
+      const secondary = Array.from(container.querySelectorAll<HTMLElement>(
+        '.timeline-ruler-column--secondary',
+      ));
+      expect(primary).not.toBeNull();
+      const clockTicks = (column: HTMLElement | null) =>
+        Array.from(column?.querySelectorAll<HTMLElement>(
+          '.timeline-ruler-label',
+        ) ?? []).map((label) => Number.parseFloat(label.style.top));
+      const mainTicks = clockTicks(primary);
+      expect(mainTicks.length).toBeGreaterThanOrEqual(25);
+      for (const column of secondary) {
+        expect(clockTicks(column)).toEqual(mainTicks);
+      }
+      // The vertical axis is the original per-day elastic mapper, including
+      // the nonuniform extra height introduced by dense/active cards.
+      const ticks = Array.from(primary?.querySelectorAll<HTMLElement>(
+        '.timeline-ruler-label',
+      ) ?? []);
+      const positionAt = (minute: number) => day.mapper.map(minute);
+      const firstHour = ticks.find((label) => label.textContent === '10:00');
+      if (firstHour) {
+        expect(Number.parseFloat(firstHour.style.top)).toBeCloseTo(positionAt(600), 5);
+      }
+    };
+    assertAlignedRulers(first);
     const section = () =>
       container.querySelector<HTMLElement>('.timeline-day-section');
     const card = container.querySelector<HTMLElement>(
@@ -125,6 +156,7 @@ describe('Timeline pointer drag geometry stability', () => {
       />,
     );
     expect(container.querySelectorAll('.timeline-ruler-column--secondary')).toHaveLength(2);
+    assertAlignedRulers(first);
     expect(container.querySelectorAll('[data-timeline-event="7"]')).toHaveLength(1);
     expect(section()?.style.height).toBe(`${first.height}px`);
     expect(
@@ -141,5 +173,6 @@ describe('Timeline pointer drag geometry stability', () => {
     expect(
       container.querySelector('.timeline-ruler-day')?.getAttribute('style'),
     ).toContain(`${stretched.height}px`);
+    assertAlignedRulers(stretched);
   });
 });
