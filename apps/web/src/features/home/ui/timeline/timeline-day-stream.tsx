@@ -938,8 +938,12 @@ export function TimelineDayStream({
     runtime.overlay.setAttribute('data-drag-preview-time', label);
     runtime.overlay.setAttribute('data-drag-preview-date', preview.day.dateKey);
     if (runtime.rulerMarker) {
+      // Anchor the preview to the primary clock, not the outermost
+      // comparison ruler; dragging still uses the original grid geometry.
       const ruler =
         gridRef.current?.parentElement?.querySelector<HTMLElement>(
+          '.timeline-ruler-column--primary',
+        ) ?? gridRef.current?.parentElement?.querySelector<HTMLElement>(
           '.timeline-ruler',
         );
       if (ruler) {
