@@ -43,9 +43,16 @@
   margin: 0;
 }
 
-/* Keep the native select and its options legible in Create and every Edit scope. */
+/* The main choice has identical height and type in Create and every Edit. */
 .temporal-recurrence-panel__choice .temporal-create-u2-repeat select,
-.temporal-recurrence-panel__choice .temporal-create-u2-repeat select option {
+.temporal-recurrence-panel__choice .temporal-recurrence-panel__frequency select {
+  height: var(--dante-temporal-control-height);
+  min-height: var(--dante-temporal-control-height);
+  font-size: var(--dante-temporal-form-text-size);
+}
+
+.temporal-recurrence-panel__choice .temporal-create-u2-repeat select option,
+.temporal-recurrence-panel__choice .temporal-recurrence-panel__frequency select option {
   font-size: var(--dante-temporal-form-text-size);
 }
 
