@@ -799,6 +799,12 @@
   font-size: var(--dante-temporal-form-helper-size);
 }
 
+.temporal-create-backdrop.is-advanced
+  .temporal-create-composer.is-advanced
+  .temporal-create-type-grid > button strong {
+  font-size: var(--dante-temporal-kind-title-size);
+}
+
 .temporal-create-composer
   .temporal-create-actions.temporal-create-actions
   > button {
