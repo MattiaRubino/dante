@@ -362,16 +362,19 @@ describe('TemporalCreateComposer', () => {
       expect(row?.getAttribute('data-title-shake')).not.toBe(firstShake);
       expect(onSubmit).not.toHaveBeenCalled();
 
-      const accepted = { ...fields, title: 'Titolo corretto' };
+      fireEvent.change(title, { target: { value: 'Titolo corretto' } });
+      const accepted = updateTemporalCreateFields(session, {
+        title: 'Titolo corretto',
+      });
       view.rerender(
         <TemporalCreateComposer
-          session={setTemporalCreateSurface(createTemporalCreateSession(accepted), 'full')}
+          session={accepted}
           contexts={context}
           issues={[]}
           lifecycle="idle"
           failureMessage=""
           postCreateRetry={false}
-          u2Draft={createTemporalCreateU2AuthoringDraft(accepted)}
+          u2Draft={createTemporalCreateU2AuthoringDraft(accepted.draft.current)}
           onPatch={vi.fn()}
           onSurfaceChange={vi.fn()}
           onRequestClose={vi.fn()}
