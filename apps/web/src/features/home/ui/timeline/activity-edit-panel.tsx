@@ -1,6 +1,7 @@
 import {
   useCallback,
   useEffect,
+  useId,
   useRef,
   useState,
   type RefObject,
@@ -45,6 +46,7 @@ import { TimeControl } from '../../../temporal-create/ui/temporal-create-core-u2
 import { TemporalCreateDatePicker } from '../../../temporal-create/ui/temporal-create-date-picker';
 import { TemporalTimeZoneControl } from '../../../temporal-create/ui/temporal-time-zone-control';
 import { TemporalAuthoringTitleRow } from '../../../temporal-create/ui/temporal-authoring-title-row';
+import { useTemporalRequiredTitle } from '../../../temporal-create/ui/temporal-required-title';
 import { TemporalCreatePlacementLockButton } from '../../../temporal-create/ui/temporal-create-placement-lock-button';
 import { createRemoteExistingRecurrence } from '../../../temporal/remote-existing-recurrence';
 import { TemporalLifeAreaSelect } from '../../../temporal-create/ui/temporal-life-area-select';
@@ -538,6 +540,9 @@ export function ActivityEditPanel({
     location: profile.location ?? '',
     colorCode: profile.colorCode ?? '',
   }));
+  const titleFeedback = useTemporalRequiredTitle(draft.title);
+  const titleRef = useRef<HTMLInputElement>(null);
+  const titleErrorId = useId();
   const [pending, setPending] = useState(false);
   const [error, setError] = useState('');
   const [confirmingDiscard, setConfirmingDiscard] = useState(false);
@@ -1339,11 +1344,14 @@ export function ActivityEditPanel({
           settingsError ||
           !captureMode ||
           !realityMode ||
-          !draft.title.trim() ||
           sessionAttempts === null ||
           !!sessionAttemptsError
         )
           return;
+        if (!titleFeedback.validate()) {
+          titleRef.current?.focus();
+          return;
+        }
         if (planDirty && Object.keys(planErrors).length) return;
         let proposedRecurrence: ReturnType<
           ExistingRecurrenceControlHandle['getRule']
@@ -1795,19 +1803,24 @@ export function ActivityEditPanel({
         <TemporalAuthoringTitleRow
           kind="activity"
           className="timeline-activity-editor__title-row"
+          invalid={titleFeedback.invalid}
+          shakeAttempt={titleFeedback.shakeAttempt}
         >
           <label className="timeline-activity-editor__title">
             <span className="timeline-activity-editor__visually-hidden">
               Titolo
             </span>
             <input
+              ref={titleRef}
               className="temporal-create-title-input"
-              required
+              aria-invalid={titleFeedback.invalid}
+              aria-describedby={titleFeedback.invalid ? titleErrorId : undefined}
               maxLength={300}
               placeholder="Titolo"
               value={draft.title}
               onChange={(event) => {
                 operation.current = undefined;
+                titleFeedback.changed(event.target.value);
                 setDraft({ ...draft, title: event.target.value });
               }}
             />
@@ -1845,6 +1858,15 @@ export function ActivityEditPanel({
             </div>
           ) : null}
         </TemporalAuthoringTitleRow>
+        {titleFeedback.invalid ? (
+          <small
+            id={titleErrorId}
+            className="temporal-create-field-error"
+            role="alert"
+          >
+            Inserisci un titolo.
+          </small>
+        ) : null}
         {lockError ? <p role="alert">{lockError}</p> : null}
         {sessionAttemptsError ? (
           <p role="alert">{sessionAttemptsError}</p>
@@ -2878,7 +2900,6 @@ export function ActivityEditPanel({
             !!sessionAttemptsError ||
             !captureMode ||
             !realityMode ||
-            !draft.title.trim() ||
             (planDirty && Object.keys(planErrors).length > 0)
           }
         >

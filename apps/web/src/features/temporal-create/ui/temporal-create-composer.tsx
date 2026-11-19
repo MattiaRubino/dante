@@ -24,6 +24,7 @@ import {
 import { TemporalCreateEventAgenda } from './temporal-create-event-agenda';
 import { TemporalCreateAdvancedEventHeaderActions } from './temporal-create-placement-lock-button';
 import { TemporalAuthoringTitleRow } from './temporal-authoring-title-row';
+import { useTemporalRequiredTitle } from './temporal-required-title';
 import { TemporalCreateRealityObjectivesSection } from './temporal-create-reality-objectives-section';
 import { TemporalCreateCalendarRecurrenceFields } from './temporal-create-calendar-recurrence-fields';
 import {
@@ -124,6 +125,7 @@ export function TemporalCreateComposer({
     i18n.resolvedLanguage ?? i18n.language,
   );
   const titleId = useId();
+  const titleErrorId = useId();
   const discardTitleId = useId();
   const discardDescriptionId = useId();
   const dialogRef = useRef<HTMLDivElement | null>(null);
@@ -136,6 +138,7 @@ export function TemporalCreateComposer({
   const [pinned, setPinned] = useState(false);
   const [clockInvalid, setClockInvalid] = useState(false);
   const fields = session.draft.current;
+  const titleFeedback = useTemporalRequiredTitle(fields.title);
   const pending = lifecycle === 'pending';
   const discardPending = session.closeDecision === 'confirm-discard';
   const advanced = session.surface !== 'quick';
@@ -294,7 +297,7 @@ export function TemporalCreateComposer({
       if (returnTarget?.isConnected) {
         returnTarget.focus({ preventScroll: true });
       } else {
-        titleRef.current?.focus({ preventScroll: true });
+        titleRef.current?.focus();
       }
     });
   };
@@ -419,9 +422,24 @@ export function TemporalCreateComposer({
   };
 
   const renderError = (path: string): ReactNode => {
+    if (path === 'title' && titleFeedback.invalid) {
+      return (
+        <span
+          id={titleErrorId}
+          className="temporal-create-field-error"
+          role="alert"
+        >
+          Inserisci un titolo.
+        </span>
+      );
+    }
     const issue = issueFor(issues, path);
     return issue ? (
-      <span className="temporal-create-field-error" role="alert">
+      <span
+        id={path === 'title' ? titleErrorId : undefined}
+        className="temporal-create-field-error"
+        role="alert"
+      >
         {validationText(issue)}
       </span>
     ) : null;
@@ -429,6 +447,10 @@ export function TemporalCreateComposer({
 
   const submitForm = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
+    if (!titleFeedback.validate()) {
+      titleRef.current?.focus();
+      return;
+    }
     if (!clockInvalid) onSubmit();
   };
 
@@ -611,7 +633,12 @@ export function TemporalCreateComposer({
               initialDraft={u2Draft}
               onDraftChange={onU2DraftChange}
             >
-              <TemporalAuthoringTitleRow kind={fields.kind} compact={!advanced}>
+              <TemporalAuthoringTitleRow
+                kind={fields.kind}
+                compact={!advanced}
+                invalid={titleFeedback.invalid || !!issueFor(issues, 'title')}
+                shakeAttempt={titleFeedback.shakeAttempt}
+              >
                 <div className="temporal-create-title-row__name">
                   <label
                     className="temporal-create-visually-hidden"
@@ -624,12 +651,22 @@ export function TemporalCreateComposer({
                     id={titleId}
                     className="temporal-create-title-input"
                     data-create-path="title"
+                    aria-invalid={
+                      titleFeedback.invalid || !!issueFor(issues, 'title')
+                    }
+                    aria-describedby={
+                      titleFeedback.invalid || issueFor(issues, 'title')
+                        ? titleErrorId
+                        : undefined
+                    }
                     name="temporal-create-title"
                     type="text"
                     value={fields.title}
-                    onChange={(event) =>
-                      onPatch({ title: event.currentTarget.value })
-                    }
+                    onChange={(event) => {
+                      const next = event.currentTarget.value;
+                      titleFeedback.changed(next);
+                      onPatch({ title: next });
+                    }}
                     placeholder={t(
                       ($) => $.common.home.timeline.create.titleLabel,
                     )}

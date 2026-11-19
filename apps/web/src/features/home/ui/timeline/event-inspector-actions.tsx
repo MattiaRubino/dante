@@ -1,4 +1,4 @@
-import { type RefObject, useEffect, useRef, useState } from 'react';
+import { type RefObject, useEffect, useId, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { detectDeviceTimeZone } from '@dante/time';
 
@@ -69,6 +69,7 @@ import {
 import { TemporalCreatePlacementLockButton } from '../../../temporal-create/ui/temporal-create-placement-lock-button';
 import type { ExistingRecurrenceControlHandle } from './existing-recurrence-control';
 import { TemporalAuthoringTitleRow } from '../../../temporal-create/ui/temporal-authoring-title-row';
+import { useTemporalRequiredTitle } from '../../../temporal-create/ui/temporal-required-title';
 import type { TimelineCanonicalSchedulePlacement } from './model/timeline-types';
 import { TimelineInspectorIcon } from './timeline-inspector-icon';
 import { RecurringEditScopeDialog } from './recurring-edit-scope-dialog';
@@ -173,6 +174,9 @@ export function EventInspectorActions({
   const [profileDraft, setProfileDraft] = useState<EventProfileDraft | null>(
     null,
   );
+  const titleFeedback = useTemporalRequiredTitle(profileDraft?.title ?? '');
+  const titleRef = useRef<HTMLInputElement>(null);
+  const titleErrorId = useId();
   const [agendaDraft, setAgendaDraft] = useState<readonly string[]>([]);
   const [scheduleDraft, setScheduleDraft] = useState<EventScheduleDraft | null>(
     null,
@@ -739,6 +743,10 @@ export function EventInspectorActions({
 
   const saveProfile = async () => {
     if (!profile || !profileDraft || busy) return;
+    if (!titleFeedback.validate()) {
+      titleRef.current?.focus();
+      return;
+    }
     setBusy(true);
     setError('');
     try {
@@ -1493,19 +1501,27 @@ export function EventInspectorActions({
             <TemporalAuthoringTitleRow
               kind="event"
               className="timeline-activity-editor__title-row timeline-event-profile-editor__title-row"
+              invalid={titleFeedback.invalid}
+              shakeAttempt={titleFeedback.shakeAttempt}
             >
               <label className="timeline-activity-editor__title">
                 <span className="timeline-activity-editor__visually-hidden">
                   Titolo Event
                 </span>
                 <input
+                  ref={titleRef}
                   className="temporal-create-title-input"
+                  aria-invalid={titleFeedback.invalid}
+                  aria-describedby={
+                    titleFeedback.invalid ? titleErrorId : undefined
+                  }
                   disabled={busy}
                   maxLength={300}
                   placeholder="Titolo"
                   value={profileDraft.title}
                   onChange={(event) => {
                     const title = event.currentTarget.value;
+                    titleFeedback.changed(title);
                     setProfileDraft((draft) => draft && { ...draft, title });
                   }}
                 />
@@ -1524,6 +1540,15 @@ export function EventInspectorActions({
                 />
               </div>
             </TemporalAuthoringTitleRow>
+            {titleFeedback.invalid ? (
+              <small
+                id={titleErrorId}
+                className="temporal-create-field-error"
+                role="alert"
+              >
+                Inserisci un titolo.
+              </small>
+            ) : null}
             <>
               <TemporalCreateEventAgenda
                 parts={agendaDraft}
@@ -1952,7 +1977,7 @@ export function EventInspectorActions({
               type="button"
               className="is-primary"
               disabled={
-                busy || !profileDraft.title.trim() ||
+                busy ||
                 (scheduleDraft !== null && !isValidEventScheduleDraft(scheduleDraft))
               }
               onClick={() => void saveProfile()}

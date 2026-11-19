@@ -1520,6 +1520,33 @@ describe('Activity Inspector', () => {
     expect(screen.queryByRole('textbox', { name: 'Titolo' })).toBeNull();
   });
 
+  it('shows the same attempted-submit title error without Activity writes, then clears it', async () => {
+    render(
+      <ActivityEditPanel
+        profile={profile}
+        closeRequestRef={createRef()}
+        onSaved={vi.fn()}
+        onCancel={vi.fn()}
+      />,
+    );
+    const title = await screen.findByRole('textbox', { name: 'Titolo' });
+    fireEvent.change(title, { target: { value: '   ' } });
+    const save = screen.getByRole('button', { name: 'Salva modifiche' });
+    await waitFor(() => expect(save.hasAttribute('disabled')).toBe(false));
+    const row = title.closest('.temporal-authoring-title-row');
+    expect(row?.getAttribute('data-title-invalid')).toBeNull();
+    fireEvent.click(save);
+    expect(row?.getAttribute('data-title-invalid')).toBe('true');
+    expect(title.getAttribute('aria-invalid')).toBe('true');
+    expect(title).toBe(document.activeElement);
+    expect(screen.getByText('Inserisci un titolo.')).toBeTruthy();
+    expect(saveCore).not.toHaveBeenCalled();
+    expect(applyAtomicEdit).not.toHaveBeenCalled();
+    fireEvent.change(title, { target: { value: 'Titolo valido' } });
+    expect(row?.getAttribute('data-title-invalid')).toBeNull();
+    expect(screen.queryByText('Inserisci un titolo.')).toBeNull();
+  });
+
   it('saves changes in the editor and returns to the Inspector', async () => {
     saveCore.mockResolvedValue({
       profile: { ...profile, title: 'Dopo', revision: 1 },

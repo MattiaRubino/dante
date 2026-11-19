@@ -1322,6 +1322,39 @@ describe('Event Inspector actions', () => {
     );
   });
 
+  it('keeps Event Save actionable with a blank title and validates before any mutation', async () => {
+    loadProfile.mockResolvedValue({
+      eventRef,
+      title: 'Conferenza',
+      description: null,
+      location: null,
+      colorCode: null,
+      profileRevision: 2,
+      agendaRevision: 0,
+      agendaParts: [],
+    });
+    render(
+      <EventInspectorActions
+        eventRef={eventRef}
+        placement={placement}
+        onDuplicate={vi.fn()}
+      />,
+    );
+    fireEvent.click(await screen.findByRole('button', { name: 'Modifica' }));
+    const title = await screen.findByRole('textbox', { name: 'Titolo Event' });
+    fireEvent.change(title, { target: { value: '' } });
+    const save = screen.getByRole('button', { name: 'Salva modifiche' });
+    expect(save.hasAttribute('disabled')).toBe(false);
+    fireEvent.click(save);
+    expect(title.closest('.temporal-authoring-title-row')?.getAttribute('data-title-invalid')).toBe('true');
+    expect(title).toBe(document.activeElement);
+    expect(screen.getByText('Inserisci un titolo.')).toBeTruthy();
+    expect(reviseProfile).not.toHaveBeenCalled();
+    expect(reviseAtomic).not.toHaveBeenCalled();
+    fireEvent.change(title, { target: { value: 'Incontro' } });
+    expect(screen.queryByText('Inserisci un titolo.')).toBeNull();
+  });
+
   it('edits current Event metadata with canonical CAS and leaves the existing identity intact', async () => {
     const current = {
       eventRef,
@@ -2867,6 +2900,16 @@ describe('Event Inspector actions', () => {
     );
 
     const title = await screen.findByRole('textbox', { name: 'Titolo' });
+    const seriesSave = screen.getByRole('button', { name: 'Salva modifiche' });
+    fireEvent.change(title, { target: { value: '' } });
+    expect(seriesSave.hasAttribute('disabled')).toBe(false);
+    fireEvent.click(seriesSave);
+    expect(title.closest('.temporal-authoring-title-row')?.getAttribute('data-title-invalid')).toBe('true');
+    expect(screen.getByText('Inserisci un titolo.')).toBeTruthy();
+    expect(reviewSeries).not.toHaveBeenCalled();
+    expect(acceptSeries).not.toHaveBeenCalled();
+    fireEvent.change(title, { target: { value: 'Riunione' } });
+    expect(screen.queryByText('Inserisci un titolo.')).toBeNull();
     const savedRepeat = screen.getByRole('region', { name: 'Ripetizione' });
     const eventTimeBlock = screen
       .getByRole('region', { name: 'Orario della serie' })

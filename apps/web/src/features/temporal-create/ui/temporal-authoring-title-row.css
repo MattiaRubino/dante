@@ -202,3 +202,39 @@
     padding-inline: 10px;
   }
 }
+
+/* Shared attempted-submit feedback, including Quick Create.
+ * The invalid red ring must win over the ordinary orange focus decoration. */
+.temporal-authoring-title-row[data-title-invalid='true'],
+.temporal-authoring-title-row[data-title-invalid='true']:focus-within {
+  border-color: #e86a70 !important;
+  outline: 1px solid #e86a70;
+  outline-offset: -1px;
+  box-shadow: 0 0 0 1px rgba(232, 106, 112, 0.3) !important;
+}
+
+.temporal-authoring-title-row[data-title-shake='odd'] {
+  animation: temporal-title-shake-odd 190ms ease-out both;
+}
+
+.temporal-authoring-title-row[data-title-shake='even'] {
+  animation: temporal-title-shake-even 190ms ease-out both;
+}
+
+@keyframes temporal-title-shake-odd {
+  0%, 100% { transform: translateX(0); }
+  25%, 75% { transform: translateX(-2px); }
+  50% { transform: translateX(2px); }
+}
+
+@keyframes temporal-title-shake-even {
+  0%, 100% { transform: translateX(0); }
+  25%, 75% { transform: translateX(-2px); }
+  50% { transform: translateX(2px); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .temporal-authoring-title-row[data-title-shake] {
+    animation: none;
+  }
+}

@@ -17,6 +17,7 @@ For current **Domain Atlas / kernel terminology**, use [`../domain/README.md`](.
 ## Current Temporal Product Behavior
 
 - [Date, clock, intervals and timezones](temporal/timezone-and-time-editing.md) — approved behavior contract; implementation status tracked separately.
+- [Required title and submit-time validation](temporal/title-validation.md) — shared Create/Edit and recurring-series UX contract, title error ring, focus and reduced-motion shake.
 
 ## V1 product concepts and execution behavior
 

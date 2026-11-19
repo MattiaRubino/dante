@@ -1,6 +1,7 @@
 import {
   useCallback,
   useEffect,
+  useId,
   useRef,
   useState,
   type RefObject,
@@ -20,6 +21,7 @@ import type { TemporalOccurrenceInventoryReviewLease } from '../../../temporal/t
 import { initialRecurrenceForScope } from './recurring-series-bounds';
 import { TemporalCreatePlacementLockButton } from '../../../temporal-create/ui/temporal-create-placement-lock-button';
 import { TemporalAuthoringTitleRow } from '../../../temporal-create/ui/temporal-authoring-title-row';
+import { useTemporalRequiredTitle } from '../../../temporal-create/ui/temporal-required-title';
 import { TIME_BANDS, TimeControl, type TimeBand } from '../../../temporal-create/ui/temporal-create-core-u2';
 import { TemporalColorControl } from '../../../temporal-create/ui/temporal-color-control';
 import { TemporalCreateDatePicker } from '../../../temporal-create/ui/temporal-create-date-picker';
@@ -315,6 +317,9 @@ export function RecurringSeriesEditor({
   const [structure, setStructure] = useState<Entry>({});
   const [recurrence, setRecurrence] = useState<Entry>({});
   const [title, setTitle] = useState('');
+  const titleFeedback = useTemporalRequiredTitle(title);
+  const titleRef = useRef<HTMLInputElement>(null);
+  const titleErrorId = useId();
   const [description, setDescription] = useState('');
   const [location, setLocation] = useState('');
   const [color, setColor] = useState('');
@@ -732,8 +737,8 @@ export function RecurringSeriesEditor({
     if (!source || busy) return;
     setError('');
     setAreaError('');
-    if (!title.trim()) {
-      setError('Inserisci un titolo.');
+    if (!titleFeedback.validate()) {
+      titleRef.current?.focus();
       return;
     }
     if (
@@ -868,17 +873,27 @@ export function RecurringSeriesEditor({
             <TemporalAuthoringTitleRow
               kind={owner === 'event' ? 'event' : 'activity'}
               className="timeline-activity-editor__title-row"
+              invalid={titleFeedback.invalid}
+              shakeAttempt={titleFeedback.shakeAttempt}
             >
               <label className="timeline-activity-editor__title">
                 <span className="timeline-activity-editor__visually-hidden">
                   Titolo
                 </span>
                 <input
+                  ref={titleRef}
                   className="temporal-create-title-input"
                   aria-label="Titolo"
+                  aria-invalid={titleFeedback.invalid}
+                  aria-describedby={
+                    titleFeedback.invalid ? titleErrorId : undefined
+                  }
                   value={title}
                   maxLength={300}
-                  onChange={(e) => updateMetadata(setTitle, e.target.value)}
+                  onChange={(e) => {
+                    titleFeedback.changed(e.target.value);
+                    updateMetadata(setTitle, e.target.value);
+                  }}
                 />
               </label>
               {owner === 'routine' ? (
@@ -926,6 +941,15 @@ export function RecurringSeriesEditor({
                 </div>
               )}
             </TemporalAuthoringTitleRow>
+            {titleFeedback.invalid ? (
+              <small
+                id={titleErrorId}
+                className="temporal-create-field-error"
+                role="alert"
+              >
+                Inserisci un titolo.
+              </small>
+            ) : null}
             {owner === 'event' ? (
               <TemporalCreateEventAgenda
                 parts={agenda}

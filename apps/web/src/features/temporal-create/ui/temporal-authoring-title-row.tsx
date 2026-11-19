@@ -11,11 +11,15 @@ export function TemporalAuthoringTitleRow({
   children,
   className = '',
   compact = false,
+  invalid = false,
+  shakeAttempt = 0,
 }: Readonly<{
   kind: 'activity' | 'event';
   children: ReactNode;
   className?: string;
   compact?: boolean;
+  invalid?: boolean;
+  shakeAttempt?: number;
 }>) {
   return (
     <div
@@ -30,6 +34,8 @@ export function TemporalAuthoringTitleRow({
         .filter(Boolean)
         .join(' ')}
       data-authoring-title-kind={kind}
+      data-title-invalid={invalid || undefined}
+      data-title-shake={invalid ? (shakeAttempt % 2 ? 'odd' : 'even') : undefined}
     >
       <span className="temporal-authoring-title-row__marker" aria-hidden="true">
         {kind === 'activity' ? '◇' : '○'}

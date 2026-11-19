@@ -311,6 +311,96 @@ describe('TemporalCreateComposer', () => {
     ).toHaveLength(1);
   });
 
+  it.each(['activity', 'event'] as const)(
+    'validates the %s title only when Add is attempted in Advanced Create',
+    (kind) => {
+      const fields = createTemporalCreateFields({
+        kind,
+        date: '2026-11-19',
+        timeZoneId: 'Europe/Rome',
+        contextId: 'personale',
+      });
+      const session = setTemporalCreateSurface(
+        createTemporalCreateSession(fields),
+        'full',
+      );
+      const onSubmit = vi.fn();
+      const view = render(
+        <TemporalCreateComposer
+          session={session}
+          contexts={context}
+          issues={[]}
+          lifecycle="idle"
+          failureMessage=""
+          postCreateRetry={false}
+          u2Draft={createTemporalCreateU2AuthoringDraft(fields)}
+          onPatch={vi.fn()}
+          onSurfaceChange={vi.fn()}
+          onRequestClose={vi.fn()}
+          onContinueEditing={vi.fn()}
+          onDiscard={vi.fn()}
+          onMoveToUnplaced={vi.fn()}
+          onSubmit={onSubmit}
+        />,
+      );
+      const title = screen.getByRole('textbox', { name: 'Titolo' });
+      const row = title.closest('.temporal-authoring-title-row');
+      const add = screen.getByRole('button', { name: 'Aggiungi' });
+      expect(add.hasAttribute('disabled')).toBe(false);
+      expect(row?.getAttribute('data-title-invalid')).toBeNull();
+      expect(screen.queryByText('Inserisci un titolo.')).toBeNull();
+
+      fireEvent.click(add);
+      expect(onSubmit).not.toHaveBeenCalled();
+      expect(row?.getAttribute('data-title-invalid')).toBe('true');
+      expect(title.getAttribute('aria-invalid')).toBe('true');
+      expect(title).toBe(document.activeElement);
+      expect(screen.getByRole('alert').textContent).toBe('Inserisci un titolo.');
+      const firstShake = row?.getAttribute('data-title-shake');
+
+      fireEvent.click(add);
+      expect(row?.getAttribute('data-title-shake')).not.toBe(firstShake);
+      expect(onSubmit).not.toHaveBeenCalled();
+
+      const accepted = { ...fields, title: 'Titolo corretto' };
+      view.rerender(
+        <TemporalCreateComposer
+          session={setTemporalCreateSurface(createTemporalCreateSession(accepted), 'full')}
+          contexts={context}
+          issues={[]}
+          lifecycle="idle"
+          failureMessage=""
+          postCreateRetry={false}
+          u2Draft={createTemporalCreateU2AuthoringDraft(accepted)}
+          onPatch={vi.fn()}
+          onSurfaceChange={vi.fn()}
+          onRequestClose={vi.fn()}
+          onContinueEditing={vi.fn()}
+          onDiscard={vi.fn()}
+          onMoveToUnplaced={vi.fn()}
+          onSubmit={onSubmit}
+        />,
+      );
+      expect(row?.getAttribute('data-title-invalid')).toBeNull();
+      expect(screen.queryByText('Inserisci un titolo.')).toBeNull();
+      expect(add.hasAttribute('disabled')).toBe(false);
+    },
+  );
+
+  it('keeps Quick Create Add actionable and validates a blank title on demand', () => {
+    renderComposer();
+    const title = screen.getByRole('textbox', { name: 'Titolo' });
+    const add = screen.getByRole('button', { name: 'Aggiungi' });
+    expect(add.hasAttribute('disabled')).toBe(false);
+    expect(title.closest('.temporal-authoring-title-row')?.getAttribute('data-title-invalid'))
+      .toBeNull();
+    fireEvent.click(add);
+    expect(title.closest('.temporal-authoring-title-row')?.getAttribute('data-title-invalid'))
+      .toBe('true');
+    expect(title).toBe(document.activeElement);
+    expect(screen.getByRole('alert').textContent).toBe('Inserisci un titolo.');
+  });
+
   it('uses the shared rounded footer action for Aggiungi', () => {
     renderComposer();
     const add = screen.getByRole('button', { name: 'Aggiungi' });
