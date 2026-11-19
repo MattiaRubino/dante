@@ -1,5 +1,20 @@
 # Timeline / Temporal-Operational — Live Execution Ledger
 
+## 2026-11-19 — Recurrence settings visual parity candidate
+
+The user requested a readable recurrence settings scale and one dark dropdown
+palette in advanced Activity/Event Create, ordinary and selected-instance Edit,
+and series Edit. The native recurrence selector now renders through
+`TemporalRecurrenceChoice` in each flow; the series retains its calendar
+families while using the same presentation boundary. Shared CSS properties set
+the 17px settings scale and explicit popup/option colors, and the generic Edit
+font rule no longer shrinks recurrence fields. The existing browser layout
+regression now checks Create, simulated ordinary Edit and series Edit styles
+for Activity/Event where applicable. The exact current SHA needs owner-local
+Web typecheck, focused browser execution, and real-app visual inspection;
+these are **NOT_RUN**. Other component color harmonization is deferred.
+
+
 ## 2026-11-17 — Create/Edit time-section parity follow-up
 
 Advanced Create now applies the approved bordered timing section to both
