@@ -173,26 +173,26 @@
   }
 
   .temporal-create-timing-section.is-activity
-    .temporal-create-u2-when
+    .temporal-create-u2-when:not(.is-quick-date-rows)
     > .temporal-create-u2-date-field {
     grid-column: 1;
   }
 
   .temporal-create-timing-section.is-activity
-    .temporal-create-u2-when
+    .temporal-create-u2-when:not(.is-quick-date-rows)
     > .temporal-create-u2-date-field
     + .temporal-create-time-control {
     grid-column: 2;
   }
 
   .temporal-create-timing-section.is-activity
-    .temporal-create-u2-when
+    .temporal-create-u2-when:not(.is-quick-date-rows)
     > .temporal-create-time-control:has([data-create-path='endTime']) {
     grid-column: 1;
   }
 
   .temporal-create-timing-section.is-activity
-    .temporal-create-u2-when
+    .temporal-create-u2-when:not(.is-quick-date-rows)
     > .temporal-create-date-picker {
     grid-column: 2;
   }

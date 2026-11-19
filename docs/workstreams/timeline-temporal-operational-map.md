@@ -1,5 +1,17 @@
 # Timeline / Temporal-Operational — Live Execution Ledger
 
+## 2026-11-19 — Narrow Quick Activity timing order
+
+Owner-local typecheck passed and the focused unit tests passed 24/24 for the
+two-row Quick candidate. The browser regression then failed at its 390px
+viewport: an older Activity-only max-width:560px selector forced the start
+date into column one and the start clock into column two. That selector now
+excludes the Quick two-row layout, leaving the Quick-specific time-left,
+date-right rule in charge. Advanced and Edit retain the older narrow layout.
+The same focused browser case already checks visual order, equal sizes and
+containment at both widths. Owner-local browser rerun and visual review of
+this follow-up are **NOT_RUN**.
+
 ## 2026-11-19 — Quick timing layout review and typecheck repair
 
 The owner reviewed the two-row Quick timing layout and requested visible
