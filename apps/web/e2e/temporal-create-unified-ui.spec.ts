@@ -644,6 +644,16 @@ test('Activity and Event repeat selectors stay inside one shared panel in Create
     const details = panel.locator('.temporal-recurrence-panel__details');
     await expect(details).toBeVisible();
     await expect(details.locator('.temporal-create-repeat')).toHaveCount(1);
+    await expect(choice).toHaveCSS('font-size', '17px');
+    await expect(choice).toHaveCSS('background-color', 'rgb(25, 35, 40)');
+    await expect(choice.locator('option').first()).toHaveCSS(
+      'background-color',
+      'rgb(25, 35, 40)',
+    );
+    await expect(details.locator('.temporal-create-repeat__row-label').first()).toHaveCSS(
+      'font-size',
+      '17px',
+    );
     await expect(
       panel.getByRole('heading', { name: 'Ripetizione' }),
     ).toHaveCount(1);
