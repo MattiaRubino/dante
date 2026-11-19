@@ -744,26 +744,35 @@ export function TimelineDayStream({
   } | null>(null);
   const dragGeometryRef = useRef<readonly TimelineRenderedDay[] | null>(null);
   const displayedDays = dragGeometry?.days ?? days;
-  const secondaryRulers = useMemo(() => (
-    secondaryZoneIds.map((zone) => ({
+  const secondaryRulers = useMemo(() => {
+    const rulerDays = view === 'week' ? displayedDays.slice(0, 1) : displayedDays;
+    return secondaryZoneIds.map((zone) => ({
       zone,
-      days: (view === 'week' ? displayedDays.slice(0, 1) : displayedDays).map(
-        (day) => {
-          const primaryTicks = timelineRulerLabels(day.mapper, state.zoom);
-          let previousDate: string | null = null;
-          const ticks = primaryTicks.map(({ minute, minor }) => {
-            const tick = timelineSecondaryRulerTick(
-              day.dateKey, minute, primaryZoneId, zone,
-            );
-            const showDate = previousDate !== tick.date;
-            previousDate = tick.date;
-            return { minute, minor, ...tick, showDate };
-          });
-          return { dateKey: day.dateKey, height: day.height, mapper: day.mapper, ticks };
-        },
-      ),
-    }))
-  ), [secondaryZoneIds, displayedDays, view, state.zoom, primaryZoneId]);
+      days: rulerDays.map((day, index) => {
+        const nextDay = rulerDays[index + 1];
+        // In the continuous Timeline, the next day's 00:00 owns the shared
+        // boundary. Rendering this day's 24:00 as well paints the same
+        // secondary clock value twice at exactly the same vertical position.
+        const hasNextDayAtBoundary =
+          view === 'timeline' &&
+          nextDay?.dateKey === timelineDateKey(addTimelineDays(day.date, 1));
+        const primaryTicks = timelineRulerLabels(day.mapper, state.zoom)
+          .filter(({ minute }) =>
+            !hasNextDayAtBoundary || minute < TIMELINE_MINUTES_PER_DAY,
+          );
+        let previousDate: string | null = null;
+        const ticks = primaryTicks.map(({ minute, minor }) => {
+          const tick = timelineSecondaryRulerTick(
+            day.dateKey, minute, primaryZoneId, zone,
+          );
+          const showDate = previousDate !== tick.date;
+          previousDate = tick.date;
+          return { minute, minor, ...tick, showDate };
+        });
+        return { dateKey: day.dateKey, height: day.height, mapper: day.mapper, ticks };
+      }),
+    }));
+  }, [secondaryZoneIds, displayedDays, view, state.zoom, primaryZoneId]);
   const openActivityRefs = new Set(
     displayedDays.flatMap((day) =>
       day.layouts.flatMap((layout) => {

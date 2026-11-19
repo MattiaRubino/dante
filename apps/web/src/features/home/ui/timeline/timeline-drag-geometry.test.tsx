@@ -1,4 +1,5 @@
 // @vitest-environment jsdom
+import { Temporal } from '@dante/time';
 import { createRef } from 'react';
 import { cleanup, fireEvent, render } from '@testing-library/react';
 import { afterEach, beforeAll, describe, expect, it, vi } from 'vitest';
@@ -174,5 +175,83 @@ describe('Timeline pointer drag geometry stability', () => {
       container.querySelector('.timeline-ruler-day')?.getAttribute('style'),
     ).toContain(`${stretched.height}px`);
     assertAlignedRulers(stretched);
+  });
+});
+
+describe('Timeline comparison ruler at a continuous day boundary', () => {
+  it('shows one secondary clock label at midnight in each zone while preserving Day mode', () => {
+    const state = createInitialTimelineState();
+    const anchor = Temporal.PlainDate.from('2026-11-19');
+    const days = buildTimelineRenderedDays(anchor, 0, 1, {
+      eventsByDate: state.eventsByDate,
+      groups: state.groups,
+      zoom: state.zoom,
+      expandedEventIds: state.expandedEventIds,
+    });
+    const first = days[0];
+    const next = days[1];
+    expect(first).toBeDefined();
+    expect(next).toBeDefined();
+    if (!first || !next) return;
+
+    const zones = ['Europe/London', 'America/Los_Angeles'];
+    const props = {
+      days,
+      view: 'timeline' as const,
+      today: anchor,
+      state,
+      expanded: false,
+      gridRef: createRef<HTMLDivElement>(),
+      primaryZoneId: 'Europe/Rome',
+      secondaryZoneIds: zones,
+      nowMinute: 12 * 60,
+      onScroll: vi.fn(),
+      onZoomAt: vi.fn(),
+      onFocusEvent: vi.fn(),
+      onToggleSubitems: vi.fn(),
+      onOpenEventDetail: vi.fn(),
+      onOpenSubitemDetail: vi.fn(),
+      onMoveEvent: vi.fn(),
+      onMoveFeedback: vi.fn(),
+      onDragActiveChange: vi.fn(),
+    };
+    const { container, rerender } = render(<TimelineDayStream {...props} />);
+
+    for (const [zone, expectedClock] of [
+      ['Europe/London', '23:00'],
+      ['America/Los_Angeles', '15:00'],
+    ] as const) {
+      const column = Array.from(container.querySelectorAll<HTMLElement>(
+        '.timeline-ruler-column--secondary',
+      )).find((element) => element.dataset.secondaryTimeZone === zone);
+      const rulerDays = Array.from(column?.querySelectorAll<HTMLElement>(
+        '.timeline-ruler-day',
+      ) ?? []);
+      expect(rulerDays).toHaveLength(2);
+      const labels = (day: HTMLElement | undefined) =>
+        Array.from(day?.querySelectorAll<HTMLElement>('.timeline-ruler-label') ?? []);
+      const at = (day: HTMLElement | undefined, pixel: number) =>
+        labels(day).filter((label) =>
+          Math.abs(Number.parseFloat(label.style.top) - pixel) < 0.001,
+        );
+      expect(at(rulerDays[0], first.mapper.map(1440))).toHaveLength(0);
+      const nextMidnight = at(rulerDays[1], next.mapper.map(0));
+      expect(nextMidnight).toHaveLength(1);
+      expect(nextMidnight[0]?.textContent).toContain(expectedClock);
+      expect(at(rulerDays[0], first.mapper.map(1380))).toHaveLength(1);
+    }
+
+    // The standalone Day ruler keeps its existing terminal label: this fix
+    // deliberately changes only the continuous multi-day comparison lanes.
+    rerender(<TimelineDayStream {...props} view="day" days={[first]} />);
+    const singleDaySecondary = container.querySelector<HTMLElement>(
+      '.timeline-ruler-column--secondary .timeline-ruler-day',
+    );
+    const terminalLabels = Array.from(singleDaySecondary?.querySelectorAll<HTMLElement>(
+      '.timeline-ruler-label',
+    ) ?? []).filter((label) =>
+      Math.abs(Number.parseFloat(label.style.top) - first.mapper.map(1440)) < 0.001,
+    );
+    expect(terminalLabels).toHaveLength(1);
   });
 });

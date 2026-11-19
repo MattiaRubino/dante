@@ -1,5 +1,18 @@
 # Timeline / Temporal-Operational — Live Execution Ledger
 
+## 2026-11-19 — Continuous Timeline secondary ruler seam
+
+In the multi-day Timeline only, each secondary time-zone ruler now renders the
+midnight boundary from the following day's 00:00 tick and skips the previous
+day's terminal tick when that following day is contiguous and visible. This
+removes the two identical, overlapping secondary clock numbers shown at the
+day change (including with multiple comparison zones). Date-shift annotations
+and the primary ruler remain unchanged. Day and Week modes remain unchanged;
+the separately reported clipped last hour in Day mode is outside this fix.
+The focused renderer regression covers two comparison zones, a contiguous
+boundary and the preserved standalone Day endpoint. Owner-local test execution
+and visual review are **NOT_RUN**.
+
 ## 2026-11-19 — Quick Create two-row date layout
 
 After owner review, Quick Create places the complete weekday/day/month date and
