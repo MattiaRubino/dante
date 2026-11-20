@@ -1,5 +1,19 @@
 # Timeline / Temporal-Operational — Live Execution Ledger
 
+## 2026-11-20 — Life Area catalog survives a versioned removal
+
+Removing an Activity or Event from a Life Area retains a versioned assignment
+with `life_area_ref: null`; the canonical unassigned list still contains the
+item and its own color. The Web organization decoder previously required a
+UUID for every assignment target, so that one valid removal rejected the
+entire catalog read. Subsequent Life Area selections and new-area projections
+then appeared missing even though the backend accepted their writes. The
+decoder now preserves the null target and its revision, while retaining strict
+UUID validation for non-null targets. The existing remote organization test
+covers an assigned Event, a colorized unassigned Activity with a null target,
+and an available Life Area in the same load. Owner-local typecheck, focused
+Vitest and visual follow-up are NOT_RUN on this candidate.
+
 ## 2026-11-20 — Reminder native popup matches Recurrence
 
 The owner compared the native «Ricorda» and «Ripeti» menus in Edit: the

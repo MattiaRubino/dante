@@ -14,7 +14,7 @@ export type LifeArea = Readonly<{
 export type LifeAreaAssignment = Readonly<{
   kind: OrganizationKind;
   itemRef: string;
-  areaRef: string;
+  areaRef: string | null;
   revision: number;
 }>;
 export type UnassignedItem = Readonly<{
@@ -136,7 +136,9 @@ function assignment(value: unknown): LifeAreaAssignment {
   return Object.freeze({
     kind: kind(row.subject_kind),
     itemRef: uuid(row.subject_native_ref),
-    areaRef: uuid(row.life_area_ref),
+    // Unassigning keeps the versioned assignment row with a null target.
+    // It must not invalidate the entire organization catalog.
+    areaRef: row.life_area_ref === null ? null : uuid(row.life_area_ref),
     revision: revision(row.assignment_revision),
   });
 }

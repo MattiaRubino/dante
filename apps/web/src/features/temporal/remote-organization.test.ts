@@ -21,7 +21,7 @@ function response(body: unknown, status = 200): Response {
 }
 
 describe('remote temporal organization data source', () => {
-  it('reads actor-local catalogs, canonical unassigned colors and inherited Routine organization', async () => {
+  it('reads Life Areas after a versioned unassignment, retaining the standalone item color', async () => {
     const fetchFn = vi.fn<typeof globalThis.fetch>((input, init) => {
       expect(new Headers(init?.headers).get('X-Dante-Client')).toBe('web');
       switch (input) {
@@ -48,6 +48,12 @@ describe('remote temporal organization data source', () => {
                 subject_native_ref: EVENT_REF,
                 life_area_ref: AREA_REF,
                 assignment_revision: 1,
+              },
+              {
+                subject_kind: 'activity',
+                subject_native_ref: UNASSIGNED_REF,
+                life_area_ref: null,
+                assignment_revision: 2,
               },
             ]),
           );
@@ -119,6 +125,12 @@ describe('remote temporal organization data source', () => {
         kind: 'event',
         itemRef: EVENT_REF,
         areaRef: AREA_REF,
+      }),
+      expect.objectContaining({
+        kind: 'activity',
+        itemRef: UNASSIGNED_REF,
+        areaRef: null,
+        revision: 2,
       }),
       expect.objectContaining({
         kind: 'routine',
