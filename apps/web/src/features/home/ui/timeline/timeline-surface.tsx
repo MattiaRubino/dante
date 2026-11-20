@@ -108,6 +108,7 @@ import {
   ViewOptionsPopover,
   detailFromEvent,
   detailFromSubitem,
+  inspectorAppearanceForEvent,
   type TimelineDetail,
 } from './timeline-overlays';
 import {
@@ -147,6 +148,7 @@ type DetailState = Readonly<{
   detail: TimelineDetail;
   event: TimelineEvent;
   opener: HTMLElement;
+  savedAppearanceColorCode?: string | null;
   openActivityEdit?: boolean;
   activityEditScope?: 'this_and_following';
 }>;
@@ -443,6 +445,69 @@ export function TimelineSurface({
   const [calendarOpen, setCalendarOpen] = useState(false);
   const [viewOptionsOpen, setViewOptionsOpen] = useState(false);
   const [detailState, setDetailState] = useState<DetailState | null>(null);
+  const inspectorAppearance = useMemo(() => {
+    if (!detailState) return undefined;
+    const liveEvent = findTimelineEvent(state, detailState.event.id)?.event;
+    const allDayItem = liveEvent
+      ? null
+      : state.allDayItems.find((item) => item.id === detailState.event.id);
+    const currentEvent = allDayItem
+      ? (() => {
+          const { appearanceColorCode: _previous, ...original } =
+            detailState.event;
+          void _previous;
+          return {
+            ...original,
+            groupId: allDayItem.groupId,
+            ...(allDayItem.appearanceColorCode
+              ? { appearanceColorCode: allDayItem.appearanceColorCode }
+              : {}),
+          };
+        })()
+      : (liveEvent ?? detailState.event);
+    const appearance = inspectorAppearanceForEvent(currentEvent, state.groups);
+    // An Activity profile save can precede the refreshed all-day projection.
+    if (
+      appearance.groupLabel === 'Senza Area' &&
+      detailState.savedAppearanceColorCode !== undefined
+    ) {
+      return {
+        ...appearance,
+        accentColorCode: detailState.savedAppearanceColorCode,
+      };
+    }
+    return appearance;
+  }, [detailState, state.allDayItems, state.eventsByDate, state.groups]);
+  useEffect(() => {
+    if (!detailState || detailState.savedAppearanceColorCode === undefined) {
+      return;
+    }
+    const liveEvent = findTimelineEvent(state, detailState.event.id)?.event;
+    const allDayItem = state.allDayItems.find(
+      (item) => item.id === detailState.event.id,
+    );
+    const projectedColor =
+      liveEvent?.appearanceColorCode ?? allDayItem?.appearanceColorCode ?? null;
+    if (
+      inspectorAppearance?.groupLabel === 'Senza Area' &&
+      projectedColor !== detailState.savedAppearanceColorCode
+    ) {
+      return;
+    }
+    setDetailState((current) => {
+      if (
+        !current ||
+        current.event.id !== detailState.event.id ||
+        current.savedAppearanceColorCode !==
+          detailState.savedAppearanceColorCode
+      ) {
+        return current;
+      }
+      const { savedAppearanceColorCode: _matched, ...fresh } = current;
+      void _matched;
+      return fresh;
+    });
+  }, [detailState, inspectorAppearance, state.allDayItems, state.eventsByDate]);
   const [nowNeeded, setNowNeeded] = useState(false);
   const [toastMessage, setToastMessage] = useState('');
   const [toastVisible, setToastVisible] = useState(false);
@@ -2085,6 +2150,7 @@ export function TimelineSurface({
 
       <EventDetailDialog
         detail={detailState?.detail ?? null}
+        {...(inspectorAppearance ? { appearance: inspectorAppearance } : {})}
         opener={detailState?.opener ?? null}
         locale={locale}
         timeZone={clockZone}
@@ -2153,11 +2219,23 @@ export function TimelineSurface({
             });
           }
           setDetailState(
-            (current) =>
-              current && {
+            (current) => {
+              if (!current) return null;
+              const { appearanceColorCode: _oldColor, ...event } = current.event;
+              void _oldColor;
+              return {
                 ...current,
+                savedAppearanceColorCode: profile.colorCode,
+                event: {
+                  ...event,
+                  title: profile.title,
+                  ...(profile.colorCode
+                    ? { appearanceColorCode: profile.colorCode }
+                    : {}),
+                },
                 detail: { ...current.detail, title: profile.title },
-              },
+              };
+            },
           );
         }}
         onActivityDeleted={() => {

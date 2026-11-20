@@ -55,6 +55,19 @@
   box-shadow: none !important;
   font: inherit;
   font-size: var(--dante-temporal-form-text-size);
+  color-scheme: dark;
+}
+
+/* Match the native Recurrence popup in Quick Create and every Edit surface.
+ * The closed Reminder field remains transparent within its own frame. */
+.temporal-create-quick-reminder.temporal-create-quick-reminder select option {
+  color: var(--dante-temporal-menu-text);
+  background: var(--dante-temporal-menu-surface);
+  font-size: var(--dante-temporal-menu-option-size);
+}
+
+.temporal-create-quick-reminder.temporal-create-quick-reminder select option:checked {
+  background: var(--dante-temporal-menu-selected);
 }
 
 .temporal-create-quick-reminder select:disabled {

@@ -4,7 +4,11 @@ import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import type { TimelineEvent, TimelineGroup } from './model/timeline-types';
-import { EventDetailDialog, detailFromEvent } from './timeline-overlays';
+import {
+  EventDetailDialog,
+  detailFromEvent,
+  inspectorAppearanceForEvent,
+} from './timeline-overlays';
 import { fetchRequestUrl } from '../../../../test-support/fetch-request';
 
 vi.mock('../../../temporal/actual-realization-controls', () => ({
@@ -307,13 +311,16 @@ describe('Timeline post-create runtime destinations', () => {
     ).toHaveLength(1);
   });
 
-  it('keeps the Inspector orange default for absent Area despite a decorative card color', () => {
-    const noArea = detailFromEvent({
-      ...baseEvent(),
-      groupId: 'Senza Area',
-      appearanceColorCode: '#13bbaa',
-    }, groups);
-    expect(noArea.accentColorCode).toBeUndefined();
+  it('uses the personal color for an Activity or Event without a Life Area', () => {
+    const noArea = detailFromEvent(
+      {
+        ...baseEvent(),
+        groupId: 'Senza Area',
+        appearanceColorCode: '#13bbaa',
+      },
+      groups,
+    );
+    expect(noArea.accentColorCode).toBe('#13bbaa');
     render(
       <EventDetailDialog
         detail={{ ...noArea, groupLabel: 'Senza Area' }}
@@ -322,6 +329,88 @@ describe('Timeline post-create runtime destinations', () => {
       />,
     );
     const dialog = screen.getByRole('dialog');
+    expect(dialog.style.getPropertyValue('--timeline-inspector-accent')).toBe(
+      '#13bbaa',
+    );
+    expect(screen.queryByRole('region', { name: 'Area' })).toBeNull();
+
+    const unassigned = [
+      {
+        id: 'legacy-unassigned',
+        label: 'Senza Area',
+        tone: 'personal' as const,
+        itemColorCodes: {
+          [`event:${EVENT_REF}`]: '#4A33DD',
+        },
+      },
+    ];
+    const event: TimelineEvent = {
+      ...baseEvent(),
+      groupId: 'legacy-unassigned',
+      canonicalBasis: {
+        kind: 'scheduled-event',
+        eventRef: EVENT_REF,
+        scheduleRef: SCHEDULE_REF,
+        placementMaterialStateRef: STATE_REF,
+        placement: {
+          kind: 'floating-local',
+          startsLocalAt: { toString: () => '2026-11-20T10:00' } as never,
+          endsLocalAt: { toString: () => '2026-11-20T11:00' } as never,
+        },
+      },
+    };
+    expect(
+      inspectorAppearanceForEvent(event, unassigned).accentColorCode,
+    ).toBe('#4A33DD');
+    expect(
+      inspectorAppearanceForEvent(
+        { ...event, appearanceColorCode: '#223344' },
+        unassigned,
+      ).accentColorCode,
+    ).toBe('#223344');
+    expect(inspectorAppearanceForEvent(event, []).accentColorCode).toBeNull();
+  });
+
+  it('updates the open Inspector when the assigned Area or its color changes', () => {
+    const detail = detailFromEvent(baseEvent(), groups);
+    const onClose = () => undefined;
+    const { rerender } = render(
+      <EventDetailDialog
+        detail={detail}
+        appearance={{ groupLabel: 'Personale', accentColorCode: '#AA2233' }}
+        opener={null}
+        onClose={onClose}
+      />,
+    );
+    const dialog = screen.getByRole('dialog');
+    expect(dialog.style.getPropertyValue('--timeline-inspector-accent')).toBe(
+      '#AA2233',
+    );
+
+    rerender(
+      <EventDetailDialog
+        detail={detail}
+        appearance={{ groupLabel: 'Lavoro', accentColorCode: '#2266BB' }}
+        opener={null}
+        onClose={onClose}
+      />,
+    );
+    expect(screen.getByRole('dialog')).toBe(dialog);
+    expect(dialog.style.getPropertyValue('--timeline-inspector-accent')).toBe(
+      '#2266BB',
+    );
+    expect(screen.getByRole('region', { name: 'Area' }).textContent).toContain(
+      'Lavoro',
+    );
+
+    rerender(
+      <EventDetailDialog
+        detail={detail}
+        appearance={{ groupLabel: 'Senza Area', accentColorCode: null }}
+        opener={null}
+        onClose={onClose}
+      />,
+    );
     expect(dialog.style.getPropertyValue('--timeline-inspector-accent')).toBe('');
     expect(screen.queryByRole('region', { name: 'Area' })).toBeNull();
   });

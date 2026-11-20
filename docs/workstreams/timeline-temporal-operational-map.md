@@ -1,5 +1,30 @@
 # Timeline / Temporal-Operational — Live Execution Ledger
 
+## 2026-11-20 — Reminder native popup matches Recurrence
+
+The owner compared the native «Ricorda» and «Ripeti» menus in Edit: the
+selected Reminder option appeared with a pink/purple platform tint while the
+Recurrence selection used the accepted dark slate palette. The shared
+`TemporalReminderControl` now gives its `select` and `option:checked` the same
+dark scheme and explicit background tokens as Recurrence. The rule applies to
+Quick/Advanced Create and Activity/Event/series Edit wherever the shared
+control is mounted. Reminder choices and persistence are unchanged. Actual
+Firefox native popup appearance still requires owner-local visual acceptance;
+no focused test has been executed on this candidate.
+
+## 2026-11-20 — Inspector border follows live Area and item color
+
+The user observed that the Inspector kept its original border after saving an
+Activity/Event with another Life Area or changing an existing Area color, and
+remained orange for an unassigned item with an explicit card color. The open
+Inspector now receives a current appearance projection from Timeline state,
+without remounting its Session controls or changing edit/persistence commands.
+Assigned Area colors take priority; without an Area the card's own color is
+used; orange remains the fallback only when neither exists. The Life Area label
+updates with the current grouping. The presentation contract and focused
+component regressions reflect this approved rule. Owner-local TypeScript,
+focused Vitest, format and real-browser checks are NOT_RUN on this change.
+
 
 ## 2026-11-20 — Inspector main Session header and shared palette follow-up
 

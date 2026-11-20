@@ -598,8 +598,14 @@ export type TimelineDetail = Readonly<{
   subitemsCount?: number;
 }>;
 
+export type TimelineInspectorAppearance = Readonly<{
+  groupLabel: string;
+  accentColorCode: string | null;
+}>;
+
 type EventDetailDialogProps = Readonly<{
   detail: TimelineDetail | null;
+  appearance?: TimelineInspectorAppearance;
   opener: HTMLElement | null;
   sessionSubject?: Readonly<{
     kind: 'activity' | 'occurrence';
@@ -772,6 +778,7 @@ function inspectorIntervalRows(
 
 export function EventDetailDialog({
   detail,
+  appearance,
   opener,
   sessionSubject = null,
   responsibilitySubject = null,
@@ -1003,18 +1010,22 @@ export function EventDetailDialog({
     return null;
   }
 
+  const groupLabel = appearance?.groupLabel ?? detail.groupLabel;
+  const accentColorCode = appearance
+    ? appearance.accentColorCode
+    : (detail.accentColorCode ?? null);
   const lifeAreaSection =
-    detail.groupLabel &&
-    detail.groupLabel !== LEGACY_UNASSIGNED_GROUP &&
-    detail.groupLabel !== 'Senza Area' ? (
+    groupLabel &&
+    groupLabel !== LEGACY_UNASSIGNED_GROUP &&
+    groupLabel !== 'Senza Area' ? (
       <section className="timeline-event-modal__life-area" aria-label="Area">
         <h4>Area</h4>
-        <p className="timeline-event-modal__group" title={detail.groupLabel}>
+        <p className="timeline-event-modal__group" title={groupLabel}>
           <span
             className="timeline-event-modal__life-area-dot"
             aria-hidden="true"
           />
-          {detail.groupLabel}
+          {groupLabel}
         </p>
       </section>
     ) : null;
@@ -1037,9 +1048,9 @@ export function EventDetailDialog({
             ? undefined
             : {
                 ...inspectorPosition,
-                ...(detail.accentColorCode && lifeAreaSection
+                ...(accentColorCode
                   ? ({
-                      '--timeline-inspector-accent': detail.accentColorCode,
+                      '--timeline-inspector-accent': accentColorCode,
                     } as CSSProperties)
                   : {}),
               }
@@ -1330,12 +1341,41 @@ export function UndoToast({ visible, message, onUndo }: UndoToastProps) {
   );
 }
 
+/** Read the same effective Area/item appearance shown by the Timeline card. */
+export function inspectorAppearanceForEvent(
+  event: TimelineEvent,
+  groups: readonly TimelineGroup[],
+): TimelineInspectorAppearance {
+  const group = groups.find((candidate) => candidate.id === event.groupId);
+  const basis = event.canonicalBasis;
+  const itemKey =
+    basis?.kind === 'scheduled-activity'
+      ? `activity:${basis.activityRef}`
+      : basis?.kind === 'scheduled-event'
+        ? `event:${basis.eventRef}`
+        : basis?.kind === 'scheduled-occurrence'
+          ? `${basis.sourceKind}:${basis.sourceNativeRef}`
+          : null;
+  const assignedArea =
+    group &&
+    group.id !== LEGACY_UNASSIGNED_GROUP &&
+    group.label !== 'Senza Area';
+  return {
+    groupLabel: group?.label ?? event.groupId,
+    accentColorCode: assignedArea
+      ? (group.colorCode ?? event.appearanceColorCode ?? null)
+      : (event.appearanceColorCode ??
+        (itemKey ? group?.itemColorCodes?.[itemKey] : undefined) ??
+        null),
+  };
+}
+
 export function detailFromEvent(
   event: TimelineEvent,
   groups: readonly TimelineGroup[],
   dateKey?: string,
 ): TimelineDetail {
-  const group = groups.find((candidate) => candidate.id === event.groupId);
+  const appearance = inspectorAppearanceForEvent(event, groups);
   const ownerKind =
     event.canonicalBasis?.kind === 'scheduled-event'
       ? ('event' as const)
@@ -1373,12 +1413,10 @@ export function detailFromEvent(
     title: event.title,
     startMinute: event.startMinute,
     endMinute: event.endMinute,
-    groupLabel: group?.label ?? event.groupId,
+    groupLabel: appearance.groupLabel,
     ...(dateKey ? { dateKey } : {}),
-    ...(group?.colorCode &&
-    group.label !== 'Senza Area' &&
-    group.label !== LEGACY_UNASSIGNED_GROUP
-      ? { accentColorCode: group.colorCode }
+    ...(appearance.accentColorCode
+      ? { accentColorCode: appearance.accentColorCode }
       : {}),
     ...(ownerKind === undefined ? {} : { ownerKind }),
     ...(eventRef === undefined ? {} : { eventRef }),
@@ -1417,18 +1455,16 @@ export function detailFromSubitem(
   parentLabel: string,
   dateKey?: string,
 ): TimelineDetail {
-  const group = groups.find((candidate) => candidate.id === event.groupId);
+  const appearance = inspectorAppearanceForEvent(event, groups);
   return {
     title: subitem,
     startMinute: event.startMinute,
     endMinute: event.endMinute,
-    groupLabel: group?.label ?? event.groupId,
+    groupLabel: appearance.groupLabel,
     contextLabel: `${parentLabel} ${event.title}`,
     ...(dateKey ? { dateKey } : {}),
-    ...(group?.colorCode &&
-    group.label !== 'Senza Area' &&
-    group.label !== LEGACY_UNASSIGNED_GROUP
-      ? { accentColorCode: group.colorCode }
+    ...(appearance.accentColorCode
+      ? { accentColorCode: appearance.accentColorCode }
       : {}),
   };
 }
