@@ -24,6 +24,7 @@ import type {
   TemporalCreatePlannedSliceDraft,
   TemporalCreateU2AuthoringDraft,
 } from '../model/temporal-create-u2-authoring';
+import { objectiveFieldIssue } from '../model/temporal-objective-validation';
 
 export type TemporalCreateU2Request =
   | Readonly<{ kind: 'activity'; request: TemporalAuthorActivityRequest }>
@@ -34,6 +35,10 @@ export function buildTemporalCreateObjectiveTemplates(
 ): readonly RecurringObjectiveTemplate[] {
   return Object.freeze(
     draft.objectives.map((objective, index) => {
+      const issue = objectiveFieldIssue(objective);
+      if (issue) {
+        throw new Error(`Obiettivo ${index + 1}: ${issue.message ?? 'Completa il campo evidenziato.'}`);
+      }
       const label = objective.label.trim();
       if (!label) {
         throw new Error(`Obiettivo ${index + 1}: inserisci una descrizione.`);
@@ -120,7 +125,7 @@ export function buildTemporalCreateObjectiveTemplates(
         !maximumText ||
         !Number.isFinite(minimum) ||
         !Number.isFinite(maximum) ||
-        minimum > maximum
+        minimum >= maximum
       ) {
         throw new Error(
           `Obiettivo ${index + 1}: inserisci un intervallo numerico valido.`,

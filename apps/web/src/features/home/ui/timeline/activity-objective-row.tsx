@@ -5,6 +5,7 @@ import type {
   ObjectiveView,
 } from '../../../temporal/remote-reality-objective-data-source';
 import { TemporalObjectiveEditorRow } from '../../../temporal-create/ui/temporal-objective-editor-row';
+import { objectiveFieldIssues, type ObjectiveFieldIssue } from '../../../temporal-create/model/temporal-objective-validation';
 
 export type ActivityObjectiveDraft = Readonly<{
   id: string;
@@ -113,27 +114,13 @@ export function objectiveChanged(draft: ActivityObjectiveDraft): boolean {
 export function objectiveDraftError(
   draft: ActivityObjectiveDraft,
 ): string | null {
-  const data = objectiveData(draft);
-  if (!data.label || data.label.length > 300)
-    return 'Inserisci un nome obiettivo valido.';
-  if (data.unitCode && data.unitCode.length > 40)
-    return 'Unità di misura troppo lunga.';
-  if (
-    data.resultKind === 'quantity' &&
-    (data.targetValue === null ||
-      !['eq', 'gte', 'lte'].includes(data.comparatorCode ?? ''))
-  ) {
-    return 'Inserisci un valore numerico e un confronto validi.';
-  }
-  if (
-    data.resultKind === 'range' &&
-    (data.targetMin === null ||
-      data.targetMax === null ||
-      data.targetMin > data.targetMax)
-  ) {
-    return 'L’intervallo numerico non è valido.';
-  }
-  return null;
+  const issue = editableObjectiveFieldIssues(draft)[0];
+  return issue ? issue.message ?? 'Completa il campo evidenziato.' : null;
+}
+
+/** Accepted legacy definitions remain readable and do not block unrelated edits. */
+export function editableObjectiveFieldIssues(draft: ActivityObjectiveDraft): readonly ObjectiveFieldIssue[] {
+  return draft.original && !objectiveChanged(draft) ? [] : objectiveFieldIssues(draft);
 }
 
 export function recordedObjectiveSummary(objective: ObjectiveView): Readonly<{
@@ -187,6 +174,8 @@ export function ActivityObjectiveRow({
   onMove,
   onDeleteRecorded,
   onCorrectRecorded,
+  issue,
+  issues,
 }: Readonly<{
   row: ActivityObjectiveDraft;
   index: number;
@@ -198,6 +187,8 @@ export function ActivityObjectiveRow({
   onMove: (direction: -1 | 1) => void;
   onDeleteRecorded?: () => void;
   onCorrectRecorded?: () => void;
+  issue?: ObjectiveFieldIssue | null;
+  issues?: readonly ObjectiveFieldIssue[] | undefined;
 }>) {
   if (row.original?.observationRef) {
     const summary = recordedObjectiveSummary(row.original);
@@ -247,6 +238,8 @@ export function ActivityObjectiveRow({
       variant="edit"
       italian
       disabled={disabled}
+      issue={issue}
+      issues={issues}
       {...(onInspect ? { onInspect } : {})}
       update={(_id, patch) => onChange(patch)}
       changeKind={(_id, kind) =>

@@ -18,7 +18,11 @@ from dante.modules.temporal.occurrence_edit_scope import (
     select_recurrence_edit_scope,
 )
 from dante.modules.temporal.recurrence import CalendarRecurrence
-from dante.modules.temporal.recurring_authoring_api import CreateRecurringRoutineRequest
+from dante.modules.temporal.reality_objective_api import ObjectiveCreateCommand
+from dante.modules.temporal.recurring_authoring_api import (
+    CreateRecurringRoutineRequest,
+    _require_strict_objective_ranges,
+)
 from dante.modules.temporal.recurring_series_edit import _validate_structure
 from dante.modules.temporal.recurring_series_reconciliation import (
     MaterializedSeriesInstance,
@@ -139,6 +143,25 @@ def test_series_edit_rejects_a_template_that_would_break_later_materialization()
     with pytest.raises(SeriesReconciliationError, match="duration disagrees"):
         _validate_structure("routine", recurrence, invalid)
 
+    equal = deepcopy(structure)
+    equal_template = equal["activity_template"]
+    assert isinstance(equal_template, dict)
+    equal_template["objectives"] = [
+        {
+            "label": "Battiti",
+            "result_kind": "range",
+            "comparator_code": "between",
+            "target_min": 70,
+            "target_max": 70,
+            "presentation_order": 0,
+        }
+    ]
+    _validate_structure("routine", recurrence, equal)  # Historical source remains readable.
+    with pytest.raises(SeriesReconciliationError, match="Objective range"):
+        _validate_structure(
+            "routine", recurrence, equal, strict_objective_ranges=True
+        )
+
     for rule in (
         replace(
             recurrence,
@@ -153,6 +176,31 @@ def test_series_edit_rejects_a_template_that_would_break_later_materialization()
     ):
         public = _series_source_recurrence(rule)
         assert _series_spec(public) == rule
+
+
+def test_objective_authoring_requires_a_nonempty_numeric_interval() -> None:
+    request = {
+        "operation_id": "objective:range:acceptance",
+        "label": "Battiti",
+        "result_kind": "range",
+        "comparator_code": "between",
+        "target_min": 70,
+        "target_max": 71,
+        "presentation_order": 0,
+    }
+    assert ObjectiveCreateCommand.model_validate(request).target_max == 71
+    for maximum in (70, 69):
+        with pytest.raises(ValidationError, match="ordered target_min/target_max"):
+            ObjectiveCreateCommand.model_validate({**request, "target_max": maximum})
+
+    for maximum in (70, 69):
+        with pytest.raises(ValueError, match="Max greater than Min"):
+            _require_strict_objective_ranges(
+                [{"result_kind": "range", "target_min": 70, "target_max": maximum}]
+            )
+    _require_strict_objective_ranges([
+        {"result_kind": "range", "target_min": 70, "target_max": 71}
+    ])
 
 
 def test_recurring_event_participation_policy_is_bounded_and_unambiguous() -> None:

@@ -193,7 +193,7 @@ class _ObjectiveDefinitionFields(BaseModel):
             or self.target_value is not None
             or self.target_min is None
             or self.target_max is None
-            or self.target_min > self.target_max
+            or self.target_min >= self.target_max
         ):
             raise ValueError("range Objective requires ordered target_min/target_max")
         return self

@@ -547,8 +547,23 @@ describe('U2 Quick Create submit mapping', () => {
     });
 
     expect(() => buildTemporalCreateObjectiveTemplates(draft)).toThrow(
-      'inserisci un target numerico valido',
+      'Completa il campo evidenziato.',
     );
+  });
+
+  it('rejects equal Objective interval bounds while retaining both entered values', () => {
+    const fields = createTemporalCreateFields({ kind: 'activity', date: '2026-10-20' });
+    const draft = patchTemporalCreateU2AuthoringDraft(
+      createTemporalCreateU2AuthoringDraft(fields),
+      { objectives: Object.freeze([Object.freeze({
+        id: 'range', label: 'Frequenza cardiaca', resultKind: 'range' as const,
+        comparatorCode: 'between' as const, targetValue: '',
+        targetMin: '70', targetMax: '70', unitCode: 'bpm',
+      })]) },
+    );
+    expect(() => buildTemporalCreateObjectiveTemplates(draft)).toThrow('Max deve superare Min.');
+    expect(draft.objectives[0]?.targetMin).toBe('70');
+    expect(draft.objectives[0]?.targetMax).toBe('70');
   });
 
   it('rejects child ranges and ignores obsolete named Session clock fields in saved drafts', () => {

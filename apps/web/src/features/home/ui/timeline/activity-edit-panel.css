@@ -619,7 +619,6 @@
   .timeline-activity-editor
   :is(
     .timeline-activity-editor__area-choice,
-    .timeline-activity-editor__objectives,
     .temporal-create-placement-lock
   )[data-edit-invalid='true'] {
   border: 1px solid var(--dante-timeline-tone-urgent, #ff5b64);

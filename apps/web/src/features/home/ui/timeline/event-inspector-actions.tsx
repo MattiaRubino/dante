@@ -92,6 +92,7 @@ import {
   objectiveChanged,
   objectiveData,
   objectiveDraftError,
+  editableObjectiveFieldIssues,
   type ActivityObjectiveDraft,
 } from './activity-objective-row';
 
@@ -214,6 +215,7 @@ export function EventInspectorActions({
   const [realityMode, setRealityMode] = useState<RealityMode>('manual');
   const [removedObjectives, setRemovedObjectives] = useState<string[]>([]);
   const [objectiveError, setObjectiveError] = useState('');
+  const [objectiveValidationVisible, setObjectiveValidationVisible] = useState(false);
   const [areaChoice, setAreaChoice] = useState<EventLifeAreaChoice | null>(
     null,
   );
@@ -745,6 +747,18 @@ export function EventInspectorActions({
     if (!profile || !profileDraft || busy) return;
     if (!titleFeedback.validate()) {
       titleRef.current?.focus();
+      return;
+    }
+    const invalidObjective = objectiveRows.find(
+      (row) => !removedObjectives.includes(row.id) && editableObjectiveFieldIssues(row).length > 0,
+    );
+    if (invalidObjective) {
+      setObjectiveValidationVisible(true);
+      requestAnimationFrame(() => {
+        document.querySelector<HTMLElement>(
+          `[data-objective-id="${invalidObjective.id}"] [aria-invalid="true"]`,
+        )?.focus();
+      });
       return;
     }
     setBusy(true);
@@ -1741,6 +1755,7 @@ export function EventInspectorActions({
                           index={index}
                           total={visible.length}
                           disabled={busy || objectiveDeletePending}
+                        issues={objectiveValidationVisible ? editableObjectiveFieldIssues(row) : undefined}
                           onCorrectRecorded={() => {
                             if (row.original)
                               beginResultCorrection(row.original);

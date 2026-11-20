@@ -6,6 +6,7 @@ import type {
 } from '../model/temporal-create-u2-authoring';
 import { TemporalObjectiveEditorRow } from './temporal-objective-editor-row';
 import { useTemporalCreateU2Draft } from './temporal-create-u2-draft-context';
+import { objectiveFieldIssues } from '../model/temporal-objective-validation';
 
 import './temporal-create-objectives.css';
 
@@ -23,7 +24,7 @@ function newObjective(): TemporalCreateObjectiveDraft {
   });
 }
 
-export function TemporalCreateObjectives() {
+export function TemporalCreateObjectives({ invalid = false }: Readonly<{ invalid?: boolean }>) {
   const { i18n } = useTranslation('common');
   const italian = i18n.language.toLowerCase().startsWith('it');
   const { draft, patch } = useTemporalCreateU2Draft();
@@ -83,6 +84,7 @@ export function TemporalCreateObjectives() {
               index={index}
               total={draft.objectives.length}
               italian={italian}
+              issues={invalid ? objectiveFieldIssues(objective) : undefined}
               update={update}
               changeKind={changeKind}
               move={move}

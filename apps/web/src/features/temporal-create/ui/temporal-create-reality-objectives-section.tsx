@@ -5,13 +5,13 @@ import { TemporalCreateObjectives } from './temporal-create-objectives';
 
 import './temporal-create-reality-objectives-section.css';
 
-type Props = Readonly<{ fields: TemporalCreateFields }>;
+type Props = Readonly<{ fields: TemporalCreateFields; invalid?: boolean }>;
 
 /**
  * Each Objective owns its verification policy. The legacy occurrence Reality
  * policy stays in draft persistence; this view never silently resets it.
  */
-export function TemporalCreateRealityObjectivesSection({ fields }: Props) {
+export function TemporalCreateRealityObjectivesSection({ fields, invalid = false }: Props) {
   const { i18n } = useTranslation('common');
   const italian = i18n.language.toLowerCase().startsWith('it');
 
@@ -32,7 +32,7 @@ export function TemporalCreateRealityObjectivesSection({ fields }: Props) {
             {italian ? 'Obiettivi' : 'Objectives'}
           </strong>
         </div>
-        <TemporalCreateObjectives />
+        <TemporalCreateObjectives invalid={invalid} />
       </div>
     </section>
   );

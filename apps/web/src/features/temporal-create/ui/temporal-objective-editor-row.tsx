@@ -1,10 +1,11 @@
-import type { ReactNode } from 'react';
+import { useId, type ReactNode } from 'react';
 
 import type {
   TemporalCreateObjectiveComparator,
   TemporalCreateObjectiveDraft,
   TemporalCreateObjectiveKind,
 } from '../model/temporal-create-u2-authoring';
+import type { ObjectiveFieldIssue, ObjectiveInvalidField } from '../model/temporal-objective-validation';
 
 import './temporal-create-objectives.css';
 
@@ -22,6 +23,8 @@ export function TemporalObjectiveEditorRow({
   move,
   remove,
   extras,
+  issue,
+  issues,
 }: Readonly<{
   objective: TemporalCreateObjectiveDraft;
   index: number;
@@ -35,15 +38,32 @@ export function TemporalObjectiveEditorRow({
   move: (index: number, direction: -1 | 1) => void;
   remove: (id: string) => void;
   extras?: ReactNode;
+  issue?: ObjectiveFieldIssue | null;
+  issues?: readonly ObjectiveFieldIssue[] | undefined;
 }>) {
+  const errorId = useId();
+  const activeIssues = issues ?? (issue ? [issue] : []);
+  const fieldIssue = (field: ObjectiveInvalidField) =>
+    activeIssues.find((current) => current.field === field);
+  const invalid = (field: ObjectiveInvalidField) => fieldIssue(field) !== undefined;
+  const idFor = (field: ObjectiveInvalidField) => `${errorId}-${field}`;
+  const fieldMessage = (field: ObjectiveInvalidField) => {
+    const message = fieldIssue(field)?.message;
+    return message ? (
+      <small id={idFor(field)} className="temporal-create-field-error" role="alert">
+        {message}
+      </small>
+    ) : null;
+  };
   return (
     <div
       className={`temporal-create-objective${variant === 'edit' ? ' is-edit' : ''}`}
       data-create-objective
       data-objective-id={objective.id}
+      data-objective-invalid={activeIssues.length ? 'true' : undefined}
       onFocusCapture={onInspect}
     >
-      <div className="temporal-create-objective__row">
+      <div className="temporal-create-objective__row" data-field-invalid={invalid('label') || undefined}>
         <span className="temporal-create-objective__index" aria-hidden="true">
           {index + 1}
         </span>
@@ -57,6 +77,8 @@ export function TemporalObjectiveEditorRow({
           type="text"
           maxLength={300}
           value={objective.label}
+          aria-invalid={invalid('label') || undefined}
+          aria-describedby={invalid('label') ? idFor('label') : undefined}
           aria-label={
             italian
               ? variant === 'edit'
@@ -109,6 +131,12 @@ export function TemporalObjectiveEditorRow({
           </button>
         </div>
       </div>
+      {activeIssues.filter((current) => current.message === null).map((current) => (
+        <span key={current.field} id={idFor(current.field)} className="temporal-create-visually-hidden">
+          Campo obbligatorio.
+        </span>
+      ))}
+      {fieldMessage('label')}
 
       <div className="temporal-create-objective__details">
         <div
@@ -149,10 +177,12 @@ export function TemporalObjectiveEditorRow({
 
           {objective.resultKind === 'quantity' ? (
             <>
-              <label>
+              <label data-field-invalid={invalid('comparatorCode') || undefined}>
                 <span>{italian ? 'Regola' : 'Rule'}</span>
                 <select
                   value={objective.comparatorCode ?? 'gte'}
+                  aria-invalid={invalid('comparatorCode') || undefined}
+                  aria-describedby={invalid('comparatorCode') ? idFor('comparatorCode') : undefined}
                   disabled={disabled}
                   aria-label={
                     italian ? 'Confronto obiettivo' : 'Objective comparator'
@@ -168,13 +198,16 @@ export function TemporalObjectiveEditorRow({
                   <option value="lte">≤</option>
                   <option value="eq">=</option>
                 </select>
+                {fieldMessage('comparatorCode')}
               </label>
-              <label>
+              <label data-field-invalid={invalid('targetValue') || undefined}>
                 <span>{italian ? 'Target' : 'Target'}</span>
                 <input
                   type="number"
                   step="any"
                   value={objective.targetValue}
+                  aria-invalid={invalid('targetValue') || undefined}
+                  aria-describedby={invalid('targetValue') ? idFor('targetValue') : undefined}
                   disabled={disabled}
                   aria-label={
                     italian
@@ -189,13 +222,16 @@ export function TemporalObjectiveEditorRow({
                     })
                   }
                 />
+                {fieldMessage('targetValue')}
               </label>
-              <label>
+              <label data-field-invalid={invalid('unitCode') || undefined}>
                 <span>{italian ? 'Unità' : 'Unit'}</span>
                 <input
                   type="text"
                   maxLength={40}
                   value={objective.unitCode}
+                  aria-invalid={invalid('unitCode') || undefined}
+                  aria-describedby={invalid('unitCode') ? idFor('unitCode') : undefined}
                   disabled={disabled}
                   aria-label={
                     italian
@@ -211,18 +247,21 @@ export function TemporalObjectiveEditorRow({
                     })
                   }
                 />
+                {fieldMessage('unitCode')}
               </label>
             </>
           ) : null}
 
           {objective.resultKind === 'range' ? (
             <>
-              <label>
+              <label data-field-invalid={invalid('targetMin') || undefined}>
                 <span>{italian ? 'Min' : 'Min'}</span>
                 <input
                   type="number"
                   step="any"
                   value={objective.targetMin}
+                  aria-invalid={invalid('targetMin') || undefined}
+                  aria-describedby={invalid('targetMin') ? idFor('targetMin') : undefined}
                   disabled={disabled}
                   aria-label={
                     italian ? 'Minimo obiettivo' : 'Objective minimum'
@@ -233,13 +272,16 @@ export function TemporalObjectiveEditorRow({
                     })
                   }
                 />
+                {fieldMessage('targetMin')}
               </label>
-              <label>
+              <label data-field-invalid={invalid('targetMax') || undefined}>
                 <span>{italian ? 'Max' : 'Max'}</span>
                 <input
                   type="number"
                   step="any"
                   value={objective.targetMax}
+                  aria-invalid={invalid('targetMax') || undefined}
+                  aria-describedby={invalid('targetMax') ? idFor('targetMax') : undefined}
                   disabled={disabled}
                   aria-label={
                     italian ? 'Massimo obiettivo' : 'Objective maximum'
@@ -250,13 +292,16 @@ export function TemporalObjectiveEditorRow({
                     })
                   }
                 />
+                {fieldMessage('targetMax')}
               </label>
-              <label>
+              <label data-field-invalid={invalid('unitCode') || undefined}>
                 <span>{italian ? 'Unità' : 'Unit'}</span>
                 <input
                   type="text"
                   maxLength={40}
                   value={objective.unitCode}
+                  aria-invalid={invalid('unitCode') || undefined}
+                  aria-describedby={invalid('unitCode') ? idFor('unitCode') : undefined}
                   disabled={disabled}
                   aria-label={
                     italian
@@ -272,6 +317,7 @@ export function TemporalObjectiveEditorRow({
                     })
                   }
                 />
+                {fieldMessage('unitCode')}
               </label>
             </>
           ) : null}

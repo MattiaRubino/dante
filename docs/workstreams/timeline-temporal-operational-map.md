@@ -1,5 +1,21 @@
 # Timeline / Temporal-Operational — Live Execution Ledger
 
+## 2026-11-20 — Objective field validation parity
+
+Approved for Advanced Create and Activity/Event single and series Edit: on a
+save/preview attempt the Objectives section and only the invalid field are
+highlighted. Empty required inputs have no duplicated visible message; wrong
+numeric/comparison values display short field-local guidance. Create and Edit
+use one field validator and one Objective row. An Objective numeric range now
+requires Max > Min in new UI authoring and server commands, with no silent
+autocorrection; a point value uses Quantity with equality. Existing equal-bound
+Objectives remain readable and historical results stay untouched. The legacy
+database CHECK retains its inclusive bound to avoid rewriting accepted rows;
+new public authoring is refused at the application boundary. Existing source
+series remain readable; a proposed edit must satisfy the new strict rule.
+Owner-local TypeScript, Python and real-app checks on this revision are
+**NOT_RUN**.
+
 ## 2026-11-19 — Timeline header readability
 
 The owner approved retaining the current month color while raising the month

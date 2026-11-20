@@ -84,6 +84,22 @@ MutatingContext = Annotated[DanteContext, Depends(require_mutating_dante_context
 Context = Annotated[DanteContext, Depends(require_dante_context)]
 
 
+def _require_strict_objective_ranges(objectives: object) -> None:
+    if not isinstance(objectives, list):
+        return
+    for objective in objectives:
+        if not isinstance(objective, dict) or objective.get("result_kind") != "range":
+            continue
+        minimum = objective.get("target_min")
+        maximum = objective.get("target_max")
+        if (
+            type(minimum) not in {float, int}
+            or type(maximum) not in {float, int}
+            or minimum >= maximum
+        ):
+            raise ValueError("Recurring Objective range requires Max greater than Min.")
+
+
 class CreateRecurringRoutineRequest(BaseModel):
     model_config = ConfigDict(extra="forbid")
     operation_id: str = Field(min_length=1, max_length=200)
@@ -98,6 +114,7 @@ class CreateRecurringRoutineRequest(BaseModel):
     @model_validator(mode="after")
     def valid_all_day(self) -> CreateRecurringRoutineRequest:
         template = self.activity_template or {}
+        _require_strict_objective_ranges(template.get("objectives"))
         recurrence = self.recurrence
         if template.get("placement_kind") == "all_day":
             days = template.get("duration_days")
@@ -127,6 +144,7 @@ class CreateRecurringRoutineRequest(BaseModel):
                         "reminder_lead_minutes": self.reminder_lead_minutes,
                         "activity_template": template,
                     },
+                    strict_objective_ranges=True,
                 )
             except SeriesReconciliationError as exc:
                 raise ValueError(str(exc)) from exc
@@ -150,6 +168,11 @@ class CreateRecurringEventRequest(BaseModel):
     reality_mode: Literal["manual", "review_on_end", "auto_confirm_outcome"] = "manual"
     objectives: list[dict[str, Any]] = Field(default_factory=list, max_length=100)
     placement_protected: bool = False
+
+    @model_validator(mode="after")
+    def valid_objective_ranges(self) -> CreateRecurringEventRequest:
+        _require_strict_objective_ranges(self.objectives)
+        return self
 
 
 class StartExistingActivityRecurrenceRequest(BaseModel):

@@ -34,6 +34,7 @@ import { TemporalCreateEventAgenda } from '../../../temporal-create/ui/temporal-
 import { TemporalEventParticipantsFields } from '../../../temporal-create/ui/temporal-create-event-participants';
 import { TemporalTimeZoneControl } from '../../../temporal-create/ui/temporal-time-zone-control';
 import { TemporalObjectiveEditorRow } from '../../../temporal-create/ui/temporal-objective-editor-row';
+import { objectiveFieldIssue, objectiveFieldIssues } from '../../../temporal-create/model/temporal-objective-validation';
 import type {
   TemporalCreateObjectiveDraft,
   TemporalCreateObjectiveKind,
@@ -312,6 +313,7 @@ export function RecurringSeriesEditor({
   closeRequestRef?: RefObject<(() => void) | null>;
 }>) {
   const [remote] = useState(createRemoteRecurringSeriesEdit);
+  const [objectiveValidationVisible, setObjectiveValidationVisible] = useState(false);
   const [participation] = useState(
     createRemoteTemporalResponsibilityDataSource,
   );
@@ -740,6 +742,18 @@ export function RecurringSeriesEditor({
     if (!source || busy) return;
     setError('');
     setAreaError('');
+    const invalidObjective = objectives.findIndex((row, index) =>
+      objectiveFieldIssue(objectiveDraft(row, index)),
+    );
+    if (invalidObjective !== -1) {
+      setObjectiveValidationVisible(true);
+      requestAnimationFrame(() => {
+        document.querySelector<HTMLElement>(
+          `[data-objective-id="${invalidObjective}"] [aria-invalid="true"]`,
+        )?.focus();
+      });
+      return;
+    }
     if (!titleFeedback.validate()) {
       titleRef.current?.focus();
       return;
@@ -1935,6 +1949,7 @@ export function RecurringSeriesEditor({
                       total={objectives.length}
                       variant="edit"
                       italian
+                      issues={objectiveValidationVisible ? objectiveFieldIssues(objectiveDraft(row, index)) : undefined}
                       update={(_id, patch) =>
                         updateObjectiveDraft(index, patch)
                       }

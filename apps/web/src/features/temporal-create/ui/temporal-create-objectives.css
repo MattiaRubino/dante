@@ -35,6 +35,16 @@
   margin-left: 0;
 }
 
+.temporal-create-objective > .temporal-create-visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
 .temporal-create-objective::before {
   position: absolute;
   top: 23px;
@@ -92,6 +102,35 @@
   box-shadow: none !important;
   font: inherit;
   font-size: var(--dante-temporal-form-text-size);
+}
+
+/* Keep the section and only the faulty field visible; the Objective list
+ * itself is not a second error panel. */
+.temporal-create-reality-objectives:has([data-objective-invalid='true']),
+.temporal-create-reality-objectives:has(.timeline-activity-editor__objectives[data-edit-invalid='true']) {
+  border-color: var(--dante-timeline-tone-urgent, #ff5b64);
+}
+
+.temporal-create-composer [data-create-path='objectives'][data-create-invalid='true'] {
+  outline: none !important;
+}
+
+.temporal-create-objective__row[data-field-invalid='true'],
+.temporal-create-objective__definition label[data-field-invalid='true'] :is(input, select) {
+  border-color: var(--dante-timeline-tone-urgent, #ff5b64) !important;
+}
+
+.temporal-create-objective__row[data-field-invalid='true']
+  .temporal-create-objective__index,
+.temporal-create-objective__definition label[data-field-invalid='true'] > span {
+  color: var(--dante-timeline-tone-urgent, #ff5b64);
+}
+
+.temporal-create-objective > .temporal-create-field-error,
+.temporal-create-objective__definition label > .temporal-create-field-error {
+  margin: 0;
+  color: var(--dante-timeline-tone-urgent, #ff5b64);
+  font-size: 12px;
 }
 
 .temporal-create-objective__actions {

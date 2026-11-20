@@ -17,6 +17,7 @@ import type {
   TemporalCreateSurface,
 } from '../model/temporal-create-session';
 import type { TemporalCreateU2AuthoringDraft } from '../model/temporal-create-u2-authoring';
+import { objectiveFieldIssue } from '../model/temporal-objective-validation';
 import {
   TemporalCreateAdvancedActivityHeaderActions,
   TemporalCreateAdvancedActivityStructure,
@@ -78,6 +79,13 @@ function focusValidationPath(root: HTMLElement, path: string): void {
     `[data-create-path="${path}"]`,
   );
   if (!region) return;
+  if (path === 'objectives') {
+    const invalid = region.querySelector<HTMLElement>('[aria-invalid="true"]');
+    if (invalid) {
+      invalid.focus();
+      return;
+    }
+  }
   if (region.matches(FOCUSABLE_SELECTOR)) {
     region.focus();
     return;
@@ -146,6 +154,8 @@ export function TemporalCreateComposer({
     advanced &&
     fields.kind === 'activity' &&
     failureTarget?.startsWith('plannedSession:') === true;
+  const invalidObjectives = failureTarget === 'objectives' &&
+    u2Draft.objectives.some((objective) => objectiveFieldIssue(objective) !== null);
   const italian = i18n.language.toLowerCase().startsWith('it');
 
   useLayoutEffect(() => {
@@ -188,7 +198,10 @@ export function TemporalCreateComposer({
       ...issues
         .map((issue) => issue.path[0])
         .filter((path): path is string => Boolean(path)),
-      ...(failureTarget && !handledPlannedSessionError ? [failureTarget] : []),
+      ...(failureTarget && !handledPlannedSessionError &&
+      (failureTarget !== 'objectives' || invalidObjectives)
+        ? [failureTarget]
+        : []),
     ];
     const marked = new Map<HTMLElement, string | null>();
     for (const path of invalidPaths) {
@@ -208,17 +221,19 @@ export function TemporalCreateComposer({
         else region.setAttribute('aria-invalid', previousAriaInvalid);
       }
     };
-  }, [issues, failureTarget, session.surface, handledPlannedSessionError]);
+  }, [issues, failureTarget, session.surface, handledPlannedSessionError, invalidObjectives]);
 
   useEffect(() => {
     if (!failureTarget) return;
     const frame = requestAnimationFrame(() => {
-      dialogRef.current
-        ?.querySelector<HTMLElement>(`[data-create-path="${failureTarget}"]`)
+      const root = dialogRef.current;
+      root?.querySelector<HTMLElement>(`[data-create-path="${failureTarget}"]`)
         ?.scrollIntoView?.({ block: 'center' });
+      if (root && failureTarget === 'objectives' && invalidObjectives)
+        focusValidationPath(root, failureTarget);
     });
     return () => cancelAnimationFrame(frame);
-  }, [failureTarget, failureMessage]);
+  }, [failureTarget, failureMessage, invalidObjectives]);
 
   useEffect(() => {
     if (!advanced || discardPending) return;
@@ -733,7 +748,10 @@ export function TemporalCreateComposer({
                 }
                 realityObjectives={
                   advanced ? (
-                    <TemporalCreateRealityObjectivesSection fields={fields} />
+                    <TemporalCreateRealityObjectivesSection
+                      fields={fields}
+                      invalid={invalidObjectives}
+                    />
                   ) : null
                 }
                 onPatch={onPatch}
@@ -751,7 +769,7 @@ export function TemporalCreateComposer({
               />
             </TemporalCreateU2DraftProvider>
 
-            {failureMessage && inlineFailureHost && !handledPlannedSessionError
+            {failureMessage && inlineFailureHost && !handledPlannedSessionError && failureTarget !== 'objectives'
               ? createPortal(
                   <span className="temporal-create-field-error" role="alert">
                     {failureMessage}

@@ -276,6 +276,8 @@ def _validate_structure(
     owner: SeriesOwner,
     recurrence: CalendarRecurrence,
     structure: dict[str, object],
+    *,
+    strict_objective_ranges: bool = False,
 ) -> None:
     if structure.get("version") != 1:
         raise SeriesReconciliationError("Unsupported series structure version.")
@@ -331,7 +333,11 @@ def _validate_structure(
                 item.get("comparator_code") != "between"
                 or type(item.get("target_min")) not in {float, int}
                 or type(item.get("target_max")) not in {float, int}
-                or item["target_min"] > item["target_max"]
+                or (
+                    item["target_min"] >= item["target_max"]
+                    if strict_objective_ranges
+                    else item["target_min"] > item["target_max"]
+                )
             ):
                 raise SeriesReconciliationError("Recurring Objective range is invalid.")
 
@@ -1261,7 +1267,12 @@ class RecurringSeriesEditApplication:
             {"actor": self_person_ref, "source": source_ref},
         )
         owner: SeriesOwner = "routine" if routine_owned else "event"
-        _validate_structure(owner, proposed_recurrence, proposed_structure)
+        _validate_structure(
+            owner,
+            proposed_recurrence,
+            proposed_structure,
+            strict_objective_ranges=True,
+        )
         # An assigned area is always self-owned. An appearance edit also
         # performs a preview-time CAS against its current revision.
         template_area = (

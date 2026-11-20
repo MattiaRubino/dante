@@ -64,6 +64,7 @@ import {
   objectiveChanged,
   objectiveData,
   objectiveDraftError,
+  editableObjectiveFieldIssues,
   type ActivityObjectiveDraft,
 } from './activity-objective-row';
 
@@ -518,6 +519,7 @@ export function ActivityEditPanel({
   const [removedObjectives, setRemovedObjectives] = useState<string[]>([]);
   const [objectivePending, setObjectivePending] = useState(false);
   const [objectiveError, setObjectiveError] = useState('');
+  const [objectiveValidationVisible, setObjectiveValidationVisible] = useState(false);
   const [deletingObjective, setDeletingObjective] =
     useState<ObjectiveView | null>(null);
   const [objectiveDeletePending, setObjectiveDeletePending] = useState(false);
@@ -1130,8 +1132,10 @@ export function ActivityEditPanel({
     );
     for (const row of retained) {
       const error = objectiveDraftError(row);
-      if (error)
+      if (error) {
+        setObjectiveValidationVisible(true);
         throw new Error(`${row.label.trim() || 'Nuovo obiettivo'}: ${error}`);
+      }
     }
     const updated = retained.filter(
       (row) => row.objectiveRef && objectiveChanged(row),
@@ -1425,13 +1429,11 @@ export function ActivityEditPanel({
             !removedObjectives.includes(row.id) && objectiveDraftError(row),
         );
         if (invalidObjective) {
-          setObjectiveError(
-            `${invalidObjective.label.trim() || 'Nuovo obiettivo'}: ${objectiveDraftError(invalidObjective)}`,
+          setObjectiveValidationVisible(true);
+          const field = event.currentTarget.querySelector<HTMLElement>(
+            `[data-objective-id="${invalidObjective.id}"] [aria-invalid="true"]`,
           );
-          const field = event.currentTarget.querySelector<HTMLInputElement>(
-            `.timeline-activity-editor__objective-row[data-objective-id="${invalidObjective.id}"] input[type="number"]`,
-          );
-          field?.focus();
+          requestAnimationFrame(() => field?.focus());
           return;
         }
         if (planningLocked && temporalDirty) {
@@ -2659,6 +2661,7 @@ export function ActivityEditPanel({
                               current.filter((item) => item.id !== row.id),
                             );
                           }
+                          issues={objectiveValidationVisible ? editableObjectiveFieldIssues(row) : undefined}
                           setObjectiveError('');
                         }}
                       />

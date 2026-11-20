@@ -19,7 +19,7 @@ import {
   setTemporalCreateSurface,
   updateTemporalCreateFields,
 } from '../model/temporal-create-session';
-import { createTemporalCreateU2AuthoringDraft } from '../model/temporal-create-u2-authoring';
+import { createTemporalCreateU2AuthoringDraft, patchTemporalCreateU2AuthoringDraft } from '../model/temporal-create-u2-authoring';
 import { TemporalCreateComposer } from './temporal-create-composer';
 
 beforeAll(async () => {
@@ -82,6 +82,45 @@ function renderComposer(options?: { dirty?: boolean }) {
 }
 
 describe('TemporalCreateComposer', () => {
+  it.each(['activity', 'event'] as const)(
+    'marks only the missing %s Objective name without a repeated section message',
+    (kind) => {
+      const fields = createTemporalCreateFields({ kind, date: '2026-11-20' });
+      const session = setTemporalCreateSurface(createTemporalCreateSession(fields), 'full');
+      const u2Draft = patchTemporalCreateU2AuthoringDraft(
+        createTemporalCreateU2AuthoringDraft(fields),
+        { objectives: Object.freeze([Object.freeze({
+          id: 'missing-name', label: '', resultKind: 'boolean' as const,
+          comparatorCode: null, targetValue: '', targetMin: '',
+          targetMax: '', unitCode: '',
+        })]) },
+      );
+      render(
+        <TemporalCreateComposer
+          session={session}
+          contexts={context}
+          issues={[]}
+          lifecycle="failed"
+          failureTarget="objectives"
+          failureMessage="Obiettivo 1: inserisci una descrizione."
+          postCreateRetry={false}
+          u2Draft={u2Draft}
+          onPatch={vi.fn()}
+          onSurfaceChange={vi.fn()}
+          onRequestClose={vi.fn()}
+          onContinueEditing={vi.fn()}
+          onDiscard={vi.fn()}
+          onMoveToUnplaced={vi.fn()}
+          onSubmit={vi.fn()}
+        />,
+      );
+      const section = document.querySelector('[data-create-path="objectives"]');
+      expect(section?.querySelectorAll('[data-objective-invalid="true"]')).toHaveLength(1);
+      expect(section?.querySelectorAll('[data-field-invalid="true"]')).toHaveLength(1);
+      expect(within(section as HTMLElement).queryByRole('alert')).toBeNull();
+    },
+  );
+
   it('marks the visible date and recurrence controls at the failing field', () => {
     const fields = createTemporalCreateFields({
       date: '2026-10-06',
