@@ -38,7 +38,7 @@ export function TemporalObjectiveEditorRow({
   move: (index: number, direction: -1 | 1) => void;
   remove: (id: string) => void;
   extras?: ReactNode;
-  issue?: ObjectiveFieldIssue | null;
+  issue?: ObjectiveFieldIssue | null | undefined;
   issues?: readonly ObjectiveFieldIssue[] | undefined;
 }>) {
   const errorId = useId();

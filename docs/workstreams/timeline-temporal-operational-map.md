@@ -16,8 +16,10 @@ series remain readable; a proposed edit must satisfy the new strict rule.
 The first owner-local run passed 47 focused Web tests and 37 backend tests.
 Typecheck and two imported Web suites stopped on a misplaced JSX prop; Ruff
 flagged only import order and formatting in the new Python test. Those source
-issues are corrected here. Owner-local rerun and real-app review of this
-correction are **NOT_RUN**.
+issues are corrected here. The next owner-local run passed the 120 Activity and
+Event Edit tests, plus Ruff check and format. Typecheck found one exact optional
+prop mismatch in the shared Objective row; its declaration is corrected in this
+follow-up. Owner-local typecheck rerun and real-app review are **NOT_RUN**.
 
 ## 2026-11-19 — Timeline header readability
 
