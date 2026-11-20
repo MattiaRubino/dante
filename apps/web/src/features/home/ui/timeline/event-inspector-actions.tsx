@@ -364,6 +364,7 @@ export function EventInspectorActions({
       setParticipantsInitial(expectedParticipants);
       setParticipantsDraft(expectedParticipants);
       setObjectiveRows(objectives.map(existingObjectiveDraft));
+      setObjectiveValidationVisible(false);
       setCorrectingObjective(null);
       correctionOperation.current = null;
       setRealityPolicy(reality);
@@ -1765,6 +1766,7 @@ export function EventInspectorActions({
                               requestRecordedObjectiveDeletion(row.original);
                           }}
                           onChange={(patch) => {
+                            setObjectiveValidationVisible(false);
                             setObjectiveRows((rows) =>
                               rows.map((item) =>
                                 item.id === row.id
@@ -1777,6 +1779,7 @@ export function EventInspectorActions({
                           onMove={(direction) => {
                             const target = index + direction;
                             if (target < 0 || target >= visible.length) return;
+                            setObjectiveValidationVisible(false);
                             setObjectiveRows((rows) => {
                               const next = [...rows];
                               const other = visible[target]!;
@@ -1808,6 +1811,7 @@ export function EventInspectorActions({
                               );
                               return;
                             }
+                            setObjectiveValidationVisible(false);
                             if (row.objectiveRef) {
                               setRemovedObjectives((ids) => [...ids, row.id]);
                             } else {
@@ -1823,7 +1827,9 @@ export function EventInspectorActions({
                         type="button"
                         className="temporal-create-objectives__add"
                         disabled={busy}
-                        onClick={() =>
+                        onClick={() => {
+                          setObjectiveValidationVisible(false);
+                          setObjectiveError('');
                           setObjectiveRows((rows) => [
                             ...rows,
                             newObjectiveDraft(
@@ -1832,8 +1838,8 @@ export function EventInspectorActions({
                                 ...rows.map((item) => item.presentationOrder),
                               ) + 1,
                             ),
-                          ])
-                        }
+                          ]);
+                        }}
                       >
                         + Obiettivo
                       </button>

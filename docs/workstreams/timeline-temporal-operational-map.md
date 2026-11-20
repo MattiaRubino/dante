@@ -1,5 +1,18 @@
 # Timeline / Temporal-Operational — Live Execution Ledger
 
+## 2026-11-20 — Objective validation only after Edit Save
+
+Owner screenshots show Objective errors appearing while authoring in different
+Activity/Event Edit surfaces without an explicit current Save. The shared
+boolean-result explanatory line is removed. Each Activity, Event and series
+Edit resets its Objective field-validation state when loading a new draft or
+changing its Objective rows; the red fields are armed only by Save or series
+preview and remain visible until the next user edit. Advanced Create already
+clears its failure target on a user draft change. Focused Activity/Event
+regressions cover add, result-kind change, Save and subsequent editing; the
+visual CSS E2E now expects no result hint for either qualitative or boolean.
+Owner-local typecheck, focused suites and visual review are **NOT_RUN**.
+
 ## 2026-11-20 — Compact Objective error guidance
 
 Advanced Create and all Activity/Event Objective Edit rows now render the same

@@ -244,12 +244,6 @@
   padding: 0 7px;
 }
 
-.temporal-create-objective__hint {
-  align-self: center;
-  color: var(--dante-semantic-color-home-text-muted, #8f9bad);
-  font-size: 14px;
-}
-
 .temporal-create-objectives__root-actions {
   display: flex;
   margin-left: 30px;

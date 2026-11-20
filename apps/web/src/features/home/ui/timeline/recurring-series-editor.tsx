@@ -313,13 +313,13 @@ export function RecurringSeriesEditor({
   closeRequestRef?: RefObject<(() => void) | null>;
 }>) {
   const [remote] = useState(createRemoteRecurringSeriesEdit);
-  const [objectiveValidationVisible, setObjectiveValidationVisible] = useState(false);
   const [participation] = useState(
     createRemoteTemporalResponsibilityDataSource,
   );
   const [request] = useState(() => createWebFetch(globalThis.fetch));
   const [source, setSource] = useState<RecurringSeriesSource | null>(null);
   const [structure, setStructure] = useState<Entry>({});
+  const [objectiveValidationVisible, setObjectiveValidationVisible] = useState(false);
   const [recurrence, setRecurrence] = useState<Entry>({});
   const [title, setTitle] = useState('');
   const titleFeedback = useTemporalRequiredTitle(title);
@@ -433,6 +433,7 @@ export function RecurringSeriesEditor({
         setParticipantLabels(labels);
         setSource(loaded);
         setStructure(loaded.structure);
+        setObjectiveValidationVisible(false);
         setRecurrence(initialRecurrenceForScope(loaded, scope));
         setTitle(loaded.title);
         setAreaQuery(
@@ -515,8 +516,10 @@ export function RecurringSeriesEditor({
       ...structure,
       activity_template: { ...template, ...patch },
     });
-  const editRows = (key: string, rows: Entry[]) =>
+  const editRows = (key: string, rows: Entry[]) => {
+    if (key === 'objectives') setObjectiveValidationVisible(false);
     changeStructure(writeRows(structure, owner, key, rows));
+  };
   const objectives = asRows(
     owner === 'routine' ? template.objectives : structure.objectives,
   );

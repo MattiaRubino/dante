@@ -1037,7 +1037,11 @@ test('Advanced Activity and Event headings, Objectives and native menus share on
     await result.selectOption('qualitative');
     await expect(
       objective.locator('.temporal-create-objective__hint'),
-    ).toHaveCSS('font-size', '14px');
+    ).toHaveCount(0);
+    await result.selectOption('boolean');
+    await expect(
+      objective.locator('.temporal-create-objective__hint'),
+    ).toHaveCount(0);
   }
 
   // Reuse the rendered controls under the Edit CSS without requiring a backend

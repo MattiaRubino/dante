@@ -731,6 +731,7 @@ export function ActivityEditPanel({
         setSettings(loaded);
         setObjectiveRows(loaded.objectives.map(existingObjectiveDraft));
         setRemovedObjectives([]);
+        setObjectiveValidationVisible(false);
         loadedObjectiveOrigins.current.clear();
         setObjectiveError('');
         setCaptureMode(loaded.capture.mode);
@@ -907,6 +908,7 @@ export function ActivityEditPanel({
     id: string,
     patch: Partial<ActivityObjectiveDraft>,
   ) => {
+    setObjectiveValidationVisible(false);
     setObjectiveRows((rows) =>
       rows.map((row) =>
         row.id === id
@@ -923,6 +925,7 @@ export function ActivityEditPanel({
   };
 
   const moveObjective = (id: string, direction: -1 | 1) => {
+    setObjectiveValidationVisible(false);
     setObjectiveRows((rows) => {
       const visible = rows.filter((row) => !removedObjectives.includes(row.id));
       const index = visible.findIndex((row) => row.id === id);
@@ -2655,6 +2658,7 @@ export function ActivityEditPanel({
                         onMove={(direction) => moveObjective(row.id, direction)}
                         issues={objectiveValidationVisible ? editableObjectiveFieldIssues(row) : undefined}
                         onRemove={() => {
+                          setObjectiveValidationVisible(false);
                           if (row.objectiveRef) {
                             setRemovedObjectives((current) => [
                               ...current,
@@ -2673,6 +2677,7 @@ export function ActivityEditPanel({
                     <button
                       type="button"
                       onClick={() => {
+                        setObjectiveValidationVisible(false);
                         setRemovedObjectives([]);
                         setObjectiveError('');
                       }}
@@ -2687,6 +2692,7 @@ export function ActivityEditPanel({
                       className="temporal-create-objectives__add"
                       disabled={pending || planPending || objectivePending}
                       onClick={() => {
+                        setObjectiveValidationVisible(false);
                         const next = newObjectiveDraft(
                           Math.max(
                             -1,

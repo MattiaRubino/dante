@@ -1779,6 +1779,44 @@ describe('Event Inspector actions', () => {
     });
   });
 
+  it('waits for Save before marking new Event Objectives and clears errors on edit', async () => {
+    loadProfile.mockResolvedValue({
+      eventRef,
+      title: 'Conferenza',
+      description: null,
+      location: null,
+      colorCode: null,
+      profileRevision: 1,
+      agendaRevision: 0,
+      agendaParts: [],
+    });
+    render(
+      <EventInspectorActions
+        eventRef={eventRef}
+        placement={placement}
+        onDuplicate={vi.fn()}
+      />,
+    );
+    fireEvent.click(screen.getByRole('button', { name: /^Modifica$/ }));
+    const add = await screen.findByRole('button', { name: '+ Obiettivo' });
+    fireEvent.click(add);
+    fireEvent.change(screen.getByRole('combobox', { name: 'Tipo obiettivo' }), {
+      target: { value: 'quantity' },
+    });
+    expect(
+      document.querySelector('[data-objective-invalid="true"]'),
+    ).toBeNull();
+
+    fireEvent.click(screen.getByRole('button', { name: 'Salva modifiche' }));
+    expect(
+      document.querySelector('[data-objective-invalid="true"]'),
+    ).not.toBeNull();
+    fireEvent.click(add);
+    expect(
+      document.querySelector('[data-objective-invalid="true"]'),
+    ).toBeNull();
+  });
+
   it('preserves the legacy Event execution policy when editing per-Objective settings', async () => {
     const current = {
       eventRef,

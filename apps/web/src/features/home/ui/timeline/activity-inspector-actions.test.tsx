@@ -985,6 +985,41 @@ const unrecordedObjective = {
 } as const;
 
 describe('Objective correction in Activity Editor', () => {
+  it('shows Objective errors only after Save and clears them on a draft change', async () => {
+    render(
+      <ActivityEditPanel
+        profile={profile}
+        closeRequestRef={createRef()}
+        onSaved={() => undefined}
+        onCancel={() => undefined}
+      />,
+    );
+    const add = await screen.findByRole('button', { name: '+ Obiettivo' });
+    fireEvent.click(add);
+    const name = screen.getByRole('textbox', { name: 'Nome obiettivo' });
+    expect(name.getAttribute('aria-invalid')).toBeNull();
+    fireEvent.change(screen.getByRole('combobox', { name: 'Tipo obiettivo' }), {
+      target: { value: 'quantity' },
+    });
+    const target = screen.getByRole('spinbutton', { name: 'Valore obiettivo' });
+    expect(target.getAttribute('aria-invalid')).toBeNull();
+    expect(
+      document.querySelector('[data-objective-invalid="true"]'),
+    ).toBeNull();
+
+    await submitEditor();
+    expect(name.getAttribute('aria-invalid')).toBe('true');
+    expect(target.getAttribute('aria-invalid')).toBe('true');
+    fireEvent.change(target, { target: { value: '3' } });
+    expect(
+      document.querySelector('[data-objective-invalid="true"]'),
+    ).toBeNull();
+    fireEvent.click(add);
+    expect(
+      document.querySelector('[data-objective-invalid="true"]'),
+    ).toBeNull();
+  });
+
   it('modifies an expanded Objective directly with one final Save', async () => {
     loadSettings.mockResolvedValueOnce({
       ...currentSettings,

@@ -377,15 +377,6 @@ export function TemporalObjectiveEditorRow({
               </label>
             </>
           ) : null}
-
-          {objective.resultKind === 'boolean' ? (
-            <span className="temporal-create-objective__hint">
-              {italian
-                ? 'Alla verifica registrerai Sì oppure No.'
-                : 'At review you will record Yes or No.'}
-            </span>
-          ) : null}
-
         </div>
         <label className="temporal-create-objective__verification">
           <span>
