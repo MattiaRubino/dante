@@ -2652,6 +2652,7 @@ export function ActivityEditPanel({
                         }}
                         onChange={(patch) => patchObjective(row.id, patch)}
                         onMove={(direction) => moveObjective(row.id, direction)}
+                        issues={objectiveValidationVisible ? editableObjectiveFieldIssues(row) : undefined}
                         onRemove={() => {
                           if (row.objectiveRef) {
                             setRemovedObjectives((current) => [
@@ -2663,7 +2664,6 @@ export function ActivityEditPanel({
                               current.filter((item) => item.id !== row.id),
                             );
                           }
-                          issues={objectiveValidationVisible ? editableObjectiveFieldIssues(row) : undefined}
                           setObjectiveError('');
                         }}
                       />

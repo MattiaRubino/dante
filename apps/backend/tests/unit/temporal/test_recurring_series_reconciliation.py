@@ -17,8 +17,8 @@ from dante.modules.temporal.occurrence_edit_scope import (
     RecurrenceEditScopePlan,
     select_recurrence_edit_scope,
 )
-from dante.modules.temporal.recurrence import CalendarRecurrence
 from dante.modules.temporal.reality_objective_api import ObjectiveCreateCommand
+from dante.modules.temporal.recurrence import CalendarRecurrence
 from dante.modules.temporal.recurring_authoring_api import (
     CreateRecurringRoutineRequest,
     _require_strict_objective_ranges,
@@ -158,9 +158,7 @@ def test_series_edit_rejects_a_template_that_would_break_later_materialization()
     ]
     _validate_structure("routine", recurrence, equal)  # Historical source remains readable.
     with pytest.raises(SeriesReconciliationError, match="Objective range"):
-        _validate_structure(
-            "routine", recurrence, equal, strict_objective_ranges=True
-        )
+        _validate_structure("routine", recurrence, equal, strict_objective_ranges=True)
 
     for rule in (
         replace(
@@ -198,9 +196,7 @@ def test_objective_authoring_requires_a_nonempty_numeric_interval() -> None:
             _require_strict_objective_ranges(
                 [{"result_kind": "range", "target_min": 70, "target_max": maximum}]
             )
-    _require_strict_objective_ranges([
-        {"result_kind": "range", "target_min": 70, "target_max": 71}
-    ])
+    _require_strict_objective_ranges([{"result_kind": "range", "target_min": 70, "target_max": 71}])
 
 
 def test_recurring_event_participation_policy_is_bounded_and_unambiguous() -> None:
