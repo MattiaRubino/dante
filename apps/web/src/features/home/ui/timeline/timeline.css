@@ -1685,19 +1685,6 @@
 }
 
 .timeline-event-modal--inspector
-  .timeline-event-modal__schedule-row
-  :is(.timeline-activity-session-card-controls, .timeline-session-controls) {
-  display: contents;
-}
-
-.timeline-event-modal--inspector
-  .timeline-event-modal__schedule-row
-  .timeline-session-controls__runtime-actions {
-  grid-column: 2;
-  grid-row: 1;
-}
-
-.timeline-event-modal--inspector
   .timeline-activity-session-card-controls
   .timeline-session-controls__runtime-button {
   width: 30px;
@@ -1712,13 +1699,6 @@
   font-size: 12px;
   font-variant-numeric: tabular-nums;
   line-height: 1.4;
-}
-
-.timeline-event-modal--inspector
-  .timeline-event-modal__schedule-row
-  .timeline-session-controls__inspector-summary {
-  grid-column: 1 / -1;
-  grid-row: 2;
 }
 
 .timeline-event-modal--inspector
@@ -3024,8 +3004,7 @@ body:has(> .timeline-recurring-edit-scope-dialog__backdrop)
   white-space: normal;
 }
 
-/* Read-only multi-interval placement occupies the existing schedule row.
- * The Activity main runtime buttons keep their original grid cell. */
+/* Read-only multi-interval placement occupies the schedule block. */
 .timeline-event-modal--inspector .timeline-inspector-intervals {
   display: grid;
   gap: 0;
@@ -3312,4 +3291,137 @@ body:has(> .timeline-recurring-edit-scope-dialog__backdrop)
   ):focus-visible {
   outline: 2px solid var(--timeline-inspector-accent, #ea5c12);
   outline-offset: -2px;
+}
+
+
+/* Inspector Activity: keep the main Session's single live component mounted
+ * next to its title. Its runtime summary is the second grid row, BEFORE the
+ * scheduled interval list. No duplicate Play/Stop or Session read. */
+.timeline-event-modal--inspector .timeline-event-modal__title-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) max-content;
+  align-items: start;
+  gap: 5px 12px;
+}
+.timeline-event-modal--inspector
+  .timeline-event-modal__title-row
+  .timeline-event-modal__title {
+  grid-column: 1;
+  grid-row: 1;
+  align-self: center;
+  min-width: 0;
+  margin: 0;
+}
+.timeline-event-modal--inspector
+  .timeline-event-modal__title-row
+  :is(.timeline-activity-session-card-controls, .timeline-session-controls) {
+  display: contents;
+}
+.timeline-event-modal--inspector
+  .timeline-event-modal__title-row
+  .timeline-session-controls__runtime-actions {
+  grid-column: 2;
+  grid-row: 1;
+  align-self: center;
+  justify-self: end;
+  white-space: nowrap;
+}
+.timeline-event-modal--inspector
+  .timeline-event-modal__title-row
+  .timeline-session-controls__inspector-summary {
+  grid-column: 1 / -1;
+  grid-row: 2;
+  min-width: 0;
+  margin: 0;
+  overflow-wrap: anywhere;
+  line-height: 1.5;
+}
+.timeline-event-modal--inspector .timeline-event-modal__schedule-row {
+  display: block;
+  min-width: 0;
+  margin-top: 10px;
+  margin-bottom: 8px;
+}
+.timeline-event-modal--inspector .timeline-event-modal__schedule-row > * {
+  min-width: 0;
+}
+
+/* Create / Edit already define these exact authoring surfaces and native
+ * select popup colors. Reuse their tokens in the Inspector, including a
+ * reliable dark menu fallback, instead of browser/system purple. */
+.timeline-event-modal--inspector
+  :is(
+    .timeline-activity-planned-sessions__row,
+    .timeline-objective-controls__item,
+    .timeline-event-agenda.is-read-only .timeline-event-agenda__list li
+  ) {
+  border-color: var(
+    --dante-temporal-editor-border,
+    rgba(159, 177, 184, 0.125)
+  );
+  background: var(--dante-temporal-editor-section-surface, #1b252a);
+}
+.timeline-event-modal--inspector
+  :is(input:not([type='checkbox']):not([type='radio']), select, textarea) {
+  box-sizing: border-box;
+  border-color: var(
+    --dante-temporal-editor-border,
+    rgba(159, 177, 184, 0.125)
+  );
+  color: var(--dante-semantic-color-home-text-primary, #edf2f8);
+  background: var(--dante-temporal-editor-field-surface, #202b30);
+  color-scheme: dark;
+}
+.timeline-event-modal--inspector
+  :is(input:not([type='checkbox']):not([type='radio']), select, textarea):focus-visible {
+  outline: 2px solid var(
+    --dante-semantic-color-home-chrome-active-border,
+    #ea5c12
+  );
+  outline-offset: 1px;
+}
+.timeline-event-modal--inspector select option {
+  color: var(--dante-temporal-menu-text, #edf2f8);
+  background-color: var(--dante-temporal-menu-surface, #192328);
+  font-size: var(--dante-temporal-menu-option-size, 17px);
+}
+.timeline-event-modal--inspector select option:checked {
+  background-color: var(--dante-temporal-menu-selected, #2c3a40);
+}
+.timeline-event-modal--inspector
+  .timeline-objective-controls__value
+  > button {
+  border-color: var(
+    --dante-temporal-editor-border,
+    rgba(159, 177, 184, 0.125)
+  );
+  color: var(--dante-semantic-color-home-text-primary, #edf2f8);
+  background: var(--dante-temporal-editor-field-surface, #202b30);
+}
+.timeline-event-modal--inspector
+  :is(
+    .timeline-actual-controls,
+    .timeline-responsibility-controls,
+    .timeline-session-controls__manual
+  )
+  button {
+  border-color: var(
+    --dante-temporal-editor-border,
+    rgba(159, 177, 184, 0.125)
+  );
+  background: var(--dante-temporal-editor-field-surface, #202b30);
+}
+.timeline-event-modal--inspector
+  :is(.timeline-session-controls__manual, .timeline-session-controls__manual button) {
+  border-color: var(
+    --dante-temporal-editor-border,
+    rgba(159, 177, 184, 0.125)
+  );
+  background: var(--dante-temporal-editor-field-surface, #202b30);
+}
+
+.timeline-event-modal--inspector
+  .timeline-objective-controls
+  :is(input, select)[aria-invalid='true']:focus-visible {
+  outline-color: var(--dante-timeline-tone-urgent, #ff5b64);
 }

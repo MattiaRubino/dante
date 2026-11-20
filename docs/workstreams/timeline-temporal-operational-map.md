@@ -1,6 +1,41 @@
 # Timeline / Temporal-Operational — Live Execution Ledger
 
 
+## 2026-11-20 — Inspector main Session header and shared palette follow-up
+
+Owner screenshots after the Inspector candidate showed **main Play/Pause/Stop
+misaligned alongside multi-interval schedules**, with live/recorded duration
+appearing below the calendar placement, and **native Objective select menus
+showing a purple/system palette inconsistent with Create/Edit**. The approved
+fix now mounts `ActivitySessionCardControls` exactly once inside the
+Inspector-only `timeline-event-modal__title-row`: title on the left and main
+controls on the right, then the existing live/paused/recorded summary below
+the title, then one/many intervals, then Life Area, then child Sessions. Event
+details retain their title/time/Area hierarchy without Activity controls.
+No Session handler, timer, capability, state transition, Activity Edit, Event
+Edit, server action or mutation path is changed.
+
+Inspector fields, native option menus, selected options and secondary buttons
+now reuse existing root `--dante-temporal-editor-*` and
+`--dante-temporal-menu-*` tokens from Create/Edit; Life Area affects the
+outer accent/bullet only, with orange #EA5C12 for absent Area. Scoped CSS
+keeps invalid red borders and runtime semantic colors. A dedicated Inspector
+header DOM regression covers single/multiple intervals, live and recorded
+summary order, single main control mount and Event without Activity Session.
+The full binding and design rules remain in
+[Inspector presentation contract](../product/temporal/inspector-presentation.md).
+
+Before this follow-up the user's WSL had Web typecheck GREEN, 25/26
+focused tests GREEN with one newly-added test assertion repaired and then
+the final Event Agenda suite **5/5 GREEN**, plus Prettier **8 files formatted
+locally and check GREEN**. The owner's local formatting changes were not yet
+uploaded/published; **preserve them** before syncing the new remote commit.
+The *new* header/palette follow-up is **NOT_RUN** in the owner WSL; do not
+claim it passes until typecheck, focused tests, format and real-browser
+checks execute on this new commit.
+
+
+
 ## 2026-11-20 — Inspector first owner-local gate and focused test repair
 
 The user pulled `0bfead325` to WSL and ran the initial Inspector verification:

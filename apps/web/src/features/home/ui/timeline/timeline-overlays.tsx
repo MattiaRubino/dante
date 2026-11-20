@@ -1088,6 +1088,18 @@ export function EventDetailDialog({
                 ? 'Modifica evento'
                 : detail.title}
           </h3>
+          {!currentEditingProfile &&
+          !eventEditorMode &&
+          sessionSubject?.kind === 'activity' ? (
+            <ActivitySessionCardControls
+              activityRef={sessionSubject.ref}
+              label={detail.title}
+              variant="inspector"
+              showPlanned={false}
+              locale={locale}
+              {...(timeZone ? { timeZone } : {})}
+            />
+          ) : null}
         </div>
         {!currentEditingProfile && detail.contextLabel ? (
           <p className="timeline-event-modal__context">{detail.contextLabel}</p>
@@ -1158,14 +1170,6 @@ export function EventDetailDialog({
                           {detailScheduleLabel(detail, locale, timeZone)}
                         </p>
                       )}
-                      <ActivitySessionCardControls
-                        activityRef={sessionSubject.ref}
-                        label={detail.title}
-                        variant="inspector"
-                        showPlanned={false}
-                        locale={locale}
-                        {...(timeZone ? { timeZone } : {})}
-                      />
                     </div>
                     {lifeAreaSection}
                   </>
