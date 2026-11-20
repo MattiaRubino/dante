@@ -2013,7 +2013,10 @@ describe('Event Inspector actions', () => {
     );
     fireEvent.click(screen.getByRole('button', { name: /^Modifica$/ }));
     const select = await screen.findByRole('combobox', { name: 'Ricorda' });
-    fireEvent.change(select, { target: { value: '15' } });
+    fireEvent.click(select);
+    fireEvent.click(
+      screen.getByRole('option', { name: 'Ricorda · 15 min prima' }),
+    );
     fireEvent.click(screen.getByRole('button', { name: 'Salva modifiche' }));
     await waitFor(() => expect(reviseAtomic).toHaveBeenCalledOnce());
     expect(reviseAtomic.mock.calls[0]?.[2]).toEqual({

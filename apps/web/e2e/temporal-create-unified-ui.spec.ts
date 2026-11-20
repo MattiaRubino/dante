@@ -1011,18 +1011,38 @@ test('Advanced Activity and Event headings, Objectives and native menus share on
     await expect(
       objective.locator('.temporal-create-objective__verification'),
     ).toHaveCSS('background-color', 'rgb(27, 37, 42)');
-    const reminder = dialog.locator('.temporal-create-quick-reminder select');
+    const reminder = dialog.getByRole('combobox', { name: 'Ricorda' });
     await expect(reminder).toHaveCSS('font-size', '16px');
-    for (const menu of [result, reminder]) {
-      await expect(menu.locator('option:not(:checked)').first()).toHaveCSS(
-        'background-color',
-        'rgb(25, 35, 40)',
-      );
-      await expect(menu.locator('option:checked')).toHaveCSS(
-        'background-color',
-        'rgb(44, 58, 64)',
-      );
-    }
+    await expect(result.locator('option:not(:checked)').first()).toHaveCSS(
+      'background-color',
+      'rgb(25, 35, 40)',
+    );
+    await expect(result.locator('option:checked')).toHaveCSS(
+      'background-color',
+      'rgb(44, 58, 64)',
+    );
+    await reminder.click();
+    const reminderMenu = page.getByRole('listbox', { name: 'Ricorda' });
+    await expect(
+      reminderMenu.getByRole('option', { name: 'Ricorda · Nessuno' }),
+    ).toHaveCSS(
+      'background-color',
+      'rgb(44, 58, 64)',
+    );
+    await expect(
+      reminderMenu.getByRole('option', { name: 'Ricorda · 5 min prima' }),
+    ).toHaveCSS(
+      'background-color',
+      'rgb(25, 35, 40)',
+    );
+    await reminder.press('Escape');
+    await expect(reminderMenu).toHaveCount(0);
+    await expect(dialog).toBeVisible();
+    await reminder.click();
+    await reminderMenu.getByRole('option', {
+      name: 'Ricorda · 15 min prima',
+    }).click();
+    await expect(reminder).toContainText('15 min prima');
 
     await result.selectOption('quantity');
     await expect(
@@ -1075,7 +1095,7 @@ test('Advanced Activity and Event headings, Objectives and native menus share on
         ),
         description: style('.temporal-create-description-section h3'),
         result: style('.temporal-create-objective__definition select'),
-        reminder: style('.temporal-create-quick-reminder select'),
+        reminder: style('.temporal-create-quick-reminder > button'),
         areaSurface: getComputedStyle(
           modal.querySelector<HTMLElement>('.temporal-editor-area-section')!,
         ).backgroundColor,

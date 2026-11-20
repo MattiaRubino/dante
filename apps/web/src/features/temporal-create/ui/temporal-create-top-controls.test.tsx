@@ -22,6 +22,7 @@ import {
 import { i18n } from '../../../bootstrap/i18n';
 import { HomeCreateInteractionBridge } from '../../home/ui/home-create-interaction-bridge';
 import { TemporalCreateEntry } from './temporal-create-entry';
+import { TemporalReminderControl } from './temporal-create-quick-reminder';
 
 beforeAll(async () => {
   Object.defineProperty(HTMLElement.prototype, 'scrollIntoView', {
@@ -97,6 +98,37 @@ function setClock(label: 'Inizio' | 'Fine', value: string) {
 }
 
 describe('Temporal Create U1 top controls', () => {
+  it('shows a slate reminder selection and keeps mouse, keyboard and custom saved values', () => {
+    const onChange = vi.fn();
+    const rendered = render(
+      <TemporalReminderControl value={90} onChange={onChange} />,
+    );
+    const trigger = screen.getByRole('combobox', { name: 'Ricorda' });
+    expect(trigger.textContent).toContain('1 h 30 min prima');
+    fireEvent.click(trigger);
+    const menu = screen.getByRole('listbox', { name: 'Ricorda' });
+    expect(
+      within(menu)
+        .getByRole('option', { name: 'Ricorda · 1 h 30 min prima' })
+        .getAttribute('aria-selected'),
+    ).toBe('true');
+    fireEvent.click(
+      within(menu).getByRole('option', { name: 'Ricorda · 15 min prima' }),
+    );
+    expect(onChange).toHaveBeenLastCalledWith(15);
+    rendered.rerender(<TemporalReminderControl value={15} onChange={onChange} />);
+    fireEvent.keyDown(trigger, { key: 'ArrowUp' });
+    expect(trigger.getAttribute('aria-expanded')).toBe('true');
+    fireEvent.keyDown(trigger, { key: 'Enter' });
+    expect(onChange).toHaveBeenLastCalledWith(10);
+    expect(trigger.getAttribute('aria-expanded')).toBe('false');
+    fireEvent.click(trigger);
+    fireEvent.keyDown(trigger, { key: 'Escape' });
+    expect(trigger.getAttribute('aria-expanded')).toBe('false');
+    fireEvent.click(trigger);
+    fireEvent.pointerDown(document.body);
+    expect(trigger.getAttribute('aria-expanded')).toBe('false');
+  });
 
   it.each([
     ['Quick', 'Attività'],
@@ -504,7 +536,10 @@ describe('Temporal Create U1 top controls', () => {
     fireEvent.click(within(localDialog).getByRole('option', { name: /Ora locale/ }));
     fireEvent.click(within(localDialog).getByRole('button', { name: 'OK' }));
     expect(
-      domElement(screen.getByLabelText('Ricorda'), HTMLSelectElement).disabled,
+      domElement(
+        screen.getByRole('combobox', { name: 'Ricorda' }),
+        HTMLButtonElement,
+      ).disabled,
     ).toBe(true);
 
     fireEvent.click(screen.getByRole('button', { name: /Fuso orario:/ }));
@@ -525,7 +560,10 @@ describe('Temporal Create U1 top controls', () => {
       screen.getByRole('button', { name: /Fuso orario: Europe\/Rome/ }),
     ).toBeTruthy();
     expect(
-      domElement(screen.getByLabelText('Ricorda'), HTMLSelectElement).disabled,
+      domElement(
+        screen.getByRole('combobox', { name: 'Ricorda' }),
+        HTMLButtonElement,
+      ).disabled,
     ).toBe(false);
   });
 

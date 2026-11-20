@@ -493,7 +493,10 @@ describe('Temporal Create U2 entry', () => {
       screen.getByRole('button', { name: /Nascondi opzioni avanzate/ }),
     );
     expect(
-      domElement(screen.getByLabelText('Ricorda'), HTMLSelectElement).disabled,
+      domElement(
+        screen.getByRole('combobox', { name: 'Ricorda' }),
+        HTMLButtonElement,
+      ).disabled,
     ).toBe(false);
     fireEvent.change(screen.getByPlaceholderText('Titolo'), {
       target: { value: 'Passeggiata' },
@@ -742,9 +745,10 @@ describe('Temporal Create U2 entry', () => {
     fireEvent.change(screen.getByPlaceholderText('Titolo'), {
       target: { value: 'Dentista' },
     });
-    fireEvent.change(screen.getByLabelText('Ricorda'), {
-      target: { value: '15' },
-    });
+    fireEvent.click(screen.getByRole('combobox', { name: 'Ricorda' }));
+    fireEvent.click(
+      screen.getByRole('option', { name: 'Ricorda · 15 min prima' }),
+    );
     fireEvent.click(screen.getByRole('button', { name: 'Aggiungi' }));
 
     await waitFor(() => expect(activityRequests).toHaveLength(1));

@@ -1,5 +1,19 @@
 # Timeline / Temporal-Operational — Live Execution Ledger
 
+## 2026-11-20 — Reminder popup uses the shared slate palette
+
+The owner's Firefox screenshot on the pulled candidate showed that the native
+Reminder popup still painted its selected row pink even though computed CSS
+reported the same selected color as Recurrence. The shared Reminder control now
+renders its own anchored, scrollable option list in the existing slate menu
+palette. It retains every existing lead-minute value, a previously saved
+nonstandard value, the disabled rule, and the same Create/Activity Edit/Event
+Edit/series Edit change callbacks. Pointer selection, keyboard navigation,
+Escape and outside dismissal are covered at the component boundary; the
+existing Create browser visual check now inspects the actual painted option
+rows and selection. Owner-local typecheck, focused Vitest, browser and Firefox
+visual acceptance remain NOT_RUN on this candidate.
+
 ## 2026-11-20 — Life Area catalog survives a versioned removal
 
 Removing an Activity or Event from a Life Area retains a versioned assignment

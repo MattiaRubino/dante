@@ -1,5 +1,6 @@
 .temporal-create-quick-reminder {
   box-sizing: border-box;
+  position: relative;
   display: grid;
   grid-template-columns: 22px 1px minmax(0, 1fr);
   min-height: 42px;
@@ -43,7 +44,11 @@
   background: color-mix(in srgb, currentColor 18%, transparent);
 }
 
-.temporal-create-quick-reminder.temporal-create-quick-reminder select {
+.temporal-create-quick-reminder.temporal-create-quick-reminder > button {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
   width: 100%;
   min-width: 0;
   height: 40px;
@@ -55,21 +60,48 @@
   box-shadow: none !important;
   font: inherit;
   font-size: var(--dante-temporal-form-text-size);
-  color-scheme: dark;
+  text-align: left;
+  cursor: pointer;
 }
 
-/* Match the native Recurrence popup in Quick Create and every Edit surface.
- * The closed Reminder field remains transparent within its own frame. */
-.temporal-create-quick-reminder.temporal-create-quick-reminder select option {
+.temporal-create-quick-reminder__chevron {
+  font-size: 14px;
+  line-height: 1;
+}
+
+.temporal-create-quick-reminder__options {
+  position: fixed;
+  z-index: 10050;
+  top: 0;
+  left: 0;
+  box-sizing: border-box;
+  max-height: min(320px, 50vh);
+  overflow-y: auto;
+  padding: 3px;
+  border: 1px solid var(--dante-temporal-editor-border);
+  border-radius: 7px;
+  background: var(--dante-temporal-menu-surface);
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.35);
+}
+
+.temporal-create-quick-reminder__options > button {
+  display: block;
+  width: 100%;
+  min-height: 27px;
+  padding: 4px 7px;
+  border: 0;
+  border-radius: 3px;
   color: var(--dante-temporal-menu-text);
   background: var(--dante-temporal-menu-surface);
   font-size: var(--dante-temporal-menu-option-size);
+  text-align: left;
+  cursor: pointer;
 }
 
-.temporal-create-quick-reminder.temporal-create-quick-reminder select option:checked {
+.temporal-create-quick-reminder__options > button:is([aria-selected='true'], [data-active='true']) {
   background: var(--dante-temporal-menu-selected);
 }
 
-.temporal-create-quick-reminder select:disabled {
+.temporal-create-quick-reminder > button:disabled {
   cursor: not-allowed;
 }

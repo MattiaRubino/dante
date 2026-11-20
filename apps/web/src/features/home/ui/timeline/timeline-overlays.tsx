@@ -965,6 +965,13 @@ export function EventDetailDialog({
       ) {
         return;
       }
+      if (
+        event.key === 'Escape' &&
+        event.target instanceof Element &&
+        event.target.closest('.temporal-create-quick-reminder [aria-expanded="true"]')
+      ) {
+        return;
+      }
       if (event.key === 'Escape') {
         event.preventDefault();
         requestCloseCurrent();
