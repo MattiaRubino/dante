@@ -1430,10 +1430,12 @@ export function ActivityEditPanel({
         );
         if (invalidObjective) {
           setObjectiveValidationVisible(true);
-          const field = event.currentTarget.querySelector<HTMLElement>(
-            `[data-objective-id="${invalidObjective.id}"] [aria-invalid="true"]`,
+          const form = event.currentTarget;
+          requestAnimationFrame(() =>
+            form.querySelector<HTMLElement>(
+              `[data-objective-id="${invalidObjective.id}"] [aria-invalid="true"]`,
+            )?.focus(),
           );
-          requestAnimationFrame(() => field?.focus());
           return;
         }
         if (planningLocked && temporalDirty) {
