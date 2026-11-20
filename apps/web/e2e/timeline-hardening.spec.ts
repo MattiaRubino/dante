@@ -369,6 +369,19 @@ test('Session Objective and agenda indicators sit near the lower card edge', asy
   const footer = event.locator('.timeline-event-card__indicators');
   const agenda = footer.locator('.timeline-event-card__indicator');
   await expect(agenda).toContainText('Scaletta');
+  const typeScale = await event.evaluate((element) => {
+    const size = (selector: string) => Number.parseFloat(
+      getComputedStyle(element.querySelector(selector)!).fontSize,
+    );
+    return {
+      title: size('.timeline-event-card__title'),
+      time: size('.timeline-event-card__time'),
+      detail: size('.timeline-event-card__indicator'),
+    };
+  });
+  expect(typeScale.title).toBeGreaterThanOrEqual(14);
+  expect(typeScale.time).toBeGreaterThanOrEqual(12);
+  expect(typeScale.detail).toBeGreaterThanOrEqual(12);
   const distanceFromBottom = await event.evaluate((element) => {
     const indicator = element.querySelector('.timeline-event-card__indicator');
     if (!indicator) return Infinity;

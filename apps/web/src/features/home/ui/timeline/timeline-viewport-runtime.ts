@@ -41,7 +41,27 @@ type TimelineRenderedDayInputs = Readonly<{
   groups: readonly TimelineGroup[];
   zoom: number;
   expandedEventIds: ReadonlySet<TimelineEventId>;
+  cardContentHeights?: ReadonlyMap<TimelineEventId, number>;
 }>;
+
+function reserveCardContentHeight(
+  events: readonly TimelineEvent[],
+  heights: ReadonlyMap<TimelineEventId, number> | undefined,
+): readonly TimelineEvent[] {
+  if (!heights?.size) return events;
+  return events.map((event) => {
+    const measured = heights.get(event.id);
+    return measured === undefined
+      ? event
+      : {
+          ...event,
+          visualMinimumHeightPx: Math.max(
+            event.visualMinimumHeightPx ?? 0,
+            measured,
+          ),
+        };
+  });
+}
 
 type TimelineCardGeometry = Readonly<{
   card: HTMLElement;
@@ -179,9 +199,11 @@ export function buildTimelineRenderedDays(
   for (let offset = -pastDays; offset <= futureDays; offset += 1) {
     const date = addTimelineDays(anchor, offset);
     const dateKey = timelineDateKey(date);
-    const events =
+    const events = reserveCardContentHeight(
       inputs.eventsByDate[dateKey] ??
-      createTimelinePrototypeEventsForDate(dateKey);
+        createTimelinePrototypeEventsForDate(dateKey),
+      inputs.cardContentHeights,
+    );
     const mapper = createTimelineTimeMapper(events, inputs.zoom, {
       expandedEventIds: inputs.expandedEventIds,
     });

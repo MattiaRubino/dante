@@ -99,6 +99,55 @@ describe('timeline viewport runtime', () => {
     expect(new Set(days.map((day) => day.mapper.map(630))).size).toBe(1);
   });
 
+  it('reserves measured detail rows in the continuous ruler without stretching bare cards or week columns', () => {
+    const date = TIMELINE_PROTOTYPE_TODAY;
+    const key = date.toString();
+    const activity: TimelineEvent = {
+      id: 'activity-with-details',
+      title: 'Lavoro',
+      groupId: 'focus',
+      startMinute: 600,
+      endMinute: 630,
+    };
+    const plain: TimelineEvent = {
+      ...activity,
+      id: 'plain-event',
+      startMinute: 720,
+      endMinute: 750,
+    };
+    const state = createInitialTimelineState(date);
+    const inputs = {
+      eventsByDate: { [key]: [activity, plain] },
+      groups: state.groups,
+      zoom: 1,
+      expandedEventIds: new Set<string>(),
+    };
+    const before = buildTimelineRenderedDays(date, 0, 0, inputs)[0]!;
+    const after = buildTimelineRenderedDays(date, 0, 0, {
+      ...inputs,
+      cardContentHeights: new Map([[activity.id, 151]]),
+    })[0]!;
+    const card = after.layouts.find(
+      (layout) => layout.event.id === activity.id,
+    )!;
+    expect(card.height).toBeGreaterThanOrEqual(151);
+    expect(card.height).toBeGreaterThan(before.layouts[0]!.height);
+    expect(
+      after.layouts.find((layout) => layout.event.id === plain.id)!.height,
+    ).toBeCloseTo(before.layouts[1]!.height);
+    expect(after.mapper.map(630) - after.mapper.map(600)).toBeGreaterThanOrEqual(
+      151,
+    );
+    const week = buildTimelineRenderedWeek(date, {
+      ...inputs,
+      cardContentHeights: new Map([[activity.id, 151]]),
+    });
+    const weekCard = week
+      .flatMap((day) => day.layouts)
+      .find((layout) => layout.event.id === activity.id)!;
+    expect(weekCard.height).toBeLessThan(card.height);
+  });
+
   it('resolves the semantic day nearest a viewport offset', () => {
     const days = buildReferenceDays();
     const today = days.find((day) => day.date.equals(TIMELINE_PROTOTYPE_TODAY));

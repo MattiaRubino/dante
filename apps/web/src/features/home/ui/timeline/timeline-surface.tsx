@@ -533,6 +533,9 @@ export function TimelineSurface({
   } | null>(null);
   const suppressExpansionClickRef = useRef(false);
   const renderedDaysRef = useRef<readonly TimelineRenderedDay[]>([]);
+  const cardContentHeightsRef = useRef<ReadonlyMap<string, number>>(new Map());
+  const [cardContentHeights, setCardContentHeights] =
+    useState<ReadonlyMap<string, number>>(cardContentHeightsRef.current);
   const dragActiveRef = useRef(false);
   const [dragSnapshot, setDragSnapshot] = useState<{
     days: readonly TimelineRenderedDay[];
@@ -568,6 +571,28 @@ export function TimelineSurface({
       pendingScrollTargetRef.current = { ...anchor, behavior: 'auto' };
     }
   }, []);
+
+  const onCardContentHeight = useCallback(
+    (eventId: string, height: number) => {
+      const measured = Math.ceil(height);
+      if (!Number.isFinite(measured)) return;
+      const floor = TIMELINE_POLICY.event.activityMinimumHeightPx;
+      const current = cardContentHeightsRef.current.get(eventId);
+      if (
+        current === measured ||
+        (measured <= floor && current === undefined)
+      ) {
+        return;
+      }
+      preserveViewportTime();
+      const next = new Map(cardContentHeightsRef.current);
+      if (measured > floor) next.set(eventId, measured);
+      else next.delete(eventId);
+      cardContentHeightsRef.current = next;
+      setCardContentHeights(next);
+    },
+    [preserveViewportTime],
+  );
 
   const reconcileAuthoritativeEvents = useCallback(
     (
@@ -690,8 +715,15 @@ export function TimelineSurface({
       groups: visibleGroups,
       zoom: state.zoom,
       expandedEventIds: state.expandedEventIds,
+      cardContentHeights,
     }),
-    [state.eventsByDate, state.expandedEventIds, visibleGroups, state.zoom],
+    [
+      cardContentHeights,
+      state.eventsByDate,
+      state.expandedEventIds,
+      visibleGroups,
+      state.zoom,
+    ],
   );
   const baseRenderedDays = useMemo(
     () =>
@@ -1919,6 +1951,7 @@ export function TimelineSurface({
             setDragSnapshot(null);
           }
         }}
+        onCardContentHeight={onCardContentHeight}
         state={{
           ...state,
           allDayItems: projectedDateLaneItems,

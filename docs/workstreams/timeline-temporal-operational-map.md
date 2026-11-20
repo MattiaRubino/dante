@@ -1,5 +1,19 @@
 # Timeline / Temporal-Operational — Live Execution Ledger
 
+## 2026-11-20 — Card detail breathing room and readable type candidate
+
+The owner approved a restrained Activity/Event card pass: preserve existing
+width, shape, Life Area colors, title ellipsis and actions; increase the title,
+time, Area/status and detail-row type modestly. A Timeline/Day card now measures
+its actual heading and footer after asynchronous Objective/Agenda/Session
+details appear. Only content exceeding the existing 118 px floor asks the
+elastic minute mapper for more height, with an 8 px bottom allowance. The
+ordinary viewport anchor stays on the same clock point; pointer drag keeps its
+frozen mapper. The seven-column Week retains compact type and geometry. An
+existing viewport test covers the added floor and unchanged bare-card/Week
+height. Owner-local typecheck, focused Vitest, visual browser and real-app
+acceptance are NOT_RUN on this candidate.
+
 ## 2026-11-20 — Reminder popup uses the shared slate palette
 
 The owner's Firefox screenshot on the pulled candidate showed that the native

@@ -91,6 +91,7 @@ type TimelineDayStreamProps = Readonly<{
   ) => void;
   onMoveEvent: (move: TimelineEventMove) => void;
   onMoveFeedback: (message: string) => void;
+  onCardContentHeight?: (eventId: string, height: number) => void;
   /** Freeze the parent ruler, scroll anchoring and day recycling during drag. */
   onDragActiveChange?: (active: boolean) => void;
 }>;
@@ -197,6 +198,7 @@ function TimelineEventCard({
   onKeyboardMove,
   suppressClickRef,
   openActivityRefs,
+  onCardContentHeight,
 }: Readonly<{
   dateKey: string;
   layout: TimelineEventLayout;
@@ -224,10 +226,37 @@ function TimelineEventCard({
   ) => void;
   suppressClickRef: RefObject<string | null>;
   openActivityRefs: ReadonlySet<string>;
+  onCardContentHeight?: (eventId: string, height: number) => void;
 }>) {
   const { t, i18n } = useTranslation('common');
   const event = layout.event;
   const details = useTimelineCardDetails(event);
+  const cardRef = useRef<HTMLElement>(null);
+
+  useLayoutEffect(() => {
+    if (!onCardContentHeight) return;
+    const card = cardRef.current;
+    const top = card?.querySelector<HTMLElement>('.timeline-event-card__top');
+    const indicators = card?.querySelector<HTMLElement>(
+      '.timeline-event-card__indicators',
+    );
+    if (!top || !indicators) return;
+    const measure = () => {
+      // The drag zone is elastic; only the real copy and footer need a floor.
+      const contentHeight = Math.ceil(
+        top.getBoundingClientRect().height +
+          indicators.getBoundingClientRect().height +
+          8,
+      );
+      if (contentHeight > 0) onCardContentHeight(event.id, contentHeight);
+    };
+    measure();
+    if (typeof ResizeObserver === 'undefined') return;
+    const observer = new ResizeObserver(measure);
+    observer.observe(top);
+    observer.observe(indicators);
+    return () => observer.disconnect();
+  }, [event.id, onCardContentHeight, details]);
   const plannedDateKey = layout.plannedDateKey ?? dateKey;
   const group = groupForEvent(event, groups);
   const tone = event.appearanceTone ?? group?.tone ?? 'personal';
@@ -337,6 +366,7 @@ function TimelineEventCard({
 
   return (
     <article
+      ref={cardRef}
       className={`timeline-event-card${isActivity ? ' timeline-event-card--activity' : ' timeline-event-card--event'}${sessionActivityRef ? ' timeline-event-card--has-session-controls' : ''}${expandedSubitems ? ' is-expanded' : ''}${isFocused ? ' is-focused' : ''}${isGroupmate ? ' is-groupmate' : ''}${isDim ? ' is-dim' : ''}`}
       data-timeline-event={event.id}
       data-timeline-tone={tone}
@@ -545,6 +575,7 @@ function TimelineDay({
   onKeyboardMove,
   suppressClickRef,
   openActivityRefs,
+  onCardContentHeight,
 }: Readonly<{
   day: TimelineRenderedDay;
   today: PlainDate;
@@ -575,6 +606,7 @@ function TimelineDay({
   ) => void;
   suppressClickRef: RefObject<string | null>;
   openActivityRefs: ReadonlySet<string>;
+  onCardContentHeight?: (eventId: string, height: number) => void;
 }>) {
   const { t, i18n } = useTranslation('common');
   const isToday = day.date.equals(today);
@@ -705,6 +737,7 @@ function TimelineDay({
             onKeyboardMove={onKeyboardMove}
             suppressClickRef={suppressClickRef}
             openActivityRefs={openActivityRefs}
+            {...(onCardContentHeight ? { onCardContentHeight } : {})}
           />
         ))}
       </div>
@@ -741,6 +774,7 @@ export function TimelineDayStream({
   onMoveEvent,
   onMoveFeedback,
   onDragActiveChange,
+  onCardContentHeight,
 }: TimelineDayStreamProps) {
   const { t, i18n } = useTranslation('common');
   const rulerLocale = i18n.resolvedLanguage ?? i18n.language;
@@ -1689,6 +1723,9 @@ export function TimelineDayStream({
               onKeyboardMove={keyboardMove}
               suppressClickRef={suppressClickRef}
               openActivityRefs={openActivityRefs}
+              {...(view === 'week' || !onCardContentHeight
+                ? {}
+                : { onCardContentHeight })}
             />
           ))}
           {view === 'timeline' ? (
