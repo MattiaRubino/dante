@@ -1,5 +1,14 @@
 # Timeline / Temporal-Operational — Live Execution Ledger
 
+## 2026-11-19 — Timeline header readability
+
+The owner approved retaining the current month color while raising the month
+label to 19px semibold. The week strip's weekday abbreviations and day numbers
+use 11px and 13px semibold respectively; below 760px the month label uses
+16px to limit pressure on the narrow header. Calendar opening, week navigation,
+selected/today colors and temporal behavior are unchanged. Owner-local visual
+review and tests for this CSS-only revision are **NOT_RUN**.
+
 ## 2026-11-19 — Month initials in visible date labels
 
 The owner requested capitalized Italian month initials throughout the Web

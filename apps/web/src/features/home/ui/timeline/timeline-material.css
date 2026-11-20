@@ -91,8 +91,8 @@
   color: var(--dante-timeline-text-secondary);
   background: transparent;
   box-shadow: none;
-  font-size: 11px;
-  font-weight: 660;
+  font-size: 19px;
+  font-weight: 600;
   line-height: 1;
   cursor: pointer;
   white-space: nowrap;
@@ -292,16 +292,16 @@
 
 .dante-timeline-week b {
   color: inherit;
-  font-size: 8px;
-  font-weight: 700;
+  font-size: 11px;
+  font-weight: 600;
   letter-spacing: 0.08em;
   line-height: 1;
 }
 
 .dante-timeline-week strong {
   color: inherit;
-  font-size: 10px;
-  font-weight: 680;
+  font-size: 13px;
+  font-weight: 600;
   line-height: 1;
 }
 
@@ -721,6 +721,10 @@
 }
 
 @media (max-width: 760px) {
+  .dante-timeline-month {
+    font-size: 16px;
+  }
+
   .dante-timeline-header {
     min-height: 176px;
   }
