@@ -3382,11 +3382,11 @@ body:has(> .timeline-recurring-edit-scope-dialog__backdrop)
 }
 .timeline-event-modal--inspector select option {
   color: var(--dante-temporal-menu-text, #edf2f8);
-  background-color: var(--dante-temporal-menu-surface, #192328);
+  background: var(--dante-temporal-menu-surface, #192328);
   font-size: var(--dante-temporal-menu-option-size, 17px);
 }
 .timeline-event-modal--inspector select option:checked {
-  background-color: var(--dante-temporal-menu-selected, #2c3a40);
+  background: var(--dante-temporal-menu-selected, #2c3a40);
 }
 .timeline-event-modal--inspector
   .timeline-objective-controls__value

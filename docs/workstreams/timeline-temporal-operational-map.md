@@ -11,6 +11,9 @@ Quick/Advanced Create and Activity/Event/series Edit wherever the shared
 control is mounted. Reminder choices and persistence are unchanged. Actual
 Firefox native popup appearance still requires owner-local visual acceptance;
 no focused test has been executed on this candidate.
+All native Create/Edit options and Inspector options use the same explicit
+background shorthand as Recurrence, rather than mixing it with a weaker
+background-color declaration for the selected native option.
 
 ## 2026-11-20 — Inspector border follows live Area and item color
 

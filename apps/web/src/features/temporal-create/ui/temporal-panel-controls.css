@@ -531,10 +531,10 @@
 
 :is(.temporal-create-composer, .timeline-event-modal--edit) select option {
   color: var(--dante-temporal-menu-text);
-  background-color: var(--dante-temporal-menu-surface);
+  background: var(--dante-temporal-menu-surface);
   font-size: var(--dante-temporal-menu-option-size);
 }
 
 :is(.temporal-create-composer, .timeline-event-modal--edit) select option:checked {
-  background-color: var(--dante-temporal-menu-selected);
+  background: var(--dante-temporal-menu-selected);
 }
