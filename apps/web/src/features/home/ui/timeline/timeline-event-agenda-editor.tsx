@@ -243,7 +243,10 @@ function TimelineEventAgendaEditorInstance({
             {t(($) => $.common.home.timeline.create.eventDetails.agendaEmpty)}
           </p>
         ) : (
-          <ol className="timeline-event-agenda__list">
+          <ol
+            className="timeline-event-agenda__list"
+            tabIndex={readOnly && parts.length > 4 ? 0 : undefined}
+          >
             {parts.map((part, index) => {
               const position = index + 1;
               const editing = editingIndex === index;
@@ -281,7 +284,7 @@ function TimelineEventAgendaEditorInstance({
                     </>
                   ) : null}
                   {readOnly ? (
-                    <span className="timeline-event-agenda__value">{part}</span>
+                    <span className="timeline-event-agenda__value" title={part}>{part}</span>
                   ) : editing ? (
                     <input
                       value={editingValue}

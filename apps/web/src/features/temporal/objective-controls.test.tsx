@@ -163,3 +163,71 @@ it('refreshes mounted Event objectives after an atomic editor save', async () =>
   await screen.findByText('Risultato evento');
   expect(source.listObjectives).toHaveBeenCalledWith('event', 'event-1');
 });
+
+it('shows Inspector Objective validation only after Confirm without writing invalid data', async () => {
+  source.listObjectives.mockResolvedValue([quantity]);
+  source.listObjectiveInputDrafts.mockResolvedValue([]);
+  render(<ObjectiveControls kind="activity" subjectRef="activity-1" validateOnConfirm />);
+  const field = await screen.findByRole('spinbutton', {
+    name: 'Valore reale per Quanti chilometri?',
+  });
+  const confirm = screen.getByRole('button', {
+    name: 'Conferma obiettivo Quanti chilometri?',
+  });
+  expect(field.getAttribute('aria-invalid')).toBeNull();
+  expect((confirm as HTMLButtonElement).disabled).toBe(false);
+  fireEvent.click(confirm);
+  expect(field.getAttribute('aria-invalid')).toBe('true');
+  expect(screen.getByRole('alert').textContent).toContain(
+    'valore numerico valido',
+  );
+  expect(source.stageObjectiveInput).not.toHaveBeenCalled();
+  expect(source.confirmObjectiveInput).not.toHaveBeenCalled();
+  fireEvent.click(confirm);
+  expect(field.getAttribute('data-invalid-shake')).toBe('even');
+  fireEvent.change(field, { target: { value: '0' } });
+  expect(field.getAttribute('aria-invalid')).toBeNull();
+  expect(screen.queryByRole('alert')).toBeNull();
+});
+
+it('requires a Confirm attempt for missing Event boolean results', async () => {
+  source.listObjectives.mockResolvedValue([
+    {
+      ...quantity,
+      resultKind: 'boolean',
+      comparatorCode: null,
+      label: 'Partecipazione',
+    },
+  ]);
+  source.listObjectiveInputDrafts.mockResolvedValue([]);
+  render(<ObjectiveControls kind="event" subjectRef="event-1" validateOnConfirm />);
+  const select = await screen.findByRole('combobox', {
+    name: 'Valore per Partecipazione',
+  });
+  expect(select.getAttribute('aria-invalid')).toBeNull();
+  fireEvent.click(
+    screen.getByRole('button', {
+      name: 'Conferma obiettivo Partecipazione',
+    }),
+  );
+  expect(select.getAttribute('aria-invalid')).toBe('true');
+  expect(screen.getByRole('alert').textContent).toContain(
+    'Seleziona un risultato',
+  );
+  fireEvent.change(select, { target: { value: 'false' } });
+  expect(select.getAttribute('aria-invalid')).toBeNull();
+  expect(source.confirmObjectiveInput).not.toHaveBeenCalled();
+});
+
+it('preserves the Home rail disabled Confirm for a missing Objective value', async () => {
+  source.listObjectives.mockResolvedValue([quantity]);
+  source.listObjectiveInputDrafts.mockResolvedValue([]);
+  render(<ObjectiveControls kind="activity" subjectRef="activity-1" />);
+  const button = await screen.findByRole<HTMLButtonElement>('button', {
+    name: 'Conferma obiettivo Quanti chilometri?',
+  });
+  expect(button.disabled).toBe(true);
+  fireEvent.click(button);
+  expect(screen.queryByRole('alert')).toBeNull();
+  expect(source.stageObjectiveInput).not.toHaveBeenCalled();
+});

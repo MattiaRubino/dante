@@ -2,6 +2,7 @@ import {
   type FocusEvent,
   useCallback,
   useEffect,
+  useId,
   useMemo,
   useRef,
   useState,
@@ -104,16 +105,20 @@ function ObjectiveInputRow({
   initialDraft,
   source,
   onConfirmed,
+  validateOnConfirm,
 }: Readonly<{
   objective: ObjectiveView;
   initialDraft: ObjectiveInputDraftView | undefined;
   source: ReturnType<typeof createRemoteRealityObjectiveDataSource>;
   onConfirmed: () => void;
+  validateOnConfirm: boolean;
 }>) {
   const [draft, setDraft] = useState(initialDraft);
   const [entry, setEntry] = useState(() => fromDraft(objective, initialDraft));
   const [busy, setBusy] = useState<'saving' | 'confirming' | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [invalidAttempts, setInvalidAttempts] = useState(0);
+  const inputErrorId = useId();
   const lock = useRef(false);
   const confirmed =
     objective.observationRef !== null || draft?.confirmedAt != null;
@@ -121,6 +126,13 @@ function ObjectiveInputRow({
     () => payloadFrom(objective, entry),
     [objective, entry],
   );
+  const invalid =
+    validateOnConfirm && invalidAttempts > 0 && validPayload === null;
+  const shake = invalid ? (invalidAttempts % 2 ? 'odd' : 'even') : undefined;
+  const invalidMessage =
+    objective.resultKind === 'boolean' || objective.resultKind === 'qualitative'
+      ? 'Seleziona un risultato.'
+      : 'Inserisci un valore numerico valido.';
   const savedEntry = fromDraft(objective, draft);
   const dirty = !!validPayload && entry !== savedEntry;
 
@@ -173,7 +185,11 @@ function ObjectiveInputRow({
   };
 
   const confirm = async () => {
-    if (!validPayload || lock.current || confirmed) return;
+    if (lock.current || confirmed || busy !== null) return;
+    if (!validPayload) {
+      if (validateOnConfirm) setInvalidAttempts((attempt) => attempt + 1);
+      return;
+    }
     setError(null);
     try {
       const saved = dirty || !draft ? await persist(validPayload) : draft;
@@ -199,6 +215,7 @@ function ObjectiveInputRow({
     <div
       className="timeline-objective-controls__item"
       data-objective-ref={objective.objectiveRef}
+      data-objective-invalid={invalid || undefined}
     >
       <div className="timeline-objective-controls__summary">
         <span
@@ -237,8 +254,12 @@ function ObjectiveInputRow({
               aria-label={`Valore per ${objective.label}`}
               value={entry}
               disabled={busy !== null}
+              aria-invalid={invalid || undefined}
+              aria-describedby={invalid ? inputErrorId : undefined}
+              data-invalid-shake={shake}
               onBlur={saveOnBlur}
               onChange={(event) => {
+                setInvalidAttempts(0);
                 setEntry(event.target.value);
               }}
             >
@@ -251,8 +272,12 @@ function ObjectiveInputRow({
               aria-label={`Valutazione per ${objective.label}`}
               value={entry}
               disabled={busy !== null}
+              aria-invalid={invalid || undefined}
+              aria-describedby={invalid ? inputErrorId : undefined}
+              data-invalid-shake={shake}
               onBlur={saveOnBlur}
               onChange={(event) => {
+                setInvalidAttempts(0);
                 setEntry(event.target.value);
               }}
             >
@@ -271,7 +296,11 @@ function ObjectiveInputRow({
                 disabled={busy !== null}
                 onBlur={saveOnBlur}
                 aria-label={`Valore reale per ${objective.label}`}
+                aria-invalid={invalid || undefined}
+                aria-describedby={invalid ? inputErrorId : undefined}
+                data-invalid-shake={shake}
                 onChange={(event) => {
+                  setInvalidAttempts(0);
                   setEntry(event.target.value);
                 }}
               />
@@ -283,13 +312,22 @@ function ObjectiveInputRow({
             data-confirm-objective={objective.objectiveRef}
             title="Conferma definitivamente questo valore"
             aria-label={`Conferma obiettivo ${objective.label}`}
-            disabled={!validPayload || busy !== null}
+            disabled={busy !== null || (!validateOnConfirm && !validPayload)}
             onClick={() => void confirm()}
           >
             ✓ Conferma
           </button>
         </div>
       )}
+      {invalid ? (
+        <small
+          id={inputErrorId}
+          className="timeline-objective-controls__invalid"
+          role="alert"
+        >
+          {invalidMessage}
+        </small>
+      ) : null}
       {!confirmed && draft && (
         <small aria-live="polite">
           {busy === 'saving'
@@ -310,10 +348,12 @@ export function ObjectiveControls({
   kind,
   subjectRef,
   onRecorded,
+  validateOnConfirm = false,
 }: Readonly<{
   kind: RealitySubjectKind;
   subjectRef: string;
   onRecorded?: () => void;
+  validateOnConfirm?: boolean;
 }>) {
   const source = useMemo(
     () => createRemoteRealityObjectiveDataSource(globalThis.fetch),
@@ -377,6 +417,7 @@ export function ObjectiveControls({
       className="timeline-objective-controls"
       data-timeline-objectives={subjectRef}
       aria-label="Obiettivi"
+      tabIndex={validateOnConfirm && objectives.length > 4 ? 0 : undefined}
     >
       <strong>Obiettivi</strong>
       {objectives.map((objective) => (
@@ -388,6 +429,7 @@ export function ObjectiveControls({
           )}
           source={source}
           onConfirmed={confirmed}
+          validateOnConfirm={validateOnConfirm}
         />
       ))}
       {message ? <span role="alert">{message}</span> : null}

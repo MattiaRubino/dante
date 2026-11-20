@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, type ReactNode } from 'react';
 
 import { createWebFetch } from '../../platform/api/web-fetch';
 import { subscribeTemporalPlanningInvalidation } from './timeline-invalidation';
@@ -14,8 +14,18 @@ type PlannedSession = Readonly<{
   name: string;
   order: number;
 }>;
+export type ActivityScheduleInterval = Readonly<{
+  scheduleRef: string;
+  order: number;
+  start: string;
+  end: string;
+  instant: boolean;
+  zoneId: string | null;
+}>;
+
 type PlannedSessionStructure = Readonly<{
   rows: readonly PlannedSession[];
+  intervals: readonly ActivityScheduleInterval[];
   independentChildren: boolean;
 }>;
 
@@ -38,14 +48,51 @@ function parsePlannedSessions(
     throw new Error('Struttura Activity non valida.');
   }
 
+  const schedules = payload.schedules.map(record);
+  const placedIntervals = schedules.filter((row) => row.role_code === 'interval');
+  const intervals = placedIntervals.flatMap(
+    (row, index): ActivityScheduleInterval[] => {
+      if (typeof row.schedule_ref !== 'string') return [];
+      const instant =
+        row.temporal_form === 'named_zone_local' ||
+        row.temporal_form === 'absolute';
+      const start = instant
+        ? (row.resolved_start_at ?? row.starts_at)
+        : row.starts_local_at;
+      const end = instant
+        ? (row.resolved_end_at ?? row.ends_at)
+        : row.ends_local_at;
+      if (typeof start !== 'string' || typeof end !== 'string') return [];
+      return [
+        {
+          scheduleRef: row.schedule_ref,
+          order:
+            typeof row.presentation_order === 'number' &&
+            Number.isInteger(row.presentation_order)
+              ? row.presentation_order
+              : index + 1,
+          start,
+          end,
+          instant,
+          zoneId: typeof row.zone_id === 'string' ? row.zone_id : null,
+        },
+      ];
+    },
+  );
+
   return Object.freeze({
+    // Missing / unplaced placements may not masquerade as a complete schedule.
+    intervals: Object.freeze(
+      intervals.length === placedIntervals.length
+        ? intervals.sort((left, right) => left.order - right.order)
+        : [],
+    ),
     // An absent capability cannot grant independent child Play.
     independentChildren:
       payload.session_capture_mode === 'disabled' ||
       payload.session_capture_mode === 'record',
     rows: Object.freeze(
-      payload.schedules
-        .map(record)
+      schedules
         .filter((row) => row.role_code === 'planned')
         .map((row, index) => {
           if (typeof row.schedule_ref !== 'string') {
@@ -82,6 +129,10 @@ type PlannedSessionCardProps = Readonly<{
   variant?: 'detail' | 'indicator';
   locale?: string;
   timeZone?: string;
+  /** Inspector-only leading content shares this component's one /children read. */
+  renderInspectorLeading?: (
+    intervals: readonly ActivityScheduleInterval[],
+  ) => ReactNode;
 }>;
 
 export function ActivityPlannedSessionsCardDetail(
@@ -99,6 +150,7 @@ function PlannedSessionCardContent({
   variant = 'detail',
   locale,
   timeZone,
+  renderInspectorLeading,
 }: PlannedSessionCardProps) {
   const [structure, setStructure] = useState<PlannedSessionStructure | null>(
     null,
@@ -171,8 +223,12 @@ function PlannedSessionCardContent({
     };
   }, [activityRef, visible, revision]);
 
-  if (!visible || structure === null || structure.rows.length === 0)
-    return null;
+  if (!visible) return null;
+  const inspectorLeading = renderInspectorLeading?.(structure?.intervals ?? []);
+  if (structure === null || structure.rows.length === 0) {
+    // Keep the main Session subtree mounted across planning read refresh/failure.
+    return inspectorLeading === undefined ? null : <>{inspectorLeading}</>;
+  }
   const { rows, independentChildren } = structure;
 
   if (variant === 'indicator') {
@@ -202,58 +258,67 @@ function PlannedSessionCardContent({
     mainSessions.length > 0 && !mainSessions.some((session) => session.open);
 
   return (
-    <div
-      className="timeline-activity-planned-sessions"
-      data-activity-planned-sessions={activityRef}
-    >
-      <span className="timeline-activity-planned-sessions__label">
-        Sessioni
-      </span>
-      {rows.map((row) => (
-        <div
-          className="timeline-activity-planned-sessions__row"
-          key={row.scheduleRef}
-        >
-          <span className="timeline-activity-planned-sessions__summary">
-            <span className="timeline-activity-planned-sessions__name">
-              {row.name}
+    <>
+      {inspectorLeading}
+      <div
+        className="timeline-activity-planned-sessions"
+        data-activity-planned-sessions={activityRef}
+        role={rows.length > 4 ? 'region' : undefined}
+        aria-label={rows.length > 4 ? 'Sessioni pianificate' : undefined}
+        tabIndex={rows.length > 4 ? 0 : undefined}
+      >
+        <span className="timeline-activity-planned-sessions__label">
+          Sessioni
+        </span>
+        {rows.map((row) => (
+          <div
+            className="timeline-activity-planned-sessions__row"
+            key={row.scheduleRef}
+          >
+            <span className="timeline-activity-planned-sessions__summary">
+              <span
+                className="timeline-activity-planned-sessions__name"
+                title={row.name}
+              >
+                {row.name}
+              </span>
             </span>
-          </span>
-          {independentChildren ||
-          mainRunning ||
-          mainPaused ||
-          (sessions ?? []).some(
-            (session) => session.plannedScheduleRef === row.scheduleRef,
-          ) ? (
-            <SessionSubjectControls
-              kind="activity"
-              subjectRef={activityRef}
-              plannedScheduleRef={row.scheduleRef}
-              label={row.name}
-              variant="detail"
-              compactRuntime
-              inspectorSummary
-              showUnstartedStatus
-              unstartedStatus={
-                !independentChildren && mainPaused
-                  ? 'Principale in pausa'
-                  : 'Non avviata'
-              }
-              playEnabled={independentChildren || mainRunning}
-              {...(locale ? { locale } : {})}
-              {...(timeZone ? { timeZone } : {})}
-            />
-          ) : (
-            <span className="timeline-activity-planned-sessions__state">
-              {mainStopped
-                ? 'Da verificare'
-                : mainPaused
-                  ? 'Principale in pausa'
-                  : 'Avvia prima la principale'}
-            </span>
-          )}
-        </div>
-      ))}
-    </div>
+            {independentChildren ||
+            mainRunning ||
+            mainPaused ||
+            (sessions ?? []).some(
+              (session) => session.plannedScheduleRef === row.scheduleRef,
+            ) ? (
+              <SessionSubjectControls
+                kind="activity"
+                subjectRef={activityRef}
+                plannedScheduleRef={row.scheduleRef}
+                label={row.name}
+                variant="detail"
+                compactRuntime
+                inspectorSummary
+                showUnstartedStatus
+                unstartedStatus={
+                  !independentChildren && mainPaused
+                    ? 'Principale in pausa'
+                    : 'Non avviata'
+                }
+                playEnabled={independentChildren || mainRunning}
+                {...(locale ? { locale } : {})}
+                {...(timeZone ? { timeZone } : {})}
+              />
+            ) : (
+              <span className="timeline-activity-planned-sessions__state">
+                {mainStopped
+                  ? 'Da verificare'
+                  : mainPaused
+                    ? 'Principale in pausa'
+                    : 'Avvia prima la principale'}
+              </span>
+            )}
+          </div>
+        ))}
+      </div>
+    </>
   );
 }

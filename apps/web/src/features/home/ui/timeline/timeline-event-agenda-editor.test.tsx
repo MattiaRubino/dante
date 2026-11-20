@@ -60,6 +60,31 @@ describe('B03-D canonical Event Agenda editor', () => {
     expect(section?.querySelectorAll('p')).toHaveLength(0);
   });
 
+  it('keeps many long Event agenda points read-only, focusable and fully accessible', async () => {
+    const longPart = 'Presentazione molto lunga del progetto e delle sue decisioni '.repeat(3);
+    const parts = Array.from({ length: 8 }, (_, index) =>
+      index === 0 ? longPart : `Punto ${index + 1}`,
+    );
+    const replaceAgenda = vi.fn();
+    render(
+      <TimelineEventAgendaEditor
+        eventRef={EVENT_REF}
+        dataSource={{
+          loadEvent: () => Promise.resolve(record(1, parts)),
+          replaceAgenda,
+        }}
+        readOnly
+      />,
+    );
+    const name = await screen.findByText(longPart);
+    expect(name.getAttribute('title')).toBe(longPart);
+    const list = name.closest('ol');
+    expect(list?.getAttribute('tabindex')).toBe('0');
+    expect(list?.querySelectorAll('li')).toHaveLength(8);
+    expect(list?.querySelectorAll('button')).toHaveLength(0);
+    expect(replaceAgenda).not.toHaveBeenCalled();
+  });
+
   it('uses the existing Event read to show a description after an empty agenda', async () => {
     const loadEvent = vi.fn<TemporalEventAgendaDataSource['loadEvent']>(() =>
       Promise.resolve({

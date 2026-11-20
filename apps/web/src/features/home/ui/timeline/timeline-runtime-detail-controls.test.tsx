@@ -212,6 +212,120 @@ describe('Timeline post-create runtime destinations', () => {
     ).toHaveLength(0);
   });
 
+
+  it('renders all Activity intervals ahead of Area and child Sessions', async () => {
+    const fetchFn = vi.fn<typeof fetch>((input) => {
+      const url = fetchRequestUrl(input);
+      if (url.endsWith('/children')) {
+        return Promise.resolve(Response.json({
+          parent_activity_ref: ACTIVITY_REF,
+          session_capture_mode: 'record',
+          schedules: [
+            {
+              schedule_ref: 'envelope-technical',
+              role_code: 'envelope',
+              starts_local_at: '2026-11-20T09:00:00',
+              ends_local_at: '2026-11-20T15:15:00',
+            },
+            {
+              schedule_ref: 'interval-afternoon',
+              role_code: 'interval',
+              presentation_order: 2,
+              temporal_form: 'named_zone_local',
+              zone_id: 'Europe/Rome',
+              resolved_start_at: '2026-11-20T13:45:00Z',
+              resolved_end_at: '2026-11-20T14:15:00Z',
+            },
+            {
+              schedule_ref: 'interval-morning',
+              role_code: 'interval',
+              presentation_order: 1,
+              temporal_form: 'named_zone_local',
+              zone_id: 'Europe/Rome',
+              resolved_start_at: '2026-11-20T08:00:00Z',
+              resolved_end_at: '2026-11-20T09:30:00Z',
+            },
+            {
+              schedule_ref: 'planned-child',
+              role_code: 'planned',
+              display_name: 'Lettura',
+              presentation_order: 1,
+            },
+          ],
+        }));
+      }
+      if (url.endsWith('/profile')) {
+        return Promise.resolve(Response.json({
+          activity_ref: ACTIVITY_REF,
+          title: 'Attività',
+          description: null,
+          location: null,
+          color_code: null,
+          revision: 1,
+        }));
+      }
+      return Promise.resolve(Response.json([]));
+    });
+    vi.stubGlobal('fetch', fetchFn);
+    render(
+      <EventDetailDialog
+        detail={{
+          title: 'Attività',
+          dateKey: '2026-11-20',
+          startMinute: 885,
+          endMinute: 915,
+          groupLabel: 'Salute',
+          accentColorCode: '#12ab9d',
+          ownerKind: 'activity',
+          realitySubject: { kind: 'activity', ref: ACTIVITY_REF },
+        }}
+        opener={null}
+        timeZone="Europe/Rome"
+        sessionSubject={{ kind: 'activity', ref: ACTIVITY_REF }}
+        onClose={() => undefined}
+      />,
+    );
+    const intervals = await screen.findByRole('list', {
+      name: 'Intervalli dell’attività',
+    });
+    expect(intervals.querySelectorAll('li')).toHaveLength(2);
+    expect(intervals.textContent).toContain('09:00–10:30');
+    expect(intervals.textContent).toContain('14:45–15:15');
+    expect(intervals.textContent).not.toContain('envelope-technical');
+    const area = screen.getByRole('region', { name: 'Area' });
+    const planned = await screen.findByText('Lettura');
+    expect(
+      intervals.compareDocumentPosition(area) & Node.DOCUMENT_POSITION_FOLLOWING,
+    ).toBeTruthy();
+    expect(
+      area.compareDocumentPosition(planned) & Node.DOCUMENT_POSITION_FOLLOWING,
+    ).toBeTruthy();
+    expect(
+      fetchFn.mock.calls.filter(([input]) =>
+        fetchRequestUrl(input).endsWith('/children'),
+      ),
+    ).toHaveLength(1);
+  });
+
+  it('keeps the Inspector orange default for absent Area despite a decorative card color', () => {
+    const noArea = detailFromEvent({
+      ...baseEvent(),
+      groupId: 'Senza Area',
+      appearanceColorCode: '#13bbaa',
+    }, groups);
+    expect(noArea.accentColorCode).toBeUndefined();
+    render(
+      <EventDetailDialog
+        detail={{ ...noArea, groupLabel: 'Senza Area' }}
+        opener={null}
+        onClose={() => undefined}
+      />,
+    );
+    const dialog = screen.getByRole('dialog');
+    expect(dialog.style.getPropertyValue('--timeline-inspector-accent')).toBe('');
+    expect(screen.queryByRole('region', { name: 'Area' })).toBeNull();
+  });
+
   it('derives B10 subjects for Activity, Event and Occurrence independently from Session', () => {
     const activity = detailFromEvent(
       {

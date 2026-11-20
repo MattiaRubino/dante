@@ -1,5 +1,24 @@
 # Timeline / Temporal-Operational — Live Execution Ledger
 
+
+## 2026-11-20 — Inspector Activity/Event presentation contract
+
+The owner approved an **Inspector-only** refresh after screenshots of both
+idle and live main Sessions. The complete normative design and guarded
+acceptance matrix are in
+[Inspector Activity/Event presentation](../product/temporal/inspector-presentation.md).
+The candidate widens the read-only Inspector, uses the effective Life Area
+border color with **orange #EA5C12 for null/no Area**, places Area after
+clock/programming and before child Sessions, displays all Activity intervals
+without inventing additional Sessions, improves Objectives and Event read-only
+agenda typography, and adds conditional scroll/truncation. Invalid Objective
+inputs show red border and short shake **only on Inspector Confirm**; the Home
+rail keeps its prior validation admission. Existing session timers, Pause/Stop
+cascade, recurrence guards, Results and Create/Edit are unchanged.
+Focused Web and owner-local real-browser gates are **NOT_RUN on this candidate**;
+do not infer completion from a code/document update.
+
+
 ## 2026-11-20 — Objective validation only after Edit Save
 
 Owner screenshots show Objective errors appearing while authoring in different

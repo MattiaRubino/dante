@@ -18,7 +18,10 @@ import { formatDateWithCapitalizedMonth } from '../../../../platform/format-loca
 
 import { ResponsibilityControls } from '../../../temporal/responsibility-controls';
 import { ActivitySessionCardControls } from '../../../temporal/activity-session-card-controls';
-import { ActivityPlannedSessionsCardDetail } from '../../../temporal/activity-planned-sessions-card-detail';
+import {
+  ActivityPlannedSessionsCardDetail,
+  type ActivityScheduleInterval,
+} from '../../../temporal/activity-planned-sessions-card-detail';
 import { ScheduleReminderControls } from '../../../temporal/schedule-reminder-controls';
 import { PlacementLockControls } from '../../../temporal/placement-lock-controls';
 import type { ActivityProfile } from '../../../temporal/remote-activity-inspector';
@@ -678,6 +681,95 @@ function detailScheduleLabel(
   return `${day}${formatTimelineMinute(detail.startMinute)}–${formatTimelineMinute(detail.endMinute)}`;
 }
 
+/**
+ * Inspector-only read projection: all accepted Activity interval Schedules,
+ * never the technical envelope or planned child Sessions. No write semantics.
+ */
+function formatInspectorInterval(
+  interval: ActivityScheduleInterval,
+  locale: string,
+  timeZone?: string,
+): string | null {
+  try {
+    const zone = interval.instant ? (timeZone ?? interval.zoneId ?? 'UTC') : 'UTC';
+    const display = (value: string) => {
+      let instant: Date;
+      if (interval.instant) {
+        instant = new Date(value);
+      } else {
+        const local = Temporal.PlainDateTime.from(value);
+        instant = new Date(
+          Date.UTC(
+            local.year,
+            local.month - 1,
+            local.day,
+            local.hour,
+            local.minute,
+          ),
+        );
+      }
+      if (!Number.isFinite(instant.getTime())) return null;
+      return {
+        day: formatDateWithCapitalizedMonth(
+          new Intl.DateTimeFormat(locale, {
+            day: 'numeric',
+            month: 'short',
+            year: 'numeric',
+            timeZone: zone,
+          }),
+          instant,
+        ),
+        clock: new Intl.DateTimeFormat(locale, {
+          hour: '2-digit',
+          minute: '2-digit',
+          hourCycle: 'h23',
+          timeZone: zone,
+        }).format(instant),
+      };
+    };
+    const start = display(interval.start);
+    const end = display(interval.end);
+    if (!start || !end) return null;
+    const ending = end.day === start.day ? end.clock : `${end.day} ${end.clock}`;
+    return `${start.day} · ${start.clock}–${ending}`;
+  } catch {
+    return null;
+  }
+}
+
+function inspectorIntervalRows(
+  intervals: readonly ActivityScheduleInterval[],
+  locale: string,
+  timeZone?: string,
+) {
+  if (intervals.length < 2) return null;
+  const labels = intervals.map((item) => ({
+    ref: item.scheduleRef,
+    order: item.order,
+    label: formatInspectorInterval(item, locale, timeZone),
+  }));
+  // Refuse incomplete readback; do not claim an incomplete list is the plan.
+  if (labels.some((item) => item.label === null)) return null;
+  return (
+    <ol
+      className="timeline-inspector-intervals"
+      aria-label="Intervalli dell’attività"
+      tabIndex={labels.length > 4 ? 0 : undefined}
+    >
+      {labels.map((item) => (
+        <li key={item.ref}>
+          <span className="timeline-inspector-intervals__name">
+            Intervallo {item.order}
+          </span>
+          <span className="timeline-inspector-intervals__time">
+            {item.label}
+          </span>
+        </li>
+      ))}
+    </ol>
+  );
+}
+
 export function EventDetailDialog({
   detail,
   opener,
@@ -911,6 +1003,22 @@ export function EventDetailDialog({
     return null;
   }
 
+  const lifeAreaSection =
+    detail.groupLabel &&
+    detail.groupLabel !== LEGACY_UNASSIGNED_GROUP &&
+    detail.groupLabel !== 'Senza Area' ? (
+      <section className="timeline-event-modal__life-area" aria-label="Area">
+        <h4>Area</h4>
+        <p className="timeline-event-modal__group" title={detail.groupLabel}>
+          <span
+            className="timeline-event-modal__life-area-dot"
+            aria-hidden="true"
+          />
+          {detail.groupLabel}
+        </p>
+      </section>
+    ) : null;
+
   return createPortal(
     <div
       className={`timeline-modal-backdrop is-open${currentEditingProfile || eventEditorMode ? '' : ' timeline-modal-backdrop--inspector'}`}
@@ -929,7 +1037,7 @@ export function EventDetailDialog({
             ? undefined
             : {
                 ...inspectorPosition,
-                ...(detail.accentColorCode
+                ...(detail.accentColorCode && lifeAreaSection
                   ? ({
                       '--timeline-inspector-accent': detail.accentColorCode,
                     } as CSSProperties)
@@ -1036,46 +1144,43 @@ export function EventDetailDialog({
                 }}
               />
             ) : null}
-            <div className="timeline-event-modal__schedule-row">
-              <p className="timeline-event-modal__time">
-                {detailScheduleLabel(detail, locale, timeZone)}
-              </p>
-              {sessionSubject?.kind === 'activity' ? (
-                <ActivitySessionCardControls
-                  activityRef={sessionSubject.ref}
-                  label={detail.title}
-                  variant="inspector"
-                  showPlanned={false}
-                  locale={locale}
-                  {...(timeZone ? { timeZone } : {})}
-                />
-              ) : null}
-            </div>
             {sessionSubject?.kind === 'activity' ? (
               <ActivityPlannedSessionsCardDetail
                 activityRef={sessionSubject.ref}
                 visible
                 locale={locale}
                 {...(timeZone ? { timeZone } : {})}
+                renderInspectorLeading={(intervals) => (
+                  <>
+                    <div className="timeline-event-modal__schedule-row">
+                      {inspectorIntervalRows(intervals, locale, timeZone) ?? (
+                        <p className="timeline-event-modal__time">
+                          {detailScheduleLabel(detail, locale, timeZone)}
+                        </p>
+                      )}
+                      <ActivitySessionCardControls
+                        activityRef={sessionSubject.ref}
+                        label={detail.title}
+                        variant="inspector"
+                        showPlanned={false}
+                        locale={locale}
+                        {...(timeZone ? { timeZone } : {})}
+                      />
+                    </div>
+                    {lifeAreaSection}
+                  </>
+                )}
               />
-            ) : null}
-            {detail.groupLabel &&
-            detail.groupLabel !== LEGACY_UNASSIGNED_GROUP &&
-            detail.groupLabel !== 'Senza Area' ? (
-              <section
-                className="timeline-event-modal__life-area"
-                aria-label="Area"
-              >
-                <h4>Area</h4>
-                <p className="timeline-event-modal__group">
-                  <span
-                    className="timeline-event-modal__life-area-dot"
-                    aria-hidden="true"
-                  />
-                  {detail.groupLabel}
-                </p>
-              </section>
-            ) : null}
+            ) : (
+              <>
+                <div className="timeline-event-modal__schedule-row">
+                  <p className="timeline-event-modal__time">
+                    {detailScheduleLabel(detail, locale, timeZone)}
+                  </p>
+                </div>
+                {lifeAreaSection}
+              </>
+            )}
             {sessionSubject?.kind === 'occurrence' ? (
               <TimelineInspectorOccurrenceSession
                 occurrenceRef={sessionSubject.ref}
@@ -1266,8 +1371,10 @@ export function detailFromEvent(
     endMinute: event.endMinute,
     groupLabel: group?.label ?? event.groupId,
     ...(dateKey ? { dateKey } : {}),
-    ...(group?.colorCode || event.appearanceColorCode
-      ? { accentColorCode: group?.colorCode ?? event.appearanceColorCode }
+    ...(group?.colorCode &&
+    group.label !== 'Senza Area' &&
+    group.label !== LEGACY_UNASSIGNED_GROUP
+      ? { accentColorCode: group.colorCode }
       : {}),
     ...(ownerKind === undefined ? {} : { ownerKind }),
     ...(eventRef === undefined ? {} : { eventRef }),
@@ -1314,8 +1421,10 @@ export function detailFromSubitem(
     groupLabel: group?.label ?? event.groupId,
     contextLabel: `${parentLabel} ${event.title}`,
     ...(dateKey ? { dateKey } : {}),
-    ...(group?.colorCode || event.appearanceColorCode
-      ? { accentColorCode: group?.colorCode ?? event.appearanceColorCode }
+    ...(group?.colorCode &&
+    group.label !== 'Senza Area' &&
+    group.label !== LEGACY_UNASSIGNED_GROUP
+      ? { accentColorCode: group.colorCode }
       : {}),
   };
 }

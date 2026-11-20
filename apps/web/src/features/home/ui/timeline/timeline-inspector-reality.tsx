@@ -66,7 +66,7 @@ export function TimelineInspectorReality({
           />
         </div>
       ) : null}
-      <ObjectiveControls kind={kind} subjectRef={subjectRef} />
+      <ObjectiveControls kind={kind} subjectRef={subjectRef} validateOnConfirm />
     </>
   );
 }

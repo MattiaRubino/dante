@@ -1607,11 +1607,7 @@
   overscroll-behavior: contain;
   pointer-events: auto;
   border-radius: 18px;
-  border-color: color-mix(
-    in srgb,
-    var(--timeline-inspector-accent, #ea5c12) 72%,
-    var(--dante-semantic-color-home-border-subtle)
-  );
+  border-color: var(--timeline-inspector-accent, #ea5c12);
   background:
     linear-gradient(180deg, rgba(255, 255, 255, 0.025), transparent 30%),
     color-mix(
@@ -2985,4 +2981,335 @@ body:has(> .timeline-recurring-edit-scope-dialog__backdrop)
 .timeline-existing-recurrence__actions button:disabled {
   opacity: 0.55;
   cursor: not-allowed;
+}
+
+/* Inspector-only presentation. Never style Edit, Create or Home Work rail here.
+ * Keep runtime/session transitions, objective writes and event read-only logic
+ * owned by their original components. All scrolling is overflow-conditional. */
+.timeline-event-modal--inspector {
+  width: min(600px, calc(100vw - 24px));
+}
+.timeline-event-modal--inspector .timeline-event-modal__title {
+  font-size: 21px;
+}
+.timeline-event-modal--inspector .timeline-event-modal__time,
+.timeline-event-modal--inspector .timeline-event-modal__schedule-row .timeline-event-modal__time {
+  font-size: 14px;
+  line-height: 1.5;
+}
+.timeline-event-modal--inspector .timeline-event-modal__schedule-row {
+  margin-bottom: 8px;
+}
+.timeline-event-modal--inspector .timeline-event-modal__life-area {
+  margin-top: 6px;
+}
+.timeline-event-modal--inspector .timeline-event-modal__life-area h4,
+.timeline-event-modal--inspector .timeline-event-modal__description h4,
+.timeline-event-modal--inspector .timeline-event-modal__participation h4 {
+  font-size: 12px;
+}
+.timeline-event-modal--inspector .timeline-event-modal__group {
+  min-width: 0;
+  max-width: 100%;
+  margin-bottom: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 14px;
+}
+.timeline-event-modal--inspector .timeline-session-controls__inspector-summary,
+.timeline-event-modal--inspector .timeline-activity-planned-sessions__state {
+  font-size: 13px;
+  overflow-wrap: anywhere;
+  white-space: normal;
+}
+
+/* Read-only multi-interval placement occupies the existing schedule row.
+ * The Activity main runtime buttons keep their original grid cell. */
+.timeline-event-modal--inspector .timeline-inspector-intervals {
+  display: grid;
+  gap: 0;
+  min-width: 0;
+  max-height: min(240px, 35dvh);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-gutter: stable;
+}
+.timeline-event-modal--inspector .timeline-inspector-intervals li {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 2px;
+  padding: 7px 6px 7px 0;
+}
+.timeline-event-modal--inspector .timeline-inspector-intervals li + li {
+  border-top: 1px solid var(--dante-semantic-color-home-border-subtle);
+}
+.timeline-event-modal--inspector .timeline-inspector-intervals__name {
+  font-size: 12px;
+  font-weight: 650;
+  color: var(--dante-semantic-color-home-text-muted, #aebbc7);
+}
+.timeline-event-modal--inspector .timeline-inspector-intervals__time {
+  font-size: 14px;
+  line-height: 1.45;
+  font-variant-numeric: tabular-nums;
+  overflow-wrap: anywhere;
+}
+
+/* Distinct major section dividers versus subtle dividers between rows. */
+.timeline-event-modal--inspector
+  :is(.timeline-activity-planned-sessions, .timeline-objective-controls,
+      .timeline-event-modal__description, .timeline-event-modal__participation,
+      .timeline-event-modal__reality) {
+  margin-top: 18px;
+  padding-top: 15px;
+  border-top: 1px solid var(--dante-semantic-color-home-border-subtle);
+}
+.timeline-event-modal--inspector .timeline-activity-planned-sessions {
+  max-height: min(320px, 44dvh);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-gutter: stable;
+}
+.timeline-event-modal--inspector .timeline-activity-planned-sessions__label {
+  display: block;
+  position: sticky;
+  z-index: 2;
+  top: 0;
+  padding: 3px 0 9px;
+  background: var(--dante-semantic-color-home-surface-primary, #0d1522);
+  font-size: 12px;
+}
+.timeline-event-modal--inspector .timeline-activity-planned-sessions__row {
+  min-width: 0;
+  padding: 12px;
+  border: 1px solid var(--dante-semantic-color-home-border-subtle);
+  border-radius: 0;
+  background: var(--dante-semantic-color-home-surface-control, #1b2529);
+}
+.timeline-event-modal--inspector
+  .timeline-activity-planned-sessions__row
+  + .timeline-activity-planned-sessions__row {
+  border-top: 0;
+}
+.timeline-event-modal--inspector
+  .timeline-activity-planned-sessions__row:first-of-type {
+  border-radius: 11px 11px 0 0;
+}
+.timeline-event-modal--inspector
+  .timeline-activity-planned-sessions__row:last-of-type {
+  border-radius: 0 0 11px 11px;
+}
+.timeline-event-modal--inspector
+  .timeline-activity-planned-sessions__row:first-of-type:last-of-type {
+  border-radius: 11px;
+}
+.timeline-event-modal--inspector .timeline-activity-planned-sessions__name {
+  display: block;
+  min-width: 0;
+  max-width: 100%;
+  font-size: 14px;
+  font-weight: 600;
+}
+.timeline-event-modal--inspector .timeline-activity-planned-sessions__time {
+  font-size: 12px;
+}
+.timeline-event-modal--inspector .timeline-activity-planned-sessions__state {
+  overflow: visible;
+  text-overflow: clip;
+}
+.timeline-event-modal--inspector
+  .timeline-activity-planned-sessions__row
+  .timeline-session-controls__runtime-actions {
+  align-self: start;
+}
+.timeline-event-modal--inspector .timeline-objective-controls {
+  max-height: min(390px, 50dvh);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-gutter: stable;
+  gap: 0;
+}
+.timeline-event-modal--inspector .timeline-objective-controls > strong {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  display: block;
+  padding: 3px 0 10px;
+  color: var(--dante-semantic-color-home-text-primary, #edf2f8);
+  background: var(--dante-semantic-color-home-surface-primary, #0d1522);
+  font-size: 13px;
+}
+.timeline-event-modal--inspector .timeline-objective-controls__item {
+  min-width: 0;
+  padding: 13px 12px;
+  gap: 9px;
+  margin: 0;
+  border: 1px solid var(--dante-semantic-color-home-border-subtle);
+  border-radius: 0;
+  background: var(--dante-semantic-color-home-surface-control, #1b2529);
+}
+.timeline-event-modal--inspector
+  .timeline-objective-controls__item
+  + .timeline-objective-controls__item {
+  border-top: 0;
+}
+.timeline-event-modal--inspector .timeline-objective-controls__item:first-of-type {
+  border-radius: 11px 11px 0 0;
+}
+.timeline-event-modal--inspector .timeline-objective-controls__item:last-of-type {
+  border-radius: 0 0 11px 11px;
+}
+.timeline-event-modal--inspector .timeline-objective-controls__item:first-of-type:last-of-type {
+  border-radius: 11px;
+}
+.timeline-event-modal--inspector .timeline-objective-controls__summary {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 5px 8px;
+  align-items: start;
+  font-size: 14px;
+}
+.timeline-event-modal--inspector .timeline-objective-controls__name {
+  grid-column: 1;
+  min-width: 0;
+  font-size: 14px;
+  font-weight: 650;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.timeline-event-modal--inspector .timeline-objective-controls__summary small {
+  grid-column: 1 / -1;
+  grid-row: 2;
+  min-width: 0;
+  max-width: 100%;
+  overflow: visible;
+  font-size: 12px;
+  line-height: 1.45;
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
+.timeline-event-modal--inspector .timeline-objective-controls__summary em {
+  grid-column: 2;
+  grid-row: 1;
+  font-size: 12px;
+}
+.timeline-event-modal--inspector .timeline-objective-controls__value {
+  min-width: 0;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.timeline-event-modal--inspector .timeline-objective-controls :is(input, select, button) {
+  min-height: 36px;
+  font-size: 13px;
+}
+.timeline-event-modal--inspector .timeline-objective-controls input {
+  width: min(160px, 100%);
+}
+.timeline-event-modal--inspector .timeline-objective-controls select {
+  width: min(220px, 100%);
+  min-width: 0;
+}
+.timeline-event-modal--inspector .timeline-objective-controls__value > span,
+.timeline-event-modal--inspector .timeline-objective-controls__observation {
+  font-size: 12px;
+}
+.timeline-event-modal--inspector
+  .timeline-objective-controls
+  :is(input, select)[aria-invalid='true'] {
+  border: 2px solid #e66d70;
+  box-shadow: 0 0 0 1px rgba(230, 109, 112, 0.2);
+}
+.timeline-objective-controls__invalid {
+  color: #f28a90;
+  font-size: 12px;
+}
+.timeline-event-modal--inspector [data-invalid-shake='odd'] {
+  animation: dante-inspector-invalid-odd 190ms ease-out;
+}
+.timeline-event-modal--inspector [data-invalid-shake='even'] {
+  animation: dante-inspector-invalid-even 190ms ease-out;
+}
+@keyframes dante-inspector-invalid-odd {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(-3px); }
+  65% { transform: translateX(3px); }
+}
+@keyframes dante-inspector-invalid-even {
+  0%, 100% { transform: translateX(0); }
+  35% { transform: translateX(3px); }
+  75% { transform: translateX(-3px); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .timeline-event-modal--inspector [data-invalid-shake] {
+    animation: none;
+  }
+}
+/* Event agenda remains read-only; the list scrolls only if its contents overflow. */
+.timeline-event-modal--inspector .timeline-event-agenda.is-read-only {
+  margin-top: 18px;
+  padding: 15px 0 0;
+  border: 0;
+  border-top: 1px solid var(--dante-semantic-color-home-border-subtle);
+  border-radius: 0;
+  background: transparent;
+}
+.timeline-event-modal--inspector .timeline-event-agenda__heading {
+  font-size: 13px;
+}
+.timeline-event-modal--inspector .timeline-event-agenda.is-read-only .timeline-event-agenda__list {
+  max-height: min(310px, 44dvh);
+  gap: 0;
+  padding: 0;
+  border: 1px solid var(--dante-semantic-color-home-border-subtle);
+  border-radius: 11px;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-gutter: stable;
+}
+.timeline-event-modal--inspector
+  .timeline-event-agenda.is-read-only
+  .timeline-event-agenda__list li {
+  min-height: 46px;
+  border: 0;
+  border-radius: 0;
+  background: var(--dante-semantic-color-home-surface-control, #1b2529);
+}
+.timeline-event-modal--inspector
+  .timeline-event-agenda.is-read-only
+  .timeline-event-agenda__list li + li {
+  border-top: 1px solid var(--dante-semantic-color-home-border-subtle);
+}
+.timeline-event-modal--inspector .timeline-event-agenda.is-read-only .timeline-event-agenda__value {
+  font-size: 14px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+/* The outer Inspector remains scrollable for the other conditional sections. */
+@media (max-width: 600px) {
+  .timeline-event-modal--inspector
+    :is(.timeline-activity-planned-sessions, .timeline-objective-controls) {
+    max-height: min(280px, 42dvh);
+  }
+  .timeline-event-modal--inspector
+    .timeline-event-agenda.is-read-only
+    .timeline-event-agenda__list {
+    max-height: min(260px, 42dvh);
+  }
+}
+
+.timeline-event-modal--inspector
+  :is(
+    .timeline-inspector-intervals,
+    .timeline-activity-planned-sessions,
+    .timeline-objective-controls,
+    .timeline-event-agenda__list
+  ):focus-visible {
+  outline: 2px solid var(--timeline-inspector-accent, #ea5c12);
+  outline-offset: -2px;
 }
