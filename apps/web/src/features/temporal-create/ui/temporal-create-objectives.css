@@ -104,6 +104,16 @@
   font-size: var(--dante-temporal-form-text-size);
 }
 
+.temporal-create-objective__title-cell {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+}
+
+.temporal-create-objective__title-cell > input {
+  flex: 1 1 auto;
+}
+
 /* Keep the section and only the faulty field visible; the Objective list
  * itself is not a second error panel. */
 .temporal-create-reality-objectives:has([data-objective-invalid='true']),
@@ -126,11 +136,22 @@
   color: var(--dante-timeline-tone-urgent, #ff5b64);
 }
 
-.temporal-create-objective > .temporal-create-field-error,
-.temporal-create-objective__definition label > .temporal-create-field-error {
+.temporal-create-objective__field-heading {
+  display: flex;
+  min-width: 0;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 4px;
+}
+
+.temporal-create-objective__title-cell > .temporal-create-field-error,
+.temporal-create-objective__field-heading > .temporal-create-field-error {
   margin: 0;
   color: var(--dante-timeline-tone-urgent, #ff5b64);
-  font-size: 12px;
+  font-size: 11px;
+  font-weight: 600;
+  line-height: 1;
+  white-space: nowrap;
 }
 
 .temporal-create-objective__actions {

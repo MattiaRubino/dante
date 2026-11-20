@@ -1,4 +1,4 @@
-import { useId, type ReactNode } from 'react';
+import { useId, useState, type ReactNode } from 'react';
 
 import type {
   TemporalCreateObjectiveComparator,
@@ -42,18 +42,48 @@ export function TemporalObjectiveEditorRow({
   issues?: readonly ObjectiveFieldIssue[] | undefined;
 }>) {
   const errorId = useId();
+  const [badNumericInput, setBadNumericInput] =
+    useState<ReadonlySet<ObjectiveInvalidField>>(new Set());
   const activeIssues = issues ?? (issue ? [issue] : []);
-  const fieldIssue = (field: ObjectiveInvalidField) =>
-    activeIssues.find((current) => current.field === field);
-  const invalid = (field: ObjectiveInvalidField) => fieldIssue(field) !== undefined;
+  const fieldIssue = (field: ObjectiveInvalidField) => {
+    const current = activeIssues.find((candidate) => candidate.field === field);
+    return current && badNumericInput.has(field)
+      ? { field, message: italian ? 'Solo numeri.' : 'Numbers only.' }
+      : current;
+  };
+  const invalid = (field: ObjectiveInvalidField) =>
+    fieldIssue(field) !== undefined;
   const idFor = (field: ObjectiveInvalidField) => `${errorId}-${field}`;
   const fieldMessage = (field: ObjectiveInvalidField) => {
     const message = fieldIssue(field)?.message;
     return message ? (
-      <small id={idFor(field)} className="temporal-create-field-error" role="alert">
+      <small
+        id={idFor(field)}
+        className="temporal-create-field-error"
+        role="alert"
+      >
         {message}
       </small>
     ) : null;
+  };
+  const fieldHeading = (field: ObjectiveInvalidField, name: string) => (
+    <span className="temporal-create-objective__field-heading">
+      <span>{name}</span>
+      {fieldMessage(field)}
+    </span>
+  );
+  const changeNumeric = (
+    field: 'targetValue' | 'targetMin' | 'targetMax',
+    value: string,
+    badInput: boolean,
+  ) => {
+    setBadNumericInput((current) => {
+      const next = new Set(current);
+      if (badInput) next.add(field);
+      else next.delete(field);
+      return next;
+    });
+    update(objective.id, { [field]: value });
   };
   return (
     <div
@@ -63,7 +93,10 @@ export function TemporalObjectiveEditorRow({
       data-objective-invalid={activeIssues.length ? 'true' : undefined}
       onFocusCapture={onInspect}
     >
-      <div className="temporal-create-objective__row" data-field-invalid={invalid('label') || undefined}>
+      <div
+        className="temporal-create-objective__row"
+        data-field-invalid={invalid('label') || undefined}
+      >
         <span className="temporal-create-objective__index" aria-hidden="true">
           {index + 1}
         </span>
@@ -71,30 +104,33 @@ export function TemporalObjectiveEditorRow({
           className="temporal-create-objective__divider"
           aria-hidden="true"
         />
-        <input
-          className="temporal-create-objective__title"
-          disabled={disabled}
-          type="text"
-          maxLength={300}
-          value={objective.label}
-          aria-invalid={invalid('label') || undefined}
-          aria-describedby={invalid('label') ? idFor('label') : undefined}
-          aria-label={
-            italian
-              ? variant === 'edit'
-                ? 'Nome obiettivo'
-                : `Obiettivo ${index + 1}`
-              : `Objective ${index + 1}`
-          }
-          placeholder={
-            italian
-              ? 'Cosa vuoi ottenere o verificare?'
-              : 'What do you want to achieve or verify?'
-          }
-          onChange={(event) =>
-            update(objective.id, { label: event.currentTarget.value })
-          }
-        />
+        <span className="temporal-create-objective__title-cell">
+          <input
+            className="temporal-create-objective__title"
+            disabled={disabled}
+            type="text"
+            maxLength={300}
+            value={objective.label}
+            aria-invalid={invalid('label') || undefined}
+            aria-describedby={invalid('label') ? idFor('label') : undefined}
+            aria-label={
+              italian
+                ? variant === 'edit'
+                  ? 'Nome obiettivo'
+                  : `Obiettivo ${index + 1}`
+                : `Objective ${index + 1}`
+            }
+            placeholder={
+              italian
+                ? 'Cosa vuoi ottenere o verificare?'
+                : 'What do you want to achieve or verify?'
+            }
+            onChange={(event) =>
+              update(objective.id, { label: event.currentTarget.value })
+            }
+          />
+          {fieldMessage('label')}
+        </span>
         <div className="temporal-create-objective__actions">
           <button
             type="button"
@@ -131,13 +167,17 @@ export function TemporalObjectiveEditorRow({
           </button>
         </div>
       </div>
-      {activeIssues.filter((current) => current.message === null).map((current) => (
-        <span key={current.field} id={idFor(current.field)} className="temporal-create-visually-hidden">
-          Campo obbligatorio.
-        </span>
-      ))}
-      {fieldMessage('label')}
-
+      {activeIssues
+        .filter((current) => fieldIssue(current.field)?.message === null)
+        .map((current) => (
+          <span
+            key={current.field}
+            id={idFor(current.field)}
+            className="temporal-create-visually-hidden"
+          >
+            Campo obbligatorio.
+          </span>
+        ))}
       <div className="temporal-create-objective__details">
         <div
           className="temporal-create-objective__definition"
@@ -155,12 +195,13 @@ export function TemporalObjectiveEditorRow({
                     : `Tipo risultato obiettivo ${index + 1}`
                   : `Objective ${index + 1} result type`
               }
-              onChange={(event) =>
+              onChange={(event) => {
+                setBadNumericInput(new Set());
                 changeKind(
                   objective.id,
                   event.currentTarget.value as TemporalCreateObjectiveKind,
-                )
-              }
+                );
+              }}
             >
               <option value="boolean">
                 {italian ? 'Sì / No' : 'Yes / No'}
@@ -178,7 +219,7 @@ export function TemporalObjectiveEditorRow({
           {objective.resultKind === 'quantity' ? (
             <>
               <label data-field-invalid={invalid('comparatorCode') || undefined}>
-                <span>{italian ? 'Regola' : 'Rule'}</span>
+                {fieldHeading('comparatorCode', italian ? 'Regola' : 'Rule')}
                 <select
                   value={objective.comparatorCode ?? 'gte'}
                   aria-invalid={invalid('comparatorCode') || undefined}
@@ -198,10 +239,9 @@ export function TemporalObjectiveEditorRow({
                   <option value="lte">≤</option>
                   <option value="eq">=</option>
                 </select>
-                {fieldMessage('comparatorCode')}
               </label>
               <label data-field-invalid={invalid('targetValue') || undefined}>
-                <span>{italian ? 'Target' : 'Target'}</span>
+                {fieldHeading('targetValue', 'Target')}
                 <input
                   type="number"
                   step="any"
@@ -217,15 +257,21 @@ export function TemporalObjectiveEditorRow({
                       : 'Objective target'
                   }
                   onChange={(event) =>
-                    update(objective.id, {
-                      targetValue: event.currentTarget.value,
-                    })
+                    changeNumeric(
+                      'targetValue',
+                      event.currentTarget.value,
+                      event.currentTarget.validity.badInput,
+                    )
                   }
+                  onInput={(event) => {
+                    if (event.currentTarget.validity.badInput)
+                      changeNumeric('targetValue', '', true);
+                  }}
+                  onInvalid={(event) => event.preventDefault()}
                 />
-                {fieldMessage('targetValue')}
               </label>
               <label data-field-invalid={invalid('unitCode') || undefined}>
-                <span>{italian ? 'Unità' : 'Unit'}</span>
+                {fieldHeading('unitCode', italian ? 'Unità' : 'Unit')}
                 <input
                   type="text"
                   maxLength={40}
@@ -247,7 +293,6 @@ export function TemporalObjectiveEditorRow({
                     })
                   }
                 />
-                {fieldMessage('unitCode')}
               </label>
             </>
           ) : null}
@@ -255,7 +300,7 @@ export function TemporalObjectiveEditorRow({
           {objective.resultKind === 'range' ? (
             <>
               <label data-field-invalid={invalid('targetMin') || undefined}>
-                <span>{italian ? 'Min' : 'Min'}</span>
+                {fieldHeading('targetMin', 'Min')}
                 <input
                   type="number"
                   step="any"
@@ -267,15 +312,21 @@ export function TemporalObjectiveEditorRow({
                     italian ? 'Minimo obiettivo' : 'Objective minimum'
                   }
                   onChange={(event) =>
-                    update(objective.id, {
-                      targetMin: event.currentTarget.value,
-                    })
+                    changeNumeric(
+                      'targetMin',
+                      event.currentTarget.value,
+                      event.currentTarget.validity.badInput,
+                    )
                   }
+                  onInput={(event) => {
+                    if (event.currentTarget.validity.badInput)
+                      changeNumeric('targetMin', '', true);
+                  }}
+                  onInvalid={(event) => event.preventDefault()}
                 />
-                {fieldMessage('targetMin')}
               </label>
               <label data-field-invalid={invalid('targetMax') || undefined}>
-                <span>{italian ? 'Max' : 'Max'}</span>
+                {fieldHeading('targetMax', 'Max')}
                 <input
                   type="number"
                   step="any"
@@ -287,15 +338,21 @@ export function TemporalObjectiveEditorRow({
                     italian ? 'Massimo obiettivo' : 'Objective maximum'
                   }
                   onChange={(event) =>
-                    update(objective.id, {
-                      targetMax: event.currentTarget.value,
-                    })
+                    changeNumeric(
+                      'targetMax',
+                      event.currentTarget.value,
+                      event.currentTarget.validity.badInput,
+                    )
                   }
+                  onInput={(event) => {
+                    if (event.currentTarget.validity.badInput)
+                      changeNumeric('targetMax', '', true);
+                  }}
+                  onInvalid={(event) => event.preventDefault()}
                 />
-                {fieldMessage('targetMax')}
               </label>
               <label data-field-invalid={invalid('unitCode') || undefined}>
-                <span>{italian ? 'Unità' : 'Unit'}</span>
+                {fieldHeading('unitCode', italian ? 'Unità' : 'Unit')}
                 <input
                   type="text"
                   maxLength={40}
@@ -317,7 +374,6 @@ export function TemporalObjectiveEditorRow({
                     })
                   }
                 />
-                {fieldMessage('unitCode')}
               </label>
             </>
           ) : null}
@@ -330,13 +386,6 @@ export function TemporalObjectiveEditorRow({
             </span>
           ) : null}
 
-          {objective.resultKind === 'qualitative' ? (
-            <span className="temporal-create-objective__hint">
-              {italian
-                ? 'Alla verifica: raggiunto, parziale, non raggiunto o non valutabile.'
-                : 'At review: reached, partial, not reached or indeterminate.'}
-            </span>
-          ) : null}
         </div>
         <label className="temporal-create-objective__verification">
           <span>

@@ -44,7 +44,7 @@ export function objectiveFieldIssues(
     !value.trim()
       ? { field, message: null }
       : !Number.isFinite(Number(value))
-        ? { field, message: 'Inserisci un numero.' }
+        ? { field, message: 'Solo numeri.' }
         : null;
 
   if (objective.resultKind === 'quantity') {
@@ -61,7 +61,7 @@ export function objectiveFieldIssues(
     if (maximumIssue) issues.push(maximumIssue);
     if (!minimumIssue && !maximumIssue &&
       Number(objective.targetMax) <= Number(objective.targetMin))
-      issues.push({ field: 'targetMax', message: 'Max deve superare Min.' });
+      issues.push({ field: 'targetMax', message: 'Max > Min.' });
   }
   return issues;
 }

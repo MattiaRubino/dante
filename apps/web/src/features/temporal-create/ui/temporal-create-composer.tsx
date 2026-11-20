@@ -624,6 +624,7 @@ export function TemporalCreateComposer({
             ref={scrollBodyRef}
             className="temporal-create-composer__body"
             inert={discardPending || undefined}
+            noValidate
             onSubmit={submitForm}
           >
             {failureMessage &&

@@ -561,7 +561,7 @@ describe('U2 Quick Create submit mapping', () => {
         targetMin: '70', targetMax: '70', unitCode: 'bpm',
       })]) },
     );
-    expect(() => buildTemporalCreateObjectiveTemplates(draft)).toThrow('Max deve superare Min.');
+    expect(() => buildTemporalCreateObjectiveTemplates(draft)).toThrow('Max > Min.');
     expect(draft.objectives[0]?.targetMin).toBe('70');
     expect(draft.objectives[0]?.targetMax).toBe('70');
   });

@@ -1,5 +1,16 @@
 # Timeline / Temporal-Operational — Live Execution Ledger
 
+## 2026-11-20 — Compact Objective error guidance
+
+Advanced Create and all Activity/Event Objective Edit rows now render the same
+short invalid-value message beside the field caption, never beneath its input.
+The numeric inputs retain their spinner controls. Their form submissions bypass
+the browser's native validation bubble and use the existing Dante validation;
+malformed numeric input receives the compact local message after submission.
+The qualitative-result explanatory sentence is removed. Unit remains optional
+for dimensionless counts. Owner-local typecheck, focused tests and visual review
+of this follow-up are **NOT_RUN**.
+
 ## 2026-11-20 — Objective field validation parity
 
 Approved for Advanced Create and Activity/Event single and series Edit: on a

@@ -105,7 +105,9 @@ describe('shared Objective row presentation', () => {
       expect(min.getAttribute('aria-invalid')).toBeNull();
       expect(max.getAttribute('aria-invalid')).toBe('true');
       expect((max as HTMLInputElement).value).toBe('2.5');
-      expect(screen.getByRole('alert').textContent).toBe('Max deve superare Min.');
+      expect(screen.getByRole('alert').textContent).toBe('Max > Min.');
+      expect(max.closest('label')?.querySelector('.temporal-create-objective__field-heading [role="alert"]')).toBe(screen.getByRole('alert'));
+      expect(max.closest('label')?.lastElementChild).toBe(max);
       expect(view.container.querySelectorAll('[data-field-invalid="true"]')).toHaveLength(1);
     },
   );
@@ -131,7 +133,7 @@ describe('shared Objective row presentation', () => {
 
   it('explains an invalid numeric target at that field only', () => {
     expect(objectiveFieldIssues({ ...objective, targetValue: 'parole' })).toEqual([
-      { field: 'targetValue', message: 'Inserisci un numero.' },
+      { field: 'targetValue', message: 'Solo numeri.' },
     ]);
     expect(objectiveFieldIssues({
       ...objective,
@@ -139,8 +141,29 @@ describe('shared Objective row presentation', () => {
       comparatorCode: 'between',
       targetMin: '5',
       targetMax: '4',
-    })).toEqual([{ field: 'targetMax', message: 'Max deve superare Min.' }]);
+    })).toEqual([{ field: 'targetMax', message: 'Max > Min.' }]);
   });
+
+  it.each(['create', 'edit'] as const)(
+    'keeps Unit optional and omits the qualitative hint in %s',
+    (variant) => {
+      expect(objectiveFieldIssues({ ...objective, unitCode: '' })).toEqual([]);
+      render(
+        <TemporalObjectiveEditorRow
+          objective={{ ...objective, resultKind: 'qualitative', unitCode: '' }}
+          index={0}
+          total={1}
+          variant={variant}
+          italian
+          update={vi.fn()}
+          changeKind={vi.fn()}
+          move={vi.fn()}
+          remove={vi.fn()}
+        />,
+      );
+      expect(screen.queryByText(/Alla verifica:/)).toBeNull();
+    },
+  );
   it('uses one identical structure for Advanced Create and Activity Edit', () => {
     const create = show('create');
     const structure = (root: HTMLElement) =>

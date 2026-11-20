@@ -1336,6 +1336,7 @@ export function ActivityEditPanel({
   return (
     <form
       className="timeline-activity-editor"
+      noValidate
       onSubmit={(event) => {
         event.preventDefault();
         if (
