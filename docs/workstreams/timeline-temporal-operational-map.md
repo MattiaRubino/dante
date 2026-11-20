@@ -11,8 +11,12 @@ nonstandard value, the disabled rule, and the same Create/Activity Edit/Event
 Edit/series Edit change callbacks. Pointer selection, keyboard navigation,
 Escape and outside dismissal are covered at the component boundary; the
 existing Create browser visual check now inspects the actual painted option
-rows and selection. Owner-local typecheck, focused Vitest, browser and Firefox
-visual acceptance remain NOT_RUN on this candidate.
+rows and selection. The first owner run passed typecheck and 94 focused Vitest
+cases but caught a Create browser failure: selecting an option in the new
+portal triggered the global outside-click bridge. The reminder list is now
+marked as a Create-owned portal so the existing bridge keeps the composer open.
+Owner-local browser rerun and Firefox visual acceptance remain NOT_RUN on this
+candidate.
 
 ## 2026-11-20 — Life Area catalog survives a versioned removal
 

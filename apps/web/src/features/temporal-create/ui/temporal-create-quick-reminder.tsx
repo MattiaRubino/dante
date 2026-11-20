@@ -195,6 +195,7 @@ export function TemporalReminderControl({
               ref={popupRef}
               id={listId}
               className="temporal-create-quick-reminder__options"
+              data-temporal-create-portal="reminder"
               role="listbox"
               aria-label="Ricorda"
               style={popupPosition}
