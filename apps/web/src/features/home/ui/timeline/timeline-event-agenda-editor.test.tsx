@@ -76,7 +76,10 @@ describe('B03-D canonical Event Agenda editor', () => {
         readOnly
       />,
     );
-    const name = await screen.findByText(longPart);
+    const name = await screen.findByText(
+      (_, element) => element?.getAttribute('title') === longPart,
+    );
+    expect(name.textContent).toBe(longPart);
     expect(name.getAttribute('title')).toBe(longPart);
     const list = name.closest('ol');
     expect(list?.getAttribute('tabindex')).toBe('0');

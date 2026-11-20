@@ -1,6 +1,22 @@
 # Timeline / Temporal-Operational — Live Execution Ledger
 
 
+## 2026-11-20 — Inspector first owner-local gate and focused test repair
+
+The user pulled `0bfead325` to WSL and ran the initial Inspector verification:
+Web TypeScript **PASS** (`tsc --noEmit`), focused Vitest **25 passed / 1 failed**
+(26 total, four suites), Prettier **8 files need formatting**. All seven
+planned-session tests, all seven Objective tests and all seven runtime-detail
+tests passed. The lone RED was the newly introduced long Event Agenda test:
+`findByText(longPart)` normalizes a deliberately trailing whitespace while
+the DOM retained its exact text and `title`; this is an assertion problem,
+not a component data loss. The focused test now locates the exact `title`
+and checks `textContent` to preserve full source text including whitespace.
+The uninitialized i18next notice in runtime-detail testing is an existing
+test-environment warning, not a failing assertion. Do not claim test or
+format gates GREEN until the user reruns after this repair. Prettier must be
+applied with the project formatter, with no bypass or suppressed failures.
+
 ## 2026-11-20 — Inspector Activity/Event presentation contract
 
 The owner approved an **Inspector-only** refresh after screenshots of both
