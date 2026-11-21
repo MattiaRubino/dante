@@ -2972,14 +2972,6 @@ body:has(> .timeline-recurring-edit-scope-dialog__backdrop)
 .timeline-event-modal--inspector .timeline-event-modal__schedule-row {
   margin-bottom: 8px;
 }
-.timeline-event-modal--inspector .timeline-event-modal__life-area {
-  margin-top: 6px;
-}
-.timeline-event-modal--inspector .timeline-event-modal__life-area h4,
-.timeline-event-modal--inspector .timeline-event-modal__description h4,
-.timeline-event-modal--inspector .timeline-event-modal__participation h4 {
-  font-size: 12px;
-}
 .timeline-event-modal--inspector .timeline-event-modal__group {
   min-width: 0;
   max-width: 100%;
@@ -3032,7 +3024,7 @@ body:has(> .timeline-recurring-edit-scope-dialog__backdrop)
 
 /* Distinct major section dividers versus subtle dividers between rows. */
 .timeline-event-modal--inspector
-  :is(.timeline-activity-planned-sessions, .timeline-objective-controls,
+  :is(.timeline-event-modal__life-area, .timeline-activity-planned-sessions, .timeline-objective-controls,
       .timeline-event-modal__description, .timeline-event-modal__participation,
       .timeline-event-modal__reality) {
   margin-top: 18px;
@@ -3229,8 +3221,19 @@ body:has(> .timeline-recurring-edit-scope-dialog__backdrop)
   border-radius: 0;
   background: transparent;
 }
-.timeline-event-modal--inspector .timeline-event-agenda__heading {
-  font-size: 13px;
+.timeline-event-modal--inspector
+  :is(.timeline-event-modal__life-area h4,
+      .timeline-activity-planned-sessions__label,
+      .timeline-objective-controls > strong,
+      .timeline-event-agenda__heading,
+      .timeline-event-modal__description h4,
+      .timeline-event-modal__participation h4) {
+  color: var(--dante-semantic-color-home-text-muted, #aebbc7);
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 1.4;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
 }
 .timeline-event-modal--inspector .timeline-event-agenda.is-read-only .timeline-event-agenda__list {
   max-height: min(310px, 44dvh);

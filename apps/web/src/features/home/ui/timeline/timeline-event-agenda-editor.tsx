@@ -1,4 +1,10 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import {
+  useCallback,
+  useEffect,
+  useMemo,
+  useState,
+  type ReactNode,
+} from 'react';
 import { useTranslation } from 'react-i18next';
 
 import type {
@@ -30,6 +36,7 @@ type TimelineEventAgendaEditorProps = Readonly<{
   hideWhenEmpty?: boolean;
   showDescription?: boolean;
   readOnly?: boolean;
+  afterAgenda?: ReactNode;
 }>;
 
 export function TimelineEventAgendaEditor(
@@ -53,6 +60,7 @@ function TimelineEventAgendaEditorInstance({
   hideWhenEmpty = false,
   showDescription = false,
   readOnly = false,
+  afterAgenda,
 }: TimelineEventAgendaEditorProps) {
   const { t } = useTranslation('common');
   const source = useMemo(
@@ -149,7 +157,7 @@ function TimelineEventAgendaEditorInstance({
   );
 
   if (state.status === 'loading') {
-    if (hideWhenEmpty) return null;
+    if (hideWhenEmpty) return <>{afterAgenda}</>;
     return (
       <section className="timeline-event-agenda" aria-busy="true">
         <strong>
@@ -162,17 +170,20 @@ function TimelineEventAgendaEditorInstance({
 
   if (state.status === 'error') {
     return (
-      <section className="timeline-event-agenda">
-        <strong>
-          {t(($) => $.common.home.timeline.create.eventDetails.agenda)}
-        </strong>
-        <div role="alert">
-          {t(($) => $.common.temporalRuntime.timeline.errorDescription)}
-        </div>
-        <button type="button" onClick={() => void load()}>
-          {t(($) => $.common.temporalRuntime.timeline.retry)}
-        </button>
-      </section>
+      <>
+        <section className="timeline-event-agenda">
+          <strong>
+            {t(($) => $.common.home.timeline.create.eventDetails.agenda)}
+          </strong>
+          <div role="alert">
+            {t(($) => $.common.temporalRuntime.timeline.errorDescription)}
+          </div>
+          <button type="button" onClick={() => void load()}>
+            {t(($) => $.common.temporalRuntime.timeline.retry)}
+          </button>
+        </section>
+        {afterAgenda}
+      </>
     );
   }
 
@@ -188,7 +199,14 @@ function TimelineEventAgendaEditorInstance({
         <p>{description}</p>
       </section>
     ) : null;
-  if (hideWhenEmpty && parts.length === 0) return descriptionSection;
+  if (hideWhenEmpty && parts.length === 0) {
+    return (
+      <>
+        {afterAgenda}
+        {descriptionSection}
+      </>
+    );
+  }
   const cancelEditing = () => {
     setEditingIndex(null);
     setEditingValue('');
@@ -459,6 +477,7 @@ function TimelineEventAgendaEditorInstance({
           </div>
         ) : null}
       </section>
+      {afterAgenda}
       {descriptionSection}
     </>
   );

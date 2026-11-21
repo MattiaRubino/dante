@@ -110,6 +110,44 @@ describe('B03-D canonical Event Agenda editor', () => {
     expect(loadEvent).toHaveBeenCalledOnce();
   });
 
+  it.each([{ parts: ['Apertura'] }, { parts: [] as string[] }])(
+    'places the Inspector Area between an agenda with $parts and its description',
+    async ({ parts }) => {
+      const loadEvent = vi.fn<TemporalEventAgendaDataSource['loadEvent']>(() =>
+        Promise.resolve({ ...record(0, parts), description: 'Materiale.' }),
+      );
+      render(
+        <TimelineEventAgendaEditor
+          eventRef={EVENT_REF}
+          dataSource={{ loadEvent, replaceAgenda: vi.fn() }}
+          readOnly
+          hideWhenEmpty
+          showDescription
+          afterAgenda={<section aria-label="Area">Lavoro</section>}
+        />,
+      );
+      const area = screen.getByRole('region', { name: 'Area' });
+      const description = await screen.findByRole('region', {
+        name: 'Descrizione',
+      });
+      const agenda = screen.queryByText('Apertura')?.closest('section');
+      if (parts.length) {
+        expect(agenda).toBeTruthy();
+        expect(
+          agenda!.compareDocumentPosition(area) &
+            Node.DOCUMENT_POSITION_FOLLOWING,
+        ).toBeTruthy();
+      } else {
+        expect(agenda).toBeNull();
+      }
+      expect(
+        area.compareDocumentPosition(description) &
+          Node.DOCUMENT_POSITION_FOLLOWING,
+      ).toBeTruthy();
+      expect(loadEvent).toHaveBeenCalledOnce();
+    },
+  );
+
   it('reads backend truth and persists add, explicit edit, reorder and remove through CAS', async () => {
     let serverRevision = 0;
     let serverParts: readonly string[] = ['Apertura', 'Decisione'];

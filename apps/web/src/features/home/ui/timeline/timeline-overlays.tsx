@@ -1200,7 +1200,20 @@ export function EventDetailDialog({
                     {detailScheduleLabel(detail, locale, timeZone)}
                   </p>
                 </div>
-                {lifeAreaSection}
+                {detail.ownerKind === 'event' && detail.eventRef ? (
+                  <TimelineEventAgendaEditor
+                    eventRef={detail.eventRef}
+                    {...(detail.occurrenceRef
+                      ? { occurrenceRef: detail.occurrenceRef }
+                      : {})}
+                    readOnly
+                    hideWhenEmpty
+                    showDescription
+                    afterAgenda={lifeAreaSection}
+                  />
+                ) : (
+                  lifeAreaSection
+                )}
               </>
             )}
             {sessionSubject?.kind === 'occurrence' ? (
@@ -1271,17 +1284,6 @@ export function EventDetailDialog({
               <TimelineEventParticipation
                 eventRef={detail.eventRef}
                 occurrenceRef={detail.occurrenceRef ?? null}
-              />
-            ) : null}
-            {detail.ownerKind === 'event' && detail.eventRef ? (
-              <TimelineEventAgendaEditor
-                eventRef={detail.eventRef}
-                {...(detail.occurrenceRef
-                  ? { occurrenceRef: detail.occurrenceRef }
-                  : {})}
-                readOnly
-                hideWhenEmpty
-                showDescription
               />
             ) : null}
             {responsibilitySubject === null ? null : (

@@ -83,6 +83,16 @@ vi.mock('../../../temporal/activity-planned-sessions-card-detail', () => ({
   },
 }));
 
+vi.mock('./timeline-event-agenda-editor', () => ({
+  TimelineEventAgendaEditor: ({ afterAgenda }: { afterAgenda?: ReactNode }) => (
+    <>
+      <section className="timeline-event-agenda" aria-label="Scaletta" />
+      {afterAgenda}
+      <section aria-label="Descrizione" />
+    </>
+  ),
+}));
+
 afterEach(() => {
   cleanup();
   main.multipleIntervals = false;
@@ -173,6 +183,7 @@ describe('Activity/Event Inspector main Session header', () => {
           endMinute: 930,
           groupLabel: 'Lavoro',
           ownerKind: 'event',
+          eventRef: 'event-1',
         }}
         opener={null}
         onClose={() => undefined}
@@ -181,5 +192,22 @@ describe('Activity/Event Inspector main Session header', () => {
     expect(screen.getByRole('heading', { name: 'Riunione' })).toBeTruthy();
     expect(screen.queryByTestId('main-session')).toBeNull();
     expect(screen.getByRole('region', { name: 'Area' })).toBeTruthy();
+    const dialog = screen.getByRole('dialog');
+    const schedule = dialog.querySelector(
+      '.timeline-event-modal__schedule-row',
+    )!;
+    const agenda = screen.getByRole('region', { name: 'Scaletta' });
+    const area = screen.getByRole('region', { name: 'Area' });
+    const description = screen.getByRole('region', { name: 'Descrizione' });
+    expect(
+      schedule.compareDocumentPosition(agenda) & Node.DOCUMENT_POSITION_FOLLOWING,
+    ).toBeTruthy();
+    expect(
+      agenda.compareDocumentPosition(area) & Node.DOCUMENT_POSITION_FOLLOWING,
+    ).toBeTruthy();
+    expect(
+      area.compareDocumentPosition(description) &
+        Node.DOCUMENT_POSITION_FOLLOWING,
+    ).toBeTruthy();
   });
 });

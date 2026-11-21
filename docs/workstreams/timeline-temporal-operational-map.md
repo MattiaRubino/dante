@@ -1376,3 +1376,14 @@ geometria o alla semantica Life Area, runtime ed errori. I browser fixture
 esistenti hanno le aspettative cromatiche aggiornate. Typecheck e Playwright
 su questa revisione sono **NOT_RUN**, riservati alla verifica locale del
 proprietario.
+
+## 2026-11-21 — Gerarchia delle sezioni Inspector
+
+Su richiesta visiva, i titoli delle sezioni Area, Sessioni, Obiettivi,
+Scaletta, Descrizione e Partecipazione condividono la stessa tipografia
+nell'Inspector Activity/Event. L'Area assegnata ha un separatore sopra di sé.
+L'Event presenta titolo → orario → Scaletta (quando presente) → Area (quando
+assegnata) → Descrizione, conservando un'unica lettura della scaletta e i
+contenuti condizionali. L'Activity conserva orario → Area → Sessioni/Obiettivi.
+Regressioni nei test owner di header e scaletta, inclusa la scaletta vuota;
+typecheck, Vitest e browser **NOT_RUN**, in attesa della verifica locale.
