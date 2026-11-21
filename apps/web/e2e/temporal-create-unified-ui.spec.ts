@@ -971,7 +971,7 @@ test('Quick Create and Inspector share the space-warm palette without recoloring
     modal.innerHTML = `<div class="timeline-event-modal__header"></div>
       <div class="timeline-objective-controls__item">
         <input aria-label="Valore" />
-        <select aria-label="Risultato"><option>Sì</option></select>
+        <select aria-label="Risultato"><option>Sì</option><option>No</option></select>
       </div>`;
     document.body.append(modal);
     try {
@@ -981,7 +981,11 @@ test('Quick Create and Inspector share the space-warm palette without recoloring
         header: getComputedStyle(modal.querySelector('.timeline-event-modal__header')!).backgroundColor,
         section: getComputedStyle(modal.querySelector('.timeline-objective-controls__item')!).backgroundColor,
         input: getComputedStyle(modal.querySelector('input')!).backgroundColor,
-        menu: getComputedStyle(modal.querySelector('select option')!).backgroundColor,
+        selectedMenu: getComputedStyle(modal.querySelector('select option:checked')!)
+          .backgroundColor,
+        unselectedMenu: getComputedStyle(
+          modal.querySelector('select option:not(:checked)')!,
+        ).backgroundColor,
       };
     } finally {
       modal.remove();
@@ -993,7 +997,8 @@ test('Quick Create and Inspector share the space-warm palette without recoloring
     header: 'rgb(18, 26, 34)',
     section: 'rgb(27, 41, 48)',
     input: 'rgb(38, 54, 59)',
-    menu: 'rgb(27, 42, 46)',
+    selectedMenu: 'rgb(60, 76, 79)',
+    unselectedMenu: 'rgb(27, 42, 46)',
   });
 });
 
