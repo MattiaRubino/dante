@@ -32,6 +32,8 @@ import { ActivityEditPanel } from './activity-edit-panel';
 import { RecurringActivitySeriesEditor } from './recurring-series-editor';
 import { requestTemporalCreateDuplicate } from '../../../temporal-create/ui/temporal-create-duplicate-request';
 import { TemporalPanelCloseButton } from '../../../temporal-create/ui/temporal-panel-close-button';
+import { TemporalKindMarker } from '../../../temporal-create/ui/temporal-kind-marker';
+import { timelineCardIdentity } from './model/timeline-card-identity';
 import { ActivityInspectorActions } from './activity-inspector-actions';
 import { EventInspectorActions } from './event-inspector-actions';
 import { TimelineEventParticipation } from './timeline-event-participation';
@@ -585,6 +587,7 @@ export type TimelineDetail = Readonly<{
   dateKey?: string;
   accentColorCode?: string;
   ownerKind?: 'activity' | 'event';
+  presentationKind?: 'activity' | 'event';
   eventRef?: string;
   occurrenceRef?: string;
   eventPlacement?: TimelineCanonicalSchedulePlacement;
@@ -1104,11 +1107,18 @@ export function EventDetailDialog({
             className="timeline-event-modal__title"
             title={detail.title}
           >
-            {currentEditingProfile
-              ? 'Modifica attività'
-              : eventEditorMode
-                ? 'Modifica evento'
-                : detail.title}
+            {!currentEditingProfile && !eventEditorMode ? (
+              <TemporalKindMarker
+                kind={detail.presentationKind ?? detail.ownerKind ?? 'event'}
+              />
+            ) : null}
+            <span className="timeline-event-modal__title-text">
+              {currentEditingProfile
+                ? 'Modifica attività'
+                : eventEditorMode
+                  ? 'Modifica evento'
+                  : detail.title}
+            </span>
           </h3>
           {!currentEditingProfile &&
           !eventEditorMode &&
@@ -1460,6 +1470,9 @@ export function detailFromEvent(
       ? { accentColorCode: appearance.accentColorCode }
       : {}),
     ...(ownerKind === undefined ? {} : { ownerKind }),
+    ...(event.canonicalBasis
+      ? { presentationKind: timelineCardIdentity(event.canonicalBasis).kind }
+      : {}),
     ...(eventRef === undefined ? {} : { eventRef }),
     ...(ownerKind === 'event' &&
     (event.canonicalBasis?.kind === 'scheduled-event' ||

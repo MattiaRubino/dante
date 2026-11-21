@@ -197,7 +197,12 @@
   min-width: 0;
 }
 
+.timeline-all-day-item__identity .temporal-kind-marker {
+  font-size: 10px;
+}
+
 .timeline-all-day-item__title {
+  min-width: 0;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;

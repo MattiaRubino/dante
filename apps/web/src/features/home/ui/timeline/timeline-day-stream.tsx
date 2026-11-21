@@ -16,6 +16,7 @@ import { useTranslation } from 'react-i18next';
 import { formatDateWithCapitalizedMonth } from '../../../../platform/format-localized-date';
 
 import { ActivitySessionCardControls } from '../../../temporal/activity-session-card-controls';
+import { TemporalKindMarker } from '../../../temporal-create/ui/temporal-kind-marker';
 import { ActivityPlannedSessionsCardDetail } from '../../../temporal/activity-planned-sessions-card-detail';
 import { timelineSecondaryRulerTick } from '../../../temporal/timeline-view-zone';
 import { computeTimelineGaps } from './model/timeline-layout';
@@ -432,7 +433,8 @@ function TimelineEventCard({
                 onOpenEventDetail(event, clickEvent.currentTarget);
               }}
             >
-              {titlePreview}
+              <TemporalKindMarker kind={identity.kind} />
+              <span className="timeline-event-card__title-text">{titlePreview}</span>
             </button>
           </div>
           {sessionActivityRef === null ? null : (

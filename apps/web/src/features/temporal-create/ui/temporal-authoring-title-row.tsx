@@ -1,4 +1,5 @@
 import type { ReactNode } from 'react';
+import { TemporalKindMarker } from './temporal-kind-marker';
 
 import './temporal-authoring-title-row.css';
 
@@ -38,7 +39,7 @@ export function TemporalAuthoringTitleRow({
       data-title-shake={invalid ? (shakeAttempt % 2 ? 'odd' : 'even') : undefined}
     >
       <span className="temporal-authoring-title-row__marker" aria-hidden="true">
-        {kind === 'activity' ? '◇' : '○'}
+        <TemporalKindMarker kind={kind} />
       </span>
       {children}
     </div>

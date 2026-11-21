@@ -1,0 +1,8 @@
+.temporal-kind-marker {
+  display: block;
+  flex: none;
+  width: 1em;
+  height: 1em;
+  color: var(--dante-semantic-color-home-chrome-active-text, #f0a06f);
+  pointer-events: none;
+}

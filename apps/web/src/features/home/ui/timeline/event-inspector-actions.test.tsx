@@ -296,7 +296,7 @@ describe('Event Inspector actions', () => {
     expect(unifiedTitle?.getAttribute('data-authoring-title-kind')).toBe(
       'event',
     );
-    expect(unifiedTitle?.firstElementChild?.textContent).toBe('○');
+    expect(unifiedTitle?.firstElementChild?.querySelector('[data-temporal-kind-marker="event"] circle')).toBeTruthy();
     expect(unifiedTitle?.children).toHaveLength(3);
     expect(
       unifiedTitle?.querySelector('.temporal-create-title-input'),
@@ -881,7 +881,7 @@ describe('Event Inspector actions', () => {
     const seriesTitle = screen.getByRole('textbox', { name: 'Titolo' });
     const seriesTitleRow = seriesTitle.closest('.temporal-event-title-row');
     expect(seriesTitleRow).not.toBeNull();
-    expect(seriesTitleRow?.firstElementChild?.textContent).toBe('○');
+    expect(seriesTitleRow?.firstElementChild?.querySelector('[data-temporal-kind-marker="event"] circle')).toBeTruthy();
     expect(seriesTitleRow?.children).toHaveLength(3);
     const seriesLock = screen.getByRole('button', {
       name: 'Blocca spostamenti',
@@ -3125,7 +3125,7 @@ describe('Event Inspector actions', () => {
     expect(routineTitleRow?.getAttribute('data-authoring-title-kind')).toBe(
       'activity',
     );
-    expect(routineTitleRow?.firstElementChild?.textContent).toBe('◇');
+    expect(routineTitleRow?.firstElementChild?.querySelector('[data-temporal-kind-marker="activity"] path')).toBeTruthy();
     expect(routineTitleRow?.children).toHaveLength(3);
     const obsoleteReality = form.querySelector(
       '.temporal-create-reality-objectives__block.is-reality',

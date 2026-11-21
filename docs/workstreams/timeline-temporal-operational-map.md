@@ -1454,3 +1454,17 @@ typecheck e Vitest mirati eseguiti nell'ambiente scratch con dipendenze
 collegate al workspace locale. La prova browser e il gate WSL dell'utente
 restano **NOT_RUN** su questo candidate. Card, Inspector e simboli di tipo
 restano oggetto della discussione successiva con l'utente.
+
+## 2026-11-21 — Marcatore condiviso Attività/Evento
+
+Scelta A approvata: rombo vuoto per Attività e cerchio vuoto per Evento, con
+identiche dimensioni, tratto e colore caldo. Un componente SVG condiviso è
+centrato nella cella a sinistra del titolo in Quick Create, Advanced Create,
+Edit ordinario e di serie. Nelle card orarie e Tutto il giorno precede il
+nome senza interrompere il troncamento; nell'Inspector precede il titolo. La
+classificazione delle Occurrence usa il tipo della sorgente canonica, senza
+modificare i permessi o le azioni dell'Inspector. La geometria delle card
+Tutto il giorno e il posizionamento dell'Inspector restano da discutere.
+Nel workspace scratch: Web typecheck e 94 test Vitest mirati PASS (4 file),
+browser e gate WSL **NOT_RUN** sul candidate finale. Il browser fixture copre
+anche il centraggio del simbolo in Quick/Advanced e il titolo lungo della card.

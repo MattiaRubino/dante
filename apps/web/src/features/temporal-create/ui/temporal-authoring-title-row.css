@@ -1,6 +1,6 @@
-/* A single title-row contract for Activity and Event: Create, Edit and
-   Recurring Series Edit share the same DOM grid, marker and action rail.
-   Only Quick Create retains its intentionally compact standalone input. */
+/* One title row in Quick/Advanced Create, Edit and Series Edit. */
+.temporal-create-composer
+  .temporal-create-title-row.temporal-authoring-title-row.is-quick,
 .temporal-create-backdrop.is-advanced
   .temporal-create-title-row.temporal-authoring-title-row.has-tools,
 .timeline-event-modal--edit
@@ -52,11 +52,7 @@
   pointer-events: none;
 }
 
-.temporal-authoring-title-row--event .temporal-authoring-title-row__marker {
-  color: var(--dante-semantic-color-home-chrome-active, #ea5c12);
-}
-
-.temporal-authoring-title-row.has-tools
+.temporal-authoring-title-row
   > :is(.temporal-create-title-row__name, .timeline-activity-editor__title) {
   box-sizing: border-box;
   display: flex;
@@ -74,6 +70,9 @@
   box-shadow: none;
 }
 
+.temporal-create-composer
+  .temporal-authoring-title-row.is-quick
+  input.temporal-create-title-input,
 .temporal-create-backdrop.is-advanced
   .temporal-authoring-title-row.has-tools
   input.temporal-create-title-input,
@@ -180,8 +179,18 @@
   box-shadow: 0 0 0 1px color-mix(in srgb, #ea5c12 13%, transparent);
 }
 
-.temporal-authoring-title-row.is-quick .temporal-authoring-title-row__marker {
-  display: none;
+.temporal-create-composer .temporal-authoring-title-row.is-quick {
+  grid-template-columns: 36px minmax(0, 1fr);
+}
+
+.temporal-create-composer
+  .temporal-authoring-title-row.is-quick:focus-within {
+  border-color: var(--dante-semantic-color-home-chrome-active, #ea5c12);
+}
+
+.temporal-create-composer
+  .temporal-authoring-title-row.is-quick:has(input:placeholder-shown) {
+  border-color: var(--dante-semantic-color-home-chrome-active, #ea5c12);
 }
 
 .temporal-authoring-title-row.has-tools

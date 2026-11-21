@@ -689,7 +689,6 @@ export function TemporalCreateComposer({
                     autoComplete="off"
                     spellCheck="true"
                   />
-                  {!advanced ? renderError('title') : null}
                 </div>
                 {advanced ? (
                   <div className="temporal-create-title-row__tools">
@@ -701,7 +700,7 @@ export function TemporalCreateComposer({
                   </div>
                 ) : null}
               </TemporalAuthoringTitleRow>
-              {advanced ? renderError('title') : null}
+              {renderError('title')}
               {advanced && fields.kind === 'activity' ? (
                 <TemporalCreateAdvancedActivityStructure
                   fields={fields}

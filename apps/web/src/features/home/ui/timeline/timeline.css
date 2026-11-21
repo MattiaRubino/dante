@@ -1075,6 +1075,24 @@
 }
 
 .timeline-event-card--activity .timeline-event-card__title {
+  display: flex;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.timeline-event-card__heading .timeline-event-card__title {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.timeline-event-card__title .temporal-kind-marker {
+  font-size: 11px;
+}
+
+.timeline-event-card__title-text {
   display: block;
   min-width: 0;
   overflow: hidden;
@@ -3299,6 +3317,20 @@ body:has(> .timeline-recurring-edit-scope-dialog__backdrop)
   grid-template-columns: minmax(0, 1fr) max-content;
   align-items: start;
   gap: 5px 12px;
+}
+.timeline-event-modal--inspector .timeline-event-modal__title-row .timeline-event-modal__title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.timeline-event-modal--inspector .timeline-event-modal__title .temporal-kind-marker {
+  font-size: 17px;
+}
+.timeline-event-modal__title-text {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 .timeline-event-modal--inspector
   .timeline-event-modal__title-row

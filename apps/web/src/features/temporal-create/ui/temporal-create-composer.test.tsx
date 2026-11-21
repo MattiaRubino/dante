@@ -82,6 +82,37 @@ function renderComposer(options?: { dirty?: boolean }) {
 }
 
 describe('TemporalCreateComposer', () => {
+  it('uses the same centered kind marker and title field in Quick Create', () => {
+    const view = renderComposer();
+    const title = screen.getByRole('textbox', { name: 'Titolo' });
+    const row = title.closest('.temporal-authoring-title-row.is-quick');
+    expect(row?.querySelector('[data-temporal-kind-marker="activity"] path')).toBeTruthy();
+    expect(row?.firstElementChild?.classList.contains('temporal-authoring-title-row__marker')).toBe(true);
+    expect(row?.children[1]?.contains(title)).toBe(true);
+    view.unmount();
+
+    const fields = createTemporalCreateFields({ kind: 'event', date: '2026-11-20' });
+    render(
+      <TemporalCreateComposer
+        session={createTemporalCreateSession(fields)}
+        contexts={context}
+        issues={[]}
+        lifecycle="idle"
+        failureMessage=""
+        postCreateRetry={false}
+        u2Draft={createTemporalCreateU2AuthoringDraft(fields)}
+        onPatch={vi.fn()}
+        onSurfaceChange={vi.fn()}
+        onRequestClose={vi.fn()}
+        onContinueEditing={vi.fn()}
+        onDiscard={vi.fn()}
+        onMoveToUnplaced={vi.fn()}
+        onSubmit={vi.fn()}
+      />,
+    );
+    expect(document.querySelector('.is-quick [data-temporal-kind-marker="event"] circle')).toBeTruthy();
+  });
+
   it.each(['activity', 'event'] as const)(
     'marks only the missing %s Objective name without a repeated section message',
     (kind) => {
@@ -158,7 +189,7 @@ describe('TemporalCreateComposer', () => {
     expect(titleRow?.getAttribute('data-authoring-title-kind')).toBe(
       'activity',
     );
-    expect(titleRow?.firstElementChild?.textContent).toBe('◇');
+    expect(titleRow?.firstElementChild?.querySelector('[data-temporal-kind-marker="activity"] path')).toBeTruthy();
     expect(titleRow?.children).toHaveLength(3);
     expect(
       titleRow?.children[1]?.classList.contains(
@@ -521,7 +552,7 @@ describe('TemporalCreateComposer', () => {
               : 'unexpected',
       ),
     ).toEqual(['marker', 'name', 'actions']);
-    expect(eventTitleRow?.firstElementChild?.textContent).toBe('○');
+    expect(eventTitleRow?.firstElementChild?.querySelector('[data-temporal-kind-marker="event"] circle')).toBeTruthy();
     const eventLock = screen.getByRole('button', {
       name: 'Blocca spostamenti',
     });

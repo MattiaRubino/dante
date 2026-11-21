@@ -2,6 +2,62 @@ import { expect, test } from '@playwright/test';
 
 test.use({ locale: 'it-IT' });
 
+test('Quick and Advanced titles center the same Activity and Event symbols', async ({
+  page,
+}) => {
+  await page.goto('/home');
+  await page.getByRole('button', { name: 'Aggiungi alla timeline' }).click();
+  const dialog = page.locator('[data-temporal-create="composer"]');
+
+  for (const advanced of [false, true]) {
+    if (advanced) {
+      await dialog.getByRole('button', { name: /Opzioni avanzate/ }).click();
+    }
+    for (const [kind, label, shape] of [
+      ['activity', 'Attività', 'path'],
+      ['event', 'Evento', 'circle'],
+    ] as const) {
+      await dialog.getByRole('radio', { name: label, exact: true }).click();
+      const row = dialog.locator(`[data-authoring-title-kind="${kind}"]`);
+      await expect(
+        row.locator(`[data-temporal-kind-marker="${kind}"] ${shape}`),
+      ).toHaveCount(1);
+      const geometry = await row.evaluate((element) => {
+        const cell = element.querySelector(
+          '.temporal-authoring-title-row__marker',
+        )!;
+        const icon = cell.querySelector('svg')!;
+        const title = element.querySelector('input')!;
+        const cellBox = cell.getBoundingClientRect();
+        const iconBox = icon.getBoundingClientRect();
+        const titleBox = title.getBoundingClientRect();
+        return {
+          visible: iconBox.width > 0 && iconBox.height > 0,
+          centered:
+            Math.abs(
+              iconBox.left +
+                iconBox.width / 2 -
+                (cellBox.left + cellBox.width / 2),
+            ) < 1 &&
+            Math.abs(
+              iconBox.top +
+                iconBox.height / 2 -
+                (cellBox.top + cellBox.height / 2),
+            ) < 1,
+          beforeTitle: iconBox.right < titleBox.left,
+          sameHeight: Math.abs(cellBox.height - titleBox.height) < 2,
+        };
+      });
+      expect(geometry).toEqual({
+        visible: true,
+        centered: true,
+        beforeTitle: true,
+        sameHeight: true,
+      });
+    }
+  }
+});
+
 test('Quick and Advanced all-day dates use the same bordered control', async ({ page }) => {
   await page.goto('/home');
   await page.getByRole('button', { name: 'Aggiungi alla timeline' }).click();
@@ -99,7 +155,13 @@ test('Advanced Activity and Event share one actual title rail without displaced 
       const inputBox = input.getBoundingClientRect();
       return {
         children: element.children.length,
-        marker: marker.textContent?.trim(),
+        marker: marker
+          .querySelector('[data-temporal-kind-marker]')
+          ?.getAttribute('data-temporal-kind-marker'),
+        centered: (() => {
+          const shape = marker.querySelector('svg')?.getBoundingClientRect();
+          return !!shape && Math.abs(shape.left + shape.width / 2 - (icon.left + icon.width / 2)) < 1;
+        })(),
         height: outer.height,
         radius: getComputedStyle(element).borderRadius,
         fontSize: getComputedStyle(input).fontSize,
@@ -159,14 +221,15 @@ test('Advanced Activity and Event share one actual title rail without displaced 
     expect(result.titleNotOverlaid).toBe(true);
     expect(result.actionsInside).toBe(true);
     expect(result.commonBaseline).toBe(true);
+    expect(result.centered).toBe(true);
     expect(result.titleWidth).toBeGreaterThan(200);
     expect(result.actionsWidth).toBeGreaterThan(40);
     expect(result.height).toBeGreaterThanOrEqual(50);
     expect(result.height).toBeLessThan(60);
   }
 
-  expect(activity.marker).toBe('◇');
-  expect(event.marker).toBe('○');
+  expect(activity.marker).toBe('activity');
+  expect(event.marker).toBe('event');
   expect(activity.height).toBeCloseTo(event.height, 0);
   expect(activity.markerWidth).toBe(event.markerWidth);
   expect(activity.radius).toBe(event.radius);

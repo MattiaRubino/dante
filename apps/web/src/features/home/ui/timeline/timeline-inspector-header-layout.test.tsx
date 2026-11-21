@@ -138,6 +138,7 @@ describe('Activity/Event Inspector main Session header', () => {
       main.multipleIntervals = multipleIntervals;
       renderActivityInspector();
       const dialog = screen.getByRole('dialog');
+      expect(dialog.querySelector('.timeline-event-modal__title [data-temporal-kind-marker="activity"] path')).toBeTruthy();
       const titleRow = dialog.querySelector(
         '.timeline-event-modal__title-row',
       );
@@ -201,6 +202,7 @@ describe('Activity/Event Inspector main Session header', () => {
         onClose={() => undefined}
       />,
     );
+    expect(screen.getByRole('dialog').querySelector('.timeline-event-modal__title [data-temporal-kind-marker="event"] circle')).toBeTruthy();
     expect(screen.getByRole('heading', { name: 'Riunione' })).toBeTruthy();
     expect(screen.queryByTestId('main-session')).toBeNull();
     expect(screen.getByRole('region', { name: 'Area' })).toBeTruthy();

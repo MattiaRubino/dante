@@ -7,6 +7,7 @@ import { formatDateWithCapitalizedMonth } from '../../../../platform/format-loca
 import { createRemoteTemporalOccurrenceScheduleDataSource } from '../../../temporal/remote-occurrence-schedule-data-source';
 import { ActivitySessionCardControls } from '../../../temporal/activity-session-card-controls';
 import { SessionSubjectControls } from '../../../temporal/session-subject-controls';
+import { TemporalKindMarker } from '../../../temporal-create/ui/temporal-kind-marker';
 import { invalidateTemporalTimelineRead } from '../../../temporal/timeline-invalidation';
 import { useTimelineDateLaneDetails } from './timeline-date-lane-details';
 import {
@@ -352,6 +353,7 @@ export function TimelineAllDayLane({
             {startsHere ? '' : '‹'}
           </span>
           <strong className="timeline-all-day-item__identity">
+            <TemporalKindMarker kind={identity.kind} />
             <span className="timeline-all-day-item__title">{item.title}</span>
           </strong>
           <span className="timeline-all-day-item__meta">

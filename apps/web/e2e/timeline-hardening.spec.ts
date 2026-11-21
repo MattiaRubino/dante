@@ -415,19 +415,22 @@ test('a long Activity title stays on one ellipsized line', async ({ page }) => {
   const title = card.locator('.timeline-event-card__title');
   await expect(title).toBeVisible();
 
-  // Measure the production Activity style (not jsdom). The full title
-  // remains accessible while its rendered preview is one ellipsized line.
+  // Keep the type symbol in place while measuring the title's own ellipsis.
   const result = await title.evaluate((element) => {
-    element.textContent = 'L'.repeat(140);
-    const css = getComputedStyle(element);
+    const text = element.querySelector<HTMLElement>('.timeline-event-card__title-text')!;
+    const marker = element.querySelector<SVGElement>('[data-temporal-kind-marker]')!;
+    text.textContent = 'L'.repeat(140);
+    const css = getComputedStyle(text);
     return {
       whitespace: css.whiteSpace,
       overflow: css.overflow,
       textOverflow: css.textOverflow,
-      height: element.getBoundingClientRect().height,
+      height: text.getBoundingClientRect().height,
       lineHeight: Number.parseFloat(css.lineHeight),
-      scrollWidth: element.scrollWidth,
-      clientWidth: element.clientWidth,
+      scrollWidth: text.scrollWidth,
+      clientWidth: text.clientWidth,
+      markerWidth: marker.getBoundingClientRect().width,
+      gap: text.getBoundingClientRect().left - marker.getBoundingClientRect().right,
     };
   });
   expect(result.whitespace).toBe('nowrap');
@@ -435,6 +438,8 @@ test('a long Activity title stays on one ellipsized line', async ({ page }) => {
   expect(result.textOverflow).toBe('ellipsis');
   expect(result.height).toBeLessThan(result.lineHeight * 1.5);
   expect(result.scrollWidth).toBeGreaterThan(result.clientWidth);
+  expect(result.markerWidth).toBeGreaterThan(0);
+  expect(result.gap).toBeGreaterThanOrEqual(4);
 });
 
 test('Session Objective and agenda indicators sit near the lower card edge', async ({

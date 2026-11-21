@@ -480,6 +480,8 @@ describe('TimelineSurface production parity', () => {
     );
     expect(targetTitle).toBeTruthy();
     expect(targetTitle?.tabIndex).toBe(0);
+    expect(targetTitle?.querySelector('[data-temporal-kind-marker="event"] circle')).toBeTruthy();
+    expect(targetTitle?.querySelector('.timeline-event-card__title-text')?.textContent).toBeTruthy();
     fireEvent.click(targetTitle as HTMLButtonElement);
     expect(screen.getByRole('dialog')).toBeTruthy();
 
