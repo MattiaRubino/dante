@@ -164,15 +164,20 @@ test('Inspector uses equal main and internal buttons without overflowing a long 
     const buttons = [
       ...root.querySelectorAll('.timeline-session-controls__runtime-button'),
     ].map((button) => button.getBoundingClientRect());
-    const name = root
-      .querySelector('.timeline-objective-controls__name')!
-      .getBoundingClientRect();
+    const nameElement = root.querySelector<HTMLElement>(
+      '.timeline-objective-controls__name',
+    )!;
+    const name = nameElement.getBoundingClientRect();
     const target = root
       .querySelector('.timeline-objective-controls__summary small')!
       .getBoundingClientRect();
     const result = {
       buttonSizes: buttons.map((button) => [button.width, button.height]),
-      nameFits: name.right <= target.left + 1,
+      nameFits: name.right <= root.getBoundingClientRect().right + 1,
+      nameTruncates:
+        nameElement.scrollWidth > nameElement.clientWidth &&
+        getComputedStyle(nameElement).textOverflow === 'ellipsis',
+      targetBelowName: target.top > name.bottom,
       targetFits: target.right <= root.getBoundingClientRect().right + 1,
     };
     root.remove();
@@ -184,6 +189,8 @@ test('Inspector uses equal main and internal buttons without overflowing a long 
       [30, 30],
     ],
     nameFits: true,
+    nameTruncates: true,
+    targetBelowName: true,
     targetFits: true,
   });
 });

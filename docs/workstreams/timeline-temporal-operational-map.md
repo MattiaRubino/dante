@@ -1430,3 +1430,14 @@ componente conserva il caso con poche Sessioni e l'accesso da tastiera
 quando le righe superano quattro. Aggiunte regressioni DOM e geometria browser;
 typecheck, Vitest e browser **NOT_RUN** su questo candidate, in attesa della
 verifica locale.
+
+## 2026-11-21 — Verifica dello scroll Sessioni e aspettativa Obiettivi
+
+Sul commit `573df26` il typecheck e i 16 test Vitest mirati sono PASS; il
+nuovo controllo browser della scrollbar delle Sessioni è PASS. Il controllo
+browser preesistente dell'Obiettivo lungo è FAIL perché confrontava nome e
+target sulla stessa riga, mentre l'Inspector già li dispone su due righe.
+Aggiornata soltanto quell'aspettativa geometrica: ora controlla il nome
+troncato entro il pannello e il target sotto di esso, conservando le misure
+dei pulsanti e del contenimento. Il nuovo candidate è **NOT_RUN** e richiede
+la verifica browser locale.
