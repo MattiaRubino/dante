@@ -1348,3 +1348,16 @@ The follow-up candidate fixes generated OpenAPI/client inventory, Dictionary
 scope, Python quality/types, read transactions in the two new PostgreSQL
 regressions, and stale date-bearing card assertions. PostgreSQL conversion
 and real browser checks require a new owner-local gate on one published SHA.
+
+## 2026-11-21 — Palette Space Warm per i pannelli temporali
+
+Candidate visuale approvata: Quick Create, Advanced Create, Edit ordinario e
+di serie e Inspector condividono le superfici calde `#121A22` / `#1B2930` /
+`#26363B`, i menu neutri `#1B2A2E` con selezione `#3C4C4F`, il testo
+`#F3F0EA` e i bordi dei controlli `#778C8D`. I token risiedono in
+`temporal-panel-controls.css`; i pannelli isolano i colori neutri senza
+ricolorare la Timeline, le card, l'accento della Life Area, gli stati runtime
+o gli errori. La stessa geometria e gli stessi comportamenti restano invariati.
+Il browser fixture `temporal-create-unified-ui.spec.ts` copre campi Quick,
+menu/section Advanced, CSS Edit e superfici Inspector; typecheck, fixture
+browser reale e accettazione visuale utente sono **NOT_RUN** su questo candidate.

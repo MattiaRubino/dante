@@ -224,11 +224,8 @@
 
 .temporal-create-timezone-list > button:hover,
 .temporal-create-timezone-list > button.is-selected {
-  color: var(--dante-semantic-color-home-chrome-active-text, #f0a06f);
-  background: var(
-    --dante-semantic-color-home-chrome-active-soft,
-    rgba(234, 92, 18, 0.095)
-  );
+  color: var(--dante-temporal-menu-text);
+  background: var(--dante-temporal-menu-selected);
 }
 
 .temporal-create-time-control {

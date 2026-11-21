@@ -16,6 +16,7 @@
   transform: none;
   color: var(--dante-semantic-color-home-text-primary, #edf2f8);
   border-radius: 14px;
+  background: var(--dante-temporal-editor-modal-surface);
 }
 
 .temporal-create-timezone-panel.is-config-dialog h3 {
@@ -69,7 +70,7 @@
   justify-content: space-between;
   gap: 10px;
   padding: 9px 11px;
-  border: 1px solid var(--dante-semantic-color-home-border-subtle, #526071);
+  border: 1px solid var(--dante-temporal-editor-border);
   border-radius: 9px;
   color: var(--dante-semantic-color-home-text-primary, #edf2f8);
   background: var(--dante-semantic-color-home-surface-control, #202b30);
@@ -93,7 +94,7 @@
   gap: 7px;
   min-width: 0;
   padding: 8px;
-  border: 1px solid var(--dante-semantic-color-home-border-subtle, #526071);
+  border: 1px solid var(--dante-temporal-editor-border);
   border-radius: 9px;
   background: var(--dante-semantic-color-home-surface-control, #202b30);
 }

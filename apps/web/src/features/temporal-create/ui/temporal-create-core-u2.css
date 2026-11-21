@@ -105,14 +105,9 @@
   padding: 0 12px;
   text-align: left;
   color: var(--dante-semantic-color-home-text-secondary, #b7c0cf);
-  border: 1px solid
-    var(--dante-semantic-color-home-border-subtle, rgba(255, 255, 255, 0.09)) !important;
+  border: 1px solid var(--dante-temporal-editor-border) !important;
   border-radius: 10px !important;
-  background: color-mix(
-    in srgb,
-    var(--dante-semantic-color-home-surface-control, #151f2e) 76%,
-    black
-  ) !important;
+  background: var(--dante-temporal-editor-field-surface) !important;
   filter: none !important;
 }
 
@@ -231,15 +226,10 @@
   align-items: center;
   justify-content: center;
   padding: 0 4px;
-  border: 1px solid
-    var(--dante-semantic-color-home-border-subtle, rgba(255, 255, 255, 0.09));
+  border: 1px solid var(--dante-temporal-editor-border);
   border-radius: 10px;
   color: var(--dante-semantic-color-home-text-primary, #edf2f8);
-  background: color-mix(
-    in srgb,
-    var(--dante-semantic-color-home-surface-control, #151f2e) 76%,
-    black
-  );
+  background: var(--dante-temporal-editor-field-surface);
   font-size: 0.7rem;
   font-weight: 650;
   letter-spacing: -0.025em;

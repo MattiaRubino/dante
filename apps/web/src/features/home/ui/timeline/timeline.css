@@ -1610,11 +1610,7 @@
   border-color: var(--timeline-inspector-accent, #ea5c12);
   background:
     linear-gradient(180deg, rgba(255, 255, 255, 0.025), transparent 30%),
-    color-mix(
-      in srgb,
-      var(--dante-semantic-color-home-surface-primary, #0d1522) 97%,
-      black
-    );
+    var(--dante-temporal-editor-modal-surface);
   box-shadow:
     0 26px 76px rgba(0, 0, 0, 0.48),
     inset 0 1px 0 rgba(255, 255, 255, 0.045);
@@ -1627,7 +1623,7 @@
   margin: 0 -22px 18px;
   padding: 12px 22px;
   border-bottom: 1px solid var(--dante-semantic-color-home-border-subtle);
-  background: #0d1522;
+  background: var(--dante-temporal-editor-modal-surface);
 }
 
 .timeline-event-modal--inspector .timeline-event-modal__title {
@@ -2083,10 +2079,10 @@ body:has(> .timeline-recurring-edit-scope-dialog__backdrop)
   width: min(100%, 440px);
   gap: 14px;
   padding: 22px;
-  border: 1px solid #46555e;
+  border: 1px solid var(--dante-temporal-editor-border);
   border-radius: 16px;
-  color: #f2f4f2;
-  background: #192328;
+  color: var(--dante-temporal-menu-text);
+  background: var(--dante-temporal-editor-modal-surface);
   box-shadow: 0 24px 60px rgb(0 0 0 / 35%);
   font-size: 14px;
   line-height: 1.45;
@@ -2182,10 +2178,10 @@ body:has(> .timeline-recurring-edit-scope-dialog__backdrop)
 
 .timeline-recurring-edit-scope-dialog button {
   padding: 9px 12px;
-  border: 1px solid #4a5c65;
+  border: 1px solid var(--dante-temporal-editor-border);
   border-radius: 9px;
-  color: #f2f4f2;
-  background: #26343b;
+  color: var(--dante-temporal-menu-text);
+  background: var(--dante-temporal-editor-field-surface);
   cursor: pointer;
   text-align: left;
 }
@@ -2325,11 +2321,7 @@ body:has(> .timeline-recurring-edit-scope-dialog__backdrop)
   ) {
   box-sizing: border-box;
   min-width: 0;
-  background: color-mix(
-    in srgb,
-    var(--dante-semantic-color-home-surface-control, #151f2e) 72%,
-    transparent
-  );
+  background: var(--dante-temporal-editor-field-surface);
 }
 
 .timeline-activity-editor__body input:focus-visible,

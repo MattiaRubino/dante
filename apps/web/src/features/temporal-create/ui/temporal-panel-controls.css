@@ -1,11 +1,11 @@
 :root {
   /* One authoring scale for Create and Edit. A future user preference can
      override these properties without changing the individual controls. */
-  /* Authoring surfaces shared by Advanced Create and all Edit scopes. */
-  --dante-temporal-editor-modal-surface: #151d21;
-  --dante-temporal-editor-section-surface: #1b252a;
-  --dante-temporal-editor-field-surface: #202b30;
-  --dante-temporal-editor-border: rgba(159, 177, 184, 0.125);
+  /* Space-warm palette shared by Quick, Advanced, Edit and Inspector. */
+  --dante-temporal-editor-modal-surface: #121a22;
+  --dante-temporal-editor-section-surface: #1b2930;
+  --dante-temporal-editor-field-surface: #26363b;
+  --dante-temporal-editor-border: #778c8d;
   --dante-temporal-form-text-size: 16px;
   --dante-temporal-form-label-size: 15px;
   --dante-temporal-form-helper-size: 13px;
@@ -15,15 +15,35 @@
   --dante-temporal-action-height: 44px;
   --dante-temporal-control-height: 44px;
   --dante-temporal-recurrence-setting-size: 17px;
-  --dante-temporal-menu-surface: #192328;
-  --dante-temporal-menu-selected: #2c3a40;
-  --dante-temporal-menu-text: #edf2f8;
+  --dante-temporal-menu-surface: #1b2a2e;
+  --dante-temporal-menu-selected: #3c4c4f;
+  --dante-temporal-menu-text: #f3f0ea;
   --dante-temporal-menu-option-size: 17px;
   /* Preserve older recurrence overrides while all native menus converge. */
   --dante-temporal-recurrence-menu-surface: var(--dante-temporal-menu-surface);
   --dante-temporal-recurrence-menu-selected: var(--dante-temporal-menu-selected);
   --dante-temporal-recurrence-menu-text: var(--dante-temporal-menu-text);
   --dante-temporal-zone-menu-width: 340px;
+}
+
+/* Scope the warm neutral text and chrome to temporal panels. Timeline cards,
+   Life Area accents and runtime/error colors retain their own semantics. */
+:is(
+    .temporal-create-composer,
+    .timeline-event-modal--edit,
+    .timeline-event-modal--inspector,
+    .temporal-create-timezone-panel.is-config-dialog
+  ) {
+  --dante-semantic-color-home-surface-primary: var(--dante-temporal-editor-modal-surface);
+  --dante-semantic-color-home-surface-raised: var(--dante-temporal-editor-section-surface);
+  --dante-semantic-color-home-surface-control: var(--dante-temporal-editor-field-surface);
+  --dante-semantic-color-home-surface-overlay: var(--dante-temporal-editor-modal-surface);
+  --dante-semantic-color-home-text-primary: #f3f0ea;
+  --dante-semantic-color-home-text-secondary: #cad0ca;
+  --dante-semantic-color-home-text-muted: #aebbb7;
+  --dante-semantic-color-home-border-subtle: #405257;
+  --dante-semantic-color-home-border-strong: var(--dante-temporal-editor-border);
+  --dante-surface: var(--dante-temporal-editor-section-surface);
 }
 
 /* The same compact zone picker accompanies the time mode in Create and Edit. */

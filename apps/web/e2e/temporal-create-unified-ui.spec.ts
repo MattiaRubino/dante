@@ -331,6 +331,10 @@ test('Quick keeps its compact clock field while Advanced uses the Edit interval 
   const zoneTrigger = dialog.getByRole('button', { name: /^Fuso orario:/ });
   await zoneTrigger.click();
   const zoneDialog = page.getByRole('dialog', { name: 'Imposta fuso orario' });
+  await expect(zoneDialog).toHaveCSS('background-color', 'rgb(18, 26, 34)');
+  await expect(
+    zoneDialog.locator('.temporal-zone-dialog__choice').first(),
+  ).toHaveCSS('background-color', 'rgb(38, 54, 59)');
   await zoneDialog.getByRole('checkbox', {
     name: 'Utilizza fusi orari diversi per inizio e fine',
   }).check();
@@ -701,16 +705,16 @@ test('Activity and Event repeat selectors stay inside one shared panel in Create
     const details = panel.locator('.temporal-recurrence-panel__details');
     await expect(details).toBeVisible();
     await expect(details.locator('.temporal-create-repeat')).toHaveCount(1);
-    await expect(panel).toHaveCSS('background-color', 'rgb(27, 37, 42)');
+    await expect(panel).toHaveCSS('background-color', 'rgb(27, 41, 48)');
     await expect(choice).toHaveCSS('font-size', '17px');
-    await expect(choice).toHaveCSS('background-color', 'rgb(25, 35, 40)');
+    await expect(choice).toHaveCSS('background-color', 'rgb(27, 42, 46)');
     await expect(choice.locator('option').first()).toHaveCSS(
       'background-color',
-      'rgb(25, 35, 40)',
+      'rgb(27, 42, 46)',
     );
     await expect(choice.locator('option:checked')).toHaveCSS(
       'background-color',
-      'rgb(44, 58, 64)',
+      'rgb(60, 76, 79)',
     );
     await expect(
       details.locator('.temporal-create-repeat__row-label').first(),
@@ -855,11 +859,11 @@ test('Activity and Event repeat selectors stay inside one shared panel in Create
       kind: 'activity',
       hasSinglePanel: true,
       noExtraMutationAction: true,
-      sectionBackground: 'rgb(27, 37, 42)',
+      sectionBackground: 'rgb(27, 41, 48)',
       selectorFont: '17px',
-      selectorBackground: 'rgb(25, 35, 40)',
-      selectedOptionBackground: 'rgb(44, 58, 64)',
-      unselectedOptionBackground: 'rgb(25, 35, 40)',
+      selectorBackground: 'rgb(27, 42, 46)',
+      selectedOptionBackground: 'rgb(60, 76, 79)',
+      unselectedOptionBackground: 'rgb(27, 42, 46)',
       settingFont: '17px',
       stacked: true,
       contained: true,
@@ -868,11 +872,11 @@ test('Activity and Event repeat selectors stay inside one shared panel in Create
       kind: 'event',
       hasSinglePanel: true,
       noExtraMutationAction: true,
-      sectionBackground: 'rgb(27, 37, 42)',
+      sectionBackground: 'rgb(27, 41, 48)',
       selectorFont: '17px',
-      selectorBackground: 'rgb(25, 35, 40)',
-      selectedOptionBackground: 'rgb(44, 58, 64)',
-      unselectedOptionBackground: 'rgb(25, 35, 40)',
+      selectorBackground: 'rgb(27, 42, 46)',
+      selectedOptionBackground: 'rgb(60, 76, 79)',
+      unselectedOptionBackground: 'rgb(27, 42, 46)',
       settingFont: '17px',
       stacked: true,
       contained: true,
@@ -931,11 +935,65 @@ test('Activity and Event repeat selectors stay inside one shared panel in Create
   });
   expect(seriesStyle).toEqual({
     selectorFont: '17px',
-    selectorBackground: 'rgb(25, 35, 40)',
-    selectedOptionBackground: 'rgb(44, 58, 64)',
-    unselectedOptionBackground: 'rgb(25, 35, 40)',
+    selectorBackground: 'rgb(27, 42, 46)',
+    selectedOptionBackground: 'rgb(60, 76, 79)',
+    unselectedOptionBackground: 'rgb(27, 42, 46)',
     settingFont: '17px',
     inputFont: '17px',
+  });
+});
+
+test('Quick Create and Inspector share the space-warm palette without recoloring Life Areas', async ({
+  page,
+}) => {
+  await page.goto('/home');
+  await page.getByRole('button', { name: 'Aggiungi alla timeline' }).click();
+  const quick = page.locator('[data-temporal-create="composer"]');
+  await expect(quick).toHaveCSS('background-color', 'rgb(18, 26, 34)');
+  for (const selector of [
+    '.temporal-create-date-picker__trigger',
+    '.temporal-create-time-control__field',
+    '.temporal-create-life-area-field__area-cell input',
+    '.temporal-create-u2-location',
+    '.temporal-create-quick-reminder',
+  ]) {
+    await expect(quick.locator(selector).first()).toHaveCSS(
+      'background-color',
+      'rgb(38, 54, 59)',
+    );
+  }
+
+  // CSS fixture: backend-free presentation proof, including the live Area accent.
+  const inspector = await page.evaluate(() => {
+    const modal = document.createElement('div');
+    modal.className = 'timeline-event-modal timeline-event-modal--inspector';
+    modal.style.setProperty('--timeline-inspector-accent', '#14ab82');
+    modal.innerHTML = `<div class="timeline-event-modal__header"></div>
+      <div class="timeline-objective-controls__item">
+        <input aria-label="Valore" />
+        <select aria-label="Risultato"><option>Sì</option></select>
+      </div>`;
+    document.body.append(modal);
+    try {
+      return {
+        surface: getComputedStyle(modal).backgroundColor,
+        accent: getComputedStyle(modal).borderColor,
+        header: getComputedStyle(modal.querySelector('.timeline-event-modal__header')!).backgroundColor,
+        section: getComputedStyle(modal.querySelector('.timeline-objective-controls__item')!).backgroundColor,
+        input: getComputedStyle(modal.querySelector('input')!).backgroundColor,
+        menu: getComputedStyle(modal.querySelector('select option')!).backgroundColor,
+      };
+    } finally {
+      modal.remove();
+    }
+  });
+  expect(inspector).toEqual({
+    surface: 'rgb(18, 26, 34)',
+    accent: 'rgb(20, 171, 130)',
+    header: 'rgb(18, 26, 34)',
+    section: 'rgb(27, 41, 48)',
+    input: 'rgb(38, 54, 59)',
+    menu: 'rgb(27, 42, 46)',
   });
 });
 
@@ -966,7 +1024,7 @@ test('Advanced Activity and Event headings, Objectives and native menus share on
       dialog.locator('.temporal-create-reality-objectives'),
       dialog.locator('.temporal-create-description-section'),
     ]) {
-      await expect(section).toHaveCSS('background-color', 'rgb(27, 37, 42)');
+      await expect(section).toHaveCSS('background-color', 'rgb(27, 41, 48)');
     }
 
     const location = dialog.getByRole('textbox', { name: 'Località' });
@@ -978,17 +1036,17 @@ test('Advanced Activity and Event headings, Objectives and native menus share on
     await expect(location).toHaveCSS('height', '44px');
     await expect(location).toHaveCSS('margin-top', '0px');
     await expect(location).toHaveCSS('font-size', '16px');
-    await expect(location).toHaveCSS('background-color', 'rgb(32, 43, 48)');
+    await expect(location).toHaveCSS('background-color', 'rgb(38, 54, 59)');
     await expect(reminderFrame).toHaveCSS('min-height', '44px');
     await expect(reminderFrame).toHaveCSS('margin-top', '0px');
-    await expect(reminderFrame).toHaveCSS('background-color', 'rgb(32, 43, 48)');
+    await expect(reminderFrame).toHaveCSS('background-color', 'rgb(38, 54, 59)');
     await expect(description).toHaveCSS('padding-top', '10px');
     await expect(description).toHaveCSS('margin-top', '0px');
-    await expect(description).toHaveCSS('background-color', 'rgb(27, 37, 42)');
+    await expect(description).toHaveCSS('background-color', 'rgb(27, 41, 48)');
     await expect(descriptionInput).toHaveCSS('min-height', '112px');
     await expect(descriptionInput).toHaveCSS('margin-top', '0px');
     await expect(descriptionInput).toHaveCSS('font-size', '16px');
-    await expect(descriptionInput).toHaveCSS('background-color', 'rgb(32, 43, 48)');
+    await expect(descriptionInput).toHaveCSS('background-color', 'rgb(38, 54, 59)');
 
     await dialog.getByRole('button', { name: '+ Obiettivo', exact: true }).click();
     const objective = dialog.locator('.temporal-create-objective').last();
@@ -1007,19 +1065,19 @@ test('Advanced Activity and Event headings, Objectives and native menus share on
     ).toHaveCSS('font-size', '16px');
     await expect(
       objective.locator('.temporal-create-objective__definition'),
-    ).toHaveCSS('background-color', 'rgb(27, 37, 42)');
+    ).toHaveCSS('background-color', 'rgb(27, 41, 48)');
     await expect(
       objective.locator('.temporal-create-objective__verification'),
-    ).toHaveCSS('background-color', 'rgb(27, 37, 42)');
+    ).toHaveCSS('background-color', 'rgb(27, 41, 48)');
     const reminder = dialog.getByRole('combobox', { name: 'Ricorda' });
     await expect(reminder).toHaveCSS('font-size', '16px');
     await expect(result.locator('option:not(:checked)').first()).toHaveCSS(
       'background-color',
-      'rgb(25, 35, 40)',
+      'rgb(27, 42, 46)',
     );
     await expect(result.locator('option:checked')).toHaveCSS(
       'background-color',
-      'rgb(44, 58, 64)',
+      'rgb(60, 76, 79)',
     );
     await reminder.click();
     const reminderMenu = page.getByRole('listbox', { name: 'Ricorda' });
@@ -1027,13 +1085,13 @@ test('Advanced Activity and Event headings, Objectives and native menus share on
       reminderMenu.getByRole('option', { name: 'Ricorda · Nessuno' }),
     ).toHaveCSS(
       'background-color',
-      'rgb(44, 58, 64)',
+      'rgb(60, 76, 79)',
     );
     await expect(
       reminderMenu.getByRole('option', { name: 'Ricorda · 5 min prima' }),
     ).toHaveCSS(
       'background-color',
-      'rgb(25, 35, 40)',
+      'rgb(27, 42, 46)',
     );
     await reminder.press('Escape');
     await expect(reminderMenu).toHaveCount(0);
@@ -1129,9 +1187,9 @@ test('Advanced Activity and Event headings, Objectives and native menus share on
     description: '18px',
     result: '16px',
     reminder: '16px',
-    areaSurface: 'rgb(27, 37, 42)',
-    objectiveSurface: 'rgb(27, 37, 42)',
-    descriptionSurface: 'rgb(27, 37, 42)',
+    areaSurface: 'rgb(27, 41, 48)',
+    objectiveSurface: 'rgb(27, 41, 48)',
+    descriptionSurface: 'rgb(27, 41, 48)',
     location: '16px',
     descriptionInput: '16px',
     locationHeight: '44px',

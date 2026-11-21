@@ -56,14 +56,10 @@
       var(--dante-semantic-color-home-chrome-active, #ea5c12)
     );
   border-radius: 18px;
-  color: var(--dante-semantic-color-home-text-primary, #edf2f8);
+  color: var(--dante-semantic-color-home-text-primary, #f3f0ea);
   background:
     linear-gradient(180deg, rgba(255, 255, 255, 0.025), transparent 28%),
-    color-mix(
-      in srgb,
-      var(--dante-semantic-color-home-surface-primary, #0d1522) 97%,
-      black
-    );
+    var(--dante-temporal-editor-modal-surface);
   box-shadow:
     0 26px 76px rgba(0, 0, 0, 0.48),
     inset 0 1px 0 rgba(255, 255, 255, 0.045);
@@ -125,16 +121,11 @@
 .temporal-create-composer textarea {
   box-sizing: border-box;
   width: 100%;
-  border: 1px solid
-    var(--dante-semantic-color-home-border-subtle, rgba(255, 255, 255, 0.09));
+  border: 1px solid var(--dante-temporal-editor-border);
   border-radius: 11px;
   outline: 0;
   color: var(--dante-semantic-color-home-text-primary, #edf2f8);
-  background: color-mix(
-    in srgb,
-    var(--dante-semantic-color-home-surface-control, #151f2e) 76%,
-    black
-  );
+  background: var(--dante-temporal-editor-field-surface);
   font: inherit;
   font-size: 13px;
   transition:
