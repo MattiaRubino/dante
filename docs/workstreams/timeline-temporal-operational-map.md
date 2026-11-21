@@ -1398,3 +1398,14 @@ secondario è distinto dalla descrizione e si trova nella sezione «Contesto»
 prima del riquadro finale, non sotto il titolo. I test owner coprono l'ordine
 del DOM, il caso senza scaletta e la lettura singola; typecheck, Vitest e
 browser **NOT_RUN** su questa revisione, riservati alla verifica locale.
+
+## 2026-11-21 — Correzione duplicazione descrizione nell'Inspector
+
+La verifica visiva dell'utente dopo il commit `981abd8` ha mostrato la
+descrizione Activity ancora sotto il titolo: la seconda stampa proveniva da
+`ActivityInspectorActions`, non dalla sezione finale. Rimossa quella stampa;
+la Località dello stesso profilo resta disponibile in una propria sezione
+verso il fondo. La sezione Descrizione di Activity/Event ora ha intestazione
+fuori dal riquadro e solo il testo dentro la cornice. Regressioni aggiunte
+all'owner delle azioni Activity e ai test Inspector Activity/Event; typecheck,
+Vitest e browser **NOT_RUN** su questo nuovo candidate.

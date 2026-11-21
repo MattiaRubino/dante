@@ -282,12 +282,6 @@ export function ActivityInspectorActions({
   return (
     <>
       {toolbarTarget ? createPortal(toolbar, toolbarTarget) : toolbar}
-      {profile?.description || profile?.location ? (
-        <div className="timeline-activity-inspector__details">
-          {profile.description ? <p>{profile.description}</p> : null}
-          {profile.location ? <p>Località: {profile.location}</p> : null}
-        </div>
-      ) : null}
       {error && !confirming ? <p role="alert">{error}</p> : null}
       {editChoice ? (
         <RecurringEditScopeDialog

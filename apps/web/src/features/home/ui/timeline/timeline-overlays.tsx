@@ -817,9 +817,10 @@ export function EventDetailDialog({
   const [toolbarTarget, setToolbarTarget] = useState<HTMLDivElement | null>(
     null,
   );
-  const [activityDescription, setActivityDescription] = useState<{
+  const [activityDetails, setActivityDetails] = useState<{
     ref: string;
-    value: string | null;
+    description: string | null;
+    location: string | null;
   } | null>(null);
   const [eventDescriptionTarget, setEventDescriptionTarget] =
     useState<HTMLDivElement | null>(null);
@@ -868,9 +869,10 @@ export function EventDetailDialog({
       .get(activityRef)
       .then((profile) => {
         if (active)
-          setActivityDescription({
+          setActivityDetails({
             ref: activityRef,
-            value: profile.description,
+            description: profile.description,
+            location: profile.location,
           });
       })
       .catch(() => undefined);
@@ -1141,9 +1143,10 @@ export function EventDetailDialog({
             closeRequestRef={editCloseRequestRef}
             onSaved={(saved) => {
               onActivitySaved?.(saved);
-              setActivityDescription({
+              setActivityDetails({
                 ref: saved.activityRef,
-                value: saved.description,
+                description: saved.description,
+                location: saved.location,
               });
               setEditingProfile(null);
             }}
@@ -1290,18 +1293,35 @@ export function EventDetailDialog({
                 aria-label="Contesto"
               >
                 <h4>Contesto</h4>
-                <p>{detail.contextLabel}</p>
+                <div className="timeline-event-modal__description-body">
+                  <p>{detail.contextLabel}</p>
+                </div>
               </section>
             ) : null}
             {activityRef &&
-            activityDescription?.ref === activityRef &&
-            activityDescription.value?.trim() ? (
+            activityDetails?.ref === activityRef &&
+            activityDetails.location?.trim() ? (
+              <section
+                className="timeline-event-modal__location"
+                aria-label="Località"
+              >
+                <h4>Località</h4>
+                <div className="timeline-event-modal__description-body">
+                  <p>{activityDetails.location}</p>
+                </div>
+              </section>
+            ) : null}
+            {activityRef &&
+            activityDetails?.ref === activityRef &&
+            activityDetails.description?.trim() ? (
               <section
                 className="timeline-event-modal__description"
                 aria-label="Descrizione"
               >
                 <h4>Descrizione</h4>
-                <p>{activityDescription.value}</p>
+                <div className="timeline-event-modal__description-body">
+                  <p>{activityDetails.description}</p>
+                </div>
               </section>
             ) : null}
             {detail.ownerKind === 'event' && detail.eventRef ? (

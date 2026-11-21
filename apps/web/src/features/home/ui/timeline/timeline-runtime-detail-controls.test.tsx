@@ -169,7 +169,7 @@ describe('Timeline post-create runtime destinations', () => {
               activity_ref: ACTIVITY_REF,
               title: 'Scrivere',
               description: 'Preparare la bozza.',
-              location: null,
+              location: 'Ufficio',
               color_code: null,
               revision: 1,
             }),
@@ -209,6 +209,17 @@ describe('Timeline post-create runtime destinations', () => {
     const inspector = screen.getByRole('dialog');
     const objectives = screen.getByTestId('reality-controls');
     const context = screen.getByRole('region', { name: 'Contesto' });
+    const location = screen.getByRole('region', { name: 'Località' });
+    expect(location.textContent).toContain('Ufficio');
+    expect(
+      location.compareDocumentPosition(description) &
+        Node.DOCUMENT_POSITION_FOLLOWING,
+    ).toBeTruthy();
+    expect(description.firstElementChild?.textContent).toBe('Descrizione');
+    expect(
+      description.querySelector('.timeline-event-modal__description-body')
+        ?.textContent,
+    ).toBe('Preparare la bozza.');
     expect(
       inspector.querySelector('.timeline-event-modal__title-row')?.contains(context),
     ).toBe(false);

@@ -1459,6 +1459,21 @@ describe('Objective correction in Activity Editor', () => {
 });
 
 describe('Activity Inspector', () => {
+  it('keeps profile description and location out of the header actions', async () => {
+    get.mockResolvedValue(profile);
+    render(
+      <ActivityInspectorActions
+        activityRef={ref}
+        onEdit={() => undefined}
+        onDeleted={() => undefined}
+        onDuplicate={() => undefined}
+      />,
+    );
+    await screen.findByRole('button', { name: 'Sposta in Bozze' });
+    expect(screen.queryByText('Nota')).toBeNull();
+    expect(screen.queryByText('Località: Casa')).toBeNull();
+  });
+
   it('offers the next instance when the selected recurring Activity has a registration', async () => {
     get.mockResolvedValue(profile);
     const context = {

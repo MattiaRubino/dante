@@ -199,7 +199,9 @@ function TimelineEventAgendaEditorInstance({
         aria-label="Descrizione"
       >
         <h4>Descrizione</h4>
-        <p>{description}</p>
+        <div className="timeline-event-modal__description-body">
+          <p>{description}</p>
+        </div>
       </section>
     ) : null;
   const renderedDescription =

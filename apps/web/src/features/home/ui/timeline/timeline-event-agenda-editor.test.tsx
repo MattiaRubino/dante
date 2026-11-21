@@ -172,6 +172,11 @@ describe('B03-D canonical Event Agenda editor', () => {
       });
       expect(description.parentElement).toBe(descriptionTarget);
       expect(description.textContent).toContain('Preparare il materiale.');
+      expect(description.firstElementChild?.textContent).toBe('Descrizione');
+      expect(
+        description.querySelector('.timeline-event-modal__description-body')
+          ?.textContent,
+      ).toBe('Preparare il materiale.');
       expect(loadEvent).toHaveBeenCalledOnce();
     } finally {
       descriptionTarget.remove();
