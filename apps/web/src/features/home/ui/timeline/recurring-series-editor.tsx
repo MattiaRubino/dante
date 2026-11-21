@@ -1258,6 +1258,7 @@ export function RecurringSeriesEditor({
                       label="Data inizio"
                       locale="it"
                       value={seriesStartDate}
+                      allDay
                       onChange={(day) =>
                         changeRecurrence({
                           ...recurrence,
@@ -1273,6 +1274,7 @@ export function RecurringSeriesEditor({
                       align="end"
                       locale="it"
                       value={seriesLastDay}
+                      allDay
                       onChange={(day) => {
                         const duration =
                           Temporal.PlainDate.from(seriesStartDate)

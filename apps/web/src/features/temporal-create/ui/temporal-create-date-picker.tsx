@@ -9,6 +9,7 @@ type TemporalCreateDatePickerProps = Readonly<{
   locale: string;
   min?: string | undefined;
   invalid?: boolean;
+  allDay?: boolean;
   align?: 'start' | 'end';
   onChange: (value: string) => void;
 }>;
@@ -73,6 +74,7 @@ export function TemporalCreateDatePicker({
   locale,
   min,
   invalid = false,
+  allDay = false,
   align = 'start',
   onChange,
 }: TemporalCreateDatePickerProps) {
@@ -105,7 +107,7 @@ export function TemporalCreateDatePicker({
   return (
     <div
       ref={rootRef}
-      className={`temporal-create-date-picker temporal-create-date-picker--${align}`}
+      className={`temporal-create-date-picker temporal-create-date-picker--${align}${allDay ? ' temporal-create-date-picker--all-day' : ''}`}
     >
       <button
         className="temporal-create-date-picker__trigger"

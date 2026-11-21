@@ -2201,6 +2201,7 @@ export function ActivityEditPanel({
                     label="Data inizio"
                     locale="it"
                     value={dateSpanDraft.start}
+                    allDay
                     onChange={(start) => {
                       setDateSpanDraft((current) => ({
                         start,
@@ -2216,6 +2217,7 @@ export function ActivityEditPanel({
                     align="end"
                     locale="it"
                     value={dateSpanDraft.end}
+                    allDay
                     min={dateSpanDraft.start}
                     onChange={(end) => {
                       setDateSpanDraft((current) => ({ ...current, end }));

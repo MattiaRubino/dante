@@ -2,6 +2,36 @@ import { expect, test } from '@playwright/test';
 
 test.use({ locale: 'it-IT' });
 
+test('Quick and Advanced all-day dates use the same bordered control', async ({ page }) => {
+  await page.goto('/home');
+  await page.getByRole('button', { name: 'Aggiungi alla timeline' }).click();
+  const dialog = page.locator('[data-temporal-create="composer"]');
+  await dialog.getByRole('radio', { name: 'Tutto il giorno' }).click();
+
+  async function checkDates() {
+    const dates = dialog.locator('.temporal-create-u2-all-day .temporal-create-date-picker__trigger');
+    await expect(dates).toHaveCount(2);
+    for (const date of await dates.all()) {
+      await expect(date).toHaveCSS('border-top-width', '1px');
+      await expect(date).not.toHaveCSS('background-color', 'rgba(0, 0, 0, 0)');
+    }
+    const boxes = await dates.evaluateAll((buttons) => buttons.map((button) => {
+      const box = button.getBoundingClientRect();
+      return { height: box.height, width: box.width };
+    }));
+    expect(boxes[0]?.width).toBeGreaterThan(100);
+    expect(boxes[0]?.height).toBeGreaterThanOrEqual(44);
+    expect(boxes[1]?.height).toBe(boxes[0]?.height);
+  }
+
+  await checkDates();
+  await dialog.getByRole('button', { name: /Opzioni avanzate/ }).click();
+  await checkDates();
+  await dialog.getByRole('radio', { name: 'Evento', exact: true }).click();
+  await dialog.getByRole('radio', { name: 'Tutto il giorno' }).click();
+  await checkDates();
+});
+
 test('Advanced Create keeps its header aligned when the title is empty', async ({
   page,
 }) => {

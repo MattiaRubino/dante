@@ -1441,3 +1441,16 @@ Aggiornata soltanto quell'aspettativa geometrica: ora controlla il nome
 troncato entro il pannello e il target sotto di esso, conservando le misure
 dei pulsanti e del contenimento. Il nuovo candidate è **NOT_RUN** e richiede
 la verifica browser locale.
+
+## 2026-11-21 — Date Tutto il giorno e materializzazione immediata
+
+I due pulsanti data dello span civile condividono il bordo e la superficie
+dei controlli orari in Create rapido/avanzato e negli Edit Activity/Event,
+incluse le serie compatibili. Il percorso U2 singolo materializza nella
+corsia Tutto il giorno la risposta Schedule accettata per Activity/Event;
+la successiva lettura Timeline riconcilia la stessa identità canonica.
+Regressioni su entrambi i tipi, assenza di Schedule e date inclusive/esclusive;
+typecheck e Vitest mirati eseguiti nell'ambiente scratch con dipendenze
+collegate al workspace locale. La prova browser e il gate WSL dell'utente
+restano **NOT_RUN** su questo candidate. Card, Inspector e simboli di tipo
+restano oggetto della discussione successiva con l'utente.

@@ -1,5 +1,10 @@
 import { Temporal } from '@dante/time';
 import { describe, expect, it } from 'vitest';
+import type {
+  TemporalAuthoredActivityResult,
+  TemporalAuthoredEventResult,
+} from '../../../../temporal/authoring-data-source';
+import { timelineAllDayFromAuthoredDateSpan } from '../timeline-create-bridge';
 
 import {
   createInitialTimelineState,
@@ -70,4 +75,78 @@ describe('Timeline native all-day state', () => {
       timelineReducer(initial, { type: 'materialize-all-day', item: invalid }),
     ).toBe(initial);
   });
+
+  it.each(['activity', 'event'] as const)(
+    'materializes the accepted %s date span without a page reload',
+    (kind) => {
+      const start = Temporal.PlainDate.from('2026-11-21');
+      const endDateExclusive = start.add({ days: 2 });
+      const common = {
+        item: {
+          subjectRef: 'subject-1',
+          title: 'Due giorni',
+          createdAt: Temporal.Instant.from('2026-11-21T09:00:00Z'),
+          description: null,
+          location: null,
+          colorCode: '#aabbcc',
+          lifeAreaRef: 'area-1',
+          lifeAreaAssignmentRevision: 1,
+          lifeAreaColorCode: '#aabbcc',
+          lifeAreaRevision: 1,
+        },
+        schedule: {
+          scheduleRef: 'schedule-1',
+          placementMaterialStateRef: 'state-1',
+          placement: {
+            kind: 'date-span' as const,
+            startDate: start,
+            endDateExclusive,
+          },
+        },
+        replayed: false,
+      };
+      const authored:
+        TemporalAuthoredActivityResult | TemporalAuthoredEventResult =
+        kind === 'activity'
+          ? {
+              ...common,
+              sessionCaptureMode: 'record',
+              childGuardMode: 'none',
+              plannedSlices: [],
+              activityIntervals: [],
+              children: [],
+            }
+          : { ...common, agendaRevision: 0, agendaParts: [] };
+      const createdItem = timelineAllDayFromAuthoredDateSpan(kind, authored);
+      expect(createdItem).toMatchObject({
+        id: 'schedule-1',
+        groupId: 'area-1',
+        appearanceColorCode: '#aabbcc',
+        canonicalBasis: {
+          kind: kind === 'activity' ? 'scheduled-activity' : 'scheduled-event',
+          scheduleRef: 'schedule-1',
+          placementMaterialStateRef: 'state-1',
+          placement: { kind: 'date-span', startDate: start, endDateExclusive },
+        },
+      });
+      if (!createdItem) throw new Error('Expected accepted date span');
+      const created = timelineReducer(createInitialTimelineState(start), {
+        type: 'materialize-all-day',
+        item: createdItem,
+      });
+      expect(timelineAllDayItemsForDate(created, '2026-11-21')).toEqual([
+        createdItem,
+      ]);
+      expect(timelineAllDayItemsForDate(created, '2026-11-22')).toEqual([
+        createdItem,
+      ]);
+      expect(timelineAllDayItemsForDate(created, '2026-11-23')).toEqual([]);
+      expect(
+        timelineAllDayFromAuthoredDateSpan(kind, {
+          ...authored,
+          schedule: null,
+        }),
+      ).toBeNull();
+    },
+  );
 });

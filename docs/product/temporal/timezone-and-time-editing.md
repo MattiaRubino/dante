@@ -15,6 +15,7 @@
 - **TMP-CLOCK-006:** stesse regole in Create rapido, Avanzate, Edit normale, singola istanza e scope ricorrenti compatibili; nessuna logica divergente per layout.
 - **TMP-CLOCK-007 (controlli orario):** per il tempo si utilizzano segmenti ore/minuti modificabili e selettore orario; il cambio dell'inizio mantiene la durata, il cambio della fine modifica la durata, senza correggere automaticamente intervalli invalidi. I diversi editor condividono semantiche, validazioni e posizione degli elementi temporali secondo il contratto del relativo scope.
 - **TMP-CLOCK-008 (fonte della verità):** le date/ore nei form sono rappresentazioni locali della programmazione; l'eventuale conversione di fuso nel selettore della **Timeline** non deve mai riscriverle in Create/Edit, né produrre salvataggi impliciti.
+- **TMP-CLOCK-009 (Tutto il giorno):** in Create rapido/avanzato e negli Edit Activity/Event, anche per le serie compatibili, inizio e fine inclusiva sono pulsanti data bordati come i controlli a orario. Dopo una creazione singola confermata, la corsia della Timeline mostra subito lo Schedule date-span con identità, colore e date civili restituiti dal server, poi lo riconcilia con la lettura canonica. Nessuna card locale senza Schedule accettato.
 
 ## Intervalli Activity
 

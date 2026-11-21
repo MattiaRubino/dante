@@ -24,6 +24,25 @@
   outline: none;
 }
 
+.temporal-create-date-picker--all-day .temporal-create-date-picker__trigger {
+  box-sizing: border-box;
+  min-height: 46px;
+  border: 1px solid var(--dante-temporal-editor-border);
+  border-radius: 11px;
+  color: var(--dante-semantic-color-home-text-primary, #edf2f8);
+  background: var(--dante-temporal-editor-field-surface);
+  font-variant-numeric: tabular-nums;
+}
+
+.temporal-create-date-picker--all-day
+  .temporal-create-date-picker__trigger:is(
+    :hover,
+    :focus-visible,
+    [aria-expanded='true']
+  ) {
+  border-color: var(--dante-semantic-color-home-chrome-active, #ea5c12);
+}
+
 .temporal-create-date-picker__popover {
   position: absolute;
   z-index: 80;

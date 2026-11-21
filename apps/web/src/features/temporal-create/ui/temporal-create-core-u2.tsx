@@ -1231,6 +1231,7 @@ export function TemporalCreateCoreFieldsU2({
               <TemporalCreateDatePicker
                 label="Data inizio"
                 value={fields.date}
+                allDay
                 locale={locale}
                 onChange={patchAllDayStartDate}
               />
@@ -1244,6 +1245,7 @@ export function TemporalCreateCoreFieldsU2({
                 label="Data fine"
                 align="end"
                 value={visibleAllDayEndDate}
+                allDay
                 min={fields.date}
                 locale={locale}
                 onChange={patchAllDayEndDate}

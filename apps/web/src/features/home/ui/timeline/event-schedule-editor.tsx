@@ -384,12 +384,14 @@ export function EventScheduleEditor({
             label="Data inizio"
             locale="it"
             value={draft.startDate}
+            allDay
             onChange={(startDate) => moveStart(startDate, draft.startTime)}
           />
           <TemporalCreateDatePicker
             label="Data fine"
             locale="it"
             value={draft.endDate}
+            allDay
             min={draft.startDate}
             invalid={timingInvalid}
             onChange={(endDate) => update({ endDate })}

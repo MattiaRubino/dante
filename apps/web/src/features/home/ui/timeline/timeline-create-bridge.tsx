@@ -11,6 +11,10 @@ import { createPortal } from 'react-dom';
 import { useTranslation } from 'react-i18next';
 
 import type { TemporalPlacement } from '../../../temporal';
+import type {
+  TemporalAuthoredActivityResult,
+  TemporalAuthoredEventResult,
+} from '../../../temporal/authoring-data-source';
 import type { DraftVaultItem } from '../../../temporal-create/application/remote-draft-vault';
 import { subscribeTemporalCreateDuplicate } from '../../../temporal-create/ui/temporal-create-duplicate-request';
 import {
@@ -34,6 +38,7 @@ import type {
   TimelineGroupId,
   TimelineSemanticTone,
 } from './model/timeline-types';
+import { LEGACY_UNASSIGNED_GROUP } from './timeline-organization';
 import { TimelineDraftVault } from './timeline-draft-vault';
 import {
   TimelinePlanningTray,
@@ -252,6 +257,43 @@ function timelineAllDayFromProjection(
       : {}),
     origin: 'create' as const,
     meta,
+  });
+}
+
+/** U2 returns accepted Schedule identity without a local undo effect. */
+export function timelineAllDayFromAuthoredDateSpan(
+  kind: 'activity' | 'event',
+  authored: TemporalAuthoredActivityResult | TemporalAuthoredEventResult,
+): TimelineAllDayItem | null {
+  const schedule = authored.schedule;
+  if (!schedule || schedule.placement.kind !== 'date-span') return null;
+  const placement = schedule.placement;
+  return Object.freeze({
+    id: schedule.scheduleRef,
+    startDateKey: placement.startDate.toString(),
+    endDateExclusiveKey: placement.endDateExclusive.toString(),
+    title: authored.item.title,
+    groupId: authored.item.lifeAreaRef ?? LEGACY_UNASSIGNED_GROUP,
+    ...(authored.item.colorCode
+      ? { appearanceColorCode: authored.item.colorCode }
+      : {}),
+    canonicalBasis:
+      kind === 'activity'
+        ? {
+            kind: 'scheduled-activity' as const,
+            activityRef: authored.item.subjectRef,
+            scheduleRef: schedule.scheduleRef,
+            placementMaterialStateRef: schedule.placementMaterialStateRef,
+            placement,
+          }
+        : {
+            kind: 'scheduled-event' as const,
+            eventRef: authored.item.subjectRef,
+            scheduleRef: schedule.scheduleRef,
+            placementMaterialStateRef: schedule.placementMaterialStateRef,
+            placement,
+          },
+    origin: 'create' as const,
   });
 }
 
@@ -959,6 +1001,13 @@ export function TimelineCreateBridge({
           runtime={runtime}
           onPreview={setPreview}
           onApplied={applied}
+          onAuthoredDateSpan={(kind, authored) => {
+            const item = timelineAllDayFromAuthoredDateSpan(kind, authored);
+            if (item) {
+              onMaterializeCreatedAllDay(item);
+              onRevealDate(Temporal.PlainDate.from(item.startDateKey));
+            }
+          }}
           onBeforeOpen={onBeforeOpen}
           creationEnabled={creationEnabled}
         />

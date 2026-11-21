@@ -46,6 +46,7 @@ afterEach(() => {
 function activityResult(
   title: string,
   scheduled = false,
+  dateSpan = false,
 ): TemporalAuthoredActivityResult {
   return Object.freeze({
     item: Object.freeze({
@@ -60,15 +61,21 @@ function activityResult(
       lifeAreaColorCode: null,
       lifeAreaRevision: null,
     }),
-    schedule: scheduled
+    schedule: scheduled || dateSpan
       ? Object.freeze({
           scheduleRef: SCHEDULE_REF,
           placementMaterialStateRef: '0199a111-1111-7111-8111-111111111121',
-          placement: Object.freeze({
-            kind: 'absolute-interval' as const,
-            startsAt: Temporal.Instant.from('2026-09-30T19:00:00Z'),
-            endsAt: Temporal.Instant.from('2026-09-30T19:30:00Z'),
-          }),
+          placement: dateSpan
+            ? Object.freeze({
+                kind: 'date-span' as const,
+                startDate: Temporal.PlainDate.from('2026-09-30'),
+                endDateExclusive: Temporal.PlainDate.from('2026-10-01'),
+              })
+            : Object.freeze({
+                kind: 'absolute-interval' as const,
+                startsAt: Temporal.Instant.from('2026-09-30T19:00:00Z'),
+                endsAt: Temporal.Instant.from('2026-09-30T19:30:00Z'),
+              }),
         })
       : null,
     sessionCaptureMode: 'record',
@@ -83,9 +90,10 @@ function activityResult(
 function eventResult(
   title: string,
   scheduled = false,
+  dateSpan = false,
 ): TemporalAuthoredEventResult {
   return Object.freeze({
-    ...activityResult(title, scheduled),
+    ...activityResult(title, scheduled, dateSpan),
     agendaRevision: 0,
     agendaParts: Object.freeze([]),
   });
@@ -102,20 +110,25 @@ function renderEntry(
   scheduledResult = false,
   defaultDate = '2026-09-30',
   invocation?: TemporalCreateInvocation,
+  dateSpanReceipt = false,
 ) {
   const activityRequests: TemporalAuthorActivityRequest[] = [];
   const eventRequests: TemporalAuthorEventRequest[] = [];
+  const onAuthoredDateSpan = vi.fn<(
+    kind: 'activity' | 'event',
+    authored: TemporalAuthoredActivityResult | TemporalAuthoredEventResult,
+  ) => void>();
   const source: TemporalAuthoringDataSource = {
     authorActivity: vi.fn<TemporalAuthoringDataSource['authorActivity']>(
       (request: TemporalAuthorActivityRequest) => {
         activityRequests.push(request);
-        return Promise.resolve(activityResult(request.title, scheduledResult));
+        return Promise.resolve(activityResult(request.title, scheduledResult, dateSpanReceipt));
       },
     ),
     authorEvent: vi.fn<TemporalAuthoringDataSource['authorEvent']>(
       (request: TemporalAuthorEventRequest) => {
         eventRequests.push(request);
-        return Promise.resolve(eventResult(request.title, scheduledResult));
+        return Promise.resolve(eventResult(request.title, scheduledResult, dateSpanReceipt));
       },
     ),
   };
@@ -130,6 +143,7 @@ function renderEntry(
         authoringDataSource={source}
         onPreview={() => undefined}
         onApplied={() => false}
+        onAuthoredDateSpan={onAuthoredDateSpan}
         creationEnabled={false}
       />
     </>,
@@ -139,7 +153,7 @@ function renderEntry(
   );
   if (!quickAdd) throw new Error('Expected Create trigger.');
   if (!invocation) fireEvent.click(quickAdd);
-  return { ...rendered, activityRequests, eventRequests };
+  return { ...rendered, activityRequests, eventRequests, onAuthoredDateSpan };
 }
 
 describe('Temporal Create U2 entry', () => {
@@ -855,6 +869,8 @@ describe('Temporal Create U2 entry', () => {
     fireEvent.click(screen.getByRole('radio', { name: 'Tutto il giorno' }));
     expect(screen.getByRole('button', { name: /Data inizio:/ })).toBeTruthy();
     expect(screen.getByRole('button', { name: /Data fine:/ })).toBeTruthy();
+    expect(screen.getByRole('button', { name: /Data inizio:/ }).closest('.temporal-create-date-picker--all-day')).toBeTruthy();
+    expect(screen.getByRole('button', { name: /Data fine:/ }).closest('.temporal-create-date-picker--all-day')).toBeTruthy();
 
     fireEvent.change(screen.getByPlaceholderText('Titolo'), {
       target: { value: 'Giornata fotografica' },
@@ -870,6 +886,21 @@ describe('Temporal Create U2 entry', () => {
     expect(placement.startDate.toString()).toBe('2026-09-30');
     expect(placement.endDateExclusive.toString()).toBe('2026-10-01');
     expect(screen.queryByText(/Schedule non è confermato/i)).toBeNull();
+  });
+
+  it.each(['activity', 'event'] as const)('materializes an accepted %s date span immediately from U2', async (kind) => {
+    const { onAuthoredDateSpan } = renderEntry([], false, '2026-09-30', undefined, true);
+    if (kind === 'event') fireEvent.click(screen.getByRole('radio', { name: 'Evento' }));
+    fireEvent.click(screen.getByRole('radio', { name: 'Tutto il giorno' }));
+    fireEvent.change(screen.getByPlaceholderText('Titolo'), {
+      target: { value: kind === 'event' ? 'Fiera' : 'Giornata fotografica' },
+    });
+    fireEvent.click(screen.getByRole('button', { name: 'Aggiungi' }));
+
+    await waitFor(() => expect(onAuthoredDateSpan).toHaveBeenCalledTimes(1));
+    expect(onAuthoredDateSpan.mock.calls[0]?.[0]).toBe(kind);
+    expect(onAuthoredDateSpan.mock.calls[0]?.[1].schedule?.scheduleRef).toBe(SCHEDULE_REF);
+    expect(onAuthoredDateSpan.mock.calls[0]?.[1].schedule?.placement.kind).toBe('date-span');
   });
 
   it('keeps an Event without accepted Schedule inactive until Add', () => {

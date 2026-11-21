@@ -13,6 +13,8 @@ import {
   createRemoteTemporalAuthoringDataSource,
   systemTemporalIdFactory,
   type TemporalAuthoringDataSource,
+  type TemporalAuthoredActivityResult,
+  type TemporalAuthoredEventResult,
   type TemporalValidationIssue,
 } from '../../temporal';
 import { createRemoteScheduleReminderDataSource } from '../../temporal/remote-schedule-reminder-data-source';
@@ -130,6 +132,10 @@ export type TemporalCreateEntryProps = Readonly<{
   authoringDataSource?: TemporalAuthoringDataSource;
   onPreview: (projection: TemporalCreateTimelineProjection | null) => void;
   onApplied: (effect: TemporalCreateAppliedEffect) => boolean;
+  onAuthoredDateSpan?: (
+    kind: 'activity' | 'event',
+    authored: TemporalAuthoredActivityResult | TemporalAuthoredEventResult,
+  ) => void;
   onBeforeOpen?: (() => void) | undefined;
   creationEnabled?: boolean | undefined;
   draftRequest?: Readonly<{
@@ -154,6 +160,7 @@ export function TemporalCreateEntry({
   authoringDataSource: authoringDataSourceOverride,
   onPreview,
   onApplied,
+  onAuthoredDateSpan,
   onBeforeOpen,
   creationEnabled = true,
   draftRequest,
@@ -674,6 +681,12 @@ export function TemporalCreateEntry({
             : 'La creazione è riuscita, ma una configurazione successiva non è stata salvata. Riprova in sicurezza senza creare un duplicato.',
         );
         return false;
+      }
+
+      // U2 has no local undo effect. Show the accepted Schedule as soon as
+      // its post-create writes finish, before the canonical read catches up.
+      if (authored.schedule?.placement.kind === 'date-span') {
+        onAuthoredDateSpan?.(mapped.kind, authored);
       }
 
       invalidateTemporalTimelineRead();
