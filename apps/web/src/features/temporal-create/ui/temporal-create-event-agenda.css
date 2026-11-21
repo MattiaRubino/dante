@@ -15,6 +15,11 @@
   padding: 4px 0;
 }
 
+/* Advanced Create uses the same first-action spacing as Activity Sessions. */
+.temporal-create-composer.is-advanced .temporal-create-event-agenda.is-edit {
+  padding: 2px 0 6px;
+}
+
 .temporal-create-event-agenda.is-edit .temporal-create-event-agenda__part {
   position: relative;
 }

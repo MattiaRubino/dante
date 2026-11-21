@@ -248,9 +248,9 @@
   }
 }
 
-/* Activity title actions use the same configurable action scale in Advanced
-   Create, ordinary Edit and recurring-series Edit. */
-.temporal-authoring-title-row--activity.has-tools
+/* The shared title actions have one scale for Activity and Event in
+   Advanced Create, ordinary Edit and recurring-series Edit. */
+.temporal-authoring-title-row.has-tools
   > .temporal-create-title-row__tools
   > :is(.temporal-create-placement-lock, .temporal-create-structure-session-toggle) {
   color: var(--dante-semantic-color-home-text-primary, #edf2f8);

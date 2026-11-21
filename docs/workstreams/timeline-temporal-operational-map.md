@@ -1473,3 +1473,16 @@ lungo ha misurato `gap=-11px` perché una regola produzione più specifica
 forzava la card Activity a `display:block` dopo il layout condiviso. La regola
 ora mantiene `display:flex` per la card e il drag overlay; quel browser test
 richiede un nuovo run, non è considerato PASS sul fix.
+
+## 2026-11-21 — Azioni del titolo in Create/Edit
+
+Il browser WSL dell'utente ha confermato PASS (1/1) per il titolo lungo della
+card su `e7f1960`. Negli editor la regola tipografica della riga titolo
+ingrandiva «Blocca spostamenti» soltanto per Activity, lasciando Event alla
+dimensione base: ora il controllo condiviso ha la medesima scala per entrambi
+in Advanced Create, Edit ordinario e di serie. Anche `+ Scaletta` in Advanced
+Create usa il padding verticale del contenitore `+ Sessione`; i pulsanti
+condividono già la classe e il margine sinistro di 28px. Il browser fixture
+misura scala del lucchetto, altezza e offset dei due pulsanti. Typecheck e
+138 test Vitest mirati (3 file) PASS nello scratch; browser WSL e gate completo
+restano **NOT_RUN** sul nuovo candidate.

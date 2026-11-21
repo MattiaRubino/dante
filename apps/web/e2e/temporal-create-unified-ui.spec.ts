@@ -143,9 +143,20 @@ test('Advanced Activity and Event share one actual title rail without displaced 
       const name = element.children.item(1) as HTMLElement | null;
       const tools = element.children.item(2) as HTMLElement | null;
       const input = name?.querySelector<HTMLInputElement>('input');
-      if (!marker || !name || !tools || !input) {
+      const lock = tools?.querySelector<HTMLButtonElement>(
+        '.temporal-create-placement-lock',
+      );
+      const kind = element.getAttribute('data-authoring-title-kind');
+      const add = element
+        .closest('.temporal-create-composer')
+        ?.querySelector<HTMLButtonElement>(
+          kind === 'activity'
+            ? '.temporal-create-activity-tree__root-actions .temporal-create-tree-add'
+            : '.temporal-create-event-agenda__root-actions .temporal-create-tree-add',
+        );
+      if (!marker || !name || !tools || !input || !lock || !add) {
         throw new Error(
-          'The shared title-row marker, name, or actions are missing.',
+          'The shared title row, placement lock or first add action is missing.',
         );
       }
       const outer = element.getBoundingClientRect();
@@ -153,6 +164,10 @@ test('Advanced Activity and Event share one actual title rail without displaced 
       const title = name.getBoundingClientRect();
       const actions = tools.getBoundingClientRect();
       const inputBox = input.getBoundingClientRect();
+      const lockBox = lock.getBoundingClientRect();
+      const addBox = add.getBoundingClientRect();
+      const lockStyle = getComputedStyle(lock);
+      const addStyle = getComputedStyle(add);
       return {
         children: element.children.length,
         marker: marker
@@ -176,6 +191,16 @@ test('Advanced Activity and Event share one actual title rail without displaced 
           Math.abs(inputBox.top - title.top) <= 2,
         titleWidth: title.width,
         actionsWidth: actions.width,
+        lockFontSize: lockStyle.fontSize,
+        lockFontWeight: lockStyle.fontWeight,
+        lockPadding: lockStyle.paddingInline,
+        lockIconWidth: lock.querySelector('svg')?.getBoundingClientRect().width,
+        lockHeight: lockBox.height,
+        addFontSize: addStyle.fontSize,
+        addPadding: addStyle.paddingInline,
+        addHeight: addBox.height,
+        addLeftOffset: addBox.left - outer.left,
+        addTopGap: addBox.top - outer.bottom,
       };
     });
   }
@@ -234,6 +259,21 @@ test('Advanced Activity and Event share one actual title rail without displaced 
   expect(activity.markerWidth).toBe(event.markerWidth);
   expect(activity.radius).toBe(event.radius);
   expect(activity.fontSize).toBe(event.fontSize);
+  for (const key of [
+    'lockFontSize',
+    'lockFontWeight',
+    'lockPadding',
+    'lockIconWidth',
+    'lockHeight',
+    'addFontSize',
+    'addPadding',
+    'addHeight',
+  ] as const) {
+    expect(activity[key]).toBe(event[key]);
+  }
+  expect(activity.lockFontSize).toBe('16px');
+  expect(activity.addLeftOffset).toBeCloseTo(event.addLeftOffset, 0);
+  expect(activity.addTopGap).toBeCloseTo(event.addTopGap, 0);
 });
 
 /** Match the bare Edit arrows, not Create's obsolete bordered mini-buttons. */
