@@ -488,11 +488,11 @@ test('Advanced Create and every Edit surface share section typography and contro
     'series',
   ]);
   for (const surface of surfaces) {
-    expect(surface.titleSize).toBe('15px');
+    expect(surface.titleSize).toBe('18px');
     expect(surface.titleCase).toBe('none');
     expect(surface.titleWeight).toBe('650');
-    expect(surface.actionSize).toBe('14px');
-    expect(surface.actionHeight).toBeGreaterThanOrEqual(38);
+    expect(surface.actionSize).toBe('16px');
+    expect(surface.actionHeight).toBeGreaterThanOrEqual(44);
   }
   expect(new Set(surfaces.map(({ titleColor }) => titleColor)).size).toBe(1);
 });
