@@ -3013,43 +3013,37 @@ body:has(> .timeline-recurring-edit-scope-dialog__backdrop)
   border-top: 1px solid var(--dante-semantic-color-home-border-subtle);
 }
 .timeline-event-modal--inspector .timeline-activity-planned-sessions {
-  max-height: min(320px, 44dvh);
-  overflow-y: auto;
-  overscroll-behavior: contain;
-  scrollbar-gutter: stable;
+  overflow: visible;
 }
 .timeline-event-modal--inspector .timeline-activity-planned-sessions__label {
   display: block;
-  position: sticky;
-  z-index: 2;
-  top: 0;
-  padding: 3px 0 9px;
-  background: var(--dante-semantic-color-home-surface-primary, #0d1522);
+  padding: 3px 0 10px;
   font-size: 12px;
+}
+.timeline-event-modal--inspector .timeline-activity-planned-sessions__list {
+  display: grid;
+  min-width: 0;
+  gap: 0;
+  max-height: min(320px, 44dvh);
+  padding-right: 5px;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-gutter: stable;
+  border: 1px solid var(--dante-semantic-color-home-border-subtle);
+  border-radius: 11px;
+  background: var(--dante-temporal-editor-section-surface);
 }
 .timeline-event-modal--inspector .timeline-activity-planned-sessions__row {
   min-width: 0;
   padding: 12px;
-  border: 1px solid var(--dante-semantic-color-home-border-subtle);
+  border: 0;
   border-radius: 0;
   background: var(--dante-semantic-color-home-surface-control, #1b2529);
 }
 .timeline-event-modal--inspector
   .timeline-activity-planned-sessions__row
   + .timeline-activity-planned-sessions__row {
-  border-top: 0;
-}
-.timeline-event-modal--inspector
-  .timeline-activity-planned-sessions__row:first-of-type {
-  border-radius: 11px 11px 0 0;
-}
-.timeline-event-modal--inspector
-  .timeline-activity-planned-sessions__row:last-of-type {
-  border-radius: 0 0 11px 11px;
-}
-.timeline-event-modal--inspector
-  .timeline-activity-planned-sessions__row:first-of-type:last-of-type {
-  border-radius: 11px;
+  border-top: 1px solid var(--dante-semantic-color-home-border-subtle);
 }
 .timeline-event-modal--inspector .timeline-activity-planned-sessions__name {
   display: block;
@@ -3275,7 +3269,7 @@ body:has(> .timeline-recurring-edit-scope-dialog__backdrop)
 /* The outer Inspector remains scrollable for the other conditional sections. */
 @media (max-width: 600px) {
   .timeline-event-modal--inspector
-    :is(.timeline-activity-planned-sessions, .timeline-objective-controls) {
+    :is(.timeline-activity-planned-sessions__list, .timeline-objective-controls) {
     max-height: min(280px, 42dvh);
   }
   .timeline-event-modal--inspector
@@ -3288,7 +3282,7 @@ body:has(> .timeline-recurring-edit-scope-dialog__backdrop)
 .timeline-event-modal--inspector
   :is(
     .timeline-inspector-intervals,
-    .timeline-activity-planned-sessions,
+    .timeline-activity-planned-sessions__list,
     .timeline-objective-controls,
     .timeline-event-agenda__list
   ):focus-visible {

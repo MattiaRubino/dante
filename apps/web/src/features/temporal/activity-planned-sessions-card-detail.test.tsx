@@ -77,6 +77,10 @@ describe('Activity planned Sessions card detail', () => {
         '.timeline-activity-planned-sessions__row',
       );
       expect(rows).toHaveLength(2);
+      expect(
+        container.querySelector('.timeline-activity-planned-sessions__list')
+          ?.getAttribute('tabindex'),
+      ).toBeNull();
       for (const row of rows) {
         expect(row.querySelector('[aria-label="Avvia"]')).not.toBeNull();
         expect(
@@ -104,6 +108,45 @@ describe('Activity planned Sessions card detail', () => {
       ).toBe(true);
     },
   );
+
+  it('keeps the Session heading outside the keyboard-scrollable list of many rows', async () => {
+    vi.stubGlobal(
+      'fetch',
+      vi.fn<typeof fetch>((input) =>
+        Promise.resolve(
+          Response.json(
+            fetchRequestUrl(input).endsWith('/sessions')
+              ? []
+              : {
+                  parent_activity_ref: ACTIVITY,
+                  session_capture_mode: 'record',
+                  schedules: Array.from({ length: 7 }, (_, index) => ({
+                    schedule_ref: `planned-${index}`,
+                    role_code: 'planned',
+                    presentation_order: index + 1,
+                    display_name: `Sessione ${index + 1}`,
+                  })),
+                },
+          ),
+        ),
+      ),
+    );
+    const { container } = render(
+      <ActivityPlannedSessionsCardDetail activityRef={ACTIVITY} visible />,
+    );
+    expect(await screen.findByText('Sessione 7')).toBeTruthy();
+    const section = container.querySelector(
+      '.timeline-activity-planned-sessions',
+    );
+    const list = screen.getByRole('region', { name: 'Sessioni pianificate' });
+    expect(section?.firstElementChild?.textContent?.trim()).toBe('Sessioni');
+    expect(section?.lastElementChild).toBe(list);
+    expect(list.getAttribute('tabindex')).toBe('0');
+    expect(
+      list.querySelectorAll('.timeline-activity-planned-sessions__row'),
+    ).toHaveLength(7);
+    expect(list.querySelectorAll('[aria-label="Avvia"]')).toHaveLength(7);
+  });
 
   it('shows Play only while main is active and replaces it with review on Stop', async () => {
     let mainStopped = false;

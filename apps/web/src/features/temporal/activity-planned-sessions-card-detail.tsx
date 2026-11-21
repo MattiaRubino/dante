@@ -263,61 +263,65 @@ function PlannedSessionCardContent({
       <div
         className="timeline-activity-planned-sessions"
         data-activity-planned-sessions={activityRef}
-        role={rows.length > 4 ? 'region' : undefined}
-        aria-label={rows.length > 4 ? 'Sessioni pianificate' : undefined}
-        tabIndex={rows.length > 4 ? 0 : undefined}
       >
         <span className="timeline-activity-planned-sessions__label">
           Sessioni
         </span>
-        {rows.map((row) => (
-          <div
-            className="timeline-activity-planned-sessions__row"
-            key={row.scheduleRef}
-          >
-            <span className="timeline-activity-planned-sessions__summary">
-              <span
-                className="timeline-activity-planned-sessions__name"
-                title={row.name}
-              >
-                {row.name}
+        <div
+          className="timeline-activity-planned-sessions__list"
+          role={rows.length > 4 ? 'region' : undefined}
+          aria-label={rows.length > 4 ? 'Sessioni pianificate' : undefined}
+          tabIndex={rows.length > 4 ? 0 : undefined}
+        >
+          {rows.map((row) => (
+            <div
+              className="timeline-activity-planned-sessions__row"
+              key={row.scheduleRef}
+            >
+              <span className="timeline-activity-planned-sessions__summary">
+                <span
+                  className="timeline-activity-planned-sessions__name"
+                  title={row.name}
+                >
+                  {row.name}
+                </span>
               </span>
-            </span>
-            {independentChildren ||
-            mainRunning ||
-            mainPaused ||
-            (sessions ?? []).some(
-              (session) => session.plannedScheduleRef === row.scheduleRef,
-            ) ? (
-              <SessionSubjectControls
-                kind="activity"
-                subjectRef={activityRef}
-                plannedScheduleRef={row.scheduleRef}
-                label={row.name}
-                variant="detail"
-                compactRuntime
-                inspectorSummary
-                showUnstartedStatus
-                unstartedStatus={
-                  !independentChildren && mainPaused
-                    ? 'Principale in pausa'
-                    : 'Non avviata'
-                }
-                playEnabled={independentChildren || mainRunning}
-                {...(locale ? { locale } : {})}
-                {...(timeZone ? { timeZone } : {})}
-              />
-            ) : (
-              <span className="timeline-activity-planned-sessions__state">
-                {mainStopped
-                  ? 'Da verificare'
-                  : mainPaused
-                    ? 'Principale in pausa'
-                    : 'Avvia prima la principale'}
-              </span>
-            )}
-          </div>
-        ))}
+              {independentChildren ||
+              mainRunning ||
+              mainPaused ||
+              (sessions ?? []).some(
+                (session) => session.plannedScheduleRef === row.scheduleRef,
+              ) ? (
+                <SessionSubjectControls
+                  kind="activity"
+                  subjectRef={activityRef}
+                  plannedScheduleRef={row.scheduleRef}
+                  label={row.name}
+                  variant="detail"
+                  compactRuntime
+                  inspectorSummary
+                  showUnstartedStatus
+                  unstartedStatus={
+                    !independentChildren && mainPaused
+                      ? 'Principale in pausa'
+                      : 'Non avviata'
+                  }
+                  playEnabled={independentChildren || mainRunning}
+                  {...(locale ? { locale } : {})}
+                  {...(timeZone ? { timeZone } : {})}
+                />
+              ) : (
+                <span className="timeline-activity-planned-sessions__state">
+                  {mainStopped
+                    ? 'Da verificare'
+                    : mainPaused
+                      ? 'Principale in pausa'
+                      : 'Avvia prima la principale'}
+                </span>
+              )}
+            </div>
+          ))}
+        </div>
       </div>
     </>
   );

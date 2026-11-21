@@ -149,10 +149,11 @@ test('Inspector uses equal main and internal buttons without overflowing a long 
         <div class="timeline-session-controls__runtime-actions"><button class="timeline-session-controls__runtime-button">▶</button></div>
       </div></div>
     </div>
-    <div class="timeline-activity-planned-sessions"><div class="timeline-activity-planned-sessions__row">
+    <div class="timeline-activity-planned-sessions"><span class="timeline-activity-planned-sessions__label">Sessioni</span>
+    <div class="timeline-activity-planned-sessions__list"><div class="timeline-activity-planned-sessions__row">
       <div class="timeline-activity-planned-sessions__summary">Sessione</div>
       <div class="timeline-session-controls__runtime-actions"><button class="timeline-session-controls__runtime-button">▶</button></div>
-    </div></div>
+    </div></div></div>
     <div class="timeline-objective-controls"><div class="timeline-objective-controls__item">
       <div class="timeline-objective-controls__summary">
         <span class="timeline-objective-controls__name">${'Obiettivo lunghissimo '.repeat(15)}</span>
@@ -184,6 +185,76 @@ test('Inspector uses equal main and internal buttons without overflowing a long 
     ],
     nameFits: true,
     targetFits: true,
+  });
+});
+
+test('Inspector scrolls inside the bordered Session list without covering Play or Stop', async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 720, height: 840 });
+  await page.goto('/home');
+  for (const path of [
+    'src/features/temporal/activity-planned-sessions-card-detail.css',
+    'src/features/temporal/session-subject-controls.css',
+    'src/features/home/ui/timeline/timeline.css',
+  ]) {
+    await page.addStyleTag({ path });
+  }
+  const geometry = await page.evaluate(() => {
+    const root = document.createElement('div');
+    root.className = 'timeline-event-modal timeline-event-modal--inspector';
+    root.style.position = 'relative';
+    root.innerHTML = `<div class="timeline-activity-planned-sessions">
+      <span class="timeline-activity-planned-sessions__label">Sessioni</span>
+      <div class="timeline-activity-planned-sessions__list">
+        ${Array.from({ length: 9 }, (_, index) => `
+          <div class="timeline-activity-planned-sessions__row">
+            <span class="timeline-activity-planned-sessions__summary">
+              <span class="timeline-activity-planned-sessions__name">Sessione ${index + 1}</span>
+            </span>
+            <div class="timeline-session-controls__runtime-actions">
+              <button class="timeline-session-controls__runtime-button" aria-label="Avvia">▶</button>
+              <button class="timeline-session-controls__runtime-button" aria-label="Termina">■</button>
+            </div>
+            <span class="timeline-activity-planned-sessions__state">Non avviata</span>
+          </div>`).join('')}
+      </div>
+    </div>`;
+    document.body.appendChild(root);
+    const label = root.querySelector<HTMLElement>(
+      '.timeline-activity-planned-sessions__label',
+    )!;
+    const list = root.querySelector<HTMLElement>(
+      '.timeline-activity-planned-sessions__list',
+    )!;
+    const first = list.querySelector<HTMLElement>(
+      '.timeline-activity-planned-sessions__row',
+    )!;
+    const labelTop = label.getBoundingClientRect().top;
+    const firstTop = first.getBoundingClientRect().top;
+    const overflowing = list.scrollHeight > list.clientHeight;
+    list.scrollTop = list.scrollHeight;
+    const stop = list.querySelector<HTMLElement>(
+      '.timeline-activity-planned-sessions__row:last-child [aria-label="Termina"]',
+    )!;
+    const result = {
+      overflowing,
+      listScrolls: list.scrollTop > 0 && first.getBoundingClientRect().top < firstTop,
+      headingStays: label.getBoundingClientRect().top === labelTop,
+      borderAroundList: getComputedStyle(list).borderTopWidth === '1px',
+      stopClearOfScrollbar:
+        stop.getBoundingClientRect().right <=
+        list.getBoundingClientRect().left + list.clientWidth - 5,
+    };
+    root.remove();
+    return result;
+  });
+  expect(geometry).toEqual({
+    overflowing: true,
+    listScrolls: true,
+    headingStays: true,
+    borderAroundList: true,
+    stopClearOfScrollbar: true,
   });
 });
 

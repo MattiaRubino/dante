@@ -42,6 +42,12 @@
   text-transform: uppercase;
 }
 
+.timeline-activity-planned-sessions__list {
+  display: grid;
+  min-width: 0;
+  gap: 5px;
+}
+
 .timeline-activity-planned-sessions__row {
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto;

@@ -1418,3 +1418,15 @@ vecchia descrizione «Nota» sotto il titolo, ora correttamente rimossa.
 L'aspettativa verifica l'assenza del duplicato, mentre resta l'asserzione che
 l'editor riceva il profilo persistito. Il nuovo candidate è **NOT_RUN**;
 richiede una nuova verifica locale.
+
+## 2026-11-21 — Scroll delle Sessioni nell'Inspector
+
+L'utente ha confermato 73/73 test PASS su `df277bb` e ha mostrato che,
+con molte Sessioni pianificate, la barra di scorrimento coinvolgeva anche
+il titolo della sezione e copriva i controlli runtime. La lista scorre ora
+dentro un unico riquadro bordato, mentre «Sessioni» resta fuori dalla zona
+mobile; lo spazio a destra della lista lascia liberi Play e Stop. Il
+componente conserva il caso con poche Sessioni e l'accesso da tastiera
+quando le righe superano quattro. Aggiunte regressioni DOM e geometria browser;
+typecheck, Vitest e browser **NOT_RUN** su questo candidate, in attesa della
+verifica locale.
