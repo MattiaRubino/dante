@@ -821,6 +821,8 @@ export function EventDetailDialog({
     ref: string;
     value: string | null;
   } | null>(null);
+  const [eventDescriptionTarget, setEventDescriptionTarget] =
+    useState<HTMLDivElement | null>(null);
   const activityRef =
     sessionSubject?.kind === 'activity' ? sessionSubject.ref : null;
   useEffect(() => {
@@ -1119,9 +1121,6 @@ export function EventDetailDialog({
             />
           ) : null}
         </div>
-        {!currentEditingProfile && detail.contextLabel ? (
-          <p className="timeline-event-modal__context">{detail.contextLabel}</p>
-        ) : null}
         {currentEditingProfile && activityEditScope !== 'only_this' ? (
           <RecurringActivitySeriesEditor
             activityRef={currentEditingProfile.activityRef}
@@ -1210,6 +1209,7 @@ export function EventDetailDialog({
                     hideWhenEmpty
                     showDescription
                     afterAgenda={lifeAreaSection}
+                    descriptionTarget={eventDescriptionTarget}
                   />
                 ) : (
                   lifeAreaSection
@@ -1269,17 +1269,6 @@ export function EventDetailDialog({
                 subjectRef={detail.realitySubject.ref}
               />
             )}
-            {activityRef &&
-            activityDescription?.ref === activityRef &&
-            activityDescription.value?.trim() ? (
-              <section
-                className="timeline-event-modal__description"
-                aria-label="Descrizione"
-              >
-                <h4>Descrizione</h4>
-                <p>{activityDescription.value}</p>
-              </section>
-            ) : null}
             {detail.ownerKind === 'event' && detail.eventRef ? (
               <TimelineEventParticipation
                 eventRef={detail.eventRef}
@@ -1295,6 +1284,29 @@ export function EventDetailDialog({
                 />
               </div>
             )}
+            {detail.contextLabel ? (
+              <section
+                className="timeline-event-modal__context"
+                aria-label="Contesto"
+              >
+                <h4>Contesto</h4>
+                <p>{detail.contextLabel}</p>
+              </section>
+            ) : null}
+            {activityRef &&
+            activityDescription?.ref === activityRef &&
+            activityDescription.value?.trim() ? (
+              <section
+                className="timeline-event-modal__description"
+                aria-label="Descrizione"
+              >
+                <h4>Descrizione</h4>
+                <p>{activityDescription.value}</p>
+              </section>
+            ) : null}
+            {detail.ownerKind === 'event' && detail.eventRef ? (
+              <div ref={setEventDescriptionTarget} />
+            ) : null}
           </>
         )}
         {activityEditChoice ? (

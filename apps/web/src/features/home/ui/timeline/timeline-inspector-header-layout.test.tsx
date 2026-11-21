@@ -2,6 +2,7 @@
 
 import { cleanup, render, screen } from '@testing-library/react';
 import type { ReactNode } from 'react';
+import { createPortal } from 'react-dom';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import { EventDetailDialog } from './timeline-overlays';
@@ -84,11 +85,22 @@ vi.mock('../../../temporal/activity-planned-sessions-card-detail', () => ({
 }));
 
 vi.mock('./timeline-event-agenda-editor', () => ({
-  TimelineEventAgendaEditor: ({ afterAgenda }: { afterAgenda?: ReactNode }) => (
+  TimelineEventAgendaEditor: ({
+    afterAgenda,
+    descriptionTarget,
+  }: {
+    afterAgenda?: ReactNode;
+    descriptionTarget?: HTMLElement | null;
+  }) => (
     <>
       <section className="timeline-event-agenda" aria-label="Scaletta" />
       {afterAgenda}
-      <section aria-label="Descrizione" />
+      {descriptionTarget
+        ? createPortal(
+            <section aria-label="Descrizione" />,
+            descriptionTarget,
+          )
+        : null}
     </>
   ),
 }));
@@ -199,6 +211,7 @@ describe('Activity/Event Inspector main Session header', () => {
     const agenda = screen.getByRole('region', { name: 'Scaletta' });
     const area = screen.getByRole('region', { name: 'Area' });
     const description = screen.getByRole('region', { name: 'Descrizione' });
+    const slot = description.parentElement;
     expect(
       schedule.compareDocumentPosition(agenda) & Node.DOCUMENT_POSITION_FOLLOWING,
     ).toBeTruthy();
@@ -209,5 +222,6 @@ describe('Activity/Event Inspector main Session header', () => {
       area.compareDocumentPosition(description) &
         Node.DOCUMENT_POSITION_FOLLOWING,
     ).toBeTruthy();
+    expect(dialog.lastElementChild).toBe(slot);
   });
 });

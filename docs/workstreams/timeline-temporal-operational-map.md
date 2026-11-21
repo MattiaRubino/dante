@@ -1387,3 +1387,14 @@ assegnata) → Descrizione, conservando un'unica lettura della scaletta e i
 contenuti condizionali. L'Activity conserva orario → Area → Sessioni/Obiettivi.
 Regressioni nei test owner di header e scaletta, inclusa la scaletta vuota;
 typecheck, Vitest e browser **NOT_RUN**, in attesa della verifica locale.
+
+## 2026-11-21 — Descrizione in fondo all'Inspector
+
+La Descrizione delle Activity e degli Event, se presente, è un riquadro
+bordato finale dopo le altre sezioni condizionali. Nel caso Event la stessa
+lettura del profilo alimenta Scaletta e Descrizione, renderizzata nello slot
+finale senza una seconda richiesta. Il testo di contesto di un elemento
+secondario è distinto dalla descrizione e si trova nella sezione «Contesto»
+prima del riquadro finale, non sotto il titolo. I test owner coprono l'ordine
+del DOM, il caso senza scaletta e la lettura singola; typecheck, Vitest e
+browser **NOT_RUN** su questa revisione, riservati alla verifica locale.

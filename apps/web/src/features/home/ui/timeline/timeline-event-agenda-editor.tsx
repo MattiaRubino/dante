@@ -6,6 +6,7 @@ import {
   type ReactNode,
 } from 'react';
 import { useTranslation } from 'react-i18next';
+import { createPortal } from 'react-dom';
 
 import type {
   TemporalEventAgendaDataSource,
@@ -37,6 +38,7 @@ type TimelineEventAgendaEditorProps = Readonly<{
   showDescription?: boolean;
   readOnly?: boolean;
   afterAgenda?: ReactNode;
+  descriptionTarget?: HTMLElement | null;
 }>;
 
 export function TimelineEventAgendaEditor(
@@ -61,6 +63,7 @@ function TimelineEventAgendaEditorInstance({
   showDescription = false,
   readOnly = false,
   afterAgenda,
+  descriptionTarget,
 }: TimelineEventAgendaEditorProps) {
   const { t } = useTranslation('common');
   const source = useMemo(
@@ -199,11 +202,17 @@ function TimelineEventAgendaEditorInstance({
         <p>{description}</p>
       </section>
     ) : null;
+  const renderedDescription =
+    descriptionTarget === undefined
+      ? descriptionSection
+      : descriptionTarget && descriptionSection
+        ? createPortal(descriptionSection, descriptionTarget)
+        : null;
   if (hideWhenEmpty && parts.length === 0) {
     return (
       <>
         {afterAgenda}
-        {descriptionSection}
+        {renderedDescription}
       </>
     );
   }
@@ -478,7 +487,7 @@ function TimelineEventAgendaEditorInstance({
         ) : null}
       </section>
       {afterAgenda}
-      {descriptionSection}
+      {renderedDescription}
     </>
   );
 }

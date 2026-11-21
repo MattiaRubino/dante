@@ -148,6 +148,36 @@ describe('B03-D canonical Event Agenda editor', () => {
     },
   );
 
+  it('renders the Event description in the final Inspector slot without rereading the Event', async () => {
+    const descriptionTarget = document.createElement('div');
+    document.body.append(descriptionTarget);
+    const loadEvent = vi.fn<TemporalEventAgendaDataSource['loadEvent']>(() =>
+      Promise.resolve({
+        ...record(0, ['Apertura']),
+        description: 'Preparare il materiale.',
+      }),
+    );
+    try {
+      render(
+        <TimelineEventAgendaEditor
+          eventRef={EVENT_REF}
+          dataSource={{ loadEvent, replaceAgenda: vi.fn() }}
+          readOnly
+          showDescription
+          descriptionTarget={descriptionTarget}
+        />,
+      );
+      const description = await screen.findByRole('region', {
+        name: 'Descrizione',
+      });
+      expect(description.parentElement).toBe(descriptionTarget);
+      expect(description.textContent).toContain('Preparare il materiale.');
+      expect(loadEvent).toHaveBeenCalledOnce();
+    } finally {
+      descriptionTarget.remove();
+    }
+  });
+
   it('reads backend truth and persists add, explicit edit, reorder and remove through CAS', async () => {
     let serverRevision = 0;
     let serverParts: readonly string[] = ['Apertura', 'Decisione'];

@@ -193,6 +193,7 @@ describe('Timeline post-create runtime destinations', () => {
           startMinute: 870,
           endMinute: 900,
           groupLabel: 'Creatività',
+          contextLabel: 'Elemento dell’attività Scrivere',
           ownerKind: 'activity',
           realitySubject: { kind: 'activity', ref: ACTIVITY_REF },
         }}
@@ -207,6 +208,19 @@ describe('Timeline post-create runtime destinations', () => {
     expect(description.textContent).toContain('Preparare la bozza.');
     const inspector = screen.getByRole('dialog');
     const objectives = screen.getByTestId('reality-controls');
+    const context = screen.getByRole('region', { name: 'Contesto' });
+    expect(
+      inspector.querySelector('.timeline-event-modal__title-row')?.contains(context),
+    ).toBe(false);
+    expect(
+      objectives.compareDocumentPosition(context) &
+        Node.DOCUMENT_POSITION_FOLLOWING,
+    ).toBeTruthy();
+    expect(
+      context.compareDocumentPosition(description) &
+        Node.DOCUMENT_POSITION_FOLLOWING,
+    ).toBeTruthy();
+    expect(inspector.lastElementChild).toBe(description);
     expect(
       objectives.compareDocumentPosition(description) &
         Node.DOCUMENT_POSITION_FOLLOWING,
