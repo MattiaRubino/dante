@@ -126,11 +126,11 @@ describe('B03-D canonical Event Agenda editor', () => {
           afterAgenda={<section aria-label="Area">Lavoro</section>}
         />,
       );
-      const area = screen.getByRole('region', { name: 'Area' });
       const description = await screen.findByRole('region', {
         name: 'Descrizione',
       });
-      const agenda = screen.queryByText('Apertura')?.closest('section');
+      const area = screen.getByRole('region', { name: 'Area' });
+      const agenda = screen.queryByText('Apertura')?.closest('section') ?? null;
       if (parts.length) {
         expect(agenda).toBeTruthy();
         expect(
