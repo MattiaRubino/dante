@@ -166,12 +166,26 @@
   .home-timeline--production
   .timeline-event-card--activity
   .timeline-event-card__title {
-  display: block;
+  display: flex;
   min-width: 0;
   width: 100%;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+
+/* This production rule has higher specificity than timeline.css: keep the
+ * symbol and the ellipsized name in separate flex items at every zoom level. */
+.home-m1
+  .home-timeline--production
+  .timeline-event-card__heading
+  .timeline-event-card__title,
+.timeline-event-drag-overlay
+  .timeline-event-card__heading
+  .timeline-event-card__title {
+  display: flex;
+  align-items: center;
+  gap: 5px;
 }
 
 .home-m1 .home-timeline--production .timeline-event-card__time,

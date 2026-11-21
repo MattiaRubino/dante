@@ -1468,3 +1468,8 @@ Tutto il giorno e il posizionamento dell'Inspector restano da discutere.
 Nel workspace scratch: Web typecheck e 94 test Vitest mirati PASS (4 file),
 browser e gate WSL **NOT_RUN** sul candidate finale. Il browser fixture copre
 anche il centraggio del simbolo in Quick/Advanced e il titolo lungo della card.
+Il primo browser WSL su `74fde7c` ha restituito 2/3 PASS: il test del titolo
+lungo ha misurato `gap=-11px` perché una regola produzione più specifica
+forzava la card Activity a `display:block` dopo il layout condiviso. La regola
+ora mantiene `display:flex` per la card e il drag overlay; quel browser test
+richiede un nuovo run, non è considerato PASS sul fix.
