@@ -1,11 +1,11 @@
 :root {
   /* One authoring scale for Create and Edit. A future user preference can
      override these properties without changing the individual controls. */
-  /* Space-warm palette shared by Quick, Advanced, Edit and Inspector. */
-  --dante-temporal-editor-modal-surface: #121a22;
-  --dante-temporal-editor-section-surface: #1b2930;
-  --dante-temporal-editor-field-surface: #26363b;
-  --dante-temporal-editor-border: #778c8d;
+  /* Muted navy shared by Quick, Advanced, Edit and Inspector. */
+  --dante-temporal-editor-modal-surface: #0d1524;
+  --dante-temporal-editor-section-surface: #111c2d;
+  --dante-temporal-editor-field-surface: #172438;
+  --dante-temporal-editor-border: #4a5e76;
   --dante-temporal-form-text-size: 16px;
   --dante-temporal-form-label-size: 15px;
   --dante-temporal-form-helper-size: 13px;
@@ -15,8 +15,8 @@
   --dante-temporal-action-height: 44px;
   --dante-temporal-control-height: 44px;
   --dante-temporal-recurrence-setting-size: 17px;
-  --dante-temporal-menu-surface: #1b2a2e;
-  --dante-temporal-menu-selected: #3c4c4f;
+  --dante-temporal-menu-surface: #111b2d;
+  --dante-temporal-menu-selected: #2c3b53;
   --dante-temporal-menu-text: #f3f0ea;
   --dante-temporal-menu-option-size: 17px;
   /* Preserve older recurrence overrides while all native menus converge. */
@@ -39,9 +39,9 @@
   --dante-semantic-color-home-surface-control: var(--dante-temporal-editor-field-surface);
   --dante-semantic-color-home-surface-overlay: var(--dante-temporal-editor-modal-surface);
   --dante-semantic-color-home-text-primary: #f3f0ea;
-  --dante-semantic-color-home-text-secondary: #cad0ca;
-  --dante-semantic-color-home-text-muted: #aebbb7;
-  --dante-semantic-color-home-border-subtle: #405257;
+  --dante-semantic-color-home-text-secondary: #cbd3dc;
+  --dante-semantic-color-home-text-muted: #aab8c8;
+  --dante-semantic-color-home-border-subtle: #34445c;
   --dante-semantic-color-home-border-strong: var(--dante-temporal-editor-border);
   --dante-surface: var(--dante-temporal-editor-section-surface);
 }

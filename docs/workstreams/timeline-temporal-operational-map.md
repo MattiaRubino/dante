@@ -1361,3 +1361,18 @@ o gli errori. La stessa geometria e gli stessi comportamenti restano invariati.
 Il browser fixture `temporal-create-unified-ui.spec.ts` copre campi Quick,
 menu/section Advanced, CSS Edit e superfici Inspector; typecheck, fixture
 browser reale e accettazione visuale utente sono **NOT_RUN** su questo candidate.
+
+## 2026-11-21 — Palette blu notte attenuata nei pannelli temporali
+
+La verifica sullo schermo reale ha mostrato che i campi verdastri della
+precedente proposta staccavano troppo dalla Timeline. Dopo il confronto delle
+anteprime, il proprietario ha scelto la via intermedia vicina al campo
+«Scrivi a DANTE…»: pannello `#0D1524`, sezioni `#111C2D`, campi `#172438`,
+menu `#111B2D` e selezione `#2C3B53`. Bordi dei controlli `#4A5E76`,
+cornici decorative `#34445C`; testo principale caldo e arancione Dante
+rimangono. Gli stessi token sono consumati da Quick/Advanced Create, Edit
+ordinario/di serie, Inspector e dialogo dei fusi; nessun cambiamento alla
+geometria o alla semantica Life Area, runtime ed errori. I browser fixture
+esistenti hanno le aspettative cromatiche aggiornate. Typecheck e Playwright
+su questa revisione sono **NOT_RUN**, riservati alla verifica locale del
+proprietario.

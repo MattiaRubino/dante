@@ -44,9 +44,9 @@ test('recurrence scope replaces the Inspector visually and remains interactive',
     scope: 'visible',
     onTop: true,
     dialogColor: 'rgb(243, 240, 234)',
-    dialogBackground: 'rgb(18, 26, 34)',
+    dialogBackground: 'rgb(13, 21, 36)',
     buttonColor: 'rgb(243, 240, 234)',
-    buttonBackground: 'rgb(38, 54, 59)',
+    buttonBackground: 'rgb(23, 36, 56)',
     centered: true,
   });
 });
