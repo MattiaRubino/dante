@@ -1562,7 +1562,7 @@ describe('Activity Inspector', () => {
         onDuplicate={() => undefined}
       />,
     );
-    expect(await screen.findByText('Nota')).toBeTruthy();
+    expect(screen.queryByText('Nota')).toBeNull();
     fireEvent.click(screen.getByRole('button', { name: 'Modifica' }));
     await waitFor(() =>
       expect(onEdit).toHaveBeenCalledWith(profile, 'only_this'),

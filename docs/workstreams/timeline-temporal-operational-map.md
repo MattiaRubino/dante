@@ -1409,3 +1409,12 @@ verso il fondo. La sezione Descrizione di Activity/Event ora ha intestazione
 fuori dal riquadro e solo il testo dentro la cornice. Regressioni aggiunte
 all'owner delle azioni Activity e ai test Inspector Activity/Event; typecheck,
 Vitest e browser **NOT_RUN** su questo nuovo candidate.
+
+## 2026-11-21 — Allineamento del test Inspector Activity
+
+La verifica locale dell'utente sul commit `bfc46bf` ha dato typecheck PASS,
+92 test PASS e uno FAIL: il test di apertura dell'editor cercava ancora la
+vecchia descrizione «Nota» sotto il titolo, ora correttamente rimossa.
+L'aspettativa verifica l'assenza del duplicato, mentre resta l'asserzione che
+l'editor riceva il profilo persistito. Il nuovo candidate è **NOT_RUN**;
+richiede una nuova verifica locale.
