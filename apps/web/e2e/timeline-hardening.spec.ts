@@ -394,7 +394,7 @@ test('Session Objective and agenda indicators sit near the lower card edge', asy
   expect(distanceFromBottom).toBeGreaterThanOrEqual(0);
   expect(distanceFromBottom).toBeLessThanOrEqual(38);
   const plain = page.locator('[data-timeline-event="3"]');
-  const stackedInside = await plain.evaluate((element) => {
+  await plain.evaluate((element) => {
     const footer =
       element.querySelector('.timeline-event-card__indicators') ??
       document.createElement('div');
@@ -407,20 +407,28 @@ test('Session Objective and agenda indicators sit near the lower card edge', asy
       footer.append(indicator);
     }
     element.append(footer);
-    const [objectives, agenda] = [...footer.children].map((indicator) =>
-      indicator.getBoundingClientRect(),
-    );
-    if (!objectives || !agenda) return false;
-    return (
-      agenda.top >= objectives.bottom &&
-      Math.abs(agenda.width - objectives.width) <= 1 &&
-      [objectives, agenda].every((bounds) => {
-        const card = element.getBoundingClientRect();
-        return bounds.top >= card.top && bounds.bottom <= card.bottom;
-      })
-    );
   });
-  expect(stackedInside).toBe(true);
+  // ResizeObserver reserves room in the elastic ruler on the next frame.
+  await expect
+    .poll(() =>
+      plain.evaluate((element) => {
+        const footer = element.querySelector('.timeline-event-card__indicators');
+        if (!footer) return false;
+        const [objectives, agenda] = [...footer.children].map((indicator) =>
+          indicator.getBoundingClientRect(),
+        );
+        if (!objectives || !agenda) return false;
+        return (
+          agenda.top >= objectives.bottom &&
+          Math.abs(agenda.width - objectives.width) <= 1 &&
+          [objectives, agenda].every((bounds) => {
+            const card = element.getBoundingClientRect();
+            return bounds.top >= card.top && bounds.bottom <= card.bottom;
+          })
+        );
+      }),
+    )
+    .toBe(true);
 });
 
 test('title drag previews the same 15-minute destination as drop', async ({

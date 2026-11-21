@@ -135,9 +135,7 @@ describe('timeline viewport runtime', () => {
     expect(
       after.layouts.find((layout) => layout.event.id === plain.id)!.height,
     ).toBeCloseTo(before.layouts[1]!.height);
-    expect(after.mapper.map(630) - after.mapper.map(600)).toBeGreaterThanOrEqual(
-      151,
-    );
+    expect(after.mapper.map(630) - after.mapper.map(600)).toBeCloseTo(151);
     const week = buildTimelineRenderedWeek(date, {
       ...inputs,
       cardContentHeights: new Map([[activity.id, 151]]),
