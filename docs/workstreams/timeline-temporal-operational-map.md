@@ -1513,3 +1513,11 @@ browser gates on the same revision.
 The existing catalog and migration tests previously pinned `_181`; their
 head, stage inventory and catalog assertions now match the current `_188`
 Dictionary candidate. Those checks remain NOT_RUN until the owner executes them.
+
+The owner's `_188` PostgreSQL run returned 28 PASS and four FAIL. The latest
+head's downgrade refusal still matched `_181` text; catalog drift exposed
+the `_185` converted-first Event state pointer/FK, `_187` named-zone end
+boundary/CHECK, and two `_185` SQL functions absent from the Dictionary and
+mappings. This candidate reconciles those existing objects, the expected
+topology `245|5|269|105|502|441|614`, and the current-head refusal test.
+The four failed checks and the full gate remain NOT_RUN on this correction.

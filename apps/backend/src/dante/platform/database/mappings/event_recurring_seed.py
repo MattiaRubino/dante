@@ -15,7 +15,7 @@ from sqlalchemy.orm import Mapped, mapped_column
 from sqlalchemy.schema import conv
 
 from dante.platform.database.metadata import Base
-from dante.platform.database.references import NativeRef
+from dante.platform.database.references import MaterialStateRef, NativeRef
 
 
 class EventRecurringSeedRow(Base):
@@ -59,6 +59,11 @@ class EventRecurringSeedRow(Base):
             ["dante.person.person_ref"],
             name="fk_event_recurring_seed_person",
         ),
+        ForeignKeyConstraint(
+            ["effective_structure_state_ref"],
+            ["dante.material_state_address.material_state_ref"],
+            name="fk_event_recurring_seed_effective_structure",
+        ),
     )
 
     event_ref: Mapped[NativeRef] = mapped_column(primary_key=True)
@@ -75,3 +80,4 @@ class EventRecurringSeedRow(Base):
     legacy_repaired_at: Mapped[datetime | None] = mapped_column(
         DateTime(timezone=True), nullable=True
     )
+    effective_structure_state_ref: Mapped[MaterialStateRef | None] = mapped_column(nullable=True)

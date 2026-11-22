@@ -534,8 +534,13 @@ class SchedulePlacementNamedZoneStateRow(Base):
             "isfinite(starts_local_at) AND ("
             "(extent_code IN ('point','start_only') AND ends_local_at IS NULL) OR "
             "(extent_code='interval' AND ends_local_at IS NOT NULL "
-            "AND isfinite(ends_local_at) AND ends_local_at > starts_local_at))",
+            "AND isfinite(ends_local_at) "
+            "AND (end_zone_id IS NOT NULL OR ends_local_at > starts_local_at)))",
             name="interval_order",
+        ),
+        CheckConstraint(
+            "end_zone_id IS NULL OR end_zone_id <> zone_id",
+            name="distinct_end_zone",
         ),
         CheckConstraint(
             "(resolved_start_at IS NULL OR isfinite(resolved_start_at)) AND ("
@@ -561,6 +566,7 @@ class SchedulePlacementNamedZoneStateRow(Base):
     starts_local_at: Mapped[datetime] = mapped_column(DateTime(timezone=False), nullable=False)
     ends_local_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=False))
     zone_id: Mapped[str] = mapped_column(Text, nullable=False)
+    end_zone_id: Mapped[str | None] = mapped_column(Text, nullable=True)
     resolved_start_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
     resolved_end_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
 

@@ -111,16 +111,16 @@
     "standalone_entries": {
       "tables": 245,
       "views": 5,
-      "routines": 267,
-      "total": 517
+      "routines": 269,
+      "total": 519
     },
     "embedded_objects": {
       "triggers": 105,
       "physical_indexes": 502
     },
     "constraints": {
-      "foreign_keys": 440,
-      "check_constraints": 613
+      "foreign_keys": 441,
+      "check_constraints": 614
     }
   },
   "technical_foundation": {

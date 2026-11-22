@@ -193,7 +193,7 @@ def test_current_repository_head_refuses_downgrade_by_design(
     # exercised separately at their own historical revisions.
     with pytest.raises(
         RuntimeError,
-        match="Profile edit history and selected-boundary semantics are forward-only",
+        match="Forward-only Dante migration",
     ):
         command.downgrade(alembic_config, "-1")
 
