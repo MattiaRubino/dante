@@ -496,6 +496,19 @@ def test_calendar_preview_reconciles_weekly_cadence_without_touching_local_edit(
     ]
 
 
+def test_calendar_preview_rejects_new_coordinates_beyond_open_allowance() -> None:
+    with pytest.raises(SeriesReconciliationError, match="Renew the series first"):
+        preview_calendar_series_reconciliation(
+            scope=_scope(),
+            materialized=_materialized(),
+            proposed_recurrence=_weekly_tuesday(),
+            window=WINDOW,
+            effective_zone_id="Europe/Rome",
+            authoritative_inventory=True,
+            authorized_coordinates=frozenset(),
+        )
+
+
 def test_selected_day_is_retained_when_the_new_clock_moves_earlier() -> None:
     proposal = replace(_weekly_tuesday(), wall_times=(time(9),))
     result = preview_calendar_series_reconciliation(

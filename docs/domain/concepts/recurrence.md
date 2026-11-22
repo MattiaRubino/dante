@@ -2204,3 +2204,22 @@ Normative downstream references:
 
 - `version.md`;
 - `../checkpoints/version-material-equivalence-v0-validation.md`.
+
+## Renewable open calendar series (2026-11-22)
+
+For Activity and Event calendar recurrences with `range_kind=open` (the UI's
+“Mai”), generation starts with an allowance of 730 expected occurrences.
+Skipped occurrences still consume their expected coordinate. A structural edit
+of “questa e le prossime” inherits the same source allowance; it does not
+restart the count. Conversion from a finite rule to an open rule begins a new
+open epoch, without deleting the finite history.
+
+When at most 30 authorized occurrences remain by the account's local date,
+the Timeline shows one optional renewal notice for that source. “Continua”
+authorizes another 730 expected coordinates with an owner-scoped, replay-safe
+decision. The notice then disappears until the next threshold. “Termina”
+closes the notice and generation ends at the currently authorized
+boundary; already accepted instances and history remain. No automatic
+extension occurs. Finite rules (“Data” and “Dopo”) do not show renewal notices
+and retain their explicit end semantics. The authoring UI currently validates
+“Dopo” in the interval 1–999 and explains that bound beside the field.

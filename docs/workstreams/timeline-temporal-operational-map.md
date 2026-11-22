@@ -1498,3 +1498,15 @@ condividono già la classe e il margine sinistro di 28px. Il browser fixture
 misura scala del lucchetto, altezza e offset dei due pulsanti. Typecheck e
 138 test Vitest mirati (3 file) PASS nello scratch; browser WSL e gate completo
 restano **NOT_RUN** sul nuovo candidate.
+### 2026-11-22 — Open calendar recurrence renewal
+
+The Activity/Event `Mai` calendar rule remains open in the canonical
+Recurrence state. Generation has a separate, durable 730-coordinate allowance
+per source. The Timeline only exposes renewal at 30 or fewer remaining
+coordinates; the owner can grant another 730 or decline. Decline suppresses
+the notice and stops generation at the authorized boundary while retaining
+historical Occurrences. Finite `Data` and `Dopo` rules do not participate.
+The existing Advanced Create `Dopo` validation remains 1–999; its inline
+message now states that range. Migration `20261122_188` and the evaluator,
+checkpoint and UI changes are pending the local PostgreSQL, typecheck and
+browser gates on the same revision.

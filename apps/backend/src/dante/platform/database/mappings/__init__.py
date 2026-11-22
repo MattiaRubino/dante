@@ -255,6 +255,8 @@ MAPPED_TABLES: tuple[Table, ...] = cast(
         recurrence.EventRecurrenceCyclePositionRow.__table__,
         recurrence.EventRecurrenceCalendarDstPolicyRow.__table__,
         recurrence.EventRecurrenceOperationRow.__table__,
+        recurrence.OpenRecurrenceAllowanceRow.__table__,
+        recurrence.OpenRecurrenceAllowanceOperationRow.__table__,
         advanced_recurrence.RoutineRecurrenceElapsedAnchorSourceRow.__table__,
         advanced_recurrence.EventRecurrenceElapsedAnchorSourceRow.__table__,
         occurrence_generation.OccurrenceGenerationRow.__table__,

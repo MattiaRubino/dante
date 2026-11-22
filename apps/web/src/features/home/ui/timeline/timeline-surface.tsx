@@ -47,6 +47,7 @@ import {
 import { REVIEW_QUEUE_INVALIDATED } from '../context-rail/review-events';
 import { useSessionPanel } from '../../../temporal/use-session-panel';
 import { useSessionPanelPresentation } from './timeline-session-panel';
+import { TimelineRecurrenceRenewals } from './timeline-recurrence-renewals';
 import { applyTimelineSessionReality } from './timeline-session-reality';
 import {
   authoritativeDateLaneIdsToReplace,
@@ -1907,6 +1908,7 @@ export function TimelineSurface({
         }
         creationEnabled={creationEnabled}
       />
+      {!prototypeMode ? <TimelineRecurrenceRenewals /> : null}
       <div className="timeline-session-panel__edge-host">
         {sessionPresentation.panel}
       </div>

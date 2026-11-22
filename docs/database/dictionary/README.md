@@ -223,6 +223,15 @@ B09-C Person-referent implementation is closed on the user-run 2026-09-25 Postgr
 
 Provider integration, native/offline, broad analytics and account collaboration are outside this vertical and must not create speculative Dictionary entries.
 
+## 2026-11-22 — Open calendar renewal (`20261122_188`)
+
+Two self-scoped state/receipt tables and three SECURITY DEFINER capabilities
+persist renewable 730-coordinate allowances for open Activity/Event calendar
+series. The candidate catalog expectation in `scope.json` is 245 tables,
+5 views, 267 routines, 105 triggers, 502 indexes, 440 foreign keys and
+613 CHECK constraints. Verify those numbers against fresh PostgreSQL before
+calling the migration accepted.
+
 B08-C / 20260924_65 reuses existing Temporal Constraint duration tables and mutation capability. It adds no physical object count; the current facet CHECK and deferred totality/mutation functions admit only the Activity-owned soft-minimum Session active-duration subset.
 
 ## 2026-11-07 — Objective verification candidate (`20261107_178`)

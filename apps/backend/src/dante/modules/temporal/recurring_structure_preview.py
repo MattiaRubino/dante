@@ -9,6 +9,7 @@ from __future__ import annotations
 import hashlib
 import json
 from dataclasses import asdict, dataclass
+from datetime import timedelta
 from uuid import UUID
 
 from sqlalchemy import text
@@ -16,8 +17,11 @@ from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 
 from dante.modules.temporal.occurrence import (
     CalendarCoordinate,
+    RecurrenceHistoryEntry,
     _candidate_instant,
+    _history_entry,
     _zone,
+    evaluate_open_calendar_allowance,
 )
 from dante.modules.temporal.occurrence_edit_inventory import (
     OccurrenceEditInventory,
@@ -219,6 +223,71 @@ class RecurringStructurePreviewApplication:
             raise StructuralSeriesPreviewError(
                 "Canonical preview changed during structural planning."
             )
+        authorized_coordinates: frozenset[CalendarCoordinate] | None = None
+        if proposed_recurrence.range_kind == "open":
+            is_routine = await session.scalar(
+                text(
+                    "SELECT EXISTS(SELECT 1 FROM dante.list_self_routines(:actor) WHERE routine_ref=:source)"
+                ),
+                {"actor": self_person_ref, "source": inventory.source_native_ref},
+            )
+            owner = "routine" if is_routine else "event"
+            allowance = (
+                (
+                    await session.execute(
+                        text(
+                            "SELECT * FROM dante.get_self_open_recurrence_allowance(:actor,:owner,:source)"
+                        ),
+                        {
+                            "actor": self_person_ref,
+                            "owner": owner,
+                            "source": inventory.source_native_ref,
+                        },
+                    )
+                )
+                .mappings()
+                .one_or_none()
+            )
+            history_statement = text(
+                "SELECT * FROM dante.list_self_routine_recurrence_history(:actor,:source)"
+                if is_routine
+                else "SELECT * FROM dante.list_self_event_recurrence_history(:actor,:source)"
+            )
+            history_rows = (
+                (
+                    await session.execute(
+                        history_statement,
+                        {"actor": self_person_ref, "source": inventory.source_native_ref},
+                    )
+                )
+                .mappings()
+                .all()
+            )
+            history = tuple(_history_entry(row) for row in history_rows)
+            synthetic_ref = UUID(int=0)
+            proposed = RecurrenceHistoryEntry(
+                material_state_ref=synthetic_ref,
+                current_from_at=max(
+                    (entry.current_from_at for entry in history),
+                    default=inventory.captured_at,
+                )
+                + timedelta(microseconds=1),
+                current_until_at=None,
+                recurrence=proposed_recurrence,
+            )
+            allowed, _ = evaluate_open_calendar_allowance(
+                (*history, proposed),
+                start_date=window.start_date,
+                end_date_exclusive=window.end_date_exclusive,
+                effective_zone_id=effective_zone_id,
+                allowed_count=int(allowance["allowed_count"]) if allowance else 730,
+            )
+            authorized_coordinates = frozenset(
+                candidate.coordinate
+                for candidate in allowed
+                if candidate.governing_recurrence_state_ref == synthetic_ref
+                and isinstance(candidate.coordinate, CalendarCoordinate)
+            )
         plan = preview_calendar_series_reconciliation(
             scope=scope,
             materialized=generated,
@@ -226,6 +295,7 @@ class RecurringStructurePreviewApplication:
             window=window,
             effective_zone_id=effective_zone_id,
             authoritative_inventory=True,
+            authorized_coordinates=authorized_coordinates,
         )
         intent = {
             "source_fingerprint": source_preview["fingerprint"],

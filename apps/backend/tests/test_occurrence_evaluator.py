@@ -1,6 +1,7 @@
 """B06-C deterministic bounded Occurrence evaluator proof."""
 
-from datetime import UTC, date, datetime, time
+from dataclasses import replace
+from datetime import UTC, date, datetime, time, timedelta
 from decimal import Decimal
 from uuid import UUID
 
@@ -15,6 +16,7 @@ from dante.modules.temporal.occurrence import (
     QuotaCoordinate,
     RecurrenceHistoryEntry,
     _normalize_exclusion_coordinate,
+    evaluate_open_calendar_allowance,
     evaluate_recurrence_history,
 )
 from dante.modules.temporal.recurrence import (
@@ -57,6 +59,70 @@ def _daily(*, effective_from: date, wall_time: time | None = None) -> CalendarRe
         nonexistent_local_time_policy=None,
         ambiguous_local_time_policy=None,
     )
+
+
+def test_open_allowance_stops_after_730_and_resumes_after_one_renewal() -> None:
+    history = (_history(_OLD, _daily(effective_from=date(2026, 1, 1)), 1),)
+    boundary = date(2026, 1, 1).toordinal() + 729
+    last_day = date.fromordinal(boundary)
+    candidates, consumed = evaluate_open_calendar_allowance(
+        history,
+        start_date=last_day,
+        end_date_exclusive=last_day + timedelta(days=2),
+        effective_zone_id="Europe/Rome",
+        allowed_count=730,
+    )
+    assert consumed == 730
+    assert [item.coordinate.generated_date for item in candidates] == [last_day]
+    extended, consumed_extended = evaluate_open_calendar_allowance(
+        history,
+        start_date=last_day,
+        end_date_exclusive=last_day + timedelta(days=2),
+        effective_zone_id="Europe/Rome",
+        allowed_count=1460,
+    )
+    assert consumed_extended == 731
+    assert len(extended) == 2
+
+
+def test_open_allowance_survives_a_following_series_revision() -> None:
+    history = (
+        _history(_OLD, _daily(effective_from=date(2026, 1, 1)), 1),
+        _history(_NEW, _daily(effective_from=date(2026, 1, 10)), 2),
+    )
+    last_day = date.fromordinal(date(2026, 1, 1).toordinal() + 729)
+    candidates, consumed = evaluate_open_calendar_allowance(
+        history,
+        start_date=last_day,
+        end_date_exclusive=last_day + timedelta(days=2),
+        effective_zone_id="Europe/Rome",
+        allowed_count=730,
+    )
+    assert consumed == 730
+    assert [
+        (item.governing_recurrence_state_ref, item.coordinate.generated_date) for item in candidates
+    ] == [(_NEW, last_day)]
+
+
+def test_finite_to_open_conversion_starts_a_new_open_epoch() -> None:
+    old = replace(
+        _daily(effective_from=date(2026, 1, 1)),
+        range_kind="expected_count",
+        expected_occurrence_count=900,
+    )
+    history = (
+        _history(_OLD, old, 1),
+        _history(_NEW, _daily(effective_from=date(2026, 4, 1)), 2),
+    )
+    candidates, consumed = evaluate_open_calendar_allowance(
+        history,
+        start_date=date(2026, 4, 1),
+        end_date_exclusive=date(2026, 4, 2),
+        effective_zone_id="Europe/Rome",
+        allowed_count=730,
+    )
+    assert consumed == 1
+    assert [item.governing_recurrence_state_ref for item in candidates] == [_NEW]
 
 
 def test_future_revision_supersedes_virtual_old_state_at_effective_boundary() -> None:

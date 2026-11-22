@@ -493,6 +493,7 @@ def _calendar_candidates(
     start: date,
     end: date,
     effective_zone: ZoneInfo,
+    max_results: int = MAX_CHECKPOINT_OCCURRENCES + 1,
 ) -> list[OccurrenceCandidate]:
     scan_start = max(spec.effective_from, start - timedelta(days=2))
     if spec.range_kind == "expected_count":
@@ -538,7 +539,7 @@ def _calendar_candidates(
                     return results
                 if _in_window(candidate, start, end, effective_zone):
                     results.append(OccurrenceCandidate(state_ref, candidate))
-                    if len(results) > MAX_CHECKPOINT_OCCURRENCES:
+                    if len(results) >= max_results:
                         return results
         value += timedelta(days=1)
     return results
@@ -758,6 +759,84 @@ def evaluate_recurrence_history(
                         "Checkpoint would materialize more than 10,000 Occurrences; narrow the requested horizon."
                     )
     return tuple(results)
+
+
+def evaluate_open_calendar_allowance(
+    history: tuple[RecurrenceHistoryEntry, ...],
+    *,
+    start_date: date,
+    end_date_exclusive: date,
+    effective_zone_id: str,
+    allowed_count: int,
+) -> tuple[tuple[OccurrenceCandidate, ...], int]:
+    """Return eligible coordinates and consumed slots in the current open epoch.
+
+    A replacement state inherits the source's allowance. A finite-to-open
+    conversion begins a new epoch; earlier accepted instances remain intact.
+    The count includes expected coordinates even when an instance was skipped.
+    """
+    if allowed_count < 1:
+        raise OccurrenceInputError("Open Recurrence allowance must be positive.")
+    ordered = tuple(
+        sorted(history, key=lambda item: (item.current_from_at, item.material_state_ref))
+    )
+    if (
+        not ordered
+        or not isinstance(ordered[-1].recurrence, CalendarRecurrence)
+        or ordered[-1].recurrence.range_kind != "open"
+    ):
+        raise OccurrenceInputError("Open calendar allowance requires a current open calendar rule.")
+    first = len(ordered) - 1
+    while (
+        first > 0
+        and isinstance(ordered[first - 1].recurrence, CalendarRecurrence)
+        and ordered[first - 1].recurrence.range_kind == "open"
+    ):
+        first -= 1
+    epoch = ordered[first:]
+    zone = _zone(effective_zone_id)
+    candidates: list[OccurrenceCandidate] = []
+    for index, entry in enumerate(epoch):
+        spec = entry.recurrence
+        if not isinstance(spec, CalendarRecurrence):
+            raise OccurrenceInputError("Open calendar epoch contains a non-calendar rule.")
+        successors = epoch[index + 1 :]
+        # Later states supersede candidates on and after their cutover. Include
+        # the boundary day to retain an earlier time on that same day.
+        end = end_date_exclusive
+        if successors:
+            end = min(end, successors[0].recurrence.effective_from + timedelta(days=1))
+        if end <= spec.effective_from:
+            continue
+        candidates.extend(
+            candidate
+            for candidate in _calendar_candidates(
+                entry.material_state_ref,
+                spec,
+                spec.effective_from,
+                end,
+                zone,
+                max_results=allowed_count + 33,
+            )
+            if not _is_superseded(candidate.coordinate, successors, zone)
+        )
+        if len(candidates) >= allowed_count:
+            break
+    candidates.sort(
+        key=lambda item: (
+            _candidate_instant(item.coordinate, zone),
+            str(item.governing_recurrence_state_ref),
+        )
+    )
+    prefix = tuple(candidates[:allowed_count])
+    return (
+        tuple(
+            item
+            for item in prefix
+            if _in_window(item.coordinate, start_date, end_date_exclusive, zone)
+        ),
+        len(prefix),
+    )
 
 
 def _history_entry(row: RowMapping) -> RecurrenceHistoryEntry:
@@ -1061,12 +1140,33 @@ class OccurrenceApplication:
                         .all()
                     )
                     history = tuple(_history_entry(row) for row in rows)
-                    candidates = evaluate_recurrence_history(
-                        history,
-                        start_date=start_date,
-                        end_date_exclusive=end_date_exclusive,
-                        effective_zone_id=zone_id,
+                    allowance = (
+                        (
+                            await session.execute(
+                                text(
+                                    "SELECT * FROM dante.get_self_open_recurrence_allowance(:actor,:owner,:source)"
+                                ),
+                                {"actor": self_person_ref, "owner": owner, "source": source_ref},
+                            )
+                        )
+                        .mappings()
+                        .one_or_none()
                     )
+                    if allowance is not None:
+                        candidates, _ = evaluate_open_calendar_allowance(
+                            history,
+                            start_date=start_date,
+                            end_date_exclusive=end_date_exclusive,
+                            effective_zone_id=zone_id,
+                            allowed_count=int(allowance["allowed_count"]),
+                        )
+                    else:
+                        candidates = evaluate_recurrence_history(
+                            history,
+                            start_date=start_date,
+                            end_date_exclusive=end_date_exclusive,
+                            effective_zone_id=zone_id,
+                        )
                     for candidate in candidates:
                         parameters = {
                             "actor": self_person_ref,

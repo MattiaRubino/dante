@@ -185,6 +185,7 @@ def preview_calendar_series_reconciliation(
     window: SeriesReconciliationWindow,
     effective_zone_id: str,
     authoritative_inventory: bool,
+    authorized_coordinates: frozenset[CalendarCoordinate] | None = None,
 ) -> SeriesReconciliation:
     """Generate a bounded calendar change preview without writing canonical truth.
 
@@ -247,6 +248,12 @@ def preview_calendar_series_reconciliation(
         if isinstance(candidate.coordinate, CalendarCoordinate)
         and is_in_scope(candidate.coordinate)
     )
+    if authorized_coordinates is not None and any(
+        coordinate not in authorized_coordinates for coordinate in regenerated
+    ):
+        raise SeriesReconciliationError(
+            "This edit would generate beyond the open series allowance. Renew the series first."
+        )
     return reconcile_materialized_series(
         scope=scope,
         materialized=materialized,

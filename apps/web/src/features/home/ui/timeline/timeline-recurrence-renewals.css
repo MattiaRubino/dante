@@ -1,0 +1,103 @@
+.timeline-renewals {
+  position: relative;
+  display: inline-flex;
+  flex: none;
+}
+.dante-timeline-actions:has(.timeline-renewals__panel) {
+  z-index: 100;
+}
+.dante-timeline-actions .timeline-renewals > button {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  padding: 0;
+  border: 0;
+  border-radius: var(--dante-timeline-control-radius);
+  color: var(--dante-timeline-text-muted);
+  background: transparent;
+  cursor: pointer;
+}
+.dante-timeline-actions .timeline-renewals > button:hover,
+.dante-timeline-actions .timeline-renewals > button[aria-expanded='true'] {
+  color: #e6ecf5;
+  background: rgba(255, 255, 255, 0.035);
+}
+.timeline-renewals svg {
+  width: 16px;
+  height: 16px;
+}
+.timeline-renewals__badge {
+  position: absolute;
+  top: -3px;
+  right: -4px;
+  display: grid;
+  place-items: center;
+  min-width: 15px;
+  height: 15px;
+  padding: 0 3px;
+  border-radius: 8px;
+  color: #fff;
+  background: #a84a18;
+  font-size: 10px;
+}
+.timeline-renewals__panel {
+  position: absolute;
+  z-index: 20;
+  top: calc(100% + 8px);
+  right: 0;
+  width: min(390px, calc(100vw - 24px));
+  max-height: min(620px, calc(100dvh - 100px));
+  overflow-y: auto;
+  border: 1px solid #334760;
+  border-radius: 14px;
+  background: #101a2b;
+  color: #e6ecf5;
+  box-shadow: 0 14px 36px #0008;
+  padding: 16px;
+}
+.timeline-renewals__panel header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+.timeline-renewals__panel section {
+  margin-top: 14px;
+  padding: 12px;
+  border: 1px solid #344761;
+  border-radius: 10px;
+  background: #172439;
+}
+.timeline-renewals__panel section > strong {
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.timeline-renewals__panel p {
+  margin: 7px 0 10px;
+  color: #acc1da;
+  font-size: 13px;
+}
+.timeline-renewals__panel section > div {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.timeline-renewals__panel button {
+  border: 1px solid #425670;
+  border-radius: 8px;
+  background: #1b2a41;
+  color: inherit;
+  cursor: pointer;
+  padding: 7px 10px;
+}
+.timeline-renewals__panel button:disabled {
+  opacity: 0.5;
+  cursor: wait;
+}
+.timeline-renewals__panel button:hover:not(:disabled) {
+  border-color: #b66435;
+}

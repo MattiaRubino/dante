@@ -324,6 +324,7 @@
     "apps/web/src/features/home/ui/timeline/timeline-authoritative-event-hydration.test.ts",
     "apps/web/src/features/home/ui/timeline/timeline-authoritative-hydration.test.ts",
     "apps/web/src/features/home/ui/timeline/timeline-draft-vault.test.tsx",
+    "apps/web/src/features/home/ui/timeline/timeline-recurrence-renewals.test.tsx",
     "apps/web/src/features/home/ui/timeline/timeline-event-agenda-editor.test.tsx",
     "apps/web/src/features/home/ui/timeline/timeline-event-lifecycle.test.tsx",
     "apps/web/src/features/home/ui/timeline/timeline-expected-occurrence-scheduling.test.ts",
@@ -3621,6 +3622,16 @@
       "invariant": "",
       "status": "UNREVIEWED",
       "audit_note": "Needs contract/assertion review, rejection cases, and executable evidence; filename alone is not proof."
+    },
+    {
+      "path": "apps/web/src/features/home/ui/timeline/timeline-recurrence-renewals.test.tsx",
+      "suite": "web-unit-component",
+      "contract_id": "T03",
+      "candidate_behavior": "Owner-scoped open-series renewal notice and decision",
+      "purpose": "Verify that the renewal control appears at the threshold and disappears after an explicit decision.",
+      "invariant": "Finite series do not enter the renewal flow; a saved decision removes the pending notice.",
+      "status": "QUALIFIED",
+      "audit_note": "Exercises the Timeline icon and decision request using a mocked authenticated transport."
     },
     {
       "path": "apps/web/src/features/home/ui/timeline/timeline-drag-geometry.test.tsx",

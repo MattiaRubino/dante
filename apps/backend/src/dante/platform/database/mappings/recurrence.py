@@ -1051,3 +1051,59 @@ class EventRecurrenceOperationRow(Base):
     expected_material_state_ref: Mapped[MaterialStateRef | None] = mapped_column()
     accepted_material_state_ref: Mapped[MaterialStateRef] = mapped_column(nullable=False)
     accepted_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
+
+
+class OpenRecurrenceAllowanceRow(Base):
+    """Renewable generation budget for one owner-scoped open calendar source."""
+
+    __tablename__ = "open_recurrence_allowance"
+    __table_args__ = (
+        CheckConstraint("owner_code IN ('routine','event')", name="owner"),
+        CheckConstraint("allowed_count >= 730 AND allowed_count % 730 = 0", name="count"),
+        CheckConstraint("revision >= 0", name="revision"),
+        ForeignKeyConstraint(
+            ["self_person_ref"],
+            ["dante.person.person_ref"],
+            name="fk_open_recurrence_allowance_person",
+        ),
+        ForeignKeyConstraint(
+            ["source_ref"],
+            ["dante.native_address.native_ref"],
+            name="fk_open_recurrence_allowance_source",
+        ),
+    )
+    self_person_ref: Mapped[NativeRef] = mapped_column(primary_key=True)
+    owner_code: Mapped[str] = mapped_column(Text, primary_key=True)
+    source_ref: Mapped[NativeRef] = mapped_column(primary_key=True)
+    epoch_state_ref: Mapped[MaterialStateRef] = mapped_column(nullable=False)
+    allowed_count: Mapped[int] = mapped_column(Integer, nullable=False)
+    declined: Mapped[bool] = mapped_column(Boolean, nullable=False)
+    revision: Mapped[int] = mapped_column(Integer, nullable=False)
+
+
+class OpenRecurrenceAllowanceOperationRow(Base):
+    """Actor-local idempotent renewal receipt."""
+
+    __tablename__ = "open_recurrence_allowance_operation"
+    __table_args__ = (
+        CheckConstraint("decision IN ('extend','decline')", name="decision"),
+        CheckConstraint("length(operation_id) BETWEEN 1 AND 200", name="id"),
+        ForeignKeyConstraint(
+            ["self_person_ref", "owner_code", "source_ref"],
+            [
+                "dante.open_recurrence_allowance.self_person_ref",
+                "dante.open_recurrence_allowance.owner_code",
+                "dante.open_recurrence_allowance.source_ref",
+            ],
+            name="fk_open_recurrence_allowance_operation_allowance",
+        ),
+    )
+    self_person_ref: Mapped[NativeRef] = mapped_column(primary_key=True)
+    operation_id: Mapped[str] = mapped_column(Text, primary_key=True)
+    owner_code: Mapped[str] = mapped_column(Text, nullable=False)
+    source_ref: Mapped[NativeRef] = mapped_column(nullable=False)
+    expected_state_ref: Mapped[MaterialStateRef] = mapped_column(nullable=False)
+    expected_revision: Mapped[int] = mapped_column(Integer, nullable=False)
+    decision: Mapped[str] = mapped_column(Text, nullable=False)
+    accepted_count: Mapped[int] = mapped_column(Integer, nullable=False)
+    accepted_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)

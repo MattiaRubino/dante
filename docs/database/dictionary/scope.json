@@ -105,21 +105,22 @@
       "B14-EXISTING-EVENT-LEGACY-CHECK-NAME",
       "B14-OBJECTIVE-VERIFICATION",
       "B14-RECORDED-OBJECTIVE-DELETE",
-      "B14-SELECTED-SERIES-PROTECTION"
+      "B14-SELECTED-SERIES-PROTECTION",
+      "B14-OPEN-RENEWAL"
     ],
     "standalone_entries": {
-      "tables": 243,
+      "tables": 245,
       "views": 5,
-      "routines": 264,
-      "total": 512
+      "routines": 267,
+      "total": 517
     },
     "embedded_objects": {
       "triggers": 105,
-      "physical_indexes": 500
+      "physical_indexes": 502
     },
     "constraints": {
-      "foreign_keys": 437,
-      "check_constraints": 608
+      "foreign_keys": 440,
+      "check_constraints": 613
     }
   },
   "technical_foundation": {
