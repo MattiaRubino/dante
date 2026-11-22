@@ -34,6 +34,7 @@ import { TemporalCreateEventAgenda } from '../../../temporal-create/ui/temporal-
 import { TemporalEventParticipantsFields } from '../../../temporal-create/ui/temporal-create-event-participants';
 import { TemporalTimeZoneControl } from '../../../temporal-create/ui/temporal-time-zone-control';
 import { TemporalObjectiveEditorRow } from '../../../temporal-create/ui/temporal-objective-editor-row';
+import { capTemporalRecurrenceCount } from '../../../temporal-create/model/temporal-create-session';
 import { objectiveFieldIssue, objectiveFieldIssues } from '../../../temporal-create/model/temporal-objective-validation';
 import type {
   TemporalCreateObjectiveDraft,
@@ -1834,8 +1835,8 @@ export function RecurringSeriesEditor({
                                   ...recurrence,
                                   range_kind: 'expected_count',
                                   effective_until: null,
-                                  expected_occurrence_count: Number(
-                                    e.target.value,
+                                  expected_occurrence_count: capTemporalRecurrenceCount(
+                                    Number(e.target.value),
                                   ),
                                 })
                               }

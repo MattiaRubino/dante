@@ -10,6 +10,13 @@ import {
   type TemporalValidationIssue,
 } from '../../temporal';
 
+/** Keep the same numeric cap in Create and existing-series Edit.
+ * Lower-bound and invalid-input behavior remain owned by each form.
+ */
+export function capTemporalRecurrenceCount(count: number): number {
+  return count > 730 ? 730 : count;
+}
+
 export type TemporalCreateKind = 'activity' | 'event';
 export type TemporalCreateTimeSemantics =
   'timed' | 'all-day' | 'coarse' | 'unscheduled';

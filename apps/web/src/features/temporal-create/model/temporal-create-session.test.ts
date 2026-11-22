@@ -2,6 +2,7 @@ import { Temporal } from '@dante/time';
 import { describe, expect, it } from 'vitest';
 
 import {
+  capTemporalRecurrenceCount,
   buildTemporalCreatePlacement,
   continueTemporalCreateEditing,
   createTemporalCreateFields,
@@ -15,6 +16,17 @@ import {
   updateTemporalCreateTitle,
   validateTemporalCreateFields,
 } from './temporal-create-session';
+
+describe('Dopo X count editor cap', () => {
+  it('caps only values above 730 while leaving other input values to existing form validation', () => {
+    expect(capTemporalRecurrenceCount(5)).toBe(5);
+    expect(capTemporalRecurrenceCount(730)).toBe(730);
+    expect(capTemporalRecurrenceCount(731)).toBe(730);
+    expect(capTemporalRecurrenceCount(9999)).toBe(730);
+    expect(capTemporalRecurrenceCount(0)).toBe(0);
+    expect(capTemporalRecurrenceCount(-5)).toBe(-5);
+  });
+});
 
 describe('timed one-minute Activity/Event validation', () => {
   it.each(['activity', 'event'] as const)(

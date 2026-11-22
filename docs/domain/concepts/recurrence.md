@@ -2245,6 +2245,12 @@ starts a new epoch without touching prior series history.
 Finite rules (“Data” and “Dopo”) do not show renewal notices and retain
 their explicit end semantics. “Data” is bounded by its selected calendar date,
 not by the open-series allowance. New “Dopo” authoring accepts **1–730
-occurrences** (Create and backend validation, concise inline error);
-existing immutable historical coordinates are not truncated by this UI
-validation change.
+occurrences**. Numeric fields in Create and existing-series Edit immediately
+cap inputs above 730 to **730**, without changing other input behavior;
+backend validation still rejects over-limit API requests instead of silently
+rewriting them. Existing immutable historical coordinates are not truncated.
+
+In existing-series Activity Edit, the **“Giorni”** field shown under
+**“Tutto il giorno”** describes the duration of each all-day Activity
+occurrence (`activity_template.duration_days`, default 1), not recurrence
+frequency, the `Dopo` end count, nor the number of calendar weekdays.

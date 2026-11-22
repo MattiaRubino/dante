@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { formatDateWithCapitalizedMonth } from '../../../platform/format-localized-date';
 
 import {
+  capTemporalRecurrenceCount,
   temporalCreateWeekdays,
   type TemporalCreateFields,
   type TemporalCreateWeekday,
@@ -378,7 +379,9 @@ export function TemporalCreateCalendarRecurrenceFields({
                 onChange={(event) =>
                   patchRecurrence({
                     endMode: 'count',
-                    count: Math.max(1, Number(event.currentTarget.value) || 1),
+                    count: capTemporalRecurrenceCount(
+                      Math.max(1, Number(event.currentTarget.value) || 1),
+                    ),
                   })
                 }
               />

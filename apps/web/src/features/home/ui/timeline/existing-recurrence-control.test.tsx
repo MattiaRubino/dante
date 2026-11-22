@@ -19,6 +19,41 @@ afterEach(() => {
   vi.clearAllMocks();
 });
 
+describe('Dopo X creation control', () => {
+  it.each(['activity', 'event'] as const)(
+    'replaces pasted values above 730 with 730 for a recurring %s',
+    (kind) => {
+      const ref = createRef<ExistingRecurrenceControlHandle>();
+      render(
+        <ExistingRecurrenceControl
+          ref={ref}
+          kind={kind}
+          date="2026-10-09"
+          startTime="09:00"
+          allDay={false}
+          zoneId="Europe/Rome"
+          disambiguation="earlier"
+          onSelectionChange={vi.fn()}
+        />,
+      );
+
+      fireEvent.change(screen.getByRole('combobox', { name: 'Ripeti' }), {
+        target: { value: 'daily' },
+      });
+      fireEvent.click(screen.getByRole('radio', { name: 'Dopo' }));
+      const count = screen.getByRole('spinbutton', { name: 'Numero di occorrenze' });
+      fireEvent.change(count, { target: { value: '9999' } });
+      expect((count as HTMLInputElement).value).toBe('730');
+      expect(ref.current?.getRule()).toMatchObject({
+        range_kind: 'expected_count',
+        expected_occurrence_count: 730,
+      });
+      fireEvent.change(count, { target: { value: '12' } });
+      expect((count as HTMLInputElement).value).toBe('12');
+    },
+  );
+});
+
 describe('Existing recurring Activity/Event Save staging', () => {
   it.each(['activity', 'event'] as const)(
     'stages a %s recurrence with no independent mutation button',
