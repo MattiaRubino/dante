@@ -235,15 +235,31 @@ describe('Timeline all-day runtime geometry', () => {
       (closed[1]?.offsetTop ?? 0) + extraHeight,
     );
     expect(opened[1]?.mapper.map(0)).toBe(closed[1]?.mapper.map(0));
-    expect(
-      applyTimelineAllDayGeometry(
-        days,
-        items,
-        new Set(),
-        false,
-        new Set(),
-      ),
-    ).toEqual(closed);
+    // A new projection recreates the mapper closures. Their identities are
+    // irrelevant: closing must restore the same measurable calendar geometry.
+    const reclosed = applyTimelineAllDayGeometry(
+      days,
+      items,
+      new Set(),
+      false,
+      new Set(),
+    );
+    expect(reclosed).toHaveLength(closed.length);
+    for (const [index, original] of closed.entries()) {
+      const restored = reclosed[index];
+      expect(restored?.dateKey).toBe(original.dateKey);
+      expect(restored?.offsetTop).toBe(original.offsetTop);
+      expect(restored?.height).toBe(original.height);
+      expect(restored?.mapper.height).toBe(original.mapper.height);
+      expect(restored?.mapper.pxPerMinute).toBe(original.mapper.pxPerMinute);
+      expect(restored?.layouts.map(({ top, height }) => ({ top, height }))).toEqual(
+        original.layouts.map(({ top, height }) => ({ top, height })),
+      );
+      for (const minute of [0, 60, 120, 1440]) {
+        expect(restored?.mapper.map(minute)).toBe(original.mapper.map(minute));
+        expect(restored?.mapper.inv(original.mapper.map(minute))).toBe(minute);
+      }
+    }
   });
 
   it('keeps week columns aligned when only one all-day lane is expanded', () => {
