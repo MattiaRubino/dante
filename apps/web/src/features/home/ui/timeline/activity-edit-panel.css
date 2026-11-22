@@ -489,13 +489,6 @@
   opacity: 0.6;
 }
 
-.timeline-event-modal--edit .timeline-activity-editor__all-day {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 12px;
-}
-
 .timeline-event-modal--edit .timeline-activity-editor__planning-hint {
   color: var(--dante-semantic-color-home-text-muted, #8f9bad);
 }

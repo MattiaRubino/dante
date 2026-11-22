@@ -295,12 +295,6 @@
   opacity: 0.58;
 }
 
-.temporal-create-u2-all-day {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 8px;
-}
-
 .temporal-create-u2-repeat select,
 .temporal-create-u2-location,
 .temporal-create-u2-description {

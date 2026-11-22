@@ -2193,7 +2193,7 @@ export function ActivityEditPanel({
               ) : null}
               {allDay && canReplan ? (
                 <div
-                  className="timeline-activity-editor__all-day"
+                  className="temporal-create-u2-all-day"
                   data-edit-invalid={!!planErrors.dateSpan}
                   inert={planningLocked || undefined}
                 >
@@ -2211,7 +2211,6 @@ export function ActivityEditPanel({
                       setPlanError('');
                     }}
                   />
-                  <span aria-hidden="true">→</span>
                   <TemporalCreateDatePicker
                     label="Data fine"
                     align="end"

@@ -1,5 +1,17 @@
 # Timeline / Temporal-Operational — Live Execution Ledger
 
+## 2026-11-22 — All-day Edit date geometry candidate
+
+The owner found that all-day Edit rendered two narrow, left-aligned date
+buttons while Advanced Create filled two equal columns. Ordinary Activity and
+Event Edit and compatible recurring Event Edit now reuse Create's date-pair
+grid; the shared date-picker stylesheet owns its layout and keeps any date
+validation message below both buttons. No date, recurrence, Session or
+Reminder behavior changed. TypeScript typecheck passed in the isolated
+worktree; the focused browser geometry check and owner real-app review remain
+NOT_RUN. The broader all-day behavior across recurring items, execution and
+reminders is still under product discussion and has not been changed here.
+
 ## 2026-11-20 — Card detail breathing room and readable type candidate
 
 The owner approved a restrained Activity/Event card pass: preserve existing

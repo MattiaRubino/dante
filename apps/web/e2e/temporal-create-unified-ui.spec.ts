@@ -88,6 +88,67 @@ test('Quick and Advanced all-day dates use the same bordered control', async ({ 
   await checkDates();
 });
 
+test('All-day Edit dates fill the same two columns as Create', async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 1280, height: 900 });
+  await page.goto('/home');
+  await page.getByRole('button', { name: 'Aggiungi alla timeline' }).click();
+  const create = page.locator('[data-temporal-create="composer"]');
+  await create.getByRole('radio', { name: 'Tutto il giorno' }).click();
+  const dates = await create
+    .locator('.temporal-create-u2-all-day')
+    .first()
+    .evaluate((element) => element.innerHTML);
+  await page.addStyleTag({
+    path: 'src/features/home/ui/timeline/timeline.css',
+  });
+  await page.addStyleTag({
+    path: 'src/features/home/ui/timeline/activity-edit-panel.css',
+  });
+  const geometry = await page.evaluate((markup) => {
+    return [
+      'timeline-activity-editor',
+      'timeline-event-profile-editor',
+      'timeline-recurring-series-editor',
+    ].map((editor) => {
+      const modal = document.createElement('div');
+      modal.className = 'timeline-event-modal timeline-event-modal--edit';
+      modal.style.cssText = 'position:absolute;left:-2000px;width:1040px';
+      modal.innerHTML = `<div class="${editor}"><div class="temporal-create-u2-all-day">${markup}</div></div>`;
+      document.body.append(modal);
+      const row = modal.querySelector<HTMLElement>(
+        '.temporal-create-u2-all-day',
+      )!;
+      const buttons = Array.from(
+        row.querySelectorAll<HTMLElement>(
+          '.temporal-create-date-picker__trigger',
+        ),
+      );
+      const bounds = row.getBoundingClientRect();
+      const first = buttons[0]!.getBoundingClientRect();
+      const second = buttons[1]!.getBoundingClientRect();
+      const result = {
+        columns: getComputedStyle(row).gridTemplateColumns.split(' ').length,
+        equal: Math.abs(first.width - second.width) < 2,
+        fullWidth:
+          first.width > bounds.width * 0.4 && second.right > bounds.right - 2,
+        aligned: Math.abs(first.top - second.top) < 1,
+      };
+      modal.remove();
+      return result;
+    });
+  }, dates);
+  for (const result of geometry) {
+    expect(result).toEqual({
+      columns: 2,
+      equal: true,
+      fullWidth: true,
+      aligned: true,
+    });
+  }
+});
+
 test('Advanced Create keeps its header aligned when the title is empty', async ({
   page,
 }) => {

@@ -2000,8 +2000,7 @@
   width: min(100%, 330px);
 }
 
-.timeline-event-schedule-editor__modes,
-.timeline-event-schedule-editor__dates {
+.timeline-event-schedule-editor__modes {
   display: flex;
   flex-wrap: wrap;
   gap: 8px;

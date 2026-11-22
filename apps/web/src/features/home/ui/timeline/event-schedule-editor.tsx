@@ -379,7 +379,7 @@ export function EventScheduleEditor({
           </div>
         </>
       ) : (
-        <div className="timeline-event-schedule-editor__dates">
+        <div className="temporal-create-u2-all-day">
           <TemporalCreateDatePicker
             label="Data inizio"
             locale="it"
