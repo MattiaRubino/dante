@@ -8,6 +8,7 @@ import {
 } from '@testing-library/react';
 import { afterEach, expect, it, vi } from 'vitest';
 
+import { invalidateTemporalPlanningRead } from '../../../temporal/timeline-invalidation';
 import { TimelineRecurrenceRenewals } from './timeline-recurrence-renewals';
 
 const notice = {
@@ -72,3 +73,33 @@ it.each([
     );
   },
 );
+
+it('refreshes the remaining occurrence count without closing the renewal popup', async () => {
+  let remaining = 30;
+  const fetcher = vi.fn().mockImplementation(() =>
+    Promise.resolve(
+      new Response(JSON.stringify([{ ...notice, remaining_count: remaining }]), {
+        status: 200,
+      }),
+    ),
+  );
+  vi.stubGlobal('fetch', fetcher);
+  render(
+    <>
+      <div className="dante-timeline-actions" />
+      <TimelineRecurrenceRenewals />
+    </>,
+  );
+  fireEvent.click(
+    await screen.findByRole('button', { name: 'Serie da rinnovare: 1' }),
+  );
+  expect(screen.getByText(/30 occorrenze rimaste su 730/)).toBeTruthy();
+  remaining = 29;
+  invalidateTemporalPlanningRead();
+  await waitFor(() => {
+    expect(screen.getByText(/29 occorrenze rimaste su 730/)).toBeTruthy();
+  });
+  expect(screen.getByRole('button', { name: 'Continua' })).toBeTruthy();
+  expect(screen.getByRole('button', { name: 'Termina' })).toBeTruthy();
+  expect(fetcher).toHaveBeenCalledTimes(2);
+});

@@ -88,6 +88,34 @@ async def test_open_series_requires_explicit_renewal_after_730_expected_dates(
             effective_zone_id="Europe/Rome",
         )
         assert len(bounded.occurrences) == 1
+
+        # Without any decision the final authorized day is still eligible,
+        # but the next day has neither new instances nor a stale renewal icon.
+        boundary_notice = next(
+            item
+            for item in await renewals.list_notices(
+                actor=alice, today=last_day, effective_zone_id="Europe/Rome"
+            )
+            if item.source_ref == routine.routine_ref
+        )
+        assert boundary_notice.remaining_count == 0
+        assert all(
+            item.source_ref != routine.routine_ref
+            for item in await renewals.list_notices(
+                actor=alice, today=last_day + timedelta(days=1), effective_zone_id="Europe/Rome"
+            )
+        )
+        unattended = await occurrences.checkpoint(
+            owner="routine",
+            self_person_ref=alice,
+            source_ref=routine.routine_ref,
+            operation_id="renewal:no-decision",
+            start_date=last_day + timedelta(days=1),
+            end_date_exclusive=last_day + timedelta(days=2),
+            effective_zone_id="Europe/Rome",
+        )
+        assert unattended.occurrences == ()
+
         for _ in range(2):
             await renewals.decide(
                 actor=alice,

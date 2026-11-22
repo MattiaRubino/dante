@@ -1,26 +1,33 @@
 # Timeline / Temporal-Operational — Live Execution Ledger
 
 
-## 2026-11-22 — Recurrence renewal boundary follow-up
+## 2026-11-22 — Renewal countdown corrected to 30 *occurrences*
 
 After the candidate commits `3b2c762`, `20e1a16`, `91739c5`,
-`ea024d8`, code review found two contract mismatches: finite “Dopo X” was
-still admitted at 999 rather than the required 730; open “Mai” triggered a
-notice with 30 **occurrences** remaining, not with 30 **local days** until
-the last authorized occurrence. Both are now corrected in the authoring
-validation/API and the derived allowance-notice projection respectively.
-The existing owner-scoped allowance tables, idempotent extend/decline,
-checkpoint cap, +N icon/popup and per-activity Event/Routine behavior are
-retained. A single bounded projection through today+30 derives the
-remaining count; no extra migration, new endpoint, automatic renewal,
-past-instance rewrite or generated-client update is introduced.
+`ea024d8`, the finite “Dopo X” admission was still 999 rather than the
+approved 730. This is now aligned across Create, Series Editor and the
+backend API/validation, without changing “Data”.
 
-Focused verification required on the same commit: Web Create session
-validation; API/Pydantic finite bound; renewal daily and weekly (30 days
-versus 30 occurrences, exactly at threshold, extended and exhausted);
-Postgres `test_open_series_requires_explicit_renewal_after_730_expected_dates`;
-the existing Timeline renewal popup; TypeScript / Ruff / formatting.
-**Execution by owner is pending; nothing is labeled GREEN without logs.**
+A subsequent interpretation of the open “Mai” renewal trigger as **30 local
+calendar days** was **incorrect** and explicitly reversed by the owner.
+The normative threshold is **30 remaining expected occurrences**, with the
+individual counter decreasing only as another occurrence is consumed, not
+every day for weekly/monthly recurrences. The backend derives consumed slots
+up to the account's current local day, honors skipped expected coordinates,
+and expires a non-renewed notice on the day *after* the 730th authorized
+occurrence. The final authorized date may show 0; the next date cannot
+offer an expired renewal. No selection means no automatic extension.
+“Termina” preserves the current cap; “Continua” adds another 730.
+The original migration `20261122_188`, durable idempotent CAS decisions,
+checkpoint fence, and +N popup (number of affected series, not remaining
+occurrences) are unchanged. No new migration, endpoint or generator.
+
+Additional focused coverage is integrated in existing backend evaluator,
+PostgreSQL checkpoint and Web renewal popup tests: 30→29→0, daily/weekly/
+monthly cadence, unchanged counts between weekly/monthly dates, no-action
+expiry, extension, decline, replay and 730-cap enforcement. Focused owner
+local tests, TypeScript, Ruff/Prettier and browser acceptance remain **NOT_RUN**
+on this revision; do not claim they pass without the owner logs.
 
 
 ## 2026-11-22 — All-day Edit date geometry candidate

@@ -6,7 +6,6 @@ from dataclasses import dataclass
 from datetime import date, timedelta
 from typing import Literal
 from uuid import UUID
-from zoneinfo import ZoneInfo
 
 from sqlalchemy import text
 from sqlalchemy.exc import DBAPIError, SQLAlchemyError
@@ -14,7 +13,6 @@ from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 
 from dante.modules.temporal.occurrence import (
     RecurrenceHistoryEntry,
-    _candidate_instant,
     _history_entry,
     evaluate_open_calendar_allowance,
 )
@@ -23,7 +21,7 @@ from dante.platform.database.references import NativeRef
 AllowanceOwner = Literal["routine", "event"]
 AllowanceDecision = Literal["extend", "decline"]
 INITIAL_ALLOWANCE = 730
-RENEWAL_NOTICE_THRESHOLD_DAYS = 30
+RENEWAL_NOTICE_THRESHOLD = 30
 
 
 class AllowanceConflictError(RuntimeError):
@@ -38,37 +36,35 @@ class AllowancePersistenceError(RuntimeError):
     """The durable renewal decision was not accepted."""
 
 
-def pending_open_allowance_days(
+def pending_open_allowance_occurrences(
     history: tuple[RecurrenceHistoryEntry, ...],
     *,
     today: date,
     effective_zone_id: str,
     allowed_count: int,
 ) -> int | None:
-    """Return remaining expected slots only if the cap is within 30 local days.
+    """Show a renewal prompt with 30..0 remaining expected occurrences.
 
-    One prefix evaluation counts all accepted expected coordinates through the
-    notice window, including skipped dates. Subtracting only the projected
-    *future* candidates gives the slots consumed through today. This
-    preserves the original remaining-count convention and avoids mistaking
-    30 weekly or monthly occurrences for 30 days.
+    The canonical evaluator counts expected slots, including skipped dates,
+    through the owner's current local day. The number therefore decreases
+    with the recurrence cadence (daily, weekly, monthly), never each day
+    indiscriminately. At the authorized boundary the option remains visible
+    on its final local date; from the following day a series with no decision
+    has expired, must not renew and must not leave a stale notification.
     """
-    upcoming, consumed_through_notice = evaluate_open_calendar_allowance(
+    today_candidates, consumed = evaluate_open_calendar_allowance(
         history,
         start_date=today,
-        end_date_exclusive=today + timedelta(days=RENEWAL_NOTICE_THRESHOLD_DAYS + 1),
+        end_date_exclusive=today + timedelta(days=1),
         effective_zone_id=effective_zone_id,
         allowed_count=allowed_count,
     )
-    if consumed_through_notice < allowed_count:
+    remaining = allowed_count - consumed
+    if remaining > RENEWAL_NOTICE_THRESHOLD:
         return None
-    zone = ZoneInfo(effective_zone_id)
-    still_future = sum(
-        _candidate_instant(candidate.coordinate, zone).astimezone(zone).date() > today
-        for candidate in upcoming
-    )
-    consumed_through_today = consumed_through_notice - still_future
-    return max(0, allowed_count - consumed_through_today)
+    if remaining == 0 and not today_candidates:
+        return None
+    return remaining
 
 
 @dataclass(frozen=True, slots=True)
@@ -126,7 +122,7 @@ class OpenRecurrenceAllowanceApplication:
             .mappings()
             .all()
         )
-        remaining = pending_open_allowance_days(
+        remaining = pending_open_allowance_occurrences(
             tuple(_history_entry(row) for row in rows),
             today=today,
             effective_zone_id=effective_zone_id,

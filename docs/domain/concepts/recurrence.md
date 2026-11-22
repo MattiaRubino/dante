@@ -2214,18 +2214,33 @@ of “questa e le prossime” inherits the same source allowance; it does not
 restart the count. Conversion from a finite rule to an open rule begins a new
 open epoch, without deleting the finite history.
 
-When the last authorized expected occurrence falls within the next
-**30 local calendar days** (including today), the Timeline shows one optional
-renewal notice for that source. This is **not** a threshold of 30 remaining
-occurrences: weekly and monthly series must not alert months early. The
-notice displays the count of still-authorized expected coordinates and is
-aggregated with other pending notices in a compact icon badge (+N); clicking
-the icon opens the list. “Continua” authorizes another 730 expected
-coordinates with an owner-scoped, replay-safe decision. The notice then
-disappears until the next 30-day window. “Termina” dismisses renewal and
-generation ends at the currently authorized 730-based boundary; already
-accepted instances and history remain. Neither choice rewrites history,
-skips count toward the allowance, nor extends automatically.
+When **30 or fewer authorized expected occurrences remain**, the Timeline
+shows a single optional renewal notice per source. The countdown uses the
+*number of expected occurrences* consumed by the account's current local
+date, **not elapsed calendar days**. For a daily series the number usually
+decreases daily, for a weekly series weekly, and for a monthly series monthly;
+non-occurrence days leave the number unchanged. Skipped expected coordinates
+still consume their slots.
+
+The Timeline's compact icon displays **+N**, where N is the number of
+different sources currently awaiting a decision. Clicking it opens the list
+with each source's individual remaining count (30, 29, 28, …, 0) and
+**“Continua” / “Termina”**:
+- **Continua** authorizes 730 additional expected coordinates (730 → 1460
+  → 2190 …) through an owner-scoped, idempotent, revision-checked decision.
+  The notice disappears until the newly authorized boundary is within
+  30 remaining expected coordinates.
+- **Termina** saves a no-renewal decision: the already authorized coordinates
+  remain valid, and generation ends at that same boundary.
+- **No choice** never silently extends the series. Once all 730 (or the
+  last previously authorized block) are consumed, new occurrences stop;
+  the offer expires after the final authorized local date. The boundary
+  day may show 0 remaining, but subsequent days do not show a stale icon.
+
+No choice rewrites historical Occurrences, generates beyond the authorized
+cap, or changes unrelated recurrence families. Structural revisions within
+the same open epoch retain the allowance; a fresh finite-to-open conversion
+starts a new epoch without touching prior series history.
 
 Finite rules (“Data” and “Dopo”) do not show renewal notices and retain
 their explicit end semantics. “Data” is bounded by its selected calendar date,

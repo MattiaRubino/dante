@@ -19,7 +19,7 @@ from dante.modules.temporal.occurrence import (
     evaluate_open_calendar_allowance,
     evaluate_recurrence_history,
 )
-from dante.modules.temporal.open_recurrence_allowance import pending_open_allowance_days
+from dante.modules.temporal.open_recurrence_allowance import pending_open_allowance_occurrences
 from dante.modules.temporal.recurrence import (
     CalendarRecurrence,
     CyclicRecurrence,
@@ -87,50 +87,75 @@ def test_open_allowance_stops_after_730_and_resumes_after_one_renewal() -> None:
 
 
 
-def test_open_renewal_notice_uses_calendar_days_not_remaining_instances() -> None:
+def _pending_open_occurrences(
+    spec: CalendarRecurrence, today: date, allowed: int = 730
+) -> int | None:
+    return pending_open_allowance_occurrences(
+        (_history(_OLD, spec, 1),),
+        today=today,
+        effective_zone_id="Europe/Rome",
+        allowed_count=allowed,
+    )
+
+
+def test_daily_open_renewal_starts_at_30_slots_and_decrements_per_occurrence() -> None:
     first = date(2024, 1, 1)
     daily = _daily(effective_from=first)
-    weekly = replace(daily, pattern_code="weekly_weekdays", weekdays=(1,))
-
-    def notice(spec: CalendarRecurrence, today: date, allowed: int = 730) -> int | None:
-        return pending_open_allowance_days(
-            (_history(_OLD, spec, 1),),
-            today=today,
-            effective_zone_id="Europe/Rome",
-            allowed_count=allowed,
-        )
-
-    # The last of 730 daily occurrences is 30 days away: notify now, not yesterday.
-    assert notice(daily, first + timedelta(days=698)) is None
-    assert notice(daily, first + timedelta(days=699)) == 30
-    assert notice(daily, first + timedelta(days=729)) == 0
-    assert notice(daily, first + timedelta(days=730)) == 0
-
-    # Thirty weekly occurrences still span seven months: do NOT notify early.
-    last_weekly = first + timedelta(days=729 * 7)
-    assert notice(weekly, first + timedelta(days=699 * 7)) is None
-    assert notice(weekly, last_weekly - timedelta(days=31)) is None
-    assert notice(weekly, last_weekly - timedelta(days=30)) == 5
-    assert notice(weekly, last_weekly + timedelta(days=1)) == 0
-
-    # A monthly rule with 30 slots left must not alert ~30 months early.
-    monthly = replace(daily, pattern_code="monthly_month_days", month_days=(1,))
-    last_year, last_month_zero = divmod(first.year * 12 + 729, 12)
-    last_monthly = date(last_year, last_month_zero + 1, 1)
-    assert notice(monthly, last_monthly - timedelta(days=31)) is None
-    assert notice(monthly, last_monthly - timedelta(days=30)) == 1
+    assert _pending_open_occurrences(daily, first + timedelta(days=698)) is None
+    assert _pending_open_occurrences(daily, first + timedelta(days=699)) == 30
+    assert _pending_open_occurrences(daily, first + timedelta(days=700)) == 29
+    assert _pending_open_occurrences(daily, first + timedelta(days=728)) == 1
+    assert _pending_open_occurrences(daily, first + timedelta(days=729)) == 0
+    # With no decision, the 730th occurrence is the last; the icon expires.
+    assert _pending_open_occurrences(daily, first + timedelta(days=730)) is None
 
 
-def test_open_renewal_notice_disappears_after_one_extension() -> None:
+def test_weekly_open_renewal_uses_30_occurrences_not_30_calendar_days() -> None:
     first = date(2024, 1, 1)
-    history = (_history(_OLD, _daily(effective_from=first), 1),)
-    today = first + timedelta(days=699)
-    assert pending_open_allowance_days(
-        history, today=today, effective_zone_id="Europe/Rome", allowed_count=730
-    ) == 30
-    assert pending_open_allowance_days(
-        history, today=today, effective_zone_id="Europe/Rome", allowed_count=1460
-    ) is None
+    weekly = replace(
+        _daily(effective_from=first),
+        pattern_code="weekly_weekdays",
+        weekdays=(1,),
+    )
+
+    def monday_at(rank: int) -> date:
+        return first + timedelta(weeks=rank)
+    assert _pending_open_occurrences(weekly, monday_at(698)) is None
+    assert _pending_open_occurrences(weekly, monday_at(699)) == 30
+    # An intervening Tuesday is not another recurrence: counter stays 30.
+    assert _pending_open_occurrences(weekly, monday_at(699) + timedelta(days=1)) == 30
+    assert _pending_open_occurrences(weekly, monday_at(700)) == 29
+    assert _pending_open_occurrences(weekly, monday_at(729)) == 0
+    assert _pending_open_occurrences(weekly, monday_at(729) + timedelta(days=1)) is None
+
+
+def test_monthly_open_renewal_decrements_only_on_monthly_expected_instances() -> None:
+    first = date(2024, 1, 1)
+    monthly = replace(
+        _daily(effective_from=first),
+        pattern_code="monthly_month_days",
+        month_days=(1,),
+    )
+
+    def month_at(rank: int) -> date:
+        year, zero_month = divmod(first.year * 12 + first.month - 1 + rank, 12)
+        return date(year, zero_month + 1, 1)
+
+    assert _pending_open_occurrences(monthly, month_at(698)) is None
+    assert _pending_open_occurrences(monthly, month_at(699)) == 30
+    assert _pending_open_occurrences(monthly, month_at(699) + timedelta(days=15)) == 30
+    assert _pending_open_occurrences(monthly, month_at(700)) == 29
+    assert _pending_open_occurrences(monthly, month_at(729)) == 0
+    assert _pending_open_occurrences(monthly, month_at(729) + timedelta(days=1)) is None
+
+
+def test_open_renewal_notice_disappears_after_extension_until_next_30_slots() -> None:
+    first = date(2024, 1, 1)
+    daily = _daily(effective_from=first)
+    near_first = first + timedelta(days=699)
+    assert _pending_open_occurrences(daily, near_first, allowed=730) == 30
+    assert _pending_open_occurrences(daily, near_first, allowed=1460) is None
+    assert _pending_open_occurrences(daily, first + timedelta(days=1429), allowed=1460) == 30
 
 
 def test_open_allowance_survives_a_following_series_revision() -> None:
