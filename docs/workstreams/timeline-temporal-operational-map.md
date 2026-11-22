@@ -1,6 +1,34 @@
 # Timeline / Temporal-Operational — Live Execution Ledger
 
 
+## 2026-11-22 — Date-lane single-line presentation and anchored Inspector
+
+The owner selected compact but readable **all-day bars**: one row with
+kind/title/date-range and only the two main Session runtime controls where
+applicable; child Session/Objective/status detail belongs to the dedicated
+panels. Visual date-lane header 34px; each of max 2 visible rows 42px
+(38px bar), visible overflow `+N` as bounded scroll, no displacement of
+the minute ruler. The existing second 44px/34px left inset inside the
+already ruler-excluded day grid is removed. An opaque slate surface, small
+top DANTE orange accent and clean bottom divider separate the sticky lane
+from timed activities; each item retains its own Life Area color.
+Presentational ordering prioritizes running then paused main Sessions,
+otherwise preserves canonical order. Expected-occurrence `Pianifica`
+remains available; no schedule, execution, session or recurrence mutation.
+
+A date-lane Inspector opens near the captured pointer position rather
+than the far edge of a full-width bar; sides flip/clamp within the
+viewport. Keyboard activation falls back to the title-side anchor.
+The ordinary timed-card Inspector position is untouched. The exact same
+anchor rule applies inside `+N`. The 42px layout constant is shared by
+CSS, date-lane geometry, mapper, week and scroll logic; focused tests
+cover model, overflow, session controls, pointer/keyboard placement and
+ordinary Inspector positioning. **All local typecheck/Vitest/format and
+real browser checks are NOT_RUN until owner WSL evidence arrives.**
+Canonical details: [Inspector presentation](../product/temporal/inspector-presentation.md).
+
+
+
 ## 2026-11-22 — Renewal countdown corrected to 30 *occurrences*
 
 After the candidate commits `3b2c762`, `20e1a16`, `91739c5`,

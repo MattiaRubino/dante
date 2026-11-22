@@ -102,6 +102,7 @@ import {
   TimelineOrganizationPanel,
   useTimelineOrganization,
 } from './timeline-organization';
+import type { TimelineInspectorClickPoint } from './timeline-inspector-position';
 import {
   CalendarPopover,
   EventDetailDialog,
@@ -149,6 +150,7 @@ type DetailState = Readonly<{
   detail: TimelineDetail;
   event: TimelineEvent;
   opener: HTMLElement;
+  anchorPoint?: TimelineInspectorClickPoint;
   savedAppearanceColorCode?: string | null;
   openActivityEdit?: boolean;
   activityEditScope?: 'this_and_following';
@@ -1980,7 +1982,7 @@ export function TimelineSurface({
             opener,
           })
         }
-        onOpenDateLaneDetail={(item, opener) => {
+        onOpenDateLaneDetail={(item, opener, anchorPoint) => {
           const event: TimelineEvent = {
             id: item.id,
             title: item.title,
@@ -1998,6 +2000,7 @@ export function TimelineSurface({
             detail: detailFromEvent(event, state.groups, item.startDateKey),
             event,
             opener,
+            ...(anchorPoint ? { anchorPoint } : {}),
           });
         }}
         onOpenSubitemDetail={(event, subitem, opener) =>
@@ -2187,6 +2190,9 @@ export function TimelineSurface({
         detail={detailState?.detail ?? null}
         {...(inspectorAppearance ? { appearance: inspectorAppearance } : {})}
         opener={detailState?.opener ?? null}
+        {...(detailState?.anchorPoint
+          ? { anchorPoint: detailState.anchorPoint }
+          : {})}
         locale={locale}
         timeZone={clockZone}
         sessionSubject={(() => {

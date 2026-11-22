@@ -1,5 +1,5 @@
 import { Temporal } from '@dante/time';
-import { type CSSProperties, useEffect, useMemo, useState } from 'react';
+import { type CSSProperties, useId, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
 import { formatDateWithCapitalizedMonth } from '../../../../platform/format-localized-date';
@@ -9,7 +9,6 @@ import { ActivitySessionCardControls } from '../../../temporal/activity-session-
 import { SessionSubjectControls } from '../../../temporal/session-subject-controls';
 import { TemporalKindMarker } from '../../../temporal-create/ui/temporal-kind-marker';
 import { invalidateTemporalTimelineRead } from '../../../temporal/timeline-invalidation';
-import { useTimelineDateLaneDetails } from './timeline-date-lane-details';
 import {
   timelineAllDayItemsForVisibleDate,
   timelineAllDayLaneHeightPx,
@@ -32,7 +31,11 @@ type TimelineAllDayLaneProps = Readonly<{
   items: readonly TimelineAllDayItem[];
   groups: readonly TimelineGroup[];
   filters: ReadonlySet<TimelineGroupId>;
-  onOpenItemDetail?: (item: TimelineAllDayItem, opener: HTMLElement) => void;
+  onOpenItemDetail?: (
+    item: TimelineAllDayItem,
+    opener: HTMLElement,
+    point?: Readonly<{ clientX: number; clientY: number }>,
+  ) => void;
 }>;
 
 function coarsePeriodLabel(
@@ -136,26 +139,25 @@ export function TimelineAllDayLane({
     string | null
   >(null);
   const [showOverflow, setShowOverflow] = useState(false);
-  const [clockMs, setClockMs] = useState(() => Date.now());
-  const visibleItems = useMemo(
-    () => timelineAllDayItemsForVisibleDate(items, filters, dateKey),
-    [dateKey, filters, items],
-  );
+  const overflowId = useId();
+  const overflowTriggerRef = useRef<HTMLButtonElement | null>(null);
+  const visibleItems = useMemo(() => {
+    const filtered = timelineAllDayItemsForVisibleDate(items, filters, dateKey);
+    if (dateKey !== todayKey) return filtered;
+    // A main Session that can be acted on must not be hidden in +N merely
+    // because its plan arrived after two ordinary all-day entries.
+    const priority = (item: TimelineAllDayItem) =>
+      item.mainSession?.state === 'running'
+        ? 0
+        : item.mainSession?.state === 'paused'
+          ? 1
+          : 2;
+    return [...filtered].sort((left, right) => priority(left) - priority(right));
+  }, [dateKey, filters, items, todayKey]);
   const groupMap = useMemo(
     () => new Map(groups.map((group) => [group.id, group])),
     [groups],
   );
-  const detailsBySubject = useTimelineDateLaneDetails(visibleItems);
-
-  const ticking = visibleItems.some(
-    (item) => dateKey === todayKey && item.mainSession?.state === 'running',
-  );
-  useEffect(() => {
-    if (!ticking) return;
-    const timer = window.setInterval(() => setClockMs(Date.now()), 1000);
-    return () => window.clearInterval(timer);
-  }, [ticking]);
-
   if (visibleItems.length === 0) {
     return null;
   }
@@ -189,11 +191,6 @@ export function TimelineAllDayLane({
       }),
       new Date(`${value}T12:00:00Z`),
     );
-  const formatDuration = (seconds: number) => {
-    const value = Math.max(0, Math.floor(seconds));
-    return `${Math.floor(value / 3600)}:${String(Math.floor((value % 3600) / 60)).padStart(2, '0')}:${String(value % 60).padStart(2, '0')}`;
-  };
-
   const scheduleOccurrence = async (item: TimelineAllDayItem) => {
     const occurrence = item.occurrenceBasis;
     if (occurrence === undefined || pendingOccurrenceRef !== null) return;
@@ -243,18 +240,6 @@ export function TimelineAllDayLane({
     const recurringLabel = english
       ? 'Recurring instance'
       : 'Istanza ricorrente';
-    const details =
-      basis?.kind === 'scheduled-activity'
-        ? detailsBySubject.get(`activity:${basis.activityRef}`)
-        : basis?.kind === 'scheduled-event'
-          ? detailsBySubject.get(`event:${basis.eventRef}`)
-          : undefined;
-    const areaLabel = details
-      ? details.lifeAreaRef === null
-        ? null
-        : groups.find((candidate) => candidate.id === details.lifeAreaRef)
-            ?.label
-      : group?.label;
     const tone = item.appearanceTone ?? group?.tone ?? 'personal';
     const organizationKey = itemOrganizationKey(item);
     const itemColorCode =
@@ -306,18 +291,12 @@ export function TimelineAllDayLane({
         : '';
     const main = item.mainSession;
     const showRuntime = dateKey === todayKey && main?.state !== 'ended';
-    const showStatus =
-      main && (main.state === 'ended' ? endsHere : dateKey === todayKey);
-    const seconds = main
-      ? main.activeSeconds +
-        (main.state === 'running'
-          ? Math.max(0, (clockMs - Date.parse(main.evaluatedAt)) / 1000)
-          : 0)
-      : 0;
-    const sessionStatus =
-      main?.state === 'ended'
-        ? `${english ? 'Stopped' : 'Conclusa'} ${new Intl.DateTimeFormat(language, { hour: '2-digit', minute: '2-digit' }).format(new Date(main.endedAt ?? main.startedAt))} · ${formatDuration(seconds)}`
-        : `${main?.state === 'paused' ? '⏸' : '▶'} ${formatDuration(seconds)}`;
+    // The date lane is only a compact navigator. Session durations, status,
+    // planned children and Objectives belong to the dedicated surfaces.
+    const compactPeriod =
+      laneKind === 'all-day' || laneKind === 'multi-day'
+        ? `${period}${plannedTime}`
+        : `${precisionLabel} · ${period}`;
     return (
       <div className="timeline-all-day-item-row" key={item.id}>
         <button
@@ -338,13 +317,15 @@ export function TimelineAllDayLane({
           data-range-end={endsHere || undefined}
           style={itemStyle}
           aria-label={`${kindLabel}${identity.recurringInstance ? `, ${recurringLabel}` : ''}: ${item.title} · ${precisionLabel} · ${group?.label ?? item.groupId}`}
-          onClick={(event) => onOpenItemDetail?.(item, event.currentTarget)}
-          onKeyDown={(event) => {
-            if (event.key === 'Enter' && onOpenItemDetail) {
-              event.preventDefault();
-              onOpenItemDetail(item, event.currentTarget);
-            }
-          }}
+          onClick={(event) =>
+            onOpenItemDetail?.(
+              item,
+              event.currentTarget,
+              event.detail > 0
+                ? { clientX: event.clientX, clientY: event.clientY }
+                : undefined,
+            )
+          }
         >
           <span
             className="timeline-all-day-item__continuation"
@@ -356,34 +337,9 @@ export function TimelineAllDayLane({
             <TemporalKindMarker kind={identity.kind} />
             <span className="timeline-all-day-item__title">{item.title}</span>
           </strong>
-          <span className="timeline-all-day-item__meta">
-            {precisionLabel} · {period}
-            {plannedTime}
-            {areaLabel ? ` · ${areaLabel}` : ''}
-            {item.meta ? ` · ${item.meta}` : ''}
+          <span className="timeline-all-day-item__meta" title={compactPeriod}>
+            {compactPeriod}
           </span>
-          {details && (details.sessions > 0 || details.objectives > 0) ? (
-            <span className="timeline-all-day-item__indicators">
-              {details.sessions > 0 ? (
-                <span title={`${details.sessions} sessioni pianificate`}>
-                  S {details.sessions}
-                </span>
-              ) : null}
-              {details.objectives > 0 ? (
-                <span title={`${details.objectives} obiettivi`}>
-                  O {details.objectives}
-                </span>
-              ) : null}
-            </span>
-          ) : null}
-          {showStatus ? (
-            <span
-              className="timeline-all-day-item__session-state"
-              title={sessionStatus}
-            >
-              {sessionStatus}
-            </span>
-          ) : null}
           <span
             className="timeline-all-day-item__continuation"
             aria-hidden="true"
@@ -402,6 +358,8 @@ export function TimelineAllDayLane({
             item.occurrenceBasis !== undefined) ? (
           <SessionSubjectControls
             kind="occurrence"
+            variant="card"
+            compactRuntime
             subjectRef={
               item.canonicalBasis?.kind === 'scheduled-occurrence'
                 ? item.canonicalBasis.occurrenceRef
@@ -446,8 +404,10 @@ export function TimelineAllDayLane({
         </span>
         {visibleItems.length > TIMELINE_ALL_DAY_VISIBLE_ROWS ? (
           <button
+            ref={overflowTriggerRef}
             type="button"
             aria-expanded={showOverflow}
+            aria-controls={showOverflow ? overflowId : undefined}
             onClick={() => setShowOverflow((value) => !value)}
           >
             + {visibleItems.length - TIMELINE_ALL_DAY_VISIBLE_ROWS}
@@ -459,8 +419,17 @@ export function TimelineAllDayLane({
       </div>
       {showOverflow ? (
         <div
+          id={overflowId}
           className="timeline-all-day-lane__overflow"
+          role="region"
           aria-label={english ? 'More date bars' : 'Altre barre'}
+          onKeyDown={(event) => {
+            if (event.key === 'Escape') {
+              event.stopPropagation();
+              setShowOverflow(false);
+              overflowTriggerRef.current?.focus();
+            }
+          }}
         >
           {visibleItems.slice(TIMELINE_ALL_DAY_VISIBLE_ROWS).map(renderItem)}
         </div>

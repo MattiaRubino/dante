@@ -61,6 +61,10 @@ describe('Timeline all-day layout', () => {
   });
 
   it('owns exact lane geometry without adding height when the lane is empty', () => {
+    // CSS and the scroll/drag mapper share this contract: visible rows
+    // must never grow the ruler differently from their painted bars.
+    expect(TIMELINE_ALL_DAY_LANE_HEADER_HEIGHT_PX).toBe(34);
+    expect(TIMELINE_ALL_DAY_ITEM_ROW_HEIGHT_PX).toBe(42);
     expect(timelineAllDayLaneHeightPx(0)).toBe(0);
     expect(timelineAllDayLaneHeightPx(1)).toBe(
       TIMELINE_ALL_DAY_LANE_HEADER_HEIGHT_PX +

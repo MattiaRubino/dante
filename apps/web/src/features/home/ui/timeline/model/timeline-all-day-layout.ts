@@ -10,7 +10,7 @@ import {
 } from './timeline-temporal';
 
 export const TIMELINE_ALL_DAY_LANE_HEADER_HEIGHT_PX = 34;
-export const TIMELINE_ALL_DAY_ITEM_ROW_HEIGHT_PX = 30;
+export const TIMELINE_ALL_DAY_ITEM_ROW_HEIGHT_PX = 42;
 export const TIMELINE_ALL_DAY_VISIBLE_ROWS = 2;
 
 export type TimelineAllDayRangePosition = 'single' | 'start' | 'middle' | 'end';

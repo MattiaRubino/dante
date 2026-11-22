@@ -84,6 +84,7 @@ type TimelineDayStreamProps = Readonly<{
   onOpenDateLaneDetail?: (
     item: TimelineAllDayItem,
     opener: HTMLElement,
+    point?: Readonly<{ clientX: number; clientY: number }>,
   ) => void;
   onOpenSubitemDetail: (
     event: TimelineEvent,
@@ -590,6 +591,7 @@ function TimelineDay({
   onOpenDateLaneDetail?: (
     item: TimelineAllDayItem,
     opener: HTMLElement,
+    point?: Readonly<{ clientX: number; clientY: number }>,
   ) => void;
   onOpenSubitemDetail: (
     event: TimelineEvent,

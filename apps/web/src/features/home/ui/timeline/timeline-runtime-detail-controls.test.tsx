@@ -127,6 +127,42 @@ describe('Timeline post-create runtime destinations', () => {
     card.remove();
   });
 
+  it('anchors a full-width all-day bar Inspector to the click, not the bar edge', () => {
+    const opener = document.createElement('button');
+    opener.dataset.timelineAllDayItem = 'all-day-1';
+    opener.getBoundingClientRect = () => ({
+      left: 100,
+      right: 1000,
+      top: 100,
+      bottom: 142,
+      width: 900,
+      height: 42,
+      x: 100,
+      y: 100,
+      toJSON: () => ({}),
+    });
+    document.body.append(opener);
+    render(
+      <EventDetailDialog
+        detail={{
+          title: 'Tutto il giorno',
+          dateKey: '2026-11-22',
+          startMinute: 0,
+          endMinute: 1440,
+          groupLabel: 'Personale',
+        }}
+        opener={opener}
+        anchorPoint={{ clientX: 180, clientY: 120 }}
+        onClose={() => undefined}
+      />,
+    );
+    const inspector = screen.getByRole('dialog');
+    expect(inspector.style.left).toBe('192px');
+    expect(inspector.style.top).toBe('154px');
+    expect(inspector.closest('.timeline-modal-backdrop--inspector')).toBeTruthy();
+    opener.remove();
+  });
+
   it('shows the planned calendar date and Life Area beneath the unchanged action bar without a timezone label', () => {
     render(
       <EventDetailDialog

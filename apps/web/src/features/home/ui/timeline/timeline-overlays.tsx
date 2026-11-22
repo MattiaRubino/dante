@@ -38,6 +38,10 @@ import { ActivityInspectorActions } from './activity-inspector-actions';
 import { EventInspectorActions } from './event-inspector-actions';
 import { TimelineEventParticipation } from './timeline-event-participation';
 import { TimelineInspectorReality } from './timeline-inspector-reality';
+import {
+  positionDateLaneInspector,
+  type TimelineInspectorClickPoint,
+} from './timeline-inspector-position';
 import { TimelineInspectorOccurrenceSession } from './timeline-inspector-occurrence-session';
 import { LEGACY_UNASSIGNED_GROUP } from './timeline-organization';
 
@@ -610,6 +614,7 @@ type EventDetailDialogProps = Readonly<{
   detail: TimelineDetail | null;
   appearance?: TimelineInspectorAppearance;
   opener: HTMLElement | null;
+  anchorPoint?: TimelineInspectorClickPoint;
   sessionSubject?: Readonly<{
     kind: 'activity' | 'occurrence';
     ref: string;
@@ -783,6 +788,7 @@ export function EventDetailDialog({
   detail,
   appearance,
   opener,
+  anchorPoint,
   sessionSubject = null,
   responsibilitySubject = null,
   reminderScheduleRef = null,
@@ -923,6 +929,17 @@ export function EventDetailDialog({
       const panel = dialogRef.current;
       const width = panel?.offsetWidth || Math.min(420, window.innerWidth - 24);
       const height = panel?.offsetHeight || 320;
+      if (opener.closest('[data-timeline-all-day-item]')) {
+        setInspectorPosition(
+          positionDateLaneInspector(
+            rect,
+            { width: window.innerWidth, height: window.innerHeight },
+            { width, height },
+            anchorPoint,
+          ),
+        );
+        return;
+      }
       const gap = 12;
       const right = rect.right + gap;
       const left = rect.left - width - gap;
@@ -956,7 +973,7 @@ export function EventDetailDialog({
       window.removeEventListener('resize', updatePosition);
       observer?.disconnect();
     };
-  }, [detail, opener, currentEditingProfile, eventEditorMode]);
+  }, [detail, opener, anchorPoint, currentEditingProfile, eventEditorMode]);
 
   useEffect(() => {
     if (!detail) {
