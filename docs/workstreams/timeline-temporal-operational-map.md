@@ -1510,3 +1510,6 @@ The existing Advanced Create `Dopo` validation remains 1–999; its inline
 message now states that range. Migration `20261122_188` and the evaluator,
 checkpoint and UI changes are pending the local PostgreSQL, typecheck and
 browser gates on the same revision.
+The existing catalog and migration tests previously pinned `_181`; their
+head, stage inventory and catalog assertions now match the current `_188`
+Dictionary candidate. Those checks remain NOT_RUN until the owner executes them.

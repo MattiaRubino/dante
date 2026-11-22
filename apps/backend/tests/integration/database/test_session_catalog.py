@@ -9,7 +9,7 @@ import pytest
 
 pytestmark = pytest.mark.postgres
 
-_EXPECTED_REVISION = "20261108_181"
+_EXPECTED_REVISION = "20261122_188"
 _SESSION_TABLES = frozenset(
     {
         "session",
