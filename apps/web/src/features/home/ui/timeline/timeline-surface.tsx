@@ -1992,7 +1992,9 @@ export function TimelineSurface({
         expandedDateLaneKeys={expandedDateLaneKeys}
         onExpandedDateLaneChange={(dateKey, isExpanded) => {
           if (dragActiveRef.current) return;
-          preserveViewportTime();
+          // This is an explicit user expansion: keep the clicked date strip
+          // visible and let timed rows move down. Restoring the previous
+          // time anchor here would scroll the newly revealed cards offscreen.
           setExpandedDateLaneKeys((previous) => {
             if (previous.has(dateKey) === isExpanded) return previous;
             const next = new Set(previous);

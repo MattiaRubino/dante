@@ -19,8 +19,11 @@ rows only. No separate popover, floating panel or timer card overlay.
 The expansion state is keyed by civil date in `TimelineSurface`, passed
 through `TimelineDayStream`; open/close recomputes ruler, Now line, timed
 card positions, inverse mapping and cumulative next-day offsets consistently.
-Preserve the existing viewport anchor before toggle; during dragging,
-geometry remains frozen and toggling is blocked. Closing via footer or
+Because expansion is an explicit user command, do **not** restore a
+previous hour-centered scroll anchor on toggle: that would scroll newly
+revealed bars out of view. The clicked date panel stays in view as timed
+rows descend. During dragging, geometry remains frozen and toggling
+is blocked. Closing via footer or
 Escape returns focus; no outside-click auto-collapse so normal Timeline
 interaction does not unexpectedly reflow. Activity Play/Stop and Inspector
 remain separate click targets in a single Life-Area-colored row; unchanged
@@ -53,8 +56,8 @@ change when it opens.
 
 Canonical layout sizes are header 34 px, row 42 px, optional footer
 32 px: 0/1/2/3+ items -> 0/76/118/150 px. The existing mapper continues
-to consume the exact same height as the painted lane; no transient
-expansion-induced jumps. The all-day Inspector's pointer anchoring,
+to consume the exact same height as the painted lane; no overlay
+or inconsistent hour offsets. The all-day Inspector's pointer anchoring,
 week and multi-day continuity, Life Area colors, runtime priority and
 Occurrence schedule action are preserved. All-day visual contract:
 [Inspector presentation](../product/temporal/inspector-presentation.md).
