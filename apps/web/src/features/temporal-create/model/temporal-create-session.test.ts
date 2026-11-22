@@ -563,6 +563,34 @@ describe('temporal create session', () => {
     ).toEqual([]);
   });
 
+  it.each(['activity', 'event'] as const)(
+    'accepts the existing count boundary for %s and rejects values beyond it',
+    (kind) => {
+      const baseline = createTemporalCreateFields({
+        kind,
+        title: 'Serie',
+        date: '2026-09-01',
+        timeZoneId: 'Europe/Rome',
+      });
+      const issuesFor = (count: number) =>
+        validateTemporalCreateFields({
+          ...baseline,
+          eventRecurrence: {
+            ...baseline.eventRecurrence,
+            patternKind: 'calendar-wall-clock',
+            endMode: 'count',
+            count,
+          },
+        }).filter(
+          (issue) => issue.code === 'temporal.create.recurrence.count_invalid',
+        );
+
+      expect(issuesFor(730)).toEqual([]);
+      expect(issuesFor(999)).toEqual([]);
+      expect(issuesFor(1000)).toHaveLength(1);
+    },
+  );
+
   it('validates all four CP6 Event recurrence families', () => {
     const baseline = createTemporalCreateFields({
       title: 'Evento ricorrente',

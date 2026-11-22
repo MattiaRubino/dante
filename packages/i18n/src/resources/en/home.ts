@@ -421,7 +421,7 @@ export const home = {
         recurrenceCycle:
           'The recurrence cycle or active positions are invalid.',
         recurrenceUntil: 'The recurrence end date cannot be before its start.',
-        recurrenceCount: 'The recurrence occurrence count is invalid.',
+        recurrenceCount: 'Enter 1 to 999 occurrences.',
         reminder: 'The configured reminder is invalid.',
         generic: 'Check this field.',
       },
