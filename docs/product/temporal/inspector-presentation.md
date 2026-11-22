@@ -75,56 +75,66 @@ Proteggere combinazioni Activity con/ senza Sessione principale; mai avviata, li
 
 Il ridisegno del Context Rail Home, l'eventuale spostamento del pannello Note/Cattura e la discussione sulla politica di risoluzione/valutazione automatica degli Obiettivi **non sono parte di questo intervento**; si discuteranno separatamente dopo l'accettazione visiva dell'Inspector. Le impostazioni Objective in Create/Edit sono già definite e non si modificano.
 
-## 10. Fascia «Tutto il giorno» e apertura dell'Inspector (22 novembre)
+## 10. Fascia «Tutto il giorno»: contenitore e controllo delle Sessioni (22 novembre)
 
-L'area `TimelineAllDayLane` è una **sezione sticky autonoma**, non un evento
-alle 14:00 né una seconda scala temporale. La griglia del giorno ha già
-escluso il righello: non inserire un altro margine interno di 44 px
-(34 px mobile). Le barre partono nell'area degli eventi, con padding
-laterale leggero e allineamento coerente anche nella Week.
+La sezione `TimelineAllDayLane` è un **pannello sticky indipendente** dalle
+ore sottostanti, non una seconda linea oraria. La griglia del giorno ha
+già escluso il righello: la fascia **non aggiunge** i precedenti 44 px di
+colonna vuota. Usa una superficie **blu notte opaca**, leggermente rientrata
+(8 px laterali), **cornice completa blu-grigia da 1 px** (resa tramite
+`inset box-shadow` per non alterare le altezze del time mapper),
+angoli 11 px, piccola ombra e **solo un puntino arancione da 5 px**
+vicino all'intestazione. È esplicitamente vietata la vecchia linea
+arancione continua superiore: si confonde con la now-line e con i
+separatori fra i giorni.
 
-- Superficie blu scuro **opaca**, linea arancione DANTE **2 px superiore**,
-  divisore inferiore netto e ombra contenuta; i singoli elementi continuano
-  a mostrare il **proprio colore di Area**, senza trasformare la fascia in
-  un'Area arancione. Intestazione leggibile, senza creare la falsa
-  impressione che la fascia appartenga alle ore visibili sotto di essa.
-- Header **34 px**, al massimo **due righe da 42 px**; barra singola
-  **38 px**, titolo **13,5 px**, periodo **11,5 px** e header **11 px**.
-  Il massimo altezza ordinaria è quindi `34 + 2 × 42 = 118 px`. Il
-  `+N` apre una lista scorrevole di righe della stessa altezza senza
-  modificare la geometria della Timeline. In settimana o su mobile, i
-  contenuti testuali secondari possono troncare/nascondersi, non alterare
-  il limite delle due righe né il riferimento temporale.
-- **Una sola riga per barra:** marcatore tipo + titolo + eventuale periodo
-  (per periodi multi-giorno anche le ore iniziale/finale già previste);
-  soltanto i controlli **Play/Pausa toggle e Stop** della Sessione
-  principale, quando applicabili. Non mostrare status, timer, Area testuale,
-  indicatori Sessioni secondarie o Obiettivi, descrizione o meta generica.
-  Il pannello Sessioni live continua a gestire la vista operativa dettagliata.
-  La specifica azione già esistente **Pianifica** per un'Occurrence attesa
-  resta raggiungibile, senza perdere il percorso di materializzazione.
-- Se ci sono più di due elementi, dare precedenza a Sessione principale
-  **running**, poi **paused**, poi agli altri nell'ordine di proiezione
-  (sort stabile). È priorità di sola presentazione: non modifica dati,
-  ricorrenze, id o collocazioni.
-- L'Inspector dei **soli elementi di questa fascia** usa il punto
-  del clic, non il `right` di una barra larga quanto tutto lo schermo.
-  Posizionamento preferito a destra del clic, altrimenti a sinistra,
-  con fallback e clamp entro `12 px` dai bordi; si considera anche
-  l'altezza reale del pannello. Per Enter/Space su un pulsante nativo,
-  fallback vicino al lato del titolo della barra. Stessa regola per
-  elementi del `+N`, ancorati alla voce effettiva e non al contatore.
-  Il posizionamento dell'Inspector delle **card orarie normali rimane
-  invariato**. Modifica dell'Inspector attiva il suo editor normale,
-  senza cambiare autorizzazioni o politiche dell'interazione.
-- Le misure della barra non sono un CSS isolato: il modello
-  `timeline-all-day-layout.ts` condivide l'altezza con mapper/inverse,
-  ruler, now-line, drag, allineamento Week e scroll anchor. Aumentare
-  entrambe assieme e conservare i test geometrici.
+- **Collassato:** header 34 px, al massimo **due righe da 42 px** con
+  card da 38 px. Titolo 13,5 px, periodo 11,5 px, header 11 px. Per
+  0/1/2 elementi la geometria è rispettivamente `0/76/118 px`.
+  I singoli elementi conservano il colore della loro Life Area e la
+  linea colorata *interna* alla card, non sulla cornice comune.
+- **Card indivisibile visivamente:** titolo, data/durata e gli eventuali
+  due pulsanti della **Sessione principale** (Play/Pausa e Stop)
+  condividono **uno stesso wrapper con sfondo, bordo e angoli**.
+  La superficie cliccabile del titolo e i due pulsanti rimangono
+  elementi fratelli, mai pulsanti annidati: aprire l'Inspector non
+  avvia né ferma la Sessione. Mantengono gli handler e le protezioni
+  già accettate, e il testo lungo lascia visibili i controlli.
+  Non mostrare timer, indicatori Obiettivi, Sessioni secondarie o
+  metadata del profilo. L'azione `Pianifica` per una Occurrence
+  attesa continua ad essere accessibile nello stesso wrapper.
+- **Tre o più elementi:** dopo le prime due card compare **una riga
+  propria da 32 px** con freccia e testo `Mostra altri N`, ben
+  associata al pannello, anziché un `+N` remoto nell'intestazione.
+  L'altezza è `34 + 2×42 + 32 = 150 px` per qualsiasi N ≥3.
+  L'espansione apre una **lista sotto la riga Mostra altri**,
+  visivamente connessa al pannello, ma **assoluta/sovrapposta**:
+  non aumenta l'altezza del giorno e non sposta ruler, now-line,
+  card orarie, drag o scroll anchoring. Il limite di altezza è
+  `min(55dvh, 264px)` (circa sei righe), con scrollbar sottile
+  e `scrollbar-gutter: stable` che non copre Play/Stop; lo
+  `overscroll-behavior: contain` evita di trasmettere lo scroll
+  interno alla Timeline. Chiudi tramite il pulsante, Escape
+  (con restituzione del focus) o clic esterno. L'elenco mantiene
+  le stesse card e gli stessi comandi, senza creare una seconda
+  rappresentazione dei dati.
+- Le prime due card danno precedenza alle Sessioni principali running
+  poi paused, altrimenti rispettano l'ordine di proiezione
+  con sort stabile. Solo presentazione, non Schedule/Session write.
+  All-day, multi-day, aspettative, Week e mobile mantengono
+  controllo e identità senza comprimere i pulsanti.
+- L'Inspector degli elementi Tutto il giorno resta ancorato al **punto
+  reale del clic**, con flip/clamp viewport e fallback da tastiera;
+  lo stesso vale per le voci espanse. Il posizionamento degli
+  Inspector delle card **orarie** è invariato.
+- Fonte unica di verità geometrica:
+  `model/timeline-all-day-layout.ts`, in cui header=34,
+  row=42 e footer condizionale=32. I test devono verificare
+  0/1/2/3/25, conteggio degli elementi, apertura/chiusura ed
+  effetto *nullo* dell'espansione sul time mapper.
 
-**Verifica richiesta:** simulazione 0/1/2/3/20 elementi, sessioni attive e
-paused nascoste dalla coda, periodo su più giorni, popup `+N`, eventi
-senza sessione, Activity runtime con due comandi, click a sinistra/
-destra, Enter/Space, viewport stretto e Week. Test automatici della
-geometria, del contenuto all-day, del posizionamento dell'Inspector,
-typecheck/format e screenshot nel browser reale sullo stesso SHA.
+**Accettazione:** typecheck, Prettier/ESLint, Vitest del layout
+e popup, verifica interattiva browser reale per schermi larghi/
+stretti, almeno 20 elementi, scroll del popup, clic su
+Play/Stop vs Inspector, Escape e clic esterno. Il gate completo
+si esegue **solo dopo** la validazione visiva, sullo stesso SHA.

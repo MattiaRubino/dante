@@ -1,124 +1,79 @@
+/*
+ * Date-lane visual surface. The model owns heights (34 header, 42 per
+ * visible row, 32 extra only for the overflow trigger). The overlay never
+ * contributes to those dimensions and cannot move the clock ruler.
+ */
 .timeline-all-day-lane {
   --timeline-group-color: var(--dante-timeline-tone-personal);
 
   box-sizing: border-box;
   position: sticky;
-  z-index: 12;
+  z-index: 16;
   top: 0;
-  margin-bottom: calc(-1 * var(--timeline-all-day-lane-height));
-  display: grid;
-  grid-template-rows: 34px minmax(0, 1fr);
+  width: calc(100% - 16px);
   min-width: 0;
+  margin: 0 8px calc(-1 * var(--timeline-all-day-lane-height));
+  display: grid;
+  grid-template-rows:
+    34px minmax(0, 1fr)
+    var(--timeline-all-day-overflow-row-height, 0px);
+  isolation: isolate;
   overflow: visible;
-  /* The day section already begins AFTER the clock ruler. Do not add
-   * another empty 44px inset here: it misaligns all-day and timed cards. */
+  border-radius: 11px;
+  color: var(--dante-semantic-color-home-text-primary);
   background: var(--dante-semantic-color-home-surface-primary, #0d1522);
   box-shadow:
-    0 6px 16px rgba(0, 0, 0, 0.26),
-    inset 0 -1px 0 var(--dante-semantic-color-home-border-strong, #394653);
-  isolation: isolate;
-}
-
-.timeline-all-day-lane::before {
-  position: absolute;
-  top: 0;
-  right: 0;
-  left: 0;
-  height: 2px;
-  background: var(--dante-semantic-color-home-chrome-active, #ea5c12);
-  content: '';
-  pointer-events: none;
+    inset 0 0 0 1px var(--dante-semantic-color-home-border-strong, #394653),
+    0 8px 20px rgba(0, 0, 0, 0.25);
 }
 
 .timeline-all-day-lane__label {
   grid-row: 1;
   display: flex;
-  min-width: 0;
   align-items: center;
-  padding: 2px 12px 0;
-  border-bottom: 1px solid
-    color-mix(
-      in srgb,
-      var(--dante-semantic-color-home-border-subtle) 62%,
-      transparent
-    );
-  color: var(--dante-semantic-color-home-text-muted);
+  min-width: 0;
+  padding: 0 12px;
   gap: 8px;
-  justify-content: space-between;
+  border-bottom: 1px solid var(--dante-semantic-color-home-border-subtle);
+  color: var(--dante-semantic-color-home-text-secondary);
 }
 
-.timeline-all-day-lane__label button {
-  flex: none;
-  border: 1px solid var(--dante-semantic-color-home-border-subtle);
-  border-radius: 7px;
-  padding: 4px 9px;
-  color: var(--dante-semantic-color-home-text-primary);
-  background: var(--dante-semantic-color-home-surface-control, #202b30);
-  font-size: 12px;
-  font-weight: 650;
-  cursor: pointer;
+.timeline-all-day-lane__label::before {
+  flex: 0 0 5px;
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: var(--dante-semantic-color-home-chrome-active, #ea5c12);
+  content: '';
 }
 
-.timeline-all-day-lane__overflow {
-  position: absolute;
-  z-index: 2;
-  top: 100%;
-  right: 0;
-  left: 0;
-  display: grid;
-  grid-auto-rows: 42px;
-  max-height: min(55vh, 340px);
-  padding: 6px 12px;
-  overflow-y: auto;
-  border: 1px solid var(--dante-semantic-color-home-border-subtle);
-  border-radius: 0 0 9px 9px;
-  background: var(--dante-semantic-color-home-surface-primary);
-  box-shadow: 0 14px 28px rgba(0, 0, 0, 0.3);
-}
-
-.timeline-all-day-lane__label span {
+.timeline-all-day-lane__label > span {
   overflow: hidden;
   font-size: 11px;
-  font-weight: 720;
-  letter-spacing: 0.035em;
-  line-height: 1;
+  font-weight: 700;
+  letter-spacing: 0.025em;
   text-overflow: ellipsis;
-  text-transform: uppercase;
   white-space: nowrap;
+  text-transform: uppercase;
 }
 
 .timeline-all-day-lane__items {
-  position: relative;
   grid-row: 2;
   display: grid;
   grid-auto-rows: 42px;
   min-width: 0;
+  min-height: 0;
   align-content: start;
-  padding: 0 12px;
+  padding: 0 10px;
 }
 
 .timeline-all-day-item-row {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) auto;
-  min-width: 0;
-  height: 42px;
+  display: flex;
   align-items: center;
-  gap: 6px;
-}
-
-.timeline-all-day-item {
-  --timeline-group-color: var(--dante-timeline-tone-personal);
-
-  box-sizing: border-box;
-  display: grid;
-  grid-template-columns: 10px minmax(0, auto) minmax(0, 1fr) 10px;
-  width: 100%;
+  min-width: 0;
   height: 38px;
-  min-width: 0;
   align-self: center;
-  align-items: center;
-  gap: 7px;
-  padding: 0 10px;
+  gap: 2px;
   overflow: hidden;
   border: 1px solid
     color-mix(
@@ -127,32 +82,49 @@
       var(--dante-semantic-color-home-border-subtle)
     );
   border-radius: 8px;
-  color: var(--dante-semantic-color-home-text-primary);
   background: color-mix(
     in srgb,
     var(--timeline-group-color) 9%,
     var(--dante-semantic-color-home-surface-primary)
   );
   box-shadow: inset 3px 0 0 var(--timeline-group-color);
+}
+
+.timeline-all-day-item-row[data-range-position='middle'],
+.timeline-all-day-item-row[data-range-position='end'] {
+  border-top-left-radius: 3px;
+  border-bottom-left-radius: 3px;
+}
+
+.timeline-all-day-item-row[data-range-position='start'],
+.timeline-all-day-item-row[data-range-position='middle'] {
+  border-top-right-radius: 3px;
+  border-bottom-right-radius: 3px;
+}
+
+.timeline-all-day-item {
+  box-sizing: border-box;
+  display: grid;
+  flex: 1 1 auto;
+  grid-template-columns: 10px minmax(0, max-content) minmax(0, 1fr) 10px;
+  min-width: 0;
+  height: 100%;
+  align-items: center;
+  gap: 7px;
+  padding: 0 10px;
+  border: 0;
+  border-radius: inherit;
+  color: var(--dante-semantic-color-home-text-primary);
+  background: transparent;
+  box-shadow: none;
   font: inherit;
   text-align: left;
   cursor: pointer;
 }
 
-.timeline-all-day-item[data-range-position='middle'],
-.timeline-all-day-item[data-range-position='end'] {
-  border-top-left-radius: 3px;
-  border-bottom-left-radius: 3px;
-}
-
-.timeline-all-day-item[data-range-position='start'],
-.timeline-all-day-item[data-range-position='middle'] {
-  border-top-right-radius: 3px;
-  border-bottom-right-radius: 3px;
-}
-
 .timeline-all-day-item strong,
 .timeline-all-day-item__meta {
+  min-width: 0;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -168,7 +140,6 @@
   display: inline-flex;
   align-items: center;
   gap: 4px;
-  min-width: 0;
 }
 
 .timeline-all-day-item__identity .temporal-kind-marker {
@@ -203,10 +174,10 @@
   text-align: center;
 }
 
-.timeline-all-day-item:hover {
+.timeline-all-day-item-row:hover {
   border-color: color-mix(
     in srgb,
-    var(--timeline-group-color) 56%,
+    var(--timeline-group-color) 58%,
     var(--dante-semantic-color-home-border-subtle)
   );
   background: color-mix(
@@ -216,34 +187,59 @@
   );
 }
 
-.timeline-all-day-item:focus-visible {
+.timeline-all-day-item:focus-visible,
+.timeline-all-day-item-row > :is(.timeline-activity-session-card-controls, .timeline-session-controls) button:focus-visible {
   outline: 2px solid var(--timeline-group-color);
   outline-offset: -2px;
 }
 
-.timeline-all-day-item__schedule {
+.timeline-all-day-item-row > .timeline-activity-session-card-controls,
+.timeline-all-day-item-row > .timeline-session-controls {
+  flex: 0 0 auto;
   min-width: 0;
-  height: 30px;
-  padding: 0 10px;
+  margin: 0;
+  padding: 0 8px 0 2px;
+}
+
+.timeline-all-day-item-row .timeline-session-controls__runtime-actions {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.timeline-all-day-item-row
+  :is(
+    .timeline-activity-session-card-controls,
+    .timeline-session-controls
+  )
+  .timeline-session-controls__runtime-button {
+  box-sizing: border-box;
+  width: 27px;
+  height: 27px;
+}
+
+.timeline-all-day-item__schedule {
+  flex: 0 0 auto;
+  max-width: 100px;
+  min-width: 0;
+  height: 28px;
+  margin-right: 7px;
+  padding: 0 8px;
+  overflow: hidden;
   border: 1px solid var(--dante-semantic-color-home-border-subtle);
-  border-radius: 7px;
+  border-radius: 6px;
   color: var(--dante-semantic-color-home-text-secondary);
-  background: var(--dante-semantic-color-home-surface-primary);
-  font: inherit;
-  font-size: 12px;
-  font-weight: 680;
-  line-height: 1;
+  background: var(--dante-semantic-color-home-surface-control, #202b30);
+  font-size: 11px;
+  font-weight: 650;
+  text-overflow: ellipsis;
   white-space: nowrap;
   cursor: pointer;
 }
 
-.timeline-all-day-item__schedule:hover:not(:disabled) {
-  color: var(--dante-semantic-color-home-text-primary);
-  border-color: color-mix(
-    in srgb,
-    var(--dante-semantic-color-home-text-secondary) 35%,
-    var(--dante-semantic-color-home-border-subtle)
-  );
+.timeline-all-day-item__schedule:disabled {
+  cursor: progress;
+  opacity: 0.6;
 }
 
 .timeline-all-day-item__schedule:focus-visible {
@@ -251,23 +247,72 @@
   outline-offset: 1px;
 }
 
-.timeline-all-day-item__schedule:disabled {
-  opacity: 0.58;
-  cursor: progress;
+.timeline-all-day-lane__more {
+  display: flex;
+  grid-row: 3;
+  align-items: center;
+  justify-content: center;
+  min-width: 0;
+  padding: 0 10px 3px;
+  border-top: 1px solid var(--dante-semantic-color-home-border-subtle);
 }
 
-
-/* Keep both controls legible without adding any secondary Session or
- * Objective information to the one-line date bar. */
-.timeline-all-day-lane
-  .timeline-activity-session-card-controls
-  .timeline-session-controls__runtime-button {
-  width: 28px;
-  height: 28px;
+.timeline-all-day-lane__more > button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 25px;
+  max-width: 100%;
+  padding: 3px 10px;
+  gap: 6px;
+  border: 0;
+  border-radius: 7px;
+  color: var(--dante-semantic-color-home-text-secondary);
+  background: transparent;
+  font-size: 12px;
+  font-weight: 650;
+  cursor: pointer;
 }
+
+.timeline-all-day-lane__more > button:hover,
+.timeline-all-day-lane__more > button[aria-expanded='true'] {
+  color: var(--dante-semantic-color-home-text-primary);
+  background: var(--dante-semantic-color-home-surface-control);
+}
+
+.timeline-all-day-lane__more > button:focus-visible {
+  outline: 2px solid var(--dante-semantic-color-home-focus-ring);
+  outline-offset: 1px;
+}
+
+.timeline-all-day-lane__overflow {
+  box-sizing: border-box;
+  position: absolute;
+  z-index: 3;
+  top: calc(100% - 2px);
+  right: 0;
+  left: 0;
+  display: grid;
+  grid-auto-rows: 42px;
+  align-content: start;
+  max-height: min(55dvh, 264px);
+  padding: 6px 7px 6px 10px;
+  overflow-x: hidden;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-width: thin;
+  scrollbar-color: var(--dante-semantic-color-home-border-strong) transparent;
+  scrollbar-gutter: stable;
+  border: 1px solid var(--dante-semantic-color-home-border-strong);
+  border-radius: 0 0 11px 11px;
+  background: var(--dante-semantic-color-home-surface-primary, #0d1522);
+  box-shadow: 0 14px 26px rgba(0, 0, 0, 0.34);
+}
+
 .timeline-day-stream.is-week .timeline-all-day-item__meta {
   display: none;
 }
+
 .timeline-day-stream.is-week .timeline-all-day-item {
   grid-template-columns: 8px minmax(0, 1fr) 8px;
   gap: 4px;
@@ -275,35 +320,32 @@
 }
 
 @media (max-width: 760px) {
-  .timeline-all-day-lane__label {
-    padding-inline: 8px;
-  }
-
-  .timeline-all-day-lane__overflow {
-    padding-inline: 8px;
+  .timeline-all-day-lane {
+    width: calc(100% - 12px);
+    margin-inline: 6px;
   }
 
   .timeline-all-day-lane__items {
-    padding-inline: 8px;
-  }
-
-  .timeline-all-day-item-row {
-    gap: 4px;
+    padding-inline: 7px;
   }
 
   .timeline-all-day-item {
-    grid-template-columns: 9px minmax(0, 1fr) 9px;
+    grid-template-columns: 8px minmax(0, 1fr) 8px;
     gap: 5px;
-    padding-inline: 8px;
+    padding-inline: 6px;
   }
 
   .timeline-all-day-item__meta {
     display: none;
   }
 
+  .timeline-all-day-item-row > .timeline-activity-session-card-controls,
+  .timeline-all-day-item-row > .timeline-session-controls {
+    padding-right: 5px;
+  }
+
   .timeline-all-day-item__schedule {
-    max-width: 92px;
-    overflow: hidden;
-    text-overflow: ellipsis;
+    max-width: 78px;
+    margin-right: 4px;
   }
 }

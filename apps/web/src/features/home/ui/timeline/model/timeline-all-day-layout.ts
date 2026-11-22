@@ -12,6 +12,7 @@ import {
 export const TIMELINE_ALL_DAY_LANE_HEADER_HEIGHT_PX = 34;
 export const TIMELINE_ALL_DAY_ITEM_ROW_HEIGHT_PX = 42;
 export const TIMELINE_ALL_DAY_VISIBLE_ROWS = 2;
+export const TIMELINE_ALL_DAY_OVERFLOW_ROW_HEIGHT_PX = 32;
 
 export type TimelineAllDayRangePosition = 'single' | 'start' | 'middle' | 'end';
 
@@ -35,7 +36,10 @@ export function timelineAllDayLaneHeightPx(itemCount: number): number {
   return (
     TIMELINE_ALL_DAY_LANE_HEADER_HEIGHT_PX +
     Math.min(itemCount, TIMELINE_ALL_DAY_VISIBLE_ROWS) *
-      TIMELINE_ALL_DAY_ITEM_ROW_HEIGHT_PX
+      TIMELINE_ALL_DAY_ITEM_ROW_HEIGHT_PX +
+    (itemCount > TIMELINE_ALL_DAY_VISIBLE_ROWS
+      ? TIMELINE_ALL_DAY_OVERFLOW_ROW_HEIGHT_PX
+      : 0)
   );
 }
 

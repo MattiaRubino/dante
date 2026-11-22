@@ -1,6 +1,40 @@
 # Timeline / Temporal-Operational — Live Execution Ledger
 
 
+## 2026-11-22 — All-day lane visual follow-up: neutral frame and integrated controls
+
+The owner's screenshots exposed three regressions in commit `879e2eedb`:
+the **continuous orange top stroke** looked like another temporal grid/Now
+line, the **main Session Play/Stop buttons floated outside** the colored
+date bar (separate sibling element), and **+N in the header** did not
+visually belong to the hidden entries. The owner approved a neutral
+**blue/gray full inset frame** with rounded corners, a small orange
+*dot only*, visually **one colored bar including its main controls**,
+and a **below-the-two-bars "Mostra altri N"** expander. Implementation
+uses an accessible sibling button structure inside one styled wrapper
+(no nested buttons) and retains the original execution handlers.
+The overflow opens a max ~6-row independent scroll container whose scrollbar
+has reserved space and overscroll containment. Escape, outside click,
+focus return and keyboard invocation are supported; menu height does not
+change when it opens.
+
+Canonical layout sizes are header 34 px, row 42 px, optional footer
+32 px: 0/1/2/3+ items -> 0/76/118/150 px. The existing mapper continues
+to consume the exact same height as the painted lane; no transient
+expansion-induced jumps. The all-day Inspector's pointer anchoring,
+week and multi-day continuity, Life Area colors, runtime priority and
+Occurrence schedule action are preserved. All-day visual contract:
+[Inspector presentation](../product/temporal/inspector-presentation.md).
+
+Scope is Web UI, shared date-lane model, focused tests and docs only.
+No backend, migration, API or Session/Recurrence semantics change.
+**Owner local TypeScript, targeted Vitest, formatting and real-browser
+acceptance are NOT_RUN for this follow-up.** Previous `879e2eedb`
+passed 57 focused Vitest tests and TypeScript, but that does not prove
+the new implementation correct.
+
+
+
 ## 2026-11-22 — Date-lane single-line presentation and anchored Inspector
 
 The owner selected compact but readable **all-day bars**: one row with

@@ -3,6 +3,7 @@ import { describe, expect, it } from 'vitest';
 import {
   TIMELINE_ALL_DAY_ITEM_ROW_HEIGHT_PX,
   TIMELINE_ALL_DAY_LANE_HEADER_HEIGHT_PX,
+  TIMELINE_ALL_DAY_OVERFLOW_ROW_HEIGHT_PX,
   offsetTimelineTimeMapper,
   timelineAllDayItemsForVisibleDate,
   timelineAllDayLaneHeightPx,
@@ -65,16 +66,20 @@ describe('Timeline all-day layout', () => {
     // must never grow the ruler differently from their painted bars.
     expect(TIMELINE_ALL_DAY_LANE_HEADER_HEIGHT_PX).toBe(34);
     expect(TIMELINE_ALL_DAY_ITEM_ROW_HEIGHT_PX).toBe(42);
+    expect(TIMELINE_ALL_DAY_OVERFLOW_ROW_HEIGHT_PX).toBe(32);
     expect(timelineAllDayLaneHeightPx(0)).toBe(0);
     expect(timelineAllDayLaneHeightPx(1)).toBe(
       TIMELINE_ALL_DAY_LANE_HEADER_HEIGHT_PX +
         TIMELINE_ALL_DAY_ITEM_ROW_HEIGHT_PX,
     );
+    expect(timelineAllDayLaneHeightPx(2)).toBe(118);
     expect(timelineAllDayLaneHeightPx(3)).toBe(
       TIMELINE_ALL_DAY_LANE_HEADER_HEIGHT_PX +
-        2 * TIMELINE_ALL_DAY_ITEM_ROW_HEIGHT_PX,
+        2 * TIMELINE_ALL_DAY_ITEM_ROW_HEIGHT_PX +
+        TIMELINE_ALL_DAY_OVERFLOW_ROW_HEIGHT_PX,
     );
-    expect(timelineAllDayLaneHeightPx(25)).toBe(timelineAllDayLaneHeightPx(2));
+    expect(timelineAllDayLaneHeightPx(3)).toBe(150);
+    expect(timelineAllDayLaneHeightPx(25)).toBe(timelineAllDayLaneHeightPx(3));
   });
 
   it('classifies single/start/middle/end segments from one canonical date span', () => {

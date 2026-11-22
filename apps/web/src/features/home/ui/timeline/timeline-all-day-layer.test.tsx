@@ -91,18 +91,21 @@ describe('Timeline date-lane one-line contract', () => {
     const onOpen = renderLane(items);
 
     const lane = document.querySelector<HTMLElement>('.timeline-all-day-lane');
-    expect(lane?.style.height).toBe('118px'); // 34 header + 2 × 42
+    expect(lane?.style.height).toBe('150px'); // 34 header + 2 × 42 + 32 for show-more
     expect(lane?.querySelectorAll('.timeline-all-day-lane__items .timeline-all-day-item'))
       .toHaveLength(2);
-    expect(screen.getByRole('button', { name: /\+ 1/ })).toBeTruthy();
+    const expand = screen.getByRole('button', { name: 'Mostra altri 1' });
+    expect(expand.closest('.timeline-all-day-lane__more')).toBeTruthy();
+    expect(expand.getAttribute('aria-expanded')).toBe('false');
     expect(lane?.textContent).not.toContain('Dettaglio non necessario');
     expect(lane?.querySelector('.timeline-all-day-item__indicators')).toBeNull();
     expect(lane?.querySelector('.timeline-all-day-item__session-state')).toBeNull();
 
-    fireEvent.click(screen.getByRole('button', { name: /\+ 1/ }));
+    fireEvent.click(expand);
+    expect(expand.getAttribute('aria-expanded')).toBe('true');
     expect(lane?.querySelectorAll('.timeline-all-day-lane__overflow .timeline-all-day-item'))
       .toHaveLength(1);
-    expect(lane?.style.height).toBe('118px');
+    expect(lane?.style.height).toBe('150px');
     expect(screen.getByText('Terza voce')).toBeTruthy();
     const overflowBar = screen.getByRole('button', { name: /Terza voce/ });
     fireEvent.click(overflowBar, { detail: 1, clientX: 450, clientY: 320 });
@@ -114,8 +117,31 @@ describe('Timeline date-lane one-line contract', () => {
     fireEvent.keyDown(overflow, { key: 'Escape' });
     expect(screen.queryByRole('region', { name: 'Altre barre' })).toBeNull();
     expect(document.activeElement).toBe(
-      screen.getByRole('button', { name: /\+ 1/ }),
+      screen.getByRole('button', { name: 'Mostra altri 1' }),
     );
+  });
+
+  it('keeps the show-more list temporary, bounded to one overlay, and closes on outside pointer', () => {
+    const items: readonly TimelineAllDayItem[] = [
+      base,
+      ...Array.from({ length: 20 }, (_, index) => ({
+        ...base,
+        id: `overflow-${index}`,
+        title: `Extra ${index + 1}`,
+      })),
+    ];
+    renderLane(items);
+    const lane = document.querySelector<HTMLElement>('.timeline-all-day-lane');
+    const expand = screen.getByRole('button', { name: 'Mostra altri 19' });
+    expect(lane?.style.height).toBe('150px');
+    fireEvent.click(expand);
+    expect(screen.getByRole('region', { name: 'Altre barre' })).toBeTruthy();
+    expect(
+      lane?.querySelectorAll('.timeline-all-day-lane__overflow .timeline-all-day-item'),
+    ).toHaveLength(19);
+    fireEvent.pointerDown(document.body);
+    expect(screen.queryByRole('region', { name: 'Altre barre' })).toBeNull();
+    expect(lane?.style.height).toBe('150px');
   });
 
   it('keeps identity, title and period on one row; no Area/Objective metadata', () => {
@@ -171,7 +197,7 @@ describe('Timeline date-lane one-line contract', () => {
     expect(visible).toHaveLength(2);
     expect(visible[0]?.textContent).toContain('Attiva');
     expect(visible[1]?.textContent).toContain('In pausa');
-    fireEvent.click(screen.getByRole('button', { name: /\+ 1/ }));
+    fireEvent.click(screen.getByRole('button', { name: 'Mostra altri 1' }));
     expect(document.querySelector('.timeline-all-day-lane__overflow')?.textContent)
       .toContain('Riunione annuale');
   });
@@ -200,10 +226,17 @@ describe('Timeline date-lane one-line contract', () => {
         evaluatedAt: '2026-11-22T08:02:03Z',
       },
     };
-    renderLane([item]);
+    const openInspector = renderLane([item]);
     const controls = screen.getByTestId('main-controls');
     expect(controls.querySelectorAll('button')).toHaveLength(2);
     expect(controls.getAttribute('data-activity-ref')).toBe('activity-a');
+    const row = controls.closest('.timeline-all-day-item-row');
+    expect(row).toBeTruthy();
+    expect(row?.contains(document.querySelector('.timeline-all-day-item'))).toBe(true);
+    expect(row?.querySelectorAll('button')).toHaveLength(3); // detail + two main controls
+    fireEvent.click(screen.getByRole('button', { name: 'Avvia' }));
+    expect(openInspector).not.toHaveBeenCalled();
+    expect(document.querySelector('.timeline-all-day-lane__more')).toBeNull();
     const lane = document.querySelector('.timeline-all-day-lane');
     expect(lane?.textContent).not.toContain('00:02');
     expect(lane?.querySelector('.timeline-all-day-item__session-state')).toBeNull();

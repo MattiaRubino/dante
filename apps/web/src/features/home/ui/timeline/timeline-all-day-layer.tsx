@@ -1,5 +1,5 @@
 import { Temporal } from '@dante/time';
-import { type CSSProperties, useId, useMemo, useRef, useState } from 'react';
+import { type CSSProperties, useEffect, useId, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
 import { formatDateWithCapitalizedMonth } from '../../../../platform/format-localized-date';
@@ -14,6 +14,7 @@ import {
   timelineAllDayLaneHeightPx,
   timelineAllDayRangePosition,
   TIMELINE_ALL_DAY_VISIBLE_ROWS,
+  TIMELINE_ALL_DAY_OVERFLOW_ROW_HEIGHT_PX,
 } from './model/timeline-all-day-layout';
 import { timelineCardIdentity } from './model/timeline-card-identity';
 import type {
@@ -141,6 +142,7 @@ export function TimelineAllDayLane({
   const [showOverflow, setShowOverflow] = useState(false);
   const overflowId = useId();
   const overflowTriggerRef = useRef<HTMLButtonElement | null>(null);
+  const laneRef = useRef<HTMLElement | null>(null);
   const visibleItems = useMemo(() => {
     const filtered = timelineAllDayItemsForVisibleDate(items, filters, dateKey);
     if (dateKey !== todayKey) return filtered;
@@ -158,6 +160,42 @@ export function TimelineAllDayLane({
     () => new Map(groups.map((group) => [group.id, group])),
     [groups],
   );
+  const hiddenCount = Math.max(
+    0,
+    visibleItems.length - TIMELINE_ALL_DAY_VISIBLE_ROWS,
+  );
+  const overflowOpen = showOverflow && hiddenCount > 0;
+
+  useEffect(() => {
+    if (!overflowOpen) return;
+    const onOutsidePointer = (event: PointerEvent) => {
+      if (
+        event.target instanceof Node &&
+        !laneRef.current?.contains(event.target)
+      ) {
+        setShowOverflow(false);
+      }
+    };
+    const onEscape = (event: KeyboardEvent) => {
+      if (
+        event.key === 'Escape' &&
+        event.target instanceof Node &&
+        laneRef.current?.contains(event.target)
+      ) {
+        event.preventDefault();
+        event.stopPropagation();
+        setShowOverflow(false);
+        overflowTriggerRef.current?.focus();
+      }
+    };
+    document.addEventListener('pointerdown', onOutsidePointer);
+    document.addEventListener('keydown', onEscape);
+    return () => {
+      document.removeEventListener('pointerdown', onOutsidePointer);
+      document.removeEventListener('keydown', onEscape);
+    };
+  }, [overflowOpen]);
+
   if (visibleItems.length === 0) {
     return null;
   }
@@ -298,7 +336,12 @@ export function TimelineAllDayLane({
         ? `${period}${plannedTime}`
         : `${precisionLabel} · ${period}`;
     return (
-      <div className="timeline-all-day-item-row" key={item.id}>
+      <div
+        className="timeline-all-day-item-row"
+        key={item.id}
+        data-range-position={position}
+        style={itemStyle}
+      >
         <button
           className="timeline-all-day-item"
           type="button"
@@ -315,7 +358,6 @@ export function TimelineAllDayLane({
           data-range-position={position}
           data-range-start={startsHere || undefined}
           data-range-end={endsHere || undefined}
-          style={itemStyle}
           aria-label={`${kindLabel}${identity.recurringInstance ? `, ${recurringLabel}` : ''}: ${item.title} · ${precisionLabel} · ${group?.label ?? item.groupId}`}
           onClick={(event) =>
             onOpenItemDetail?.(
@@ -388,6 +430,7 @@ export function TimelineAllDayLane({
 
   return (
     <section
+      ref={laneRef}
       className="timeline-all-day-lane"
       data-timeline-all-day-lane={dateKey}
       aria-label={laneLabel}
@@ -395,6 +438,10 @@ export function TimelineAllDayLane({
         {
           height: laneHeight,
           '--timeline-all-day-lane-height': `${laneHeight}px`,
+          '--timeline-all-day-overflow-row-height':
+            hiddenCount > 0
+              ? `${TIMELINE_ALL_DAY_OVERFLOW_ROW_HEIGHT_PX}px`
+              : '0px',
         } as CSSProperties
       }
     >
@@ -402,34 +449,36 @@ export function TimelineAllDayLane({
         <span>
           {formatDay(dateKey)} · {laneLabel}
         </span>
-        {visibleItems.length > TIMELINE_ALL_DAY_VISIBLE_ROWS ? (
-          <button
-            ref={overflowTriggerRef}
-            type="button"
-            aria-expanded={showOverflow}
-            aria-controls={showOverflow ? overflowId : undefined}
-            onClick={() => setShowOverflow((value) => !value)}
-          >
-            + {visibleItems.length - TIMELINE_ALL_DAY_VISIBLE_ROWS}
-          </button>
-        ) : null}
       </div>
       <div className="timeline-all-day-lane__items">
         {visibleItems.slice(0, TIMELINE_ALL_DAY_VISIBLE_ROWS).map(renderItem)}
       </div>
-      {showOverflow ? (
+      {hiddenCount > 0 ? (
+        <div className="timeline-all-day-lane__more">
+          <button
+            ref={overflowTriggerRef}
+            type="button"
+            aria-expanded={overflowOpen}
+            aria-controls={overflowOpen ? overflowId : undefined}
+            onClick={() => setShowOverflow((value) => !value)}
+          >
+            <span aria-hidden="true">{overflowOpen ? '⌃' : '⌄'}</span>
+            {overflowOpen
+              ? english
+                ? 'Hide additional items'
+                : 'Nascondi altri elementi'
+              : english
+                ? `Show ${hiddenCount} more`
+                : `Mostra altri ${hiddenCount}`}
+          </button>
+        </div>
+      ) : null}
+      {overflowOpen ? (
         <div
           id={overflowId}
           className="timeline-all-day-lane__overflow"
           role="region"
           aria-label={english ? 'More date bars' : 'Altre barre'}
-          onKeyDown={(event) => {
-            if (event.key === 'Escape') {
-              event.stopPropagation();
-              setShowOverflow(false);
-              overflowTriggerRef.current?.focus();
-            }
-          }}
         >
           {visibleItems.slice(TIMELINE_ALL_DAY_VISIBLE_ROWS).map(renderItem)}
         </div>
