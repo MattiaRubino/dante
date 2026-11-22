@@ -2,12 +2,13 @@
 
 from __future__ import annotations
 
+from dataclasses import replace
 from uuid import UUID
 
 import pytest
 from pydantic import BaseModel, ValidationError
 
-from dante.modules.temporal.recurrence import RecurrenceView
+from dante.modules.temporal.recurrence import RecurrenceInputError, RecurrenceView, _validate
 from dante.modules.temporal.recurrence_api import (
     CalendarOrdinalWeekday,
     CalendarRecurrenceRequest,
@@ -75,3 +76,23 @@ def test_recurrence_read_serializes_positional_coordinates_as_named_fields(
         )
     ).model_dump(mode="json")
     assert state["recurrence"][expected_field] == expected_value
+
+
+def test_dopo_expected_count_is_bounded_at_730_on_api_and_domain_layers() -> None:
+    payload = {
+        "family_code": "calendar_wall_clock",
+        "range_kind": "expected_count",
+        "expected_occurrence_count": 730,
+        "effective_from": "2026-11-22",
+        "pattern_code": "daily",
+        "interval_count": 1,
+        "clock_basis_code": "floating_local",
+    }
+    accepted = CalendarRecurrenceRequest.model_validate(payload)
+    _validate(_spec(accepted))
+    with pytest.raises(ValidationError):
+        CalendarRecurrenceRequest.model_validate(
+            {**payload, "expected_occurrence_count": 731}
+        )
+    with pytest.raises(RecurrenceInputError, match="730"):
+        _validate(replace(_spec(accepted), expected_occurrence_count=731))

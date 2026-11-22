@@ -761,14 +761,18 @@ export function RecurringSeriesEditor({
       titleRef.current?.focus();
       return;
     }
-    if (
-      recurrence.range_kind === 'expected_count' &&
-      asNumber(recurrence.expected_occurrence_count) < 1
-    ) {
-      setError(
-        'Non ci sono istanze successive da modificare. Cambia esplicitamente il limite per estendere la serie.',
-      );
-      return;
+    if (recurrence.range_kind === 'expected_count') {
+      const count = asNumber(recurrence.expected_occurrence_count);
+      if (!Number.isInteger(count) || count < 1) {
+        setError(
+          'Non ci sono istanze successive da modificare. Cambia esplicitamente il limite per estendere la serie.',
+        );
+        return;
+      }
+      if (count > 730) {
+        setError('Inserisci da 1 a 730 occorrenze.');
+        return;
+      }
     }
     if (normalizedAreaName && !activeArea && !creatingArea) {
       setAreaError('Scegli l’area già esistente dall’elenco.');
@@ -1809,6 +1813,7 @@ export function RecurringSeriesEditor({
                             <input
                               type="number"
                               min={1}
+                              max={730}
                               aria-label="Numero di occorrenze"
                               value={asNumber(
                                 recurrence.expected_occurrence_count,

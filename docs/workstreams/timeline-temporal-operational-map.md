@@ -1,5 +1,28 @@
 # Timeline / Temporal-Operational — Live Execution Ledger
 
+
+## 2026-11-22 — Recurrence renewal boundary follow-up
+
+After the candidate commits `3b2c762`, `20e1a16`, `91739c5`,
+`ea024d8`, code review found two contract mismatches: finite “Dopo X” was
+still admitted at 999 rather than the required 730; open “Mai” triggered a
+notice with 30 **occurrences** remaining, not with 30 **local days** until
+the last authorized occurrence. Both are now corrected in the authoring
+validation/API and the derived allowance-notice projection respectively.
+The existing owner-scoped allowance tables, idempotent extend/decline,
+checkpoint cap, +N icon/popup and per-activity Event/Routine behavior are
+retained. A single bounded projection through today+30 derives the
+remaining count; no extra migration, new endpoint, automatic renewal,
+past-instance rewrite or generated-client update is introduced.
+
+Focused verification required on the same commit: Web Create session
+validation; API/Pydantic finite bound; renewal daily and weekly (30 days
+versus 30 occurrences, exactly at threshold, extended and exhausted);
+Postgres `test_open_series_requires_explicit_renewal_after_730_expected_dates`;
+the existing Timeline renewal popup; TypeScript / Ruff / formatting.
+**Execution by owner is pending; nothing is labeled GREEN without logs.**
+
+
 ## 2026-11-22 — All-day Edit date geometry candidate
 
 The owner found that all-day Edit rendered two narrow, left-aligned date

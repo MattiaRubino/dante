@@ -585,9 +585,10 @@ describe('temporal create session', () => {
           (issue) => issue.code === 'temporal.create.recurrence.count_invalid',
         );
 
+      expect(issuesFor(1)).toEqual([]);
       expect(issuesFor(730)).toEqual([]);
-      expect(issuesFor(999)).toEqual([]);
-      expect(issuesFor(1000)).toHaveLength(1);
+      expect(issuesFor(731)).toHaveLength(1);
+      expect(issuesFor(999)).toHaveLength(1);
     },
   );
 

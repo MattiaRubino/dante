@@ -2214,12 +2214,22 @@ of “questa e le prossime” inherits the same source allowance; it does not
 restart the count. Conversion from a finite rule to an open rule begins a new
 open epoch, without deleting the finite history.
 
-When at most 30 authorized occurrences remain by the account's local date,
-the Timeline shows one optional renewal notice for that source. “Continua”
-authorizes another 730 expected coordinates with an owner-scoped, replay-safe
-decision. The notice then disappears until the next threshold. “Termina”
-closes the notice and generation ends at the currently authorized
-boundary; already accepted instances and history remain. No automatic
-extension occurs. Finite rules (“Data” and “Dopo”) do not show renewal notices
-and retain their explicit end semantics. The authoring UI currently validates
-“Dopo” in the interval 1–999 and explains that bound beside the field.
+When the last authorized expected occurrence falls within the next
+**30 local calendar days** (including today), the Timeline shows one optional
+renewal notice for that source. This is **not** a threshold of 30 remaining
+occurrences: weekly and monthly series must not alert months early. The
+notice displays the count of still-authorized expected coordinates and is
+aggregated with other pending notices in a compact icon badge (+N); clicking
+the icon opens the list. “Continua” authorizes another 730 expected
+coordinates with an owner-scoped, replay-safe decision. The notice then
+disappears until the next 30-day window. “Termina” dismisses renewal and
+generation ends at the currently authorized 730-based boundary; already
+accepted instances and history remain. Neither choice rewrites history,
+skips count toward the allowance, nor extends automatically.
+
+Finite rules (“Data” and “Dopo”) do not show renewal notices and retain
+their explicit end semantics. “Data” is bounded by its selected calendar date,
+not by the open-series allowance. New “Dopo” authoring accepts **1–730
+occurrences** (Create and backend validation, concise inline error);
+existing immutable historical coordinates are not truncated by this UI
+validation change.

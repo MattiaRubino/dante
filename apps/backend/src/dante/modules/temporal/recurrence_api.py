@@ -64,7 +64,7 @@ class CalendarRecurrenceRequest(BaseModel):
     model_config = ConfigDict(extra="forbid")
     family_code: Literal["calendar_wall_clock"] = "calendar_wall_clock"
     range_kind: Literal["open", "until_boundary", "expected_count"]
-    expected_occurrence_count: int | None = Field(default=None, ge=1)
+    expected_occurrence_count: int | None = Field(default=None, ge=1, le=730)
     effective_from: date
     effective_until: date | None = None
     pattern_code: Literal[
@@ -93,7 +93,7 @@ class ElapsedRecurrenceRequest(BaseModel):
     model_config = ConfigDict(extra="forbid")
     family_code: Literal["elapsed_interval"] = "elapsed_interval"
     range_kind: Literal["open", "until_boundary", "expected_count"]
-    expected_occurrence_count: int | None = Field(default=None, ge=1)
+    expected_occurrence_count: int | None = Field(default=None, ge=1, le=730)
     effective_from: datetime
     effective_until: datetime | None = None
     elapsed_seconds: Decimal = Field(gt=0, max_digits=20, decimal_places=6)
@@ -121,7 +121,7 @@ class CyclicRecurrenceRequest(BaseModel):
     model_config = ConfigDict(extra="forbid")
     family_code: Literal["cyclic_positional"] = "cyclic_positional"
     range_kind: Literal["open", "until_boundary", "expected_count"]
-    expected_occurrence_count: int | None = Field(default=None, ge=1)
+    expected_occurrence_count: int | None = Field(default=None, ge=1, le=730)
     effective_from: date
     effective_until: date | None = None
     cycle_length: int = Field(ge=1, le=10000)

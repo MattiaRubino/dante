@@ -429,7 +429,7 @@ export const home = {
           'Il ciclo o le posizioni della ricorrenza non sono validi.',
         recurrenceUntil:
           'La data finale della ricorrenza non può precedere l’inizio.',
-        recurrenceCount: 'Inserisci da 1 a 999 occorrenze.',
+        recurrenceCount: 'Inserisci da 1 a 730 occorrenze.',
         reminder: 'Il promemoria configurato non è valido.',
         generic: 'Controlla questo campo.',
       },

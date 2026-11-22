@@ -182,6 +182,11 @@ def _validate(spec: RecurrenceSpec) -> None:
         raise RecurrenceInputError(
             "Expected-count Recurrence requires a positive expected occurrence count."
         )
+    if spec.range_kind == "expected_count" and (
+        spec.expected_occurrence_count is not None
+        and spec.expected_occurrence_count > 730
+    ):
+        raise RecurrenceInputError("Expected-count Recurrence permits at most 730 occurrences.")
     if spec.range_kind != "expected_count" and spec.expected_occurrence_count is not None:
         raise RecurrenceInputError(
             "Only expected-count Recurrence may carry expected occurrence count."

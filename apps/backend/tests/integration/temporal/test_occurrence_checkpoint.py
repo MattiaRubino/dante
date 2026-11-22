@@ -170,7 +170,7 @@ async def test_open_series_requires_explicit_renewal_after_730_expected_dates(
             recurrence=replace(
                 _daily(starts_on=today + timedelta(days=1), wall_time=time(9)),
                 range_kind="expected_count",
-                expected_occurrence_count=900,
+                expected_occurrence_count=730,
             ),
         )
         assert all(

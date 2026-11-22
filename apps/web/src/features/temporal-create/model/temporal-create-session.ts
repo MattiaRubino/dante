@@ -862,7 +862,7 @@ function validateRecurrence(
     recurrence.endMode === 'count' &&
     (!Number.isInteger(recurrence.count) ||
       recurrence.count < 1 ||
-      recurrence.count > 999)
+      recurrence.count > 730)
   ) {
     issues.push(
       temporalValidationIssue('temporal.create.recurrence.count_invalid', [

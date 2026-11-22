@@ -369,7 +369,7 @@ export function TemporalCreateCalendarRecurrenceFields({
                 data-create-path="eventRecurrence.count"
                 type="number"
                 min="1"
-                max="999"
+                max="730"
                 aria-label={
                   italian ? 'Numero di occorrenze' : 'Number of occurrences'
                 }
