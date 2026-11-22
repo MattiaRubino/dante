@@ -104,20 +104,21 @@ separatori fra i giorni.
   metadata del profilo. L'azione `Pianifica` per una Occurrence
   attesa continua ad essere accessibile nello stesso wrapper.
 - **Tre o più elementi:** dopo le prime due card compare **una riga
-  propria da 32 px** con freccia e testo `Mostra altri N`, ben
-  associata al pannello, anziché un `+N` remoto nell'intestazione.
-  L'altezza è `34 + 2×42 + 32 = 150 px` per qualsiasi N ≥3.
-  L'espansione apre una **lista sotto la riga Mostra altri**,
-  visivamente connessa al pannello, ma **assoluta/sovrapposta**:
-  non aumenta l'altezza del giorno e non sposta ruler, now-line,
-  card orarie, drag o scroll anchoring. Il limite di altezza è
-  `min(55dvh, 264px)` (circa sei righe), con scrollbar sottile
-  e `scrollbar-gutter: stable` che non copre Play/Stop; lo
-  `overscroll-behavior: contain` evita di trasmettere lo scroll
-  interno alla Timeline. Chiudi tramite il pulsante, Escape
-  (con restituzione del focus) o clic esterno. L'elenco mantiene
-  le stesse card e gli stessi comandi, senza creare una seconda
-  rappresentazione dei dati.
+  da 32 px** con freccia e testo `Mostra altri N`. Da chiuso il pannello
+  misura `34 + 2×42 + 32 = 150 px`. Da aperto **si espande davvero verso
+  il basso all'interno della stessa cornice**, mostrando le altre card
+  nella stessa struttura, **non in un popup, un secondo pannello o un layer
+  assoluto sovrapposto alle ore**. Le card orarie, il righello e la
+  linea dell'ora attuale devono scendere dello stesso numero di pixel.
+  La geometria aperta è `150 + min(N, 6)×42 px`: ad esempio, 3 elementi
+  totali = 192 px, 8 o più = 402 px. Da 7 elementi aggiuntivi in poi
+  compare lo **scroll interno** nelle sole righe aggiuntive (massimo
+  6 visibili), con `scrollbar-gutter: stable` per non coprire Play/Stop e
+  `overscroll-behavior: contain`. Il comando resta in fondo al pannello
+  e diventa `Nascondi altri elementi`; anche Escape richiude e
+  restituisce il focus. Il clic fuori non richiude automaticamente,
+  evitando salti di layout durante le interazioni con la Timeline.
+  Nessuna card o pulsante deve finire sotto un pannello flottante.
 - Le prime due card danno precedenza alle Sessioni principali running
   poi paused, altrimenti rispettano l'ordine di proiezione
   con sort stabile. Solo presentazione, non Schedule/Session write.
@@ -129,12 +130,15 @@ separatori fra i giorni.
   Inspector delle card **orarie** è invariato.
 - Fonte unica di verità geometrica:
   `model/timeline-all-day-layout.ts`, in cui header=34,
-  row=42 e footer condizionale=32. I test devono verificare
-  0/1/2/3/25, conteggio degli elementi, apertura/chiusura ed
-  effetto *nullo* dell'espansione sul time mapper.
+  row=42, footer condizionale=32, ed espansione limitata a 6 righe
+  aggiuntive. Lo stato di apertura per giorno è condiviso fra il pannello
+  e `applyTimelineAllDayGeometry`: il mapper/inverso, gli offset dei giorni,
+  la now-line, le card orarie e la Week devono ricevere lo **stesso delta**
+  della fascia espansa. I test coprono 0/1/2/3/25, apertura e chiusura,
+  mapper/inverso, offset giorni, righello Week e scrollbar interna.
 
 **Accettazione:** typecheck, Prettier/ESLint, Vitest del layout
-e popup, verifica interattiva browser reale per schermi larghi/
-stretti, almeno 20 elementi, scroll del popup, clic su
-Play/Stop vs Inspector, Escape e clic esterno. Il gate completo
+ed espansione in linea, verifica interattiva browser reale per schermi
+larghi/stretti, almeno 20 elementi, scroll interno, clic su Play/Stop vs
+Inspector, Escape e richiudi con la freccia. Il gate completo
 si esegue **solo dopo** la validazione visiva, sullo stesso SHA.

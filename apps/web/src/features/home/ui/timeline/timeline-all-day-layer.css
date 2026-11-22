@@ -1,7 +1,8 @@
 /*
  * Date-lane visual surface. The model owns heights (34 header, 42 per
- * visible row, 32 extra only for the overflow trigger). The overlay never
- * contributes to those dimensions and cannot move the clock ruler.
+ * visible row, 32 extra only for the overflow trigger). Additional visible
+ * rows expand the SAME panel and the clock mapper together, never overlay
+ * any timed cards or drift out of sync with the hour ruler.
  */
 .timeline-all-day-lane {
   --timeline-group-color: var(--dante-timeline-tone-personal);
@@ -15,7 +16,9 @@
   margin: 0 8px calc(-1 * var(--timeline-all-day-lane-height));
   display: grid;
   grid-template-rows:
-    34px minmax(0, 1fr)
+    34px
+    var(--timeline-all-day-visible-rows-height, 0px)
+    var(--timeline-all-day-expanded-rows-height, 0px)
     var(--timeline-all-day-overflow-row-height, 0px);
   isolation: isolate;
   overflow: visible;
@@ -249,7 +252,7 @@
 
 .timeline-all-day-lane__more {
   display: flex;
-  grid-row: 3;
+  grid-row: 4;
   align-items: center;
   justify-content: center;
   min-width: 0;
@@ -285,28 +288,28 @@
   outline-offset: 1px;
 }
 
+/* Real in-flow expansion: the list is inside the neutral frame.
+ * The parent allocates exactly min(hidden,6)*42px via the shared model.
+ * Only extra entries scroll; its thumb has an independent gutter so no
+ * Activity Play/Stop is covered. No popover, absolute layer or backdrop. */
 .timeline-all-day-lane__overflow {
   box-sizing: border-box;
-  position: absolute;
-  z-index: 3;
-  top: calc(100% - 2px);
-  right: 0;
-  left: 0;
+  position: relative;
+  grid-row: 3;
   display: grid;
   grid-auto-rows: 42px;
   align-content: start;
-  max-height: min(55dvh, 264px);
-  padding: 6px 7px 6px 10px;
+  min-width: 0;
+  min-height: 0;
+  max-height: 100%;
+  padding: 0 6px 0 10px;
   overflow-x: hidden;
   overflow-y: auto;
   overscroll-behavior: contain;
   scrollbar-width: thin;
   scrollbar-color: var(--dante-semantic-color-home-border-strong) transparent;
   scrollbar-gutter: stable;
-  border: 1px solid var(--dante-semantic-color-home-border-strong);
-  border-radius: 0 0 11px 11px;
-  background: var(--dante-semantic-color-home-surface-primary, #0d1522);
-  box-shadow: 0 14px 26px rgba(0, 0, 0, 0.34);
+  background: inherit;
 }
 
 .timeline-day-stream.is-week .timeline-all-day-item__meta {

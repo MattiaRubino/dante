@@ -205,6 +205,66 @@ describe('Timeline all-day runtime geometry', () => {
     );
   });
 
+  it('expands the actual day geometry and shifts timed cards/ruler together, without touching the minute scale', () => {
+    const items: readonly TimelineAllDayItem[] = [
+      spanningItem,
+      ...Array.from({ length: 8 }, (_, index) => ({
+        ...spanningItem,
+        id: `all-day:additional-${index}`,
+        endDateExclusiveKey: '2026-09-04',
+      })),
+    ];
+    const days = [day('2026-09-03', 0), day('2026-09-04', 1440)];
+    const closed = applyTimelineAllDayGeometry(days, items, new Set());
+    const opened = applyTimelineAllDayGeometry(
+      days,
+      items,
+      new Set(),
+      false,
+      new Set(['2026-09-03']),
+    );
+    const extraHeight = 6 * 42;
+    expect(closed[0]?.mapper.map(0)).toBe(150);
+    expect(opened[0]?.mapper.map(0)).toBe(150 + extraHeight);
+    expect(opened[0]?.mapper.map(60)).toBe(210 + extraHeight);
+    expect(opened[0]?.mapper.inv(150 + extraHeight + 60)).toBe(60);
+    expect(opened[0]?.layouts[0]?.top).toBe(
+      (closed[0]?.layouts[0]?.top ?? 0) + extraHeight,
+    );
+    expect(opened[1]?.offsetTop).toBe(
+      (closed[1]?.offsetTop ?? 0) + extraHeight,
+    );
+    expect(opened[1]?.mapper.map(0)).toBe(closed[1]?.mapper.map(0));
+    expect(
+      applyTimelineAllDayGeometry(
+        days,
+        items,
+        new Set(),
+        false,
+        new Set(),
+      ),
+    ).toEqual(closed);
+  });
+
+  it('keeps week columns aligned when only one all-day lane is expanded', () => {
+    const items: readonly TimelineAllDayItem[] = [
+      spanningItem,
+      { ...spanningItem, id: 'all-day:2', endDateExclusiveKey: '2026-09-04' },
+      { ...spanningItem, id: 'all-day:3', endDateExclusiveKey: '2026-09-04' },
+    ];
+    const result = applyTimelineAllDayGeometry(
+      [day('2026-09-03', 0), day('2026-09-04', 0)],
+      items,
+      new Set(),
+      true,
+      new Set(['2026-09-03']),
+    );
+    expect(result[0]?.mapper.map(0)).toBe(192);
+    expect(result[1]?.mapper.map(0)).toBe(192);
+    expect(result[0]?.height).toBe(result[1]?.height);
+    expect(result[1]?.layouts[0]?.top).toBe(120 + 192);
+  });
+
   it('removes all-day geometry when Context filters hide every all-day item', () => {
     const originalDays = [day('2026-09-03', 0), day('2026-09-04', 1440)];
     const result = applyTimelineAllDayGeometry(

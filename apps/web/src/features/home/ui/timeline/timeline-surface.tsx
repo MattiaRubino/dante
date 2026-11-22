@@ -425,6 +425,11 @@ export function TimelineSurface({
   const [anchor, setAnchor] = useState<PlainDate>(() => initialDate);
   const [viewDate, setViewDate] = useState<PlainDate>(() => initialDate);
   const [timelineView, setTimelineView] = useState<TimelineView>('timeline');
+  // Date-lane expansion is view state, never a Schedule mutation. Both the
+  // painted rows and the calendar's time mapper read exactly this Set.
+  const [expandedDateLaneKeys, setExpandedDateLaneKeys] = useState<
+    ReadonlySet<string>
+  >(() => new Set());
   const [realityClock, setRealityClock] = useState(() => Date.now());
   const sessionPanel = useSessionPanel(
     sessionPanelEnabled,
@@ -776,6 +781,7 @@ export function TimelineSurface({
         projectedDateLaneItems,
         presentationFilters,
         timelineView === 'week',
+        expandedDateLaneKeys,
       ),
       sessionPanel.snapshot?.visuals ?? [],
       clockZone,
@@ -806,6 +812,7 @@ export function TimelineSurface({
     projectedDateLaneItems,
     presentationFilters,
     timelineView,
+    expandedDateLaneKeys,
     viewDate,
     sessionPanel.snapshot,
     dateLaneSessions,
@@ -1982,6 +1989,18 @@ export function TimelineSurface({
             opener,
           })
         }
+        expandedDateLaneKeys={expandedDateLaneKeys}
+        onExpandedDateLaneChange={(dateKey, isExpanded) => {
+          if (dragActiveRef.current) return;
+          preserveViewportTime();
+          setExpandedDateLaneKeys((previous) => {
+            if (previous.has(dateKey) === isExpanded) return previous;
+            const next = new Set(previous);
+            if (isExpanded) next.add(dateKey);
+            else next.delete(dateKey);
+            return next;
+          });
+        }}
         onOpenDateLaneDetail={(item, opener, anchorPoint) => {
           const event: TimelineEvent = {
             id: item.id,

@@ -1,6 +1,39 @@
 # Timeline / Temporal-Operational — Live Execution Ledger
 
 
+## 2026-11-22 — Real in-flow all-day expansion, not a detached popup
+
+Owner acceptance found that the `20f429d` implementation still displayed
+additional full-day bars as a **second panel floating below** the frame.
+The intended interaction is to **physically expand the same neutral frame
+downwards**, showing further bars within it. This follow-up removes the
+absolute overflow positioning and adds a fourth in-flow CSS grid track:
+header 34px, first 2 bars ×42px, up to 6 additional bars ×42px, footer
+toggle 32px (when hidden items exist). The exact model height is shared by
+`timelineAllDayLaneHeightPx(count, expanded)`, `TimelineAllDayLane` and
+`applyTimelineAllDayGeometry`, including week-wide column alignment.
+Collapsed heights 0/76/118/150px; 3 items expanded 192px; >=8 items
+expanded up to 402px with thin internal scrollbar on the additional
+rows only. No separate popover, floating panel or timer card overlay.
+
+The expansion state is keyed by civil date in `TimelineSurface`, passed
+through `TimelineDayStream`; open/close recomputes ruler, Now line, timed
+card positions, inverse mapping and cumulative next-day offsets consistently.
+Preserve the existing viewport anchor before toggle; during dragging,
+geometry remains frozen and toggling is blocked. Closing via footer or
+Escape returns focus; no outside-click auto-collapse so normal Timeline
+interaction does not unexpectedly reflow. Activity Play/Stop and Inspector
+remain separate click targets in a single Life-Area-colored row; unchanged
+runtime/business semantics.
+
+Focused tests for component expansion/collapse, 3 vs 21 entries,
+6-row scroll limit, mapper/inverse, day offset and Week align were added.
+TypeScript, Vitest, formatting and browser verification **NOT_RUN** at
+publish time; owner runs them locally before the final visual review.
+No backend/schema/migration/API changes.
+
+
+
 ## 2026-11-22 — All-day lane visual follow-up: neutral frame and integrated controls
 
 The owner's screenshots exposed three regressions in commit `879e2eedb`:

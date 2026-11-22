@@ -14,6 +14,7 @@ export function applyTimelineAllDayGeometry(
   items: readonly TimelineAllDayItem[],
   filters: ReadonlySet<TimelineGroupId>,
   alignColumns = false,
+  expandedDateKeys: ReadonlySet<string> = new Set(),
 ): readonly TimelineRenderedDay[] {
   let offsetTop = 0;
   const sharedLaneHeight = alignColumns
@@ -23,6 +24,7 @@ export function applyTimelineAllDayGeometry(
           timelineAllDayLaneHeightPx(
             timelineAllDayItemsForVisibleDate(items, filters, day.dateKey)
               .length,
+            expandedDateKeys.has(day.dateKey),
           ),
         ),
       )
@@ -36,7 +38,10 @@ export function applyTimelineAllDayGeometry(
     );
     const laneHeight = alignColumns
       ? sharedLaneHeight
-      : timelineAllDayLaneHeightPx(visibleItems.length);
+      : timelineAllDayLaneHeightPx(
+          visibleItems.length,
+          expandedDateKeys.has(day.dateKey),
+        );
     const mapper = offsetTimelineTimeMapper(day.mapper, laneHeight);
     const layouts =
       laneHeight === 0

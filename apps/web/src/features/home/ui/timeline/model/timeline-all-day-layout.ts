@@ -13,6 +13,7 @@ export const TIMELINE_ALL_DAY_LANE_HEADER_HEIGHT_PX = 34;
 export const TIMELINE_ALL_DAY_ITEM_ROW_HEIGHT_PX = 42;
 export const TIMELINE_ALL_DAY_VISIBLE_ROWS = 2;
 export const TIMELINE_ALL_DAY_OVERFLOW_ROW_HEIGHT_PX = 32;
+export const TIMELINE_ALL_DAY_MAX_EXPANDED_ROWS = 6;
 
 export type TimelineAllDayRangePosition = 'single' | 'start' | 'middle' | 'end';
 
@@ -29,7 +30,15 @@ export function timelineAllDayItemsForVisibleDate(
   );
 }
 
-export function timelineAllDayLaneHeightPx(itemCount: number): number {
+/**
+ * The expanded rows occupy actual calendar geometry, not a floating popover.
+ * Both the painted lane and every consumer of the time mapper use this value.
+ * After six additional rows the list scrolls inside the SAME date-lane panel.
+ */
+export function timelineAllDayLaneHeightPx(
+  itemCount: number,
+  expanded = false,
+): number {
   if (itemCount <= 0) {
     return 0;
   }
@@ -39,6 +48,12 @@ export function timelineAllDayLaneHeightPx(itemCount: number): number {
       TIMELINE_ALL_DAY_ITEM_ROW_HEIGHT_PX +
     (itemCount > TIMELINE_ALL_DAY_VISIBLE_ROWS
       ? TIMELINE_ALL_DAY_OVERFLOW_ROW_HEIGHT_PX
+      : 0) +
+    (expanded
+      ? Math.min(
+          Math.max(0, itemCount - TIMELINE_ALL_DAY_VISIBLE_ROWS),
+          TIMELINE_ALL_DAY_MAX_EXPANDED_ROWS,
+        ) * TIMELINE_ALL_DAY_ITEM_ROW_HEIGHT_PX
       : 0)
   );
 }

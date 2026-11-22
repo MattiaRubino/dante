@@ -86,6 +86,8 @@ type TimelineDayStreamProps = Readonly<{
     opener: HTMLElement,
     point?: Readonly<{ clientX: number; clientY: number }>,
   ) => void;
+  expandedDateLaneKeys?: ReadonlySet<string>;
+  onExpandedDateLaneChange?: (dateKey: string, expanded: boolean) => void;
   onOpenSubitemDetail: (
     event: TimelineEvent,
     subitem: string,
@@ -573,6 +575,8 @@ function TimelineDay({
   onToggleSubitems,
   onOpenEventDetail,
   onOpenDateLaneDetail,
+  expandedDateLaneKeys,
+  onExpandedDateLaneChange,
   onOpenSubitemDetail,
   onPointerPress,
   onKeyboardMove,
@@ -593,6 +597,8 @@ function TimelineDay({
     opener: HTMLElement,
     point?: Readonly<{ clientX: number; clientY: number }>,
   ) => void;
+  expandedDateLaneKeys?: ReadonlySet<string>;
+  onExpandedDateLaneChange?: (dateKey: string, expanded: boolean) => void;
   onOpenSubitemDetail: (
     event: TimelineEvent,
     subitem: string,
@@ -652,6 +658,15 @@ function TimelineDay({
         items={state.allDayItems}
         groups={state.groups}
         filters={state.filters}
+        {...(expandedDateLaneKeys
+          ? { expanded: expandedDateLaneKeys.has(day.dateKey) }
+          : {})}
+        {...(onExpandedDateLaneChange
+          ? {
+              onExpandedChange: (isExpanded: boolean) =>
+                onExpandedDateLaneChange(day.dateKey, isExpanded),
+            }
+          : {})}
         {...(onOpenDateLaneDetail
           ? { onOpenItemDetail: onOpenDateLaneDetail }
           : {})}
@@ -774,6 +789,8 @@ export function TimelineDayStream({
   onToggleSubitems,
   onOpenEventDetail,
   onOpenDateLaneDetail,
+  expandedDateLaneKeys,
+  onExpandedDateLaneChange,
   onOpenSubitemDetail,
   onMoveEvent,
   onMoveFeedback,
@@ -1722,6 +1739,8 @@ export function TimelineDayStream({
               onToggleSubitems={onToggleSubitems}
               onOpenEventDetail={onOpenEventDetail}
               {...(onOpenDateLaneDetail ? { onOpenDateLaneDetail } : {})}
+              {...(expandedDateLaneKeys ? { expandedDateLaneKeys } : {})}
+              {...(onExpandedDateLaneChange ? { onExpandedDateLaneChange } : {})}
               onOpenSubitemDetail={onOpenSubitemDetail}
               onPointerPress={startPointerPress}
               onKeyboardMove={keyboardMove}

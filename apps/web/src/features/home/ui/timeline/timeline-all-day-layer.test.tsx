@@ -77,7 +77,7 @@ function renderLane(
 }
 
 describe('Timeline date-lane one-line contract', () => {
-  it('shows two readable rows and overflows the rest without expanding the lane', () => {
+  it('expands inside the same date-lane frame and collapses without leaving a separate popover', () => {
     const items = [
       base,
       {
@@ -105,7 +105,9 @@ describe('Timeline date-lane one-line contract', () => {
     expect(expand.getAttribute('aria-expanded')).toBe('true');
     expect(lane?.querySelectorAll('.timeline-all-day-lane__overflow .timeline-all-day-item'))
       .toHaveLength(1);
-    expect(lane?.style.height).toBe('150px');
+    expect(lane?.style.height).toBe('192px'); // 150 collapsed + 42 one extra row
+    const inlineList = screen.getByRole('region', { name: 'Altre barre' });
+    expect(inlineList.parentElement).toBe(lane);
     expect(screen.getByText('Terza voce')).toBeTruthy();
     const overflowBar = screen.getByRole('button', { name: /Terza voce/ });
     fireEvent.click(overflowBar, { detail: 1, clientX: 450, clientY: 320 });
@@ -116,12 +118,13 @@ describe('Timeline date-lane one-line contract', () => {
     const overflow = screen.getByRole('region', { name: 'Altre barre' });
     fireEvent.keyDown(overflow, { key: 'Escape' });
     expect(screen.queryByRole('region', { name: 'Altre barre' })).toBeNull();
+    expect(lane?.style.height).toBe('150px');
     expect(document.activeElement).toBe(
       screen.getByRole('button', { name: 'Mostra altri 1' }),
     );
   });
 
-  it('keeps the show-more list temporary, bounded to one overlay, and closes on outside pointer', () => {
+  it('expands at most six additional rows inside the panel and scrolls beyond that', () => {
     const items: readonly TimelineAllDayItem[] = [
       base,
       ...Array.from({ length: 20 }, (_, index) => ({
@@ -136,11 +139,45 @@ describe('Timeline date-lane one-line contract', () => {
     expect(lane?.style.height).toBe('150px');
     fireEvent.click(expand);
     expect(screen.getByRole('region', { name: 'Altre barre' })).toBeTruthy();
+    const additional = screen.getByRole('region', { name: 'Altre barre' });
+    expect(additional.parentElement).toBe(lane);
     expect(
       lane?.querySelectorAll('.timeline-all-day-lane__overflow .timeline-all-day-item'),
     ).toHaveLength(19);
-    fireEvent.pointerDown(document.body);
+    expect(lane?.style.height).toBe('402px'); // 150 + six 42px rows
+    expect(screen.getByRole('button', { name: 'Nascondi altri elementi' })).toBeTruthy();
+    fireEvent.click(screen.getByRole('button', { name: 'Nascondi altri elementi' }));
     expect(screen.queryByRole('region', { name: 'Altre barre' })).toBeNull();
+    expect(lane?.style.height).toBe('150px');
+  });
+
+  it('keeps controlled parent expansion and the rendered panel height in sync', () => {
+    const items: readonly TimelineAllDayItem[] = [
+      base,
+      { ...base, id: 'event-b', title: 'Seconda' },
+      { ...base, id: 'event-c', title: 'Terza' },
+    ];
+    const change = vi.fn();
+    const props = {
+      dateKey: '2026-11-22',
+      todayKey: '2026-11-22',
+      items,
+      groups,
+      filters: new Set<string>(),
+      onExpandedChange: change,
+    };
+    const view = render(<TimelineAllDayLane {...props} expanded={false} />);
+    const lane = document.querySelector<HTMLElement>('.timeline-all-day-lane');
+    fireEvent.click(screen.getByRole('button', { name: 'Mostra altri 1' }));
+    expect(change).toHaveBeenCalledTimes(1);
+    expect(change).toHaveBeenCalledWith(true);
+    expect(lane?.style.height).toBe('150px'); // controlled: parent owns state
+    view.rerender(<TimelineAllDayLane {...props} expanded />);
+    expect(lane?.style.height).toBe('192px');
+    expect(screen.getByRole('region', { name: 'Altre barre' })).toBeTruthy();
+    fireEvent.click(screen.getByRole('button', { name: 'Nascondi altri elementi' }));
+    expect(change).toHaveBeenLastCalledWith(false);
+    view.rerender(<TimelineAllDayLane {...props} expanded={false} />);
     expect(lane?.style.height).toBe('150px');
   });
 

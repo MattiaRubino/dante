@@ -80,6 +80,11 @@ describe('Timeline all-day layout', () => {
     );
     expect(timelineAllDayLaneHeightPx(3)).toBe(150);
     expect(timelineAllDayLaneHeightPx(25)).toBe(timelineAllDayLaneHeightPx(3));
+    expect(timelineAllDayLaneHeightPx(3, true)).toBe(192);
+    expect(timelineAllDayLaneHeightPx(8, true)).toBe(402);
+    expect(timelineAllDayLaneHeightPx(25, true)).toBe(402);
+    expect(timelineAllDayLaneHeightPx(2, true)).toBe(118);
+    expect(timelineAllDayLaneHeightPx(0, true)).toBe(0);
   });
 
   it('classifies single/start/middle/end segments from one canonical date span', () => {
