@@ -16,13 +16,24 @@ const sources = vi.hoisted(() => ({
   list: vi.fn(),
   remove: vi.fn(),
 }));
-vi.mock('../../../temporal-create/application/remote-draft-vault', () => ({
-  createRemoteDraftVault: () => ({
-    list: sources.list,
-    remove: sources.remove,
-  }),
-  DRAFT_VAULT_UPDATED: 'dante:draft-vault-updated',
-}));
+vi.mock(
+  '../../../temporal-create/application/remote-draft-vault',
+  async (importOriginal) => {
+    // Preserve real exported quota/event contracts; replace only remote I/O.
+    // This prevents an obsolete test mock from hiding newly added exports.
+    const actual =
+      await importOriginal<
+        typeof import('../../../temporal-create/application/remote-draft-vault')
+      >();
+    return {
+      ...actual,
+      createRemoteDraftVault: () => ({
+        list: sources.list,
+        remove: sources.remove,
+      }),
+    };
+  },
+);
 
 const draft = {
   draftRef: 'draft-1',
