@@ -226,11 +226,11 @@ test('DV-STRESS-08 100 mixed drafts: bounded vertical scroll, fixed search, unti
     await expect(panel.locator('article')).toHaveCount(12);
     await expect(panel.locator('article').first()).toContainText('Senza titolo');
   }
-  await search.fill('Stress 100');
+  await search.fill('Stress 99');
   await expect(panel.locator('article')).toHaveCount(1);
   await search.fill('');
   await expect(panel.locator('article')).toHaveCount(100);
-  const chosen = panel.locator('article').filter({ hasText: 'Stress 100' });
+  const chosen = panel.locator('article').filter({ hasText: 'Stress 99' });
   await chosen.getByRole('button', { name: 'Elimina' }).click();
   await chosen.getByRole('button', { name: 'Annulla' }).click();
   expect(records).toHaveProperty('size', 100);
