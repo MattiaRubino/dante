@@ -7,17 +7,20 @@
   border-color: var(--dante-semantic-color-home-border-strong, #52606b);
   color: var(--dante-semantic-color-home-text-primary, #edf2f8);
   background: var(--dante-semantic-color-home-surface-overlay, #192328);
-  font-size: 15px;
-  line-height: 1.55;
+  font-size: 17px;
+  line-height: 1.5;
 }
 
 .timeline-vault-move-confirmation > strong {
-  font-size: 16px;
+  font-size: 18px;
+  font-weight: 650;
 }
 
 .timeline-vault-move-confirmation > p {
   margin: 0;
-  color: var(--dante-semantic-color-home-text-secondary, #b7c0cf);
+  color: var(--dante-semantic-color-home-text-secondary, #cbd3de);
+  font-size: 17px;
+  line-height: 1.5;
 }
 
 .timeline-vault-move-confirmation .timeline-vault-move-confirmation__warning {
@@ -26,8 +29,9 @@
   border-radius: 8px;
   color: #ffb6ad;
   background: color-mix(in srgb, #a83131 12%, transparent);
-  font-size: 14px;
-  font-weight: 600;
+  font-size: 16px;
+  font-weight: 650;
+  line-height: 1.5;
 }
 
 .timeline-vault-move-confirmation__actions {
@@ -38,55 +42,56 @@
   margin-top: 8px;
 }
 
-.timeline-vault-move-confirmation__actions button {
-  min-height: 42px;
-  padding: 9px 15px;
+.timeline-vault-move-confirmation .timeline-vault-move-confirmation__actions button {
+  min-height: 46px;
+  padding: 10px 17px;
   border: 1px solid var(--dante-semantic-color-home-border-subtle, #52606b);
   border-radius: 8px;
   color: inherit;
   background: var(--dante-semantic-color-home-surface-control, #26343b);
-  font-size: 14px;
+  font-size: 16px;
   font-weight: 600;
   cursor: pointer;
 }
 
-.timeline-vault-move-confirmation__actions button.timeline-vault-move-confirmation__confirm {
+.timeline-vault-move-confirmation .timeline-vault-move-confirmation__actions button.timeline-vault-move-confirmation__confirm {
   border-color: #ba633b;
   color: #ffe3d4;
   background: color-mix(in srgb, #c45b2e 27%, #26343b);
 }
 
-.timeline-vault-move-confirmation__actions button:disabled {
+.timeline-vault-move-confirmation .timeline-vault-move-confirmation__actions button:disabled {
   opacity: 0.55;
   cursor: wait;
 }
 
 .timeline-vault-move-confirmation > h4 {
   margin: 0;
-  font-size: 19px;
+  font-size: 22px;
   font-weight: 700;
 }
 
 .timeline-vault-move-confirmation__item {
-  font-size: 16px;
+  font-size: 18px;
+  font-weight: 650;
   overflow-wrap: anywhere;
 }
 
-.timeline-vault-move-confirmation__actions
+.timeline-vault-move-confirmation .timeline-vault-move-confirmation__actions
   button.timeline-vault-move-confirmation__confirm.is-destructive {
   border-color: #b94c45;
   color: #ffe3df;
   background: color-mix(in srgb, #b62e2e 36%, #26343b);
 }
 
-.timeline-vault-move-confirmation__actions
+.timeline-vault-move-confirmation .timeline-vault-move-confirmation__actions
   button.timeline-vault-move-confirmation__confirm.is-destructive:hover:not(:disabled) {
   background: color-mix(in srgb, #b62e2e 52%, #26343b);
 }
 
 .timeline-event-modal--vault-review .timeline-vault-move-confirmation {
   margin: 0;
-  padding: 12px 0 8px;
+  padding: 14px 0 10px;
   border: 0;
   background: transparent;
 }

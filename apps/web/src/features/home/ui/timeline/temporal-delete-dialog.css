@@ -119,15 +119,15 @@ body:has(> .timeline-delete-dialog__backdrop)
 /* Second-stage Vault loss confirmation: readable without enlarging every
    unrelated Activity/Event hard-delete dialog. */
 .timeline-delete-dialog--vault-loss {
-  width: min(100%, 540px);
-  padding: 26px;
-  gap: 18px;
-  font-size: 16px;
-  line-height: 1.55;
+  width: min(100%, 560px);
+  padding: 28px;
+  gap: 20px;
+  font-size: 17px;
+  line-height: 1.5;
 }
 
 .timeline-delete-dialog--vault-loss .timeline-delete-dialog__header h2 {
-  font-size: 21px;
+  font-size: 22px;
   font-weight: 700;
 }
 
@@ -136,31 +136,31 @@ body:has(> .timeline-delete-dialog__backdrop)
 }
 
 .timeline-delete-dialog--vault-loss .timeline-delete-dialog__subject strong {
-  font-size: 17px;
+  font-size: 18px;
   font-weight: 650;
 }
 
 .timeline-delete-dialog--vault-loss .timeline-delete-dialog__subject span {
-  font-size: 14px;
+  font-size: 16px;
 }
 
 .timeline-delete-dialog--vault-loss .timeline-delete-dialog__description {
-  font-size: 15px;
-  font-weight: 600;
+  font-size: 17px;
+  font-weight: 500;
 }
 
 .timeline-delete-dialog--vault-loss .timeline-delete-dialog__note {
-  font-size: 15px;
-  line-height: 1.5;
+  font-size: 16px;
+  line-height: 1.55;
   color: #ffb6ad;
-  font-weight: 600;
+  font-weight: 650;
 }
 
 .timeline-delete-dialog--vault-loss .timeline-delete-dialog__choices button,
 .timeline-delete-dialog--vault-loss > .timeline-delete-dialog__cancel {
-  min-height: 46px;
-  font-size: 15px;
-  font-weight: 600;
+  min-height: 48px;
+  font-size: 16px;
+  font-weight: 650;
 }
 
 @media (max-width: 500px) {
