@@ -108,6 +108,7 @@ export function EventInspectorActions({
   onDeleted,
   onDuplicate,
   onCancelScope,
+  onVaultReviewChange,
   onEditorStateChange,
   onSaved,
   closeRequestRef,
@@ -123,6 +124,7 @@ export function EventInspectorActions({
   onDeleted?: () => void;
   onDuplicate: (seed: ActivityDuplicateSeed) => void;
   onCancelScope?: () => void;
+  onVaultReviewChange?: (active: boolean) => void;
   onEditorStateChange?: (mode: 'profile' | 'series' | null) => void;
   /** Called only after a successful Save, never on Cancel or API error. */
   onSaved?: () => void;
@@ -1303,6 +1305,7 @@ export function EventInspectorActions({
             Boolean(objective.observationRef),
           ).length,
         });
+        onVaultReviewChange?.(true);
       }
     } catch (reason) {
       setError(
@@ -2039,6 +2042,8 @@ export function EventInspectorActions({
       {vaultMove && vaultEligible ? (
         <VaultMoveConfirmation
           subject="evento"
+          itemTitle={itemTitle ?? profile?.title ?? 'Evento'}
+          scheduleLabel={scheduleLabel}
           recordedObjectives={vaultMove.recordedObjectives}
           busy={busy}
           error={error}
@@ -2051,6 +2056,7 @@ export function EventInspectorActions({
               .then(() => {
                 notifyDraftVaultUpdated();
                 setVaultMove(null);
+                onVaultReviewChange?.(false);
                 if (onDeleted) onDeleted();
                 else window.location.reload();
               })
@@ -2065,6 +2071,7 @@ export function EventInspectorActions({
           }}
           onCancel={() => {
             setVaultMove(null);
+            onVaultReviewChange?.(false);
             setError('');
           }}
         />

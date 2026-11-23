@@ -40,7 +40,14 @@ draft kinds, not prematurely supported or activated.
   the Vault without changing the original. The separate **Copia in Bozze**
   Inspector command is removed, not merely hidden.
 - **Move an existing standalone Activity/Event:** only after an explicit
-  concise in-Inspector confirmation (no separate modal). The owner-scoped backend command
+  dedicated Inspector review replacing the usual title, schedule, Session,
+  Objective and other detail sections. Cancel restores the unchanged original
+  Inspector without re-fetching or dropping its local state. For a subject
+  without recorded facts, Move confirms directly with no extra popup. If
+  there are active, paused or recorded Sessions, or recorded Objective results,
+  the Move button becomes red and opens a **second irreversible-loss
+  confirmation**; only that final approval calls the atomic backend command.
+  The owner-scoped backend command
   atomically saves the inert snapshot **and hard-deletes the original native
   subject, Sessions, recorded attempts, Objective Observations/Results,
   execution/participation facts and other dependent historical records**
@@ -60,7 +67,8 @@ draft kinds, not prematurely supported or activated.
   and remain part of the draft's planned configuration.
 - **Active/paused/completed and recorded facts:** never a silent move.
   The in-Inspector warning appears when there are active/paused/completed Sessions
-  or recorded Objective results; it warns they will be permanently removed if confirmed.
+  or recorded Objective results; its action is red and requires the additional
+  confirmation of irreversible loss. No second popup for a clean Activity/Event.
   For Event it warns about recorded Objective facts without
   introducing Activity Session controls. The action is allowed even when
   these facts exist because it is an explicitly confirmed **hard deletion**,

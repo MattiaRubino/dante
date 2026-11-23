@@ -44,6 +44,7 @@ export function ActivityInspectorActions({
   onDeleted,
   onDuplicate,
   onCancelScope,
+  onVaultReviewChange,
   toolbarTarget = null,
 }: Readonly<{
   activityRef: string;
@@ -55,6 +56,7 @@ export function ActivityInspectorActions({
   onDeleted: () => void;
   onDuplicate: (seed: ActivityDuplicateSeed) => void;
   onCancelScope?: () => void;
+  onVaultReviewChange?: (active: boolean) => void;
   toolbarTarget?: HTMLElement | null;
 }>) {
   const [source] = useState(createRemoteActivityInspector);
@@ -285,6 +287,7 @@ export function ActivityInspectorActions({
                   Boolean(objective.observationRef),
                 ).length,
               });
+              onVaultReviewChange?.(true);
             })
           }
         >
@@ -366,6 +369,8 @@ export function ActivityInspectorActions({
       {vaultMove && vaultEligible ? (
         <VaultMoveConfirmation
           subject="attività"
+          itemTitle={itemTitle ?? profile?.title ?? 'Attività'}
+          scheduleLabel={scheduleLabel}
           recordedSessions={vaultMove.attempts}
           recordedObjectives={vaultMove.recordedObjectives}
           busy={pending}
@@ -380,11 +385,13 @@ export function ActivityInspectorActions({
               );
               notifyDraftVaultUpdated();
               setVaultMove(null);
+              onVaultReviewChange?.(false);
               onDeleted();
             })
           }
           onCancel={() => {
             setVaultMove(null);
+            onVaultReviewChange?.(false);
             setError('');
           }}
         />

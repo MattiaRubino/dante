@@ -18,6 +18,8 @@ export type TemporalDeleteChoice = Readonly<{
 export function TemporalDeleteDialog({
   subject,
   itemTitle,
+  heading,
+  description,
   scheduleLabel,
   choices,
   note,
@@ -27,6 +29,8 @@ export function TemporalDeleteDialog({
 }: Readonly<{
   subject: 'attività' | 'evento';
   itemTitle: string;
+  heading?: string;
+  description?: string;
   scheduleLabel?: string | undefined;
   choices: readonly TemporalDeleteChoice[];
   note?: string | undefined;
@@ -95,11 +99,11 @@ export function TemporalDeleteDialog({
         onKeyDown={handleTab}
       >
         <div className="timeline-delete-dialog__header">
-          <h2 id={headingId}>Elimina {subject}</h2>
+          <h2 id={headingId}>{heading ?? `Elimina ${subject}`}</h2>
           <button
             type="button"
             className="timeline-delete-dialog__close"
-            aria-label="Chiudi eliminazione"
+            aria-label={heading ? 'Chiudi conferma' : 'Chiudi eliminazione'}
             disabled={busy}
             onClick={onCancel}
           >
@@ -111,9 +115,10 @@ export function TemporalDeleteDialog({
           {scheduleLabel ? <span>{scheduleLabel}</span> : null}
         </div>
         <p id={detailId} className="timeline-delete-dialog__description">
-          {choices.length > 1
-            ? 'Scegli cosa eliminare. L’operazione è definitiva.'
-            : 'L’eliminazione è definitiva.'}
+          {description ??
+            (choices.length > 1
+              ? 'Scegli cosa eliminare. L’operazione è definitiva.'
+              : 'L’eliminazione è definitiva.')}
         </p>
         {note ? <p className="timeline-delete-dialog__note">{note}</p> : null}
         {error ? <p role="alert">{error}</p> : null}

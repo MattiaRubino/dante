@@ -1024,6 +1024,7 @@ describe('Event Inspector actions', () => {
     };
     previewHardDeletion.mockResolvedValue(preview);
     const onDeleted = vi.fn();
+    const onReviewChange = vi.fn();
     const onDuplicate = vi.fn();
     render(
       <EventInspectorActions
@@ -1031,6 +1032,7 @@ describe('Event Inspector actions', () => {
         placement={placement}
         onDuplicate={onDuplicate}
         onDeleted={onDeleted}
+        onVaultReviewChange={onReviewChange}
       />,
     );
     const trigger = await screen.findByRole('button', {
@@ -1041,15 +1043,23 @@ describe('Event Inspector actions', () => {
       name: 'Sposta evento in Bozze',
     });
     expect(dialog.textContent).toContain('Eliminazione definitiva di 1 risultato');
+    expect(onReviewChange).toHaveBeenCalledWith(true);
     expect(screen.queryByRole('alertdialog', { name: 'Sposta evento in Bozze' })).toBeNull();
     expect(moveDraft).not.toHaveBeenCalled();
     fireEvent.click(within(dialog).getByRole('button', { name: 'Annulla' }));
+    expect(onReviewChange).toHaveBeenLastCalledWith(false);
     expect(moveDraft).not.toHaveBeenCalled();
     fireEvent.click(trigger);
     const confirm = await screen.findByRole('button', {
       name: 'Conferma spostamento in Bozze',
     });
     fireEvent.click(confirm);
+    expect(moveDraft).not.toHaveBeenCalled();
+    const loss = await screen.findByRole('alertdialog', {
+      name: 'Conferma perdita registrazioni',
+    });
+    expect(loss.textContent).toContain('1 risultato di Obiettivi');
+    fireEvent.click(within(loss).getByRole('button', { name: 'Elimina registrazioni e sposta' }));
     await waitFor(() => expect(moveDraft).toHaveBeenCalledOnce());
     const [snapshot, ref, fingerprint, revision] = moveDraft.mock.calls[0]!;
     expect(ref).toBe(eventRef);

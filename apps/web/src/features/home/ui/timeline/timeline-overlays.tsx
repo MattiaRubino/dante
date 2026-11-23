@@ -730,6 +730,12 @@ export function EventDetailDialog({
   const [toolbarTarget, setToolbarTarget] = useState<HTMLDivElement | null>(
     null,
   );
+  // A Vault move is a replacement Inspector view, not a new section above
+  // the current Session, Agenda, Objective and Timeline details.
+  const [vaultReviewActive, setVaultReviewActive] = useState(false);
+  useEffect(() => {
+    setVaultReviewActive(false);
+  }, [detail?.eventRef, detail?.occurrenceRef, sessionSubject?.ref, detail?.dateKey]);
   const [activityDetails, setActivityDetails] = useState<{
     ref: string;
     description: string | null;
@@ -977,7 +983,7 @@ export function EventDetailDialog({
     >
       <div
         ref={dialogRef}
-        className={`timeline-event-modal${currentEditingProfile || eventEditorMode ? ' timeline-event-modal--edit' : ' timeline-event-modal--inspector'}${eventEditorMode ? ' timeline-event-modal--event-edit' : ''}`}
+        className={`timeline-event-modal${currentEditingProfile || eventEditorMode ? ' timeline-event-modal--edit' : ' timeline-event-modal--inspector'}${eventEditorMode ? ' timeline-event-modal--event-edit' : ''}${vaultReviewActive && !currentEditingProfile && !eventEditorMode ? ' timeline-event-modal--vault-review' : ''}`}
         style={
           currentEditingProfile || eventEditorMode
             ? undefined
@@ -1088,6 +1094,7 @@ export function EventDetailDialog({
             onActivityDeleted ? (
               <ActivityInspectorActions
                 toolbarTarget={toolbarTarget}
+                onVaultReviewChange={setVaultReviewActive}
                 activityRef={sessionSubject.ref}
                 subitemsCount={detail.subitemsCount ?? 0}
                 recurringOccurrenceRef={detail.occurrenceRef ?? null}
@@ -1159,6 +1166,7 @@ export function EventDetailDialog({
                 {detail.eventPlacement ? (
                   <EventInspectorActions
                     toolbarTarget={toolbarTarget}
+                    onVaultReviewChange={setVaultReviewActive}
                     closeRequestRef={eventEditCloseRequestRef}
                     onEditorStateChange={setEventEditorMode}
                     eventRef={detail.eventRef}

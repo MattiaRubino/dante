@@ -1581,6 +1581,34 @@
     inset 0 1px 0 rgba(255, 255, 255, 0.045);
 }
 
+/* Vault Move is a focused Inspector mode. Keep action components mounted
+   (CAS snapshot and cancel state), but remove unrelated details from layout
+   and accessibility. Only the Inspector close button stays in the header. */
+.timeline-event-modal--vault-review {
+  width: min(480px, calc(100vw - 24px));
+}
+
+.timeline-event-modal--vault-review
+  > :not(.timeline-event-modal__header):not(.timeline-vault-move-confirmation):not(.timeline-activity-inspector__actions) {
+  display: none !important;
+}
+
+.timeline-event-modal--vault-review
+  > .timeline-activity-inspector__actions
+  > :not(.timeline-vault-move-confirmation) {
+  display: none !important;
+}
+
+.timeline-event-modal--vault-review
+  .timeline-event-modal__header-actions
+  > :not(.dante-temporal-panel-close) {
+  display: none !important;
+}
+
+.timeline-event-modal--vault-review .timeline-event-modal__header {
+  margin-bottom: 12px;
+}
+
 .timeline-event-modal--inspector .timeline-event-modal__header {
   position: sticky;
   z-index: 20;

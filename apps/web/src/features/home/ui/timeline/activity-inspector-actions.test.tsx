@@ -387,7 +387,7 @@ describe('Activity Inspector actions', () => {
 });
 
 describe('Activity move to inert Draft Vault', () => {
-  it('shows a centered destructive confirmation for paused/recorded Sessions and moves atomically', async () => {
+  it('reviews in Inspector, then confirms recorded Session loss before moving atomically', async () => {
     get.mockResolvedValue(profile);
     sessionImpact.mockResolvedValueOnce({
       fingerprint: 'a'.repeat(64),
@@ -397,11 +397,13 @@ describe('Activity move to inert Draft Vault', () => {
       ],
     });
     const onDeleted = vi.fn();
+    const onReviewChange = vi.fn();
     render(
       <ActivityInspectorActions
         activityRef={ref}
         onEdit={() => undefined}
         onDeleted={onDeleted}
+        onVaultReviewChange={onReviewChange}
         onDuplicate={() => undefined}
       />,
     );
@@ -411,15 +413,23 @@ describe('Activity move to inert Draft Vault', () => {
       name: 'Sposta attività in Bozze',
     });
     expect(dialog.textContent).toContain('2 Sessioni');
+    expect(onReviewChange).toHaveBeenCalledWith(true);
     expect(screen.queryByRole('alertdialog', { name: 'Sposta attività in Bozze' })).toBeNull();
     expect(moveDraft).not.toHaveBeenCalled();
     fireEvent.click(within(dialog).getByRole('button', { name: 'Annulla' }));
+    expect(onReviewChange).toHaveBeenLastCalledWith(false);
     expect(moveDraft).not.toHaveBeenCalled();
     fireEvent.click(trigger);
     const confirm = await screen.findByRole('button', {
       name: 'Conferma spostamento in Bozze',
     });
     fireEvent.click(confirm);
+    expect(moveDraft).not.toHaveBeenCalled();
+    const loss = await screen.findByRole('alertdialog', {
+      name: 'Conferma perdita registrazioni',
+    });
+    expect(loss.textContent).toContain('2 Sessioni');
+    fireEvent.click(within(loss).getByRole('button', { name: 'Elimina registrazioni e sposta' }));
     await waitFor(() => expect(moveDraft).toHaveBeenCalledOnce());
     const [snapshot, subjectRef, fingerprint, revision] = moveDraft.mock.calls[0]!;
     expect(snapshot.fields.kind).toBe('activity');

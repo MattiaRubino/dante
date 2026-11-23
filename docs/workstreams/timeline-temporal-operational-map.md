@@ -1,6 +1,35 @@
 # Timeline / Temporal-Operational — Live Execution Ledger
 
 
+## 2026-11-23 — Vault Move replaces Inspector details; extra warning only on facts
+
+Owner visual feedback rejected the previous **small Vault confirmation above
+the unchanged Inspector content**. This was caused by per-action state living
+inside `ActivityInspectorActions` / `EventInspectorActions`, while the parent
+`EventDetailDialog` continued to render title, dates, Session controls,
+Objectives, Event agenda and all other detail sections.
+
+Contract and candidate: when owner clicks **Sposta in Bozze**, the action
+component reports review mode to `EventDetailDialog`. The existing Inspector
+surface remains anchored, but its irrelevant sections and owner toolbar are
+hidden; only the short dedicated **Spostare nelle Bozze?** review and Inspector
+close control remain visible. **Annulla** restores the pre-existing detail
+view with its mounted child state. No separate modal for a clean standalone
+Activity/Event. If active/paused/completed Sessions or Objective observations
+exist, the inline Move button turns **red** and first opens a second, focused
+irreversible-loss confirmation; only its final acceptance calls the existing
+atomic Vault save + hard-delete endpoint. Cancelling either step is inert.
+Series/occurrences remain ineligible.
+
+Component tests cover both fact/no-fact paths, modal cancel and final
+approval, as well as the parent Inspector's mode change. Reuse the existing
+`TemporalDeleteDialog` focus/Escape management with optional heading and
+description so this is not a second custom dialog implementation. No backend
+changes or OpenAPI generation. **Owner WSL tests and visual acceptance are
+pending for this commit**.
+
+
+
 ## 2026-11-23 — Draft Vault Resume → Add: jsonb key order / Home runtime
 
 Owner browser regression after 174 focused Vitest tests + 30 focused Create
