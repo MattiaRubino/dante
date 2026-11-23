@@ -23,10 +23,14 @@ draft kinds, not prematurely supported or activated.
 
 - **Save draft:** persist one versioned snapshot of the shared Quick/Advanced
   Create form, even if partly filled. This does not invoke product authoring.
-- **Resume:** open the same Create editor and exact saved field configuration.
-  Save revisions under optimistic concurrency control.
-- **Duplicate:** open the same configuration with a new draft identity; the
-  source draft stays in the vault.
+- **Resume:** open the real **full Advanced Create** (the same editor used
+  for normal Activity/Event authoring) with the exact saved field and advanced
+  form configuration, regardless of whether the snapshot was saved from Quick
+  or Advanced Create. Save revisions under optimistic concurrency control.
+- **Duplicate:** open that same real **full Advanced Create** prefilled from the
+  source draft but with a new draft identity; the source stays in the vault.
+  Duplica on an existing Activity/Event uses the same full Advanced Create.
+  There is no separate Draft editor or Draft-only authoring/validation logic.
 - **Add:** explicitly author the chosen Activity/Event through existing accepted
   domain commands; consume the source draft only after successful authoring.
   Never replay creation if only draft consumption failed.

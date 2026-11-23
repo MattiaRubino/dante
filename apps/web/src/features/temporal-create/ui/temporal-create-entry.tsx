@@ -357,7 +357,10 @@ export function TemporalCreateEntry({
     const selected = draftRequest.item;
     const snapshot = selected.payload;
     const restored = createTemporalCreateSession(snapshot.fields);
-    const nextSession = setTemporalCreateSurface(restored, snapshot.surface);
+    // Vault items are inert snapshots, never a separate editor: Resume and
+    // Duplicate always reopen the real advanced Create form, even when the
+    // snapshot was originally saved from Quick Create.
+    const nextSession = setTemporalCreateSurface(restored, 'full');
     onBeforeOpen?.();
     currentVaultDraft.current = draftRequest.duplicate ? null : selected;
     pendingVaultSave.current = null;

@@ -39,13 +39,13 @@ function entry(draftRequest?: {
   id: number;
   item: {
     draftRef: string;
-    subjectKind: 'activity';
+    subjectKind: 'activity' | 'event';
     title: string;
     payload: {
       version: 1;
       fields: ReturnType<typeof createTemporalCreateFields>;
       advanced: ReturnType<typeof createTemporalCreateU2AuthoringDraft>;
-      surface: 'full';
+      surface: 'quick' | 'expanded' | 'full';
     };
     revision: number;
     createdAt: string;
@@ -104,6 +104,47 @@ describe('Create + Draft Vault', () => {
       expect(screen.queryByPlaceholderText('Titolo')).toBeNull(),
     );
   });
+
+  it.each([
+    { kind: 'activity' as const, duplicate: false },
+    { kind: 'activity' as const, duplicate: true },
+    { kind: 'event' as const, duplicate: false },
+    { kind: 'event' as const, duplicate: true },
+  ])(
+    'opens the real Advanced Create for a quick-saved $kind draft (duplicate=$duplicate)',
+    async ({ kind, duplicate }) => {
+      const fields = createTemporalCreateFields({
+        kind,
+        title: kind === 'activity' ? 'Preparazione' : 'Riunione',
+      });
+      const advanced = createTemporalCreateU2AuthoringDraft(fields);
+      entry({
+        id: 21,
+        item: {
+          draftRef: 'vault-quick',
+          subjectKind: kind,
+          title: fields.title,
+          revision: 2,
+          createdAt: '',
+          updatedAt: '',
+          payload: { version: 1, fields, advanced, surface: 'quick' },
+        },
+        duplicate,
+      });
+      const title = domElement(
+        await screen.findByPlaceholderText('Titolo'),
+        HTMLInputElement,
+      );
+      expect(title.value).toBe(fields.title);
+      const advancedToggle = document.querySelector<HTMLButtonElement>(
+        '.temporal-create-advanced-toggle',
+      );
+      expect(advancedToggle?.getAttribute('aria-expanded')).toBe('true');
+      expect(screen.getByRole('button', { name: 'Salva bozza' })).toBeTruthy();
+      expect(screen.getByRole('button', { name: 'Aggiungi' })).toBeTruthy();
+      expect(mocks.save).not.toHaveBeenCalled();
+    },
+  );
 
   it('reopens a saved advanced draft without creating an operational subject', async () => {
     const fields = { ...createTemporalCreateFields(), title: 'Preparazione' };
