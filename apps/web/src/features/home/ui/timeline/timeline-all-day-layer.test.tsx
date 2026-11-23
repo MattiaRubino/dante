@@ -191,6 +191,28 @@ describe('Timeline date-lane one-line contract', () => {
     expect(bar?.textContent).not.toContain('Lavoro');
     expect(bar?.textContent).not.toContain('Dettaglio non necessario');
     expect(bar?.querySelectorAll('.timeline-all-day-item__identity')).toHaveLength(1);
+    expect(bar?.querySelector('.timeline-all-day-item__continuation')).toBeNull();
+    // The canonical range metadata remains available without glyphs.
+    expect(bar?.getAttribute('data-range-start')).toBe('true');
+    expect(bar?.getAttribute('data-range-end')).toBe('true');
+  });
+
+  it('omits both continuation glyphs for a multi-day Activity while preserving the range', () => {
+    renderLane([
+      {
+        ...base,
+        id: 'multi-day',
+        startDateKey: '2026-11-21',
+        endDateExclusiveKey: '2026-11-26',
+      },
+    ]);
+    const bar = document.querySelector<HTMLElement>('.timeline-all-day-item');
+    expect(bar?.getAttribute('data-range-position')).toBe('middle');
+    expect(bar?.querySelector('.timeline-all-day-item__continuation')).toBeNull();
+    expect(bar?.textContent).not.toContain('‹');
+    expect(bar?.textContent).not.toContain('›');
+    expect(bar?.querySelector('.timeline-all-day-item__meta')?.textContent)
+      .toMatch(/21\s+nov.*25\s+nov/i);
   });
 
   it('provides the exact pointer coordinate, with a keyboard fallback', () => {

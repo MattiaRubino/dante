@@ -2,7 +2,10 @@ import { Temporal } from '@dante/time';
 import { describe, expect, it } from 'vitest';
 
 import type { TemporalSessionView } from '../../../temporal/remote-session-data-source';
-import { timelineAllDayLaneHeightPx } from './model/timeline-all-day-layout';
+import {
+  timelineAllDayItemsForVisibleDate,
+  timelineAllDayLaneHeightPx,
+} from './model/timeline-all-day-layout';
 import type {
   TimelineAllDayItem,
   TimelineEventLayout,
@@ -132,6 +135,39 @@ describe('Timeline all-day runtime geometry', () => {
         'Europe/Rome',
       )[0],
     ).toBe(spanningItem);
+  });
+
+  it('keeps only the real Stop day after a one-minute main Session', () => {
+    const oneMinuteMain = {
+      ...mainSession('2026-10-19T09:01:00Z'),
+      activeSeconds: 60,
+      elapsedSeconds: 60,
+    };
+    const projected = projectTimelineDateLaneSessions(
+      [activityItem],
+      new Map([[activityRef, [oneMinuteMain]]]),
+      'Europe/Rome',
+    );
+    const record = projected[0];
+    expect(record?.mainSession?.state).toBe('ended');
+    expect(record?.mainSession?.activeSeconds).toBe(60);
+    expect(record?.plannedEndDateExclusiveKey).toBe('2026-10-29');
+    expect(record?.endDateExclusiveKey).toBe('2026-10-20');
+    expect(
+      timelineAllDayItemsForVisibleDate(projected, new Set(), '2026-10-19'),
+    ).toHaveLength(1);
+    for (const futureDay of ['2026-10-20', '2026-10-21', '2026-10-28']) {
+      expect(
+        timelineAllDayItemsForVisibleDate(projected, new Set(), futureDay),
+      ).toHaveLength(0);
+    }
+    const days = [day('2026-10-19', 0), day('2026-10-20', 1440)];
+    const geometries = applyTimelineAllDayGeometry(days, projected, new Set());
+    expect(geometries[0]?.mapper.map(0)).toBe(
+      timelineAllDayLaneHeightPx(1),
+    );
+    expect(geometries[1]?.mapper.map(0)).toBe(0);
+    expect(geometries[1]?.height).toBe(1440);
   });
 
   it('does not retire future bars when only a named internal Session ends', () => {

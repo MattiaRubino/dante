@@ -1169,13 +1169,11 @@ export function EventDetailDialog({
             {...(timeZone ? { timeZone } : {})}
             closeRequestRef={editCloseRequestRef}
             onSaved={(saved) => {
+              // Saving can move a date-lane entry into an hourly card (or
+              // vice versa). Never return to an Inspector anchored to the
+              // obsolete card; the refreshed Timeline is the destination.
               onActivitySaved?.(saved);
-              setActivityDetails({
-                ref: saved.activityRef,
-                description: saved.description,
-                location: saved.location,
-              });
-              setEditingProfile(null);
+              onClose();
             }}
             onCancel={() => setEditingProfile(null)}
           />
@@ -1273,6 +1271,7 @@ export function EventDetailDialog({
                     }
                     placement={detail.eventPlacement}
                     onCancelScope={onClose}
+                    onSaved={onClose}
                     onDuplicate={(seed) => {
                       onClose();
                       requestTemporalCreateDuplicate(seed);

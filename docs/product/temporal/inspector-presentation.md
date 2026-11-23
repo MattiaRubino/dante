@@ -44,7 +44,7 @@ Proteggere combinazioni Activity con/ senza Sessione principale; mai avviata, li
 
 - Main Play avvia solo la principale, senza auto-start delle interne.
 - Main Pause sospende ogni interna attiva; Main Resume **non** riattiva automaticamente le interne.
-- Main Stop termina atomicamente tutte le interne ancora aperte, non quelle mai avviate; non conferma l'Activity.
+- Main Stop termina atomicamente tutte le interne ancora aperte, non quelle mai avviate; chiude **l'esecuzione effettiva dell'Activity**, ma non conferma automaticamente esito/Obiettivi. La Schedule originale resta registrata separatamente dalla realtà.
 - La disponibilità delle interne cambia quando la principale inizia/pausa/riprende/si chiude, secondo policy esistente. Il timer principale continua ad aggiornarsi; nessuno stile può interrompere il suo React mounting/ciclo di vita.
 - Il runtime con / senza Sessioni registrate non modifica il piano. Non duplicare la riga della Sessione principale né creare nuovi tentativi.
 
@@ -119,6 +119,17 @@ separatori fra i giorni.
   restituisce il focus. Il clic fuori non richiude automaticamente,
   evitando salti di layout durante le interazioni con la Timeline.
   Nessuna card o pulsante deve finire sotto un pannello flottante.
+- **Niente frecce decorative `‹`/`›`** a fianco del titolo o vicino
+  ai controlli: il periodo testuale e il colore bastano. I dati
+  `data-range-*` e l'informazione di continuità restano nel modello.
+- **Stop della Sessione principale su Activity all-day/multi-day**:
+  conserva la barra nel **giorno locale dello Stop** e rimuove dalle
+  proiezioni della Timeline le barre dei **giorni successivi**;
+  se la Sessione dura un minuto, quel minuto è la durata effettiva, ma
+  non converte il piano all-day in una card a orario. Il periodo
+  programmato rimane distinto dal periodo effettivo. Una Sessione
+  interna che finisce **non** tronca la Activity. Gli Obiettivi non
+  vengono confermati automaticamente.
 - Le prime due card danno precedenza alle Sessioni principali running
   poi paused, altrimenti rispettano l'ordine di proiezione
   con sort stabile. Solo presentazione, non Schedule/Session write.
@@ -136,6 +147,19 @@ separatori fra i giorni.
   la now-line, le card orarie e la Week devono ricevere lo **stesso delta**
   della fascia espansa. I test coprono 0/1/2/3/25, apertura e chiusura,
   mapper/inverso, offset giorni, righello Week e scrollbar interna.
+
+**Comportamento Editor → Timeline:** dopo un **Save riuscito**
+di Activity o Event (normale, istanza o serie), l'Editor e il relativo
+Inspector si chiudono insieme. Questo vale anche convertendo all-day ↔
+intervallo a orario: la nuova card nasce nella propria collocazione
+senza lasciare Inspector ancorati alla vecchia. **Annulla** torna
+all'Inspector senza salvare; errori di Save restano visibili in Editor.
+Nessuna chiusura prematura prima della conferma backend.
+
+Il passaggio sticky fra giorni rimane quello già in uso: ogni
+contenitore è limitato al proprio giorno, senza una nuova animazione
+di transizione o cambiamento del time mapper. Va verificato visivamente
+con almeno due giorni consecutivi e una Activity multi-day.
 
 **Accettazione:** typecheck, Prettier/ESLint, Vitest del layout
 ed espansione in linea, verifica interattiva browser reale per schermi

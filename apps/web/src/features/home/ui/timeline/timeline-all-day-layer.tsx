@@ -374,24 +374,12 @@ export function TimelineAllDayLane({
             )
           }
         >
-          <span
-            className="timeline-all-day-item__continuation"
-            aria-hidden="true"
-          >
-            {startsHere ? '' : '‹'}
-          </span>
           <strong className="timeline-all-day-item__identity">
             <TemporalKindMarker kind={identity.kind} />
             <span className="timeline-all-day-item__title">{item.title}</span>
           </strong>
           <span className="timeline-all-day-item__meta" title={compactPeriod}>
             {compactPeriod}
-          </span>
-          <span
-            className="timeline-all-day-item__continuation"
-            aria-hidden="true"
-          >
-            {endsHere ? '' : '›'}
           </span>
         </button>
         {item.canonicalBasis?.kind === 'scheduled-activity' && showRuntime ? (

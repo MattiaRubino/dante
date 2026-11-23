@@ -1,6 +1,47 @@
 # Timeline / Temporal-Operational — Live Execution Ledger
 
 
+## 2026-11-23 — Main Session Stop and Save/Inspector lifecycle cleanup
+
+Owner screenshots confirm the revised in-flow date-lane expansion is usable.
+Remaining defects and **approved** rules:
+
+1. Date bars must not show detached `‹` / `›` continuation characters
+   between title and main Session controls. Keep date-period text and
+   `data-range-*` semantics; remove only the decorative spans and their
+   reserved CSS grid columns (including narrow Week/mobile).
+2. **Main Session Stop is the effective end of Activity execution.**
+   An all-day/multi-day Activity remains present in the **local Stop day**,
+   even if worked for only one minute; its **future planned day-lane bars
+   disappear**, while original Schedule and actual Session duration remain
+   distinct and durable. Stopping a named internal Session does *not*
+   cut the parent Activity, and Stop does not automatically confirm
+   Outcomes/Objectives. The existing
+   `projectTimelineDateLaneSessions` and `TimelineSurface` presentation
+   pipeline already enforce the future-day clip; add an exact one-minute
+   regression test instead of changing correct production logic.
+3. Preserve current per-day sticky transition; no unrequested redesign
+   or extra overlap/time-mapper complexity at this stage.
+4. **Successful Save closes Editor and Inspector together** for ordinary
+   Activity, Event and recurrence/instance editing. Current Activity
+   one-off `ActivityEditPanel` and Event `EventInspectorActions` saved
+   paths previously returned to a stale Inspector even when all-day
+   converted to a timed card. Pass a completion callback and close
+   only after successful Save. Cancel still returns to Inspector;
+   failed/invalid Save stays in Editor with errors.
+5. Comprehensive cross-product E2E and real PostgreSQL testing will be
+   **planned after finishing UI fixes**, not interleaved with each small
+   presentation tweak. Add focused regression expectations now for the
+   known contracts, but the owner executes local tests.
+
+Updated code scope: date-lane TSX/CSS, EventDetailDialog save callback,
+EventInspectorActions save notifications, focused existing Vitest, this
+ledger and the canonical Inspector presentation document. No backend,
+migration, API, Activity replan or Session execution semantics change.
+**All new tests are NOT_RUN until user WSL output is received.**
+
+
+
 ## 2026-11-22 — Real in-flow all-day expansion, not a detached popup
 
 Owner acceptance found that the `20f429d` implementation still displayed

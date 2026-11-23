@@ -108,6 +108,7 @@ export function EventInspectorActions({
   onDuplicate,
   onCancelScope,
   onEditorStateChange,
+  onSaved,
   closeRequestRef,
   toolbarTarget = null,
 }: Readonly<{
@@ -122,6 +123,8 @@ export function EventInspectorActions({
   onDuplicate: (seed: ActivityDuplicateSeed) => void;
   onCancelScope?: () => void;
   onEditorStateChange?: (mode: 'profile' | 'series' | null) => void;
+  /** Called only after a successful Save, never on Cancel or API error. */
+  onSaved?: () => void;
   closeRequestRef?: RefObject<(() => void) | null>;
   toolbarTarget?: HTMLElement | null;
 }>) {
@@ -773,6 +776,7 @@ export function EventInspectorActions({
         setRecurrenceSelected(false);
         setEditingProfile(false);
         setProfileNotice('Modifiche salvate; ripetizione non avviata.');
+        onSaved?.();
         return;
       }
       if (
@@ -806,6 +810,7 @@ export function EventInspectorActions({
         setRecurrenceSelected(false);
         setEditingProfile(false);
         setProfileNotice('Ripetizione avviata da questo Evento.');
+        onSaved?.();
         return;
       }
       let acceptedProfile = profile;
@@ -889,6 +894,7 @@ export function EventInspectorActions({
         ) {
           setProfileDraft(null);
           setEditingProfile(false);
+          onSaved?.();
           return;
         }
         let selectedSchedule: ReturnType<
@@ -1049,6 +1055,7 @@ export function EventInspectorActions({
         ) {
           setProfileDraft(null);
           setEditingProfile(false);
+          onSaved?.();
           return;
         }
         if (
@@ -1171,6 +1178,7 @@ export function EventInspectorActions({
           ? 'Ripetizione avviata da questo Evento.'
           : 'Evento aggiornato.',
       );
+      onSaved?.();
     } catch (reason) {
       const message =
         reason instanceof Error ? reason.message : 'Modifica Event rifiutata.';
@@ -1501,6 +1509,7 @@ export function EventInspectorActions({
           onSaved={() => {
             setEditingProfile(false);
             setProfileNotice('Serie aggiornata.');
+            onSaved?.();
           }}
           onCancel={() => setEditingProfile(false)}
         />

@@ -1333,11 +1333,13 @@ describe('Event Inspector actions', () => {
       agendaRevision: 0,
       agendaParts: [],
     });
+    const onSaved = vi.fn();
     render(
       <EventInspectorActions
         eventRef={eventRef}
         placement={placement}
         onDuplicate={vi.fn()}
+        onSaved={onSaved}
       />,
     );
     fireEvent.click(await screen.findByRole('button', { name: 'Modifica' }));
@@ -1351,6 +1353,7 @@ describe('Event Inspector actions', () => {
     expect(screen.getByText('Inserisci un titolo.')).toBeTruthy();
     expect(reviseProfile).not.toHaveBeenCalled();
     expect(reviseAtomic).not.toHaveBeenCalled();
+    expect(onSaved).not.toHaveBeenCalled();
     fireEvent.change(title, { target: { value: 'Incontro' } });
     expect(screen.queryByText('Inserisci un titolo.')).toBeNull();
   });
@@ -1627,11 +1630,13 @@ describe('Event Inspector actions', () => {
       agendaParts: ['Apertura', 'Discussione'],
       lifeAreaRef: 'area-1',
     });
+    const onSaved = vi.fn();
     render(
       <EventInspectorActions
         eventRef={eventRef}
         placement={placement}
         onDuplicate={vi.fn()}
+        onSaved={onSaved}
       />,
     );
     fireEvent.click(screen.getByRole('button', { name: /^Modifica$/ }));
@@ -1673,6 +1678,7 @@ describe('Event Inspector actions', () => {
       ),
     );
     expect(reviseProfile).not.toHaveBeenCalled();
+    await waitFor(() => expect(onSaved).toHaveBeenCalledTimes(1));
   });
 
   // Regression 2026-11-09: normal Event Edit rejected a typed new Life
