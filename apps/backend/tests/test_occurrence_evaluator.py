@@ -158,6 +158,51 @@ def test_open_renewal_notice_disappears_after_extension_until_next_30_slots() ->
     assert _pending_open_occurrences(daily, first + timedelta(days=1429), allowed=1460) == 30
 
 
+@pytest.mark.parametrize(
+    ("pattern_code", "pattern_fields", "expected_last"),
+    [
+        ("daily", {}, date(2026, 11, 1) + timedelta(days=729)),
+        (
+            "weekly_weekdays",
+            {"weekdays": (4,)},
+            date(2026, 11, 5) + timedelta(weeks=729),
+        ),
+        (
+            "monthly_month_days",
+            {"month_days": (1,)},
+            date(2087, 8, 1),
+        ),
+    ],
+)
+def test_after_730_authorized_occurrences_never_generates_731st(
+    pattern_code: str,
+    pattern_fields: dict[str, object],
+    expected_last: date,
+) -> None:
+    first = date(2026, 11, 1)
+    # Independent date arithmetic ensures that the 730th is included but
+    # the 731st is never authorized, even in a larger evaluation window.
+    recurrence = replace(
+        _daily(effective_from=first),
+        range_kind="expected_count",
+        expected_occurrence_count=730,
+        pattern_code=pattern_code,
+        **pattern_fields,
+    )
+    result = evaluate_recurrence_history(
+        (_history(_OLD, recurrence, 1),),
+        start_date=first,
+        end_date_exclusive=expected_last + timedelta(days=32),
+        effective_zone_id="Europe/Rome",
+    )
+    assert len(result) == 730
+    assert len({item.coordinate.generated_date for item in result}) == 730
+    assert result[-1].coordinate.generated_date == expected_last
+    assert all(
+        item.coordinate.generated_date <= expected_last for item in result
+    )
+
+
 def test_open_allowance_survives_a_following_series_revision() -> None:
     history = (
         _history(_OLD, _daily(effective_from=date(2026, 1, 1)), 1),

@@ -70,7 +70,7 @@ function accountIndex(info: TestInfo, ordinal: number): number {
     project === undefined ||
     !Number.isInteger(ordinal) ||
     ordinal < 0 ||
-    ordinal >= 103
+    ordinal >= 110
   ) {
     throw new Error('Stateful E2E account partition is invalid');
   }
@@ -78,7 +78,10 @@ function accountIndex(info: TestInfo, ordinal: number): number {
   // 408..410 dedicated first-Event double-card regression (one per browser).
   if (ordinal < 100) return 102 + project * 100 + ordinal;
   if (ordinal < 102) return 402 + project * 2 + ordinal - 100;
-  return 408 + project;
+  if (ordinal === 102) return 408 + project;
+  // New focused suites get seven dedicated accounts in each browser,
+  // never reusing the 100 persona/series accounts or runtime guards.
+  return 411 + project * 7 + ordinal - 103;
 }
 
 export async function signedInPersona(

@@ -1539,6 +1539,25 @@ test.describe('Temporal v2 — real stateful user personas', () => {
             async () => {
               await openHome(page, day);
               await assertOneOffTruth(page, authored);
+              if (persona.allDay) {
+                // Extend the existing rich-persona E2E, without duplicating
+                // its Activity/Event/Objective/Session persistence journey.
+                const dateLane = page.locator(
+                  '[data-timeline-all-day-lane="' + day + '"]',
+                );
+                const dateBar = dateLane
+                  .locator('[data-timeline-all-day-item]')
+                  .filter({ hasText: title });
+                await expect(dateBar).toHaveCount(1);
+                await expect(dateBar).toHaveAttribute(
+                  'data-timeline-date-lane-kind',
+                  /^(all-day|multi-day)$/,
+                );
+                await expect(dateBar.locator('.timeline-all-day-item__continuation'))
+                  .toHaveCount(0);
+                await expect(dateLane.locator('.timeline-all-day-lane__items .timeline-all-day-item'))
+                  .toHaveCount(1);
+              }
             },
           );
           const updated = await test.step(

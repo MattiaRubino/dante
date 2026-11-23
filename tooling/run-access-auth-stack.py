@@ -28,7 +28,8 @@ _E2E_CONTROL_ID_ENV = "DANTE_E2E_CONTROL_ID"
 _E2E_CONTROL_LABEL = "dante.e2e.control_id"
 # 1-101: auth/lifecycle; 102-401: v2 matrix; 402-407: runtime guards;
 # 408-410: converted-first-Event duplicate regression, isolated per browser.
-_E2E_ACCOUNT_COUNT = 410
+# 411-431: all-day/renewal focused full-stack probes, seven per browser.
+_E2E_ACCOUNT_COUNT = 431
 
 
 def _load_core() -> ModuleType:
