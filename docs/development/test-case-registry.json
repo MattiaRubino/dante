@@ -3113,7 +3113,7 @@
       "purpose": "Verify draft save/resume behavior and a wider Draft Vault with a fixed search field and a separately scrolling, live-filtered list of cards.",
       "invariant": "A large number of draft cards does not scroll the title or search; only matching drafts remain after typing, and the panel stays within a mobile viewport.",
       "status": "UNREVIEWED",
-      "audit_note": "Draft Vault geometry/filter browser case updated 2026-11-23, NOT_RUN; other legacy planning-tray cases still need review."
+      "audit_note": "Draft Vault geometry/filter browser case initially FAIL in owner WSL because the fixture bypassed invalidation after direct row insertion; refresh event added, rerun NOT_RUN. Other legacy cases still need review."
     },
     {
       "path": "apps/web/e2e/temporal-create.spec.ts",
@@ -3701,7 +3701,7 @@
       "purpose": "Verify inert draft actions, schedule previews for timed and all-day items, and live title filtering in the Draft Vault.",
       "invariant": "Draft cards show the canonical activity/event marker and stored scheduling intent without exposing execution controls; filtering does not mutate drafts.",
       "status": "UNREVIEWED",
-      "audit_note": "Draft card layout/filter assertions updated 2026-11-23, NOT_RUN; full existing file qualification remains pending."
+      "audit_note": "Owner WSL focused Vitest 3 PASS and Web typecheck PASS on 2026-11-23; full existing file qualification remains pending."
     },
     {
       "path": "apps/web/src/features/home/ui/timeline/timeline-recurrence-renewals.test.tsx",

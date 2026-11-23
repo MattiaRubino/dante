@@ -13,8 +13,12 @@ Draft cards use the Timeline's activity/event kind marker, appearance tone,
 title and stored date/time intent. They retain the inert status and the
 existing Riprendi, Duplica and Elimina actions beneath the content. The
 browser fixture checks desktop/mobile geometry and independent list scrolling;
-the component test checks timed/all-day previews and filtering. Web typecheck,
-Vitest and browser execution remain **NOT_RUN** pending owner WSL evidence.
+the component test checks timed/all-day previews and filtering. Owner WSL
+evidence: Web typecheck **PASS**, focused Vitest **3 PASS**. The first focused
+Playwright run **FAIL** at the fixture's expected eight cards: the test added
+seven rows directly to its in-memory API after the Vault had loaded, without
+publishing a refresh event. The test now publishes the existing Draft Vault
+invalidation event after fixture insertion. Playwright rerun is **NOT_RUN**.
 
 ## 2026-11-23 — Header actions and view-options retirement
 

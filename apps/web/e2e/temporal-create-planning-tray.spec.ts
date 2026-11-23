@@ -127,6 +127,11 @@ test('Draft Vault keeps search fixed while many full-size cards scroll and filte
   }
 
   const vault = await openDraftVault(page);
+  // The fixture changes its in-memory API rows outside a user command.
+  // Publish the same invalidation that a draft write would send.
+  await page.evaluate(() =>
+    window.dispatchEvent(new Event('dante:draft-vault-updated')),
+  );
   await expect(vault.locator('article')).toHaveCount(8);
   const search = vault.getByRole('searchbox', { name: 'Cerca Bozze' });
   const list = vault.locator('.timeline-planning-tray__body');
