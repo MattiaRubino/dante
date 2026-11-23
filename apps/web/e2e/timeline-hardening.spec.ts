@@ -456,15 +456,33 @@ test('Session Objective and agenda indicators sit near the lower card edge', asy
     const size = (selector: string) => Number.parseFloat(
       getComputedStyle(element.querySelector(selector)!).fontSize,
     );
+    const marker = element.querySelector<SVGElement>(
+      '.timeline-event-card__title .temporal-kind-marker',
+    )!;
+    const titleText = element.querySelector<HTMLElement>(
+      '.timeline-event-card__title-text',
+    )!;
+    const centerY = (node: Element) => {
+      const rect = node.getBoundingClientRect();
+      return rect.top + rect.height / 2;
+    };
     return {
       title: size('.timeline-event-card__title'),
       time: size('.timeline-event-card__time'),
       detail: size('.timeline-event-card__indicator'),
+      marker: marker.getBoundingClientRect().width,
+      markerOffset: Math.abs(centerY(marker) - centerY(titleText)),
+      topPadding: Number.parseFloat(
+        getComputedStyle(element.querySelector('.timeline-event-card__top')!).paddingTop,
+      ),
     };
   });
   expect(typeScale.title).toBeGreaterThanOrEqual(15);
   expect(typeScale.time).toBeGreaterThanOrEqual(12);
   expect(typeScale.detail).toBeGreaterThanOrEqual(12);
+  expect(typeScale.marker).toBeGreaterThanOrEqual(15);
+  expect(typeScale.markerOffset).toBeLessThanOrEqual(2);
+  expect(typeScale.topPadding).toBeLessThanOrEqual(5);
   const distanceFromBottom = await event.evaluate((element) => {
     const indicator = element.querySelector('.timeline-event-card__indicator');
     if (!indicator) return Infinity;

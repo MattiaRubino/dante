@@ -68,6 +68,9 @@ describe('Timeline Draft Vault', () => {
     expect(await screen.findByText('Allenamento')).toBeTruthy();
     expect(panel.textContent).toContain('10:00–10:30 · 23 nov');
     expect(panel.querySelector('[data-temporal-kind-marker="activity"]')).toBeTruthy();
+    expect(panel.querySelector('.timeline-event-card__heading')).toBeTruthy();
+    expect(panel.querySelector('.timeline-event-card__time')).toBeTruthy();
+    expect(panel.textContent).not.toContain('Non attiva');
     expect(screen.queryByRole('button', { name: 'Play' })).toBeNull();
     expect(
       screen.queryByRole('button', { name: /elementi già creati/i }),

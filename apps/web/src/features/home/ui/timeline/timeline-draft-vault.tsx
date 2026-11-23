@@ -250,17 +250,20 @@ export function TimelineDraftVault({
             className="timeline-planning-card timeline-planning-card--draft"
           >
             <div className="timeline-planning-card__main">
-              <div className="timeline-planning-card__copy">
-                <strong>
-                  <TemporalKindMarker kind={item.subjectKind} />
-                  <span>{item.title || 'Senza titolo'}</span>
-                </strong>
-                <span className="timeline-planning-card__schedule">
+              <div className="timeline-event-card__top">
+                <div className="timeline-event-card__heading">
+                  <div className="timeline-event-card__identity">
+                    <div className="timeline-event-card__title">
+                      <TemporalKindMarker kind={item.subjectKind} />
+                      <span className="timeline-event-card__title-text">
+                        {item.title || 'Senza titolo'}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+                <div className="timeline-event-card__time">
                   {draftScheduleLabel(item)}
-                </span>
-                <span className="timeline-planning-card__policy">
-                  Non attiva
-                </span>
+                </div>
               </div>
             </div>
             <div className="timeline-planning-card__actions">

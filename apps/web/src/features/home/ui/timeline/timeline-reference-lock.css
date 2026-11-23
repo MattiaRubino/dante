@@ -79,7 +79,7 @@
 
 .home-m1 .home-timeline--production .timeline-event-card__top,
 .timeline-event-drag-overlay .timeline-event-card__top {
-  padding-top: clamp(6px, calc(4.8px + 1.6cqh), 8.5px);
+  padding-top: clamp(3px, calc(2px + 1.2cqh), 5px);
   padding-bottom: clamp(2px, calc(1.2px + 0.9cqh), 3.5px);
 }
 
@@ -186,6 +186,16 @@
   display: flex;
   align-items: center;
   gap: 5px;
+}
+
+.home-m1
+  .home-timeline--production
+  .timeline-event-card__title
+  .temporal-kind-marker,
+.timeline-event-drag-overlay .timeline-event-card__title .temporal-kind-marker {
+  width: 1em;
+  height: 1em;
+  font-size: 1em;
 }
 
 .home-m1 .home-timeline--production .timeline-event-card__time,

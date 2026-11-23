@@ -1,5 +1,18 @@
 # Timeline / Temporal-Operational — Live Execution Ledger
 
+## 2026-11-23 — Draft cards match Timeline card rows
+
+Owner visual review required the same inner card grammar in Draft Vault and
+ordinary Timeline cards. Draft cards now render the shared kind marker/title
+heading, its separator and the planned date/time row, followed only by the
+three existing draft actions. The redundant “Non attiva” row is removed;
+Drafts remain inert and retain the same resume/duplicate/delete behavior.
+Ordinary cards use a kind marker scaled to the title text, and their top
+padding is reduced without changing card height, runtime actions or Week
+geometry. Fixture browser assertions cover marker/text alignment, separator,
+row order and card top padding. Web typecheck, focused Vitest and browser
+reruns are **NOT_RUN** pending owner WSL evidence.
+
 ## 2026-11-23 — Draft card readability and Timeline title size
 
 Owner visual review found the Draft Vault cards pink and their text/actions

@@ -156,20 +156,31 @@ test('Draft Vault keeps search fixed while many full-size cards scroll and filte
 
   const cardStyle = await vault.locator('article').first().evaluate((card) => {
     const title = card.querySelector<HTMLElement>(
-      '.timeline-planning-card__copy strong',
+      '.timeline-event-card__title',
     )!;
     const schedule = card.querySelector<HTMLElement>(
-      '.timeline-planning-card__schedule',
+      '.timeline-event-card__time',
     )!;
+    const heading = card.querySelector<HTMLElement>('.timeline-event-card__heading')!;
+    const marker = title.querySelector<SVGElement>('.temporal-kind-marker')!;
+    const titleText = title.querySelector<HTMLElement>('.timeline-event-card__title-text')!;
     const action = card.querySelector<HTMLButtonElement>(
       '.timeline-planning-card__actions button',
     )!;
+    const centerY = (element: Element) => {
+      const rect = element.getBoundingClientRect();
+      return rect.top + rect.height / 2;
+    };
     return {
       accent: getComputedStyle(card)
         .getPropertyValue('--timeline-group-color')
         .trim(),
       titleSize: Number.parseFloat(getComputedStyle(title).fontSize),
       scheduleSize: Number.parseFloat(getComputedStyle(schedule).fontSize),
+      markerSize: marker.getBoundingClientRect().width,
+      markerOffset: Math.abs(centerY(marker) - centerY(titleText)),
+      headingRule: getComputedStyle(heading).borderBottomWidth,
+      actionBelowTime: action.getBoundingClientRect().top > schedule.getBoundingClientRect().bottom,
       actionSize: Number.parseFloat(getComputedStyle(action).fontSize),
       actionWeight: Number.parseInt(getComputedStyle(action).fontWeight, 10),
       actionColor: getComputedStyle(action).color,
@@ -178,6 +189,10 @@ test('Draft Vault keeps search fixed while many full-size cards scroll and filte
   expect(cardStyle.accent).toBe('#ea5c12');
   expect(cardStyle.titleSize).toBeGreaterThanOrEqual(15);
   expect(cardStyle.scheduleSize).toBeGreaterThanOrEqual(12);
+  expect(cardStyle.markerSize).toBeGreaterThanOrEqual(15);
+  expect(cardStyle.markerOffset).toBeLessThanOrEqual(2);
+  expect(cardStyle.headingRule).toBe('1px');
+  expect(cardStyle.actionBelowTime).toBe(true);
   expect(cardStyle.actionSize).toBeGreaterThanOrEqual(12);
   expect(cardStyle.actionWeight).toBeGreaterThanOrEqual(600);
   expect(cardStyle.actionColor).toBe('rgb(243, 246, 251)');
@@ -209,7 +224,9 @@ test('saving a Draft never creates an executable Timeline card and Resume preser
   const vault = await openDraftVault(page);
   const item = draft(vault, 'Preparare portfolio');
   await expect(item).toBeVisible();
-  await expect(item).toContainText('Non attiva');
+  await expect(item.locator('.timeline-event-card__heading')).toBeVisible();
+  await expect(item.locator('.timeline-event-card__time')).toBeVisible();
+  await expect(item).not.toContainText('Non attiva');
 
   const accessibility = await new AxeBuilder({ page })
     .include('[data-timeline-draft-vault="true"]')

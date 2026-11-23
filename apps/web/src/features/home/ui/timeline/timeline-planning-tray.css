@@ -266,9 +266,9 @@
 .timeline-draft-vault__anchor .timeline-planning-card--draft {
   --timeline-group-color: var(--dante-timeline-accent, #ea5c12);
   grid-template-columns: minmax(0, 1fr);
-  gap: 4px;
+  gap: 6px;
   margin-bottom: 10px;
-  padding: 10px 12px 11px;
+  padding: 7px 12px 10px;
   border-color: color-mix(
     in srgb,
     var(--timeline-group-color) 70%,
@@ -289,52 +289,47 @@
 
 .timeline-draft-vault__anchor .timeline-planning-card--draft .timeline-planning-card__main {
   display: block;
-  min-height: 54px;
-  padding: 3px 2px;
+  padding: 0;
   cursor: default;
   touch-action: auto;
   user-select: text;
 }
 
-.timeline-draft-vault__anchor .timeline-planning-card--draft .timeline-planning-card__copy {
-  gap: 5px;
+.timeline-draft-vault__anchor .timeline-planning-card--draft .timeline-event-card__top {
+  padding: 0;
+}
+
+.timeline-draft-vault__anchor .timeline-planning-card--draft .timeline-event-card__heading {
+  padding-bottom: 3px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.11);
+}
+
+.timeline-draft-vault__anchor .timeline-planning-card--draft .timeline-event-card__title {
+  width: 100%;
+  font-size: 15px;
+  font-weight: 700;
+  line-height: 1.28;
   cursor: default;
 }
 
-.timeline-draft-vault__anchor .timeline-planning-card--draft .timeline-planning-card__copy > strong {
-  display: flex;
-  align-items: center;
-  min-width: 0;
-  gap: 6px;
-  font-size: 15px;
-  font-weight: 700;
-  text-decoration: none;
+.timeline-draft-vault__anchor .timeline-planning-card--draft .timeline-event-card__title .temporal-kind-marker {
+  width: 1em;
+  height: 1em;
+  font-size: 1em;
 }
 
-.timeline-draft-vault__anchor .timeline-planning-card--draft .timeline-planning-card__copy > strong > span {
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.timeline-draft-vault__anchor .timeline-planning-card--draft .temporal-kind-marker {
-  font-size: 15px;
-}
-
-.timeline-draft-vault__anchor .timeline-planning-card__schedule {
+.timeline-draft-vault__anchor .timeline-planning-card--draft .timeline-event-card__time {
+  margin-top: 0;
+  padding: 3px 0;
   color: var(--dante-semantic-color-home-text-secondary, #b2bdc1);
   font-size: 12.5px;
   line-height: 1.25;
   font-variant-numeric: tabular-nums;
 }
 
-.timeline-draft-vault__anchor .timeline-planning-card--draft .timeline-planning-card__policy {
-  font-size: 11.5px;
-}
-
 .timeline-draft-vault__anchor .timeline-planning-card--draft .timeline-planning-card__actions {
   gap: 7px;
-  padding: 2px 2px 0;
+  padding: 0 2px;
 }
 
 .timeline-draft-vault__anchor .timeline-planning-card--draft .timeline-planning-card__actions button {
