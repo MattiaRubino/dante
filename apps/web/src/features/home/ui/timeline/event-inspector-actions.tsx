@@ -2120,7 +2120,7 @@ export function EventInspectorActions({
           onCancel={() => setDeletingObjective(null)}
         />
       ) : null}
-      {error && !deletePreviews ? <p role="alert">{error}</p> : null}
+      {error && !deletePreviews && !vaultMove ? <p role="alert">{error}</p> : null}
     </div>
   );
 }

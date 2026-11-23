@@ -333,7 +333,7 @@ export function ActivityInspectorActions({
   return (
     <>
       {toolbarTarget ? createPortal(toolbar, toolbarTarget) : toolbar}
-      {error && !confirming ? <p role="alert">{error}</p> : null}
+      {error && !confirming && !vaultMove ? <p role="alert">{error}</p> : null}
       {editChoice ? (
         <RecurringEditScopeDialog
           subjectLabel="attività"
