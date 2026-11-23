@@ -349,6 +349,12 @@ test.describe('All-day real-stack acceptance', () => {
       await openHome(page, day);
       const trigger = page.getByRole('button', { name: 'Serie da rinnovare: 2' });
       await expect(trigger).toBeVisible();
+      await expect(trigger).toHaveCSS('width', '44px');
+      await expect(trigger.locator('svg')).toHaveCSS('width', '21px');
+      await expect(trigger.locator('.timeline-renewals__badge')).toHaveCSS(
+        'height',
+        '19px',
+      );
       await trigger.click();
       const panel = page.locator('.timeline-renewals__panel');
       await expect(panel).toContainText('30 occorrenze rimaste su 730');

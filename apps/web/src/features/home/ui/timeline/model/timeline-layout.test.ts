@@ -7,7 +7,6 @@ import {
 } from './timeline-fixtures';
 import {
   computeTimelineEventLayouts,
-  computeTimelineGaps,
   computeTimelineOverlapLayout,
 } from './timeline-layout';
 import { TIMELINE_POLICY } from './timeline-policy';
@@ -209,17 +208,5 @@ describe('timeline layout engine', () => {
       expect(layout.groupIndex).toBeGreaterThanOrEqual(0);
       expect(layout.groupIndex).toBeLessThan(TIMELINE_GROUPS.length);
     }
-  });
-
-  it('reports free-time gaps between overlapping clusters rather than between cards', () => {
-    const gaps = computeTimelineGaps(events);
-
-    expect(gaps.length).toBeGreaterThan(0);
-    expect(gaps.every((gap) => gap.durationMinutes >= 0)).toBe(true);
-    expect(
-      gaps.some(
-        (gap) => gap.fromMinute === 11 * 60 && gap.toMinute === 11 * 60 + 45,
-      ),
-    ).toBe(true);
   });
 });

@@ -12,9 +12,9 @@
 }
 .dante-timeline-actions .timeline-session-panel__toggle {
   display: grid;
-  width: 34px;
-  min-width: 34px;
-  height: 34px;
+  width: var(--timeline-action-size);
+  min-width: var(--timeline-action-size);
+  height: var(--timeline-action-size);
   place-items: center;
   padding: 0;
   border: 0;
@@ -39,14 +39,14 @@
   position: absolute;
   top: -4px;
   right: -4px;
-  min-width: 15px;
-  height: 15px;
-  padding: 0 3px;
-  border-radius: 8px;
+  min-width: 19px;
+  height: 19px;
+  padding: 0 4px;
+  border-radius: 10px;
   background: var(--dante-timeline-accent, #ea5c12);
   color: #fff;
-  font-size: 10px;
-  line-height: 15px;
+  font-size: 11px;
+  line-height: 19px;
   text-align: center;
 }
 .timeline-session-panel {

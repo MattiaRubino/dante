@@ -474,7 +474,7 @@ async function emptyTimedCanvasPoint(
           !!hit &&
           section.contains(hit) &&
           !hit.closest(
-            '.timeline-event-card,button,input,select,.timeline-milestone,.timeline-margin-label',
+            '.timeline-event-card,button,input,select',
           )
         );
       };

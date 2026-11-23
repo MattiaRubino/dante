@@ -79,15 +79,8 @@ function timelineGroupColorRules(groups: readonly TimelineGroup[]): string {
     .join('\n');
 }
 
-function TimelineIcon({ type }: { type: 'view' | 'group' | 'reset' }) {
+function TimelineIcon({ type }: { type: 'group' | 'reset' }) {
   switch (type) {
-    case 'view':
-      return (
-        <svg viewBox="0 0 24 24" aria-hidden="true">
-          <path d="M5 6h14M5 12h14M5 18h14" />
-          <path d="M8 4v4M15 10v4M11 16v4" />
-        </svg>
-      );
     case 'group':
       return (
         <svg viewBox="0 0 24 24" aria-hidden="true">
@@ -123,14 +116,11 @@ type TimelineHeaderProps = Readonly<{
   nowNeeded: boolean;
   split: boolean;
   calendarOpen: boolean;
-  viewOptionsOpen: boolean;
   calendarTriggerRef: RefObject<HTMLButtonElement | null>;
-  viewOptionsTriggerRef: RefObject<HTMLButtonElement | null>;
   groupScrollerRef: RefObject<HTMLDivElement | null>;
   onCalendarToggle: () => void;
   onDateSelect: (date: PlainDate) => void;
   onGoNow: () => void;
-  onViewOptionsToggle: () => void;
   onSplitToggle: () => void;
   onResetGroupsFocus: () => void;
   onToggleFilter: (groupId: TimelineGroupId) => void;
@@ -163,14 +153,11 @@ export function TimelineHeader({
   nowNeeded,
   split,
   calendarOpen,
-  viewOptionsOpen,
   calendarTriggerRef,
-  viewOptionsTriggerRef,
   groupScrollerRef,
   onCalendarToggle,
   onDateSelect,
   onGoNow,
-  onViewOptionsToggle,
   onSplitToggle,
   onResetGroupsFocus,
   onToggleFilter,
@@ -285,9 +272,6 @@ export function TimelineHeader({
           onBeforeOpen={() => {
             if (calendarOpen) {
               onCalendarToggle();
-            }
-            if (viewOptionsOpen) {
-              onViewOptionsToggle();
             }
           }}
           creationEnabled={creationEnabled}
@@ -438,20 +422,6 @@ export function TimelineHeader({
 
         <div className="dante-timeline-actions">
           {sessionPanelToggle}
-          <button
-            ref={viewOptionsTriggerRef}
-            className={viewOptionsOpen ? 'is-active' : ''}
-            type="button"
-            onClick={onViewOptionsToggle}
-            aria-label={t(($) => $.common.home.timeline.viewOptions.label)}
-            data-timeline-tooltip={t(
-              ($) => $.common.home.timeline.viewOptions.label,
-            )}
-            aria-haspopup="dialog"
-            aria-expanded={viewOptionsOpen}
-          >
-            <TimelineIcon type="view" />
-          </button>
           <button
             className={split ? 'is-active' : ''}
             type="button"

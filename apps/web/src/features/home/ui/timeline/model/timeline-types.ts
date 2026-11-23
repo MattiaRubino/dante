@@ -197,9 +197,3 @@ export type TimelineEventLayout = Readonly<{
     sessionRefs: readonly string[];
   }>;
 }>;
-
-export type TimelineGap = Readonly<{
-  fromMinute: number;
-  toMinute: number;
-  durationMinutes: number;
-}>;

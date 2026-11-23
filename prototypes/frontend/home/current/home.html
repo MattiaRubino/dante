@@ -951,7 +951,7 @@ drawBackdrop();
 class LifeOSToday extends HTMLElement {
   connectedCallback(){
     if(this.shadowRoot) return;
-    this.state={zoom:1,split:false,expanded:false,filters:new Set(),focus:null,past:1,loaded:4,showMargins:true,showNow:true,showMilestones:true};
+    this.state={zoom:1,split:false,expanded:false,filters:new Set(),focus:null,past:1,loaded:4};
     /* Larghezza della corsia riservata alla maniglia, a destra della griglia.
        Unica fonte di verita': viene scritta anche nella variabile CSS
        --tl-handle-gutter, cosi' la barra di scorrimento verticale e la
@@ -1069,12 +1069,10 @@ class LifeOSToday extends HTMLElement {
       <div class="tl-toolbar">
         <div class="tl-toolbar__utility" aria-label="Controlli vista timeline">
           <button class="tl-now-btn" id="goNow" type="button" title="Torna a ora" aria-label="Torna a ora"><span class="tl-now-dot" aria-hidden="true"></span>Ora</button>
-          <button id="viewOptions" title="Vista e legenda" aria-label="Vista e legenda" aria-haspopup="true" aria-expanded="false" aria-controls="viewPop">☷</button>
           <button id="splitGroups" title="Separa per gruppi" aria-label="Separa per gruppi" aria-pressed="false">▥</button>
         </div>
         <button class="tl-groupbar__reset" id="resetView" title="Ripristina gruppi e focus" aria-label="Ripristina gruppi e focus">◉</button>
         <div class="group-chips" id="groupChips"><div class="group-chips-track" id="groupChipsTrack"></div></div>
-        <div class="view-pop" id="viewPop"><b>Vista e legenda</b><label><input type="checkbox" data-opt="margins" checked> Margini tra impegni</label><label><input type="checkbox" data-opt="now" checked> Ora corrente</label><label><input type="checkbox" data-opt="milestones" checked> Milestone sul percorso</label><button id="resetOptions">Ripristina vista predefinita</button></div>
       </div>
       <div class="timeline-frame">
         <div class="tl-ruler" aria-hidden="true"></div>
@@ -1186,9 +1184,9 @@ class LifeOSToday extends HTMLElement {
     .group-chips{grid-column:3;position:relative;min-width:0;height:42px;overflow-x:auto;overflow-y:hidden;scrollbar-width:thin;scrollbar-color:rgba(255,255,255,.13) transparent;padding:6px 0}.group-chips::-webkit-scrollbar{height:7px}.group-chips::-webkit-scrollbar-thumb{background:rgba(255,255,255,.13);border-radius:999px}
     .group-chips-track{position:relative;height:30px;min-width:100%}
     .tl-groupbar__chip{position:absolute;top:0;height:30px;display:flex;align-items:center;gap:6px;padding:0 12px;border-radius:999px;border:1px solid color-mix(in srgb,var(--c) 28%,rgba(255,255,255,.08));background:color-mix(in srgb,var(--c) 12%,rgba(10,19,34,.92));color:color-mix(in srgb,var(--c) 72%,white);font-size:10px;font-weight:650;cursor:grab;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;user-select:none}.tl-groupbar__chip:active{cursor:grabbing}.tl-groupbar__chip.is-reordering{opacity:.45}.tl-groupbar__chip.is-drop-target{box-shadow:0 0 0 2px #7c5cfc}.tl-groupbar__chip.is-active{background:color-mix(in srgb,var(--c) 18%,rgba(10,19,34,.92));color:#f3f6ff}.tl-groupbar__chip.is-dimmed{opacity:.45;filter:saturate(.55)}.tl-groupbar__chip__dot{width:6px;height:6px;border-radius:50%;flex:0 0 auto}.tl-groupbar__chip>span:last-child{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-    .view-pop{display:none;position:absolute;left:8px;top:46px;z-index:88;width:220px;padding:12px;border:1px solid rgba(255,255,255,.09);border-radius:14px;background:#0a1424;box-shadow:0 18px 45px rgba(0,0,0,.34);font-size:10px}.view-pop.is-open{display:grid;gap:8px}.view-pop b{font-size:11px;margin-bottom:3px}.view-pop label{display:flex;gap:7px;align-items:center;color:#b8c4d6}.view-pop button{margin-top:4px;border:0;background:rgba(255,255,255,.04);color:#a997ff;border-radius:8px;padding:7px;cursor:pointer}.tl-zoom-float{position:absolute;right:14px;bottom:14px;z-index:74;display:flex;align-items:center;gap:2px;padding:3px;border:1px solid rgba(255,255,255,.065);border-radius:11px;background:rgba(6,13,24,.42);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);box-shadow:0 8px 24px rgba(0,0,0,.16);pointer-events:auto}.tl-zoom-float button{width:30px;height:30px;border:0;border-radius:8px;background:transparent;color:#9eabc0;font-size:16px;cursor:pointer;transition:.14s ease}.tl-zoom-float button:hover{background:rgba(255,255,255,.055);color:#f0f4fb}.tl-zoom-float button:active{background:rgba(124,92,255,.12);color:#d5c9ff}
+    .tl-zoom-float{position:absolute;right:14px;bottom:14px;z-index:74;display:flex;align-items:center;gap:2px;padding:3px;border:1px solid rgba(255,255,255,.065);border-radius:11px;background:rgba(6,13,24,.42);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);box-shadow:0 8px 24px rgba(0,0,0,.16);pointer-events:auto}.tl-zoom-float button{width:30px;height:30px;border:0;border-radius:8px;background:transparent;color:#9eabc0;font-size:16px;cursor:pointer;transition:.14s ease}.tl-zoom-float button:hover{background:rgba(255,255,255,.055);color:#f0f4fb}.tl-zoom-float button:active{background:rgba(124,92,255,.12);color:#d5c9ff}
     .timeline-frame{height:570px;display:grid;grid-template-columns:84px minmax(0,1fr) var(--tl-handle-gutter,14px);position:relative;background:linear-gradient(180deg,rgba(255,255,255,.004),rgba(255,255,255,.001))}.tl-ruler{position:relative;overflow:hidden;border-right:1px solid rgba(255,255,255,.055);background:rgba(4,10,20,.18)}.tl-ruler-stream{position:absolute;left:0;right:0;top:0;will-change:transform}.ruler-day{position:relative;width:100%}.ruler-label{position:absolute;right:12px;transform:translateY(-50%);color:#7f8da4;font-size:9px;line-height:1;white-space:nowrap}.ruler-label.is-major{color:#9aa8bc}.tl-grid{position:relative;overflow-x:hidden;overflow-y:auto;scrollbar-color:rgba(137,101,255,.28) transparent;scrollbar-width:thin;overscroll-behavior:contain}.day-stream{position:relative;min-width:100%}.day-section{position:relative;border-bottom:1px solid rgba(255,255,255,.07);min-width:100%;overflow:visible}.day-section__label{position:absolute;top:10px;left:10px;z-index:8;font-size:10px;color:#718097;padding:5px 8px;border-radius:999px;background:rgba(7,14,25,.72);border:1px solid rgba(255,255,255,.055)}
-    .tl-hour{position:absolute;left:0;right:0;height:1px;border-top:1px solid rgba(255,255,255,.045);pointer-events:none}.tl-hour__label{position:absolute;left:-68px;top:-7px;width:55px;text-align:right;color:#73829a;font-size:9px}.tl-hour--minor{border-top-color:rgba(255,255,255,.018)}.tl-hour--minor .tl-hour__label{display:none}.tl-nowline{position:absolute;left:0;right:0;height:1px;background:linear-gradient(90deg,#8c65ff,rgba(122,88,255,.62),transparent);z-index:6;pointer-events:none}.tl-nowline::before{content:'';position:absolute;left:-5px;top:-4px;width:9px;height:9px;border-radius:50%;background:#9574ff;border:2px solid #d7cdff;box-shadow:0 0 12px rgba(142,103,255,.8)}.tl-nowline span{position:absolute;left:7px;top:-12px;padding:3px 6px;border-radius:7px;background:#7655ef;color:#fff;font-size:9px;font-weight:750}.tl-margin-label{position:absolute;left:10px;right:auto;z-index:5;color:#596980;font-size:8px;border-left:1px solid rgba(255,255,255,.05);border-right:0;padding-left:5px;padding-right:0;pointer-events:none}.milestone{position:absolute;left:12px;z-index:5;color:#8f7ce8;font-size:11px;opacity:.75}
+    .tl-hour{position:absolute;left:0;right:0;height:1px;border-top:1px solid rgba(255,255,255,.045);pointer-events:none}.tl-hour__label{position:absolute;left:-68px;top:-7px;width:55px;text-align:right;color:#73829a;font-size:9px}.tl-hour--minor{border-top-color:rgba(255,255,255,.018)}.tl-hour--minor .tl-hour__label{display:none}.tl-nowline{position:absolute;left:0;right:0;height:1px;background:linear-gradient(90deg,#8c65ff,rgba(122,88,255,.62),transparent);z-index:6;pointer-events:none}.tl-nowline::before{content:'';position:absolute;left:-5px;top:-4px;width:9px;height:9px;border-radius:50%;background:#9574ff;border:2px solid #d7cdff;box-shadow:0 0 12px rgba(142,103,255,.8)}.tl-nowline span{position:absolute;left:7px;top:-12px;padding:3px 6px;border-radius:7px;background:#7655ef;color:#fff;font-size:9px;font-weight:750}
     .events-layer{position:absolute;inset:0 16px 0 44px;min-width:0}
     .ev-block{position:absolute;border-radius:12px;border:1px solid color-mix(in srgb,var(--c) 42%,transparent);background:linear-gradient(180deg,rgba(13,24,42,.94),rgba(9,17,31,.94));box-shadow:inset 3px 0 0 var(--c),0 10px 22px rgba(0,0,0,.13);overflow:hidden;z-index:4;transition:height .18s cubic-bezier(.22,1,.36,1),opacity .14s,filter .14s,box-shadow .14s;display:flex;flex-direction:column}
     .ev-block.is-expanded{z-index:9;overflow:visible;box-shadow:inset 3px 0 0 var(--c),0 20px 40px rgba(0,0,0,.28),0 0 0 1px color-mix(in srgb,var(--c) 34%,rgba(255,255,255,.08))}.ev-block.is-focused{box-shadow:inset 3px 0 0 var(--c),0 0 0 1px color-mix(in srgb,var(--c) 42%,transparent),0 14px 28px rgba(0,0,0,.22)}.ev-block.is-dim{opacity:.25;filter:saturate(.45)}.ev-block.is-groupmate{opacity:.70}.ev-block.is-drag-source{opacity:.22}
@@ -1204,17 +1202,11 @@ class LifeOSToday extends HTMLElement {
   bind(){
     const r=this.root;
     r.getElementById('resetView').onclick=()=>{this.state.filters.clear();this.state.focus=null;this.renderAll(false)};
-    r.getElementById('viewOptions').onclick=e=>{
-      const pop=r.getElementById('viewPop'),open=pop.classList.toggle('is-open');
-      e.currentTarget.setAttribute('aria-expanded',String(open));
-    };
     r.getElementById('goNow').onclick=()=>this.goNow();
     this.bindCalendar();
     r.getElementById('splitGroups').onclick=()=>this.settleTo(this.expansionP>=.5?0:1);
     this.bindExpandHandle();
     r.querySelectorAll('.js-zoom').forEach(b=>b.onclick=()=>this.zoom(b.dataset.dir==='in'?1.18:1/1.18));
-    r.getElementById('viewPop').addEventListener('change',e=>{if(!e.target.dataset.opt)return;this.state[e.target.dataset.opt==='now'?'showNow':e.target.dataset.opt==='milestones'?'showMilestones':'showMargins']=e.target.checked;this.renderAll(false)});
-    r.getElementById('resetOptions').onclick=()=>{this.state.showMargins=this.state.showNow=this.state.showMilestones=true;r.getElementById('viewPop').querySelectorAll('input').forEach(i=>i.checked=true);this.renderAll(false)};
     r.getElementById('move-toast-undo').onclick=()=>this.undo();
     r.getElementById('modal-backdrop').onclick=e=>{if(e.target===r.getElementById('modal-backdrop'))this.closeModal()};
     const grid=r.getElementById('tl-grid');
@@ -1420,10 +1412,8 @@ class LifeOSToday extends HTMLElement {
   renderDay(key){
     const events=this.ensureEvents(key),map=this.mapper(events),sec=document.createElement('section');sec.className='day-section';sec.dataset.date=key;sec.style.height=map.height+'px';sec.style.minWidth='100%';sec.style.setProperty('--group-count',this.GROUPS.length);sec.innerHTML=`<div class="day-section__label">${key===this.TODAY?'Oggi · ':''}${this.dateLabel(key)}</div>`;
     for(let m=0;m<=1440;m+=30){const line=document.createElement('div');line.className='tl-hour'+(m%60?' tl-hour--minor':'');line.style.top=map.map(m)+'px';if(m%60===0)line.innerHTML=`<span class="tl-hour__label">${String(Math.floor(m/60)).padStart(2,'0')}:00</span>`;sec.appendChild(line)}
-    if(key===this.TODAY&&this.state.showNow){const l=document.createElement('div');l.className='tl-nowline';l.style.top=map.map(this.NOW_MIN)+'px';l.innerHTML=`<span>${this.fmt(this.NOW_MIN)}</span>`;sec.appendChild(l)}
-    if(this.state.showMilestones&&key===this.TODAY){[[9*60,'⚑'],[18*60,'⚑']].forEach(([m,t])=>{const x=document.createElement('span');x.className='milestone';x.style.top=map.map(m)+'px';x.textContent=t;sec.appendChild(x)})}
+    if(key===this.TODAY){const l=document.createElement('div');l.className='tl-nowline';l.style.top=map.map(this.NOW_MIN)+'px';l.innerHTML=`<span>${this.fmt(this.NOW_MIN)}</span>`;sec.appendChild(l)}
     const cols=document.createElement('div');cols.className='split-columns';cols.innerHTML=this.GROUPS.map(g=>`<div class="split-col" style="--c:${g[2]}"></div>`).join('');sec.appendChild(cols);
-    if(this.state.showMargins){this.clusterGaps(events).forEach(g=>{if(g.from>20*60)return;const x=document.createElement('div');x.className='tl-margin-label';x.style.top=(map.map(g.from)+4)+'px';x.textContent=`${g.gap} min`;sec.appendChild(x)})}
     const layer=document.createElement('div');layer.className='events-layer';sec.appendChild(layer);this.layoutEvents(events,map).forEach(o=>{if(this.state.filters.size&&!this.state.filters.has(o.e.category))return;layer.appendChild(this.eventNode(key,o,map))});return sec;
   }
   computeOverlapLayout(events){
@@ -1451,7 +1441,6 @@ class LifeOSToday extends HTMLElement {
     const dz=n.querySelector('.ev-block__drag-zone');n.addEventListener('click',ev=>{if(ev.target.closest('button,.ev-block__sub-item'))return;if(this._suppressCardClick){this._suppressCardClick=false;return}this.state.focus=this.state.focus===e.id?null:e.id;this.renderAll(false)});this.bindDrag(n,key,e,map);return n;
   }
   fmt(m){m=Math.max(0,Math.min(1440,Math.round(m)));return `${String(Math.floor(m/60)).padStart(2,'0')}:${String(m%60).padStart(2,'0')}`}
-  clusterGaps(events){const a=[...events].sort((x,y)=>x.start-y.start);const clusters=[];for(const e of a){const last=clusters.at(-1);if(last&&e.start<last.end)last.end=Math.max(last.end,e.end);else clusters.push({start:e.start,end:e.end})}return clusters.slice(0,-1).map((c,i)=>({from:c.end,to:clusters[i+1].start,gap:clusters[i+1].start-c.end}))}
   findEvent(id){for(const [key,list] of Object.entries(this.events)){const e=list.find(x=>x.id==id);if(e)return {key,e}}return null}
   openModal(e){const b=this.root.getElementById('modal-backdrop'),m=this.root.getElementById('eventModal');m.innerHTML=`<h3>${e.title}</h3><p>${this.fmt(e.start)}–${this.fmt(e.end)} · ${this.groupInfo(e.category)[1]} · ${e.meta||''}</p>${e.subitems?`<p>${e.subitems.length} sotto-attività collegate</p>`:''}<div class="ai-note">LifeOS può usare questo contesto per proporre modifiche, ma le variazioni operative restano confermabili.</div><button id="closeEventModal">Chiudi</button>`;b.classList.add('is-open');m.querySelector('#closeEventModal').onclick=()=>this.closeModal()}
   closeModal(){this.root.getElementById('modal-backdrop').classList.remove('is-open')}
@@ -1812,7 +1801,6 @@ class LifeOSToday extends HTMLElement {
     if(cell)cell.focus();
   }
   exposeDebug(){window.__lifeosDebug={
-    marginGaps:()=>this.clusterGaps(this.ensureEvents(this.TODAY)),
     zoomAnchorAt:y=>this.zoomAnchorAt(y),
     activeTimeEdit:()=>this._activeTime?{id:this._activeTime.e.id}:null,
     state:()=>({...this.state,expansionP:this.expansionP,filters:[...this.state.filters]}),
@@ -4278,10 +4266,8 @@ customElements.define('lifeos-today',LifeOSToday);
     const week=r.getElementById('weekStrip');
     const utility=r.querySelector('.tl-toolbar__utility');
     const now=r.getElementById('goNow');
-    const legend=r.getElementById('viewOptions');
     const split=r.getElementById('splitGroups');
-    const pop=r.getElementById('viewPop');
-    if(!head || !zone || !week || !utility || !now || !legend || !split || !pop) return false;
+    if(!head || !zone || !week || !utility || !now || !split) return false;
 
     // One compact week navigator; existing #weekStrip remains the behavioral source.
     let weekNav=r.querySelector('.tl-week-nav');
@@ -4320,14 +4306,10 @@ customElements.define('lifeos-today',LifeOSToday);
       zone.appendChild(actions);
     }
     now.classList.add('tl-head-now');
-    legend.classList.add('tl-head-legend');
     split.classList.add('tl-head-split');
-    legend.innerHTML='<span aria-hidden="true">☷</span>';
     split.innerHTML='<span aria-hidden="true">▥</span>';
     zone.appendChild(now);
-    actions.appendChild(legend);
     actions.appendChild(split);
-    actions.appendChild(pop);
 
     const syncSplitLabel=()=>{
       const pressed=split.getAttribute('aria-pressed')==='true';
@@ -4392,18 +4374,17 @@ customElements.define('lifeos-today',LifeOSToday);
       .week b{font-size:8px !important;letter-spacing:.08em !important}
 
       .tl-head-actions{grid-area:actions;justify-self:end;display:flex;align-items:center;gap:5px;position:relative}
-      .tl-head-now,.tl-head-legend,.tl-head-split{
+      .tl-head-now,.tl-head-split{
         height:34px !important;border:0 !important;border-radius:10px !important;
         background:transparent !important;color:#78879b !important;box-shadow:none !important;
         display:inline-flex !important;align-items:center !important;justify-content:center !important;
         font-size:10px !important;font-weight:650 !important;white-space:nowrap !important;
       }
       .tl-head-now{grid-area:now !important;justify-self:start !important;padding:0 10px !important;gap:6px !important;color:#9a8de4 !important;background:rgba(119,89,220,.035) !important}
-      .tl-head-legend,.tl-head-split{width:34px !important;min-width:34px !important;padding:0 !important;gap:0 !important}
-      .tl-head-now:hover,.tl-head-legend:hover,.tl-head-split:hover{background:rgba(255,255,255,.035) !important;color:#e6ecf5 !important}
+      .tl-head-split{width:44px !important;min-width:44px !important;padding:0 !important;gap:0 !important}
+      .tl-head-now:hover,.tl-head-split:hover{background:rgba(255,255,255,.035) !important;color:#e6ecf5 !important}
       .tl-head-split[aria-pressed="true"]{background:rgba(121,91,225,.09) !important;color:#c9bcff !important}
-      .tl-head-legend > span,.tl-head-split > span{display:block !important;font-size:14px !important;line-height:1 !important}
-      .tl-head-actions .view-pop{left:auto !important;right:0 !important;top:42px !important;z-index:120 !important}
+      .tl-head-split > span{display:block !important;font-size:21px !important;line-height:1 !important}
       .cal-pop,.cal-pop.is-up,.today.is-expanded .cal-pop{left:0 !important;right:auto !important;top:58px !important;bottom:auto !important}
 
       /* GROUP ROW — ruler | reset gutter | group columns | handle gutter.

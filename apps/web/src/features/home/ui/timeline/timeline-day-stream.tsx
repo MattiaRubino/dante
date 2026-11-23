@@ -19,7 +19,6 @@ import { ActivitySessionCardControls } from '../../../temporal/activity-session-
 import { TemporalKindMarker } from '../../../temporal-create/ui/temporal-kind-marker';
 import { ActivityPlannedSessionsCardDetail } from '../../../temporal/activity-planned-sessions-card-detail';
 import { timelineSecondaryRulerTick } from '../../../temporal/timeline-view-zone';
-import { computeTimelineGaps } from './model/timeline-layout';
 import { timelineCardIdentity } from './model/timeline-card-identity';
 import {
   TIMELINE_MINUTES_PER_DAY,
@@ -632,15 +631,6 @@ function TimelineDay({
   const fullLabel = isToday
     ? `${t(($) => $.common.home.timeline.todayPrefix)} · ${label}`
     : label;
-  const gaps = state.viewOptions.showMargins
-    ? computeTimelineGaps(
-        day.layouts.map((layout) => ({
-          ...layout.event,
-          startMinute: day.mapper.inv(layout.top),
-          endMinute: day.mapper.inv(layout.top + layout.height),
-        })),
-      )
-    : [];
   const gridPolicy = TIMELINE_POLICY.grid;
 
   return (
@@ -687,7 +677,7 @@ function TimelineDay({
         />
       ))}
 
-      {isToday && state.viewOptions.showNow ? (
+      {isToday ? (
         <div
           className="timeline-now-line"
           style={{ top: day.mapper.map(nowMinute) }}
@@ -697,44 +687,11 @@ function TimelineDay({
         </div>
       ) : null}
 
-      {isToday && state.viewOptions.showMilestones
-        ? gridPolicy.milestoneMinutes.map((minute) => (
-            <span
-              className="timeline-milestone"
-              key={minute}
-              style={{ top: day.mapper.map(minute) }}
-              aria-hidden="true"
-            >
-              ⚑
-            </span>
-          ))
-        : null}
-
       <div className="timeline-split-columns" aria-hidden="true">
         {state.groups.map((group) => (
           <span data-timeline-tone={group.tone} key={group.id} />
         ))}
       </div>
-
-      {gaps
-        .filter(
-          (gap) =>
-            gap.fromMinute <= gridPolicy.marginLabelCutoffMinute &&
-            gap.durationMinutes >= 5,
-        )
-        .map((gap) => (
-          <span
-            className="timeline-margin-label"
-            key={`${gap.fromMinute}-${gap.toMinute}`}
-            style={{
-              top:
-                day.mapper.map(gap.fromMinute) + gridPolicy.marginLabelOffsetPx,
-            }}
-            aria-hidden="true"
-          >
-            Spazio libero · {Math.round(gap.durationMinutes)} min
-          </span>
-        ))}
 
       <div className="timeline-events-layer">
         {day.layouts.map((layout) => (

@@ -3139,11 +3139,11 @@
       "path": "apps/web/e2e/timeline-controls.spec.ts",
       "suite": "browser-fixture",
       "contract_id": "T11",
-      "candidate_behavior": "Timeline controls, zone-ruler layout and view preferences",
-      "purpose": "Verify Timeline group controls and add a real browser check of three same-width 84px elastic timezone rulers, limit of three zones, removal and localStorage readback.",
-      "invariant": "All three ruler columns inherit identical tick coordinates and 14px major labels; only two secondary IANA zones can coexist and they survive refresh without duplicating physical Timeline items.",
+      "candidate_behavior": "Timeline controls, zone-ruler layout and fixed current-time marker",
+      "purpose": "Verify Timeline group controls, large accessible header actions, an always-present current-time marker, and three same-width 84px elastic timezone rulers with removal and localStorage readback.",
+      "invariant": "The view-options affordance is absent, the current-time line remains on today's Timeline, header actions fit desktop/mobile widths, and secondary IANA zones survive refresh without duplicating physical items.",
       "status": "UNREVIEWED",
-      "audit_note": "Timezone ruler case source reviewed as candidate 2026-11-19, NOT_RUN. Legacy group-control cases not yet qualified; retain UNREVIEWED rather than claiming a full audit."
+      "audit_note": "Timezone ruler case source reviewed as candidate 2026-11-19; view-options removal and icon-size browser assertion updated 2026-11-23, NOT_RUN. Other legacy cases remain unqualified."
     },
     {
       "path": "apps/web/e2e/timeline-hardening.spec.ts",
@@ -3618,8 +3618,8 @@
       "suite": "web-unit-component",
       "contract_id": "T11",
       "candidate_behavior": "timeline layout",
-      "purpose": "",
-      "invariant": "",
+      "purpose": "Verify overlapping event lanes and deterministic grouped/compact card geometry after retiring optional free-time margin labels.",
+      "invariant": "Event placement geometry remains stable without the removed optional free-time gap display.",
       "status": "UNREVIEWED",
       "audit_note": "Needs contract/assertion review, rejection cases, and executable evidence; filename alone is not proof."
     },

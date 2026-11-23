@@ -458,13 +458,6 @@ export const home = {
       go: 'Torna a ora',
       visible: 'Ora corrente già visibile',
     },
-    viewOptions: {
-      label: 'Vista e legenda',
-      margins: 'Margini tra impegni',
-      now: 'Ora corrente',
-      milestones: 'Milestone sul percorso',
-      reset: 'Ripristina vista predefinita',
-    },
     groups: {
       split: 'Separa per gruppi',
       merge: 'Riunisci nella timeline',

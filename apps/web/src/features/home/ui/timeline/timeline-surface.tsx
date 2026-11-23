@@ -107,7 +107,6 @@ import {
   CalendarPopover,
   EventDetailDialog,
   UndoToast,
-  ViewOptionsPopover,
   detailFromEvent,
   detailFromSubitem,
   inspectorAppearanceForEvent,
@@ -451,7 +450,6 @@ export function TimelineSurface({
     return () => window.clearInterval(interval);
   }, [openRealityCount]);
   const [calendarOpen, setCalendarOpen] = useState(false);
-  const [viewOptionsOpen, setViewOptionsOpen] = useState(false);
   const [detailState, setDetailState] = useState<DetailState | null>(null);
   const inspectorAppearance = useMemo(() => {
     if (!detailState) return undefined;
@@ -529,7 +527,6 @@ export function TimelineSurface({
   const gridRef = useRef<HTMLDivElement | null>(null);
   const groupScrollerRef = useRef<HTMLDivElement | null>(null);
   const calendarTriggerRef = useRef<HTMLButtonElement | null>(null);
-  const viewOptionsTriggerRef = useRef<HTMLButtonElement | null>(null);
   const expansionProgressRef = useRef(expanded ? 1 : 0);
   const expansionFrameRef = useRef<number | null>(null);
   const pendingExpansionRef = useRef(expanded ? 1 : 0);
@@ -1512,13 +1509,6 @@ export function TimelineSurface({
     }
   }, []);
 
-  const closeViewOptions = useCallback((restoreFocus = true) => {
-    setViewOptionsOpen(false);
-    if (restoreFocus) {
-      requestAnimationFrame(() => viewOptionsTriggerRef.current?.focus());
-    }
-  }, []);
-
   useLayoutEffect(() => {
     if (initialViewPublishedRef.current) {
       return;
@@ -1837,20 +1827,13 @@ export function TimelineSurface({
         nowNeeded={nowNeeded}
         split={expanded}
         calendarOpen={calendarOpen}
-        viewOptionsOpen={viewOptionsOpen}
         calendarTriggerRef={calendarTriggerRef}
-        viewOptionsTriggerRef={viewOptionsTriggerRef}
         groupScrollerRef={groupScrollerRef}
         onCalendarToggle={() => {
-          setViewOptionsOpen(false);
           setCalendarOpen((value) => !value);
         }}
         onDateSelect={(date) => goToDate(date)}
         onGoNow={goNow}
-        onViewOptionsToggle={() => {
-          setCalendarOpen(false);
-          setViewOptionsOpen((value) => !value);
-        }}
         onSplitToggle={() =>
           settleExpansion(
             expansionProgressRef.current >=
@@ -2111,17 +2094,6 @@ export function TimelineSurface({
         onClose={closeCalendar}
         onDateSelect={goToDate}
         onGoToday={goNow}
-      />
-
-      <ViewOptionsPopover
-        open={viewOptionsOpen}
-        triggerRef={viewOptionsTriggerRef}
-        options={state.viewOptions}
-        onChange={(option, value) =>
-          dispatch({ type: 'set-view-option', option, value })
-        }
-        onReset={() => dispatch({ type: 'reset-view-options' })}
-        onClose={closeViewOptions}
       />
 
       {pendingActivityReplan?.recurring &&

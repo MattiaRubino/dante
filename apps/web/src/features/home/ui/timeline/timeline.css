@@ -61,7 +61,6 @@
 
 .home-timeline--production button,
 .timeline-calendar-popover button,
-.timeline-view-popover button,
 .timeline-event-modal button {
   font: inherit;
 }
@@ -69,7 +68,6 @@
 .home-timeline--production button:focus-visible,
 .home-timeline--production [tabindex='0']:focus-visible,
 .timeline-calendar-popover button:focus-visible,
-.timeline-view-popover button:focus-visible,
 .timeline-event-modal button:focus-visible {
   outline: 2px solid var(--dante-semantic-color-home-chrome-active, #ea5c12);
   outline-offset: 2px;
@@ -882,26 +880,6 @@
   font-variant-numeric: tabular-nums;
 }
 
-.timeline-milestone {
-  position: absolute;
-  z-index: 5;
-  left: 12px;
-  color: color-mix(in srgb, var(--timeline-tone-focus) 58%, white);
-  font-size: 9px;
-  opacity: 0.58;
-}
-
-.timeline-margin-label {
-  position: absolute;
-  z-index: 5;
-  left: 10px;
-  padding-left: 5px;
-  border-left: 1px solid var(--dante-semantic-color-home-border-subtle);
-  color: var(--dante-semantic-color-home-text-muted);
-  font-size: 7.5px;
-  pointer-events: none;
-}
-
 .timeline-split-columns {
   position: absolute;
   inset: 0 16px 0 44px;
@@ -1377,8 +1355,7 @@
 
 /* Popovers ----------------------------------------------------------------- */
 
-.timeline-calendar-popover,
-.timeline-view-popover {
+.timeline-calendar-popover {
   position: fixed;
   z-index: 1250;
   border: 1px solid
@@ -1518,36 +1495,6 @@
     --dante-semantic-color-home-chrome-active-soft,
     rgba(234, 92, 18, 0.095)
   );
-}
-
-.timeline-view-popover {
-  display: grid;
-  width: 232px;
-  gap: 9px;
-  padding: 12px;
-  border-radius: 13px;
-  font-size: 9px;
-}
-
-.timeline-view-popover strong {
-  font-size: 10px;
-}
-
-.timeline-view-popover label {
-  display: flex;
-  align-items: center;
-  gap: 7px;
-  color: var(--dante-semantic-color-home-text-secondary, #b2bdc1);
-}
-
-.timeline-view-popover > button {
-  margin-top: 3px;
-  padding: 7px;
-  border: 0;
-  border-radius: 8px;
-  color: var(--dante-semantic-color-home-chrome-active-text, #f0a06f);
-  background: var(--dante-semantic-color-home-surface-control, #202b30);
-  cursor: pointer;
 }
 
 /* Modal and feedback ------------------------------------------------------- */
@@ -2865,7 +2812,6 @@ body:has(> .timeline-recurring-edit-scope-dialog__backdrop)
 @media (prefers-reduced-motion: reduce) {
   .home-timeline--production *,
   .timeline-calendar-popover *,
-  .timeline-view-popover *,
   .timeline-move-toast {
     scroll-behavior: auto !important;
     transition-duration: 0.001ms !important;

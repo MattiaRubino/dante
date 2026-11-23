@@ -449,13 +449,6 @@ export const home = {
       go: 'Return to now',
       visible: 'Current time is already visible',
     },
-    viewOptions: {
-      label: 'View and legend',
-      margins: 'Margins between commitments',
-      now: 'Current time',
-      milestones: 'Milestones on the path',
-      reset: 'Reset default view',
-    },
     groups: {
       split: 'Split by groups',
       merge: 'Merge into timeline',

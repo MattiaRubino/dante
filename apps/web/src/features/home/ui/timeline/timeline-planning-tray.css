@@ -12,9 +12,9 @@
   .timeline-draft-vault__anchor
   > .timeline-planning-trigger {
   display: grid;
-  width: 34px;
-  min-width: 34px;
-  height: 34px;
+  width: var(--timeline-action-size);
+  min-width: var(--timeline-action-size);
+  height: var(--timeline-action-size);
   place-items: center;
   padding: 0;
   border: 0;
@@ -44,7 +44,6 @@
   max-height: min(620px, calc(100dvh - 100px));
 }
 
-.timeline-planning-trigger svg,
 .timeline-planning-tray svg {
   width: 15px;
   height: 15px;
@@ -60,15 +59,15 @@
   top: -3px;
   right: -4px;
   display: grid;
-  min-width: 15px;
-  height: 15px;
+  min-width: 19px;
+  height: 19px;
   place-items: center;
   padding: 0 4px;
   border: 2px solid #0a1220;
   border-radius: 999px;
   color: #fff;
   background: var(--dante-timeline-accent, #ea5c12);
-  font-size: 7px;
+  font-size: 10px;
   font-weight: 800;
   line-height: 1;
 }

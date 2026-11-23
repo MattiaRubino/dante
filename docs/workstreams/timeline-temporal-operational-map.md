@@ -1,5 +1,24 @@
 # Timeline / Temporal-Operational — Live Execution Ledger
 
+## 2026-11-23 — Header actions and view-options retirement
+
+The owner approved removing the obsolete «Vista e legenda» control and its
+whole view-options path, while keeping the current-time line visible on the
+current day. The optional free-time margin labels and milestone flags are
+retired with their settings, state/actions, locale copy, CSS and fixture
+test. The legacy HTML prototype's duplicate control and rendering path are
+also removed. The Timeline's calendar, group split, reset, zoom and time-zone
+controls are separate and remain available.
+
+The remaining top-right action targets are 44px with 21px glyphs and more
+legible count badges; this applies to Sessioni, groups, Bozze and the
+conditional recurrence renewal notice. The header's existing two-row
+responsive layout and the panels' current width/content remain unchanged.
+The fixture browser regression checks desktop/mobile target geometry, the
+absent view-options control and the current-time line. The owner will review
+the visual result and the panel contents in later steps. Focused TypeScript,
+browser and full local gates are **NOT_RUN** until owner WSL evidence arrives.
+
 
 ## 2026-11-23 — Main Session Stop and Save/Inspector lifecycle cleanup
 

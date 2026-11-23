@@ -15,12 +15,6 @@ import type {
   TimelineGroupId,
 } from './timeline-types';
 
-export type TimelineViewOptions = Readonly<{
-  showMargins: boolean;
-  showNow: boolean;
-  showMilestones: boolean;
-}>;
-
 type TimelineUndoGroup = 'single' | 'keyboard-nudge';
 
 type TimelineUndoSnapshot = Readonly<{
@@ -40,7 +34,6 @@ export type TimelineState = Readonly<{
   focusedEventId: TimelineEventId | null;
   expandedEventIds: ReadonlySet<TimelineEventId>;
   zoom: number;
-  viewOptions: TimelineViewOptions;
   undo: TimelineUndoSnapshot | null;
 }>;
 
@@ -66,12 +59,6 @@ export type TimelineAction =
       eventId: TimelineEventId;
     }>
   | Readonly<{ type: 'set-zoom'; zoom: number }>
-  | Readonly<{
-      type: 'set-view-option';
-      option: keyof TimelineViewOptions;
-      value: boolean;
-    }>
-  | Readonly<{ type: 'reset-view-options' }>
   | Readonly<{
       type: 'materialize-event';
       dateKey: string;
@@ -99,12 +86,6 @@ export type TimelineAction =
       undoGroup?: 'keyboard-nudge';
     }>
   | Readonly<{ type: 'undo-last-event-change' }>;
-
-const DEFAULT_VIEW_OPTIONS: TimelineViewOptions = {
-  showMargins: false,
-  showNow: true,
-  showMilestones: false,
-};
 
 function sortEvents(
   events: readonly TimelineEvent[],
@@ -143,7 +124,6 @@ export function createInitialTimelineState(
     focusedEventId: null,
     expandedEventIds: new Set<TimelineEventId>(),
     zoom: 1,
-    viewOptions: DEFAULT_VIEW_OPTIONS,
     undo: null,
   };
 }
@@ -613,18 +593,6 @@ export function timelineReducer(
 
     case 'set-zoom':
       return { ...state, zoom: clampTimelineZoom(action.zoom) };
-
-    case 'set-view-option':
-      return {
-        ...state,
-        viewOptions: {
-          ...state.viewOptions,
-          [action.option]: action.value,
-        },
-      };
-
-    case 'reset-view-options':
-      return { ...state, viewOptions: DEFAULT_VIEW_OPTIONS };
 
     case 'materialize-event':
       return materializeEvent(state, action);

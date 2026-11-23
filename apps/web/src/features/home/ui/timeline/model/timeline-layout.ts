@@ -4,7 +4,6 @@ import type {
   TimelineEvent,
   TimelineEventId,
   TimelineEventLayout,
-  TimelineGap,
   TimelineGroup,
   TimelineOverlapSlot,
   TimelineTimeMapper,
@@ -212,42 +211,4 @@ export function computeTimelineEventLayouts(
       ...group,
     };
   });
-}
-
-export function computeTimelineGaps(
-  events: readonly TimelineEvent[],
-): readonly TimelineGap[] {
-  const sorted = [...events].sort(
-    (left, right) => left.startMinute - right.startMinute,
-  );
-  const clusters: Array<{ startMinute: number; endMinute: number }> = [];
-
-  for (const event of sorted) {
-    const previous = clusters.at(-1);
-    if (previous && event.startMinute < previous.endMinute) {
-      previous.endMinute = Math.max(previous.endMinute, event.endMinute);
-    } else {
-      clusters.push({
-        startMinute: event.startMinute,
-        endMinute: event.endMinute,
-      });
-    }
-  }
-
-  const gaps: TimelineGap[] = [];
-  for (let index = 0; index < clusters.length - 1; index += 1) {
-    const cluster = clusters[index];
-    const next = clusters[index + 1];
-    if (!cluster || !next) {
-      continue;
-    }
-
-    gaps.push({
-      fromMinute: cluster.endMinute,
-      toMinute: next.startMinute,
-      durationMinutes: next.startMinute - cluster.endMinute,
-    });
-  }
-
-  return gaps;
 }

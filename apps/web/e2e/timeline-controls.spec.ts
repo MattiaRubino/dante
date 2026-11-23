@@ -164,64 +164,24 @@ test('keyboard group reorder moves exactly one slot and remains reversible', asy
   await expect(creativity).toBeFocused();
 });
 
-test('view options toggle real Timeline layers, reset defaults, and restore trigger focus', async ({
-  page,
-}) => {
-  await page.setViewportSize({ width: 1440, height: 900 });
-  await page.goto('/home');
+test('header actions grow while the Now line stays visible', async ({ page }) => {
+  for (const width of [1440, 390]) {
+    await page.setViewportSize({ width, height: 900 });
+    await page.goto('/home');
 
-  const trigger = page.getByRole('button', { name: 'Vista e legenda' });
-  const nowLine = page.locator('.timeline-now-line');
-  const milestones = page.locator('.timeline-milestone');
-  const margins = page.locator('.timeline-margin-label');
-
-  await expect(nowLine).toHaveCount(1);
-  await expect(milestones).toHaveCount(0);
-  await expect(margins).toHaveCount(0);
-
-  await trigger.click();
-  const dialog = page.getByRole('dialog', { name: 'Vista e legenda' });
-  await expect(dialog).toBeVisible();
-
-  const marginsOption = dialog.getByRole('checkbox', {
-    name: 'Margini tra impegni',
-  });
-  const nowOption = dialog.getByRole('checkbox', { name: 'Ora corrente' });
-  const milestonesOption = dialog.getByRole('checkbox', {
-    name: 'Milestone sul percorso',
-  });
-
-  await expect(marginsOption).not.toBeChecked();
-  await expect(nowOption).toBeChecked();
-  await expect(milestonesOption).not.toBeChecked();
-
-  await milestonesOption.check();
-  await expect(milestones).toHaveCount(2);
-  await marginsOption.check();
-  await expect.poll(() => margins.count()).toBeGreaterThan(0);
-
-  await nowOption.uncheck();
-  await expect(nowLine).toHaveCount(0);
-
-  await milestonesOption.uncheck();
-  await expect(milestones).toHaveCount(0);
-
-  await marginsOption.uncheck();
-  await expect(margins).toHaveCount(0);
-
-  await dialog
-    .getByRole('button', { name: 'Ripristina vista predefinita' })
-    .click();
-  await expect(marginsOption).not.toBeChecked();
-  await expect(nowOption).toBeChecked();
-  await expect(milestonesOption).not.toBeChecked();
-  await expect(nowLine).toHaveCount(1);
-  await expect(milestones).toHaveCount(0);
-  await expect(margins).toHaveCount(0);
-
-  await page.keyboard.press('Escape');
-  await expect(dialog).toHaveCount(0);
-  await expect(trigger).toBeFocused();
+    await expect(page.locator('.timeline-now-line')).toHaveCount(1);
+    await expect(
+      page.getByRole('button', { name: 'Vista e legenda' }),
+    ).toHaveCount(0);
+    const group = page.getByRole('button', { name: 'Separa per gruppi' });
+    const drafts = page.getByRole('button', { name: 'Apri Bozze' });
+    for (const action of [group, drafts]) {
+      await expect(action).toHaveCSS('width', '44px');
+      await expect(action).toHaveCSS('height', '44px');
+      await expect(action.locator('svg')).toHaveCSS('width', '21px');
+      await expect(action).toBeInViewport();
+    }
+  }
 });
 
 test('split and merge remain reversible without mutating group order', async ({

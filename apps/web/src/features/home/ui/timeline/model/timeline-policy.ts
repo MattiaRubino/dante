@@ -120,9 +120,6 @@ export const TIMELINE_POLICY = {
   grid: {
     minorLineIntervalMinutes: 15,
     majorLineIntervalMinutes: 60,
-    milestoneMinutes: [9 * 60, 18 * 60],
-    marginLabelCutoffMinute: 20 * 60,
-    marginLabelOffsetPx: 4,
   },
   layout: {
     rulerWidthPx: 84,

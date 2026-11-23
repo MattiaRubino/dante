@@ -56,7 +56,6 @@ import {
   type TimelineCalendarCursor,
   type TimelineCalendarLevel,
 } from './model/timeline-calendar';
-import type { TimelineViewOptions } from './model/timeline-state';
 import {
   formatTimelineMinute,
   isSameTimelineDate,
@@ -482,101 +481,6 @@ export function CalendarPopover({
           {t(($) => $.common.home.timeline.calendar.today)}
         </button>
       </div>
-    </div>,
-    document.body,
-  );
-}
-
-type ViewOptionsPopoverProps = Readonly<{
-  open: boolean;
-  triggerRef: RefObject<HTMLButtonElement | null>;
-  options: TimelineViewOptions;
-  onChange: (option: keyof TimelineViewOptions, value: boolean) => void;
-  onReset: () => void;
-  onClose: (restoreFocus?: boolean) => void;
-}>;
-
-export function ViewOptionsPopover({
-  open,
-  triggerRef,
-  options,
-  onChange,
-  onReset,
-  onClose,
-}: ViewOptionsPopoverProps) {
-  const { t } = useTranslation('common');
-  const popoverRef = useRef<HTMLDivElement | null>(null);
-  const [position, setPosition] = useState<PopoverPosition>({
-    left: 0,
-    top: 0,
-    placement: 'bottom',
-  });
-
-  useLayoutEffect(() => {
-    if (!open || !triggerRef.current) {
-      return;
-    }
-    const update = () => {
-      if (triggerRef.current) {
-        setPosition(positionNearAnchor(triggerRef.current, 232, 196));
-      }
-    };
-    update();
-    window.addEventListener('resize', update);
-    window.addEventListener('scroll', update, true);
-    return () => {
-      window.removeEventListener('resize', update);
-      window.removeEventListener('scroll', update, true);
-    };
-  }, [open, triggerRef]);
-
-  useDismissablePopover(open, popoverRef, triggerRef, onClose);
-
-  if (!open) {
-    return null;
-  }
-
-  return createPortal(
-    <div
-      ref={popoverRef}
-      className="timeline-view-popover"
-      role="dialog"
-      aria-label={t(($) => $.common.home.timeline.viewOptions.label)}
-      data-placement={position.placement}
-      style={{ left: position.left, top: position.top }}
-    >
-      <strong>{t(($) => $.common.home.timeline.viewOptions.label)}</strong>
-      <label>
-        <input
-          type="checkbox"
-          checked={options.showMargins}
-          onChange={(event) =>
-            onChange('showMargins', event.currentTarget.checked)
-          }
-        />
-        {t(($) => $.common.home.timeline.viewOptions.margins)}
-      </label>
-      <label>
-        <input
-          type="checkbox"
-          checked={options.showNow}
-          onChange={(event) => onChange('showNow', event.currentTarget.checked)}
-        />
-        {t(($) => $.common.home.timeline.viewOptions.now)}
-      </label>
-      <label>
-        <input
-          type="checkbox"
-          checked={options.showMilestones}
-          onChange={(event) =>
-            onChange('showMilestones', event.currentTarget.checked)
-          }
-        />
-        {t(($) => $.common.home.timeline.viewOptions.milestones)}
-      </label>
-      <button type="button" onClick={onReset}>
-        {t(($) => $.common.home.timeline.viewOptions.reset)}
-      </button>
     </div>,
     document.body,
   );

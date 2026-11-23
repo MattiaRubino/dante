@@ -95,7 +95,6 @@ Historical `home.stage.worlds` / `home.stage.stats` implementation vocabulary is
 | `home.timeline.calendar` | mese/anno | ACTIVE | Opens calendar/date navigation; viewed day is distinct from real/current “today”. |
 | `home.timeline.now` | Ora | ACTIVE | Returns temporal viewport toward current day/time context within the existing frontend behavior. |
 | `home.timeline.quickAdd` | + | PROTOTYPE_ONLY | Real contextual timeline affordance. Final production date/time prefill, destination, command and persistence semantics are explicitly not defined yet. |
-| `home.timeline.viewOptions` | Vista e legenda | ACTIVE | Opens view-options popover. |
 | `home.timeline.splitGroups` | — | ACTIVE | Separates/rejoins timeline by groups while preserving temporal semantics. |
 | `home.timeline.resetView` | — | ACTIVE | Restores group/focus view state. |
 | `home.timeline.groupFilters` | Focus, Riunioni, Salute, Creatività, Personale, Urgenze | ACTIVE | Visibility/group controls; historical prototype group vocabulary, not domain taxonomy. |
@@ -149,7 +148,6 @@ The accepted rail must **not** become:
 | `home.overlay.launcher` | launcher | ACTIVE | Shared AppShell launcher using real application routes. |
 | `home.overlay.account` | account menu | ACTIVE / DEFERRED SESSION | Profile/settings routing is real; identity/session/logout is deferred to Access/Auth. |
 | `home.overlay.calendar` | calendar popover | ACTIVE | Date navigation; P2 owns viewed-day production-depth state/routing semantics. |
-| `home.overlay.timelineOptions` | Vista e legenda | ACTIVE | Timeline view controls. |
 | `home.overlay.timePicker` | Inizio/Fine | ACTIVE | Anchored precise time editing in current frontend behavior. |
 | `home.overlay.eventDetail` | event detail | ACTIVE | Event detail surface in the existing Home lineage. |
 | `home.feedback.moveToast` | Annulla | ACTIVE | Temporary feedback + undo. |

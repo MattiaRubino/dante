@@ -322,6 +322,8 @@
 }
 
 .dante-timeline-actions {
+  --timeline-action-size: 44px;
+  --timeline-action-icon-size: 21px;
   grid-area: actions;
   position: relative;
   display: flex;
@@ -332,9 +334,9 @@
 
 .dante-timeline-actions > button {
   display: grid;
-  width: 34px;
-  min-width: 34px;
-  height: 34px;
+  width: var(--timeline-action-size);
+  min-width: var(--timeline-action-size);
+  height: var(--timeline-action-size);
   place-items: center;
   padding: 0;
   border: 0;
@@ -388,7 +390,19 @@
   visibility: visible;
 }
 
-.dante-timeline-actions svg,
+.dante-timeline-actions > button > svg,
+.dante-timeline-actions .timeline-session-panel__toggle > svg,
+.dante-timeline-actions .timeline-planning-trigger > svg,
+.dante-timeline-actions .timeline-renewals > button > svg {
+  width: var(--timeline-action-icon-size);
+  height: var(--timeline-action-icon-size);
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.7;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
 .dante-timeline-group-reset svg {
   width: 14px;
   height: 14px;
