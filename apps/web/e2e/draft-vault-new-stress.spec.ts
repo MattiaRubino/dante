@@ -201,6 +201,29 @@ test('DV-STRESS-08 100 mixed drafts: bounded vertical scroll, fixed search, unti
   const panel = await vault(page);
   await expect(panel.locator('article')).toHaveCount(100);
   await expect(panel).toContainText('100/100');
+  const headerLayout = await panel
+    .locator('.timeline-planning-tray__header')
+    .evaluate((header) => {
+      const title = header.querySelector('h2')!.getBoundingClientRect();
+      const count = header
+        .querySelector<HTMLElement>('.timeline-planning-tray__capacity')!
+        .getBoundingClientRect();
+      const close = header
+        .querySelector<HTMLButtonElement>('.timeline-planning-tray__close')!
+        .getBoundingClientRect();
+      return {
+        titleBottom: title.bottom,
+        countTop: count.top,
+        closeTop: close.top,
+        closeLeft: close.left,
+        titleRight: title.right,
+        dividerWidth: getComputedStyle(header).borderBottomWidth,
+      };
+    });
+  expect(headerLayout.closeTop).toBeLessThan(headerLayout.titleBottom);
+  expect(headerLayout.closeLeft).toBeGreaterThan(headerLayout.titleRight);
+  expect(headerLayout.countTop).toBeGreaterThanOrEqual(headerLayout.titleBottom);
+  expect(headerLayout.dividerWidth).toBe('1px');
   const list = panel.locator('.timeline-planning-tray__body');
   const search = panel.getByRole('searchbox', { name: 'Cerca Bozze' });
   const initialGeometry = await panel.evaluate((node) => {

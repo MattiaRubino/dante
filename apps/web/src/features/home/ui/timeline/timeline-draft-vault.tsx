@@ -210,13 +210,15 @@ export function TimelineDraftVault({
       aria-label="Bozze"
     >
       <header className="timeline-planning-tray__header">
-        <h2>Bozze</h2>
-        <span
-          className="timeline-planning-tray__capacity"
-          aria-label={`${items.length} Bozze su ${DRAFT_VAULT_MAX_ITEMS} disponibili`}
-        >
-          {items.length}/{DRAFT_VAULT_MAX_ITEMS}
-        </span>
+        <div className="timeline-planning-tray__heading">
+          <h2>Bozze</h2>
+          <span
+            className="timeline-planning-tray__capacity"
+            aria-label={`${items.length} Bozze su ${DRAFT_VAULT_MAX_ITEMS} disponibili`}
+          >
+            {items.length}/{DRAFT_VAULT_MAX_ITEMS}
+          </span>
+        </div>
         <button
           type="button"
           aria-label="Chiudi Bozze"

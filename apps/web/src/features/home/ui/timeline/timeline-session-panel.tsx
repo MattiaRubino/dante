@@ -35,10 +35,7 @@ export function useSessionPanelPresentation(
         }}
       >
         <header>
-          <div>
-            <strong>Sessioni</strong>
-            <span>Imminenti, in corso o in pausa</span>
-          </div>
+          <strong>Sessioni</strong>
           <button
             type="button"
             onClick={close}

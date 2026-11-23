@@ -142,6 +142,7 @@ describe('Timeline Session panel integration', () => {
     ]);
     fireEvent(window, new Event('focus'));
     expect(await screen.findByRole('complementary')).toBeTruthy();
+    expect(screen.queryByText('Imminenti, in corso o in pausa')).toBeNull();
     expect(screen.getAllByRole('region', { name: 'Studio' })).toHaveLength(1);
     expect(screen.getAllByRole('listitem')).toHaveLength(2);
     const trigger = screen.getByRole('button', {

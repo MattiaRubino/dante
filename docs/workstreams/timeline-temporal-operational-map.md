@@ -1,5 +1,18 @@
 # Timeline / Temporal-Operational — Live Execution Ledger
 
+## 2026-11-23 — Vault header and Session panel typography
+
+The Vault header now groups the smaller `N/100` count below “Bozze”, keeps
+the close control in the upper right column, and retains the separator above
+the fixed search field. The existing DV-STRESS-08 browser case checks this
+geometry alongside scrolling. The Session panel removes the redundant
+subtitle and enlarges its header, activity names, Session names and statuses;
+its commands, statuses and grouping logic remain unchanged. The existing
+Session component test checks the subtitle is absent. A proposed card layout
+for Session rows awaits owner choice before implementation. Focused browser
+and unit checks on this change are **NOT_RUN** in the cloud workspace (the
+required pinned Node/pnpm versions are unavailable); no green claim is made.
+
 
 ## 2026-11-23 — Vault capacity popup: prevent phantom Create discard (DV-STRESS-09)
 
