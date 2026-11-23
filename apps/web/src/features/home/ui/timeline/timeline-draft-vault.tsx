@@ -6,9 +6,68 @@ import {
   DRAFT_VAULT_UPDATED,
   type DraftVaultItem,
 } from '../../../temporal-create/application/remote-draft-vault';
+import { TemporalKindMarker } from '../../../temporal-create/ui/temporal-kind-marker';
 import { subscribeTemporalPlanningInvalidation } from '../../../temporal/timeline-invalidation';
 
 import './timeline-planning-tray.css';
+
+const draftDateFormatter = new Intl.DateTimeFormat('it-IT', {
+  day: 'numeric',
+  month: 'short',
+  timeZone: 'UTC',
+});
+
+function draftDateLabel(value: string): string | null {
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(value)) return null;
+  const date = new Date(`${value}T12:00:00Z`);
+  return Number.isNaN(date.getTime()) ? null : draftDateFormatter.format(date);
+}
+
+function draftScheduleLabel(item: DraftVaultItem): string {
+  const fields = item.payload.fields;
+  if (fields.timeSemantics === 'unscheduled') return 'Senza orario';
+  const date = draftDateLabel(fields.date);
+  if (!date) return 'Data da definire';
+
+  if (fields.timeSemantics === 'all-day') {
+    const end =
+      item.subjectKind === 'event'
+        ? draftDateLabel(fields.event.allDayEndDate)
+        : null;
+    return end && end !== date
+      ? `Tutto il giorno · ${date}–${end}`
+      : `Tutto il giorno · ${date}`;
+  }
+  if (fields.timeSemantics === 'coarse') {
+    const period = {
+      morning: 'Mattina',
+      afternoon: 'Pomeriggio',
+      evening: 'Sera',
+    }[fields.coarsePeriod];
+    return `${period ?? 'Periodo indicativo'} · ${date}`;
+  }
+
+  const match = /^(\d{2}):(\d{2})$/.exec(fields.startTime);
+  if (
+    !match ||
+    !Number.isSafeInteger(fields.durationMinutes) ||
+    fields.durationMinutes < 0
+  )
+    return date;
+  const startMinute = Number(match[1]) * 60 + Number(match[2]);
+  if (startMinute >= 1440 || Number(match[2]) >= 60) return date;
+  const endMinute = startMinute + fields.durationMinutes;
+  if (endMinute < startMinute) return date;
+  const clock = (minute: number) =>
+    `${String(Math.floor(minute / 60) % 24).padStart(2, '0')}:${String(minute % 60).padStart(2, '0')}`;
+  const endDayOffset = Math.floor(endMinute / 1440);
+  if (endDayOffset === 0) {
+    return `${fields.startTime}–${clock(endMinute)} · ${date}`;
+  }
+  const endDate = new Date(`${fields.date}T12:00:00Z`);
+  endDate.setUTCDate(endDate.getUTCDate() + endDayOffset);
+  return `${fields.startTime}–${clock(endMinute)} · ${date}–${draftDateFormatter.format(endDate)}`;
+}
 
 export function TimelineDraftVault({
   onOpen,
@@ -142,16 +201,7 @@ export function TimelineDraftVault({
       aria-label="Bozze"
     >
       <header className="timeline-planning-tray__header">
-        <div>
-          <span className="timeline-planning-tray__kicker">
-            DANTE · Cassaforte
-          </span>
-          <h2>Bozze</h2>
-          <p>
-            Configurazioni conservate. Nessuna Sessione, notifica o ricorrenza è
-            attiva.
-          </p>
-        </div>
+        <h2>Bozze</h2>
         <button
           type="button"
           aria-label="Chiudi Bozze"
@@ -165,7 +215,7 @@ export function TimelineDraftVault({
         <span className="home-visually-hidden">Cerca Bozze</span>
         <input
           type="search"
-          placeholder="Cerca…"
+          placeholder="Cerca bozze…"
           value={query}
           onChange={(event) => setQuery(event.target.value)}
         />
@@ -186,20 +236,32 @@ export function TimelineDraftVault({
         ) : null}
         {filtered.length === 0 && !failure ? (
           <div className="timeline-planning-empty">
-            <strong>Nessuna bozza</strong>
-            <p>Usa «Salva bozza» durante la creazione.</p>
+            <strong>
+              {items.length ? 'Nessuna bozza trovata' : 'Nessuna bozza'}
+            </strong>
+            {items.length ? null : (
+              <p>Usa «Salva bozza» durante la creazione.</p>
+            )}
           </div>
         ) : null}
         {filtered.map((item) => (
           <article
             key={item.draftRef}
-            className="timeline-planning-card timeline-planning-card--session"
+            className="timeline-planning-card timeline-planning-card--draft"
+            data-timeline-tone={
+              item.payload.fields.appearanceTone ?? 'personal'
+            }
           >
             <div className="timeline-planning-card__main">
               <div className="timeline-planning-card__copy">
-                <strong>{item.title || 'Senza titolo'}</strong>
+                <strong>
+                  <TemporalKindMarker kind={item.subjectKind} />
+                  <span>{item.title || 'Senza titolo'}</span>
+                </strong>
+                <span className="timeline-planning-card__schedule">
+                  {draftScheduleLabel(item)}
+                </span>
                 <span className="timeline-planning-card__policy">
-                  {item.subjectKind === 'activity' ? 'Attività' : 'Evento'} ·
                   Non attiva
                 </span>
               </div>

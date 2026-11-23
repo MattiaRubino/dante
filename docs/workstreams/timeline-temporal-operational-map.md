@@ -1,5 +1,21 @@
 # Timeline / Temporal-Operational — Live Execution Ledger
 
+## 2026-11-23 — Draft Vault panel and card presentation
+
+The owner clarified that “X” means an open-ended number of saved drafts, not
+the close control. The Draft Vault keeps its close action but shows only the
+“Bozze” heading above the search. The panel is up to 520px wide and responsive.
+The search adopts the established time-zone field proportions and filters
+titles immediately. Only the list below it scrolls, at a capped height with a
+stable scrollbar gutter; the heading and search remain visible for many drafts.
+
+Draft cards use the Timeline's activity/event kind marker, appearance tone,
+title and stored date/time intent. They retain the inert status and the
+existing Riprendi, Duplica and Elimina actions beneath the content. The
+browser fixture checks desktop/mobile geometry and independent list scrolling;
+the component test checks timed/all-day previews and filtering. Web typecheck,
+Vitest and browser execution remain **NOT_RUN** pending owner WSL evidence.
+
 ## 2026-11-23 — Header actions and view-options retirement
 
 The owner approved removing the obsolete «Vista e legenda» control and its

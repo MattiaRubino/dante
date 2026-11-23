@@ -5,10 +5,12 @@ import {
   render,
   screen,
   waitFor,
+  within,
 } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import { TimelineDraftVault } from './timeline-draft-vault';
+import { createTemporalCreateFields } from '../../../temporal-create/model/temporal-create-session';
 
 const sources = vi.hoisted(() => ({
   list: vi.fn(),
@@ -28,7 +30,13 @@ const draft = {
   subjectKind: 'activity' as const,
   payload: {
     version: 1 as const,
-    fields: { title: 'Allenamento', kind: 'activity' },
+    fields: createTemporalCreateFields({
+      title: 'Allenamento',
+      kind: 'activity',
+      date: '2026-11-23',
+      startTime: '10:00',
+      durationMinutes: 30,
+    }),
     advanced: { objectives: [] },
     surface: 'full' as const,
   },
@@ -58,6 +66,8 @@ describe('Timeline Draft Vault', () => {
     expect(panel.parentElement).toBe(trigger.parentElement);
     expect(trigger.getAttribute('data-timeline-tooltip')).toBe('Bozze');
     expect(await screen.findByText('Allenamento')).toBeTruthy();
+    expect(panel.textContent).toContain('10:00–10:30 · 23 nov');
+    expect(panel.querySelector('[data-temporal-kind-marker="activity"]')).toBeTruthy();
     expect(screen.queryByRole('button', { name: 'Play' })).toBeNull();
     expect(
       screen.queryByRole('button', { name: /elementi già creati/i }),
@@ -68,6 +78,60 @@ describe('Timeline Draft Vault', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Riprendi' }));
     expect(onOpen).toHaveBeenCalledWith(draft, false);
     expect(sources.remove).not.toHaveBeenCalled();
+  });
+
+  it('filters saved activity and all-day event cards as the search changes', async () => {
+    const event = {
+      ...draft,
+      draftRef: 'draft-2',
+      title: 'Conferenza',
+      subjectKind: 'event' as const,
+      payload: {
+        ...draft.payload,
+        fields: createTemporalCreateFields({
+          title: 'Conferenza',
+          kind: 'event',
+          date: '2026-11-24',
+          timeSemantics: 'all-day',
+        }),
+      },
+    };
+    const overnight = {
+      ...draft,
+      draftRef: 'draft-3',
+      title: 'Turno serale',
+      payload: {
+        ...draft.payload,
+        fields: createTemporalCreateFields({
+          title: 'Turno serale',
+          kind: 'activity',
+          date: '2026-11-23',
+          startTime: '23:30',
+          durationMinutes: 120,
+        }),
+      },
+    };
+    sources.list.mockResolvedValueOnce([draft, event, overnight]);
+    render(
+      <>
+        <div className="dante-timeline-actions" />
+        <TimelineDraftVault onOpen={() => undefined} />
+      </>,
+    );
+    fireEvent.click(await screen.findByRole('button', { name: 'Apri Bozze' }));
+    const panel = screen.getByRole('complementary', { name: 'Bozze' });
+    expect(within(panel).getByRole('heading', { name: 'Bozze' })).toBeTruthy();
+    expect(panel.textContent).not.toContain('DANTE · Cassaforte');
+    expect(panel.textContent).toContain('Tutto il giorno · 24 nov');
+    expect(panel.textContent).toContain('23:30–01:30 · 23 nov–24 nov');
+    expect(panel.querySelector('[data-temporal-kind-marker="event"]')).toBeTruthy();
+
+    fireEvent.change(within(panel).getByRole('searchbox', { name: 'Cerca Bozze' }), {
+      target: { value: 'conf' },
+    });
+    expect(within(panel).getAllByRole('article')).toHaveLength(1);
+    expect(within(panel).queryByText('Allenamento')).toBeNull();
+    expect(within(panel).getByText('Conferenza')).toBeTruthy();
   });
 
   it('requires confirmation before deleting the inert vault row', async () => {

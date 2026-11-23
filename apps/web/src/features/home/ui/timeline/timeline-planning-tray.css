@@ -40,8 +40,9 @@
   right: 0;
   bottom: auto;
   left: auto;
-  width: min(390px, calc(100vw - 24px));
-  max-height: min(620px, calc(100dvh - 100px));
+  grid-template-rows: auto auto minmax(0, 1fr);
+  width: min(520px, calc(100vw - 24px));
+  max-height: min(680px, calc(100dvh - 100px));
 }
 
 .timeline-planning-tray svg {
@@ -209,6 +210,130 @@
   overscroll-behavior: contain;
   scrollbar-width: thin;
   scrollbar-color: rgba(255, 255, 255, 0.12) transparent;
+}
+
+.timeline-draft-vault__anchor .timeline-planning-tray__header {
+  align-items: center;
+  padding: 18px 20px 12px;
+}
+
+.timeline-draft-vault__anchor .timeline-planning-tray__header h2 {
+  margin: 0;
+}
+
+.timeline-draft-vault__anchor .timeline-planning-tray__search {
+  display: block;
+  margin: 14px 20px 4px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+}
+
+.timeline-draft-vault__anchor .timeline-planning-tray__search input {
+  box-sizing: border-box;
+  width: 100%;
+  height: 42px;
+  padding: 0 12px;
+  border: 1px solid var(--dante-semantic-color-home-border-subtle, #31424a);
+  border-radius: 8px;
+  color: var(--dante-semantic-color-home-text-primary, #e8eef8);
+  background: var(--dante-temporal-editor-field-surface, #202f37);
+  font-size: 14px;
+  outline: none;
+}
+
+.timeline-draft-vault__anchor .timeline-planning-tray__search input:focus-visible {
+  border-color: #84baff;
+  box-shadow: 0 0 0 2px rgba(132, 186, 255, 0.32);
+}
+
+.timeline-draft-vault__anchor .timeline-planning-tray__body {
+  max-height: min(440px, calc(100dvh - 220px));
+  padding: 12px 16px 16px 20px;
+  scrollbar-gutter: stable;
+  scrollbar-color: #566a76 transparent;
+}
+
+.timeline-draft-vault__anchor .timeline-planning-tray__body::-webkit-scrollbar {
+  width: 8px;
+}
+
+.timeline-draft-vault__anchor .timeline-planning-tray__body::-webkit-scrollbar-thumb {
+  border-radius: 8px;
+  background: #566a76;
+}
+
+.timeline-draft-vault__anchor .timeline-planning-card--draft {
+  grid-template-columns: minmax(0, 1fr);
+  gap: 4px;
+  margin-bottom: 10px;
+  padding: 10px 12px 11px;
+  border-radius: 10px;
+  background: color-mix(
+    in srgb,
+    var(--timeline-group-color) 3.5%,
+    var(--dante-semantic-color-home-surface-primary, #151d21)
+  );
+  box-shadow: inset 3px 0 0 var(--timeline-group-color);
+}
+
+.timeline-draft-vault__anchor .timeline-planning-card--draft:last-child {
+  margin-bottom: 0;
+}
+
+.timeline-draft-vault__anchor .timeline-planning-card--draft .timeline-planning-card__main {
+  display: block;
+  min-height: 54px;
+  padding: 3px 2px;
+  cursor: default;
+  touch-action: auto;
+  user-select: text;
+}
+
+.timeline-draft-vault__anchor .timeline-planning-card--draft .timeline-planning-card__copy {
+  gap: 5px;
+  cursor: default;
+}
+
+.timeline-draft-vault__anchor .timeline-planning-card--draft .timeline-planning-card__copy > strong {
+  display: flex;
+  align-items: center;
+  min-width: 0;
+  gap: 6px;
+  font-size: 13px;
+  text-decoration: none;
+}
+
+.timeline-draft-vault__anchor .timeline-planning-card--draft .timeline-planning-card__copy > strong > span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.timeline-draft-vault__anchor .timeline-planning-card--draft .temporal-kind-marker {
+  font-size: 13px;
+}
+
+.timeline-draft-vault__anchor .timeline-planning-card__schedule {
+  color: var(--dante-semantic-color-home-text-secondary, #b2bdc1);
+  font-size: 11px;
+  font-variant-numeric: tabular-nums;
+}
+
+.timeline-draft-vault__anchor .timeline-planning-card--draft .timeline-planning-card__policy {
+  font-size: 10px;
+}
+
+.timeline-draft-vault__anchor .timeline-planning-card--draft .timeline-planning-card__actions {
+  gap: 7px;
+  padding: 2px 2px 0;
+}
+
+.timeline-draft-vault__anchor .timeline-planning-card--draft .timeline-planning-card__actions button {
+  min-width: 0;
+  height: 32px;
+  padding: 0 11px;
+  font-size: 11px;
 }
 
 .timeline-planning-card,
@@ -626,7 +751,7 @@ html[data-timeline-planning-mode='true'] .home-timeline--production {
     left: 12px;
     width: auto;
     max-width: calc(100vw - 24px);
-    max-height: min(620px, calc(100dvh - 90px));
+    max-height: min(680px, calc(100dvh - 90px));
     border: 1px solid rgba(255, 255, 255, 0.095);
     border-radius: 20px;
   }

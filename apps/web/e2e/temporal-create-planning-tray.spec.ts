@@ -113,6 +113,52 @@ function draft(vault: ReturnType<Page['locator']>, title: string) {
   return vault.locator('article').filter({ hasText: title });
 }
 
+test('Draft Vault keeps search fixed while many full-size cards scroll and filter live', async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await page.goto('/home');
+  const records = await installDraftVaultFixture(page);
+  await saveDraft(page, 'Bozza 1');
+  const seed = [...records.values()][0]!;
+  for (let index = 2; index <= 8; index += 1) {
+    const ref = `draft-${index}`;
+    records.set(ref, { ...seed, draft_ref: ref, title: `Bozza ${index}` });
+  }
+
+  const vault = await openDraftVault(page);
+  await expect(vault.locator('article')).toHaveCount(8);
+  const search = vault.getByRole('searchbox', { name: 'Cerca Bozze' });
+  const list = vault.locator('.timeline-planning-tray__body');
+  const geometry = await vault.evaluate((panel) => {
+    const input = panel.querySelector<HTMLInputElement>('input[type="search"]')!;
+    const body = panel.querySelector<HTMLElement>('.timeline-planning-tray__body')!;
+    return {
+      width: panel.getBoundingClientRect().width,
+      inputHeight: input.getBoundingClientRect().height,
+      searchBottom: input.getBoundingClientRect().bottom,
+      listTop: body.getBoundingClientRect().top,
+      listClientHeight: body.clientHeight,
+      listScrollHeight: body.scrollHeight,
+      scrollbarGutter: getComputedStyle(body).scrollbarGutter,
+    };
+  });
+  expect(geometry.width).toBeGreaterThanOrEqual(500);
+  expect(geometry.inputHeight).toBe(42);
+  expect(geometry.searchBottom).toBeLessThan(geometry.listTop);
+  expect(geometry.listScrollHeight).toBeGreaterThan(geometry.listClientHeight);
+  expect(geometry.scrollbarGutter).toBe('stable');
+
+  await search.fill('bozza 7');
+  await expect(vault.locator('article')).toHaveCount(1);
+  await expect(draft(vault, 'Bozza 7')).toBeVisible();
+  await expect(list).not.toContainText('Bozza 1');
+
+  await page.setViewportSize({ width: 390, height: 800 });
+  await expect(vault).toBeInViewport();
+  await expect(search).toBeInViewport();
+});
+
 test('saving a Draft never creates an executable Timeline card and Resume preserves its identity', async ({
   page,
 }) => {
