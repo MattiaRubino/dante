@@ -107,6 +107,7 @@ export function EventInspectorActions({
   placementMaterialStateRef = null,
   onDeleted,
   onDuplicate,
+  onVaultMoved,
   onCancelScope,
   onVaultReviewChange,
   onEditorStateChange,
@@ -122,6 +123,7 @@ export function EventInspectorActions({
   scheduleRef?: string | null;
   placementMaterialStateRef?: string | null;
   onDeleted?: () => void;
+  onVaultMoved?: (kind: 'activity' | 'event', nativeRef: string) => void;
   onDuplicate: (seed: ActivityDuplicateSeed) => void;
   onCancelScope?: () => void;
   onVaultReviewChange?: (active: boolean) => void;
@@ -2052,13 +2054,13 @@ export function EventInspectorActions({
             setBusy(true);
             setError('');
             void draftVault
-              .move(vaultMove.snapshot, eventRef, vaultMove.fingerprint, null)
-              .then(() => {
-                notifyDraftVaultUpdated();
+              .move(vaultMove.snapshot, eventRef, vaultMove.fingerprint, null, () => {
                 setVaultMove(null);
                 onVaultReviewChange?.(false);
-                if (onDeleted) onDeleted();
+                if (onVaultMoved) onVaultMoved('event', eventRef);
+                else if (onDeleted) onDeleted();
                 else window.location.reload();
+                notifyDraftVaultUpdated();
               })
               .catch((reason: unknown) => {
                 setError(

@@ -129,6 +129,7 @@ export function createRemoteDraftVault(
       sourceRef: string,
       fingerprint: string,
       expectedProfileRevision: number | null,
+      onCommitted?: () => void,
     ): Promise<DraftVaultItem> {
       // This single backend transaction saves the inert Draft and hard-deletes
       // the source. Never stage a separate client-side save/retire sequence.
@@ -162,6 +163,10 @@ export function createRemoteDraftVault(
         );
       }
       const result = parseItem(await response.json());
+      // The server has committed an atomic hard move. Remove its card from
+      // presentation state BEFORE invalidating Timeline/Area projections.
+      // Otherwise a transient refetch can repaint the doomed card uncolored.
+      onCommitted?.();
       invalidateTemporalTimelineRead();
       invalidateTemporalPlanningRead();
       if (typeof window !== 'undefined')

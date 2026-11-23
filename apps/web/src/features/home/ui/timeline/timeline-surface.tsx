@@ -48,6 +48,10 @@ import { REVIEW_QUEUE_INVALIDATED } from '../context-rail/review-events';
 import { useSessionPanel } from '../../../temporal/use-session-panel';
 import { useSessionPanelPresentation } from './timeline-session-panel';
 import { TimelineRecurrenceRenewals } from './timeline-recurrence-renewals';
+import {
+  movedVaultSubjectKey,
+  wasMovedToVault,
+} from './timeline-vault-move-visibility';
 import { applyTimelineSessionReality } from './timeline-session-reality';
 import {
   authoritativeDateLaneIdsToReplace,
@@ -451,6 +455,9 @@ export function TimelineSurface({
   }, [openRealityCount]);
   const [calendarOpen, setCalendarOpen] = useState(false);
   const [detailState, setDetailState] = useState<DetailState | null>(null);
+  // Confirmed hard moves must not briefly resurrect from an older Timeline
+  // window or lose their Life Area colour before being removed.
+  const movedVaultSubjectsRef = useRef<Set<string>>(new Set());
   const inspectorAppearance = useMemo(() => {
     if (!detailState) return undefined;
     const liveEvent = findTimelineEvent(state, detailState.event.id)?.event;
@@ -607,19 +614,29 @@ export function TimelineSurface({
       }>[],
     ) => {
       preserveViewportTime();
-      dispatch({ type: 'reconcile-authoritative-events', projections });
+      dispatch({
+        type: 'reconcile-authoritative-events',
+        projections: projections.filter(
+          ({ event }) =>
+            !wasMovedToVault(event.canonicalBasis, movedVaultSubjectsRef.current),
+        ),
+      });
     },
     [preserveViewportTime],
   );
   const reconcileAuthoritativeDateLane = useCallback(
     (items: readonly TimelineAllDayItem[]) => {
+      const visibleItems = items.filter(
+        (item) =>
+          !wasMovedToVault(item.canonicalBasis, movedVaultSubjectsRef.current),
+      );
       for (const itemId of authoritativeDateLaneIdsToReplace(
         state.allDayItems,
-        items,
+        visibleItems,
       )) {
         dispatch({ type: 'remove-all-day', itemId });
       }
-      for (const item of items) {
+      for (const item of visibleItems) {
         dispatch({ type: 'materialize-all-day', item });
       }
     },
@@ -2271,6 +2288,24 @@ export function TimelineSurface({
               };
             },
           );
+        }}
+        onVaultMoved={(kind, nativeRef) => {
+          // Already committed by the backend. Locally remove the card before
+          // the datasource invalidation starts reloading organization colours.
+          movedVaultSubjectsRef.current.add(
+            movedVaultSubjectKey(kind, nativeRef),
+          );
+          if (detailState) {
+            preserveViewportTime();
+            dispatch({ type: 'remove-event', eventId: detailState.event.id });
+            dispatch({ type: 'remove-all-day', itemId: detailState.event.id });
+          }
+          setDetailState(null);
+          window.dispatchEvent(new Event(REVIEW_QUEUE_INVALIDATED));
+          showScheduleNotice({
+            kind: 'status',
+            message: 'Spostato nelle Bozze.',
+          });
         }}
         onActivityDeleted={() => {
           window.dispatchEvent(new Event(REVIEW_QUEUE_INVALIDATED));

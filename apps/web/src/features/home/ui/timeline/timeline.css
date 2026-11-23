@@ -1585,7 +1585,7 @@
    (CAS snapshot and cancel state), but remove unrelated details from layout
    and accessibility. Only the Inspector close button stays in the header. */
 .timeline-event-modal--vault-review {
-  width: min(480px, calc(100vw - 24px));
+  width: min(540px, calc(100vw - 24px));
 }
 
 .timeline-event-modal--vault-review

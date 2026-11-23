@@ -65,6 +65,12 @@ draft kinds, not prematurely supported or activated.
   An Activity with child Activities is excluded until a graph-preserving move
   is explicitly designed. Planned child Sessions are not Activity children
   and remain part of the draft's planned configuration.
+- **Immediate presentation after commit:** remove the Activity/Event card
+  from the Timeline before read-model invalidations can repaint it with stale
+  Area/Session colours. A UI-only native-subject tombstone filters
+  stale timed and all-day read projections for the lifetime of the current
+  Timeline view; the authoritative backend delete
+  remains the source of truth. Failed moves leave the card in place.
 - **Active/paused/completed and recorded facts:** never a silent move.
   The in-Inspector warning appears when there are active/paused/completed Sessions
   or recorded Objective results; its action is red and requires the additional

@@ -43,6 +43,7 @@ export function ActivityInspectorActions({
   onEdit,
   onDeleted,
   onDuplicate,
+  onVaultMoved,
   onCancelScope,
   onVaultReviewChange,
   toolbarTarget = null,
@@ -54,6 +55,7 @@ export function ActivityInspectorActions({
   scheduleLabel?: string;
   onEdit: (profile: ActivityProfile, scope: RecurringProfileEditScope) => void;
   onDeleted: () => void;
+  onVaultMoved?: (kind: 'activity' | 'event', nativeRef: string) => void;
   onDuplicate: (seed: ActivityDuplicateSeed) => void;
   onCancelScope?: () => void;
   onVaultReviewChange?: (active: boolean) => void;
@@ -382,11 +384,16 @@ export function ActivityInspectorActions({
                 activityRef,
                 vaultMove.fingerprint,
                 vaultMove.profileRevision,
+                () => {
+                  // The server commit is confirmed: remove the Timeline card
+                  // before remote invalidations can repaint stale colours.
+                  setVaultMove(null);
+                  onVaultReviewChange?.(false);
+                  if (onVaultMoved) onVaultMoved('activity', activityRef);
+                  else onDeleted();
+                  notifyDraftVaultUpdated();
+                },
               );
-              notifyDraftVaultUpdated();
-              setVaultMove(null);
-              onVaultReviewChange?.(false);
-              onDeleted();
             })
           }
           onCancel={() => {

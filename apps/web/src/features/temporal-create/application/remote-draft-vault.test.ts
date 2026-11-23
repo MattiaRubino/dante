@@ -2,6 +2,7 @@ import { fetchRequestUrl } from '../../../test-support/fetch-request';
 import { fetchRequestBody } from '../../../test-support/fetch-request';
 import { describe, expect, it, vi } from 'vitest';
 
+import { subscribeTemporalTimelineInvalidation } from '../../temporal/timeline-invalidation';
 import { createTemporalCreateFields } from '../model/temporal-create-session';
 import { createTemporalCreateU2AuthoringDraft } from '../model/temporal-create-u2-authoring';
 import { createRemoteDraftVault } from './remote-draft-vault';
@@ -116,12 +117,19 @@ describe('Draft Vault remote owner boundary', () => {
       advanced: createTemporalCreateU2AuthoringDraft(fields),
       surface: 'full' as const,
     };
+    const order: string[] = [];
+    const unsubscribe = subscribeTemporalTimelineInvalidation(() => {
+      order.push('timeline-invalidate');
+    });
     const moved = await createRemoteDraftVault(fetchFn).move(
       snapshot,
       'activity-1',
       'a'.repeat(64),
       7,
+      () => order.push('committed-local-removal'),
     );
+    unsubscribe();
+    expect(order).toEqual(['committed-local-removal', 'timeline-invalidate']);
     expect(mutations).toHaveLength(1);
     expect(mutations[0]).toMatchObject({
       path: expect.stringContaining('/drafts/move/activity-1'),

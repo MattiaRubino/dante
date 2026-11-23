@@ -92,6 +92,7 @@ export function VaultMoveConfirmation({
           itemTitle={itemTitle}
           {...(scheduleLabel ? { scheduleLabel } : {})}
           heading="Conferma perdita registrazioni"
+          variant="vault-loss"
           description="Questa operazione è irreversibile."
           note={`Eliminerai definitivamente ${lostFacts}. Nelle Bozze resterà solo la configurazione.`}
           busy={busy}

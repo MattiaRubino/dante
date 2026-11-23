@@ -1,6 +1,38 @@
 # Timeline / Temporal-Operational — Live Execution Ledger
 
 
+## 2026-11-23 — Readability and no intermediate colour flash on Vault move
+
+Owner screenshot review accepted the review/reconfirmation flow and confirmed
+**134/134 Web Vitest + TypeScript typecheck PASS** on `471bec0`.
+Two final UX issues: tiny text in both the Inspector review and the
+recorded-loss popup; and after a successful atomic Vault Move the Timeline
+card briefly lost its Area colour before finally disappearing.
+
+The successful `createRemoteDraftVault.move` now accepts an owner-visible
+`onCommitted` callback invoked **only after** the returned committed receipt
+has been parsed, **before** Timeline and Planning invalidations. The caller
+synchronously tells the Timeline to remove the native Activity/Event card,
+including all-day items, and closes Inspector. A presentation-only
+native-subject tombstone filters any stale authoritative timed/date-lane
+projections until the page changes; it never edits Schedule or persists
+client-side delete facts. The Event path no longer reloads the whole page
+when used in the Timeline; its separate callback handles the same local
+removal as Activity. Rejected operations do not call `onCommitted` and
+leave the original visible.
+
+Increase Inspector review and dedicated second-stage loss dialog typography,
+button heights and padding, with a 540px responsive maximum and semibold
+recorded-loss warning. Existing unrelated deletion dialogs retain their
+sizes. Targeted tests check callback-before-invalidation ordering, stale
+projection filtering for both subject types, and the handoff to the parent
+Timeline rather than fallback reload.
+
+Status: **candidate pending owner-local typecheck/Vitest and browser review**
+for this commit; previous green tests do not establish this revision green.
+
+
+
 ## 2026-11-23 — Vault review owner-local gate: strict TS + test-harness repair
 
 WSL owner gate on `58c599b`: `pnpm --filter @dante/web typecheck`

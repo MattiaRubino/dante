@@ -54,7 +54,20 @@ const sessionImpact = vi.fn().mockResolvedValue({
 });
 const deleteSessionAttempt = vi.fn();
 const deleteHard = vi.fn();
-const moveDraft = vi.fn().mockResolvedValue({});
+// Match the remote Vault boundary: after the backend succeeds it invokes
+// the local removal callback before notifying Timeline subscribers.
+const moveDraft = vi.fn(
+  (
+    _snapshot: unknown,
+    _ref: string,
+    _fingerprint: string,
+    _revision: number | null,
+    onCommitted?: () => void,
+  ): Promise<object> => {
+    onCommitted?.();
+    return Promise.resolve({});
+  },
+);
 vi.mock('../../../temporal-create/application/remote-draft-vault', () => ({
   createRemoteDraftVault: () => ({ move: moveDraft }),
   notifyDraftVaultUpdated: vi.fn(),
@@ -401,12 +414,14 @@ describe('Activity move to inert Draft Vault', () => {
     };
     sessionImpact.mockResolvedValueOnce(impact).mockResolvedValueOnce(impact);
     const onDeleted = vi.fn();
+    const onVaultMoved = vi.fn();
     const onReviewChange = vi.fn();
     render(
       <ActivityInspectorActions
         activityRef={ref}
         onEdit={() => undefined}
         onDeleted={onDeleted}
+        onVaultMoved={onVaultMoved}
         onVaultReviewChange={onReviewChange}
         onDuplicate={() => undefined}
       />,
@@ -443,7 +458,10 @@ describe('Activity move to inert Draft Vault', () => {
     expect(revision).toBe(profile.revision);
     expect(deleteHard).not.toHaveBeenCalled();
     expect(retire).not.toHaveBeenCalled();
-    await waitFor(() => expect(onDeleted).toHaveBeenCalledOnce());
+    await waitFor(() =>
+      expect(onVaultMoved).toHaveBeenCalledWith('activity', ref),
+    );
+    expect(onDeleted).not.toHaveBeenCalled();
   });
 
   it('keeps the original open when the atomic move is rejected by the backend', async () => {

@@ -20,6 +20,7 @@ export function TemporalDeleteDialog({
   itemTitle,
   heading,
   description,
+  variant,
   scheduleLabel,
   choices,
   note,
@@ -31,6 +32,7 @@ export function TemporalDeleteDialog({
   itemTitle: string;
   heading?: string;
   description?: string;
+  variant?: 'vault-loss';
   scheduleLabel?: string | undefined;
   choices: readonly TemporalDeleteChoice[];
   note?: string | undefined;
@@ -91,7 +93,7 @@ export function TemporalDeleteDialog({
     >
       <section
         ref={dialogRef}
-        className="timeline-delete-dialog"
+        className={`timeline-delete-dialog${variant === 'vault-loss' ? ' timeline-delete-dialog--vault-loss' : ''}`}
         role="alertdialog"
         aria-modal="true"
         aria-labelledby={headingId}

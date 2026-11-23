@@ -535,6 +535,8 @@ type EventDetailDialogProps = Readonly<{
   initialActivityEditScope?: 'this_and_following' | undefined;
   onActivitySaved?: (profile: ActivityProfile) => void;
   onActivityDeleted?: () => void;
+  /** Server-committed Vault move: remove presentation before read invalidation. */
+  onVaultMoved?: (kind: 'activity' | 'event', nativeRef: string) => void;
   onClose: () => void;
 }>;
 
@@ -703,6 +705,7 @@ export function EventDetailDialog({
   initialActivityEditScope,
   onActivitySaved,
   onActivityDeleted,
+  onVaultMoved,
   onClose,
 }: EventDetailDialogProps) {
   const { t } = useTranslation('common');
@@ -1106,6 +1109,7 @@ export function EventDetailDialog({
                 }}
                 onCancelScope={onClose}
                 onDeleted={onActivityDeleted}
+                {...(onVaultMoved ? { onVaultMoved } : {})}
                 onDuplicate={(seed) => {
                   onClose();
                   requestTemporalCreateDuplicate(seed);
@@ -1184,6 +1188,7 @@ export function EventDetailDialog({
                     placement={detail.eventPlacement}
                     onCancelScope={onClose}
                     onSaved={onClose}
+                    {...(onVaultMoved ? { onVaultMoved } : {})}
                     onDuplicate={(seed) => {
                       onClose();
                       requestTemporalCreateDuplicate(seed);

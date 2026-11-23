@@ -59,7 +59,20 @@ const convertedSourceRef = '0199a888-8888-7888-8888-888888888888';
 const startExistingEvent = vi.fn().mockResolvedValue(convertedSourceRef);
 const previewHardDeletion = vi.fn();
 const confirmHardDeletion = vi.fn();
-const moveDraft = vi.fn().mockResolvedValue({});
+// Match the remote Vault boundary: after the backend succeeds it invokes
+// the local removal callback before notifying Timeline subscribers.
+const moveDraft = vi.fn(
+  (
+    _snapshot: unknown,
+    _ref: string,
+    _fingerprint: string,
+    _revision: number | null,
+    onCommitted?: () => void,
+  ): Promise<object> => {
+    onCommitted?.();
+    return Promise.resolve({});
+  },
+);
 const loadVaultOrganization = vi.fn().mockResolvedValue({ areas: [] });
 vi.mock('../../../temporal-create/application/remote-draft-vault', () => ({
   createRemoteDraftVault: () => ({ move: moveDraft }),
@@ -1024,6 +1037,7 @@ describe('Event Inspector actions', () => {
     };
     previewHardDeletion.mockResolvedValue(preview);
     const onDeleted = vi.fn();
+    const onVaultMoved = vi.fn();
     const onReviewChange = vi.fn();
     const onDuplicate = vi.fn();
     render(
@@ -1032,6 +1046,7 @@ describe('Event Inspector actions', () => {
         placement={placement}
         onDuplicate={onDuplicate}
         onDeleted={onDeleted}
+        onVaultMoved={onVaultMoved}
         onVaultReviewChange={onReviewChange}
       />,
     );
@@ -1068,7 +1083,10 @@ describe('Event Inspector actions', () => {
     expect(snapshot.fields.title).toBe('Visita');
     expect(JSON.stringify(snapshot)).not.toContain('registered-result');
     expect(onDuplicate).not.toHaveBeenCalled();
-    await waitFor(() => expect(onDeleted).toHaveBeenCalledOnce());
+    await waitFor(() =>
+      expect(onVaultMoved).toHaveBeenCalledWith('event', eventRef),
+    );
+    expect(onDeleted).not.toHaveBeenCalled();
     expect(confirmHardDeletion).not.toHaveBeenCalled();
   });
 

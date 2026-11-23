@@ -1,18 +1,18 @@
 /* Inspector-local Vault review. A second hard-delete confirmation only opens
    when live/recorded facts would be destroyed. */
 .timeline-vault-move-confirmation {
-  gap: 7px;
+  gap: 12px;
   margin-block: 10px;
-  padding: 12px;
+  padding: 16px;
   border-color: var(--dante-semantic-color-home-border-strong, #52606b);
   color: var(--dante-semantic-color-home-text-primary, #edf2f8);
   background: var(--dante-semantic-color-home-surface-overlay, #192328);
-  font-size: 13px;
-  line-height: 1.45;
+  font-size: 15px;
+  line-height: 1.55;
 }
 
 .timeline-vault-move-confirmation > strong {
-  font-size: 14px;
+  font-size: 16px;
 }
 
 .timeline-vault-move-confirmation > p {
@@ -21,28 +21,32 @@
 }
 
 .timeline-vault-move-confirmation .timeline-vault-move-confirmation__warning {
-  padding: 7px 9px;
+  padding: 10px 12px;
   border: 1px solid color-mix(in srgb, #e26864 48%, transparent);
   border-radius: 8px;
   color: #ffb6ad;
   background: color-mix(in srgb, #a83131 12%, transparent);
+  font-size: 14px;
+  font-weight: 600;
 }
 
 .timeline-vault-move-confirmation__actions {
   display: flex;
   flex-wrap: wrap;
   justify-content: flex-end;
-  gap: 8px;
-  margin-top: 4px;
+  gap: 10px;
+  margin-top: 8px;
 }
 
 .timeline-vault-move-confirmation__actions button {
-  min-height: 36px;
-  padding: 7px 12px;
+  min-height: 42px;
+  padding: 9px 15px;
   border: 1px solid var(--dante-semantic-color-home-border-subtle, #52606b);
   border-radius: 8px;
   color: inherit;
   background: var(--dante-semantic-color-home-surface-control, #26343b);
+  font-size: 14px;
+  font-weight: 600;
   cursor: pointer;
 }
 
@@ -59,12 +63,12 @@
 
 .timeline-vault-move-confirmation > h4 {
   margin: 0;
-  font-size: 16px;
+  font-size: 19px;
   font-weight: 700;
 }
 
 .timeline-vault-move-confirmation__item {
-  font-size: 14px;
+  font-size: 16px;
   overflow-wrap: anywhere;
 }
 
@@ -82,7 +86,7 @@
 
 .timeline-event-modal--vault-review .timeline-vault-move-confirmation {
   margin: 0;
-  padding: 6px 0 4px;
+  padding: 12px 0 8px;
   border: 0;
   background: transparent;
 }
