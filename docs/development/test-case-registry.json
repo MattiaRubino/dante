@@ -3110,10 +3110,10 @@
       "suite": "browser-fixture",
       "contract_id": "T01",
       "candidate_behavior": "temporal create planning tray and Draft Vault presentation",
-      "purpose": "Verify draft save/resume behavior and a wider Draft Vault with a fixed search field and a separately scrolling, live-filtered list of cards.",
-      "invariant": "A large number of draft cards does not scroll the title or search; only matching drafts remain after typing, and the panel stays within a mobile viewport.",
+      "purpose": "Verify draft save/resume behavior and a wider Draft Vault with orange, legible cards, a fixed search field and a separately scrolling, live-filtered list.",
+      "invariant": "Draft cards use the Timeline orange accent with readable title, schedule and action contrast; many cards scroll below the fixed title/search and filtering stays live within a mobile viewport.",
       "status": "UNREVIEWED",
-      "audit_note": "Owner WSL focused Draft Vault geometry/filter Playwright rerun 1 PASS on 2026-11-23 at 958d02b after fixture invalidation correction; full file and other legacy cases remain unqualified."
+      "audit_note": "Owner WSL geometry/filter Playwright 1 PASS at 958d02b; visual accent/typography assertions added 2026-11-23, NOT_RUN. Full file and other legacy cases remain unqualified."
     },
     {
       "path": "apps/web/e2e/temporal-create.spec.ts",
@@ -3149,11 +3149,11 @@
       "path": "apps/web/e2e/timeline-hardening.spec.ts",
       "suite": "browser-fixture",
       "contract_id": "P-OTHER",
-      "candidate_behavior": "timeline hardening",
-      "purpose": "",
-      "invariant": "",
+      "candidate_behavior": "Timeline card presentation and interactions",
+      "purpose": "Verify card title readability, text truncation, adjacent indicator geometry and existing interaction constraints in a fixture browser.",
+      "invariant": "Timeline and Day card titles remain at least 15px and ellipsize within the card while adjacent rows and controls retain their placement.",
       "status": "UNREVIEWED",
-      "audit_note": "Needs contract/assertion review, rejection cases, and executable evidence; filename alone is not proof."
+      "audit_note": "Title scale assertion updated 2026-11-23, NOT_RUN; other legacy cases still need contract and execution review."
     },
     {
       "path": "apps/web/e2e/timeline-interactions.spec.ts",

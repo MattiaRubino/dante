@@ -154,6 +154,34 @@ test('Draft Vault keeps search fixed while many full-size cards scroll and filte
   expect(geometry.listScrollHeight).toBeGreaterThan(geometry.listClientHeight);
   expect(geometry.scrollbarGutter).toBe('stable');
 
+  const cardStyle = await vault.locator('article').first().evaluate((card) => {
+    const title = card.querySelector<HTMLElement>(
+      '.timeline-planning-card__copy strong',
+    )!;
+    const schedule = card.querySelector<HTMLElement>(
+      '.timeline-planning-card__schedule',
+    )!;
+    const action = card.querySelector<HTMLButtonElement>(
+      '.timeline-planning-card__actions button',
+    )!;
+    return {
+      accent: getComputedStyle(card)
+        .getPropertyValue('--timeline-group-color')
+        .trim(),
+      titleSize: Number.parseFloat(getComputedStyle(title).fontSize),
+      scheduleSize: Number.parseFloat(getComputedStyle(schedule).fontSize),
+      actionSize: Number.parseFloat(getComputedStyle(action).fontSize),
+      actionWeight: Number.parseInt(getComputedStyle(action).fontWeight, 10),
+      actionColor: getComputedStyle(action).color,
+    };
+  });
+  expect(cardStyle.accent).toBe('#ea5c12');
+  expect(cardStyle.titleSize).toBeGreaterThanOrEqual(15);
+  expect(cardStyle.scheduleSize).toBeGreaterThanOrEqual(12);
+  expect(cardStyle.actionSize).toBeGreaterThanOrEqual(12);
+  expect(cardStyle.actionWeight).toBeGreaterThanOrEqual(600);
+  expect(cardStyle.actionColor).toBe('rgb(243, 246, 251)');
+
   await search.fill('bozza 7');
   await expect(vault.locator('article')).toHaveCount(1);
   await expect(draft(vault, 'Bozza 7')).toBeVisible();

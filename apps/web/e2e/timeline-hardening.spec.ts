@@ -462,7 +462,7 @@ test('Session Objective and agenda indicators sit near the lower card edge', asy
       detail: size('.timeline-event-card__indicator'),
     };
   });
-  expect(typeScale.title).toBeGreaterThanOrEqual(14);
+  expect(typeScale.title).toBeGreaterThanOrEqual(15);
   expect(typeScale.time).toBeGreaterThanOrEqual(12);
   expect(typeScale.detail).toBeGreaterThanOrEqual(12);
   const distanceFromBottom = await event.evaluate((element) => {

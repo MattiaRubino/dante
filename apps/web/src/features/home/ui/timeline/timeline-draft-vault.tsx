@@ -248,9 +248,6 @@ export function TimelineDraftVault({
           <article
             key={item.draftRef}
             className="timeline-planning-card timeline-planning-card--draft"
-            data-timeline-tone={
-              item.payload.fields.appearanceTone ?? 'personal'
-            }
           >
             <div className="timeline-planning-card__main">
               <div className="timeline-planning-card__copy">

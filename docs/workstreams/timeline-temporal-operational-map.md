@@ -1,5 +1,17 @@
 # Timeline / Temporal-Operational — Live Execution Ledger
 
+## 2026-11-23 — Draft card readability and Timeline title size
+
+Owner visual review found the Draft Vault cards pink and their text/actions
+too small. Vault cards now use Dante's orange Timeline accent regardless of
+the draft's saved appearance tone, with larger title, schedule, status and
+white semibold action labels. This is a display-only change: the saved tone
+is still available when resuming the draft. Production Timeline/Day card
+titles grow by 1px, retaining truncation and the compact Week layout. Browser
+fixture assertions cover draft accent/type/button contrast and the existing
+Timeline card title scale. Web typecheck and focused browser reruns for this
+visual refinement are **NOT_RUN** pending owner WSL evidence.
+
 ## 2026-11-23 — Draft Vault panel and card presentation
 
 The owner clarified that “X” means an open-ended number of saved drafts, not
@@ -9,8 +21,8 @@ The search adopts the established time-zone field proportions and filters
 titles immediately. Only the list below it scrolls, at a capped height with a
 stable scrollbar gutter; the heading and search remain visible for many drafts.
 
-Draft cards use the Timeline's activity/event kind marker, appearance tone,
-title and stored date/time intent. They retain the inert status and the
+Draft cards use the Timeline's activity/event kind marker, title and stored
+date/time intent. They retain the inert status and the
 existing Riprendi, Duplica and Elimina actions beneath the content. The
 browser fixture checks desktop/mobile geometry and independent list scrolling;
 the component test checks timed/all-day previews and filtering. Owner WSL

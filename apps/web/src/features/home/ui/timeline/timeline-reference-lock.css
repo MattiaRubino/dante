@@ -158,7 +158,7 @@
 
 .home-m1 .home-timeline--production .timeline-event-card__title,
 .timeline-event-drag-overlay .timeline-event-card__title {
-  font-size: clamp(14px, calc(12.5px + 2cqh), 16px);
+  font-size: clamp(15px, calc(13.5px + 2cqh), 17px);
   font-weight: 700;
 }
 
