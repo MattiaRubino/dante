@@ -2,7 +2,7 @@ import { createWebFetch } from '../../../platform/api/web-fetch';
 import {
   invalidateTemporalPlanningRead,
   invalidateTemporalTimelineRead,
-} from '../../../temporal/timeline-invalidation';
+} from '../../temporal/timeline-invalidation';
 import type {
   TemporalCreateFields,
   TemporalCreateSurface,
