@@ -19,6 +19,9 @@ describe('Draft Vault capacity dialog', () => {
       name: 'Spazio Bozze esaurito',
     });
     expect(dialog.textContent).toContain('limite di 100 Bozze');
+    expect(
+      dialog.closest('[data-temporal-create-portal="vault-capacity"]'),
+    ).toBeTruthy();
     expect(screen.getByRole('textbox', { name: 'Titolo compilato' })).toHaveProperty(
       'value',
       'Non perdere questo',

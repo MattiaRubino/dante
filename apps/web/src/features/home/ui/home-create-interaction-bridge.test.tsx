@@ -3,6 +3,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import { useState } from 'react';
 
 import { HomeCreateInteractionBridge } from './home-create-interaction-bridge';
+import { DraftVaultCapacityDialog } from '../../temporal-create/ui/draft-vault-capacity-dialog';
 
 function Harness({ onEscape }: { onEscape: () => void }) {
   const [date, setDate] = useState('2026-10-01');
@@ -86,6 +87,34 @@ describe('Home U1 Create interaction bridge', () => {
 
     fireEvent.pointerDown(screen.getByRole('button', { name: 'Fuori' }));
 
+    expect(onEscape).toHaveBeenCalledOnce();
+  });
+
+  it('keeps Create open when the Vault capacity popup is clicked and dismissed', () => {
+    const onEscape = vi.fn();
+    const onDismiss = vi.fn();
+    render(
+      <>
+        <Harness onEscape={onEscape} />
+        <DraftVaultCapacityDialog onDismiss={onDismiss} />
+      </>,
+    );
+
+    const popup = screen.getByRole('alertdialog', {
+      name: 'Spazio Bozze esaurito',
+    });
+    const close = screen.getByRole('button', { name: 'Chiudi' });
+    expect(popup.closest('[data-temporal-create-portal]')).toBeTruthy();
+
+    fireEvent.pointerDown(close);
+    fireEvent.click(close);
+
+    expect(onDismiss).toHaveBeenCalledOnce();
+    expect(onEscape).not.toHaveBeenCalled();
+    expect(inputByLabel('Data').value).toBe('2026-10-01');
+
+    // Genuine outside clicks must still request closing the Create form.
+    fireEvent.pointerDown(screen.getByRole('button', { name: 'Fuori' }));
     expect(onEscape).toHaveBeenCalledOnce();
   });
 

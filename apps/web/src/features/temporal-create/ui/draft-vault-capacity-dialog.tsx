@@ -29,6 +29,7 @@ export function DraftVaultCapacityDialog({
   return createPortal(
     <div
       className="draft-vault-capacity__viewport"
+      data-temporal-create-portal="vault-capacity"
       onKeyDown={(event) => {
         if (event.key === 'Escape') {
           event.preventDefault();

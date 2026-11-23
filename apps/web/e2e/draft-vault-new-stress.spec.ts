@@ -266,6 +266,15 @@ test('DV-STRESS-09 full Vault: new and duplicated Saves fail safely, one deletio
   expect(records.size).toBe(100);
   await expect(composer.getByRole('textbox', { name: 'Titolo' })).toHaveValue(title);
   await popup.getByRole('button', { name: 'Chiudi' }).click();
+  await expect(popup).toHaveCount(0);
+  // Dismissing the quota portal must not be interpreted as clicking outside
+  // Create, which otherwise opens a blocking "discard changes" confirmation.
+  await expect(
+    page.locator('[data-temporal-create="discard-modal"]'),
+  ).toHaveCount(0);
+  await expect(
+    composer.getByRole('textbox', { name: 'Titolo' }),
+  ).toHaveValue(title);
   const toFree = [...records.keys()][0]!;
   records.delete(toFree);
   await composer.getByRole('button', { name: 'Salva bozza' }).click();

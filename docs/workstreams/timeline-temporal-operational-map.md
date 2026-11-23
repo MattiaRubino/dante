@@ -1,6 +1,39 @@
 # Timeline / Temporal-Operational — Live Execution Ledger
 
 
+## 2026-11-23 — Vault capacity popup: prevent phantom Create discard (DV-STRESS-09)
+
+Owner non-auth Playwright first run at `1731083`: **DV-STRESS-08 PASS**,
+**DV-STRESS-10 PASS**, **DV-STRESS-09 FAIL**. At 100/100 the save correctly
+raised the capacity popup, but the subsequent popup's **Chiudi** pointerdown
+was interpreted by `HomeCreateInteractionBridge` as an outside click because
+the capacity dialog is portaled outside the Composer. It synthesised
+`Escape` inside Create and switched `closeDecision` to `confirm-discard`.
+The destructive discard viewport then intercepted the retry's Save button
+until the 30-second Playwright timeout. This is a genuine UI contract defect,
+not an acceptable test timeout.
+
+Fix: mark the capacity portal with the already-supported
+`data-temporal-create-portal` exemption. Preserve normal outside-Create
+dismissal, Escape dismissal inside the capacity dialog, and the user's
+unsaved title. Add a bridge integration regression reproducing the popup
+pointerdown while Create is mounted, plus a DOM contract assertion and E2E
+assertion that **no discard modal appears** after capacity popup dismissal.
+No new `test.skip`, force-click, hardcoded sleeps, backend changes or
+changes to older E2E suites.
+
+The proxy `ECONNREFUSED 127.0.0.1:8000` on ancillary Home endpoints
+in the non-auth fixture is independent: it models only authenticated Draft
+requests; the real-stack E2E starts the isolated API itself.
+
+Local normal PostgreSQL Compose starts postgres only. The **auth E2E harness**
+explicitly invokes Alembic on its disposable isolated database on startup;
+it does **not** prove the user's ordinary local named volume was upgraded.
+Owner must rerun focused typecheck/unit and three non-auth E2E scenarios;
+candidate status **NOT_RUN**.
+
+
+
 ## 2026-11-23 — Draft Vault hard 100 cap, full documentation and 10 new E2E
 
 **Implementation:** introduce Alembic `20261123_189`:
