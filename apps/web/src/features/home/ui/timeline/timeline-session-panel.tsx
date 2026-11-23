@@ -70,7 +70,11 @@ export function useSessionPanelPresentation(
                 ),
             );
             return (
-              <section key={group.activity_ref} aria-label={group.title}>
+              <section
+                key={group.activity_ref}
+                className="timeline-session-panel__card"
+                aria-label={group.title}
+              >
                 <h3 title={group.title}>{group.title}</h3>
                 <ul>
                   {group.rows.map((row, index) => {

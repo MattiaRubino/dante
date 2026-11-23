@@ -123,3 +123,105 @@ for (const width of [1440, 390]) {
     });
   });
 }
+
+for (const width of [1440, 390]) {
+  test(`session cards keep main and children together with a separate scroll at ${width}px`, async ({
+    page,
+  }) => {
+    await page.setViewportSize({ width, height: 900 });
+    const groups = Array.from({ length: 8 }, (_, index) => ({
+      activity_ref: `0199a111-1111-7111-8111-${String(index + 1).padStart(12, '0')}`,
+      title: `Attività ${index + 1}`,
+      rows:
+        index === 0
+          ? [
+              {
+                planned_schedule_ref: null,
+                name: 'Sessione attività',
+                starts_at: null,
+                execution: {
+                  session_ref: session,
+                  timing_material_state_ref: state,
+                  paused: true,
+                },
+              },
+              {
+                planned_schedule_ref: schedule,
+                name: 'Ripasso',
+                starts_at: null,
+                execution: null,
+              },
+              {
+                planned_schedule_ref: state,
+                name: 'Esercizi',
+                starts_at: null,
+                execution: null,
+              },
+            ]
+          : [
+              {
+                planned_schedule_ref: schedule,
+                name: `Sessione ${index + 1}`,
+                starts_at: null,
+                execution: null,
+              },
+            ],
+    }));
+    await page.route('**/api/v1/**', (route) => {
+      const path = new URL(route.request().url()).pathname;
+      return route.fulfill({
+        json: path.endsWith('/session-panel')
+          ? {
+              evaluated_at: '2026-10-09T10:00:00Z',
+              next_change_at: null,
+              visuals: [],
+              groups,
+            }
+          : path.endsWith('/auth/session')
+            ? { authenticated: true, csrf_token: 'test-csrf' }
+            : [],
+      });
+    });
+    await page.goto('/tests-browser/session-panel/index.html');
+    const panel = page.getByRole('complementary', {
+      name: 'Sessioni disponibili',
+    });
+    await expect(panel).toBeVisible();
+    const cards = panel.locator('.timeline-session-panel__card');
+    await expect(cards).toHaveCount(8);
+    await expect(cards.first().locator('li')).toHaveCount(3);
+    await expect(cards.first()).toContainText('Sessione principale');
+    await expect(cards.first()).toContainText('Ripasso');
+    await expect(cards.first()).toContainText('Esercizi');
+    await expect(
+      cards.first().getByRole('button', { name: 'Riprendi · Sessione attività' }),
+    ).toBeEnabled();
+    await expect(
+      cards.first().getByRole('button', { name: 'Avvia · Ripasso' }),
+    ).toBeDisabled();
+    const list = panel.locator('.timeline-session-panel__groups');
+    const headerTop = await panel.locator('header').evaluate((header) =>
+      Math.round(header.getBoundingClientRect().top),
+    );
+    const geometry = await list.evaluate((element) => ({
+      scrollHeight: element.scrollHeight,
+      clientHeight: element.clientHeight,
+      scrollRight: element.getBoundingClientRect().right,
+      cardRight: element.querySelector('section')!.getBoundingClientRect().right,
+    }));
+    expect(geometry.scrollHeight).toBeGreaterThan(geometry.clientHeight);
+    expect(geometry.cardRight).toBeLessThan(geometry.scrollRight - 8);
+    expect(
+      await list.evaluate((element) => {
+        element.scrollTop = element.scrollHeight;
+        return element.scrollTop;
+      }),
+    ).toBeGreaterThan(0);
+    await expect(cards.last()).toBeInViewport();
+    expect(
+      await panel.locator('header').evaluate((header) =>
+        Math.round(header.getBoundingClientRect().top),
+      ),
+    ).toBe(headerTop);
+  });
+}

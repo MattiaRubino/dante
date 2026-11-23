@@ -1,5 +1,20 @@
 # Timeline / Temporal-Operational — Live Execution Ledger
 
+## 2026-11-23 — Session panel: Activity cards with grouped Sessions
+
+Owner accepted one card per Activity, containing the main Session and all
+available planned Sessions in their existing order. The panel now gives each
+Activity a bounded card with a title and internal row separators. Each Session
+retains its current label, status, controls, disabled rules and command path;
+no runtime or backend behavior changes. The list of Activity cards has a
+bounded vertical scroll with a stable gutter and inner right padding, while
+the panel heading stays fixed. Desktop panel width grows to 420px; the
+existing 280px mobile fit remains. The existing component regression checks
+main/child grouping, and two browser fixture scenarios cover independent
+scroll geometry at desktop and mobile widths. Checks **NOT_RUN** in the cloud
+workspace because pinned Node/pnpm versions are unavailable; owner WSL
+verification is pending on the published SHA.
+
 ## 2026-11-23 — Vault header and Session panel typography
 
 The Vault header now groups the smaller `N/100` count below “Bozze”, keeps

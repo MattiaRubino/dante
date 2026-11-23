@@ -204,6 +204,15 @@ describe('Timeline Session panel integration', () => {
     ).toBeTruthy();
     expect(screen.getByRole('region', { name: 'Studio' })).toBeTruthy();
     expect(screen.getAllByRole('listitem')).toHaveLength(3);
+    const activityCard = screen.getByRole('region', { name: 'Studio' });
+    expect(activityCard.classList.contains('timeline-session-panel__card')).toBe(
+      true,
+    );
+    expect(
+      Array.from(
+        activityCard.querySelectorAll('li .timeline-session-panel__name > span'),
+      ).map((name) => name.textContent),
+    ).toEqual(['Sessione principale', 'Ripasso', 'Esercizi']);
     expect(
       screen.getByRole('button', { name: 'Pausa · Sessione attività' }),
     ).toBeTruthy();

@@ -54,7 +54,7 @@
   z-index: 24;
   top: 8px;
   right: 12px;
-  width: min(320px, calc(100% - 24px), calc(100vw - 24px));
+  width: min(420px, calc(100% - 24px), calc(100vw - 24px));
   pointer-events: auto;
   max-height: min(520px, calc(100vh - 104px));
   display: flex;
@@ -105,24 +105,51 @@
   cursor: default;
 }
 .timeline-session-panel__groups {
+  min-height: 0;
+  max-height: min(440px, calc(100dvh - 180px));
   overflow-y: auto;
   overscroll-behavior: contain;
-  padding: 4px 14px 12px;
+  scrollbar-gutter: stable;
+  scrollbar-width: thin;
+  scrollbar-color: #566a76 transparent;
+  padding: 12px 12px 14px 14px;
 }
-.timeline-session-panel h3 {
+.timeline-session-panel__groups::-webkit-scrollbar {
+  width: 8px;
+}
+.timeline-session-panel__groups::-webkit-scrollbar-thumb {
+  border-radius: 8px;
+  background: #566a76;
+}
+.timeline-session-panel__card {
+  overflow: hidden;
+  border: 1px solid var(--dante-semantic-color-home-border-subtle, #31424a);
+  border-radius: 11px;
+  background: var(--dante-temporal-editor-section-surface, #111b29);
+}
+.timeline-session-panel__card + .timeline-session-panel__card {
+  margin-top: 10px;
+}
+.timeline-session-panel__card h3 {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-  margin: 14px 0 8px;
-  font-size: 14px;
+  margin: 0;
+  padding: 12px 14px;
+  border-bottom: 1px solid var(--dante-semantic-color-home-border-subtle, #31424a);
+  font-size: 15px;
+  font-weight: 650;
 }
-.timeline-session-panel ul {
+.timeline-session-panel__card ul {
   padding: 0;
   margin: 0;
   list-style: none;
 }
-.timeline-session-panel li + li {
-  border-top: 1px solid #ffffff0c;
+.timeline-session-panel__card li {
+  padding: 0 14px;
+}
+.timeline-session-panel__card li + li {
+  border-top: 1px solid var(--dante-semantic-color-home-border-subtle, #31424a);
 }
 .timeline-session-panel__row {
   display: flex;
@@ -147,7 +174,7 @@
   gap: 5px;
 }
 .timeline-session-panel__error,
-.timeline-session-panel li > p {
+.timeline-session-panel__card li > p {
   color: #ffb79b;
   font-size: 13px;
   overflow-wrap: anywhere;
@@ -160,7 +187,7 @@
 @media (max-width: 600px) {
   .timeline-session-panel {
     /* The 390px toolbar trigger sits left of the screen's right edge.
-       A 320px right-anchored panel crosses x=0; shrink instead of
+       A wider right-anchored panel crosses x=0; shrink instead of
        shifting the Home rail or clipping the panel. */
     width: min(280px, calc(100vw - 24px));
   }
