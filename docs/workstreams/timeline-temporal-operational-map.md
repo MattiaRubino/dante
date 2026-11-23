@@ -18,7 +18,11 @@ evidence: Web typecheck **PASS**, focused Vitest **3 PASS**. The first focused
 Playwright run **FAIL** at the fixture's expected eight cards: the test added
 seven rows directly to its in-memory API after the Vault had loaded, without
 publishing a refresh event. The test now publishes the existing Draft Vault
-invalidation event after fixture insertion. Playwright rerun is **NOT_RUN**.
+invalidation event after fixture insertion. Owner WSL rerun at `958d02b`:
+focused Playwright **1 PASS** in 14.4s; Vite build and bundle gate **PASS**.
+Vite proxy `ECONNREFUSED` messages concerned unrelated Home API reads while
+the backend was stopped and did not fail the fixture test. The full browser
+suite remains **NOT_RUN**.
 
 ## 2026-11-23 — Header actions and view-options retirement
 

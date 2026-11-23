@@ -3113,7 +3113,7 @@
       "purpose": "Verify draft save/resume behavior and a wider Draft Vault with a fixed search field and a separately scrolling, live-filtered list of cards.",
       "invariant": "A large number of draft cards does not scroll the title or search; only matching drafts remain after typing, and the panel stays within a mobile viewport.",
       "status": "UNREVIEWED",
-      "audit_note": "Draft Vault geometry/filter browser case initially FAIL in owner WSL because the fixture bypassed invalidation after direct row insertion; refresh event added, rerun NOT_RUN. Other legacy cases still need review."
+      "audit_note": "Owner WSL focused Draft Vault geometry/filter Playwright rerun 1 PASS on 2026-11-23 at 958d02b after fixture invalidation correction; full file and other legacy cases remain unqualified."
     },
     {
       "path": "apps/web/e2e/temporal-create.spec.ts",
