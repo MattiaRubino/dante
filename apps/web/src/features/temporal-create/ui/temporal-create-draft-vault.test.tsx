@@ -107,7 +107,36 @@ describe('Create + Draft Vault', () => {
 
   it('reopens a saved advanced draft without creating an operational subject', async () => {
     const fields = { ...createTemporalCreateFields(), title: 'Preparazione' };
-    const advanced = createTemporalCreateU2AuthoringDraft(fields);
+    const base = createTemporalCreateU2AuthoringDraft(fields);
+    const advanced = {
+      ...base,
+      activityStructure: {
+        ...base.activityStructure,
+        plannedSlices: [
+          {
+            id: 'planned-1',
+            title: 'Ricerca fonti',
+            timeEnabled: false,
+            date: fields.date,
+            startTime: fields.startTime,
+            endTime: fields.startTime,
+          },
+        ],
+      },
+      objectives: [
+        {
+          id: 'goal-1',
+          label: 'Lavoro completato',
+          resultKind: 'boolean' as const,
+          comparatorCode: null,
+          targetValue: '',
+          targetMin: '',
+          targetMax: '',
+          unitCode: '',
+          verificationMode: 'none' as const,
+        },
+      ],
+    };
     entry({
       id: 1,
       item: {
@@ -126,6 +155,10 @@ describe('Create + Draft Vault', () => {
         .value,
     ).toBe('Preparazione');
     expect(screen.getByRole('button', { name: 'Salva bozza' })).toBeTruthy();
+    // Resume is the full advanced Create editor, not a read-only mockup.
+    expect(screen.getByDisplayValue('Ricerca fonti')).toBeTruthy();
+    expect(screen.getByDisplayValue('Lavoro completato')).toBeTruthy();
+    expect(screen.getByRole('button', { name: 'Aggiungi' })).toBeTruthy();
     expect(mocks.save).not.toHaveBeenCalled();
   });
 });
