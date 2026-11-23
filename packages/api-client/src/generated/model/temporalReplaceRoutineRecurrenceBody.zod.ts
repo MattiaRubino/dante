@@ -8,6 +8,8 @@ import * as zod from 'zod/mini';
 
 export const temporalReplaceRoutineRecurrenceBodyOperationIdMax = 200;
 
+export const temporalReplaceRoutineRecurrenceBodyRecurrenceOneExpectedOccurrenceCountOneMax = 730;
+
 export const temporalReplaceRoutineRecurrenceBodyRecurrenceOneFamilyCodeDefault = `calendar_wall_clock`;
 export const temporalReplaceRoutineRecurrenceBodyRecurrenceOneIntervalCountMax = 10000;
 
@@ -41,6 +43,7 @@ export const temporalReplaceRoutineRecurrenceBodyRecurrenceTwoElapsedSecondsTwoR
   new RegExp(
     '^(?!^[-+.]*$)[+-]?0*(?:\\d{0,14}|(?=[\\d.]{1,21}0*$)\\d{0,14}\\.\\d{0,6}0*$)',
   );
+export const temporalReplaceRoutineRecurrenceBodyRecurrenceTwoExpectedOccurrenceCountOneMax = 730;
 
 export const temporalReplaceRoutineRecurrenceBodyRecurrenceTwoFamilyCodeDefault = `elapsed_interval`;
 export const temporalReplaceRoutineRecurrenceBodyRecurrenceThreeFamilyCodeDefault = `quota_per_period`;
@@ -53,6 +56,8 @@ export const temporalReplaceRoutineRecurrenceBodyRecurrenceThreeWeekStartOneMax 
 export const temporalReplaceRoutineRecurrenceBodyRecurrenceThreeZoneIdOneMax = 200;
 
 export const temporalReplaceRoutineRecurrenceBodyRecurrenceFourCycleLengthMax = 10000;
+
+export const temporalReplaceRoutineRecurrenceBodyRecurrenceFourExpectedOccurrenceCountOneMax = 730;
 
 export const temporalReplaceRoutineRecurrenceBodyRecurrenceFourFamilyCodeDefault = `cyclic_positional`;
 export const temporalReplaceRoutineRecurrenceBodyRecurrenceFourGeneratesExpectedMax = 10000;
@@ -94,7 +99,14 @@ export const TemporalReplaceRoutineRecurrenceBody = /*#__PURE__*/ zod.object({
       ),
       expected_occurrence_count: /*#__PURE__*/ zod.optional(
         /*#__PURE__*/ zod.union([
-          /*#__PURE__*/ zod.int().check(/*#__PURE__*/ zod.gte(1)),
+          /*#__PURE__*/ zod
+            .int()
+            .check(/*#__PURE__*/ zod.gte(1))
+            .check(
+              /*#__PURE__*/ zod.lte(
+                temporalReplaceRoutineRecurrenceBodyRecurrenceOneExpectedOccurrenceCountOneMax,
+              ),
+            ),
           /*#__PURE__*/ zod.null(),
         ]),
       ),
@@ -279,7 +291,14 @@ export const TemporalReplaceRoutineRecurrenceBody = /*#__PURE__*/ zod.object({
       ]),
       expected_occurrence_count: /*#__PURE__*/ zod.optional(
         /*#__PURE__*/ zod.union([
-          /*#__PURE__*/ zod.int().check(/*#__PURE__*/ zod.gte(1)),
+          /*#__PURE__*/ zod
+            .int()
+            .check(/*#__PURE__*/ zod.gte(1))
+            .check(
+              /*#__PURE__*/ zod.lte(
+                temporalReplaceRoutineRecurrenceBodyRecurrenceTwoExpectedOccurrenceCountOneMax,
+              ),
+            ),
           /*#__PURE__*/ zod.null(),
         ]),
       ),
@@ -391,7 +410,14 @@ export const TemporalReplaceRoutineRecurrenceBody = /*#__PURE__*/ zod.object({
       ),
       expected_occurrence_count: /*#__PURE__*/ zod.optional(
         /*#__PURE__*/ zod.union([
-          /*#__PURE__*/ zod.int().check(/*#__PURE__*/ zod.gte(1)),
+          /*#__PURE__*/ zod
+            .int()
+            .check(/*#__PURE__*/ zod.gte(1))
+            .check(
+              /*#__PURE__*/ zod.lte(
+                temporalReplaceRoutineRecurrenceBodyRecurrenceFourExpectedOccurrenceCountOneMax,
+              ),
+            ),
           /*#__PURE__*/ zod.null(),
         ]),
       ),

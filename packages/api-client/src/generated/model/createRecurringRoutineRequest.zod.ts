@@ -15,6 +15,8 @@ export const createRecurringRoutineRequestLifeAreaOneNewNameOneMax = 100;
 
 export const createRecurringRoutineRequestOperationIdMax = 200;
 
+export const createRecurringRoutineRequestRecurrenceOneExpectedOccurrenceCountOneMax = 730;
+
 export const createRecurringRoutineRequestRecurrenceOneFamilyCodeDefault = `calendar_wall_clock`;
 export const createRecurringRoutineRequestRecurrenceOneIntervalCountMax = 10000;
 
@@ -48,6 +50,7 @@ export const createRecurringRoutineRequestRecurrenceTwoElapsedSecondsTwoRegExp =
   new RegExp(
     '^(?!^[-+.]*$)[+-]?0*(?:\\d{0,14}|(?=[\\d.]{1,21}0*$)\\d{0,14}\\.\\d{0,6}0*$)',
   );
+export const createRecurringRoutineRequestRecurrenceTwoExpectedOccurrenceCountOneMax = 730;
 
 export const createRecurringRoutineRequestRecurrenceTwoFamilyCodeDefault = `elapsed_interval`;
 export const createRecurringRoutineRequestRecurrenceThreeFamilyCodeDefault = `quota_per_period`;
@@ -60,6 +63,8 @@ export const createRecurringRoutineRequestRecurrenceThreeWeekStartOneMax = 7;
 export const createRecurringRoutineRequestRecurrenceThreeZoneIdOneMax = 200;
 
 export const createRecurringRoutineRequestRecurrenceFourCycleLengthMax = 10000;
+
+export const createRecurringRoutineRequestRecurrenceFourExpectedOccurrenceCountOneMax = 730;
 
 export const createRecurringRoutineRequestRecurrenceFourFamilyCodeDefault = `cyclic_positional`;
 export const createRecurringRoutineRequestRecurrenceFourGeneratesExpectedMax = 10000;
@@ -165,7 +170,14 @@ export const CreateRecurringRoutineRequest = /*#__PURE__*/ zod.object({
       ),
       expected_occurrence_count: /*#__PURE__*/ zod.optional(
         /*#__PURE__*/ zod.union([
-          /*#__PURE__*/ zod.int().check(/*#__PURE__*/ zod.gte(1)),
+          /*#__PURE__*/ zod
+            .int()
+            .check(/*#__PURE__*/ zod.gte(1))
+            .check(
+              /*#__PURE__*/ zod.lte(
+                createRecurringRoutineRequestRecurrenceOneExpectedOccurrenceCountOneMax,
+              ),
+            ),
           /*#__PURE__*/ zod.null(),
         ]),
       ),
@@ -350,7 +362,14 @@ export const CreateRecurringRoutineRequest = /*#__PURE__*/ zod.object({
       ]),
       expected_occurrence_count: /*#__PURE__*/ zod.optional(
         /*#__PURE__*/ zod.union([
-          /*#__PURE__*/ zod.int().check(/*#__PURE__*/ zod.gte(1)),
+          /*#__PURE__*/ zod
+            .int()
+            .check(/*#__PURE__*/ zod.gte(1))
+            .check(
+              /*#__PURE__*/ zod.lte(
+                createRecurringRoutineRequestRecurrenceTwoExpectedOccurrenceCountOneMax,
+              ),
+            ),
           /*#__PURE__*/ zod.null(),
         ]),
       ),
@@ -462,7 +481,14 @@ export const CreateRecurringRoutineRequest = /*#__PURE__*/ zod.object({
       ),
       expected_occurrence_count: /*#__PURE__*/ zod.optional(
         /*#__PURE__*/ zod.union([
-          /*#__PURE__*/ zod.int().check(/*#__PURE__*/ zod.gte(1)),
+          /*#__PURE__*/ zod
+            .int()
+            .check(/*#__PURE__*/ zod.gte(1))
+            .check(
+              /*#__PURE__*/ zod.lte(
+                createRecurringRoutineRequestRecurrenceFourExpectedOccurrenceCountOneMax,
+              ),
+            ),
           /*#__PURE__*/ zod.null(),
         ]),
       ),

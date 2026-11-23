@@ -10,6 +10,8 @@ export const temporalStartExistingActivityRecurrenceBodyExpectedProfileRevisionM
 
 export const temporalStartExistingActivityRecurrenceBodyOperationIdMax = 200;
 
+export const temporalStartExistingActivityRecurrenceBodyRecurrenceExpectedOccurrenceCountOneMax = 730;
+
 export const temporalStartExistingActivityRecurrenceBodyRecurrenceFamilyCodeDefault = `calendar_wall_clock`;
 export const temporalStartExistingActivityRecurrenceBodyRecurrenceIntervalCountMax = 10000;
 
@@ -77,7 +79,14 @@ export const TemporalStartExistingActivityRecurrenceBody =
       ),
       expected_occurrence_count: /*#__PURE__*/ zod.optional(
         /*#__PURE__*/ zod.union([
-          /*#__PURE__*/ zod.int().check(/*#__PURE__*/ zod.gte(1)),
+          /*#__PURE__*/ zod
+            .int()
+            .check(/*#__PURE__*/ zod.gte(1))
+            .check(
+              /*#__PURE__*/ zod.lte(
+                temporalStartExistingActivityRecurrenceBodyRecurrenceExpectedOccurrenceCountOneMax,
+              ),
+            ),
           /*#__PURE__*/ zod.null(),
         ]),
       ),

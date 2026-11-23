@@ -71,6 +71,7 @@ import type {
   DecompositionPolicyCommand,
   DecompositionPolicyResponse,
   DecompositionResponse,
+  DraftVaultMoveRequest,
   DraftVaultResponse,
   DraftVaultSaveRequest,
   EstablishActivityScheduleRequest,
@@ -187,6 +188,8 @@ import type {
   RenamePersonReferentRequest,
   RenameProductTagRequest,
   RenameRoutineRequest,
+  RenewalDecisionRequest,
+  RenewalNoticeResponse,
   ReorderLifeAreasRequest,
   ReplaceEventAgendaRequest,
   ReplacePlanBody,
@@ -7700,6 +7703,80 @@ export const temporalListDrafts = async (
   } as temporalListDraftsResponse;
 };
 
+export type temporalMoveSelfItemToDraftResponse200 = {
+  data: DraftVaultResponse;
+  status: 200;
+};
+
+export type temporalMoveSelfItemToDraftResponse422 = {
+  data: HTTPValidationError;
+  status: 422;
+};
+
+export type temporalMoveSelfItemToDraftResponseSuccess =
+  temporalMoveSelfItemToDraftResponse200 & {
+    headers: Headers;
+  };
+export type temporalMoveSelfItemToDraftResponseError =
+  temporalMoveSelfItemToDraftResponse422 & {
+    headers: Headers;
+  };
+
+export type temporalMoveSelfItemToDraftResponse =
+  | temporalMoveSelfItemToDraftResponseSuccess
+  | temporalMoveSelfItemToDraftResponseError;
+
+export const getTemporalMoveSelfItemToDraftUrl = (sourceRef: string) => {
+  return `/api/v1/temporal/drafts/move/${sourceRef}`;
+};
+
+/**
+ * Commit draft+hard deletion atomically; no orphaned draft or lost facts on failure.
+ *
+ * Only standalone owner Activity/Event subjects qualify. Series/occurrence
+ * scope is never inferred, and the owner must confirm the irreversible
+ * deletion CAS captured before this command.
+ * @summary Move Self Item To Draft
+ */
+export const temporalMoveSelfItemToDraft = async (
+  sourceRef: string,
+  draftVaultMoveRequest: DraftVaultMoveRequest,
+  options?: RequestInit,
+  fetchFn?: typeof globalThis.fetch,
+): Promise<temporalMoveSelfItemToDraftResponse> => {
+  const getHeaders = (
+    h?: NonNullable<RequestInit['headers']>,
+  ): Record<string, string | readonly string[]> => {
+    if (!h) return {};
+    if (h instanceof Headers) return Object.fromEntries(h.entries());
+    if (Array.isArray(h)) return Object.fromEntries(h);
+    return h;
+  };
+  const res = await (fetchFn ?? fetch)(
+    getTemporalMoveSelfItemToDraftUrl(sourceRef),
+    {
+      ...options,
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        ...getHeaders(options?.headers),
+      },
+      body: JSON.stringify(draftVaultMoveRequest),
+    },
+  );
+
+  const body = [204, 205, 304].includes(res.status) ? null : await res.text();
+
+  const data: temporalMoveSelfItemToDraftResponse['data'] = body
+    ? JSON.parse(body)
+    : {};
+  return {
+    data,
+    status: res.status,
+    headers: res.headers,
+  } as temporalMoveSelfItemToDraftResponse;
+};
+
 export type temporalRetireDraftResponse204 = {
   data: void;
   status: 204;
@@ -12672,6 +12749,122 @@ export const temporalSetOccurrenceRealityPolicy = async (
     status: res.status,
     headers: res.headers,
   } as temporalSetOccurrenceRealityPolicyResponse;
+};
+
+export type temporalListOpenRecurrenceAllowancesResponse200 = {
+  data: RenewalNoticeResponse[];
+  status: 200;
+};
+
+export type temporalListOpenRecurrenceAllowancesResponseSuccess =
+  temporalListOpenRecurrenceAllowancesResponse200 & {
+    headers: Headers;
+  };
+export type temporalListOpenRecurrenceAllowancesResponse =
+  temporalListOpenRecurrenceAllowancesResponseSuccess;
+
+export const getTemporalListOpenRecurrenceAllowancesUrl = () => {
+  return `/api/v1/temporal/open-recurrence-allowances`;
+};
+
+/**
+ * @summary List Renewal Notices
+ */
+export const temporalListOpenRecurrenceAllowances = async (
+  options?: RequestInit,
+  fetchFn?: typeof globalThis.fetch,
+): Promise<temporalListOpenRecurrenceAllowancesResponse> => {
+  const res = await (fetchFn ?? fetch)(
+    getTemporalListOpenRecurrenceAllowancesUrl(),
+    {
+      ...options,
+      method: 'GET',
+    },
+  );
+
+  const body = [204, 205, 304].includes(res.status) ? null : await res.text();
+
+  const data: temporalListOpenRecurrenceAllowancesResponse['data'] = body
+    ? JSON.parse(body)
+    : {};
+  return {
+    data,
+    status: res.status,
+    headers: res.headers,
+  } as temporalListOpenRecurrenceAllowancesResponse;
+};
+
+export type temporalDecideOpenRecurrenceAllowanceResponse204 = {
+  data: void;
+  status: 204;
+};
+
+export type temporalDecideOpenRecurrenceAllowanceResponse422 = {
+  data: HTTPValidationError;
+  status: 422;
+};
+
+export type temporalDecideOpenRecurrenceAllowanceResponseSuccess =
+  temporalDecideOpenRecurrenceAllowanceResponse204 & {
+    headers: Headers;
+  };
+export type temporalDecideOpenRecurrenceAllowanceResponseError =
+  temporalDecideOpenRecurrenceAllowanceResponse422 & {
+    headers: Headers;
+  };
+
+export type temporalDecideOpenRecurrenceAllowanceResponse =
+  | temporalDecideOpenRecurrenceAllowanceResponseSuccess
+  | temporalDecideOpenRecurrenceAllowanceResponseError;
+
+export const getTemporalDecideOpenRecurrenceAllowanceUrl = (
+  owner: 'routine' | 'event',
+  sourceRef: string,
+) => {
+  return `/api/v1/temporal/open-recurrence-allowances/${owner}/${sourceRef}/decision`;
+};
+
+/**
+ * @summary Decide Renewal
+ */
+export const temporalDecideOpenRecurrenceAllowance = async (
+  owner: 'routine' | 'event',
+  sourceRef: string,
+  renewalDecisionRequest: RenewalDecisionRequest,
+  options?: RequestInit,
+  fetchFn?: typeof globalThis.fetch,
+): Promise<temporalDecideOpenRecurrenceAllowanceResponse> => {
+  const getHeaders = (
+    h?: NonNullable<RequestInit['headers']>,
+  ): Record<string, string | readonly string[]> => {
+    if (!h) return {};
+    if (h instanceof Headers) return Object.fromEntries(h.entries());
+    if (Array.isArray(h)) return Object.fromEntries(h);
+    return h;
+  };
+  const res = await (fetchFn ?? fetch)(
+    getTemporalDecideOpenRecurrenceAllowanceUrl(owner, sourceRef),
+    {
+      ...options,
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        ...getHeaders(options?.headers),
+      },
+      body: JSON.stringify(renewalDecisionRequest),
+    },
+  );
+
+  const body = [204, 205, 304].includes(res.status) ? null : await res.text();
+
+  const data: temporalDecideOpenRecurrenceAllowanceResponse['data'] = body
+    ? JSON.parse(body)
+    : undefined;
+  return {
+    data,
+    status: res.status,
+    headers: res.headers,
+  } as temporalDecideOpenRecurrenceAllowanceResponse;
 };
 
 export type temporalListOutcomeConfirmationsResponse200 = {

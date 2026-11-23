@@ -9,6 +9,7 @@ import * as zod from 'zod/mini';
 export const elapsedRecurrenceResponseElapsedSecondsRegExp = new RegExp(
   '^(?!^[-+.]*$)[+-]?0*(?:\\d{0,14}|(?=[\\d.]{1,21}0*$)\\d{0,14}\\.\\d{0,6}0*$)',
 );
+export const elapsedRecurrenceResponseExpectedOccurrenceCountOneMax = 730;
 
 export const elapsedRecurrenceResponseFamilyCodeDefault = `elapsed_interval`;
 export const ElapsedRecurrenceResponse = /*#__PURE__*/ zod.object({
@@ -31,7 +32,14 @@ export const ElapsedRecurrenceResponse = /*#__PURE__*/ zod.object({
     ),
   expected_occurrence_count: /*#__PURE__*/ zod.optional(
     /*#__PURE__*/ zod.union([
-      /*#__PURE__*/ zod.int().check(/*#__PURE__*/ zod.gte(1)),
+      /*#__PURE__*/ zod
+        .int()
+        .check(/*#__PURE__*/ zod.gte(1))
+        .check(
+          /*#__PURE__*/ zod.lte(
+            elapsedRecurrenceResponseExpectedOccurrenceCountOneMax,
+          ),
+        ),
       /*#__PURE__*/ zod.null(),
     ]),
   ),

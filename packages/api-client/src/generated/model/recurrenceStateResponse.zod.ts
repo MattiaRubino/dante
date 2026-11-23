@@ -6,6 +6,8 @@
  */
 import * as zod from 'zod/mini';
 
+export const recurrenceStateResponseRecurrenceOneExpectedOccurrenceCountOneMax = 730;
+
 export const recurrenceStateResponseRecurrenceOneFamilyCodeDefault = `calendar_wall_clock`;
 export const recurrenceStateResponseRecurrenceOneIntervalCountMax = 10000;
 
@@ -37,6 +39,7 @@ export const recurrenceStateResponseRecurrenceTwoElapsedSecondsRegExp =
   new RegExp(
     '^(?!^[-+.]*$)[+-]?0*(?:\\d{0,14}|(?=[\\d.]{1,21}0*$)\\d{0,14}\\.\\d{0,6}0*$)',
   );
+export const recurrenceStateResponseRecurrenceTwoExpectedOccurrenceCountOneMax = 730;
 
 export const recurrenceStateResponseRecurrenceTwoFamilyCodeDefault = `elapsed_interval`;
 export const recurrenceStateResponseRecurrenceThreeFamilyCodeDefault = `quota_per_period`;
@@ -49,6 +52,8 @@ export const recurrenceStateResponseRecurrenceThreeWeekStartOneMax = 7;
 export const recurrenceStateResponseRecurrenceThreeZoneIdOneMax = 200;
 
 export const recurrenceStateResponseRecurrenceFourCycleLengthMax = 10000;
+
+export const recurrenceStateResponseRecurrenceFourExpectedOccurrenceCountOneMax = 730;
 
 export const recurrenceStateResponseRecurrenceFourFamilyCodeDefault = `cyclic_positional`;
 export const recurrenceStateResponseRecurrenceFourGeneratesExpectedMax = 10000;
@@ -77,7 +82,14 @@ export const RecurrenceStateResponse = /*#__PURE__*/ zod.object({
       ),
       expected_occurrence_count: /*#__PURE__*/ zod.optional(
         /*#__PURE__*/ zod.union([
-          /*#__PURE__*/ zod.int().check(/*#__PURE__*/ zod.gte(1)),
+          /*#__PURE__*/ zod
+            .int()
+            .check(/*#__PURE__*/ zod.gte(1))
+            .check(
+              /*#__PURE__*/ zod.lte(
+                recurrenceStateResponseRecurrenceOneExpectedOccurrenceCountOneMax,
+              ),
+            ),
           /*#__PURE__*/ zod.null(),
         ]),
       ),
@@ -253,7 +265,14 @@ export const RecurrenceStateResponse = /*#__PURE__*/ zod.object({
         ),
       expected_occurrence_count: /*#__PURE__*/ zod.optional(
         /*#__PURE__*/ zod.union([
-          /*#__PURE__*/ zod.int().check(/*#__PURE__*/ zod.gte(1)),
+          /*#__PURE__*/ zod
+            .int()
+            .check(/*#__PURE__*/ zod.gte(1))
+            .check(
+              /*#__PURE__*/ zod.lte(
+                recurrenceStateResponseRecurrenceTwoExpectedOccurrenceCountOneMax,
+              ),
+            ),
           /*#__PURE__*/ zod.null(),
         ]),
       ),
@@ -365,7 +384,14 @@ export const RecurrenceStateResponse = /*#__PURE__*/ zod.object({
       ),
       expected_occurrence_count: /*#__PURE__*/ zod.optional(
         /*#__PURE__*/ zod.union([
-          /*#__PURE__*/ zod.int().check(/*#__PURE__*/ zod.gte(1)),
+          /*#__PURE__*/ zod
+            .int()
+            .check(/*#__PURE__*/ zod.gte(1))
+            .check(
+              /*#__PURE__*/ zod.lte(
+                recurrenceStateResponseRecurrenceFourExpectedOccurrenceCountOneMax,
+              ),
+            ),
           /*#__PURE__*/ zod.null(),
         ]),
       ),

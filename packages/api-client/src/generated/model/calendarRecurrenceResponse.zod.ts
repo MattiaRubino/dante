@@ -6,6 +6,8 @@
  */
 import * as zod from 'zod/mini';
 
+export const calendarRecurrenceResponseExpectedOccurrenceCountOneMax = 730;
+
 export const calendarRecurrenceResponseFamilyCodeDefault = `calendar_wall_clock`;
 export const calendarRecurrenceResponseIntervalCountMax = 10000;
 
@@ -52,7 +54,14 @@ export const CalendarRecurrenceResponse = /*#__PURE__*/ zod.object({
   ),
   expected_occurrence_count: /*#__PURE__*/ zod.optional(
     /*#__PURE__*/ zod.union([
-      /*#__PURE__*/ zod.int().check(/*#__PURE__*/ zod.gte(1)),
+      /*#__PURE__*/ zod
+        .int()
+        .check(/*#__PURE__*/ zod.gte(1))
+        .check(
+          /*#__PURE__*/ zod.lte(
+            calendarRecurrenceResponseExpectedOccurrenceCountOneMax,
+          ),
+        ),
       /*#__PURE__*/ zod.null(),
     ]),
   ),

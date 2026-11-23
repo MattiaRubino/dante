@@ -10,6 +10,8 @@ export const startExistingEventRecurrenceRequestExpectedProfileRevisionMin = 0;
 
 export const startExistingEventRecurrenceRequestOperationIdMax = 200;
 
+export const startExistingEventRecurrenceRequestRecurrenceExpectedOccurrenceCountOneMax = 730;
+
 export const startExistingEventRecurrenceRequestRecurrenceFamilyCodeDefault = `calendar_wall_clock`;
 export const startExistingEventRecurrenceRequestRecurrenceIntervalCountMax = 10000;
 
@@ -75,7 +77,14 @@ export const StartExistingEventRecurrenceRequest = /*#__PURE__*/ zod.object({
     ),
     expected_occurrence_count: /*#__PURE__*/ zod.optional(
       /*#__PURE__*/ zod.union([
-        /*#__PURE__*/ zod.int().check(/*#__PURE__*/ zod.gte(1)),
+        /*#__PURE__*/ zod
+          .int()
+          .check(/*#__PURE__*/ zod.gte(1))
+          .check(
+            /*#__PURE__*/ zod.lte(
+              startExistingEventRecurrenceRequestRecurrenceExpectedOccurrenceCountOneMax,
+            ),
+          ),
         /*#__PURE__*/ zod.null(),
       ]),
     ),

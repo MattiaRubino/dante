@@ -23,6 +23,8 @@ export const createRecurringEventRequestOperationIdMax = 200;
 
 export const createRecurringEventRequestPlacementProtectedDefault = false;
 export const createRecurringEventRequestRealityModeDefault = `manual`;
+export const createRecurringEventRequestRecurrenceOneExpectedOccurrenceCountOneMax = 730;
+
 export const createRecurringEventRequestRecurrenceOneFamilyCodeDefault = `calendar_wall_clock`;
 export const createRecurringEventRequestRecurrenceOneIntervalCountMax = 10000;
 
@@ -56,6 +58,7 @@ export const createRecurringEventRequestRecurrenceTwoElapsedSecondsTwoRegExp =
   new RegExp(
     '^(?!^[-+.]*$)[+-]?0*(?:\\d{0,14}|(?=[\\d.]{1,21}0*$)\\d{0,14}\\.\\d{0,6}0*$)',
   );
+export const createRecurringEventRequestRecurrenceTwoExpectedOccurrenceCountOneMax = 730;
 
 export const createRecurringEventRequestRecurrenceTwoFamilyCodeDefault = `elapsed_interval`;
 export const createRecurringEventRequestRecurrenceThreeFamilyCodeDefault = `quota_per_period`;
@@ -68,6 +71,8 @@ export const createRecurringEventRequestRecurrenceThreeWeekStartOneMax = 7;
 export const createRecurringEventRequestRecurrenceThreeZoneIdOneMax = 200;
 
 export const createRecurringEventRequestRecurrenceFourCycleLengthMax = 10000;
+
+export const createRecurringEventRequestRecurrenceFourExpectedOccurrenceCountOneMax = 730;
 
 export const createRecurringEventRequestRecurrenceFourFamilyCodeDefault = `cyclic_positional`;
 export const createRecurringEventRequestRecurrenceFourGeneratesExpectedMax = 10000;
@@ -226,7 +231,14 @@ export const CreateRecurringEventRequest = /*#__PURE__*/ zod.object({
       ),
       expected_occurrence_count: /*#__PURE__*/ zod.optional(
         /*#__PURE__*/ zod.union([
-          /*#__PURE__*/ zod.int().check(/*#__PURE__*/ zod.gte(1)),
+          /*#__PURE__*/ zod
+            .int()
+            .check(/*#__PURE__*/ zod.gte(1))
+            .check(
+              /*#__PURE__*/ zod.lte(
+                createRecurringEventRequestRecurrenceOneExpectedOccurrenceCountOneMax,
+              ),
+            ),
           /*#__PURE__*/ zod.null(),
         ]),
       ),
@@ -411,7 +423,14 @@ export const CreateRecurringEventRequest = /*#__PURE__*/ zod.object({
       ]),
       expected_occurrence_count: /*#__PURE__*/ zod.optional(
         /*#__PURE__*/ zod.union([
-          /*#__PURE__*/ zod.int().check(/*#__PURE__*/ zod.gte(1)),
+          /*#__PURE__*/ zod
+            .int()
+            .check(/*#__PURE__*/ zod.gte(1))
+            .check(
+              /*#__PURE__*/ zod.lte(
+                createRecurringEventRequestRecurrenceTwoExpectedOccurrenceCountOneMax,
+              ),
+            ),
           /*#__PURE__*/ zod.null(),
         ]),
       ),
@@ -523,7 +542,14 @@ export const CreateRecurringEventRequest = /*#__PURE__*/ zod.object({
       ),
       expected_occurrence_count: /*#__PURE__*/ zod.optional(
         /*#__PURE__*/ zod.union([
-          /*#__PURE__*/ zod.int().check(/*#__PURE__*/ zod.gte(1)),
+          /*#__PURE__*/ zod
+            .int()
+            .check(/*#__PURE__*/ zod.gte(1))
+            .check(
+              /*#__PURE__*/ zod.lte(
+                createRecurringEventRequestRecurrenceFourExpectedOccurrenceCountOneMax,
+              ),
+            ),
           /*#__PURE__*/ zod.null(),
         ]),
       ),

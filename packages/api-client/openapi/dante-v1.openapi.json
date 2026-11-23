@@ -4361,6 +4361,7 @@
           "expected_occurrence_count": {
             "anyOf": [
               {
+                "maximum": 730.0,
                 "minimum": 1.0,
                 "type": "integer"
               },
@@ -4540,6 +4541,7 @@
           "expected_occurrence_count": {
             "anyOf": [
               {
+                "maximum": 730.0,
                 "minimum": 1.0,
                 "type": "integer"
               },
@@ -5977,6 +5979,7 @@
           "expected_occurrence_count": {
             "anyOf": [
               {
+                "maximum": 730.0,
                 "minimum": 1.0,
                 "type": "integer"
               },
@@ -6057,6 +6060,7 @@
           "expected_occurrence_count": {
             "anyOf": [
               {
+                "maximum": 730.0,
                 "minimum": 1.0,
                 "type": "integer"
               },
@@ -6379,6 +6383,77 @@
           "cycle"
         ],
         "title": "DependencyFindingResponse",
+        "type": "object"
+      },
+      "DraftVaultMoveRequest": {
+        "additionalProperties": false,
+        "description": "Fresh inert snapshot plus the original's current destructive CAS.",
+        "properties": {
+          "draft_ref": {
+            "format": "uuid",
+            "title": "Draft Ref",
+            "type": "string"
+          },
+          "expected_fingerprint": {
+            "pattern": "^[a-f0-9]{64}$",
+            "title": "Expected Fingerprint",
+            "type": "string"
+          },
+          "expected_profile_revision": {
+            "anyOf": [
+              {
+                "minimum": 0.0,
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Expected Profile Revision"
+          },
+          "expected_revision": {
+            "anyOf": [
+              {
+                "minimum": 1.0,
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Expected Revision"
+          },
+          "operation_id": {
+            "maxLength": 200,
+            "minLength": 1,
+            "title": "Operation Id",
+            "type": "string"
+          },
+          "payload": {
+            "additionalProperties": true,
+            "title": "Payload",
+            "type": "object"
+          },
+          "subject_kind": {
+            "enum": ["activity", "event"],
+            "title": "Subject Kind",
+            "type": "string"
+          },
+          "title": {
+            "maxLength": 300,
+            "title": "Title",
+            "type": "string"
+          }
+        },
+        "required": [
+          "draft_ref",
+          "operation_id",
+          "subject_kind",
+          "title",
+          "payload",
+          "expected_fingerprint"
+        ],
+        "title": "DraftVaultMoveRequest",
         "type": "object"
       },
       "DraftVaultResponse": {
@@ -6737,6 +6812,7 @@
           "expected_occurrence_count": {
             "anyOf": [
               {
+                "maximum": 730.0,
                 "minimum": 1.0,
                 "type": "integer"
               },
@@ -6806,6 +6882,7 @@
           "expected_occurrence_count": {
             "anyOf": [
               {
+                "maximum": 730.0,
                 "minimum": 1.0,
                 "type": "integer"
               },
@@ -13842,6 +13919,86 @@
         },
         "required": ["operation_id", "expected_source_revision", "title"],
         "title": "RenameRoutineRequest",
+        "type": "object"
+      },
+      "RenewalDecisionRequest": {
+        "additionalProperties": false,
+        "properties": {
+          "decision": {
+            "enum": ["extend", "decline"],
+            "title": "Decision",
+            "type": "string"
+          },
+          "expected_material_state_ref": {
+            "format": "uuid",
+            "title": "Expected Material State Ref",
+            "type": "string"
+          },
+          "expected_revision": {
+            "minimum": 0.0,
+            "title": "Expected Revision",
+            "type": "integer"
+          },
+          "operation_id": {
+            "maxLength": 200,
+            "minLength": 1,
+            "title": "Operation Id",
+            "type": "string"
+          }
+        },
+        "required": [
+          "operation_id",
+          "expected_material_state_ref",
+          "expected_revision",
+          "decision"
+        ],
+        "title": "RenewalDecisionRequest",
+        "type": "object"
+      },
+      "RenewalNoticeResponse": {
+        "properties": {
+          "allowed_count": {
+            "title": "Allowed Count",
+            "type": "integer"
+          },
+          "material_state_ref": {
+            "format": "uuid",
+            "title": "Material State Ref",
+            "type": "string"
+          },
+          "owner": {
+            "enum": ["routine", "event"],
+            "title": "Owner",
+            "type": "string"
+          },
+          "remaining_count": {
+            "title": "Remaining Count",
+            "type": "integer"
+          },
+          "revision": {
+            "title": "Revision",
+            "type": "integer"
+          },
+          "source_ref": {
+            "format": "uuid",
+            "title": "Source Ref",
+            "type": "string"
+          },
+          "title": {
+            "title": "Title",
+            "type": "string"
+          }
+        },
+        "required": [
+          "owner",
+          "source_ref",
+          "title",
+          "material_state_ref",
+          "allowed_count",
+          "remaining_count",
+          "revision"
+        ],
+        "title": "RenewalNoticeResponse",
         "type": "object"
       },
       "ReorderLifeAreasRequest": {
@@ -32485,6 +32642,58 @@
         "tags": ["temporal"]
       }
     },
+    "/api/v1/temporal/drafts/move/{source_ref}": {
+      "post": {
+        "description": "Commit draft+hard deletion atomically; no orphaned draft or lost facts on failure.\n\nOnly standalone owner Activity/Event subjects qualify. Series/occurrence\nscope is never inferred, and the owner must confirm the irreversible\ndeletion CAS captured before this command.",
+        "operationId": "temporal_move_self_item_to_draft",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "source_ref",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Source Ref",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DraftVaultMoveRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DraftVaultResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Move Self Item To Draft",
+        "tags": ["temporal"]
+      }
+    },
     "/api/v1/temporal/drafts/{draft_ref}": {
       "delete": {
         "operationId": "temporal_retire_draft",
@@ -36194,6 +36403,83 @@
           }
         },
         "summary": "Set Occurrence Reality Policy",
+        "tags": ["temporal"]
+      }
+    },
+    "/api/v1/temporal/open-recurrence-allowances": {
+      "get": {
+        "operationId": "temporal_list_open_recurrence_allowances",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/RenewalNoticeResponse"
+                  },
+                  "title": "Response Temporal List Open Recurrence Allowances",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "List Renewal Notices",
+        "tags": ["temporal"]
+      }
+    },
+    "/api/v1/temporal/open-recurrence-allowances/{owner}/{source_ref}/decision": {
+      "post": {
+        "operationId": "temporal_decide_open_recurrence_allowance",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "owner",
+            "required": true,
+            "schema": {
+              "enum": ["routine", "event"],
+              "title": "Owner",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "source_ref",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Source Ref",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RenewalDecisionRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Decide Renewal",
         "tags": ["temporal"]
       }
     },

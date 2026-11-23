@@ -23,6 +23,8 @@ export const temporalCreateRecurringEventBodyOperationIdMax = 200;
 
 export const temporalCreateRecurringEventBodyPlacementProtectedDefault = false;
 export const temporalCreateRecurringEventBodyRealityModeDefault = `manual`;
+export const temporalCreateRecurringEventBodyRecurrenceOneExpectedOccurrenceCountOneMax = 730;
+
 export const temporalCreateRecurringEventBodyRecurrenceOneFamilyCodeDefault = `calendar_wall_clock`;
 export const temporalCreateRecurringEventBodyRecurrenceOneIntervalCountMax = 10000;
 
@@ -56,6 +58,7 @@ export const temporalCreateRecurringEventBodyRecurrenceTwoElapsedSecondsTwoRegEx
   new RegExp(
     '^(?!^[-+.]*$)[+-]?0*(?:\\d{0,14}|(?=[\\d.]{1,21}0*$)\\d{0,14}\\.\\d{0,6}0*$)',
   );
+export const temporalCreateRecurringEventBodyRecurrenceTwoExpectedOccurrenceCountOneMax = 730;
 
 export const temporalCreateRecurringEventBodyRecurrenceTwoFamilyCodeDefault = `elapsed_interval`;
 export const temporalCreateRecurringEventBodyRecurrenceThreeFamilyCodeDefault = `quota_per_period`;
@@ -68,6 +71,8 @@ export const temporalCreateRecurringEventBodyRecurrenceThreeWeekStartOneMax = 7;
 export const temporalCreateRecurringEventBodyRecurrenceThreeZoneIdOneMax = 200;
 
 export const temporalCreateRecurringEventBodyRecurrenceFourCycleLengthMax = 10000;
+
+export const temporalCreateRecurringEventBodyRecurrenceFourExpectedOccurrenceCountOneMax = 730;
 
 export const temporalCreateRecurringEventBodyRecurrenceFourFamilyCodeDefault = `cyclic_positional`;
 export const temporalCreateRecurringEventBodyRecurrenceFourGeneratesExpectedMax = 10000;
@@ -234,7 +239,14 @@ export const TemporalCreateRecurringEventBody = /*#__PURE__*/ zod.object({
       ),
       expected_occurrence_count: /*#__PURE__*/ zod.optional(
         /*#__PURE__*/ zod.union([
-          /*#__PURE__*/ zod.int().check(/*#__PURE__*/ zod.gte(1)),
+          /*#__PURE__*/ zod
+            .int()
+            .check(/*#__PURE__*/ zod.gte(1))
+            .check(
+              /*#__PURE__*/ zod.lte(
+                temporalCreateRecurringEventBodyRecurrenceOneExpectedOccurrenceCountOneMax,
+              ),
+            ),
           /*#__PURE__*/ zod.null(),
         ]),
       ),
@@ -419,7 +431,14 @@ export const TemporalCreateRecurringEventBody = /*#__PURE__*/ zod.object({
       ]),
       expected_occurrence_count: /*#__PURE__*/ zod.optional(
         /*#__PURE__*/ zod.union([
-          /*#__PURE__*/ zod.int().check(/*#__PURE__*/ zod.gte(1)),
+          /*#__PURE__*/ zod
+            .int()
+            .check(/*#__PURE__*/ zod.gte(1))
+            .check(
+              /*#__PURE__*/ zod.lte(
+                temporalCreateRecurringEventBodyRecurrenceTwoExpectedOccurrenceCountOneMax,
+              ),
+            ),
           /*#__PURE__*/ zod.null(),
         ]),
       ),
@@ -531,7 +550,14 @@ export const TemporalCreateRecurringEventBody = /*#__PURE__*/ zod.object({
       ),
       expected_occurrence_count: /*#__PURE__*/ zod.optional(
         /*#__PURE__*/ zod.union([
-          /*#__PURE__*/ zod.int().check(/*#__PURE__*/ zod.gte(1)),
+          /*#__PURE__*/ zod
+            .int()
+            .check(/*#__PURE__*/ zod.gte(1))
+            .check(
+              /*#__PURE__*/ zod.lte(
+                temporalCreateRecurringEventBodyRecurrenceFourExpectedOccurrenceCountOneMax,
+              ),
+            ),
           /*#__PURE__*/ zod.null(),
         ]),
       ),

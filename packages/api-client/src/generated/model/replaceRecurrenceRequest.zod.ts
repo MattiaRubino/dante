@@ -8,6 +8,8 @@ import * as zod from 'zod/mini';
 
 export const replaceRecurrenceRequestOperationIdMax = 200;
 
+export const replaceRecurrenceRequestRecurrenceOneExpectedOccurrenceCountOneMax = 730;
+
 export const replaceRecurrenceRequestRecurrenceOneFamilyCodeDefault = `calendar_wall_clock`;
 export const replaceRecurrenceRequestRecurrenceOneIntervalCountMax = 10000;
 
@@ -41,6 +43,7 @@ export const replaceRecurrenceRequestRecurrenceTwoElapsedSecondsTwoRegExp =
   new RegExp(
     '^(?!^[-+.]*$)[+-]?0*(?:\\d{0,14}|(?=[\\d.]{1,21}0*$)\\d{0,14}\\.\\d{0,6}0*$)',
   );
+export const replaceRecurrenceRequestRecurrenceTwoExpectedOccurrenceCountOneMax = 730;
 
 export const replaceRecurrenceRequestRecurrenceTwoFamilyCodeDefault = `elapsed_interval`;
 export const replaceRecurrenceRequestRecurrenceThreeFamilyCodeDefault = `quota_per_period`;
@@ -53,6 +56,8 @@ export const replaceRecurrenceRequestRecurrenceThreeWeekStartOneMax = 7;
 export const replaceRecurrenceRequestRecurrenceThreeZoneIdOneMax = 200;
 
 export const replaceRecurrenceRequestRecurrenceFourCycleLengthMax = 10000;
+
+export const replaceRecurrenceRequestRecurrenceFourExpectedOccurrenceCountOneMax = 730;
 
 export const replaceRecurrenceRequestRecurrenceFourFamilyCodeDefault = `cyclic_positional`;
 export const replaceRecurrenceRequestRecurrenceFourGeneratesExpectedMax = 10000;
@@ -90,7 +95,14 @@ export const ReplaceRecurrenceRequest = /*#__PURE__*/ zod.object({
       ),
       expected_occurrence_count: /*#__PURE__*/ zod.optional(
         /*#__PURE__*/ zod.union([
-          /*#__PURE__*/ zod.int().check(/*#__PURE__*/ zod.gte(1)),
+          /*#__PURE__*/ zod
+            .int()
+            .check(/*#__PURE__*/ zod.gte(1))
+            .check(
+              /*#__PURE__*/ zod.lte(
+                replaceRecurrenceRequestRecurrenceOneExpectedOccurrenceCountOneMax,
+              ),
+            ),
           /*#__PURE__*/ zod.null(),
         ]),
       ),
@@ -275,7 +287,14 @@ export const ReplaceRecurrenceRequest = /*#__PURE__*/ zod.object({
       ]),
       expected_occurrence_count: /*#__PURE__*/ zod.optional(
         /*#__PURE__*/ zod.union([
-          /*#__PURE__*/ zod.int().check(/*#__PURE__*/ zod.gte(1)),
+          /*#__PURE__*/ zod
+            .int()
+            .check(/*#__PURE__*/ zod.gte(1))
+            .check(
+              /*#__PURE__*/ zod.lte(
+                replaceRecurrenceRequestRecurrenceTwoExpectedOccurrenceCountOneMax,
+              ),
+            ),
           /*#__PURE__*/ zod.null(),
         ]),
       ),
@@ -387,7 +406,14 @@ export const ReplaceRecurrenceRequest = /*#__PURE__*/ zod.object({
       ),
       expected_occurrence_count: /*#__PURE__*/ zod.optional(
         /*#__PURE__*/ zod.union([
-          /*#__PURE__*/ zod.int().check(/*#__PURE__*/ zod.gte(1)),
+          /*#__PURE__*/ zod
+            .int()
+            .check(/*#__PURE__*/ zod.gte(1))
+            .check(
+              /*#__PURE__*/ zod.lte(
+                replaceRecurrenceRequestRecurrenceFourExpectedOccurrenceCountOneMax,
+              ),
+            ),
           /*#__PURE__*/ zod.null(),
         ]),
       ),

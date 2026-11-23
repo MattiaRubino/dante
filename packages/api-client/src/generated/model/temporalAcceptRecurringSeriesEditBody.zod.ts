@@ -13,6 +13,8 @@ export const temporalAcceptRecurringSeriesEditBodyExpectedRevisionMin = 0;
 
 export const temporalAcceptRecurringSeriesEditBodyOperationIdMax = 200;
 
+export const temporalAcceptRecurringSeriesEditBodyRecurrenceExpectedOccurrenceCountOneMax = 730;
+
 export const temporalAcceptRecurringSeriesEditBodyRecurrenceFamilyCodeDefault = `calendar_wall_clock`;
 export const temporalAcceptRecurringSeriesEditBodyRecurrenceIntervalCountMax = 10000;
 
@@ -107,7 +109,14 @@ export const TemporalAcceptRecurringSeriesEditBody = /*#__PURE__*/ zod.object({
     ),
     expected_occurrence_count: /*#__PURE__*/ zod.optional(
       /*#__PURE__*/ zod.union([
-        /*#__PURE__*/ zod.int().check(/*#__PURE__*/ zod.gte(1)),
+        /*#__PURE__*/ zod
+          .int()
+          .check(/*#__PURE__*/ zod.gte(1))
+          .check(
+            /*#__PURE__*/ zod.lte(
+              temporalAcceptRecurringSeriesEditBodyRecurrenceExpectedOccurrenceCountOneMax,
+            ),
+          ),
         /*#__PURE__*/ zod.null(),
       ]),
     ),

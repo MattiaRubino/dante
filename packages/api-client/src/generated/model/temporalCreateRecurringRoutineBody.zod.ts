@@ -15,6 +15,8 @@ export const temporalCreateRecurringRoutineBodyLifeAreaOneNewNameOneMax = 100;
 
 export const temporalCreateRecurringRoutineBodyOperationIdMax = 200;
 
+export const temporalCreateRecurringRoutineBodyRecurrenceOneExpectedOccurrenceCountOneMax = 730;
+
 export const temporalCreateRecurringRoutineBodyRecurrenceOneFamilyCodeDefault = `calendar_wall_clock`;
 export const temporalCreateRecurringRoutineBodyRecurrenceOneIntervalCountMax = 10000;
 
@@ -48,6 +50,7 @@ export const temporalCreateRecurringRoutineBodyRecurrenceTwoElapsedSecondsTwoReg
   new RegExp(
     '^(?!^[-+.]*$)[+-]?0*(?:\\d{0,14}|(?=[\\d.]{1,21}0*$)\\d{0,14}\\.\\d{0,6}0*$)',
   );
+export const temporalCreateRecurringRoutineBodyRecurrenceTwoExpectedOccurrenceCountOneMax = 730;
 
 export const temporalCreateRecurringRoutineBodyRecurrenceTwoFamilyCodeDefault = `elapsed_interval`;
 export const temporalCreateRecurringRoutineBodyRecurrenceThreeFamilyCodeDefault = `quota_per_period`;
@@ -60,6 +63,8 @@ export const temporalCreateRecurringRoutineBodyRecurrenceThreeWeekStartOneMax = 
 export const temporalCreateRecurringRoutineBodyRecurrenceThreeZoneIdOneMax = 200;
 
 export const temporalCreateRecurringRoutineBodyRecurrenceFourCycleLengthMax = 10000;
+
+export const temporalCreateRecurringRoutineBodyRecurrenceFourExpectedOccurrenceCountOneMax = 730;
 
 export const temporalCreateRecurringRoutineBodyRecurrenceFourFamilyCodeDefault = `cyclic_positional`;
 export const temporalCreateRecurringRoutineBodyRecurrenceFourGeneratesExpectedMax = 10000;
@@ -169,7 +174,14 @@ export const TemporalCreateRecurringRoutineBody = /*#__PURE__*/ zod.object({
       ),
       expected_occurrence_count: /*#__PURE__*/ zod.optional(
         /*#__PURE__*/ zod.union([
-          /*#__PURE__*/ zod.int().check(/*#__PURE__*/ zod.gte(1)),
+          /*#__PURE__*/ zod
+            .int()
+            .check(/*#__PURE__*/ zod.gte(1))
+            .check(
+              /*#__PURE__*/ zod.lte(
+                temporalCreateRecurringRoutineBodyRecurrenceOneExpectedOccurrenceCountOneMax,
+              ),
+            ),
           /*#__PURE__*/ zod.null(),
         ]),
       ),
@@ -354,7 +366,14 @@ export const TemporalCreateRecurringRoutineBody = /*#__PURE__*/ zod.object({
       ]),
       expected_occurrence_count: /*#__PURE__*/ zod.optional(
         /*#__PURE__*/ zod.union([
-          /*#__PURE__*/ zod.int().check(/*#__PURE__*/ zod.gte(1)),
+          /*#__PURE__*/ zod
+            .int()
+            .check(/*#__PURE__*/ zod.gte(1))
+            .check(
+              /*#__PURE__*/ zod.lte(
+                temporalCreateRecurringRoutineBodyRecurrenceTwoExpectedOccurrenceCountOneMax,
+              ),
+            ),
           /*#__PURE__*/ zod.null(),
         ]),
       ),
@@ -466,7 +485,14 @@ export const TemporalCreateRecurringRoutineBody = /*#__PURE__*/ zod.object({
       ),
       expected_occurrence_count: /*#__PURE__*/ zod.optional(
         /*#__PURE__*/ zod.union([
-          /*#__PURE__*/ zod.int().check(/*#__PURE__*/ zod.gte(1)),
+          /*#__PURE__*/ zod
+            .int()
+            .check(/*#__PURE__*/ zod.gte(1))
+            .check(
+              /*#__PURE__*/ zod.lte(
+                temporalCreateRecurringRoutineBodyRecurrenceFourExpectedOccurrenceCountOneMax,
+              ),
+            ),
           /*#__PURE__*/ zod.null(),
         ]),
       ),

@@ -8,6 +8,8 @@ import * as zod from 'zod/mini';
 
 export const cyclicRecurrenceResponseCycleLengthMax = 10000;
 
+export const cyclicRecurrenceResponseExpectedOccurrenceCountOneMax = 730;
+
 export const cyclicRecurrenceResponseFamilyCodeDefault = `cyclic_positional`;
 export const cyclicRecurrenceResponseGeneratesExpectedMax = 10000;
 
@@ -25,7 +27,14 @@ export const CyclicRecurrenceResponse = /*#__PURE__*/ zod.object({
   ),
   expected_occurrence_count: /*#__PURE__*/ zod.optional(
     /*#__PURE__*/ zod.union([
-      /*#__PURE__*/ zod.int().check(/*#__PURE__*/ zod.gte(1)),
+      /*#__PURE__*/ zod
+        .int()
+        .check(/*#__PURE__*/ zod.gte(1))
+        .check(
+          /*#__PURE__*/ zod.lte(
+            cyclicRecurrenceResponseExpectedOccurrenceCountOneMax,
+          ),
+        ),
       /*#__PURE__*/ zod.null(),
     ]),
   ),
