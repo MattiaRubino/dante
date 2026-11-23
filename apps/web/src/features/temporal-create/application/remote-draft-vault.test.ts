@@ -88,63 +88,70 @@ describe('Draft Vault remote owner boundary', () => {
       ),
     ).toBe(true);
   });
-  it('moves via a single owner-scoped atomic command, never a separate draft PUT and DELETE', async () => {
-    const mutations: Array<{ path: string; body: Record<string, unknown> }> = [];
-    const fetchFn = vi.fn((input: RequestInfo | URL, init?: RequestInit) => {
-      const path = fetchRequestUrl(input);
-      if (path.endsWith('/auth/session'))
-        return resolvedResponse({ authenticated: true, csrf_token: 'csrf' });
-      if (path.includes('/temporal/drafts/move/') && init?.method === 'POST') {
-        expect(new Headers(init.headers).get('X-Dante-CSRF')).toBe('csrf');
-        const body = JSON.parse(fetchRequestBody(init.body)) as Record<string, unknown>;
-        mutations.push({ path, body });
-        return resolvedResponse({
-          draft_ref: body.draft_ref,
-          subject_kind: body.subject_kind,
-          title: body.title,
-          payload: body.payload,
-          revision: 1,
-          created_at: '2026-10-09T20:00:00Z',
-          updated_at: '2026-10-09T20:00:00Z',
-        });
-      }
-      throw new Error(`Unexpected request: ${path}`);
-    });
-    const fields = { ...createTemporalCreateFields(), title: 'Allenamento' };
-    const snapshot = {
-      version: 1 as const,
-      fields,
-      advanced: createTemporalCreateU2AuthoringDraft(fields),
-      surface: 'full' as const,
-    };
-    const order: string[] = [];
-    const unsubscribe = subscribeTemporalTimelineInvalidation(() => {
-      order.push('timeline-invalidate');
-    });
-    const moved = await createRemoteDraftVault(fetchFn).move(
-      snapshot,
-      'activity-1',
-      'a'.repeat(64),
-      7,
-      () => order.push('committed-local-removal'),
-    );
-    unsubscribe();
-    expect(order).toEqual(['committed-local-removal', 'timeline-invalidate']);
-    expect(mutations).toHaveLength(1);
-    expect(mutations[0]).toMatchObject({
-      path: expect.stringContaining('/drafts/move/activity-1'),
-      body: {
-        subject_kind: 'activity',
-        expected_revision: null,
-        expected_fingerprint: 'a'.repeat(64),
-        expected_profile_revision: 7,
-        payload: { version: 1, fields: { title: 'Allenamento' } },
-      },
-    });
-    expect(moved.subjectKind).toBe('activity');
-    expect(fetchFn.mock.calls.filter(([, init]) => init?.method === 'DELETE')).toHaveLength(0);
-  });
-
+  it(
+    'moves via a single owner-scoped atomic command, never a separate draft PUT and DELETE',
+    async () => {
+      const mutations: Array<{ path: string; body: Record<string, unknown> }> = [];
+      const fetchFn = vi.fn((input: RequestInfo | URL, init?: RequestInit) => {
+        const path = fetchRequestUrl(input);
+        if (path.endsWith('/auth/session'))
+          return resolvedResponse({ authenticated: true, csrf_token: 'csrf' });
+        if (path.includes('/temporal/drafts/move/') && init?.method === 'POST') {
+          expect(new Headers(init.headers).get('X-Dante-CSRF')).toBe('csrf');
+          const body = JSON.parse(fetchRequestBody(init.body)) as Record<
+            string,
+            unknown
+          >;
+          mutations.push({ path, body });
+          return resolvedResponse({
+            draft_ref: body.draft_ref,
+            subject_kind: body.subject_kind,
+            title: body.title,
+            payload: body.payload,
+            revision: 1,
+            created_at: '2026-10-09T20:00:00Z',
+            updated_at: '2026-10-09T20:00:00Z',
+          });
+        }
+        throw new Error(`Unexpected request: ${path}`);
+      });
+      const fields = { ...createTemporalCreateFields(), title: 'Allenamento' };
+      const snapshot = {
+        version: 1 as const,
+        fields,
+        advanced: createTemporalCreateU2AuthoringDraft(fields),
+        surface: 'full' as const,
+      };
+      const order: string[] = [];
+      const unsubscribe = subscribeTemporalTimelineInvalidation(() => {
+        order.push('timeline-invalidate');
+      });
+      const moved = await createRemoteDraftVault(fetchFn).move(
+        snapshot,
+        'activity-1',
+        'a'.repeat(64),
+        7,
+        () => order.push('committed-local-removal'),
+      );
+      unsubscribe();
+      expect(order).toEqual(['committed-local-removal', 'timeline-invalidate']);
+      expect(mutations).toHaveLength(1);
+      expect(mutations[0]).toMatchObject({
+        path: expect.stringContaining('/drafts/move/activity-1'),
+        body: {
+          subject_kind: 'activity',
+          expected_revision: null,
+          expected_fingerprint: 'a'.repeat(64),
+          expected_profile_revision: 7,
+          payload: { version: 1, fields: { title: 'Allenamento' } },
+        },
+      });
+      expect(moved.subjectKind).toBe('activity');
+      expect(
+        fetchFn.mock.calls.filter(([, init]) => init?.method === 'DELETE'),
+      ).toHaveLength(0);
+    },
+  );
 
   it.each([
     { status: 409, expected: 'sono cambiati' },
@@ -242,5 +249,4 @@ describe('Draft Vault remote owner boundary', () => {
     }
     expect(effects).toEqual([]);
   });
-
 });

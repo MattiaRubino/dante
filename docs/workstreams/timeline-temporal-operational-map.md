@@ -1,6 +1,30 @@
 # Timeline / Temporal-Operational — Live Execution Ledger
 
 
+## 2026-11-23 — Owner Vitest 198/199: Event resumed Vault fixture
+
+Owner WSL gate at `4efedb0`: Web TypeScript PASS, 198/199 focused
+Web Vitest PASS. The lone RED was
+`temporal-create-draft-vault.test.tsx` "Resume → Aggiungi ... event":
+the test itself injected `activityStructure.captureMode='live'`
+for **both** kinds, even though a canonical Event cannot own Activity
+Sessions. The real U6 structural validator correctly rejected the invalid
+Event seed with "Le Sessioni pianificate richiedono un’attività."
+Narrow test-only fix: retain `live` and three planned Sessions for Activity,
+but use the canonical `disabled` default for Event. Assert the distinction
+before submitting; do not loosen production validation or reroute API.
+The same local run showed 5/5 remote Vault boundary and 52/52 Event
+Inspector assertions green.
+
+Prettier gate reported formatting warnings for two touched tests:
+`remote-draft-vault.test.ts`, `event-inspector-actions.test.tsx`.
+Format only these focused files (and the corrected Create test)
+using the repository's official `pnpm exec prettier --write`.
+**New candidate remains NOT_RUN until owner WSL reruns Vitest,
+typecheck and Prettier.**
+
+
+
 ## 2026-11-23 — Normal-test audit after Vault move fast fixes
 
 Branch audit from `471bec0` through `4eaf98c`: three changes added

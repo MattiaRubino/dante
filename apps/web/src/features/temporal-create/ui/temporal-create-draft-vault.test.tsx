@@ -172,7 +172,9 @@ describe('Create + Draft Vault', () => {
         ...base,
         activityStructure: {
           ...base.activityStructure,
-          captureMode: 'live' as const,
+          // Events cannot own Activity Sessions; only Activity uses live capture.
+          captureMode:
+            kind === 'activity' ? ('live' as const) : base.activityStructure.captureMode,
           plannedSlices:
             kind === 'activity'
               ? ['1', '2', '3'].map((title) => ({
@@ -200,6 +202,12 @@ describe('Create + Draft Vault', () => {
               }]
             : [],
       };
+      expect(advanced.activityStructure.captureMode).toBe(
+        kind === 'activity' ? 'live' : 'disabled',
+      );
+      expect(advanced.activityStructure.plannedSlices).toHaveLength(
+        kind === 'activity' ? 3 : 0,
+      );
       const view = entry({
         id: kind === 'activity' ? 34 : 35,
         item: {
