@@ -16,6 +16,7 @@ import { ActivityEditPanel } from './activity-edit-panel';
 import { withTemporalOccurrenceInventoryFence } from '../../../temporal/temporal-occurrence-inventory-fence';
 import { SessionAttemptDeleteDialog } from './session-attempt-delete-dialog';
 import type { ActivityDuplicateSeed } from '../../../temporal-create/application/activity-duplicate-seed';
+import type { DraftVaultSnapshot } from '../../../temporal-create/application/remote-draft-vault';
 
 /** Vitest asymmetric matchers are typed as any; preserve their runtime
  * matching semantics without propagating any into the expected payload. */
@@ -58,7 +59,7 @@ const deleteHard = vi.fn();
 // the local removal callback before notifying Timeline subscribers.
 const moveDraft = vi.fn(
   (
-    _snapshot: unknown,
+    _snapshot: DraftVaultSnapshot,
     _ref: string,
     _fingerprint: string,
     _revision: number | null,

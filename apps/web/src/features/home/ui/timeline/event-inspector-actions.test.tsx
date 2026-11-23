@@ -12,6 +12,7 @@ import {
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import type { ActivityDuplicateSeed } from '../../../temporal-create/application/activity-duplicate-seed';
+import type { DraftVaultSnapshot } from '../../../temporal-create/application/remote-draft-vault';
 import { invalidateTemporalTimelineRead } from '../../../temporal/timeline-invalidation';
 import { EventInspectorActions } from './event-inspector-actions';
 import { withTemporalOccurrenceInventoryFence } from '../../../temporal/temporal-occurrence-inventory-fence';
@@ -63,7 +64,7 @@ const confirmHardDeletion = vi.fn();
 // the local removal callback before notifying Timeline subscribers.
 const moveDraft = vi.fn(
   (
-    _snapshot: unknown,
+    _snapshot: DraftVaultSnapshot,
     _ref: string,
     _fingerprint: string,
     _revision: number | null,
