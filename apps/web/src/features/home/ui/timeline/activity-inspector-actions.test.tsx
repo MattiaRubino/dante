@@ -54,6 +54,11 @@ const sessionImpact = vi.fn().mockResolvedValue({
 });
 const deleteSessionAttempt = vi.fn();
 const deleteHard = vi.fn();
+const moveDraft = vi.fn().mockResolvedValue({});
+vi.mock('../../../temporal-create/application/remote-draft-vault', () => ({
+  createRemoteDraftVault: () => ({ move: moveDraft }),
+  notifyDraftVaultUpdated: vi.fn(),
+}));
 const loadSettings = vi.fn();
 const listActivitySessions = vi.fn().mockResolvedValue([]);
 const loadChildCount = vi.fn().mockResolvedValue(0);
@@ -378,6 +383,73 @@ describe('Activity Inspector actions', () => {
     expect(
       screen.queryByRole('button', { name: /Annulla rimozione Timeline/ }),
     ).toBeNull();
+  });
+});
+
+describe('Activity move to inert Draft Vault', () => {
+  it('shows a centered destructive confirmation for paused/recorded Sessions and moves atomically', async () => {
+    get.mockResolvedValue(profile);
+    sessionImpact.mockResolvedValueOnce({
+      fingerprint: 'a'.repeat(64),
+      attempts: [
+        { sessionRef: 'live', status: 'in pausa', plannedScheduleRef: null },
+        { sessionRef: 'ended', status: 'conclusa', plannedScheduleRef: null },
+      ],
+    });
+    const onDeleted = vi.fn();
+    render(
+      <ActivityInspectorActions
+        activityRef={ref}
+        onEdit={() => undefined}
+        onDeleted={onDeleted}
+        onDuplicate={() => undefined}
+      />,
+    );
+    const trigger = await screen.findByRole('button', { name: 'Sposta in Bozze' });
+    fireEvent.click(trigger);
+    const dialog = await screen.findByRole('alertdialog', {
+      name: 'Sposta attività in Bozze',
+    });
+    expect(dialog.textContent).toContain('2 Sessioni');
+    expect(moveDraft).not.toHaveBeenCalled();
+    fireEvent.click(within(dialog).getByRole('button', { name: 'Annulla' }));
+    expect(moveDraft).not.toHaveBeenCalled();
+    fireEvent.click(trigger);
+    const confirm = await screen.findByRole('button', {
+      name: 'Conferma spostamento in Bozze',
+    });
+    fireEvent.click(confirm);
+    await waitFor(() => expect(moveDraft).toHaveBeenCalledOnce());
+    const [snapshot, subjectRef, fingerprint, revision] = moveDraft.mock.calls[0]!;
+    expect(snapshot.fields.kind).toBe('activity');
+    expect(snapshot.fields.title).toBe(profile.title);
+    expect(subjectRef).toBe(ref);
+    expect(fingerprint).toBe('a'.repeat(64));
+    expect(revision).toBe(profile.revision);
+    expect(deleteHard).not.toHaveBeenCalled();
+    expect(retire).not.toHaveBeenCalled();
+    await waitFor(() => expect(onDeleted).toHaveBeenCalledOnce());
+  });
+
+  it('keeps the original open when the atomic move is rejected by the backend', async () => {
+    get.mockResolvedValue(profile);
+    moveDraft.mockRejectedValueOnce(new Error('Conflitto: Sessione cambiata'));
+    const onDeleted = vi.fn();
+    render(
+      <ActivityInspectorActions
+        activityRef={ref}
+        onEdit={() => undefined}
+        onDeleted={onDeleted}
+        onDuplicate={() => undefined}
+      />,
+    );
+    fireEvent.click(await screen.findByRole('button', { name: 'Sposta in Bozze' }));
+    fireEvent.click(await screen.findByRole('button', {
+      name: 'Conferma spostamento in Bozze',
+    }));
+    expect((await screen.findByRole('alert')).textContent).toContain('Sessione cambiata');
+    expect(onDeleted).not.toHaveBeenCalled();
+    expect(retire).not.toHaveBeenCalled();
   });
 });
 

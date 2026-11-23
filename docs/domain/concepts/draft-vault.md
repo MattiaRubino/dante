@@ -1,6 +1,6 @@
 # Draft Vault — Bozze (B14 candidate domain contract)
 
-**Status:** B14 source branch candidate, user-defined semantics, pending PostgreSQL and real-app acceptance.
+**Status:** B14 operational contract; standalone Activity/Event destructive move requires owner-local PostgreSQL, UI and browser acceptance on the final commit.
 **Date:** 2026-10-09
 **Source workstream:** `feature/timeline-temporal-operational`
 
@@ -31,13 +31,41 @@ draft kinds, not prematurely supported or activated.
   domain commands; consume the source draft only after successful authoring.
   Never replay creation if only draft consumption failed.
 - **Delete:** remove only an inert draft owned by the actor under exact revision.
-- **Move an already-created Activity:** build a new snapshot, then retire the
-  original using the canonical guarded owner capability; a history/series/child
-  veto protects facts. On failure, remove the staged snapshot or present a
-  concrete double-presence warning if rollback cleanup also fails.
-- **Already-created Event:** there is currently no equivalent owner-scoped,
-  history-safe Event retirement. Copy into vault is possible but **must not be
-  mislabeled as Move**; retirement requires a separate accepted capability.
+- **Duplicate an existing Activity/Event:** opens the existing Create composer
+  with a clean configuration. Selecting **Salva bozza** there copies it into
+  the Vault without changing the original. The separate **Copia in Bozze**
+  Inspector command is removed, not merely hidden.
+- **Move an existing standalone Activity/Event:** only after an explicit
+  centered destructive confirmation. The owner-scoped backend command
+  atomically saves the inert snapshot **and hard-deletes the original native
+  subject, Sessions, recorded attempts, Objective Observations/Results,
+  execution/participation facts and other dependent historical records**
+  using the same canonical deletion routine as **Elimina definitivamente**.
+  The draft preserves the planning, definitions, Area, intended participants
+  and recurrence settings only; it never includes live timers, attempts,
+  actual result values or accepted progress. The original disappears from
+  Timeline and the saved configuration appears in Bozze.
+- **No partial transfer:** preview captures current owner, revision and
+  destructive CAS fingerprint. The backend verifies them in the same
+  SERIALIZABLE transaction as Vault save and canonical hard-delete. A stale
+  source/Session fingerprint, failed permission check or SQL error rolls back
+  both writes: **no orphaned draft and no partial deletion**. Cancel makes
+  no write; a failed confirmation leaves the original available for review.
+  An Activity with child Activities is excluded until a graph-preserving move
+  is explicitly designed. Planned child Sessions are not Activity children
+  and remain part of the draft's planned configuration.
+- **Active/paused/completed and recorded facts:** never a silent move.
+  The centered popup clearly warns that all active/paused/completed Sessions
+  and recorded Objective results will be permanently removed if confirmed.
+  For Event it warns about recorded Objective/participation facts without
+  introducing Activity Session controls. The action is allowed even when
+  these facts exist because it is an explicitly confirmed **hard deletion**,
+  not the historically guarded **retire** command.
+- **Recurrence guard:** hide **Sposta in Bozze** for a recurring source,
+  individual generated Occurrence and materialized Routine Activity; owner
+  backend checks fail closed even if a client bypasses the UI. No recurrence
+  source, occurrence, exception or already-accepted historical record is
+  repackaged as an ordinary single draft.
 
 ## Coexistence with existing “Da collocare” data
 

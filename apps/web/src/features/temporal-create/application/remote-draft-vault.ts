@@ -1,4 +1,8 @@
 import { createWebFetch } from '../../../platform/api/web-fetch';
+import {
+  invalidateTemporalPlanningRead,
+  invalidateTemporalTimelineRead,
+} from '../../../temporal/timeline-invalidation';
 import type {
   TemporalCreateFields,
   TemporalCreateSurface,
@@ -118,6 +122,51 @@ export function createRemoteDraftVault(
             : 'Non è stato possibile salvare la bozza.',
         );
       return parseItem(await response.json());
+    },
+
+    async move(
+      snapshot: DraftVaultSnapshot,
+      sourceRef: string,
+      fingerprint: string,
+      expectedProfileRevision: number | null,
+    ): Promise<DraftVaultItem> {
+      // This single backend transaction saves the inert Draft and hard-deletes
+      // the source. Never stage a separate client-side save/retire sequence.
+      const response = await request(
+        `${url}/move/${encodeURIComponent(sourceRef)}`,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'X-Dante-CSRF': await csrf(),
+          },
+          body: JSON.stringify({
+            draft_ref: crypto.randomUUID(),
+            operation_id: crypto.randomUUID(),
+            expected_revision: null,
+            subject_kind: snapshot.fields.kind,
+            title: snapshot.fields.title.trim(),
+            payload: snapshot,
+            expected_fingerprint: fingerprint,
+            expected_profile_revision: expectedProfileRevision,
+          }),
+        },
+      );
+      if (!response.ok) {
+        throw new Error(
+          response.status === 409
+            ? 'L’elemento o le registrazioni sono cambiati. Riapri la scheda prima di spostarlo.'
+            : response.status === 404
+              ? 'Elemento non più disponibile.'
+              : 'Spostamento nelle Bozze non riuscito. L’originale è rimasto invariato.',
+        );
+      }
+      const result = parseItem(await response.json());
+      invalidateTemporalTimelineRead();
+      invalidateTemporalPlanningRead();
+      if (typeof window !== 'undefined')
+        window.dispatchEvent(new Event('dante:session-changed'));
+      return result;
     },
 
     async remove(item: DraftVaultItem): Promise<void> {

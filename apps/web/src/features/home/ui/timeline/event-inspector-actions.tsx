@@ -172,6 +172,10 @@ export function EventInspectorActions({
     createRemoteTemporalOrganizationDataSource,
   );
   const [draftVault] = useState(createRemoteDraftVault);
+  const [vaultMove, setVaultMove] = useState<{
+    snapshot: ReturnType<typeof draftVaultSnapshotFromDuplicate>;
+    fingerprint: string;
+  } | null>(null);
   const [profile, setProfile] = useState<TemporalEventDetailRecord | null>(
     null,
   );
@@ -1192,13 +1196,13 @@ export function EventInspectorActions({
     }
   };
 
-  const duplicate = async (intoVault = false) => {
+  const duplicate = async (mode: 'duplicate' | 'move' = 'duplicate') => {
     if (busy) return;
     setBusy(true);
     setError('');
     try {
       const recurring = await recurrenceGuard.isRecurring(eventRef);
-      if (recurring && (intoVault || !occurrenceRef)) {
+      if (recurring && (mode === 'move' || !occurrenceRef)) {
         throw new Error(
           'Apri un’istanza della ricorrenza per precompilarla in Create avanzato.',
         );
@@ -1266,7 +1270,7 @@ export function EventInspectorActions({
         objectives,
         reminder?.enabled ? reminder.leadMinutes : null,
       );
-      if (!intoVault) {
+      if (mode === 'duplicate') {
         onDuplicate(seed);
       } else {
         const organization = await organizationSource.load();
@@ -1289,15 +1293,11 @@ export function EventInspectorActions({
               colorChanged: false,
             }
           : undefined;
-        await draftVault.save(draftVaultSnapshotFromDuplicate(seed, selected), {
-          draftRef: crypto.randomUUID(),
-          revision: null,
-          operationId: crypto.randomUUID(),
+        const preview = await hardDelete.preview(eventRef, 'event_once');
+        setVaultMove({
+          snapshot: draftVaultSnapshotFromDuplicate(seed, selected),
+          fingerprint: preview.fingerprint,
         });
-        notifyDraftVaultUpdated();
-        setProfileNotice(
-          'Copia salvata nelle Bozze. L’Evento originale rimane attivo.',
-        );
       }
     } catch (reason) {
       setError(
@@ -1435,14 +1435,14 @@ export function EventInspectorActions({
         <button
           type="button"
           disabled={busy}
-          aria-label="Copia in Bozze"
-          title="Copia in Bozze"
-          onClick={() => void duplicate(true)}
+          aria-label="Sposta in Bozze"
+          title="Sposta in Bozze"
+          onClick={() => void duplicate('move')}
         >
           {toolbarTarget ? (
             <TimelineInspectorIcon name="vault" />
           ) : (
-            'Copia in Bozze'
+            'Sposta in Bozze'
           )}
         </button>
       ) : null}
@@ -2031,6 +2031,48 @@ export function EventInspectorActions({
         </div>
       ) : null}
       {profileNotice ? <p role="status">{profileNotice}</p> : null}
+      {vaultMove && vaultEligible ? (
+        <TemporalDeleteDialog
+          intent="move"
+          subject="evento"
+          itemTitle={itemTitle ?? profile?.title ?? 'Evento'}
+          scheduleLabel={scheduleLabel}
+          busy={busy}
+          error={error}
+          note="Le registrazioni e i risultati degli Obiettivi confermati verranno eliminati definitivamente. La bozza conserva soltanto la configurazione."
+          choices={[
+            {
+              key: 'move',
+              label: 'Conferma spostamento in Bozze',
+              onConfirm: () => {
+                if (busy) return;
+                setBusy(true);
+                setError('');
+                void draftVault
+                  .move(vaultMove.snapshot, eventRef, vaultMove.fingerprint, null)
+                  .then(() => {
+                    notifyDraftVaultUpdated();
+                    setVaultMove(null);
+                    if (onDeleted) onDeleted();
+                    else window.location.reload();
+                  })
+                  .catch((reason: unknown) => {
+                    setError(
+                      reason instanceof Error
+                        ? reason.message
+                        : 'Spostamento nelle Bozze non riuscito.',
+                    );
+                  })
+                  .finally(() => setBusy(false));
+              },
+            },
+          ]}
+          onCancel={() => {
+            setVaultMove(null);
+            setError('');
+          }}
+        />
+      ) : null}
       {deletePreviews ? (
         <TemporalDeleteDialog
           subject="evento"

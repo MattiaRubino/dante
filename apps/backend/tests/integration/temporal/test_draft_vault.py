@@ -16,7 +16,14 @@ from sqlalchemy.engine import RowMapping
 from sqlalchemy.exc import DBAPIError
 from tests.integration.temporal.test_schedule_create import _context
 
+from dante.modules.temporal.activity import TemporalActivityApplication
+from dante.modules.temporal.event import TemporalEventApplication
+from tests.integration.temporal.support.life_area import ensure_test_life_area
+from dante.platform.http.problem import ProblemError
+
 from dante.modules.temporal.draft_vault_api import (
+    DraftVaultMoveRequest,
+    move_self_item_to_draft,
     DraftVaultSaveRequest,
     delete_draft,
     list_drafts,
@@ -201,5 +208,170 @@ async def test_draft_vault_http_capability_returns_saved_snapshot_and_cas_delete
         assert [item.draft_ref for item in listed] == [draft_ref]
         await delete_draft(draft_ref, 1, context, request, Response())
         assert await list_drafts(context, request, Response()) == []
+    finally:
+        await runtime.dispose()
+
+
+@pytest.mark.asyncio
+async def test_standalone_event_moves_atomically_to_an_inert_draft(
+    migrated_database: Any,
+) -> None:
+    actor = _seed_self(migrated_database)
+    area = ensure_test_life_area(migrated_database, actor)
+    runtime = create_database_runtime(migrated_database.runtime_settings())
+    context = _context(actor)
+    request = Request({
+        "type": "http",
+        "app": SimpleNamespace(state=SimpleNamespace(database_runtime=runtime)),
+    })
+    draft_ref = uuid7()
+    try:
+        created = await TemporalEventApplication(runtime.session_factory).create_event(
+            self_person_ref=actor,
+            operation_id="move:event:create",
+            title="Visita",
+            life_area_ref=area,
+        )
+        event_ref = created.event.event_ref
+        async with runtime.session_factory() as session, session.begin():
+            fingerprint = await session.scalar(
+                text(
+                    "SELECT dante.get_self_temporal_hard_delete_fingerprint("
+                    ":actor,:source,'event_once')"
+                ),
+                {"actor": actor, "source": event_ref},
+            )
+        assert fingerprint is not None
+        snapshot = {
+            "version": 1,
+            "fields": {"kind": "event", "title": "Visita"},
+            "advanced": {"eventParticipants": [], "objectives": []},
+            "surface": "full",
+        }
+        request_body = DraftVaultMoveRequest(
+            draft_ref=draft_ref,
+            operation_id="move:event:commit",
+            subject_kind="event",
+            title="Visita",
+            payload=snapshot,
+            expected_fingerprint=fingerprint,
+        )
+        with pytest.raises(ProblemError) as stale:
+            await move_self_item_to_draft(
+                event_ref,
+                request_body.model_copy(update={"expected_fingerprint": "0" * 64}),
+                context,
+                request,
+                Response(),
+            )
+        assert stale.value.status == 409
+        assert await list_drafts(context, request, Response()) == []
+
+        moved = await move_self_item_to_draft(
+            event_ref, request_body, context, request, Response()
+        )
+        assert moved.draft_ref == draft_ref
+        assert moved.payload == snapshot
+        assert [item.draft_ref for item in await list_drafts(context, request, Response())] == [
+            draft_ref
+        ]
+        # Verify physical root deletion through the privileged test harness,
+        # not by calling a preview function that raises for a missing Event.
+        with psycopg.connect(
+            **migrated_database.connection_kwargs(
+                "dante_migrator", migrated_database.cluster.migrator_password
+            )
+        ) as connection:
+            connection.execute("SET ROLE dante_owner")
+            remaining = connection.execute(
+                "SELECT count(*) FROM dante.event_expectation "
+                "WHERE event_ref=%s AND self_person_ref=%s",
+                (event_ref, actor),
+            ).fetchone()
+        assert remaining is not None and remaining[0] == 0
+    finally:
+        await runtime.dispose()
+
+
+@pytest.mark.asyncio
+async def test_standalone_activity_moves_atomically_without_leaving_product_identity(
+    migrated_database: Any,
+) -> None:
+    actor = _seed_self(migrated_database)
+    area = ensure_test_life_area(migrated_database, actor)
+    runtime = create_database_runtime(migrated_database.runtime_settings())
+    context = _context(actor)
+    request = Request({
+        "type": "http",
+        "app": SimpleNamespace(state=SimpleNamespace(database_runtime=runtime)),
+    })
+    draft_ref = uuid7()
+    try:
+        created = await TemporalActivityApplication(runtime.session_factory).create_activity(
+            self_person_ref=actor,
+            operation_id="move:activity:create",
+            title="Allenamento",
+            life_area_ref=area,
+        )
+        activity_ref = created.activity.activity_ref
+        async with runtime.session_factory() as session, session.begin():
+            original = (
+                (
+                    await session.execute(
+                        text("SELECT * FROM dante.get_self_activity_profile(:actor,:source)"),
+                        {"actor": actor, "source": activity_ref},
+                    )
+                )
+                .mappings()
+                .one()
+            )
+            fingerprint = await session.scalar(
+                text("SELECT dante.get_self_activity_session_impact_hash(:actor,:source)"),
+                {"actor": actor, "source": activity_ref},
+            )
+        assert fingerprint is not None
+        snapshot = {
+            "version": 1,
+            "fields": {"kind": "activity", "title": "Allenamento"},
+            "advanced": {"activityStructure": {"plannedSlices": []}, "objectives": []},
+            "surface": "full",
+        }
+        request_body = DraftVaultMoveRequest(
+            draft_ref=draft_ref,
+            operation_id="move:activity:commit",
+            subject_kind="activity",
+            title="Allenamento",
+            payload=snapshot,
+            expected_fingerprint=fingerprint,
+            expected_profile_revision=original["revision"],
+        )
+        with pytest.raises(ProblemError) as stale:
+            await move_self_item_to_draft(
+                activity_ref,
+                request_body.model_copy(update={"expected_profile_revision": original["revision"] + 1}),
+                context,
+                request,
+                Response(),
+            )
+        assert stale.value.status == 409
+        assert await list_drafts(context, request, Response()) == []
+
+        moved = await move_self_item_to_draft(
+            activity_ref, request_body, context, request, Response()
+        )
+        assert moved.draft_ref == draft_ref
+        assert moved.payload == snapshot
+        with psycopg.connect(
+            **migrated_database.connection_kwargs(
+                "dante_migrator", migrated_database.cluster.migrator_password
+            )
+        ) as connection:
+            connection.execute("SET ROLE dante_owner")
+            existing = connection.execute(
+                "SELECT count(*) FROM dante.activity_intention "
+                "WHERE activity_ref=%s AND self_person_ref=%s",
+                (activity_ref, actor),
+            ).fetchone()
+        assert existing is not None and existing[0] == 0
     finally:
         await runtime.dispose()

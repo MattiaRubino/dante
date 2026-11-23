@@ -172,6 +172,173 @@ async def save_draft(
         raise _problem(exc) from exc
 
 
+class DraftVaultMoveRequest(DraftVaultSaveRequest):
+    """Fresh inert snapshot plus the original's current destructive CAS."""
+
+    expected_fingerprint: str = Field(pattern=r"^[a-f0-9]{64}$")
+    expected_profile_revision: int | None = Field(default=None, ge=0)
+
+    @model_validator(mode="after")
+    def require_fresh_draft(self) -> DraftVaultMoveRequest:
+        if self.expected_revision is not None:
+            raise ValueError("Move creates a new draft, never replaces another.")
+        if self.subject_kind == "activity" and self.expected_profile_revision is None:
+            raise ValueError("Activity move requires the reviewed profile revision.")
+        if self.subject_kind == "event" and self.expected_profile_revision is not None:
+            raise ValueError("Event move uses the owner-scoped deletion fingerprint.")
+        return self
+
+
+def _move_conflict(detail: str) -> ProblemError:
+    return ProblemError(
+        status=409,
+        code="temporal.drafts.move_conflict",
+        category="conflict",
+        title="Original changed",
+        detail=detail,
+    )
+
+
+@router.post(
+    "/move/{source_ref}",
+    response_model=DraftVaultResponse,
+    operation_id="temporal_move_self_item_to_draft",
+)
+async def move_self_item_to_draft(
+    source_ref: UUID,
+    payload: DraftVaultMoveRequest,
+    context: WriteContext,
+    request: Request,
+    response: Response,
+) -> DraftVaultResponse:
+    """Commit draft+hard deletion atomically; no orphaned draft or lost facts on failure.
+
+    Only standalone owner Activity/Event subjects qualify. Series/occurrence
+    scope is never inferred, and the owner must confirm the irreversible
+    deletion CAS captured before this command.
+    """
+    response.headers["Cache-Control"] = "no-store"
+    try:
+        async with request.app.state.database_runtime.session_factory() as session, session.begin():
+            await session.execute(text("SET TRANSACTION ISOLATION LEVEL SERIALIZABLE"))
+            actor = context.self_person_ref
+            if payload.subject_kind == "activity":
+                profile = (
+                    (
+                        await session.execute(
+                            text(
+                                "SELECT * FROM dante.get_self_activity_profile(:actor,:source)"
+                            ),
+                            {"actor": actor, "source": source_ref},
+                        )
+                    )
+                    .mappings()
+                    .one_or_none()
+                )
+                if profile is None:
+                    raise _move_conflict("Attività non più disponibile.")
+                if (
+                    profile["revision"] != payload.expected_profile_revision
+                    or profile["title"] != payload.title
+                ):
+                    raise _move_conflict("L'attività è cambiata. Riaprila prima di spostarla.")
+                # No subtree is silently collapsed into a one-off draft.
+                children = await session.execute(
+                    text(
+                        "SELECT 1 FROM dante.get_self_activity_decomposition(:actor,:source) LIMIT 1"
+                    ),
+                    {"actor": actor, "source": source_ref},
+                )
+                if children.first() is not None:
+                    raise _move_conflict("L'attività ha sotto-attività: lo spostamento non è disponibile.")
+                current = await session.scalar(
+                    text("SELECT dante.get_self_activity_session_impact_hash(:actor,:source)"),
+                    {"actor": actor, "source": source_ref},
+                )
+                if current != payload.expected_fingerprint:
+                    raise _move_conflict("Le Sessioni sono cambiate. Riapri e conferma nuovamente.")
+            else:
+                current = await session.scalar(
+                    text(
+                        "SELECT dante.get_self_temporal_hard_delete_fingerprint("
+                        ":actor,:source,'event_once')"
+                    ),
+                    {"actor": actor, "source": source_ref},
+                )
+                if current is None:
+                    raise _move_conflict("Evento ricorrente o non più disponibile.")
+                if current != payload.expected_fingerprint:
+                    raise _move_conflict("L'Evento è cambiato. Riapri e conferma nuovamente.")
+
+            draft_row = (
+                (
+                    await session.execute(
+                        text(
+                            "SELECT * FROM dante.save_self_temporal_draft("
+                            ":actor,:draft,:operation,NULL,:kind,:title,CAST(:data AS jsonb))"
+                        ),
+                        {
+                            "actor": actor,
+                            "draft": payload.draft_ref,
+                            "operation": payload.operation_id,
+                            "kind": payload.subject_kind,
+                            "title": payload.title,
+                            "data": json.dumps(payload.payload, ensure_ascii=False),
+                        },
+                    )
+                )
+                .mappings()
+                .one()
+            )
+
+            if payload.subject_kind == "activity":
+                deleted = await session.scalar(
+                    text("SELECT dante.delete_self_activity_hard(:actor,:source,:fingerprint)"),
+                    {
+                        "actor": actor,
+                        "source": source_ref,
+                        "fingerprint": payload.expected_fingerprint,
+                    },
+                )
+            else:
+                deleted = await session.scalar(
+                    text(
+                        "SELECT dante.delete_self_temporal_hard("
+                        ":actor,:source,'event_once',:fingerprint)"
+                    ),
+                    {
+                        "actor": actor,
+                        "source": source_ref,
+                        "fingerprint": payload.expected_fingerprint,
+                    },
+                )
+            if not isinstance(deleted, int) or deleted < 1:
+                raise _move_conflict("Lo spostamento non è stato completato.")
+            # Both SQL functions run within this ONE transaction. Exceptions
+            # roll back the draft too, including Session/Observation deletions.
+            result = _response(draft_row)
+        return result
+    except ProblemError:
+        raise
+    except DBAPIError as exc:
+        constraint = getattr(getattr(exc.orig, "diag", None), "constraint_name", None)
+        if (
+            getattr(exc.orig, "sqlstate", None) in {"40001", "23505", "23514"}
+            or constraint in {
+                "activity_lifecycle_stale",
+                "activity_lifecycle_recurring_scope_required",
+                "temporal_hard_stale",
+                "temporal_hard_invalid_scope",
+            }
+        ):
+            raise _move_conflict("L'elemento o le registrazioni sono cambiati. Riprova.") from exc
+        if constraint in {"activity_lifecycle_unavailable", "temporal_hard_unavailable"}:
+            raise _move_conflict("L'elemento non è più disponibile.") from exc
+        raise _problem(exc) from exc
+    except SQLAlchemyError as exc:
+        raise _problem(exc) from exc
+
+
 @router.delete(
     "/{draft_ref}",
     status_code=204,

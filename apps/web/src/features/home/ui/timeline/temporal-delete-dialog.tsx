@@ -17,6 +17,7 @@ export type TemporalDeleteChoice = Readonly<{
 /** Shared hard-deletion confirmation. Preview fingerprints remain owned by callers. */
 export function TemporalDeleteDialog({
   subject,
+  intent = 'delete',
   itemTitle,
   scheduleLabel,
   choices,
@@ -26,6 +27,7 @@ export function TemporalDeleteDialog({
   onCancel,
 }: Readonly<{
   subject: 'attività' | 'evento';
+  intent?: 'delete' | 'move';
   itemTitle: string;
   scheduleLabel?: string | undefined;
   choices: readonly TemporalDeleteChoice[];
@@ -95,11 +97,13 @@ export function TemporalDeleteDialog({
         onKeyDown={handleTab}
       >
         <div className="timeline-delete-dialog__header">
-          <h2 id={headingId}>Elimina {subject}</h2>
+          <h2 id={headingId}>
+            {intent === 'move' ? `Sposta ${subject} in Bozze` : `Elimina ${subject}`}
+          </h2>
           <button
             type="button"
             className="timeline-delete-dialog__close"
-            aria-label="Chiudi eliminazione"
+            aria-label={intent === 'move' ? 'Chiudi spostamento' : 'Chiudi eliminazione'}
             disabled={busy}
             onClick={onCancel}
           >
@@ -111,9 +115,11 @@ export function TemporalDeleteDialog({
           {scheduleLabel ? <span>{scheduleLabel}</span> : null}
         </div>
         <p id={detailId} className="timeline-delete-dialog__description">
-          {choices.length > 1
-            ? 'Scegli cosa eliminare. L’operazione è definitiva.'
-            : 'L’eliminazione è definitiva.'}
+          {intent === 'move'
+            ? 'Una copia pulita della configurazione sarà conservata nelle Bozze. L’originale e tutte le sue registrazioni verranno eliminati definitivamente.'
+            : choices.length > 1
+              ? 'Scegli cosa eliminare. L’operazione è definitiva.'
+              : 'L’eliminazione è definitiva.'}
         </p>
         {note ? <p className="timeline-delete-dialog__note">{note}</p> : null}
         {error ? <p role="alert">{error}</p> : null}

@@ -1,5 +1,34 @@
 # Timeline / Temporal-Operational — Live Execution Ledger
 
+
+## 2026-11-23 — Standalone Activity/Event hard move to Draft Vault
+
+Owner-approved UX replaces the old asymmetry (Activity **Sposta** using
+retire; Event **Copia** bypassing Create) with one **Sposta in Bozze**
+operation for standalone Activity and Event. **Copia in Bozze** is removed
+from UI, test assertions and handler logic; **Duplica → Create → Salva bozza**
+remains for a non-destructive copy. Toolbar buttons stay suppressed for
+recurring source and Occurrence scopes, including generated Routine
+Activities.
+
+Moving a standalone Activity/Event opens the same accessible centered
+confirmation treatment as hard delete, spelling out permanent loss of
+recorded Objective outcomes/observations, live/paused/ended Sessions when
+applicable, attendance and factual history. Cancel performs no write;
+Confirm sends a fresh inert snapshot plus authoritative current CAS to
+`POST /api/v1/temporal/drafts/move/{source_ref}`. Backend serializable
+single-transaction calls `save_self_temporal_draft` and the **existing**
+`delete_self_activity_hard` / `delete_self_temporal_hard(event_once)`
+functions. Failure rolls back both changes. No new SQL function, migration,
+recurrence edit or client-generated API models. Activity subtree moves
+remain prohibited. Successful UI invalidates Timeline, planning, live
+Session and Vault views. Full normative details:
+[Draft Vault](../domain/concepts/draft-vault.md).
+
+This is a candidate pending WSL typecheck, real PostgreSQL, Web Vitest,
+and browser E2E confirmation; static review is **not** execution evidence.
+
+
 ## 2026-11-23 — Draft cards match Timeline card rows
 
 Owner visual review required the same inner card grammar in Draft Vault and

@@ -95,7 +95,12 @@ export function ActivityInspectorActions({
     };
   }, []);
 
-  const [confirmingVault, setConfirmingVault] = useState(false);
+  const [vaultMove, setVaultMove] = useState<{
+    snapshot: ReturnType<typeof draftVaultSnapshotFromDuplicate>;
+    fingerprint: string;
+    profileRevision: number;
+    attempts: number;
+  } | null>(null);
   const [pending, setPending] = useState(false);
   const [error, setError] = useState('');
 
@@ -230,7 +235,53 @@ export function ActivityInspectorActions({
           aria-label="Sposta in Bozze"
           title="Sposta in Bozze"
           disabled={pending}
-          onClick={() => setConfirmingVault(true)}
+          onClick={() =>
+            void action(async () => {
+              if (subitemsCount > 0) {
+                throw new Error('Sposta prima o completa le sotto-attività.');
+              }
+              const [savedProfile, settings, childCount, recurring, choice, impact] =
+                await Promise.all([
+                  source.get(activityRef),
+                  settingsSource.load(activityRef),
+                  settingsSource.loadChildCount(activityRef),
+                  recurringSource.loadActivityContext(activityRef),
+                  settingsSource.loadLifeAreaChoice(activityRef),
+                  source.sessionImpact(activityRef),
+                ]);
+              if (recurring !== null || childCount !== 0) {
+                throw new Error(
+                  'Una serie, un’istanza o un’attività con sotto-attività non può essere spostata nelle Bozze.',
+                );
+              }
+              const selected =
+                settings.lifeAreaRef === null
+                  ? undefined
+                  : choice.options.find((area) => area.ref === settings.lifeAreaRef);
+              if (settings.lifeAreaRef !== null && !selected) {
+                throw new Error('Area non più disponibile: ricarica la scheda.');
+              }
+              const areaDraft = selected
+                ? {
+                    kind: 'existing' as const,
+                    lifeAreaRef: selected.ref,
+                    label: selected.name,
+                    expectedRevision: selected.revision ?? 1,
+                    colorCode: selected.colorCode ?? null,
+                    colorChanged: false,
+                  }
+                : undefined;
+              setVaultMove({
+                snapshot: draftVaultSnapshotFromDuplicate(
+                  buildActivityDuplicateSeed(savedProfile, settings),
+                  areaDraft,
+                ),
+                fingerprint: impact.fingerprint,
+                profileRevision: savedProfile.revision,
+                attempts: impact.attempts.length,
+              });
+            })
+          }
         >
           {toolbarTarget ? (
             <TimelineInspectorIcon name="vault" />
@@ -307,96 +358,44 @@ export function ActivityInspectorActions({
           }}
         />
       ) : null}
-      {confirmingVault && vaultEligible ? (
-        <div className="timeline-activity-inspector__confirmation">
-          <p>
-            L'Attività verrà conservata come bozza non operativa e ritirata
-            dalla Timeline. Le esecuzioni o i risultati registrati impediscono
-            il ritiro: in quel caso l'originale rimane intatto.
-          </p>
-          <button
-            type="button"
-            disabled={pending}
-            onClick={() =>
-              void action(async () => {
-                if (subitemsCount > 0) {
-                  throw new Error('Sposta prima o completa le sotto-attività.');
-                }
-                const [savedProfile, settings, childCount, recurring, choice] =
-                  await Promise.all([
-                    source.get(activityRef),
-                    settingsSource.load(activityRef),
-                    settingsSource.loadChildCount(activityRef),
-                    recurringSource.loadActivityContext(activityRef),
-                    settingsSource.loadLifeAreaChoice(activityRef),
-                  ]);
-                if (recurring !== null || childCount !== 0) {
-                  throw new Error(
-                    'Questa attività contiene una serie o sotto-attività: ' +
-                      'non possiamo ritirarle fingendo che siano una singola bozza.',
+      {vaultMove && vaultEligible ? (
+        <TemporalDeleteDialog
+          intent="move"
+          subject="attività"
+          itemTitle={itemTitle ?? profile?.title ?? 'Attività'}
+          scheduleLabel={scheduleLabel}
+          busy={pending}
+          error={error}
+          note={
+            vaultMove.attempts > 0
+              ? `${vaultMove.attempts} Sessioni in corso, in pausa o registrate verranno cancellate, insieme ai risultati degli Obiettivi.`
+              : 'Eventuali risultati degli Obiettivi già confermati verranno cancellati.'
+          }
+          choices={[
+            {
+              key: 'move',
+              label: 'Conferma spostamento in Bozze',
+              onConfirm: () =>
+                void action(async () => {
+                  // Snapshot and CAS are reviewed together. The backend
+                  // commits Draft + destructive deletion in one transaction.
+                  await draftVault.move(
+                    vaultMove.snapshot,
+                    activityRef,
+                    vaultMove.fingerprint,
+                    vaultMove.profileRevision,
                   );
-                }
-                const selected =
-                  settings.lifeAreaRef === null
-                    ? undefined
-                    : choice.options.find(
-                        (area) => area.ref === settings.lifeAreaRef,
-                      );
-                if (settings.lifeAreaRef !== null && !selected) {
-                  throw new Error(
-                    'Area non più disponibile: ricarica la scheda.',
-                  );
-                }
-                const areaDraft = selected
-                  ? {
-                      kind: 'existing' as const,
-                      lifeAreaRef: selected.ref,
-                      label: selected.name,
-                      expectedRevision: selected.revision ?? 1,
-                      colorCode: selected.colorCode ?? null,
-                      colorChanged: false,
-                    }
-                  : undefined;
-                const draft = await draftVault.save(
-                  draftVaultSnapshotFromDuplicate(
-                    buildActivityDuplicateSeed(savedProfile, settings),
-                    areaDraft,
-                  ),
-                  {
-                    draftRef: crypto.randomUUID(),
-                    revision: null,
-                    operationId: crypto.randomUUID(),
-                  },
-                );
-                try {
-                  await source.retire(activityRef);
-                } catch (reason) {
-                  try {
-                    await draftVault.remove(draft);
-                  } catch {
-                    notifyDraftVaultUpdated();
-                    throw new Error(
-                      'Attività originale non ritirata. È stata conservata ' +
-                        'anche una bozza: controlla Bozze prima di riprovare.',
-                    );
-                  }
-                  throw reason;
-                }
-                notifyDraftVaultUpdated();
-                onDeleted();
-              })
-            }
-          >
-            Conferma spostamento in Bozze
-          </button>
-          <button
-            type="button"
-            disabled={pending}
-            onClick={() => setConfirmingVault(false)}
-          >
-            Annulla
-          </button>
-        </div>
+                  notifyDraftVaultUpdated();
+                  setVaultMove(null);
+                  onDeleted();
+                }),
+            },
+          ]}
+          onCancel={() => {
+            setVaultMove(null);
+            setError('');
+          }}
+        />
       ) : null}
       {confirming && deleteImpact ? (
         <TemporalDeleteDialog

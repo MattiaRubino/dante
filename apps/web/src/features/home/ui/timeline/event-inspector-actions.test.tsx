@@ -59,6 +59,18 @@ const convertedSourceRef = '0199a888-8888-7888-8888-888888888888';
 const startExistingEvent = vi.fn().mockResolvedValue(convertedSourceRef);
 const previewHardDeletion = vi.fn();
 const confirmHardDeletion = vi.fn();
+const moveDraft = vi.fn().mockResolvedValue({});
+const loadVaultOrganization = vi.fn().mockResolvedValue({ areas: [] });
+vi.mock('../../../temporal-create/application/remote-draft-vault', () => ({
+  createRemoteDraftVault: () => ({ move: moveDraft }),
+  notifyDraftVaultUpdated: vi.fn(),
+}));
+vi.mock('../../../temporal/remote-organization', () => ({
+  createRemoteTemporalOrganizationDataSource: () => ({
+    load: loadVaultOrganization,
+  }),
+}));
+
 const eventOccurrences = vi.fn();
 const loadOccurrenceContext = vi.fn();
 const loadOccurrencePatch = vi.fn();
@@ -539,7 +551,7 @@ describe('Event Inspector actions', () => {
     ).toBe('true');
     expect(saveRecurringEvent).not.toHaveBeenCalled();
     expect(screen.queryByRole('button', { name: 'Duplica' })).toBeNull();
-    expect(screen.queryByRole('button', { name: 'Copia in Bozze' })).toBeNull();
+    expect(screen.queryByRole('button', { name: 'Sposta in Bozze' })).toBeNull();
     expect(screen.queryByText('Ambito: solo questa istanza.')).toBeNull();
     const localAgenda = screen.getByRole('region', { name: 'Scaletta evento' });
     expect(
@@ -919,7 +931,7 @@ describe('Event Inspector actions', () => {
         Node.DOCUMENT_POSITION_FOLLOWING,
     ).toBeTruthy();
     expect(screen.queryByRole('button', { name: 'Duplica' })).toBeNull();
-    expect(screen.queryByRole('button', { name: 'Copia in Bozze' })).toBeNull();
+    expect(screen.queryByRole('button', { name: 'Sposta in Bozze' })).toBeNull();
     expect(
       screen.getAllByRole('button', { name: /^Data inizio:/ }),
     ).toHaveLength(1);
@@ -965,7 +977,7 @@ describe('Event Inspector actions', () => {
     expect(saveRecurringEvent).not.toHaveBeenCalled();
     expect(reviseProfile).not.toHaveBeenCalled();
   });
-  it('offers a copy to Bozze without exposing canonical unplacement', async () => {
+  it('offers a move to Bozze without exposing canonical unplacement', async () => {
     render(
       <EventInspectorActions
         eventRef={eventRef}
@@ -974,7 +986,7 @@ describe('Event Inspector actions', () => {
       />,
     );
     expect(
-      await screen.findByRole('button', { name: 'Copia in Bozze' }),
+      await screen.findByRole('button', { name: 'Sposta in Bozze' }),
     ).toBeTruthy();
     expect(
       screen.queryByRole('button', { name: /Rimuovi Event dalla Timeline/ }),
@@ -982,6 +994,71 @@ describe('Event Inspector actions', () => {
     expect(
       screen.queryByRole('button', { name: /Annulla rimozione Event/ }),
     ).toBeNull();
+  });
+
+  it('moves a standalone Event only after destructive confirmation, preserving a clean Objective definition', async () => {
+    loadEvent.mockResolvedValue({
+      eventRef,
+      title: 'Visita',
+      agendaParts: ['Introduzione'],
+      lifeAreaRef: null,
+      description: null,
+      location: null,
+      colorCode: null,
+    });
+    listObjectives.mockResolvedValue([
+      {
+        objectiveRef: 'goal-1',
+        label: 'Presenza',
+        resultKind: 'boolean',
+        presentationOrder: 0,
+        observedBoolean: true,
+        observationRef: 'registered-result',
+        assessmentCode: 'satisfied',
+      },
+    ]);
+    const preview = {
+      requestedRef: eventRef,
+      scope: 'event_once',
+      fingerprint: 'a'.repeat(64),
+    };
+    previewHardDeletion.mockResolvedValue(preview);
+    const onDeleted = vi.fn();
+    const onDuplicate = vi.fn();
+    render(
+      <EventInspectorActions
+        eventRef={eventRef}
+        placement={placement}
+        onDuplicate={onDuplicate}
+        onDeleted={onDeleted}
+      />,
+    );
+    const trigger = await screen.findByRole('button', {
+      name: 'Sposta in Bozze',
+    });
+    fireEvent.click(trigger);
+    const dialog = await screen.findByRole('alertdialog', {
+      name: 'Sposta evento in Bozze',
+    });
+    expect(dialog.textContent).toContain('eliminati definitivamente');
+    expect(moveDraft).not.toHaveBeenCalled();
+    fireEvent.click(within(dialog).getByRole('button', { name: 'Annulla' }));
+    expect(moveDraft).not.toHaveBeenCalled();
+    fireEvent.click(trigger);
+    const confirm = await screen.findByRole('button', {
+      name: 'Conferma spostamento in Bozze',
+    });
+    fireEvent.click(confirm);
+    await waitFor(() => expect(moveDraft).toHaveBeenCalledOnce());
+    const [snapshot, ref, fingerprint, revision] = moveDraft.mock.calls[0]!;
+    expect(ref).toBe(eventRef);
+    expect(fingerprint).toBe(preview.fingerprint);
+    expect(revision).toBeNull();
+    expect(snapshot.fields.title).toBe('Visita');
+    expect(JSON.stringify(snapshot)).not.toContain('registered-result');
+    expect(onDuplicate).not.toHaveBeenCalled();
+    await waitFor(() => expect(onDeleted).toHaveBeenCalledOnce());
+    expect(confirmHardDeletion).not.toHaveBeenCalled();
   });
 
   it('loads owner-scoped Agenda and Participation and opens a new draft without copying truth', async () => {
@@ -2122,13 +2199,13 @@ describe('Event Inspector actions', () => {
     // The owner guard is asynchronous. Still require the complete toolbar
     // once non-recurring ownership has been verified.
     await within(toolbar as HTMLElement).findByRole('button', {
-      name: 'Copia in Bozze',
+      name: 'Sposta in Bozze',
     });
     expect(
       within(toolbar as HTMLElement)
         .getAllByRole('button')
         .map((button) => button.getAttribute('aria-label')),
-    ).toEqual(['Modifica', 'Duplica', 'Copia in Bozze', 'Elimina Event']);
+    ).toEqual(['Modifica', 'Duplica', 'Sposta in Bozze', 'Elimina Event']);
     expect(
       within(toolbar as HTMLElement).queryByRole('button', {
         name: 'Modifica area',
@@ -2486,7 +2563,7 @@ describe('Event Inspector actions', () => {
       'Apri un’istanza',
     );
     expect(isRecurring).toHaveBeenCalledWith(eventRef);
-    expect(screen.queryByRole('button', { name: 'Copia in Bozze' })).toBeNull();
+    expect(screen.queryByRole('button', { name: 'Sposta in Bozze' })).toBeNull();
     expect(onDuplicate).not.toHaveBeenCalled();
   });
 
@@ -2543,7 +2620,7 @@ describe('Event Inspector actions', () => {
         onDuplicate={onDuplicate}
       />,
     );
-    expect(screen.queryByRole('button', { name: 'Copia in Bozze' })).toBeNull();
+    expect(screen.queryByRole('button', { name: 'Sposta in Bozze' })).toBeNull();
     fireEvent.click(screen.getByRole('button', { name: 'Duplica' }));
     await waitFor(() => expect(onDuplicate).toHaveBeenCalledOnce());
     expect(loadOccurrenceEvent).toHaveBeenCalledWith(occurrenceRef);
