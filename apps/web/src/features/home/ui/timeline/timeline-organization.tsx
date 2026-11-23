@@ -80,6 +80,25 @@ export function canonicalOrganizationGroups(
   return Object.freeze(groups);
 }
 
+/** Match the Activity card color without depending on the currently viewed day. */
+export function canonicalActivityPresentationColor(
+  activityRef: string,
+  groups: readonly TimelineGroup[] | null,
+  assignments: ReadonlyMap<string, string | null>,
+): string | null {
+  const key = `activity:${activityRef}`;
+  const groupId = assignments.get(key) ?? LEGACY_UNASSIGNED_GROUP;
+  const group = groups?.find((candidate) => candidate.id === groupId);
+  if (!group) return null;
+  return (
+    (groupId === LEGACY_UNASSIGNED_GROUP
+      ? group.itemColorCodes?.[key]
+      : undefined) ??
+    group.colorCode ??
+    `var(--dante-timeline-tone-${group.tone})`
+  );
+}
+
 export function useTimelineOrganization(enabled: boolean) {
   const [snapshot, setSnapshot] = useState<OrganizationSnapshot | null>(null);
   const [error, setError] = useState<string | null>(null);

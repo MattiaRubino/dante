@@ -1,4 +1,4 @@
-import { useId, useRef } from 'react';
+import { useId, useRef, type CSSProperties } from 'react';
 
 import {
   sessionPanelRowKey,
@@ -8,6 +8,7 @@ import './timeline-session-panel.css';
 
 export function useSessionPanelPresentation(
   controller: SessionPanelController,
+  activityColor: (activityRef: string) => string | null = () => null,
 ) {
   const id = useId();
   const triggerRef = useRef<HTMLButtonElement>(null);
@@ -69,11 +70,19 @@ export function useSessionPanelPresentation(
                   sessionPanelRowKey(group.activity_ref, candidate),
                 ),
             );
+            const color = activityColor(group.activity_ref);
             return (
               <section
                 key={group.activity_ref}
                 className="timeline-session-panel__card"
                 aria-label={group.title}
+                style={
+                  color
+                    ? ({
+                        '--timeline-session-activity-color': color,
+                      } as CSSProperties)
+                    : undefined
+                }
               >
                 <h3 title={group.title}>{group.title}</h3>
                 <ul>

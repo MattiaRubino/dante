@@ -5,6 +5,7 @@ import type { TemporalTimelineItem } from '../../../temporal/timeline-read';
 
 import type { OrganizationSnapshot } from '../../../temporal/remote-organization';
 import {
+  canonicalActivityPresentationColor,
   canonicalOrganizationGroups,
   canonicalItemLifeAreaGroup,
   LEGACY_UNASSIGNED_GROUP,
@@ -82,6 +83,54 @@ describe('Timeline organization groups', () => {
           groups.find((group) => group.id === assignment.areaRef)?.colorCode,
       ),
     ).toEqual(['#33B679', '#33B679']);
+  });
+
+  it('gives the Session card the Activity color from its assigned Area or its own unassigned color', () => {
+    const assigned = snapshot({
+      assignments: [
+        {
+          kind: 'activity',
+          itemRef: UNASSIGNED_REF,
+          areaRef: AREA_REF,
+          revision: 1,
+        },
+      ],
+    });
+    const assignments = new Map(
+      assigned.assignments.map((entry) => [
+        `${entry.kind}:${entry.itemRef}`,
+        entry.areaRef,
+      ]),
+    );
+    expect(
+      canonicalActivityPresentationColor(
+        UNASSIGNED_REF,
+        canonicalOrganizationGroups(assigned),
+        assignments,
+      ),
+    ).toBe('#F4C95D');
+
+    const unassigned = snapshot({
+      assignments: [],
+      unassigned: [
+        {
+          kind: 'activity',
+          itemRef: UNASSIGNED_REF,
+          title: 'Studio',
+          colorCode: '#EA5C12',
+        },
+      ],
+    });
+    expect(
+      canonicalActivityPresentationColor(
+        UNASSIGNED_REF,
+        canonicalOrganizationGroups(unassigned),
+        new Map(),
+      ),
+    ).toBe('#EA5C12');
+    expect(
+      canonicalActivityPresentationColor(UNASSIGNED_REF, null, new Map()),
+    ).toBeNull();
   });
 
   // Regression 2026-11-09: "Solo questa istanza" was saved correctly in

@@ -100,6 +100,7 @@ import { TimelineDayStream } from './timeline-day-stream';
 import { TimelineHeader } from './timeline-header';
 import { RecurringEditScopeDialog } from './recurring-edit-scope-dialog';
 import {
+  canonicalActivityPresentationColor,
   canonicalOrganizationGroups,
   canonicalItemLifeAreaGroup,
   LEGACY_UNASSIGNED_GROUP,
@@ -440,7 +441,19 @@ export function TimelineSurface({
     clockZone,
     timelineView === 'week',
   );
-  const sessionPresentation = useSessionPanelPresentation(sessionPanel);
+  const sessionActivityColor = useCallback(
+    (activityRef: string) =>
+      canonicalActivityPresentationColor(
+        activityRef,
+        canonicalGroups,
+        assignmentBySubject,
+      ),
+    [canonicalGroups, assignmentBySubject],
+  );
+  const sessionPresentation = useSessionPanelPresentation(
+    sessionPanel,
+    sessionActivityColor,
+  );
   const openRealityCount =
     sessionPanel.snapshot?.visuals?.filter((visual) => visual.ended_at === null)
       .length ?? 0;

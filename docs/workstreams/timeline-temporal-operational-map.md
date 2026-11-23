@@ -1,5 +1,20 @@
 # Timeline / Temporal-Operational — Live Execution Ledger
 
+## 2026-11-23 — Session card border follows Activity color
+
+Owner WSL evidence on `5e6ffb6`: Web typecheck PASS, Session component
+11/11 PASS, and Session browser fixture 4/4 PASS. The owner then requested
+the Session group's border to match its Activity card's Area/item color.
+The Timeline already holds canonical Area assignments and per-item unassigned
+colors, so Session cards now resolve the same actor-scoped color by
+`activity_ref`. No new database query, Session command, grouping, or generated
+API change is required. The visible border and left accent use this color;
+when organization has not loaded the card remains neutral. A same-text
+Activity title and planned Session name may be independently authored; that
+collision does not justify hiding or relabeling a Session control. New
+focused color regressions are **NOT_RUN** in this workspace pending the
+owner's WSL checks on the new SHA.
+
 ## 2026-11-23 — Session panel: Activity cards with grouped Sessions
 
 Owner accepted one card per Activity, containing the main Session and all

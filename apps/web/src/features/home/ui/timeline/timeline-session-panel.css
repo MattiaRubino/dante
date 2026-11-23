@@ -123,9 +123,15 @@
 }
 .timeline-session-panel__card {
   overflow: hidden;
-  border: 1px solid var(--dante-semantic-color-home-border-subtle, #31424a);
+  border: 1px solid
+    color-mix(
+      in srgb,
+      var(--timeline-session-activity-color, #31424a) 72%,
+      var(--dante-semantic-color-home-border-subtle, #31424a)
+    );
   border-radius: 11px;
   background: var(--dante-temporal-editor-section-surface, #111b29);
+  box-shadow: inset 3px 0 0 var(--timeline-session-activity-color, transparent);
 }
 .timeline-session-panel__card + .timeline-session-panel__card {
   margin-top: 10px;

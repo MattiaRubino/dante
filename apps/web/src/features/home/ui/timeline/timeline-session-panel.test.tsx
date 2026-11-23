@@ -32,9 +32,15 @@ const requestBody = (init?: RequestInit) =>
     unknown
   >;
 
-function Harness({ enabled = true }: { enabled?: boolean }) {
+function Harness({
+  enabled = true,
+  activityColor,
+}: {
+  enabled?: boolean;
+  activityColor?: (activityRef: string) => string | null;
+}) {
   const controller = useSessionPanel(enabled);
-  const view = useSessionPanelPresentation(controller);
+  const view = useSessionPanelPresentation(controller, activityColor);
   return (
     <section>
       <nav>{view.control}</nav>
@@ -127,6 +133,18 @@ describe('Timeline Session panel integration', () => {
       await screen.findByRole('button', { name: 'Avvia · Ripasso' }),
     ).toBeTruthy();
     expect(fetcher).toHaveBeenCalledTimes(2);
+  });
+
+  it('colors only the owning Activity card without changing Session controls', async () => {
+    vi.stubGlobal('fetch', vi.fn(async () => Response.json(feed())));
+    render(
+      <Harness activityColor={(ref) => (ref === activity ? '#33B679' : null)} />,
+    );
+    const card = await screen.findByRole('region', { name: 'Studio' });
+    expect(
+      card.style.getPropertyValue('--timeline-session-activity-color'),
+    ).toBe('#33B679');
+    expect(screen.getByRole('button', { name: 'Avvia · Ripasso' })).toBeTruthy();
   });
 
   it('groups sessions, opens on arrival, preserves dismissal and restores keyboard focus', async () => {
