@@ -146,4 +146,101 @@ describe('Draft Vault remote owner boundary', () => {
   });
 
 
+  it.each([
+    { status: 409, expected: 'sono cambiati' },
+    { status: 500, expected: 'L’originale è rimasto invariato' },
+  ])(
+    'never removes or invalidates an Event on a failed atomic move ($status)',
+    async ({ status, expected }) => {
+      const fetchFn = vi.fn((input: RequestInfo | URL, init?: RequestInit) => {
+        const path = fetchRequestUrl(input);
+        if (path.endsWith('/auth/session')) {
+          return resolvedResponse({ authenticated: true, csrf_token: 'csrf' });
+        }
+        if (path.includes('/temporal/drafts/move/') && init?.method === 'POST') {
+          return resolvedResponse({ error: 'move rejected' }, status);
+        }
+        throw new Error(`Unexpected request: ${path}`);
+      });
+      const fields = createTemporalCreateFields({
+        kind: 'event',
+        title: 'Visita',
+      });
+      const snapshot = {
+        version: 1 as const,
+        fields,
+        advanced: createTemporalCreateU2AuthoringDraft(fields),
+        surface: 'full' as const,
+      };
+      const effects: string[] = [];
+      const unsubscribe = subscribeTemporalTimelineInvalidation(() => {
+        effects.push('timeline-invalidate');
+      });
+      try {
+        await expect(
+          createRemoteDraftVault(fetchFn).move(
+            snapshot,
+            'event-1',
+            'a'.repeat(64),
+            null,
+            () => effects.push('committed-local-removal'),
+          ),
+        ).rejects.toThrow(expected);
+      } finally {
+        unsubscribe();
+      }
+      expect(effects).toEqual([]);
+      expect(
+        fetchFn.mock.calls.filter(([, init]) => init?.method === 'POST'),
+      ).toHaveLength(1);
+      expect(
+        fetchFn.mock.calls.filter(
+          ([, init]) => init?.method === 'DELETE' || init?.method === 'PUT',
+        ),
+      ).toHaveLength(0);
+    },
+  );
+
+  it('does not announce a committed move when the success receipt is invalid', async () => {
+    const fetchFn = vi.fn((input: RequestInfo | URL, init?: RequestInit) => {
+      const path = fetchRequestUrl(input);
+      if (path.endsWith('/auth/session')) {
+        return resolvedResponse({ authenticated: true, csrf_token: 'csrf' });
+      }
+      if (path.includes('/temporal/drafts/move/') && init?.method === 'POST') {
+        // A successful HTTP status is not a validated committed Draft receipt.
+        return resolvedResponse({ draft_ref: 'new-draft', subject_kind: 'event' });
+      }
+      throw new Error(`Unexpected request: ${path}`);
+    });
+    const fields = createTemporalCreateFields({
+      kind: 'event',
+      title: 'Visita',
+    });
+    const snapshot = {
+      version: 1 as const,
+      fields,
+      advanced: createTemporalCreateU2AuthoringDraft(fields),
+      surface: 'full' as const,
+    };
+    const effects: string[] = [];
+    const unsubscribe = subscribeTemporalTimelineInvalidation(() => {
+      effects.push('timeline-invalidate');
+    });
+    try {
+      await expect(
+        createRemoteDraftVault(fetchFn).move(
+          snapshot,
+          'event-1',
+          'a'.repeat(64),
+          null,
+          () => effects.push('committed-local-removal'),
+        ),
+      ).rejects.toThrow('La bozza salvata non è compatibile con questo editor.');
+    } finally {
+      unsubscribe();
+    }
+    expect(effects).toEqual([]);
+  });
+
 });

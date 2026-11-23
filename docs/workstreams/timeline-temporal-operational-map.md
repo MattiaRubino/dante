@@ -1,6 +1,32 @@
 # Timeline / Temporal-Operational — Live Execution Ledger
 
 
+## 2026-11-23 — Normal-test audit after Vault move fast fixes
+
+Branch audit from `471bec0` through `4eaf98c`: three changes added
+immediate native-subject card removal, timed/all-day stale-read tombstones,
+readability for the Inspector and recorded-loss confirmation, and mock typing
+corrections. Existing focused Web tests already cover both Inspector move
+paths, Cancel, required two-step recorded-data consent, successful local
+handoff, and the typed Activity/Event native-ref tombstone filter.
+The existing four PostgreSQL Vault integration tests previously passed on
+the earlier backend version; no new backend or generated-API changes were
+introduced by these three UI commits.
+
+Gap addressed without duplicating these tests: add **three remote boundary
+rejection cases** (409 conflict, 500 failure, and malformed successful
+receipt), asserting no `onCommitted`/Timeline invalidation and no separate
+draft PUT or product DELETE on failures; add **one Event Inspector refusal
+case** asserting that an API rejection leaves the original available,
+preserves the inline review/error, and never calls its local-removal callback.
+No new E2E tests in this pass; the owner will decide E2E scope separately.
+
+**Evidence:** source-level review only for the new assertions. They are
+NOT_RUN until the owner runs WSL TypeScript/Vitest/format checks. Do not call
+this candidate green on the basis of the earlier passing test suite.
+
+
+
 ## 2026-11-23 — Readability and no intermediate colour flash on Vault move
 
 Owner screenshot review accepted the review/reconfirmation flow and confirmed

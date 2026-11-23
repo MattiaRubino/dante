@@ -1091,6 +1091,63 @@ describe('Event Inspector actions', () => {
     expect(confirmHardDeletion).not.toHaveBeenCalled();
   });
 
+  it('keeps the Event and Inspector review intact if atomic Vault move fails', async () => {
+    loadEvent.mockResolvedValue({
+      eventRef,
+      title: 'Visita',
+      agendaParts: [],
+      lifeAreaRef: null,
+      description: null,
+      location: null,
+      colorCode: null,
+    });
+    previewHardDeletion.mockResolvedValue({
+      requestedRef: eventRef,
+      scope: 'event_once',
+      fingerprint: 'a'.repeat(64),
+    });
+    moveDraft.mockRejectedValueOnce(new Error('Conflitto: Evento modificato'));
+    const onVaultMoved = vi.fn();
+    const onDeleted = vi.fn();
+    const onReviewChange = vi.fn();
+    render(
+      <EventInspectorActions
+        eventRef={eventRef}
+        placement={placement}
+        onDuplicate={() => undefined}
+        onDeleted={onDeleted}
+        onVaultMoved={onVaultMoved}
+        onVaultReviewChange={onReviewChange}
+      />,
+    );
+    fireEvent.click(
+      await screen.findByRole('button', { name: 'Sposta in Bozze' }),
+    );
+    const review = await screen.findByRole('region', {
+      name: 'Sposta evento in Bozze',
+    });
+    expect(onReviewChange).toHaveBeenCalledWith(true);
+    expect(within(review).queryByRole('note')).toBeNull();
+    fireEvent.click(
+      within(review).getByRole('button', {
+        name: 'Conferma spostamento in Bozze',
+      }),
+    );
+    expect((await within(review).findByRole('alert')).textContent).toContain(
+      'Conflitto: Evento modificato',
+    );
+    expect(moveDraft).toHaveBeenCalledOnce();
+    expect(onVaultMoved).not.toHaveBeenCalled();
+    expect(onDeleted).not.toHaveBeenCalled();
+    expect(confirmHardDeletion).not.toHaveBeenCalled();
+    expect(screen.getByRole('region', { name: 'Sposta evento in Bozze' })).toBeTruthy();
+
+    fireEvent.click(within(review).getByRole('button', { name: 'Annulla' }));
+    expect(onReviewChange).toHaveBeenLastCalledWith(false);
+    expect(screen.queryByRole('region', { name: 'Sposta evento in Bozze' })).toBeNull();
+    expect(onDeleted).not.toHaveBeenCalled();
+  });
+
   it('loads owner-scoped Agenda and Participation and opens a new draft without copying truth', async () => {
     getRealityPolicy.mockResolvedValue({
       mode: 'review_on_end',
