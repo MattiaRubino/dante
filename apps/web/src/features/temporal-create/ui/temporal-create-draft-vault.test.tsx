@@ -64,7 +64,7 @@ function entry(draftRequest?: {
         defaultDate={Temporal.PlainDate.from('2026-10-09')}
         contexts={[]}
         draftRequest={draftRequest ?? null}
-        runtime={withHomeRuntime ? createB14TemporalCreateRuntime() : undefined}
+        {...(withHomeRuntime ? { runtime: createB14TemporalCreateRuntime() } : {})}
         authoringDataSource={{ authorActivity, authorEvent }}
         onPreview={() => undefined}
         onApplied={() => false}

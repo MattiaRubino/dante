@@ -1,6 +1,25 @@
 # Timeline / Temporal-Operational — Live Execution Ledger
 
 
+## 2026-11-23 — Vault review owner-local gate: strict TS + test-harness repair
+
+WSL owner gate on `58c599b`: `pnpm --filter @dante/web typecheck`
+failed on **2** `exactOptionalPropertyTypes` errors; targeted Vitest ran
+**132 PASS, 2 FAIL** (134 total). No backend error was observed in these logs.
+
+Repairs: pass the optional `TemporalDeleteDialog.error` and the test's
+`TemporalCreateEntry.runtime` **only when defined**; make the Activity
+Session-impact mock return the same fact snapshot on both Cancel → reopen reads without leaking into other tests;
+and avoid constructing a new nested mock component type whenever
+`EventDetailDialog` re-renders on Vault review, which was discarding the
+test component's own React state. Retain the parent Inspector view contract
+and the second destructive confirmation for recorded facts. These repairs
+do not alter API, PostgreSQL, user records or recurrence semantics.
+
+**Owner-local typecheck/Vitest rerun after this repair: pending.**
+
+
+
 ## 2026-11-23 — Vault Move replaces Inspector details; extra warning only on facts
 
 Owner visual feedback rejected the previous **small Vault confirmation above

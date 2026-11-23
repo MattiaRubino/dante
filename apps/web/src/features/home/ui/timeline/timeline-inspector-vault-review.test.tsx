@@ -6,37 +6,46 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import { EventDetailDialog } from './timeline-overlays';
 
 vi.mock('./activity-inspector-actions', () => ({
+  // Stable React component identity: defining a component INSIDE this mock
+  // component remounts it when EventDetailDialog changes review mode, losing
+  // the local open state and making the review vanish.
   ActivityInspectorActions: ({
     onVaultReviewChange,
   }: {
     onVaultReviewChange?: (active: boolean) => void;
   }) => {
-    function ActivityReviewStub() {
-      const [active, setActive] = useState(false);
-      return (
-        <>
-          {!active ? (
-            <button type="button" onClick={() => {
+    const [active, setActive] = useState(false);
+    return (
+      <>
+        {!active ? (
+          <button
+            type="button"
+            onClick={() => {
               setActive(true);
               onVaultReviewChange?.(true);
-            }}>
-              Sposta in Bozze
-            </button>
-          ) : (
-            <section role="region" aria-label="Sposta attività in Bozze"
-              className="timeline-vault-move-confirmation">
-              <button type="button" onClick={() => {
+            }}
+          >
+            Sposta in Bozze
+          </button>
+        ) : (
+          <section
+            role="region"
+            aria-label="Sposta attività in Bozze"
+            className="timeline-vault-move-confirmation"
+          >
+            <button
+              type="button"
+              onClick={() => {
                 setActive(false);
                 onVaultReviewChange?.(false);
-              }}>
-                Annulla
-              </button>
-            </section>
-          )}
-        </>
-      );
-    }
-    return <ActivityReviewStub />;
+              }}
+            >
+              Annulla
+            </button>
+          </section>
+        )}
+      </>
+    );
   },
 }));
 

@@ -389,13 +389,17 @@ describe('Activity Inspector actions', () => {
 describe('Activity move to inert Draft Vault', () => {
   it('reviews in Inspector, then confirms recorded Session loss before moving atomically', async () => {
     get.mockResolvedValue(profile);
-    sessionImpact.mockResolvedValueOnce({
+    // Cancel does not modify facts: both reads must see the SAME paused/
+    // recorded Sessions. Keep responses one-shot so this test cannot leak
+    // its mocked active Sessions into unrelated tests (vi.clearAllMocks).
+    const impact = {
       fingerprint: 'a'.repeat(64),
       attempts: [
         { sessionRef: 'live', status: 'in pausa', plannedScheduleRef: null },
         { sessionRef: 'ended', status: 'conclusa', plannedScheduleRef: null },
       ],
-    });
+    };
+    sessionImpact.mockResolvedValueOnce(impact).mockResolvedValueOnce(impact);
     const onDeleted = vi.fn();
     const onReviewChange = vi.fn();
     render(

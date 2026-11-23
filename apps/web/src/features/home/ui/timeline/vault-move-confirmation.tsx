@@ -95,7 +95,7 @@ export function VaultMoveConfirmation({
           description="Questa operazione è irreversibile."
           note={`Eliminerai definitivamente ${lostFacts}. Nelle Bozze resterà solo la configurazione.`}
           busy={busy}
-          error={error}
+          {...(error ? { error } : {})}
           choices={[
             {
               key: 'move-with-loss',
