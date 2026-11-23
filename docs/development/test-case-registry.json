@@ -3113,7 +3113,7 @@
       "purpose": "Verify draft save/resume behavior and a wider Draft Vault with orange, legible cards, a fixed search field and a separately scrolling, live-filtered list.",
       "invariant": "Draft cards use the Timeline orange accent with readable title, schedule and action contrast; many cards scroll below the fixed title/search and filtering stays live within a mobile viewport.",
       "status": "UNREVIEWED",
-      "audit_note": "Owner WSL geometry/filter Playwright 1 PASS at 958d02b; visual accent/typography assertions added 2026-11-23, NOT_RUN. Full file and other legacy cases remain unqualified."
+      "audit_note": "Owner WSL focused geometry/filter Playwright PASS at 958d02b; orange accent/typography/browser case PASS at 3117f6e on 2026-11-23. Full file and other legacy cases remain unqualified."
     },
     {
       "path": "apps/web/e2e/temporal-create.spec.ts",
@@ -3153,7 +3153,7 @@
       "purpose": "Verify card title readability, text truncation, adjacent indicator geometry and existing interaction constraints in a fixture browser.",
       "invariant": "Timeline and Day card titles remain at least 15px and ellipsize within the card while adjacent rows and controls retain their placement.",
       "status": "UNREVIEWED",
-      "audit_note": "Title scale assertion updated 2026-11-23, NOT_RUN; other legacy cases still need contract and execution review."
+      "audit_note": "Owner WSL focused title scale browser case PASS at 3117f6e on 2026-11-23; other legacy cases still need contract and execution review."
     },
     {
       "path": "apps/web/e2e/timeline-interactions.spec.ts",

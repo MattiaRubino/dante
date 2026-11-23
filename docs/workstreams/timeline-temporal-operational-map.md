@@ -9,8 +9,11 @@ white semibold action labels. This is a display-only change: the saved tone
 is still available when resuming the draft. Production Timeline/Day card
 titles grow by 1px, retaining truncation and the compact Week layout. Browser
 fixture assertions cover draft accent/type/button contrast and the existing
-Timeline card title scale. Web typecheck and focused browser reruns for this
-visual refinement are **NOT_RUN** pending owner WSL evidence.
+Timeline card title scale. Owner WSL evidence at `3117f6e`: Web typecheck
+**PASS**, Vite build/bundle gate **PASS**, and both focused Playwright cases
+**2 PASS** in 4.0s. Vite's `ECONNREFUSED` proxy messages are unrelated Home
+API calls with the backend stopped; they did not fail either fixture case.
+The complete browser suite remains **NOT_RUN**.
 
 ## 2026-11-23 — Draft Vault panel and card presentation
 
