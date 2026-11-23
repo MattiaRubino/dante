@@ -1,6 +1,51 @@
 # Timeline / Temporal-Operational — Live Execution Ledger
 
 
+## 2026-11-23 — Draft Vault hard 100 cap, full documentation and 10 new E2E
+
+**Implementation:** introduce Alembic `20261123_189`:
+100 inert Draft rows per `owner_person_ref` enforced by a BEFORE INSERT
+trigger holding an owner-scoped transaction advisory lock. Existing Draft
+revisions and deletes do not consume slots; the same save function is
+used by atomic Move. SQLSTATE `PZ101` maps to
+`409 temporal.drafts.capacity`; the client distinguishes it from CAS
+conflicts and renders an accessible `Spazio Bozze esaurito` popup without
+closing the user's edited Create form or discarding the Inspector.
+Search treats empty stored titles as `Senza titolo` and alias
+`Senza nome` for filtering only; panel shows `N/100`,
+resets search on reopening and retains the established bounded list scroll.
+
+**Canonical documentation:** rewrite
+`docs/domain/concepts/draft-vault.md` as the complete owner, CAS,
+capacity, life-cycle, copy/move/delete, Activity/Event, recurrence,
+timezone, registered-fact-loss and error contract; add
+`docs/domain/concepts/temporal-duplicate.md` for accepted-source and
+Draft duplication, DST/interval/Session/Objective/participant mapping,
+fail-closed restrictions and identity invariants. Document the current
+known limitation: duplicate Activity planned Session names/order survive,
+but copied planned times are deliberately unplaced (`timeEnabled=false`).
+Do not claim perfect temporal fidelity.
+
+**Tests:** 2 new real PostgreSQL cases for 100 cap, update-at-cap,
+slot recovery, two concurrent creates and Move rollback with original
+Event preserved; new unit cases for full capacity and 100-item search.
+New untouched-existing-suite E2E inventory totals **10**:
+7 authenticated real-stack journeys in
+`apps/web/e2e/auth/draft-vault-real-lifecycle.spec.ts`;
+3 non-auth browser stress journeys in
+`apps/web/e2e/draft-vault-new-stress.spec.ts`.
+Exact case ids and run commands:
+`docs/development/draft-vault-duplicate-e2e-acceptance.md`.
+
+**Evidence status:** all new backend/frontend/E2E changes are CANDIDATE,
+not green. No WSL migration, tsc, Ruff, pytest, Prettier or Playwright
+execution has been reported for this change set. Previous 66/66 focus
+tests were green only on their earlier commit. Keep owner-formatted
+pre-existing local files untouched and evaluate any failures at the new
+commit before accepting E2E.
+
+
+
 ## 2026-11-23 — Owner Vitest 198/199: Event resumed Vault fixture
 
 Owner WSL gate at `4efedb0`: Web TypeScript PASS, 198/199 focused
