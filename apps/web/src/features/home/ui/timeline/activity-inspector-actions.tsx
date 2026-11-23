@@ -377,6 +377,7 @@ export function ActivityInspectorActions({
           recordedObjectives={vaultMove.recordedObjectives}
           busy={pending}
           error={error}
+          onCapacityDismiss={() => setError('')}
           onConfirm={() =>
             void action(async () => {
               await draftVault.move(

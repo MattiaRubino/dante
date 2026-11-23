@@ -3,6 +3,7 @@ import { createPortal } from 'react-dom';
 
 import {
   createRemoteDraftVault,
+  DRAFT_VAULT_MAX_ITEMS,
   DRAFT_VAULT_UPDATED,
   type DraftVaultItem,
 } from '../../../temporal-create/application/remote-draft-vault';
@@ -145,9 +146,14 @@ export function TimelineDraftVault({
     };
   }, [vault]);
 
-  const filtered = items.filter((draft) =>
-    draft.title.toLocaleLowerCase().includes(query.trim().toLocaleLowerCase()),
-  );
+  const normalizedQuery = query.trim().toLocaleLowerCase('it-IT');
+  const filtered = items.filter((draft) => {
+    // "Senza titolo" is a UI label, never a persisted artificial title.
+    // The alternative "Senza nome" is searchable for legacy user wording.
+    const title = draft.title.trim();
+    const label = title ? title : 'Senza titolo Senza nome';
+    return label.toLocaleLowerCase('it-IT').includes(normalizedQuery);
+  });
 
   const remove = async (item: DraftVaultItem) => {
     setPendingRef(item.draftRef);
@@ -175,7 +181,10 @@ export function TimelineDraftVault({
       aria-label="Apri Bozze"
       aria-expanded={open}
       data-timeline-tooltip="Bozze"
-      onClick={() => setOpen((value) => !value)}
+      onClick={() => {
+        if (!open) setQuery('');
+        setOpen((value) => !value);
+      }}
     >
       <svg
         viewBox="0 0 24 24"
@@ -202,6 +211,12 @@ export function TimelineDraftVault({
     >
       <header className="timeline-planning-tray__header">
         <h2>Bozze</h2>
+        <span
+          className="timeline-planning-tray__capacity"
+          aria-label={`${items.length} Bozze su ${DRAFT_VAULT_MAX_ITEMS} disponibili`}
+        >
+          {items.length}/{DRAFT_VAULT_MAX_ITEMS}
+        </span>
         <button
           type="button"
           aria-label="Chiudi Bozze"

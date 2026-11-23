@@ -1,5 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 
+import { DRAFT_VAULT_CAPACITY_MESSAGE } from '../../../temporal-create/application/remote-draft-vault';
+import { DraftVaultCapacityDialog } from '../../../temporal-create/ui/draft-vault-capacity-dialog';
 import { TemporalDeleteDialog } from './temporal-delete-dialog';
 
 import './vault-move-confirmation.css';
@@ -15,6 +17,7 @@ export function VaultMoveConfirmation({
   error,
   onConfirm,
   onCancel,
+  onCapacityDismiss,
 }: Readonly<{
   subject: 'attività' | 'evento';
   itemTitle: string;
@@ -25,6 +28,7 @@ export function VaultMoveConfirmation({
   error?: string;
   onConfirm: () => void;
   onCancel: () => void;
+  onCapacityDismiss?: () => void;
 }>) {
   const [confirmLoss, setConfirmLoss] = useState(false);
   const cancelRef = useRef<HTMLButtonElement | null>(null);
@@ -37,6 +41,10 @@ export function VaultMoveConfirmation({
       }
     };
   }, []);
+  const capacityFull = error === DRAFT_VAULT_CAPACITY_MESSAGE;
+  useEffect(() => {
+    if (capacityFull) setConfirmLoss(false);
+  }, [capacityFull]);
   const hasRecordedFacts = recordedSessions > 0 || recordedObjectives > 0;
   const lostFacts = [
     recordedSessions > 0
@@ -61,7 +69,7 @@ export function VaultMoveConfirmation({
           Attenzione: Eliminazione definitiva di {lostFacts}.
         </p>
       ) : null}
-      {error ? (
+      {error && !capacityFull ? (
         <p role="alert" className="timeline-vault-move-confirmation__warning">
           {error}
         </p>
@@ -86,6 +94,9 @@ export function VaultMoveConfirmation({
           {busy ? 'Spostamento…' : 'Sposta in Bozze'}
         </button>
       </div>
+      {capacityFull && onCapacityDismiss ? (
+        <DraftVaultCapacityDialog onDismiss={onCapacityDismiss} />
+      ) : null}
       {confirmLoss ? (
         <TemporalDeleteDialog
           subject={subject}

@@ -63,6 +63,14 @@ def _response(row: Any) -> DraftVaultResponse:
 
 def _problem(exc: DBAPIError | SQLAlchemyError) -> ProblemError:
     sqlstate = getattr(exc.orig, "sqlstate", None) if isinstance(exc, DBAPIError) else None
+    if sqlstate == "PZ101":
+        return ProblemError(
+            status=409,
+            code="temporal.drafts.capacity",
+            category="conflict",
+            title="Draft Vault full",
+            detail="Hai raggiunto il limite di 100 Bozze. Elimina una Bozza prima di salvarne un'altra.",
+        )
     if sqlstate in {"40001", "23505"}:
         return ProblemError(
             status=409,

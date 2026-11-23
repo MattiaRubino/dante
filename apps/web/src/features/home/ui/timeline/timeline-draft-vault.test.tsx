@@ -137,6 +137,50 @@ describe('Timeline Draft Vault', () => {
     expect(within(panel).getByText('Conferenza')).toBeTruthy();
   });
 
+  it('supports 100 mixed drafts and searches untitled aliases without materializing fake titles', async () => {
+    const many = Array.from({ length: 100 }, (_, index) => {
+      const untitled = index % 5 === 0;
+      const title = untitled ? '' : `Bozza ${index + 1}`;
+      return {
+        ...draft,
+        draftRef: `quota-draft-${index}`,
+        subjectKind: index % 2 === 0 ? ('activity' as const) : ('event' as const),
+        title,
+        payload: {
+          ...draft.payload,
+          fields: createTemporalCreateFields({
+            kind: index % 2 === 0 ? 'activity' : 'event',
+            title,
+          }),
+        },
+      };
+    });
+    sources.list.mockResolvedValueOnce(many);
+    render(
+      <>
+        <div className="dante-timeline-actions" />
+        <TimelineDraftVault onOpen={() => undefined} />
+      </>,
+    );
+    fireEvent.click(await screen.findByRole('button', { name: 'Apri Bozze' }));
+    const panel = screen.getByRole('complementary', { name: 'Bozze' });
+    expect(within(panel).getAllByRole('article')).toHaveLength(100);
+    expect(within(panel).getByLabelText('100 Bozze su 100 disponibili')).toBeTruthy();
+    const search = within(panel).getByRole('searchbox', { name: 'Cerca Bozze' });
+    fireEvent.change(search, { target: { value: 'SENZA NOME' } });
+    expect(within(panel).getAllByRole('article')).toHaveLength(20);
+    fireEvent.change(search, { target: { value: 'senza titolo' } });
+    expect(within(panel).getAllByRole('article')).toHaveLength(20);
+    fireEvent.change(search, { target: { value: 'Bozza 100' } });
+    expect(within(panel).getAllByRole('article')).toHaveLength(1);
+    fireEvent.click(within(panel).getByRole('button', { name: 'Chiudi Bozze' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Apri Bozze' }));
+    expect(within(screen.getByRole('complementary', { name: 'Bozze' }))
+      .getByRole('searchbox', { name: 'Cerca Bozze' })).toHaveProperty('value', '');
+    expect(within(screen.getByRole('complementary', { name: 'Bozze' }))
+      .getAllByRole('article')).toHaveLength(100);
+  });
+
   it('requires confirmation before deleting the inert vault row', async () => {
     sources.list.mockResolvedValueOnce([draft]);
     sources.remove.mockResolvedValueOnce(undefined);

@@ -61,6 +61,36 @@ function parseItem(value: unknown): DraftVaultItem {
   });
 }
 
+export const DRAFT_VAULT_MAX_ITEMS = 100;
+
+export const DRAFT_VAULT_CAPACITY_MESSAGE =
+  'Hai raggiunto il limite di 100 Bozze. Elimina una Bozza prima di salvarne un’altra.';
+
+export class DraftVaultCapacityError extends Error {
+  constructor() {
+    super(DRAFT_VAULT_CAPACITY_MESSAGE);
+    this.name = 'DraftVaultCapacityError';
+  }
+}
+
+async function assertDraftVaultCapacity(response: Response): Promise<void> {
+  if (response.status !== 409) return;
+  try {
+    const body: unknown = await response.clone().json();
+    if (
+      body !== null &&
+      typeof body === 'object' &&
+      'code' in body &&
+      body.code === 'temporal.drafts.capacity'
+    ) {
+      throw new DraftVaultCapacityError();
+    }
+  } catch (error) {
+    if (error instanceof DraftVaultCapacityError) throw error;
+    // Non-JSON conflict responses retain the existing stale-revision message.
+  }
+}
+
 export function createRemoteDraftVault(
   fetchFn: typeof globalThis.fetch = globalThis.fetch,
 ) {
@@ -115,12 +145,14 @@ export function createRemoteDraftVault(
           }),
         },
       );
-      if (!response.ok)
+      if (!response.ok) {
+        await assertDraftVaultCapacity(response);
         throw new Error(
           response.status === 409
             ? 'La bozza è cambiata. Riaprila e riprova.'
             : 'Non è stato possibile salvare la bozza.',
         );
+      }
       return parseItem(await response.json());
     },
 
@@ -154,6 +186,7 @@ export function createRemoteDraftVault(
         },
       );
       if (!response.ok) {
+        await assertDraftVaultCapacity(response);
         throw new Error(
           response.status === 409
             ? 'L’elemento o le registrazioni sono cambiati. Riapri la scheda prima di spostarlo.'

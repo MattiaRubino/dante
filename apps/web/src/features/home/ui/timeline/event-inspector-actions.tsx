@@ -2049,6 +2049,7 @@ export function EventInspectorActions({
           recordedObjectives={vaultMove.recordedObjectives}
           busy={busy}
           error={error}
+          onCapacityDismiss={() => setError('')}
           onConfirm={() => {
             if (busy) return;
             setBusy(true);

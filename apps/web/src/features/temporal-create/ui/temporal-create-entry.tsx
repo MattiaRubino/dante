@@ -23,6 +23,7 @@ import { invalidateTemporalTimelineRead } from '../../temporal/timeline-invalida
 import { createRemoteRecurringAuthoringDataSource } from '../application/remote-recurring-authoring';
 import {
   createRemoteDraftVault,
+  DraftVaultCapacityError,
   notifyDraftVaultUpdated,
   type DraftVaultItem,
   type DraftVaultSnapshot,
@@ -82,6 +83,8 @@ import {
   TemporalCreateComposer,
   type TemporalCreateContextOption,
 } from './temporal-create-composer';
+
+import { DraftVaultCapacityDialog } from './draft-vault-capacity-dialog';
 
 import './temporal-create.css';
 import './temporal-create-u1.css';
@@ -211,6 +214,7 @@ export function TemporalCreateEntry({
     'idle',
   );
   const [failureMessage, setFailureMessage] = useState('');
+  const [vaultCapacityOpen, setVaultCapacityOpen] = useState(false);
   const [failureTarget, setFailureTarget] = useState<string | null>(null);
 
   const freshFields = useCallback(
@@ -261,6 +265,7 @@ export function TemporalCreateEntry({
       setOpen(false);
       setIssues([]);
       setFailureMessage('');
+      setVaultCapacityOpen(false);
       setLifecycle('idle');
       preparedRef.current = null;
       partialPostCreateRef.current = null;
@@ -505,12 +510,20 @@ export function TemporalCreateEntry({
       notifyDraftVaultUpdated();
       closeComposer();
     } catch (reason) {
-      setLifecycle('failed');
-      setFailureMessage(
-        reason instanceof Error
-          ? reason.message
-          : 'Impossibile salvare la bozza.',
-      );
+      if (reason instanceof DraftVaultCapacityError) {
+        setLifecycle('idle');
+        // Never discard or close Create because the Vault reached capacity.
+        pendingVaultSave.current = null;
+        setFailureMessage('');
+        setVaultCapacityOpen(true);
+      } else {
+        setLifecycle('failed');
+        setFailureMessage(
+          reason instanceof Error
+            ? reason.message
+            : 'Impossibile salvare la bozza.',
+        );
+      }
     } finally {
       commitInFlightRef.current = false;
     }
@@ -1233,6 +1246,9 @@ export function TemporalCreateEntry({
           )
         : null}
       {discardModal}
+      {vaultCapacityOpen ? (
+        <DraftVaultCapacityDialog onDismiss={() => setVaultCapacityOpen(false)} />
+      ) : null}
     </>
   );
 }

@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import asyncio
 import json
 from datetime import UTC, datetime
 from types import SimpleNamespace
@@ -372,5 +373,167 @@ async def test_standalone_activity_moves_atomically_without_leaving_product_iden
                 (activity_ref, actor),
             ).fetchone()
         assert existing is not None and existing[0] == 0
+    finally:
+        await runtime.dispose()
+
+
+
+async def _save_capacity_draft(
+    runtime: Any,
+    actor: NativeRef,
+    index: int,
+    *,
+    draft_ref: Any = None,
+    expected_revision: int | None = None,
+) -> RowMapping:
+    """Exercise the real SECURITY DEFINER path, never privileged test inserts."""
+    ref = draft_ref or uuid7()
+    name = f"Bozza {index}"
+    async with runtime.session_factory() as session, session.begin():
+        return (
+            (
+                await session.execute(
+                    text(
+                        "SELECT * FROM dante.save_self_temporal_draft("
+                        ":actor,:draft,:operation,:revision,'activity',:title,CAST(:data AS jsonb))"
+                    ),
+                    {
+                        "actor": actor,
+                        "draft": ref,
+                        "operation": f"capacity:{index}:{expected_revision or 0}",
+                        "revision": expected_revision,
+                        "title": name,
+                        "data": json.dumps(
+                            {
+                                "version": 1,
+                                "fields": {"kind": "activity", "title": name},
+                                "advanced": {"activityStructure": {"plannedSlices": []}},
+                                "surface": "full",
+                            }
+                        ),
+                    },
+                )
+            )
+            .mappings()
+            .one()
+        )
+
+
+@pytest.mark.asyncio
+async def test_vault_limit_100_update_allowed_delete_frees_slot_and_move_rolls_back(
+    migrated_database: Any,
+) -> None:
+    actor = _seed_self(migrated_database)
+    other = _seed_self(migrated_database)
+    area = ensure_test_life_area(migrated_database, actor)
+    runtime = create_database_runtime(migrated_database.runtime_settings())
+    ctx = _context(actor)
+    request = Request({
+        "type": "http",
+        "app": SimpleNamespace(state=SimpleNamespace(database_runtime=runtime)),
+    })
+    try:
+        created = await TemporalEventApplication(runtime.session_factory).create_event(
+            self_person_ref=actor,
+            operation_id="capacity:original:event",
+            title="Evento da proteggere",
+            life_area_ref=area,
+        )
+        event_ref = created.event.event_ref
+        async with runtime.session_factory() as session, session.begin():
+            fingerprint = await session.scalar(
+                text(
+                    "SELECT dante.get_self_temporal_hard_delete_fingerprint("
+                    ":actor,:source,'event_once')"
+                ),
+                {"actor": actor, "source": event_ref},
+            )
+        assert fingerprint is not None
+
+        first = await _save_capacity_draft(runtime, actor, 0)
+        for index in range(1, 100):
+            await _save_capacity_draft(runtime, actor, index)
+        assert len(await list_drafts(ctx, request, Response())) == 100
+
+        with pytest.raises(DBAPIError) as overflow:
+            await _save_capacity_draft(runtime, actor, 100)
+        assert getattr(overflow.value.orig, "sqlstate", None) == "PZ101"
+
+        # Revisions do not consume additional slots. Cross-owner capacity is
+        # isolated; another owner remains free to create their own draft.
+        revised = await _save_capacity_draft(
+            runtime, actor, 501, draft_ref=first["draft_ref"], expected_revision=1
+        )
+        assert revised["revision"] == 2
+        assert len(await list_drafts(ctx, request, Response())) == 100
+        await _save_capacity_draft(runtime, other, 1)
+
+        move_request = DraftVaultMoveRequest(
+            draft_ref=uuid7(),
+            operation_id="capacity:move:event",
+            subject_kind="event",
+            title="Evento da proteggere",
+            payload={
+                "version": 1,
+                "fields": {"kind": "event", "title": "Evento da proteggere"},
+                "advanced": {"objectives": []},
+                "surface": "full",
+            },
+            expected_fingerprint=fingerprint,
+        )
+        with pytest.raises(ProblemError) as at_capacity:
+            await move_self_item_to_draft(
+                event_ref, move_request, ctx, request, Response()
+            )
+        assert at_capacity.value.status == 409
+        assert at_capacity.value.code == "temporal.drafts.capacity"
+        assert len(await list_drafts(ctx, request, Response())) == 100
+
+        # A failed move must NEVER delete the accepted original Event.
+        with psycopg.connect(
+            **migrated_database.connection_kwargs(
+                "dante_migrator", migrated_database.cluster.migrator_password
+            )
+        ) as connection:
+            connection.execute("SET ROLE dante_owner")
+            count = connection.execute(
+                "SELECT count(*) FROM dante.event_expectation WHERE event_ref=%s",
+                (event_ref,),
+            ).fetchone()
+        assert count is not None and count[0] == 1
+
+        await delete_draft(first["draft_ref"], 2, ctx, request, Response())
+        assert len(await list_drafts(ctx, request, Response())) == 99
+        await _save_capacity_draft(runtime, actor, 100)
+        assert len(await list_drafts(ctx, request, Response())) == 100
+    finally:
+        await runtime.dispose()
+
+
+@pytest.mark.asyncio
+async def test_vault_capacity_serializes_two_concurrent_owner_creates(
+    migrated_database: Any,
+) -> None:
+    actor = _seed_self(migrated_database)
+    runtime = create_database_runtime(migrated_database.runtime_settings())
+    try:
+        for index in range(99):
+            await _save_capacity_draft(runtime, actor, index)
+        results = await asyncio.gather(
+            _save_capacity_draft(runtime, actor, 1000),
+            _save_capacity_draft(runtime, actor, 1001),
+            return_exceptions=True,
+        )
+        assert sum(isinstance(result, RowMapping) for result in results) == 1
+        failures = [result for result in results if isinstance(result, BaseException)]
+        assert len(failures) == 1
+        assert isinstance(failures[0], DBAPIError)
+        assert getattr(failures[0].orig, "sqlstate", None) == "PZ101"
+        async with runtime.session_factory() as session, session.begin():
+            count = await session.scalar(
+                text("SELECT count(*) FROM dante.list_self_temporal_drafts(:actor)"),
+                {"actor": actor},
+            )
+        assert count == 100
     finally:
         await runtime.dispose()

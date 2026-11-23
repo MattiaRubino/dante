@@ -221,6 +221,14 @@
   margin: 0;
 }
 
+.timeline-draft-vault__anchor .timeline-planning-tray__capacity {
+  margin-left: auto;
+  color: var(--dante-semantic-color-home-text-secondary, #a9b6c0);
+  font-size: 12px;
+  font-weight: 650;
+  font-variant-numeric: tabular-nums;
+}
+
 .timeline-draft-vault__anchor .timeline-planning-tray__search {
   display: block;
   margin: 14px 20px 4px;
