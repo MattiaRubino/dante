@@ -305,6 +305,38 @@ describe('Temporal Create U2 entry', () => {
     expect(screen.getByDisplayValue('Event duplicato')).toBeTruthy();
   });
 
+  it('creates a normal Event with inactive legacy Scheduling values via the canonical authoring endpoint', async () => {
+    const invocation: TemporalCreateInvocation = {
+      id: 1001,
+      date: Temporal.PlainDate.from('2026-11-23'),
+      seed: {
+        kind: 'event',
+        title: 'Riunione',
+        date: '2026-11-23',
+        timeSemantics: 'timed',
+        startTime: '15:15',
+        durationMinutes: 30,
+        scheduling: {
+          windowStartTime: '05:00',
+          earliestStartTime: '07:00',
+          deadlineTime: '23:00',
+        },
+      },
+    };
+    const { activityRequests, eventRequests } = renderEntry(
+      [], true, '2026-11-23', invocation,
+    );
+    await screen.findByDisplayValue('Riunione');
+    fireEvent.click(screen.getByRole('button', { name: 'Aggiungi' }));
+    await waitFor(() => expect(eventRequests).toHaveLength(1));
+    expect(eventRequests[0]).toMatchObject({
+      title: 'Riunione',
+      placement: { kind: 'named-zone-local-interval' },
+    });
+    expect(activityRequests).toHaveLength(0);
+    expect(screen.queryByText('Non è stato possibile applicare la creazione. La bozza è ancora qui.')).toBeNull();
+  });
+
   it('resets abandoned Activity Sessions, intervals and settings when switching to Event and back', async () => {
     const { activityRequests, eventRequests } = renderEntry(
       [],

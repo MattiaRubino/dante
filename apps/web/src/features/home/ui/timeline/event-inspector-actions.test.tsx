@@ -1037,10 +1037,11 @@ describe('Event Inspector actions', () => {
       name: 'Sposta in Bozze',
     });
     fireEvent.click(trigger);
-    const dialog = await screen.findByRole('alertdialog', {
+    const dialog = await screen.findByRole('region', {
       name: 'Sposta evento in Bozze',
     });
-    expect(dialog.textContent).toContain('eliminati definitivamente');
+    expect(dialog.textContent).toContain('Eliminazione definitiva di 1 risultato');
+    expect(screen.queryByRole('alertdialog', { name: 'Sposta evento in Bozze' })).toBeNull();
     expect(moveDraft).not.toHaveBeenCalled();
     fireEvent.click(within(dialog).getByRole('button', { name: 'Annulla' }));
     expect(moveDraft).not.toHaveBeenCalled();

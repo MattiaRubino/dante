@@ -32,6 +32,7 @@ import {
 import { TimelineInspectorIcon } from './timeline-inspector-icon';
 import { RecurringEditScopeDialog } from './recurring-edit-scope-dialog';
 import { TemporalDeleteDialog } from './temporal-delete-dialog';
+import { VaultMoveConfirmation } from './vault-move-confirmation';
 
 export function ActivityInspectorActions({
   activityRef,
@@ -100,6 +101,7 @@ export function ActivityInspectorActions({
     fingerprint: string;
     profileRevision: number;
     attempts: number;
+    recordedObjectives: number;
   } | null>(null);
   const [pending, setPending] = useState(false);
   const [error, setError] = useState('');
@@ -279,6 +281,9 @@ export function ActivityInspectorActions({
                 fingerprint: impact.fingerprint,
                 profileRevision: savedProfile.revision,
                 attempts: impact.attempts.length,
+                recordedObjectives: settings.objectives.filter((objective) =>
+                  Boolean(objective.observationRef),
+                ).length,
               });
             })
           }
@@ -359,38 +364,25 @@ export function ActivityInspectorActions({
         />
       ) : null}
       {vaultMove && vaultEligible ? (
-        <TemporalDeleteDialog
-          intent="move"
+        <VaultMoveConfirmation
           subject="attività"
-          itemTitle={itemTitle ?? profile?.title ?? 'Attività'}
-          scheduleLabel={scheduleLabel}
+          recordedSessions={vaultMove.attempts}
+          recordedObjectives={vaultMove.recordedObjectives}
           busy={pending}
           error={error}
-          note={
-            vaultMove.attempts > 0
-              ? `${vaultMove.attempts} Sessioni in corso, in pausa o registrate verranno cancellate, insieme ai risultati degli Obiettivi.`
-              : 'Eventuali risultati degli Obiettivi già confermati verranno cancellati.'
+          onConfirm={() =>
+            void action(async () => {
+              await draftVault.move(
+                vaultMove.snapshot,
+                activityRef,
+                vaultMove.fingerprint,
+                vaultMove.profileRevision,
+              );
+              notifyDraftVaultUpdated();
+              setVaultMove(null);
+              onDeleted();
+            })
           }
-          choices={[
-            {
-              key: 'move',
-              label: 'Conferma spostamento in Bozze',
-              onConfirm: () =>
-                void action(async () => {
-                  // Snapshot and CAS are reviewed together. The backend
-                  // commits Draft + destructive deletion in one transaction.
-                  await draftVault.move(
-                    vaultMove.snapshot,
-                    activityRef,
-                    vaultMove.fingerprint,
-                    vaultMove.profileRevision,
-                  );
-                  notifyDraftVaultUpdated();
-                  setVaultMove(null);
-                  onDeleted();
-                }),
-            },
-          ]}
           onCancel={() => {
             setVaultMove(null);
             setError('');

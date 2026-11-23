@@ -1,6 +1,31 @@
 # Timeline / Temporal-Operational — Live Execution Ledger
 
 
+## 2026-11-23 — Vault Inspector inline review and legacy Create routing regression
+
+Restore the familiar **inline Inspector** Vault confirmation for standalone
+Activity/Event, removing the transient centered modal and its obsolete
+`TemporalDeleteDialog.intent='move'` branch. Keep atomic owner backend
+movement unchanged. The confirmation is deliberately short: one sentence
+about preserving configuration and deleting the original, a red fact warning
+ONLY for actual Session attempts/Objective observations, and side-by-side
+Cancel / Sposta in Bozze actions. Recurrence/occurrence suppression remains
+unchanged.
+
+Create had a separate regression: inactive legacy Scheduling clock fields
+could divert an otherwise ordinary Activity/Event away from canonical U2;
+the production historical path cannot author Events and reports a generic
+failure. Canonical compatibility now disregards only truly inactive
+Scheduling date/clock values when there is no Scheduling constraint;
+movement/fallback and other meaningful policies still fail closed.
+Injected authoring tests no longer bypass that same gate. For genuinely
+unsupported old options, show a more specific incompatibility reason
+rather than blaming the visible planned Session row. This is a **candidate**:
+the screenshot does not reveal which hidden legacy option was present.
+Owner WSL tests and real-browser Add Activity/Event must confirm.
+
+
+
 ## 2026-11-23 — Standalone Activity/Event hard move to Draft Vault
 
 Owner-approved UX replaces the old asymmetry (Activity **Sposta** using
@@ -11,8 +36,8 @@ remains for a non-destructive copy. Toolbar buttons stay suppressed for
 recurring source and Occurrence scopes, including generated Routine
 Activities.
 
-Moving a standalone Activity/Event opens the same accessible centered
-confirmation treatment as hard delete, spelling out permanent loss of
+Moving a standalone Activity/Event uses a concise Inspector-local
+review, spelling out permanent loss of
 recorded Objective outcomes/observations, live/paused/ended Sessions when
 applicable, attendance and factual history. Cancel performs no write;
 Confirm sends a fresh inert snapshot plus authoritative current CAS to

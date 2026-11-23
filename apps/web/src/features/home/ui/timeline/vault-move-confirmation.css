@@ -1,0 +1,57 @@
+/* In-place Vault confirmation: same Inspector, never a second modal. */
+.timeline-vault-move-confirmation {
+  gap: 7px;
+  margin-block: 10px;
+  padding: 12px;
+  border-color: var(--dante-semantic-color-home-border-strong, #52606b);
+  color: var(--dante-semantic-color-home-text-primary, #edf2f8);
+  background: var(--dante-semantic-color-home-surface-overlay, #192328);
+  font-size: 13px;
+  line-height: 1.45;
+}
+
+.timeline-vault-move-confirmation > strong {
+  font-size: 14px;
+}
+
+.timeline-vault-move-confirmation > p {
+  margin: 0;
+  color: var(--dante-semantic-color-home-text-secondary, #b7c0cf);
+}
+
+.timeline-vault-move-confirmation .timeline-vault-move-confirmation__warning {
+  padding: 7px 9px;
+  border: 1px solid color-mix(in srgb, #e26864 48%, transparent);
+  border-radius: 8px;
+  color: #ffb6ad;
+  background: color-mix(in srgb, #a83131 12%, transparent);
+}
+
+.timeline-vault-move-confirmation__actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-top: 4px;
+}
+
+.timeline-vault-move-confirmation__actions button {
+  min-height: 36px;
+  padding: 7px 12px;
+  border: 1px solid var(--dante-semantic-color-home-border-subtle, #52606b);
+  border-radius: 8px;
+  color: inherit;
+  background: var(--dante-semantic-color-home-surface-control, #26343b);
+  cursor: pointer;
+}
+
+.timeline-vault-move-confirmation__actions button.timeline-vault-move-confirmation__confirm {
+  border-color: #ba633b;
+  color: #ffe3d4;
+  background: color-mix(in srgb, #c45b2e 27%, #26343b);
+}
+
+.timeline-vault-move-confirmation__actions button:disabled {
+  opacity: 0.55;
+  cursor: wait;
+}

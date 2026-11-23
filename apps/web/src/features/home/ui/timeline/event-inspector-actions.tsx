@@ -77,6 +77,7 @@ import { RecurringSeriesEditor } from './recurring-series-editor';
 import { ExistingRecurrenceControl } from './existing-recurrence-control';
 import { UnsavedChangesDialog } from './unsaved-changes-dialog';
 import { TemporalDeleteDialog } from './temporal-delete-dialog';
+import { VaultMoveConfirmation } from './vault-move-confirmation';
 import { ObjectiveRecordingDeleteDialog } from './objective-recording-delete-dialog';
 import {
   EventScheduleEditor,
@@ -175,6 +176,7 @@ export function EventInspectorActions({
   const [vaultMove, setVaultMove] = useState<{
     snapshot: ReturnType<typeof draftVaultSnapshotFromDuplicate>;
     fingerprint: string;
+    recordedObjectives: number;
   } | null>(null);
   const [profile, setProfile] = useState<TemporalEventDetailRecord | null>(
     null,
@@ -1297,6 +1299,9 @@ export function EventInspectorActions({
         setVaultMove({
           snapshot: draftVaultSnapshotFromDuplicate(seed, selected),
           fingerprint: preview.fingerprint,
+          recordedObjectives: objectives.filter((objective) =>
+            Boolean(objective.observationRef),
+          ).length,
         });
       }
     } catch (reason) {
@@ -2032,41 +2037,32 @@ export function EventInspectorActions({
       ) : null}
       {profileNotice ? <p role="status">{profileNotice}</p> : null}
       {vaultMove && vaultEligible ? (
-        <TemporalDeleteDialog
-          intent="move"
+        <VaultMoveConfirmation
           subject="evento"
-          itemTitle={itemTitle ?? profile?.title ?? 'Evento'}
-          scheduleLabel={scheduleLabel}
+          recordedObjectives={vaultMove.recordedObjectives}
           busy={busy}
           error={error}
-          note="Le registrazioni e i risultati degli Obiettivi confermati verranno eliminati definitivamente. La bozza conserva soltanto la configurazione."
-          choices={[
-            {
-              key: 'move',
-              label: 'Conferma spostamento in Bozze',
-              onConfirm: () => {
-                if (busy) return;
-                setBusy(true);
-                setError('');
-                void draftVault
-                  .move(vaultMove.snapshot, eventRef, vaultMove.fingerprint, null)
-                  .then(() => {
-                    notifyDraftVaultUpdated();
-                    setVaultMove(null);
-                    if (onDeleted) onDeleted();
-                    else window.location.reload();
-                  })
-                  .catch((reason: unknown) => {
-                    setError(
-                      reason instanceof Error
-                        ? reason.message
-                        : 'Spostamento nelle Bozze non riuscito.',
-                    );
-                  })
-                  .finally(() => setBusy(false));
-              },
-            },
-          ]}
+          onConfirm={() => {
+            if (busy) return;
+            setBusy(true);
+            setError('');
+            void draftVault
+              .move(vaultMove.snapshot, eventRef, vaultMove.fingerprint, null)
+              .then(() => {
+                notifyDraftVaultUpdated();
+                setVaultMove(null);
+                if (onDeleted) onDeleted();
+                else window.location.reload();
+              })
+              .catch((reason: unknown) => {
+                setError(
+                  reason instanceof Error
+                    ? reason.message
+                    : 'Spostamento nelle Bozze non riuscito.',
+                );
+              })
+              .finally(() => setBusy(false));
+          }}
           onCancel={() => {
             setVaultMove(null);
             setError('');

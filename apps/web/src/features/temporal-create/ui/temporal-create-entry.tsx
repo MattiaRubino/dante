@@ -58,6 +58,7 @@ import {
   temporalCreateHasU6Structure,
   temporalCreateRecurringEventSharedIntentSupported,
   temporalCreateU2QuickIntentSupported,
+  temporalCreateU2QuickUnsupportedReason,
   validateTemporalCreateU2QuickFields,
   validateTemporalCreateU6StructureIssue,
 } from '../application/temporal-create-u2-submit';
@@ -962,24 +963,37 @@ export function TemporalCreateEntry({
       return;
     }
 
+    const u2IntentSupported = temporalCreateU2QuickIntentSupported(fields);
+    // Test injections must not bypass the real compatibility gate: doing so
+    // hid precisely the Create failure reproduced by real browser users.
     const useU2Quick =
+      u2IntentSupported &&
       (authoringDataSourceOverride !== undefined ||
-        import.meta.env.MODE !== 'test') &&
-      temporalCreateU2QuickIntentSupported(fields);
-    if (!useU2Quick && temporalCreateHasU6Structure(u2DraftRef.current)) {
-      const structure = u2DraftRef.current.activityStructure;
-      setFailureTarget(
-        structure.activityIntervals.length > 0
-          ? 'activityIntervals'
-          : structure.plannedSlices.length > 0
-            ? 'plannedSessions'
-            : 'activityStructure',
+        import.meta.env.MODE !== 'test');
+    if (
+      !u2IntentSupported &&
+      fields.kind === 'event' &&
+      fields.eventRecurrence.patternKind === 'none' &&
+      import.meta.env.MODE !== 'test' &&
+      runtimeOverride === undefined
+    ) {
+      // The historical runtime is Activity-only in production. Do not
+      // attempt Event creation through it and show a meaningless failure.
+      setLifecycle('failed');
+      setFailureTarget(null);
+      setFailureMessage(
+        `L’Evento non può essere creato: ${temporalCreateU2QuickUnsupportedReason(fields)} Nessuna modifica salvata.`,
       );
+      return;
+    }
+    if (!useU2Quick && temporalCreateHasU6Structure(u2DraftRef.current)) {
+      // The incompatible field can be an invisible legacy Scheduling /
+      // execution option, not the user's valid named Sessions or intervals.
+      // Do not paint the Session row red when it is not actually invalid.
+      setFailureTarget(null);
       setLifecycle('failed');
       setFailureMessage(
-        i18n.language.toLowerCase().startsWith('en')
-          ? 'These advanced settings cannot yet be combined with Activity intervals or planned Sessions.'
-          : 'Queste impostazioni avanzate non possono ancora essere combinate con intervalli dell’attività o Sessioni pianificate.',
+        `Impostazioni non compatibili: ${temporalCreateU2QuickUnsupportedReason(fields)} La bozza resta invariata.`,
       );
       return;
     }

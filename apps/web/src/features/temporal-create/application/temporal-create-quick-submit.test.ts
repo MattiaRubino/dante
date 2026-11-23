@@ -392,6 +392,46 @@ describe('U2 Quick Create submit mapping', () => {
     expect(temporalCreateU2QuickIntentSupported(editedMovement)).toBe(false);
   });
 
+  it('routes inactive legacy Scheduling clocks through U2 for standard Activity/Event', () => {
+    for (const kind of ['activity', 'event'] as const) {
+      const initial = createTemporalCreateFields({
+        kind,
+        title: 'Programmazione ordinaria',
+        date: '2026-11-23',
+        timeSemantics: 'timed',
+        startTime: '15:15',
+        durationMinutes: 30,
+        timeMode: 'zoned',
+        timeZoneId: 'Europe/Rome',
+      });
+      const stale = createTemporalCreateFields({
+        ...initial,
+        scheduling: {
+          ...initial.scheduling,
+          windowStartTime: '04:30',
+          windowEndTime: '06:30',
+          earliestStartTime: '06:30',
+          deadlineTime: '22:30',
+          preferredStartTime: '23:00',
+          preferredEndTime: '23:30',
+        },
+      });
+      // With no scheduling constraint, these hidden clock values carry no
+      // user-authored intent. They must not send an Event to the production
+      // legacy runtime, which only supports Activity.
+      expect(temporalCreateU2QuickIntentSupported(stale)).toBe(true);
+      const mapped = buildTemporalCreateU2Request(
+        stale,
+        createTemporalCreateU2AuthoringDraft(stale),
+        `create:inactive-clock:${kind}`,
+      );
+      expect(mapped.kind).toBe(kind);
+      expect(mapped.request.placement).toMatchObject({
+        kind: 'named-zone-local-interval',
+      });
+    }
+  });
+
   it('keeps not-yet-migrated advanced intent on the historical runtime path', () => {
     const baseline = createTemporalCreateFields({
       title: 'Focus',

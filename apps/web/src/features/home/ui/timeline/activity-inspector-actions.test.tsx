@@ -407,10 +407,11 @@ describe('Activity move to inert Draft Vault', () => {
     );
     const trigger = await screen.findByRole('button', { name: 'Sposta in Bozze' });
     fireEvent.click(trigger);
-    const dialog = await screen.findByRole('alertdialog', {
+    const dialog = await screen.findByRole('region', {
       name: 'Sposta attività in Bozze',
     });
     expect(dialog.textContent).toContain('2 Sessioni');
+    expect(screen.queryByRole('alertdialog', { name: 'Sposta attività in Bozze' })).toBeNull();
     expect(moveDraft).not.toHaveBeenCalled();
     fireEvent.click(within(dialog).getByRole('button', { name: 'Annulla' }));
     expect(moveDraft).not.toHaveBeenCalled();

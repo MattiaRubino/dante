@@ -173,8 +173,10 @@ function defaultFieldsFor(fields: TemporalCreateFields): TemporalCreateFields {
  * new date previously diverted valid multi-day Event creation to the legacy
  * runtime, where the B03 compatibility gate rejected it before any POST.
  *
- * Keep checking every meaningful policy, time and mode. Ignore only four
- * dates which have no semantics while constraintKind is 'none'.
+ * Keep checking every meaningful movement/fallback policy, execution
+ * mode and explicit constraint. Ignore cached dates AND clock fields in
+ * the inactive Scheduling form when constraintKind is 'none': those cannot
+ * express a scheduling constraint and must not divert canonical authoring.
  */
 function equivalentSchedulingForU2(fields: TemporalCreateFields): boolean {
   const defaults = defaultFieldsFor(fields).scheduling;
@@ -187,6 +189,12 @@ function equivalentSchedulingForU2(fields: TemporalCreateFields): boolean {
       windowEndDate: defaults.windowEndDate,
       earliestStartDate: defaults.earliestStartDate,
       deadlineDate: defaults.deadlineDate,
+      windowStartTime: defaults.windowStartTime,
+      windowEndTime: defaults.windowEndTime,
+      earliestStartTime: defaults.earliestStartTime,
+      deadlineTime: defaults.deadlineTime,
+      preferredStartTime: defaults.preferredStartTime,
+      preferredEndTime: defaults.preferredEndTime,
     },
     defaults,
   );
@@ -256,6 +264,71 @@ export function temporalCreateU2QuickIntentSupported(
   }
 
   return true;
+}
+
+/** Explain why a current one-off form cannot use canonical U2 authoring.
+ * This is diagnostic only: never drop an unsupported user-authored field.
+ */
+export function temporalCreateU2QuickUnsupportedReason(
+  fields: TemporalCreateFields,
+): string {
+  const defaults = defaultFieldsFor(fields);
+  if (fields.timeSemantics === 'coarse')
+    return 'Il periodo approssimativo non è supportato qui.';
+  if (fields.appearanceTone !== null)
+    return 'È ancora impostato un tema visivo della versione precedente.';
+  if (fields.eventRecurrence.patternKind !== 'none')
+    return 'La ripetizione richiede il percorso ricorrente.';
+  if (!equivalentSchedulingForU2(fields))
+    return 'Sono presenti vincoli di pianificazione o spostamento della versione precedente.';
+  if (
+    fields.execution.sessionMode === 'indivisible' &&
+    fields.execution.minSessionMinutes !== defaults.execution.minSessionMinutes
+  )
+    return 'È presente una durata minima Sessione non compatibile con la modalità attuale.';
+  if (
+    !sameJson(
+      {
+        ...fields.execution,
+        sessionMode: defaults.execution.sessionMode,
+        minSessionMinutes: defaults.execution.minSessionMinutes,
+      },
+      defaults.execution,
+    ) ||
+    (fields.execution.sessionMode === 'splittable' && fields.kind !== 'activity')
+  )
+    return 'Sono presenti regole di esecuzione Sessioni della versione precedente.';
+  if (
+    !sameJson(
+      {
+        ...fields.confirmation,
+        reminderLeadMinutes: defaults.confirmation.reminderLeadMinutes,
+      },
+      defaults.confirmation,
+    )
+  )
+    return 'È presente una regola di conferma precedente non compatibile.';
+  if (fields.kind === 'event') {
+    const event = fields.event;
+    const baseline = defaults.event;
+    if (
+      event.availability !== baseline.availability ||
+      event.visibility !== baseline.visibility ||
+      event.purpose !== baseline.purpose ||
+      event.expectedOutcome !== baseline.expectedOutcome ||
+      event.decisionRequired !== baseline.decisionRequired ||
+      event.requiredParticipants !== baseline.requiredParticipants ||
+      event.optionalParticipants !== baseline.optionalParticipants ||
+      event.resources !== baseline.resources ||
+      event.preRead !== baseline.preRead ||
+      event.preparationMinutes !== baseline.preparationMinutes ||
+      event.recoveryMinutes !== baseline.recoveryMinutes ||
+      event.conferenceMode !== baseline.conferenceMode
+    ) {
+      return 'Sono presenti opzioni Evento della versione precedente non supportate.';
+    }
+  }
+  return 'Una configurazione avanzata non è supportata dal Create attuale.';
 }
 
 export function temporalCreateRecurringEventSharedIntentSupported(
