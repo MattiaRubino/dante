@@ -89,6 +89,7 @@ async def test_atomic_edit_assigns_stable_name_to_new_and_cleared_planned_sessio
                 replan=ActivityReplanCommand(
                     operation_id="default-names:edit",
                     envelope=_move(envelope, 9, 12),
+                    planned_sessions=[_retain(row) for row in planned],
                     new_planned_sessions=[NewPlannedRow(client_ref=uuid7(), name=None)],
                 ),
                 planned_names=[
