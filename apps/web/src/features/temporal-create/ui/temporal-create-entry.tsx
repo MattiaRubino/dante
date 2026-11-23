@@ -973,15 +973,11 @@ export function TemporalCreateEntry({
       u2IntentSupported &&
       (authoringDataSourceOverride !== undefined ||
         import.meta.env.MODE !== 'test');
-    if (
-      !u2IntentSupported &&
-      fields.kind === 'event' &&
-      fields.eventRecurrence.patternKind === 'none' &&
-      import.meta.env.MODE !== 'test' &&
-      runtimeOverride === undefined
-    ) {
-      // The historical runtime is Activity-only in production. Do not
-      // attempt Event creation through it and show a meaningless failure.
+    if (!u2IntentSupported && fields.kind === 'event') {
+      // TimelineCreateBridge ALWAYS passes a B14 runtime override. That is
+      // not a capability grant: non-recurring Events must NEVER fall through
+      // to the historical Activity-only runtime (including during tests).
+      // A meaningful unsupported option must be corrected explicitly.
       setLifecycle('failed');
       setFailureTarget(null);
       setFailureMessage(

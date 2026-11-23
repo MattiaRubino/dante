@@ -55,6 +55,44 @@ describe('calendar-wall-clock DST defaults', () => {
   );
 });
 
+describe('PostgreSQL jsonb Draft Vault field round-trips', () => {
+  it.each(['activity', 'event'] as const)(
+    'accepts a saved %s configuration irrespective of JSON object key order',
+    (kind) => {
+      const canonical = createTemporalCreateFields({
+        kind,
+        title: 'Riprendi da Bozze',
+        date: '2026-11-23',
+        timeZoneId: 'Europe/Rome',
+        timeMode: 'zoned',
+        startTime: '17:00',
+        durationMinutes: 30,
+      });
+      // jsonb reorders object keys at EVERY depth; JSON.stringify equality
+      // used to reject these identical values after a real Vault round-trip.
+      const fromJsonb = JSON.parse(
+        JSON.stringify(canonical, (_key: string, value: unknown) =>
+          value !== null && typeof value === 'object' && !Array.isArray(value)
+            ? Object.fromEntries(Object.entries(value).reverse())
+            : value,
+        ),
+      ) as typeof canonical;
+      expect(temporalCreateU2QuickIntentSupported(canonical)).toBe(true);
+      expect(temporalCreateU2QuickIntentSupported(fromJsonb)).toBe(true);
+      const snapshot = createTemporalCreateU2AuthoringDraft(fromJsonb);
+      expect(
+        buildTemporalCreateU2Request(fromJsonb, snapshot, 'jsonb:resume').kind,
+      ).toBe(kind);
+      // Actual legacy policies still must not disappear silently.
+      const changedMovement = createTemporalCreateFields({
+        ...fromJsonb,
+        scheduling: { ...fromJsonb.scheduling, movementPolicy: 'window' },
+      });
+      expect(temporalCreateU2QuickIntentSupported(changedMovement)).toBe(false);
+    },
+  );
+});
+
 describe('minute-exact U2 submit mappings', () => {
   it.each(['activity', 'event'] as const)(
     'preserves 10:30–10:31 on the outgoing %s request',

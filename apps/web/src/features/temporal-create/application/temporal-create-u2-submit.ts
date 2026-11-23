@@ -154,8 +154,47 @@ function optionalText(value: string): string | undefined {
   return normalized.length > 0 ? normalized : undefined;
 }
 
+/**
+ * Draft Vault snapshots are persisted in PostgreSQL jsonb, which does NOT
+ * preserve object-key insertion order. JSON.stringify equality therefore
+ * rejects semantically identical scheduling/execution/confirmation settings
+ * after Resume, diverting Create to the legacy runtime.
+ *
+ * Compare JSON values structurally: object key order is irrelevant, but
+ * array order, keys and every meaningful value still matter.
+ */
 function sameJson(left: unknown, right: unknown): boolean {
-  return JSON.stringify(left) === JSON.stringify(right);
+  if (Object.is(left, right)) return true;
+  if (Array.isArray(left) || Array.isArray(right)) {
+    return (
+      Array.isArray(left) &&
+      Array.isArray(right) &&
+      left.length === right.length &&
+      left.every((value, index) => sameJson(value, right[index]))
+    );
+  }
+  if (
+    left === null ||
+    right === null ||
+    typeof left !== 'object' ||
+    typeof right !== 'object'
+  ) {
+    return false;
+  }
+  const first = left as Record<string, unknown>;
+  const second = right as Record<string, unknown>;
+  const firstKeys = Object.keys(first).filter((key) => first[key] !== undefined);
+  const secondKeys = Object.keys(second).filter(
+    (key) => second[key] !== undefined,
+  );
+  return (
+    firstKeys.length === secondKeys.length &&
+    firstKeys.every(
+      (key) =>
+        Object.prototype.hasOwnProperty.call(second, key) &&
+        sameJson(first[key], second[key]),
+    )
+  );
 }
 
 function defaultFieldsFor(fields: TemporalCreateFields): TemporalCreateFields {

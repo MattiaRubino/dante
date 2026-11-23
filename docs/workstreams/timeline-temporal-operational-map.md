@@ -1,6 +1,39 @@
 # Timeline / Temporal-Operational — Live Execution Ledger
 
 
+## 2026-11-23 — Draft Vault Resume → Add: jsonb key order / Home runtime
+
+Owner browser regression after 174 focused Vitest tests + 30 focused Create
+tests passed: **Resume → Aggiungi** failed for a standalone Activity with
+three named Sessions/Objective and for an ordinary Event. No data loss was
+observed, but the Bozza remained blocked.
+
+Root cause 1: snapshots are persisted as PostgreSQL **jsonb**, which reorders
+object properties. Canonical Create used `JSON.stringify(left) ===
+JSON.stringify(right)` for Scheduling, execution and confirmation compatibility;
+semantically identical saved values were rejected after Vault rehydration,
+causing the false "legacy planning" error. Fix `sameJson` to compare JSON
+values structurally regardless of object-key order; still reject actual
+material changes and keep array order significant. Unit regression simulates
+a jsonb round-trip for both subject kinds and checks retained meaningful
+movement-policy rejection.
+
+Root cause 2: `TimelineCreateBridge` supplies the B14 runtime as an explicit
+`runtime` prop to the normal Create entry. A prior Event fallback guard
+treated that prop as permission to fall through to the old **Activity-only**
+runtime, which cannot create Events and returned the generic "La bozza è
+ancora qui" failure. Fix the guard to refuse unsupported one-off Event
+legacy authoring irrespective of the Home runtime injection. A supported
+one-off Event must always route to canonical U2 authoring.
+
+Add component regression with the same runtime injection used by Home, both
+Activity and Event JSONB-style rehydrated snapshots (including 3 named
+Activity Sessions and an Objective), and an explicit Event policy rejection
+case. No database migration, no OpenAPI generation, no Draft identity change.
+Tests remain **NOT_RUN** on this candidate until WSL reports them.
+
+
+
 ## 2026-11-23 — Vault Inspector inline review and legacy Create routing regression
 
 Restore the familiar **inline Inspector** Vault confirmation for standalone
