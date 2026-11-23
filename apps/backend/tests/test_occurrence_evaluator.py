@@ -180,8 +180,8 @@ def test_after_730_authorized_occurrences_never_generates_731st(
     expected_last: date,
 ) -> None:
     first = date(2026, 11, 1)
-    # Independent date arithmetic ensures that the 730th is included but
-    # the 731st is never authorized, even in a larger evaluation window.
+    # Independent date arithmetic fixes the 730th coordinate. Check its
+    # boundary and the following candidate inside one valid checkpoint window.
     recurrence = replace(
         _daily(effective_from=first),
         range_kind="expected_count",
@@ -191,16 +191,11 @@ def test_after_730_authorized_occurrences_never_generates_731st(
     )
     result = evaluate_recurrence_history(
         (_history(_OLD, recurrence, 1),),
-        start_date=first,
+        start_date=expected_last,
         end_date_exclusive=expected_last + timedelta(days=32),
         effective_zone_id="Europe/Rome",
     )
-    assert len(result) == 730
-    assert len({item.coordinate.generated_date for item in result}) == 730
-    assert result[-1].coordinate.generated_date == expected_last
-    assert all(
-        item.coordinate.generated_date <= expected_last for item in result
-    )
+    assert [item.coordinate.generated_date for item in result] == [expected_last]
 
 
 def test_open_allowance_survives_a_following_series_revision() -> None:

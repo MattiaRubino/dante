@@ -50,6 +50,31 @@ No direct SQL fixtures for the E2E Activity/Event under test.
 date checks for `Dopo 730`: daily, weekly, monthly. The evaluator must
 include exactly the 730th authorized occurrence and never generate the 731st.
 
+## Chromium diagnostic and correction — 2026-11-23
+
+On branch `4d4ebe562`, the owner ran the seven-case Chromium real-stack
+selection: AD-02, AD-04 and AD-06 passed; both AD-01 variants, AD-03 and
+AD-05 failed. TypeScript typecheck passed. The targeted three-case Python
+selection failed before its assertions because its requested checkpoint
+windows exceeded the evaluator's 62-day limit.
+
+Trace and source review found test setup/locator faults: AD-01 matched the
+original title as a prefix of the updated title; AD-03 looked for the main
+Session checkbox before opening Advanced Create; AD-05 reused the same
+Create date helper after navigating forward, but that helper could only
+move the picker to later months. The backend test now evaluates a 32-day
+window starting on the independently calculated 730th date; it checks that
+the 730th is present and the following daily/weekly/monthly candidate is
+absent. No product implementation was changed.
+
+The new real-stack test and seven previously unregistered component test
+files were added to the test-case registry, and the reviewed dual-zone
+boundary test entry was qualified. Filename and registry integrity checks
+pass on this corrected worktree. The corrected Python, Web typecheck and
+Chromium tests are **NOT_RUN** here; the owner's WSL rerun must verify them
+on one published candidate SHA before acceptance. A later real-stack failure
+after these setup points must be diagnosed against API readback and traces.
+
 ## Owner-run order
 
 1. Fast TypeScript, Vitest and Python tests.

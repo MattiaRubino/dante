@@ -186,15 +186,24 @@ export async function openCreate(page: Page, kind: Subject): Promise<Locator> {
 
 async function setStartDate(composer: Locator, date: string): Promise<void> {
   const trigger = composer.getByRole('button', { name: /^Data inizio:/ });
-  if ((await trigger.getAttribute('data-temporal-date')) !== date) {
+  const selected = await trigger.getAttribute('data-temporal-date');
+  if (selected !== date) {
     await trigger.click();
     const picker = composer.getByRole('dialog', { name: 'Data inizio' });
     const day = picker.locator('button[data-temporal-date="' + date + '"]');
-    // A future Create date can cross a month/year boundary. Calendar
-    // neighboring-month cells may exist but be disabled.
+    // The Create panel inherits the viewed day. A subsequent creation can
+    // target an earlier month; neighboring-month cells may be disabled.
+    const direction =
+      selected !== null &&
+      Temporal.PlainDate.compare(
+        Temporal.PlainDate.from(date),
+        Temporal.PlainDate.from(selected),
+      ) < 0
+        ? 'Mese precedente'
+        : 'Mese successivo';
     for (let offset = 0; offset < 12; offset += 1) {
       if ((await day.isVisible()) && (await day.isEnabled())) break;
-      await picker.getByRole('button', { name: 'Mese successivo' }).click();
+      await picker.getByRole('button', { name: direction }).click();
     }
     await expect(day).toBeEnabled();
     await day.click();

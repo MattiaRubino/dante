@@ -34,7 +34,7 @@ test.describe('All-day real-stack acceptance', () => {
   function bar(page: Page, day: string, title: string): Locator {
     return lane(page, day)
       .locator('[data-timeline-all-day-item]')
-      .filter({ hasText: title });
+      .filter({ has: page.getByText(title, { exact: true }) });
   }
 
   async function extendAllDayEnd(
@@ -69,6 +69,11 @@ test.describe('All-day real-stack acceptance', () => {
     await configureCreate(composer, { kind, title, date: start, allDay: true });
     await extendAllDayEnd(composer, end);
     if (enableMainSession) {
+      await composer.getByRole('button', { name: /Opzioni avanzate/ }).click();
+      await expect(composer).toHaveAttribute(
+        'data-temporal-create-surface',
+        'advanced',
+      );
       await composer
         .locator('label[data-session-capability="activity"] input[type="checkbox"]')
         .check();

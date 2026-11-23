@@ -2966,6 +2966,86 @@
       "audit_note": "Needs contract/assertion review, rejection cases, and executable evidence; filename alone is not proof."
     },
     {
+      "path": "apps/web/e2e/auth/temporal-all-day-regressions.spec.ts",
+      "suite": "web-browser-real-stack",
+      "contract_id": "T05",
+      "candidate_behavior": "authenticated all-day Activity/Event editing, execution and recurrence boundaries",
+      "purpose": "Exercise real Create, Edit and reload for all-day Activity/Event; bounded date-lane overflow, main Session Stop clipping, Objective and planned Session persistence, finite Dopo termination, and isolated renewal notice UI conflict handling.",
+      "invariant": "Canonical all-day titles and child definitions survive reload, main Session Stop preserves recorded reality while hiding future dates, a three-occurrence rule never exposes a fourth, and the UI renewal conflict cannot claim success.",
+      "status": "QUALIFIED",
+      "audit_note": "Case intent and isolated account boundaries reviewed 2026-11-23; initial Chromium run 3 pass, 4 fail from test locator/setup faults; corrected cases require fresh owner real-stack evidence."
+    },
+    {
+      "path": "apps/web/src/features/home/ui/timeline/event-schedule-time-zone-dialog.test.tsx",
+      "suite": "web-unit-component",
+      "contract_id": "T04",
+      "candidate_behavior": "Event Edit shared timezone dialog and clock placement",
+      "purpose": "Exercise atomic two-zone Event Edit selection, elapsed duration preservation, cancellation and clock control separation.",
+      "invariant": "A timezone draft changes the Event only on OK, preserves the instant interval and remains separate from start/end clock pickers.",
+      "status": "QUALIFIED",
+      "audit_note": "Reviewed component assertions and cancellation path 2026-11-23; runtime verification pending."
+    },
+    {
+      "path": "apps/web/src/features/home/ui/timeline/recurring-series-time.test.tsx",
+      "suite": "web-unit-component",
+      "contract_id": "T05",
+      "candidate_behavior": "recurring Activity time band and interval editing",
+      "purpose": "Verify band selection across midnight, start/end clock edits, removal layout and absence of unsupported timezone controls.",
+      "invariant": "A start edit retains duration while an end edit changes duration; recurring intervals show only valid controls and retain their offsets.",
+      "status": "QUALIFIED",
+      "audit_note": "Reviewed positive and conditional-control assertions 2026-11-23; runtime verification pending."
+    },
+    {
+      "path": "apps/web/src/features/home/ui/timeline/timeline-all-day-layer.test.tsx",
+      "suite": "web-unit-component",
+      "contract_id": "T11",
+      "candidate_behavior": "date-lane overflow, geometry, title and Session controls",
+      "purpose": "Exercise inline expansion and bounded scrolling, controlled height, one-line bar identity, range glyph removal, pointer anchoring and main Session priority.",
+      "invariant": "Expansion remains in the date-lane frame and geometry matches its visible rows; all-day bars retain identity and exactly the applicable main Session controls.",
+      "status": "QUALIFIED",
+      "audit_note": "Reviewed component render and interaction assertions 2026-11-23; real browser behavior remains a separate boundary."
+    },
+    {
+      "path": "apps/web/src/features/home/ui/timeline/timeline-inspector-header-layout.test.tsx",
+      "suite": "web-unit-component",
+      "contract_id": "T06",
+      "candidate_behavior": "Activity and Event Inspector Session header layout",
+      "purpose": "Verify main Activity Session controls and recorded duration precede intervals while Event omits Activity execution controls.",
+      "invariant": "Main Session status is visually grouped with the Activity title, ahead of subordinate intervals, without leaking into Event Inspector.",
+      "status": "QUALIFIED",
+      "audit_note": "Reviewed mocked boundary and rendered header assertions 2026-11-23; runtime verification pending."
+    },
+    {
+      "path": "apps/web/src/features/home/ui/timeline/timeline-inspector-position.test.ts",
+      "suite": "web-unit-component",
+      "contract_id": "T11",
+      "candidate_behavior": "date-lane Inspector pointer and keyboard positioning",
+      "purpose": "Exercise pointer anchoring, left flip, vertical clamp, keyboard fallback and overflow-list bounds in narrow viewports.",
+      "invariant": "The calculated Inspector position remains within the viewport without losing the clicked title anchor.",
+      "status": "QUALIFIED",
+      "audit_note": "Reviewed geometry boundary cases 2026-11-23; runtime verification pending."
+    },
+    {
+      "path": "apps/web/src/features/temporal-create/ui/temporal-required-title.test.tsx",
+      "suite": "web-unit-component",
+      "contract_id": "T01",
+      "candidate_behavior": "Create required title validation feedback",
+      "purpose": "Verify empty and whitespace-only titles are rejected after a save attempt and valid edits clear the invalid state.",
+      "invariant": "The title receives invalid feedback only after an attempted save and whitespace is never accepted as saved content.",
+      "status": "QUALIFIED",
+      "audit_note": "Reviewed validation and reset assertions 2026-11-23; runtime verification pending."
+    },
+    {
+      "path": "apps/web/src/features/temporal-create/ui/temporal-time-zone-control.test.tsx",
+      "suite": "web-unit-component",
+      "contract_id": "T03",
+      "candidate_behavior": "shared temporal timezone dialog and offset display",
+      "purpose": "Verify GMT offsets across DST/fractional zones, cancel isolation, atomic two-zone commit and single-zone refusal.",
+      "invariant": "The dialog does not persist drafts on cancel; supported start/end zones commit together and unsupported distinct-zone selection stays unavailable.",
+      "status": "QUALIFIED",
+      "audit_note": "Reviewed positive and refusal UI assertions 2026-11-23; runtime verification pending."
+    },
+    {
       "path": "apps/web/e2e/auth/temporal-runtime-foundation.spec.ts",
       "suite": "browser-real-stack",
       "contract_id": "P-AUTH",
@@ -5770,8 +5850,8 @@
       "candidate_behavior": "distinct IANA timezone at one-off Schedule end",
       "purpose": "Verify original wall clocks, instant ordering, gap rejection, backward compatible payload/API shape.",
       "invariant": "Legacy single-zone behavior remains unchanged and two-zone end is validated using real instants, not local string ordering.",
-      "status": "UNREVIEWED",
-      "audit_note": "New regression tests submitted for user-run local verification; no passing result claimed."
+      "status": "QUALIFIED",
+      "audit_note": "Reviewed accepted dual-zone instant order, legacy payload, invalid/redundant zone, DST gap and API omission assertions 2026-11-23; owner runtime verification pending."
     },
     {
       "path": "apps/web/src/features/temporal/timeline-view-zone.test.ts",
