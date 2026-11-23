@@ -2802,8 +2802,8 @@
       "suite": "backend-unit",
       "contract_id": "T05",
       "candidate_behavior": "Bounded recurring calendar cadence reconciliation",
-      "purpose": "Verify retained, superseded and new coordinates while preserving recorded and locally edited occurrences.",
-      "invariant": "A following-series plan never replaces a protected identity or accepts an incomplete or ambiguous materialized inventory.",
+      "purpose": "Verify retained, superseded and new coordinates while preserving recorded and locally edited occurrences, and confirm blank planned Session names are normalized in recurring source and revision requests.",
+      "invariant": "A following-series plan never replaces a protected identity or accepts an incomplete or ambiguous materialized inventory; an unnamed planned Schedule receives a persisted ordinal label without changing explicit names.",
       "status": "QUALIFIED"
     },
     {

@@ -9,7 +9,12 @@ import pytest
 from pydantic import ValidationError
 
 from dante.modules.temporal.occurrence import CalendarCoordinate, OccurrenceView
-from dante.modules.temporal.occurrence_api import _series_source_recurrence, _series_spec
+from dante.modules.temporal.occurrence_api import (
+    RecurringSeriesEditCommand,
+    _series_source_recurrence,
+    _series_spec,
+)
+from dante.modules.temporal.authoring import named_planned_session_template
 from dante.modules.temporal.occurrence_edit_inventory import OccurrenceEditInventory
 from dante.modules.temporal.occurrence_edit_scope import (
     EditScopeInputError,
@@ -38,6 +43,19 @@ from dante.modules.temporal.recurring_structure_preview import (
 
 SOURCE, FIRST, LOCAL, CLEAN = (UUID(int=n) for n in (1, 11, 12, 13))
 WINDOW = SeriesReconciliationWindow(date(2026, 10, 19), date(2026, 10, 29))
+
+
+def test_recurring_template_keeps_names_and_fills_blank_ordinal_labels() -> None:
+    template: dict[str, object] = {
+        "planned_slices": [{"name": "  "}, {"name": "Lettura"}, {"name": ""}],
+        "children": [{"planned_slices": [{"name": ""}]}],
+    }
+    named = named_planned_session_template(template)
+    assert [row["name"] for row in named["planned_slices"]] == [
+        "Sessione 1", "Lettura", "Sessione 3",
+    ]
+    assert named["children"][0]["planned_slices"][0]["name"] == "Sessione 1"
+    assert template["planned_slices"][0]["name"] == "  "
 
 
 def test_recurring_all_day_create_rejects_timed_structure_before_persistence() -> None:
@@ -72,6 +90,37 @@ def test_recurring_all_day_create_rejects_timed_structure_before_persistence() -
         },
     }
     assert CreateRecurringRoutineRequest.model_validate(request).duration_minutes == 2880
+    unnamed = CreateRecurringRoutineRequest.model_validate(
+        {
+            **request,
+            "activity_template": {
+                **template,
+                "planned_slices": [{"name": "", "time_enabled": False}],
+            },
+        }
+    )
+    assert unnamed.activity_template is not None
+    assert unnamed.activity_template["planned_slices"] == [
+        {"name": "Sessione 1", "time_enabled": False}
+    ]
+    revised = RecurringSeriesEditCommand.model_validate(
+        {
+            "operation_id": "all-day:revision",
+            "expected_revision": 0,
+            "expected_recurrence_state_ref": SOURCE,
+            "scope_code": "this_and_following",
+            "recurrence": request["recurrence"],
+            "structure_snapshot": {
+                "activity_template": {
+                    **template,
+                    "planned_slices": [{"name": "", "time_enabled": False}],
+                }
+            },
+        }
+    )
+    assert revised.structure_snapshot["activity_template"]["planned_slices"] == [
+        {"name": "Sessione 1", "time_enabled": False}
+    ]
 
     for change in (
         {"activity_intervals": [{"start_offset_minutes": 0, "duration_minutes": 60}]},

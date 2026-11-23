@@ -67,6 +67,41 @@ class TemporalAuthoringStructureConflictError(RuntimeError):
     """The requested child placement or relationship conflicts with current truth."""
 
 
+def planned_session_name(name: str | None, order: int) -> str:
+    """Persist the visible fallback as a stable name when no name was supplied."""
+    return (name or "").strip() or f"Sessione {order}"
+
+
+def named_planned_session_template(template: dict[str, object]) -> dict[str, object]:
+    """Fill absent names in a recurring template without mutating the request."""
+
+    def named_rows(rows: object) -> object:
+        if not isinstance(rows, list):
+            return rows
+        named: list[object] = []
+        for index, row in enumerate(rows, start=1):
+            if isinstance(row, dict):
+                name = row.get("name")
+                if name is None or isinstance(name, str):
+                    named.append({**row, "name": planned_session_name(name, index)})
+                    continue
+            named.append(row)
+        return named
+
+    result = dict(template)
+    if "planned_slices" in template:
+        result["planned_slices"] = named_rows(template["planned_slices"])
+    children = template.get("children")
+    if isinstance(children, list):
+        result["children"] = [
+            {**child, "planned_slices": named_rows(child["planned_slices"])}
+            if isinstance(child, dict) and "planned_slices" in child
+            else child
+            for child in children
+        ]
+    return result
+
+
 @dataclass(frozen=True, slots=True)
 class AuthoringLifeAreaIntent:
     """Optional actor-local organization requested by one Quick Create draft.
@@ -1017,9 +1052,12 @@ class TemporalAuthoringApplication:
                                         "activity": item.subject_native_ref,
                                         "schedule": new_scoped_record_ref(),
                                         "position": index + 1,
-                                        "display_name": planned_slice_names[index].strip() or None
-                                        if planned_slice_names
-                                        else None,
+                                        "display_name": planned_session_name(
+                                            planned_slice_names[index]
+                                            if planned_slice_names
+                                            else None,
+                                            index + 1,
+                                        ),
                                     },
                                 )
                             )
@@ -1051,9 +1089,10 @@ class TemporalAuthoringApplication:
                         schedule=accepted,
                         role_code="planned",
                         presentation_order=index + 1,
-                        display_name=planned_slice_names[index].strip() or None
-                        if planned_slice_names
-                        else None,
+                        display_name=planned_session_name(
+                            planned_slice_names[index] if planned_slice_names else None,
+                            index + 1,
+                        ),
                     )
                     planned_results.append(accepted)
 
@@ -1163,9 +1202,12 @@ class TemporalAuthoringApplication:
                             schedule=accepted,
                             role_code="planned",
                             presentation_order=slice_index + 1,
-                            display_name=child.planned_slice_names[slice_index].strip() or None
-                            if child.planned_slice_names
-                            else None,
+                            display_name=planned_session_name(
+                                child.planned_slice_names[slice_index]
+                                if child.planned_slice_names
+                                else None,
+                                slice_index + 1,
+                            ),
                         )
                         child_slices.append(accepted)
                     if child.session_capture_mode is not None:

@@ -19,6 +19,7 @@ from dante.modules.temporal.authoring import (
     TemporalAuthoringLifeAreaConflictError,
     TemporalAuthoringLifeAreaUnavailableError,
     TemporalAuthoringPersistenceError,
+    named_planned_session_template,
 )
 from dante.modules.temporal.authoring_api import AuthoringLifeAreaRequest
 from dante.modules.temporal.event import (
@@ -113,6 +114,8 @@ class CreateRecurringRoutineRequest(BaseModel):
 
     @model_validator(mode="after")
     def valid_all_day(self) -> CreateRecurringRoutineRequest:
+        if self.activity_template is not None:
+            self.activity_template = named_planned_session_template(self.activity_template)
         template = self.activity_template or {}
         _require_strict_objective_ranges(template.get("objectives"))
         recurrence = self.recurrence

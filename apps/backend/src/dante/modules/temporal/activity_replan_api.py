@@ -26,6 +26,7 @@ from dante.modules.temporal.activity_edit_snapshot_api import (
     ActivityEditSnapshot,
     revise_activity_core_in_session,
 )
+from dante.modules.temporal.authoring import planned_session_name
 from dante.modules.temporal.decomposition_api import ActivityScheduleResponse
 from dante.modules.temporal.life_area import _fingerprint as life_area_fingerprint
 from dante.modules.temporal.life_area_assignment import _fingerprint as assignment_fingerprint
@@ -1179,7 +1180,7 @@ async def apply_activity_replan_in_session(
                     "activity": activity_ref,
                     "schedule": uuid7(),
                     "position": next_order,
-                    "name": new_planned.name,
+                    "name": planned_session_name(new_planned.name, next_order),
                 },
             )
     return await _read(session, actor, activity_ref)
@@ -1249,6 +1250,24 @@ async def _commit_activity_atomic_edit_once(
                 session, actor=actor, activity_ref=activity_ref, body=body.replan
             )
         for change in body.planned_names:
+            name = change.name
+            if name is None:
+                order = await session.scalar(
+                    text("""
+                    SELECT presentation_order
+                      FROM dante.get_self_activity_schedule_roles(
+                          :actor, CAST(ARRAY[:activity] AS uuid[]))
+                     WHERE role_code='planned' AND schedule_ref=:schedule
+                    """),
+                    {
+                        "actor": actor,
+                        "activity": activity_ref,
+                        "schedule": change.schedule_ref,
+                    },
+                )
+                if order is None:
+                    raise _invalid("The planned Session is unavailable.")
+                name = planned_session_name(None, order)
             await session.execute(
                 text(
                     "SELECT * FROM dante.revise_self_planned_session_name("
@@ -1259,7 +1278,7 @@ async def _commit_activity_atomic_edit_once(
                     "activity": NativeRef(activity_ref),
                     "schedule": change.schedule_ref,
                     "expected": change.expected_name,
-                    "name": change.name,
+                    "name": name,
                 },
             )
         if body.life_area is not None:

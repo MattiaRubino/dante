@@ -20,13 +20,18 @@ from dante.modules.temporal.activity_edit_snapshot_api import (
     EditPolicyChange,
     revise_activity_core_in_session,
 )
-from dante.modules.temporal.activity_inspector_api import get_self_activity_session_impact
+from dante.modules.temporal.activity_inspector_api import (
+    PlannedSessionNameChange,
+    get_self_activity_session_impact,
+    revise_self_planned_session_name,
+)
 from dante.modules.temporal.activity_replan_api import (
     ActivityAtomicEditCommand,
     ActivityReplanCommand,
     AtomicLifeArea,
     AtomicNewLifeArea,
     AtomicPlacementLock,
+    AtomicPlannedName,
     DeletePlannedRow,
     NewIntervalRow,
     NewPlannedRow,
@@ -57,6 +62,68 @@ from dante.platform.database.runtime import create_database_runtime
 from dante.platform.http.problem import ProblemError
 
 pytestmark = pytest.mark.postgres
+
+
+@pytest.mark.asyncio
+async def test_atomic_edit_assigns_stable_name_to_new_and_cleared_planned_sessions(
+    migrated_database: Any,
+) -> None:
+    actor = _seed_self(migrated_database)
+    runtime = create_database_runtime(migrated_database.runtime_settings())
+    try:
+        created = await TemporalAuthoringApplication(runtime.session_factory).create_activity(
+            self_person_ref=actor,
+            operation_id="default-names:initial",
+            title="Studio",
+            placement=_window(9, 12),
+            planned_slices=(None, None),
+            planned_slice_names=("Prima", "Seconda"),
+        )
+        activity = created.item.subject_native_ref
+        snapshot = await _snapshot(runtime, actor, activity)
+        planned = [row for row in snapshot.schedules if row.role_code == "planned"]
+        envelope = next(row for row in snapshot.schedules if row.role_code == "envelope")
+        accepted = await apply_activity_atomic_edit(
+            activity,
+            ActivityAtomicEditCommand(
+                replan=ActivityReplanCommand(
+                    operation_id="default-names:edit",
+                    envelope=_move(envelope, 9, 12),
+                    new_planned_sessions=[NewPlannedRow(client_ref=uuid7(), name=None)],
+                ),
+                planned_names=[
+                    AtomicPlannedName(
+                        schedule_ref=planned[1].schedule_ref,
+                        expected_name="Seconda",
+                        name=None,
+                    )
+                ],
+            ),
+            _context(actor),
+            _request(runtime),
+            Response(),
+        )
+        assert [
+            row.display_name
+            for row in accepted.snapshot.schedules
+            if row.role_code == "planned"
+        ] == ["Prima", "Sessione 2", "Sessione 3"]
+        renamed = await revise_self_planned_session_name(
+            activity,
+            planned[0].schedule_ref,
+            PlannedSessionNameChange(expected_name="Prima", name=None),
+            _context(actor),
+            _request(runtime),
+            Response(),
+        )
+        assert renamed.display_name == "Sessione 1"
+        assert [
+            row.display_name
+            for row in (await _snapshot(runtime, actor, activity)).schedules
+            if row.role_code == "planned"
+        ] == ["Sessione 1", "Sessione 2", "Sessione 3"]
+    finally:
+        await runtime.dispose()
 
 
 def _window(start: int, end: int) -> NamedZoneLocalIntervalPlacement:

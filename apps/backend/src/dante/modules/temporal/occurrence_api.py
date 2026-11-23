@@ -21,6 +21,7 @@ from dante.modules.temporal.api import (
     TemporalScheduleApplicationDependency,
     _placement_from_request,
 )
+from dante.modules.temporal.authoring import named_planned_session_template
 from dante.modules.temporal.event import _read_event_in_session
 from dante.modules.temporal.event_api import (
     EventAtomicPlacementLockChange,
@@ -306,6 +307,16 @@ class RecurringSeriesEditCommand(BaseModel):
     structure_snapshot: dict[str, object] = Field(min_length=1)
     profile_patch: dict[str, str | None] | None = None
     expected_preview_fingerprint: str | None = Field(default=None, min_length=64, max_length=64)
+
+    @model_validator(mode="after")
+    def named_sessions(self) -> RecurringSeriesEditCommand:
+        template = self.structure_snapshot.get("activity_template")
+        if isinstance(template, dict):
+            self.structure_snapshot = {
+                **self.structure_snapshot,
+                "activity_template": named_planned_session_template(template),
+            }
+        return self
 
 
 class RecurringSeriesEditResponse(BaseModel):

@@ -30,6 +30,61 @@ pytestmark = pytest.mark.postgres
 
 
 @pytest.mark.asyncio
+async def test_unnamed_planned_rows_persist_ordinal_names_per_activity(
+    migrated_database: Any,
+) -> None:
+    actor = _seed_self(migrated_database)
+    runtime = create_database_runtime(migrated_database.runtime_settings())
+    authoring = TemporalAuthoringApplication(runtime.session_factory)
+    child_window = AbsoluteIntervalPlacement(
+        starts_at=datetime(2026, 10, 20, 9, tzinfo=UTC),
+        ends_at=datetime(2026, 10, 20, 10, tzinfo=UTC),
+    )
+    root_window = AbsoluteIntervalPlacement(
+        starts_at=datetime(2026, 10, 20, 8, tzinfo=UTC),
+        ends_at=datetime(2026, 10, 20, 12, tzinfo=UTC),
+    )
+    children = (
+        ActivityChildIntent(
+            title="Sezione",
+            presentation_order=1,
+            planned_slices=(child_window,),
+            planned_slice_names=("",),
+        ),
+    )
+    try:
+        for replayed in (False, True):
+            created = await authoring.create_activity(
+                self_person_ref=actor,
+                operation_id="planned-default-names",
+                title="Attività",
+                placement=root_window,
+                planned_slices=(None, None, None),
+                planned_slice_names=("", "Personalizzata", "  "),
+                children=children,
+            )
+            assert created.replayed is replayed
+            current = await get_activity_children(
+                created.item.subject_native_ref,
+                _context(actor),
+                Request(
+                    {
+                        "type": "http",
+                        "app": SimpleNamespace(state=SimpleNamespace(database_runtime=runtime)),
+                    }
+                ),
+            )
+            assert [
+                row.display_name for row in current.schedules if row.role_code == "planned"
+            ] == ["Sessione 1", "Personalizzata", "Sessione 3"]
+            assert [
+                row.display_name for row in current.children[0].schedules
+            ] == ["Sessione 1"]
+    finally:
+        await runtime.dispose()
+
+
+@pytest.mark.asyncio
 async def test_root_children_and_planned_slices_are_atomic_and_replayable(
     migrated_database: Any,
 ) -> None:

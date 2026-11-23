@@ -103,7 +103,7 @@
           "kind": "none",
           "expression": null
         },
-        "meaning": "Optional user name for a future planned execution row; no actual Session identity.",
+        "meaning": "User name or backend-assigned Sessione N fallback for a future planned execution row; historical unnamed rows remain possible; no actual Session identity.",
         "semantic_type": null,
         "value_contract": "Trimmed nonempty at most 300 characters; only planned role."
       },

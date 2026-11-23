@@ -1,5 +1,9 @@
 # Timeline / Temporal-Operational — Live Execution Ledger
 
+## 2026-11-23 — Persistent default planned Session names
+
+Owner choice: keep Create/Edit fields and Session panel layout unchanged. When a planned Session has no supplied name, backend Create and atomic Edit persist `Sessione N` using its Activity-local planned Schedule order; a user name is kept. Clearing an existing name restores that row's default. Recurring Activity templates receive the same defaults before source or series-revision persistence so future Occurrences inherit them. Historical rows with NULL names are not bulk rewritten; their existing read fallback remains available. No Alembic migration or generated-client edit. Focused unit and real PostgreSQL regressions were added; local validation evidence is pending.
+
 ## 2026-11-23 — Session card border follows Activity color
 
 Owner WSL evidence on `5e6ffb6`: Web typecheck PASS, Session component

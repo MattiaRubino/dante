@@ -15,6 +15,7 @@ from sqlalchemy.exc import DBAPIError, SQLAlchemyError
 
 from dante.context.contracts import DanteContext
 from dante.context.dependencies import require_dante_context, require_mutating_dante_context
+from dante.modules.temporal.authoring import planned_session_name
 from dante.platform.database.references import NativeRef
 from dante.platform.http.problem import ProblemError
 
@@ -513,6 +514,23 @@ async def revise_self_planned_session_name(
         )
     try:
         async with request.app.state.database_runtime.session_factory() as session, session.begin():
+            name = body.name
+            if name is None:
+                order = await session.scalar(
+                    text("""
+                    SELECT presentation_order
+                      FROM dante.get_self_activity_schedule_roles(
+                          :actor, CAST(ARRAY[:activity] AS uuid[]))
+                     WHERE role_code='planned' AND schedule_ref=:schedule
+                    """),
+                    {
+                        "actor": context.self_person_ref,
+                        "activity": NativeRef(activity_ref),
+                        "schedule": schedule_ref,
+                    },
+                )
+                if order is not None:
+                    name = planned_session_name(None, order)
             row = (
                 (
                     await session.execute(
@@ -525,7 +543,7 @@ async def revise_self_planned_session_name(
                             "activity": NativeRef(activity_ref),
                             "schedule": schedule_ref,
                             "expected": body.expected_name,
-                            "name": body.name,
+                            "name": name,
                         },
                     )
                 )

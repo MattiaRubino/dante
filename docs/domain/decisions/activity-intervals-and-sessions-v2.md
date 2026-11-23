@@ -18,6 +18,8 @@ The Activity keeps one identity across its intervals. `Schedule != Session != Ac
 
 An Activity planned Session can be created without an orario. Its Activity-owned Schedule has the explicit `planned` role and no current or historical placement until the user assigns one. This is the only new-Schedule exception to the deferred owner-placement check; Event, envelope and interval Schedule owners still require a current placement at creation. The absence of a time must be stored as absence, never as an invented placement. This is planning intent, not evidence of a real B08 Session.
 
+The planned Session name is optional in Create/Edit. For a new row without a user name, the backend persists `Sessione N`, where `N` is that Activity's assigned planned Schedule presentation order. An explicit user name wins. Clearing a name in Edit assigns the same default for that row's existing order. Deleting another row does not renumber persisted names or recorded execution; existing unnamed historical rows are not rewritten by this rule. This name belongs to the planned Schedule, not the actual B08 Session identity.
+
 ## Create and Timeline
 
 The main Activity date/time fields define interval 1. `+ Aggiungi intervallo` below them adds another independently editable date/start/end row. The number of rows replaces the `Unica / Suddivisa` control. Rows have positive duration, use the Activity time frame and do not overlap; gaps are permitted. The additional intervals are available for timed Activities only, up to 100 total.
