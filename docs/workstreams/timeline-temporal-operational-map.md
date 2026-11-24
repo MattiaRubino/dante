@@ -1,5 +1,11 @@
 # Timeline / Temporal-Operational — Live Execution Ledger
 
+La descrizione corrente delle icone della testata, della Cattura rapida e delle
+tre viste del pannello destro è in
+[Home Timeline — controlli e pannello](../frontend/home/timeline-context-rail.md).
+I paragrafi datati più sotto conservano la sequenza delle decisioni e dei test,
+ma non sostituiscono quel riferimento per il comportamento attuale.
+
 ## 2026-11-24 — Cronologia: color fidelity and historical search
 
 The chronology cards and Timeline now use the same item color resolver,
@@ -18,8 +24,14 @@ the field and refresh icon stay above the independently scrolling card list.
 Refresh and Timeline invalidation rebuild the list, including after a move,
 removal or deletion. The viewing timezone follows the same explicit device
 projection as the Timeline window. Component and PostgreSQL cursor/owner
-regressions cover the change. Real-stack acceptance and whole gate remain
-pending owner WSL execution; no performance claim is based on fixture tests.
+regressions cover the change. Real-stack browser acceptance and whole gate
+remain pending; no performance claim is based on fixture tests.
+On `93f8a99` the owner PostgreSQL test exposed unsupported `MIN(uuid)` in the
+Occurrence Schedule selector. `0466c02` uses the canonical ordered first-row
+selection instead; the owner reran the focused PostgreSQL test on that commit:
+**1 passed, 3 deselected in 6.90 s**. Real browser and whole gate remain
+pending. The current UI/API/read and refresh contract is in the Home reference
+linked above.
 
 ## 2026-11-24 — Default Scaletta names and bounded add controls
 
