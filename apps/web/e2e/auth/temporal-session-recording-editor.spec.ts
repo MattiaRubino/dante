@@ -57,7 +57,8 @@ test('Inspector records and corrects a concluded named Session without offering 
           ) && response.request().method() === 'POST',
     );
     await row.getByRole('button', { name: 'Salva registrazione' }).click();
-    expect((await firstWrite).status()).toBe(201);
+    const firstResponse = await firstWrite;
+    expect(firstResponse.status(), await firstResponse.text()).toBe(201);
     await expect(row.getByRole('button', { name: 'Correggi' })).toBeVisible();
     await expect(row.getByRole('button', { name: 'Registra' })).toHaveCount(0);
 
@@ -87,7 +88,8 @@ test('Inspector records and corrects a concluded named Session without offering 
           ) && response.request().method() === 'POST',
     );
     await row.getByRole('button', { name: 'Salva registrazione' }).click();
-    expect((await correction).status()).toBe(200);
+    const correctionResponse = await correction;
+    expect(correctionResponse.status(), await correctionResponse.text()).toBe(200);
     const [corrected] = await read();
     expect(corrected?.session_ref).toBe(recorded?.session_ref);
     expect(corrected?.pause_ranges).toHaveLength(1);

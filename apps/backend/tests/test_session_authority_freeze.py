@@ -13,6 +13,7 @@ from pydantic import ValidationError
 
 from dante.bootstrap.openapi_export import openapi_document
 from dante.modules.temporal.session_api import (
+    SessionEditorCommand,
     SessionEndCommand,
     SessionTransitionCommand,
 )
@@ -98,6 +99,7 @@ def test_b08_session_http_operations_and_duration_contract_are_explicit() -> Non
     assert session_paths == {
         "/api/v1/temporal/activities/{activity_ref}/sessions",
         "/api/v1/temporal/activities/{activity_ref}/sessions/manual",
+        "/api/v1/temporal/activities/{activity_ref}/sessions/editor",
         "/api/v1/temporal/activities/{activity_ref}/planned-sessions/{schedule_ref}/sessions",
         "/api/v1/temporal/activities/{activity_ref}/planned-sessions/{schedule_ref}/name",
         "/api/v1/temporal/activities/{activity_ref}/session-impact",
@@ -143,6 +145,26 @@ def test_session_transitions_accept_json_uuid_string_and_reject_invalid_refs() -
             command.model_validate({**payload, "expected_material_state_ref": "not-a-uuid"})
         with pytest.raises(ValidationError):
             command.model_validate({**payload, "unexpected_field": True})
+
+
+def test_session_editor_accepts_json_dates_and_uuid_strings() -> None:
+    planned = "0199a8c0-7e73-7de2-8cf2-c4062517839f"
+    command = SessionEditorCommand.model_validate(
+        {
+            "operation_id": "session-editor-json",
+            "planned_schedule_ref": planned,
+            "started_at": "2026-11-23T08:05:00Z",
+            "ended_at": "2026-11-23T08:25:00Z",
+            "pause_ranges": [
+                {
+                    "started_at": "2026-11-23T08:10:00Z",
+                    "ended_at": "2026-11-23T08:12:00Z",
+                }
+            ],
+        }
+    )
+    assert command.planned_schedule_ref == UUID(planned)
+    assert command.started_at < command.pause_ranges[0].started_at < command.ended_at
 
 
 class _SessionConstraintError(Exception):

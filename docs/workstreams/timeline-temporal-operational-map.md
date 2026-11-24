@@ -14,6 +14,13 @@ all'editor in questo candidate; la vista mantiene il comportamento attuale.
 I test PostgreSQL e browser reale richiedono l'ambiente locale dell'owner;
 non sono dichiarati PASS qui.
 
+Il primo run reale ha rilevato una colonna ambigua nel ramo di correzione SQL
+e un rifiuto HTTP 422 dei valori data/UUID JSON nel comando API. La migrazione
+forward `20261124_191` qualifica le colonne senza modificare la migrazione
+già applicabile `190`; il comando accetta esplicitamente la conversione JSON.
+I test mirati di modello/OpenAPI passano, mentre PostgreSQL ed E2E vanno
+rieseguiti sul nuovo SHA.
+
 La descrizione corrente delle icone della testata, della Cattura rapida e delle
 tre viste del pannello destro è in
 [Home Timeline — controlli e pannello](../frontend/home/timeline-context-rail.md).

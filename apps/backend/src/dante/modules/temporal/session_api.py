@@ -60,11 +60,11 @@ class SessionEditorPauseInput(BaseModel):
 
 
 class SessionEditorCommand(SessionCommand):
-    started_at: datetime
-    ended_at: datetime
-    planned_schedule_ref: UUID | None = None
-    session_ref: UUID | None = None
-    expected_material_state_ref: UUID | None = None
+    started_at: datetime = Field(strict=False)
+    ended_at: datetime = Field(strict=False)
+    planned_schedule_ref: UUID | None = Field(default=None, strict=False)
+    session_ref: UUID | None = Field(default=None, strict=False)
+    expected_material_state_ref: UUID | None = Field(default=None, strict=False)
     pause_ranges: list[SessionEditorPauseInput] = Field(default_factory=list)
 
 
