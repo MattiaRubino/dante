@@ -611,7 +611,9 @@ function formatInspectorInterval(
   timeZone?: string,
 ): string | null {
   try {
-    const zone = interval.instant ? (timeZone ?? interval.zoneId ?? 'UTC') : 'UTC';
+    const zone = interval.instant
+      ? (timeZone ?? interval.zoneId ?? 'UTC')
+      : 'UTC';
     const display = (value: string) => {
       let instant: Date;
       if (interval.instant) {
@@ -650,7 +652,8 @@ function formatInspectorInterval(
     const start = display(interval.start);
     const end = display(interval.end);
     if (!start || !end) return null;
-    const ending = end.day === start.day ? end.clock : `${end.day} ${end.clock}`;
+    const ending =
+      end.day === start.day ? end.clock : `${end.day} ${end.clock}`;
     return `${start.day} · ${start.clock}–${ending}`;
   } catch {
     return null;
@@ -738,7 +741,12 @@ export function EventDetailDialog({
   const [vaultReviewActive, setVaultReviewActive] = useState(false);
   useEffect(() => {
     setVaultReviewActive(false);
-  }, [detail?.eventRef, detail?.occurrenceRef, sessionSubject?.ref, detail?.dateKey]);
+  }, [
+    detail?.eventRef,
+    detail?.occurrenceRef,
+    sessionSubject?.ref,
+    detail?.dateKey,
+  ]);
   const [activityDetails, setActivityDetails] = useState<{
     ref: string;
     description: string | null;
@@ -905,7 +913,9 @@ export function EventDetailDialog({
       if (
         event.key === 'Escape' &&
         event.target instanceof Element &&
-        event.target.closest('.temporal-create-quick-reminder [aria-expanded="true"]')
+        event.target.closest(
+          '.temporal-create-quick-reminder [aria-expanded="true"]',
+        )
       ) {
         return;
       }
@@ -1103,6 +1113,7 @@ export function EventDetailDialog({
                 recurringOccurrenceRef={detail.occurrenceRef ?? null}
                 itemTitle={detail.title}
                 scheduleLabel={detailScheduleLabel(detail, locale, timeZone)}
+                {...(timeZone ? { timeZone } : {})}
                 onEdit={(profile, scope) => {
                   setActivityEditScope(scope);
                   setEditingProfile(profile);

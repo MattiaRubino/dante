@@ -17356,6 +17356,176 @@
         "title": "SessionDurationEvaluationResponse",
         "type": "object"
       },
+      "SessionEditorAttempt": {
+        "properties": {
+          "ended_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Ended At"
+          },
+          "pause_ranges": {
+            "items": {
+              "$ref": "#/components/schemas/SessionEditorPause"
+            },
+            "title": "Pause Ranges",
+            "type": "array"
+          },
+          "planned_schedule_ref": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Planned Schedule Ref"
+          },
+          "session_ref": {
+            "format": "uuid",
+            "title": "Session Ref",
+            "type": "string"
+          },
+          "started_at": {
+            "format": "date-time",
+            "title": "Started At",
+            "type": "string"
+          },
+          "timing_material_state_ref": {
+            "format": "uuid",
+            "title": "Timing Material State Ref",
+            "type": "string"
+          }
+        },
+        "required": [
+          "session_ref",
+          "planned_schedule_ref",
+          "timing_material_state_ref",
+          "started_at",
+          "ended_at",
+          "pause_ranges"
+        ],
+        "title": "SessionEditorAttempt",
+        "type": "object"
+      },
+      "SessionEditorCommand": {
+        "additionalProperties": false,
+        "properties": {
+          "ended_at": {
+            "format": "date-time",
+            "title": "Ended At",
+            "type": "string"
+          },
+          "expected_material_state_ref": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Expected Material State Ref"
+          },
+          "operation_id": {
+            "maxLength": 200,
+            "minLength": 1,
+            "title": "Operation Id",
+            "type": "string"
+          },
+          "pause_ranges": {
+            "items": {
+              "$ref": "#/components/schemas/SessionEditorPauseInput"
+            },
+            "title": "Pause Ranges",
+            "type": "array"
+          },
+          "planned_schedule_ref": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Planned Schedule Ref"
+          },
+          "session_ref": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Session Ref"
+          },
+          "started_at": {
+            "format": "date-time",
+            "title": "Started At",
+            "type": "string"
+          }
+        },
+        "required": ["operation_id", "started_at", "ended_at"],
+        "title": "SessionEditorCommand",
+        "type": "object"
+      },
+      "SessionEditorPause": {
+        "additionalProperties": false,
+        "properties": {
+          "ended_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Ended At"
+          },
+          "started_at": {
+            "format": "date-time",
+            "title": "Started At",
+            "type": "string"
+          }
+        },
+        "required": ["started_at", "ended_at"],
+        "title": "SessionEditorPause",
+        "type": "object"
+      },
+      "SessionEditorPauseInput": {
+        "additionalProperties": false,
+        "properties": {
+          "ended_at": {
+            "format": "date-time",
+            "title": "Ended At",
+            "type": "string"
+          },
+          "started_at": {
+            "format": "date-time",
+            "title": "Started At",
+            "type": "string"
+          }
+        },
+        "required": ["started_at", "ended_at"],
+        "title": "SessionEditorPauseInput",
+        "type": "object"
+      },
       "SessionEndCommand": {
         "additionalProperties": false,
         "properties": {
@@ -31285,6 +31455,100 @@
           }
         },
         "summary": "Start Activity Session",
+        "tags": ["temporal"]
+      }
+    },
+    "/api/v1/temporal/activities/{activity_ref}/sessions/editor": {
+      "get": {
+        "operationId": "temporal_list_activity_session_editor_attempts",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "activity_ref",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Activity Ref",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/SessionEditorAttempt"
+                  },
+                  "title": "Response Temporal List Activity Session Editor Attempts",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "List Activity Session Editor Attempts",
+        "tags": ["temporal"]
+      },
+      "post": {
+        "operationId": "temporal_write_activity_session_editor_attempt",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "activity_ref",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Activity Ref",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SessionEditorCommand"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SessionResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Write Activity Session Editor Attempt",
         "tags": ["temporal"]
       }
     },

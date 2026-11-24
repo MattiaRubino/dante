@@ -149,8 +149,9 @@
           "kind": "server",
           "expression": "Latest save instant"
         },
-        "meaning": null,
-        "value_contract": "Bounded draft vault payload and owner authority."
+        "meaning": "Most recent accepted save instant",
+        "value_contract": "Bounded draft vault payload and owner authority.",
+        "semantic_type": null
       }
     ],
     "primary_key": {
@@ -233,7 +234,26 @@
         "live": true
       }
     ],
-    "triggers": [],
+    "triggers": [
+      {
+        "name": "tr_temporal_draft_vault_owner_capacity",
+        "routine": "dante.enforce_temporal_draft_vault_capacity",
+        "events": [
+          "INSERT"
+        ],
+        "timing": "BEFORE",
+        "orientation": "ROW",
+        "constraint_trigger": false,
+        "deferrable": false,
+        "initially_deferred": false,
+        "enabled_mode": "ORIGIN",
+        "update_columns": [],
+        "when_condition": null,
+        "arguments": [],
+        "invariant_role": "capacity",
+        "reason": "Serialize owner inserts and reject capacity overflow."
+      }
+    ],
     "table": {
       "persistence": "permanent",
       "access_method": "heap",

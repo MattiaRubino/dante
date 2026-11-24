@@ -106,21 +106,23 @@
       "B14-OBJECTIVE-VERIFICATION",
       "B14-RECORDED-OBJECTIVE-DELETE",
       "B14-SELECTED-SERIES-PROTECTION",
-      "B14-OPEN-RENEWAL"
+      "B14-OPEN-RENEWAL",
+      "B14-DRAFT-VAULT-CAPACITY",
+      "SESSION-RECORDING-EDITOR"
     ],
     "standalone_entries": {
-      "tables": 245,
+      "tables": 246,
       "views": 5,
-      "routines": 269,
-      "total": 519
+      "routines": 272,
+      "total": 523
     },
     "embedded_objects": {
-      "triggers": 105,
-      "physical_indexes": 502
+      "triggers": 106,
+      "physical_indexes": 503
     },
     "constraints": {
-      "foreign_keys": 441,
-      "check_constraints": 614
+      "foreign_keys": 444,
+      "check_constraints": 616
     }
   },
   "technical_foundation": {

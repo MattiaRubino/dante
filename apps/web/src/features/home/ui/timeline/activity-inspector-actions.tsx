@@ -30,6 +30,10 @@ import {
   type ActivityDuplicateSeed,
 } from '../../../temporal-create/application/activity-duplicate-seed';
 import { TimelineInspectorIcon } from './timeline-inspector-icon';
+import {
+  activityHasSessionRecordings,
+  ActivitySessionRecordingEditor,
+} from './activity-session-recording-editor';
 import { RecurringEditScopeDialog } from './recurring-edit-scope-dialog';
 import { TemporalDeleteDialog } from './temporal-delete-dialog';
 import { VaultMoveConfirmation } from './vault-move-confirmation';
@@ -47,6 +51,7 @@ export function ActivityInspectorActions({
   onCancelScope,
   onVaultReviewChange,
   toolbarTarget = null,
+  timeZone,
 }: Readonly<{
   activityRef: string;
   subitemsCount?: number;
@@ -60,6 +65,7 @@ export function ActivityInspectorActions({
   onCancelScope?: () => void;
   onVaultReviewChange?: (active: boolean) => void;
   toolbarTarget?: HTMLElement | null;
+  timeZone?: string;
 }>) {
   const [source] = useState(createRemoteActivityInspector);
   const [settingsSource] = useState(createRemoteActivityEditSettings);
@@ -109,6 +115,23 @@ export function ActivityInspectorActions({
   } | null>(null);
   const [pending, setPending] = useState(false);
   const [error, setError] = useState('');
+  const [sessionEditorEligible, setSessionEditorEligible] = useState(false);
+  const [sessionEditorOpen, setSessionEditorOpen] = useState(false);
+  const sessionEditorButton = useRef<HTMLButtonElement>(null);
+
+  useEffect(() => {
+    let active = true;
+    void activityHasSessionRecordings(activityRef)
+      .then((eligible) => {
+        if (active) setSessionEditorEligible(eligible);
+      })
+      .catch(() => {
+        if (active) setSessionEditorEligible(false);
+      });
+    return () => {
+      active = false;
+    };
+  }, [activityRef]);
 
   useEffect(() => {
     let active = true;
@@ -177,6 +200,22 @@ export function ActivityInspectorActions({
 
   const toolbar = (
     <div className="timeline-activity-inspector__toolbar">
+      {sessionEditorEligible ? (
+        <button
+          ref={sessionEditorButton}
+          type="button"
+          aria-label="Registrazioni delle Sessioni"
+          title="Registrazioni delle Sessioni"
+          disabled={pending}
+          onClick={() => setSessionEditorOpen(true)}
+        >
+          {toolbarTarget ? (
+            <TimelineInspectorIcon name="sessions" />
+          ) : (
+            'Sessioni'
+          )}
+        </button>
+      ) : null}
       <button
         type="button"
         aria-label="Modifica"
@@ -246,15 +285,21 @@ export function ActivityInspectorActions({
               if (subitemsCount > 0) {
                 throw new Error('Sposta prima o completa le sotto-attività.');
               }
-              const [savedProfile, settings, childCount, recurring, choice, impact] =
-                await Promise.all([
-                  source.get(activityRef),
-                  settingsSource.load(activityRef),
-                  settingsSource.loadChildCount(activityRef),
-                  recurringSource.loadActivityContext(activityRef),
-                  settingsSource.loadLifeAreaChoice(activityRef),
-                  source.sessionImpact(activityRef),
-                ]);
+              const [
+                savedProfile,
+                settings,
+                childCount,
+                recurring,
+                choice,
+                impact,
+              ] = await Promise.all([
+                source.get(activityRef),
+                settingsSource.load(activityRef),
+                settingsSource.loadChildCount(activityRef),
+                recurringSource.loadActivityContext(activityRef),
+                settingsSource.loadLifeAreaChoice(activityRef),
+                source.sessionImpact(activityRef),
+              ]);
               if (recurring !== null || childCount !== 0) {
                 throw new Error(
                   'Una serie, un’istanza o un’attività con sotto-attività non può essere spostata nelle Bozze.',
@@ -263,9 +308,13 @@ export function ActivityInspectorActions({
               const selected =
                 settings.lifeAreaRef === null
                   ? undefined
-                  : choice.options.find((area) => area.ref === settings.lifeAreaRef);
+                  : choice.options.find(
+                      (area) => area.ref === settings.lifeAreaRef,
+                    );
               if (settings.lifeAreaRef !== null && !selected) {
-                throw new Error('Area non più disponibile: ricarica la scheda.');
+                throw new Error(
+                  'Area non più disponibile: ricarica la scheda.',
+                );
               }
               const areaDraft = selected
                 ? {
@@ -343,6 +392,19 @@ export function ActivityInspectorActions({
   return (
     <>
       {toolbarTarget ? createPortal(toolbar, toolbarTarget) : toolbar}
+      {sessionEditorOpen ? (
+        <ActivitySessionRecordingEditor
+          activityRef={activityRef}
+          activityTitle={itemTitle ?? profile?.title ?? 'Attività'}
+          timeZone={
+            timeZone ?? Intl.DateTimeFormat().resolvedOptions().timeZone
+          }
+          onClose={() => {
+            setSessionEditorOpen(false);
+            requestAnimationFrame(() => sessionEditorButton.current?.focus());
+          }}
+        />
+      ) : null}
       {error && !confirming && !vaultMove ? <p role="alert">{error}</p> : null}
       {editChoice ? (
         <RecurringEditScopeDialog

@@ -5872,7 +5872,97 @@
       "purpose": "Verify canonical named-zone and absolute instants project into selected display zone without rewriting original temporal values, floating-local stays floating, stored choices are IANA IDs and spring-forward retains factual duration.",
       "invariant": "Changing the Timeline viewing timezone does not mutate canonical Schedule/Session data or coerce IANA zones to fixed numeric offsets.",
       "status": "QUALIFIED",
-      "audit_note": "New focused regression; user local Vitest, visual and real-stack acceptance still NOT_RUN."
+      "audit_note": "Focused Vitest passed locally; visual and real-stack acceptance still NOT_RUN."
+    },
+    {
+      "path": "apps/backend/tests/integration/temporal/test_session_recording_editor.py",
+      "suite": "temporal-postgresql-integration",
+      "contract_id": "T06",
+      "candidate_behavior": "Retrospective Activity Session recording and correction",
+      "purpose": "Prove concluded main and named Sessions persist factual intervals, pauses and immutable correction states under owner-scoped PostgreSQL commands.",
+      "invariant": "Recording cannot create a second attempt for the same configured row; correction retains Session identity and refuses stale writes or a main interval excluding recorded children.",
+      "status": "QUALIFIED",
+      "audit_note": "PostgreSQL regression; owner-local Docker run pending."
+    },
+    {
+      "path": "apps/web/src/features/home/ui/timeline/activity-session-recording-editor.test.tsx",
+      "suite": "web-unit-component",
+      "contract_id": "T06",
+      "candidate_behavior": "Session recording editor replaces Registra with Correggi and disambiguates repeated clock hours",
+      "purpose": "Verify a completed manual recording refreshes the Inspector editor and permits correction on the same factual Session identity.",
+      "invariant": "After save, a registered row cannot offer a second Registra action and its existing timestamps are available for correction.",
+      "status": "QUALIFIED",
+      "audit_note": "Focused Vitest run on candidate required after formatting."
+    },
+    {
+      "path": "apps/web/e2e/auth/draft-vault-real-lifecycle.spec.ts",
+      "suite": "web-browser-real-stack",
+      "contract_id": "T02",
+      "candidate_behavior": "Actual owner-backed Draft Vault create, duplicate, move and delete paths.",
+      "purpose": "Actual owner-backed Draft Vault create, duplicate, move and delete paths.",
+      "invariant": "Verify state transitions are read back from the authenticated database rather than a fixture.",
+      "status": "QUALIFIED",
+      "audit_note": "Reviewed the real source assertions, fixture boundary and refusal paths for this newly inventoried tracked test; complete same-SHA runtime acceptance remains pending."
+    },
+    {
+      "path": "apps/web/e2e/draft-vault-new-stress.spec.ts",
+      "suite": "web-browser-fixture",
+      "contract_id": "T02",
+      "candidate_behavior": "Draft Vault search, capacity and long-list interactions.",
+      "purpose": "Draft Vault search, capacity and long-list interactions.",
+      "invariant": "Verify bounded scrolling and persistence of controls through a large fixture list.",
+      "status": "QUALIFIED",
+      "audit_note": "Reviewed the real source assertions, fixture boundary and refusal paths for this newly inventoried tracked test; complete same-SHA runtime acceptance remains pending."
+    },
+    {
+      "path": "apps/web/src/features/home/ui/timeline/timeline-inspector-vault-review.test.tsx",
+      "suite": "web-unit-component",
+      "contract_id": "T02",
+      "candidate_behavior": "Inspector Vault review visibility and stable component identity.",
+      "purpose": "Inspector Vault review visibility and stable component identity.",
+      "invariant": "Verify review does not disappear from local remount during change of presentation.",
+      "status": "QUALIFIED",
+      "audit_note": "Reviewed the real source assertions, fixture boundary and refusal paths for this newly inventoried tracked test; complete same-SHA runtime acceptance remains pending."
+    },
+    {
+      "path": "apps/web/src/features/home/ui/timeline/timeline-vault-move-visibility.test.ts",
+      "suite": "web-unit-component",
+      "contract_id": "T02",
+      "candidate_behavior": "Timeline visibility after moving an item to Draft Vault.",
+      "purpose": "Timeline visibility after moving an item to Draft Vault.",
+      "invariant": "Verify moved items are removed from the live projection without deleting unrelated entries.",
+      "status": "QUALIFIED",
+      "audit_note": "Reviewed the real source assertions, fixture boundary and refusal paths for this newly inventoried tracked test; complete same-SHA runtime acceptance remains pending."
+    },
+    {
+      "path": "apps/web/src/features/home/ui/timeline/vault-move-confirmation.test.tsx",
+      "suite": "web-unit-component",
+      "contract_id": "T02",
+      "candidate_behavior": "Vault move confirmation and registered-fact impact.",
+      "purpose": "Vault move confirmation and registered-fact impact.",
+      "invariant": "Verify the confirmation requires review when moving loses registrations.",
+      "status": "QUALIFIED",
+      "audit_note": "Reviewed the real source assertions, fixture boundary and refusal paths for this newly inventoried tracked test; complete same-SHA runtime acceptance remains pending."
+    },
+    {
+      "path": "apps/web/src/features/temporal-create/application/remote-draft-vault-capacity.test.ts",
+      "suite": "web-unit-component",
+      "contract_id": "T02",
+      "candidate_behavior": "Remote Draft Vault owner capacity error handling.",
+      "purpose": "Remote Draft Vault owner capacity error handling.",
+      "invariant": "Verify capacity conflict is distinguished from a stale revision or transport error.",
+      "status": "QUALIFIED",
+      "audit_note": "Reviewed the real source assertions, fixture boundary and refusal paths for this newly inventoried tracked test; complete same-SHA runtime acceptance remains pending."
+    },
+    {
+      "path": "apps/web/src/features/temporal-create/ui/draft-vault-capacity-dialog.test.tsx",
+      "suite": "web-unit-component",
+      "contract_id": "T02",
+      "candidate_behavior": "Draft Vault capacity dialog content and dismissal.",
+      "purpose": "Draft Vault capacity dialog content and dismissal.",
+      "invariant": "Verify failed capacity save preserves the Create content and allows a safe return.",
+      "status": "QUALIFIED",
+      "audit_note": "Reviewed the real source assertions, fixture boundary and refusal paths for this newly inventoried tracked test; complete same-SHA runtime acceptance remains pending."
     }
   ]
 }

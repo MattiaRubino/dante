@@ -55,6 +55,10 @@ class SessionResumeConflictError(RuntimeError):
     """The Session is not paused or its state is stale."""
 
 
+class SessionEditorConflictError(RuntimeError):
+    """A concluded Session cannot be recorded or corrected with stale facts."""
+
+
 class SessionPersistenceError(RuntimeError):
     """Canonical Session persistence could not complete safely."""
 
@@ -251,6 +255,85 @@ class SessionApplication:
                 "activity_ref": activity_ref,
                 "started_at": started_at,
                 "ended_at": ended_at,
+            },
+        )
+        return await self._hydrate(self_person_ref, view)
+
+    async def write_editor(
+        self,
+        *,
+        self_person_ref: NativeRef,
+        operation_id: str,
+        activity_ref: NativeRef,
+        planned_schedule_ref: ScopedRecordRef | None,
+        session_ref: NativeRef | None,
+        expected_material_state_ref: MaterialStateRef | None,
+        started_at: datetime,
+        ended_at: datetime,
+        pause_ranges: Sequence[tuple[datetime, datetime]],
+    ) -> SessionView:
+        """Record or version a concluded attempt, preserving its Session identity."""
+        if (
+            started_at.tzinfo is None
+            or ended_at.tzinfo is None
+            or started_at >= ended_at
+            or ended_at > datetime.now(UTC)
+            or (session_ref is None) != (expected_material_state_ref is None)
+        ):
+            raise SessionInputError("Inserisci un intervallo concluso e valido.")
+        previous = started_at
+        for pause_start, pause_end in sorted(pause_ranges):
+            if (
+                pause_start.tzinfo is None
+                or pause_end.tzinfo is None
+                or pause_start <= previous
+                or pause_start >= pause_end
+                or pause_end > ended_at
+            ):
+                raise SessionInputError("Le pause devono essere ordinate e interne alla Sessione.")
+            previous = pause_end
+        normalized_pauses = [
+            {
+                "started_at": start.astimezone(UTC).isoformat(),
+                "ended_at": end.astimezone(UTC).isoformat(),
+            }
+            for start, end in sorted(pause_ranges)
+        ]
+        identity = session_ref or new_native_ref()
+        resulting_state = new_material_state_ref()
+        normalized = _normalize_operation_id(operation_id)
+        fingerprint = _fingerprint(
+            {
+                "version": "1",
+                "command": "session_editor",
+                "activity_ref": str(activity_ref),
+                "planned_schedule_ref": str(planned_schedule_ref),
+                "session_ref": str(session_ref),
+                "expected_material_state_ref": str(expected_material_state_ref),
+                "started_at": started_at.astimezone(UTC).isoformat(),
+                "ended_at": ended_at.astimezone(UTC).isoformat(),
+                "pause_ranges": json.dumps(normalized_pauses, sort_keys=True),
+            }
+        )
+        view = await self._call(
+            """SELECT session_ref,subject_native_ref,timing_material_state_ref,
+                      started_at,ended_at,replayed
+                 FROM dante.write_self_activity_session_editor(
+                     :actor,:operation_id,:fingerprint,:activity,:planned,:session,
+                     :expected_state,:result_state,:started_at,:ended_at,CAST(:pauses AS jsonb)
+                 )""",
+            {
+                "actor": self_person_ref,
+                "operation_id": normalized,
+                "fingerprint": fingerprint,
+                "activity": activity_ref,
+                "planned": planned_schedule_ref,
+                "session": identity,
+                "expected_state": expected_material_state_ref,
+                "result_state": resulting_state,
+                "started_at": started_at,
+                "ended_at": ended_at,
+                "pauses": json.dumps(normalized_pauses),
             },
         )
         return await self._hydrate(self_person_ref, view)
@@ -573,6 +656,26 @@ class SessionApplication:
             raise SessionResumeConflictError(
                 "Session resume conflicts with current timing."
             ) from exc
+        editor_conflicts = {
+            "session_editor_stale": "La registrazione è cambiata. Ricarica i dati prima di salvarla.",
+            "session_editor_already_recorded": "Questa Sessione è già registrata. Apri la correzione.",
+            "session_editor_dependent_actual": (
+                "Questa Sessione sostiene un risultato già registrato. "
+                "Risolvi prima quel risultato."
+            ),
+        }
+        if name in editor_conflicts:
+            raise SessionEditorConflictError(editor_conflicts[name]) from exc
+        if name in {"session_editor_invalid", "session_editor_outside_main"}:
+            raise SessionInputError(
+                "Gli intervalli devono essere passati e le Sessioni secondarie devono rientrare nei tratti attivi della principale."
+            ) from exc
+        if name == "session_editor_capture_disabled":
+            raise SessionCaptureDisabledError("Sessione attività non configurata.") from exc
+        if name in {"session_editor_activity_unavailable", "session_editor_planned_unavailable"}:
+            raise SessionNotFoundError("Sessione non disponibile per questa Attività.") from exc
+        if name == "session_editor_operation_reused":
+            raise SessionOperationReuseError("Session operation id was reused.") from exc
         if (
             name in {"session_subject_unavailable", "session_manual_record_owner_unavailable"}
             or "unavailable" in message

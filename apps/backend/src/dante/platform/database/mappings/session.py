@@ -349,6 +349,42 @@ class SessionManualRecordOperationRow(Base):
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
 
 
+class SessionEditorOperationRow(Base):
+    """Idempotent receipt for recording or correcting an Activity Session."""
+
+    __tablename__ = "session_editor_operation"
+    __table_args__ = (
+        CheckConstraint(
+            "operation_id=btrim(operation_id) AND operation_id<>'' "
+            "AND char_length(operation_id)<=200",
+            name="operation_id",
+        ),
+        CheckConstraint("intent_fingerprint ~ '^[0-9a-f]{64}$'", name="fingerprint"),
+        ForeignKeyConstraint(
+            ["self_person_ref"],
+            ["dante.person.person_ref"],
+            name="fk_session_editor_operation_person",
+        ),
+        ForeignKeyConstraint(
+            ["session_ref"],
+            ["dante.session.session_ref"],
+            name="fk_session_editor_operation_session",
+        ),
+        ForeignKeyConstraint(
+            ["resulting_material_state_ref"],
+            ["dante.session_timing_state.material_state_ref"],
+            name="fk_session_editor_operation_state",
+        ),
+    )
+
+    self_person_ref: Mapped[NativeRef] = mapped_column(primary_key=True)
+    operation_id: Mapped[str] = mapped_column(Text, primary_key=True)
+    intent_fingerprint: Mapped[str] = mapped_column(Text, nullable=False)
+    session_ref: Mapped[NativeRef] = mapped_column(nullable=False)
+    resulting_material_state_ref: Mapped[MaterialStateRef] = mapped_column(nullable=False)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
+
+
 class SessionEndOperationRow(Base):
     """Immutable end receipt bound to expected and produced timing states."""
 

@@ -1,5 +1,19 @@
 # Timeline / Temporal-Operational — Live Execution Ledger
 
+## 2026-11-24 — Editor registrazioni delle Sessioni (candidate)
+
+L'Inspector Activity espone un'azione Sessioni solo per attività con
+configurazione principale/interna o tentativi già registrati. Il pannello
+separa principale e secondarie, legge anche le pause e accetta solo orari
+effettivi conclusi. Registra una sola volta per configurazione e corregge
+un tentativo concluso conservandone SessionRef e storia MaterialState. Il
+comando PostgreSQL `20261124_190` protegge owner, CAS, replay, gerarchia,
+stato aperto e dipendenze Actual. Non è un controllo Play/Pausa/Stop e non
+modifica le Sessioni pianificate. «Da verificare» non è ancora collegato
+all'editor in questo candidate; la vista mantiene il comportamento attuale.
+I test PostgreSQL e browser reale richiedono l'ambiente locale dell'owner;
+non sono dichiarati PASS qui.
+
 La descrizione corrente delle icone della testata, della Cattura rapida e delle
 tre viste del pannello destro è in
 [Home Timeline — controlli e pannello](../frontend/home/timeline-context-rail.md).

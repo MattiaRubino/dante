@@ -23,7 +23,7 @@ export type ActivityScheduleInterval = Readonly<{
   zoneId: string | null;
 }>;
 
-type PlannedSessionStructure = Readonly<{
+export type PlannedSessionStructure = Readonly<{
   rows: readonly PlannedSession[];
   intervals: readonly ActivityScheduleInterval[];
   independentChildren: boolean;
@@ -36,7 +36,7 @@ function record(value: unknown): Record<string, unknown> {
   return value as Record<string, unknown>;
 }
 
-function parsePlannedSessions(
+export function parsePlannedSessions(
   value: unknown,
   activityRef: string,
 ): PlannedSessionStructure {
@@ -49,7 +49,9 @@ function parsePlannedSessions(
   }
 
   const schedules = payload.schedules.map(record);
-  const placedIntervals = schedules.filter((row) => row.role_code === 'interval');
+  const placedIntervals = schedules.filter(
+    (row) => row.role_code === 'interval',
+  );
   const intervals = placedIntervals.flatMap(
     (row, index): ActivityScheduleInterval[] => {
       if (typeof row.schedule_ref !== 'string') return [];

@@ -1,6 +1,6 @@
 import type { ReactNode } from 'react';
 
-type InspectorIconName = 'edit' | 'copy' | 'trash' | 'vault';
+type InspectorIconName = 'edit' | 'copy' | 'trash' | 'vault' | 'sessions';
 
 export function TimelineInspectorIcon({
   name,
@@ -28,6 +28,12 @@ export function TimelineInspectorIcon({
       <>
         <rect x="3" y="5" width="18" height="15" rx="2" />
         <path d="M3 10h18M9 14h6" />
+      </>
+    ),
+    sessions: (
+      <>
+        <rect x="3" y="5" width="18" height="15" rx="2" />
+        <path d="M8 10h8M8 15h5" />
       </>
     ),
   } satisfies Record<InspectorIconName, ReactNode>;

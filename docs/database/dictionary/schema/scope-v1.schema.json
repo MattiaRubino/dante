@@ -124,7 +124,7 @@
       "properties": {
         "completed_stages": {
           "type": "array",
-          "maxItems": 80,
+          "maxItems": 128,
           "uniqueItems": true,
           "items": {
             "enum": [
@@ -207,7 +207,12 @@
               "B14-EXISTING-EVENT-REPAIR-PERF",
               "B14-FIRST-EVENT-DELETION-LIFECYCLE",
               "B14-EXISTING-EVENT-LEGACY-CHECK-NAME",
-              "B14-OBJECTIVE-VERIFICATION"
+              "B14-OBJECTIVE-VERIFICATION",
+              "B14-RECORDED-OBJECTIVE-DELETE",
+              "B14-SELECTED-SERIES-PROTECTION",
+              "B14-OPEN-RENEWAL",
+              "B14-DRAFT-VAULT-CAPACITY",
+              "SESSION-RECORDING-EDITOR"
             ]
           }
         },
@@ -526,7 +531,12 @@
                   "B14-EXISTING-EVENT-REPAIR-PERF",
                   "B14-FIRST-EVENT-DELETION-LIFECYCLE",
                   "B14-EXISTING-EVENT-LEGACY-CHECK-NAME",
-                  "B14-OBJECTIVE-VERIFICATION"
+                  "B14-OBJECTIVE-VERIFICATION",
+                  "B14-RECORDED-OBJECTIVE-DELETE",
+                  "B14-SELECTED-SERIES-PROTECTION",
+                  "B14-OPEN-RENEWAL",
+                  "B14-DRAFT-VAULT-CAPACITY",
+                  "SESSION-RECORDING-EDITOR"
                 ]
               }
             }

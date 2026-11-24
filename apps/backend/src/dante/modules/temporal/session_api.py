@@ -8,12 +8,15 @@ from uuid import UUID
 
 from fastapi import APIRouter, Depends, Request, Response
 from pydantic import BaseModel, ConfigDict, Field
+from sqlalchemy import text
+from sqlalchemy.exc import SQLAlchemyError
 
 from dante.context.contracts import DanteContext
 from dante.context.dependencies import require_dante_context, require_mutating_dante_context
 from dante.modules.temporal.session_runtime import (
     SessionApplication,
     SessionCaptureDisabledError,
+    SessionEditorConflictError,
     SessionEndConflictError,
     SessionInputError,
     SessionNotFoundError,
@@ -42,6 +45,36 @@ class SessionEndCommand(SessionCommand):
 class SessionManualCommand(SessionCommand):
     started_at: datetime = Field(strict=False)
     ended_at: datetime = Field(strict=False)
+
+
+class SessionEditorPause(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+    started_at: datetime
+    ended_at: datetime | None
+
+
+class SessionEditorPauseInput(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+    started_at: datetime
+    ended_at: datetime
+
+
+class SessionEditorCommand(SessionCommand):
+    started_at: datetime
+    ended_at: datetime
+    planned_schedule_ref: UUID | None = None
+    session_ref: UUID | None = None
+    expected_material_state_ref: UUID | None = None
+    pause_ranges: list[SessionEditorPauseInput] = Field(default_factory=list)
+
+
+class SessionEditorAttempt(BaseModel):
+    session_ref: UUID
+    planned_schedule_ref: UUID | None
+    timing_material_state_ref: UUID
+    started_at: datetime
+    ended_at: datetime | None
+    pause_ranges: list[SessionEditorPause]
 
 
 SessionTransitionCommand = SessionEndCommand
@@ -146,6 +179,14 @@ def _problem(exc: Exception) -> ProblemError:
             code="temporal.session.operation_id_reused",
             category="conflict",
             title="Session operation id reused",
+            detail=str(exc),
+        )
+    if isinstance(exc, SessionEditorConflictError):
+        return ProblemError(
+            status=409,
+            code="temporal.session.editor_conflict",
+            category="conflict",
+            title="Session recording changed",
             detail=str(exc),
         )
     if isinstance(exc, SessionEndConflictError):
@@ -299,6 +340,83 @@ async def record_manual_activity_session(
     ) as exc:
         raise _problem(exc) from exc
     response.status_code = 200 if view.replayed else 201
+    return _response(view)
+
+
+@router.get(
+    "/activities/{activity_ref}/sessions/editor",
+    response_model=list[SessionEditorAttempt],
+    operation_id="temporal_list_activity_session_editor_attempts",
+)
+async def list_activity_session_editor_attempts(
+    activity_ref: UUID,
+    context: Context,
+    request: Request,
+    response: Response,
+) -> list[SessionEditorAttempt]:
+    response.headers["Cache-Control"] = "no-store"
+    try:
+        async with request.app.state.database_runtime.session_factory() as session, session.begin():
+            result = await session.execute(
+                text(
+                    "SELECT * FROM dante.list_self_activity_session_editor_attempts(:actor,:activity)"
+                ),
+                {"actor": context.self_person_ref, "activity": activity_ref},
+            )
+            return [SessionEditorAttempt.model_validate(dict(row)) for row in result.mappings()]
+    except SQLAlchemyError as exc:
+        raise ProblemError(
+            status=503,
+            code="temporal.session.unavailable",
+            category="unavailable",
+            title="Session recordings unavailable",
+            detail="Riprova a caricare le registrazioni.",
+        ) from exc
+
+
+@router.post(
+    "/activities/{activity_ref}/sessions/editor",
+    response_model=SessionResponse,
+    operation_id="temporal_write_activity_session_editor_attempt",
+)
+async def write_activity_session_editor_attempt(
+    activity_ref: UUID,
+    payload: SessionEditorCommand,
+    context: MutatingContext,
+    application: Application,
+    response: Response,
+) -> SessionResponse:
+    try:
+        view = await application.write_editor(
+            self_person_ref=context.self_person_ref,
+            operation_id=payload.operation_id,
+            activity_ref=NativeRef(activity_ref),
+            planned_schedule_ref=(
+                ScopedRecordRef(payload.planned_schedule_ref)
+                if payload.planned_schedule_ref is not None
+                else None
+            ),
+            session_ref=NativeRef(payload.session_ref) if payload.session_ref else None,
+            expected_material_state_ref=(
+                MaterialStateRef(payload.expected_material_state_ref)
+                if payload.expected_material_state_ref
+                else None
+            ),
+            started_at=payload.started_at,
+            ended_at=payload.ended_at,
+            pause_ranges=[(row.started_at, row.ended_at) for row in payload.pause_ranges],
+        )
+    except (
+        SessionInputError,
+        SessionNotFoundError,
+        SessionOperationReuseError,
+        SessionPersistenceError,
+        SessionCaptureDisabledError,
+        SessionEditorConflictError,
+    ) as exc:
+        raise _problem(exc) from exc
+    response.status_code = 200 if view.replayed or payload.session_ref else 201
+    response.headers["Cache-Control"] = "no-store"
     return _response(view)
 
 

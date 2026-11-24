@@ -70,6 +70,7 @@ const moveDraft = vi.fn(
   },
 );
 vi.mock('../../../temporal-create/application/remote-draft-vault', () => ({
+  DRAFT_VAULT_CAPACITY_MESSAGE: 'Spazio Bozze esaurito',
   createRemoteDraftVault: () => ({ move: moveDraft }),
   notifyDraftVaultUpdated: vi.fn(),
 }));

@@ -88,6 +88,32 @@ gain an Activity Session.
 
 ## Availability and timer rules
 
+### Registrazioni manuali nell'Inspector (2026-11-24)
+
+L'azione «Registrazioni delle Sessioni» compare soltanto se l'Attività ha
+la Sessione principale abilitata, almeno una Sessione interna configurata o
+tentativi fattuali ancora esistenti. L'editor è dedicato agli intervalli
+**effettivi**, anche per tentativi conclusi: non avvia, mette in pausa o ferma
+il timer live e non aggiunge/rimuove configurazioni pianificate. Mostra tutti
+i tentativi della stessa Attività, distinguendo principale e secondarie.
+
+«Registra» accetta inizio/fine nel passato e pause ordinate. Il risultato è
+una Sessione conclusa, non una Sessione pronta per Play. Una configurazione
+già registrata non offre una seconda registrazione manuale; resta «Correggi»
+sulla sua identità fattuale. Correggere una Sessione conclusa crea un nuovo
+MaterialState temporale e conserva lo stato precedente nella storia; il
+piano resta intatto. Un tentativo aperto deve prima concludersi con i controlli
+live. La correzione rifiuta una revisione stale o un tentativo già utilizzato
+come base di un Actual registrato; quest'ultimo deve essere risolto
+esplicitamente prima di cambiare il suo fondamento temporale.
+
+Con la principale abilitata, gli intervalli attivi delle secondarie devono
+rientrare nel suo intervallo attivo, senza occupare le pause della principale.
+La correzione della principale verifica di nuovo tutte le secondarie già
+registrate. Ogni comando è owner-scoped, con idempotency receipt e controllo
+della versione corrente. Le righe «Da verificare» continueranno ad aprire
+questo stesso editor nella fase di integrazione del pannello destro.
+
 The Session panel uses the Activity interval, not an internal Session time:
 
 - named rows become available `PREVIEW_LEAD` before a precise Activity interval and remain available until its end;

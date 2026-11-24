@@ -240,6 +240,8 @@ import type {
   ScopedProfileEditResponse,
   ScopedProfileEditStateResponse,
   SessionCommand,
+  SessionEditorAttempt,
+  SessionEditorCommand,
   SessionEndCommand,
   SessionManualCommand,
   SessionPanelResponse,
@@ -5862,6 +5864,134 @@ export const temporalStartActivitySession = async (
     status: res.status,
     headers: res.headers,
   } as temporalStartActivitySessionResponse;
+};
+
+export type temporalListActivitySessionEditorAttemptsResponse200 = {
+  data: SessionEditorAttempt[];
+  status: 200;
+};
+
+export type temporalListActivitySessionEditorAttemptsResponse422 = {
+  data: HTTPValidationError;
+  status: 422;
+};
+
+export type temporalListActivitySessionEditorAttemptsResponseSuccess =
+  temporalListActivitySessionEditorAttemptsResponse200 & {
+    headers: Headers;
+  };
+export type temporalListActivitySessionEditorAttemptsResponseError =
+  temporalListActivitySessionEditorAttemptsResponse422 & {
+    headers: Headers;
+  };
+
+export type temporalListActivitySessionEditorAttemptsResponse =
+  | temporalListActivitySessionEditorAttemptsResponseSuccess
+  | temporalListActivitySessionEditorAttemptsResponseError;
+
+export const getTemporalListActivitySessionEditorAttemptsUrl = (
+  activityRef: string,
+) => {
+  return `/api/v1/temporal/activities/${activityRef}/sessions/editor`;
+};
+
+/**
+ * @summary List Activity Session Editor Attempts
+ */
+export const temporalListActivitySessionEditorAttempts = async (
+  activityRef: string,
+  options?: RequestInit,
+  fetchFn?: typeof globalThis.fetch,
+): Promise<temporalListActivitySessionEditorAttemptsResponse> => {
+  const res = await (fetchFn ?? fetch)(
+    getTemporalListActivitySessionEditorAttemptsUrl(activityRef),
+    {
+      ...options,
+      method: 'GET',
+    },
+  );
+
+  const body = [204, 205, 304].includes(res.status) ? null : await res.text();
+
+  const data: temporalListActivitySessionEditorAttemptsResponse['data'] = body
+    ? JSON.parse(body)
+    : {};
+  return {
+    data,
+    status: res.status,
+    headers: res.headers,
+  } as temporalListActivitySessionEditorAttemptsResponse;
+};
+
+export type temporalWriteActivitySessionEditorAttemptResponse200 = {
+  data: SessionResponse;
+  status: 200;
+};
+
+export type temporalWriteActivitySessionEditorAttemptResponse422 = {
+  data: HTTPValidationError;
+  status: 422;
+};
+
+export type temporalWriteActivitySessionEditorAttemptResponseSuccess =
+  temporalWriteActivitySessionEditorAttemptResponse200 & {
+    headers: Headers;
+  };
+export type temporalWriteActivitySessionEditorAttemptResponseError =
+  temporalWriteActivitySessionEditorAttemptResponse422 & {
+    headers: Headers;
+  };
+
+export type temporalWriteActivitySessionEditorAttemptResponse =
+  | temporalWriteActivitySessionEditorAttemptResponseSuccess
+  | temporalWriteActivitySessionEditorAttemptResponseError;
+
+export const getTemporalWriteActivitySessionEditorAttemptUrl = (
+  activityRef: string,
+) => {
+  return `/api/v1/temporal/activities/${activityRef}/sessions/editor`;
+};
+
+/**
+ * @summary Write Activity Session Editor Attempt
+ */
+export const temporalWriteActivitySessionEditorAttempt = async (
+  activityRef: string,
+  sessionEditorCommand: SessionEditorCommand,
+  options?: RequestInit,
+  fetchFn?: typeof globalThis.fetch,
+): Promise<temporalWriteActivitySessionEditorAttemptResponse> => {
+  const getHeaders = (
+    h?: NonNullable<RequestInit['headers']>,
+  ): Record<string, string | readonly string[]> => {
+    if (!h) return {};
+    if (h instanceof Headers) return Object.fromEntries(h.entries());
+    if (Array.isArray(h)) return Object.fromEntries(h);
+    return h;
+  };
+  const res = await (fetchFn ?? fetch)(
+    getTemporalWriteActivitySessionEditorAttemptUrl(activityRef),
+    {
+      ...options,
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        ...getHeaders(options?.headers),
+      },
+      body: JSON.stringify(sessionEditorCommand),
+    },
+  );
+
+  const body = [204, 205, 304].includes(res.status) ? null : await res.text();
+
+  const data: temporalWriteActivitySessionEditorAttemptResponse['data'] = body
+    ? JSON.parse(body)
+    : {};
+  return {
+    data,
+    status: res.status,
+    headers: res.headers,
+  } as temporalWriteActivitySessionEditorAttemptResponse;
 };
 
 export type temporalRecordManualActivitySessionResponse200 = {
