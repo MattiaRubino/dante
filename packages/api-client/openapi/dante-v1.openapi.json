@@ -4733,6 +4733,68 @@
         "title": "CandidateIntervalResponse",
         "type": "object"
       },
+      "ChronologyCandidate": {
+        "additionalProperties": false,
+        "properties": {
+          "end_local_at": {
+            "format": "date-time",
+            "title": "End Local At",
+            "type": "string"
+          },
+          "schedule_ref": {
+            "format": "uuid",
+            "title": "Schedule Ref",
+            "type": "string"
+          },
+          "view_date": {
+            "format": "date",
+            "title": "View Date",
+            "type": "string"
+          }
+        },
+        "required": ["schedule_ref", "end_local_at", "view_date"],
+        "title": "ChronologyCandidate",
+        "type": "object"
+      },
+      "ChronologyCandidatePage": {
+        "additionalProperties": false,
+        "properties": {
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/ChronologyCandidate"
+            },
+            "title": "Items",
+            "type": "array"
+          },
+          "next_end_local_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Next End Local At"
+          },
+          "next_schedule_ref": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Next Schedule Ref"
+          }
+        },
+        "required": ["items", "next_end_local_at", "next_schedule_ref"],
+        "title": "ChronologyCandidatePage",
+        "type": "object"
+      },
       "CoarseLocalPeriodPlacementRequest": {
         "additionalProperties": false,
         "properties": {
@@ -34470,6 +34532,81 @@
           }
         },
         "summary": "Preview Temporal Hard Deletion",
+        "tags": ["temporal"]
+      }
+    },
+    "/api/v1/temporal/home/chronology-candidates": {
+      "get": {
+        "operationId": "temporal_list_home_chronology_candidates",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "before_end_local_at",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "format": "date-time",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Before End Local At"
+            }
+          },
+          {
+            "in": "query",
+            "name": "before_schedule_ref",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "format": "uuid",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Before Schedule Ref"
+            }
+          },
+          {
+            "in": "query",
+            "name": "limit",
+            "required": false,
+            "schema": {
+              "default": 40,
+              "title": "Limit",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ChronologyCandidatePage"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "List Home Chronology Candidates",
         "tags": ["temporal"]
       }
     },

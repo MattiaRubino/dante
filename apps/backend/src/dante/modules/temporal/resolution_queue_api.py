@@ -6,12 +6,12 @@ routes to its owning vertical: B10 Reconciliation or B10 Actual realization.
 
 from __future__ import annotations
 
-from datetime import UTC, datetime
+from datetime import UTC, date, datetime
 from typing import Annotated, Any, Literal
 from uuid import UUID
 from zoneinfo import ZoneInfo
 
-from fastapi import APIRouter, Depends, Request, Response
+from fastapi import APIRouter, Depends, Query, Request, Response
 from pydantic import BaseModel, ConfigDict
 from sqlalchemy import text
 from sqlalchemy.engine import RowMapping
@@ -22,6 +22,7 @@ from dante.context.dependencies import require_dante_context
 from dante.modules.temporal.decomposition_api import ActivityScheduleResponse
 from dante.modules.temporal.session_panel_api import _bounds
 from dante.platform.http.problem import ProblemError
+from dante.platform.time import InvalidTimeZoneError, validate_iana_timezone
 
 router = APIRouter(prefix="/api/v1/temporal", tags=["temporal"])
 Context = Annotated[DanteContext, Depends(require_dante_context)]
@@ -270,6 +271,176 @@ class ObjectiveWorkItem(BaseModel):
     presentation_order: int
     draft_revision: int | None
     draft_updated_at: datetime | None
+
+
+class ChronologyCandidate(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    schedule_ref: UUID
+    end_local_at: datetime
+    view_date: date
+
+
+class ChronologyCandidatePage(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    items: list[ChronologyCandidate]
+    next_end_local_at: datetime | None
+    next_schedule_ref: UUID | None
+
+
+_CHRONOLOGY_CANDIDATES = text("""
+    WITH self_subject AS (
+        SELECT 'activity'::text AS kind, a.activity_ref AS ref
+          FROM dante.activity_intention AS a
+         WHERE a.self_person_ref=:actor AND a.retired_at IS NULL
+           AND NOT dante.is_self_recurring_occurrence_superseded(
+               :actor,dante.get_self_materialized_activity_occurrence(:actor,a.activity_ref)
+           )
+        UNION ALL
+        SELECT 'event', e.event_ref
+          FROM dante.event_expectation AS e
+         WHERE e.self_person_ref=:actor
+        UNION ALL
+        SELECT DISTINCT 'occurrence', o.occurrence_ref
+          FROM dante.schedule AS candidate
+          JOIN dante.schedule_current_placement AS candidate_current
+            ON candidate_current.scoped_owner_ref=candidate.schedule_ref
+         CROSS JOIN LATERAL dante.get_self_occurrence(
+             :actor,candidate.subject_native_ref
+         ) AS o
+     LEFT JOIN dante.list_self_routines(:actor) AS r
+            ON r.routine_ref=o.source_native_ref
+     LEFT JOIN dante.event_expectation AS e
+            ON e.event_ref=o.source_native_ref AND e.self_person_ref=:actor
+         WHERE (r.routine_ref IS NOT NULL OR e.event_ref IS NOT NULL)
+           AND NOT o.skipped
+           AND NOT dante.is_self_recurring_occurrence_superseded(:actor,o.occurrence_ref)
+    ), placed AS (
+        SELECT s.schedule_ref, owner.kind,
+               CASE p.temporal_form_code
+                   WHEN 'date_span' THEN upper(d.date_span)::timestamp
+                   WHEN 'floating_local' THEN f.ends_local_at
+                   WHEN 'named_zone_local' THEN timezone(
+                       CAST(:zone AS text), n.resolved_end_at
+                   )
+                   WHEN 'absolute' THEN timezone(
+                       CAST(:zone AS text), z.ends_at
+                   )
+                   WHEN 'coarse_local_period' THEN c.local_date::timestamp + interval '1 day'
+               END AS end_key
+          FROM self_subject AS owner
+          JOIN dante.schedule AS s ON s.subject_native_ref=owner.ref
+          JOIN dante.schedule_current_placement AS current
+            ON current.scoped_owner_ref=s.schedule_ref
+          JOIN dante.schedule_placement_state AS p
+            ON p.material_state_ref=current.material_state_ref
+           AND p.schedule_ref=s.schedule_ref
+     LEFT JOIN dante.schedule_placement_date_state AS d
+            ON d.material_state_ref=p.material_state_ref
+     LEFT JOIN dante.schedule_placement_floating_local_state AS f
+            ON f.material_state_ref=p.material_state_ref AND f.extent_code='interval'
+     LEFT JOIN dante.schedule_placement_named_zone_state AS n
+            ON n.material_state_ref=p.material_state_ref AND n.extent_code='interval'
+     LEFT JOIN dante.schedule_placement_absolute_state AS z
+            ON z.material_state_ref=p.material_state_ref AND z.extent_code='interval'
+     LEFT JOIN dante.schedule_placement_coarse_local_period_state AS c
+            ON c.material_state_ref=p.material_state_ref
+     LEFT JOIN LATERAL dante.get_self_activity_schedule_roles(
+         :actor, ARRAY[owner.ref]
+     ) AS role ON owner.kind='activity' AND role.schedule_ref=s.schedule_ref
+         WHERE (owner.kind <> 'activity' OR (
+             role.role_code IS DISTINCT FROM 'planned'
+             AND (role.role_code IS DISTINCT FROM 'envelope' OR NOT EXISTS (
+                 SELECT 1 FROM dante.get_self_activity_schedule_roles(
+                     :actor, ARRAY[owner.ref]
+                 ) AS occupied WHERE occupied.role_code='interval'
+             ))
+         ))
+           AND (owner.kind <> 'occurrence' OR s.schedule_ref=(
+               SELECT MIN(candidate.schedule_ref)
+                 FROM dante.schedule AS candidate
+                 JOIN dante.schedule_current_placement AS candidate_current
+                   ON candidate_current.scoped_owner_ref=candidate.schedule_ref
+                WHERE candidate.subject_native_ref=owner.ref
+           ))
+    )
+    SELECT schedule_ref, end_key AS end_local_at,
+           (end_key - interval '1 microsecond')::date AS view_date
+      FROM placed
+     WHERE end_key IS NOT NULL AND end_key <= :now_local
+       AND (CAST(:before_end AS timestamp) IS NULL OR
+            (end_key,schedule_ref) < (CAST(:before_end AS timestamp),CAST(:before_ref AS uuid)))
+     ORDER BY end_key DESC,schedule_ref DESC
+     LIMIT :batch
+""")
+
+
+@router.get(
+    "/home/chronology-candidates",
+    response_model=ChronologyCandidatePage,
+    operation_id="temporal_list_home_chronology_candidates",
+)
+async def list_home_chronology_candidates(
+    request: Request,
+    context: Context,
+    response: Response,
+    before_end_local_at: datetime | None = None,
+    before_schedule_ref: UUID | None = None,
+    limit: int = 40,
+    view_zone_id: Annotated[str | None, Query(include_in_schema=False)] = None,
+) -> ChronologyCandidatePage:
+    response.headers["Cache-Control"] = "no-store"
+    if not 1 <= limit <= 100 or (before_end_local_at is None) != (before_schedule_ref is None) or (
+        before_end_local_at is not None and before_end_local_at.tzinfo is not None
+    ):
+        raise ProblemError(
+            status=422,
+            code="temporal.home.invalid_chronology_cursor",
+            category="validation",
+            title="Invalid chronology cursor",
+            detail="Richiedi una pagina valida dello storico.",
+        )
+    try:
+        if view_zone_id is not None:
+            validate_iana_timezone(view_zone_id)
+        zone_id = view_zone_id or context.effective_zone_id
+    except InvalidTimeZoneError as exc:
+        raise ProblemError(
+            status=400,
+            code="temporal.home.invalid_chronology_zone",
+            category="validation",
+            title="Invalid chronology viewing timezone",
+            detail="Scegli un fuso orario valido.",
+        ) from exc
+    try:
+        async with request.app.state.database_runtime.session_factory() as session, session.begin():
+            rows = (
+                (await session.execute(_CHRONOLOGY_CANDIDATES, {
+                    "actor": context.self_person_ref,
+                    "zone": zone_id,
+                    "now_local": datetime.now(ZoneInfo(zone_id)).replace(tzinfo=None),
+                    "before_end": before_end_local_at,
+                    "before_ref": before_schedule_ref,
+                    "batch": limit + 1,
+                })).mappings().all()
+            )
+    except SQLAlchemyError as exc:
+        raise ProblemError(
+            status=503,
+            code="temporal.home.chronology_unavailable",
+            category="service",
+            title="Chronology unavailable",
+            detail="Cronologia non disponibile.",
+            retryable=True,
+        ) from exc
+    items = [ChronologyCandidate.model_validate(dict(row)) for row in rows[:limit]]
+    last = items[-1] if len(rows) > limit else None
+    return ChronologyCandidatePage(
+        items=items,
+        next_end_local_at=last.end_local_at if last else None,
+        next_schedule_ref=last.schedule_ref if last else None,
+    )
 
 
 @router.get(

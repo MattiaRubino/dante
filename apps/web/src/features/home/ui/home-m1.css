@@ -1318,6 +1318,84 @@
   overflow-y: auto;
   overscroll-behavior: contain;
   padding-right: 4px;
+  scrollbar-gutter: stable;
+}
+
+.home-past-toolbar {
+  display: flex;
+  flex: 0 0 auto;
+  gap: 9px;
+  margin-top: 13px;
+}
+
+.home-past-toolbar input {
+  box-sizing: border-box;
+  width: 100%;
+  min-width: 0;
+  height: 42px;
+  padding: 0 12px;
+  border: 1px solid var(--dante-semantic-color-home-border-subtle, #31424a);
+  border-radius: 8px;
+  color: var(--dante-semantic-color-home-text-primary, #e8eef8);
+  background: var(--dante-temporal-editor-field-surface, #202f37);
+  font-size: 14px;
+  outline: none;
+}
+
+.home-past-toolbar input:focus-visible,
+.home-past-toolbar button:focus-visible {
+  border-color: #84baff;
+  box-shadow: 0 0 0 2px rgba(132, 186, 255, 0.32);
+}
+
+.home-past-toolbar button {
+  display: grid;
+  place-items: center;
+  flex: 0 0 42px;
+  height: 42px;
+  border: 1px solid var(--dante-semantic-color-home-border-subtle, #31424a);
+  border-radius: 8px;
+  color: #e8eef8;
+  background: var(--dante-temporal-editor-field-surface, #202f37);
+  cursor: pointer;
+}
+
+.home-past-toolbar svg,
+.home-past-progress {
+  width: 20px;
+  height: 20px;
+}
+
+.home-past-toolbar svg {
+  stroke-width: 1.8;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.home-past-progress {
+  justify-self: center;
+  border: 2px solid #4a5e76;
+  border-top-color: #ea5c12;
+  border-radius: 50%;
+  animation: home-past-spin 0.9s linear infinite;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .home-past-toolbar button[aria-busy='true'] svg {
+    animation: home-past-spin 0.9s linear infinite;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .home-past-progress {
+    animation: none;
+  }
+}
+
+@keyframes home-past-spin {
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 .home-resolution-empty {
@@ -1384,8 +1462,7 @@
 .home-past-card button:hover {
   background: rgba(255, 255, 255, 0.035);
 }
-.home-past-card button:focus-visible,
-.home-past-more:focus-visible {
+.home-past-card button:focus-visible {
   outline: 2px solid #ea5c12;
   outline-offset: 2px;
 }
@@ -1406,14 +1483,6 @@
   border-top: 1px solid rgba(159, 177, 184, 0.22);
   color: #b3c0d4;
   font-size: 12px;
-}
-.home-past-more {
-  min-height: 36px;
-  border: 1px solid #4a5e76;
-  border-radius: 8px;
-  color: #f3f0ea;
-  background: #172438;
-  cursor: pointer;
 }
 .home-resolution-list article > p {
   margin: 4px 0 0;

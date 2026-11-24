@@ -27,6 +27,7 @@ from dante.modules.temporal.reality_objective_api import (
     create_activity_objective,
 )
 from dante.modules.temporal.resolution_queue_api import (
+    list_home_chronology_candidates,
     list_home_finished_work,
     list_home_objective_work,
     list_resolution_queue,
@@ -40,6 +41,67 @@ from dante.platform.database.runtime import create_database_runtime
 from dante.platform.http.problem import ProblemError
 
 pytestmark = pytest.mark.postgres
+
+
+@pytest.mark.asyncio
+async def test_chronology_cursor_reads_only_past_accepted_self_placements(
+    migrated_database: Any,
+) -> None:
+    actor = _seed_self(migrated_database)
+    other = _seed_self(migrated_database)
+    runtime = create_database_runtime(migrated_database.runtime_settings())
+    request = _fake_request(runtime)
+    now = datetime.now(UTC)
+    authoring = TemporalAuthoringApplication(runtime.session_factory)
+    try:
+        refs = []
+        for index, hours in enumerate((-4, -2, 2)):
+            result = await authoring.create_event(
+                self_person_ref=actor,
+                operation_id=f"chronology:own:{index}",
+                title=f"Evento {index}",
+                placement=AbsoluteIntervalPlacement(
+                    starts_at=now + timedelta(hours=hours - 1),
+                    ends_at=now + timedelta(hours=hours),
+                ),
+            )
+            assert result.schedule is not None
+            refs.append(result.schedule.schedule_ref)
+        outsider = await authoring.create_event(
+            self_person_ref=other,
+            operation_id="chronology:outsider",
+            title="Altro proprietario",
+            placement=AbsoluteIntervalPlacement(
+                starts_at=now - timedelta(hours=3),
+                ends_at=now - timedelta(hours=2),
+            ),
+        )
+        assert outsider.schedule is not None
+        first = await list_home_chronology_candidates(
+            request, _fake_context(actor, "UTC"), Response(), limit=1,
+        )
+        assert [item.schedule_ref for item in first.items] == [refs[1]]
+        assert first.next_end_local_at is not None
+        assert first.next_schedule_ref == refs[1]
+        second = await list_home_chronology_candidates(
+            request, _fake_context(actor, "UTC"), Response(),
+            before_end_local_at=first.next_end_local_at,
+            before_schedule_ref=first.next_schedule_ref, limit=1,
+        )
+        assert [item.schedule_ref for item in second.items] == [refs[0]]
+        assert second.next_schedule_ref is None
+        with pytest.raises(ProblemError):
+            await list_home_chronology_candidates(
+                request, _fake_context(actor, "UTC"), Response(),
+                before_schedule_ref=refs[0],
+            )
+        with pytest.raises(ProblemError):
+            await list_home_chronology_candidates(
+                request, _fake_context(actor, "UTC"), Response(),
+                view_zone_id="not/a-zone",
+            )
+    finally:
+        await runtime.dispose()
 
 
 def _fake_context(actor: object, zone_id: str = "Europe/Rome") -> DanteContext:

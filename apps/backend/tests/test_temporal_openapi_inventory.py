@@ -9,7 +9,7 @@ from dante.bootstrap.openapi_export import openapi_document
 _PUBLISHED_OPENAPI = (
     Path(__file__).resolve().parents[3] / "packages/api-client/openapi/dante-v1.openapi.json"
 )
-_CURRENT_ACCEPTED_TEMPORAL_OPERATION_COUNT = 203
+_CURRENT_ACCEPTED_TEMPORAL_OPERATION_COUNT = 207
 
 _HTTP_METHODS = frozenset({"get", "post", "put", "patch", "delete", "options", "head", "trace"})
 
@@ -409,6 +409,10 @@ _EXPECTED_TEMPORAL_OPERATIONS = {
     ("/api/v1/temporal/authoring/activities", "post"): "temporal_author_activity",
     ("/api/v1/temporal/authoring/events", "post"): "temporal_author_event",
     ("/api/v1/temporal/resolution-queue", "get"): "temporal_list_resolution_queue",
+    (
+        "/api/v1/temporal/home/chronology-candidates",
+        "get",
+    ): "temporal_list_home_chronology_candidates",
     (
         "/api/v1/temporal/activities/{activity_ref}/execution-policy",
         "get",

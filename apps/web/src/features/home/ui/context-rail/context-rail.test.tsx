@@ -425,6 +425,24 @@ it('switches three views and only opens one selected Objective owner', async () 
           : input instanceof URL
             ? input.href
             : input.url;
+      if (uri.includes('/home/chronology-candidates')) {
+        const date = new Date(Date.now() - 2 * 86_400_000)
+          .toISOString()
+          .slice(0, 10);
+        return Promise.resolve(
+          Response.json({
+            items: [
+              {
+                schedule_ref: '019a45a2-7180-7000-8000-000000000033',
+                end_local_at: `${date}T17:00:00`,
+                view_date: date,
+              },
+            ],
+            next_end_local_at: null,
+            next_schedule_ref: null,
+          }),
+        );
+      }
       if (uri.includes('/timeline/window')) {
         const params = new URL(uri, 'http://localhost').searchParams;
         const date = new Date(Date.now() - 2 * 86_400_000)
@@ -497,6 +515,24 @@ it('removes a past card when its accepted placement moves into the future', asyn
           : input instanceof URL
             ? input.href
             : input.url;
+      if (uri.includes('/home/chronology-candidates')) {
+        const placed = date(-2);
+        return Promise.resolve(
+          Response.json({
+            items: moved
+              ? []
+              : [
+                  {
+                    schedule_ref: '019a45a2-7180-7000-8000-000000000052',
+                    end_local_at: `${placed}T17:00:00`,
+                    view_date: placed,
+                  },
+                ],
+            next_end_local_at: null,
+            next_schedule_ref: null,
+          }),
+        );
+      }
       if (uri.includes('/timeline/window')) {
         const params = new URL(uri, 'http://localhost').searchParams;
         const placed = moved ? date(2) : date(-2);
@@ -541,4 +577,117 @@ it('removes a past card when its accepted placement moves into the future', asyn
       screen.queryByRole('button', { name: 'Apri Evento Concerto' }),
     ).toBeNull(),
   );
+});
+
+it('searches past placed cards across cursor pages and refreshes the fixed list', async () => {
+  const day = new Date(Date.now() - 2 * 86_400_000).toISOString().slice(0, 10);
+  const first = '019a45a2-7180-7000-8000-000000000061';
+  const older = '019a45a2-7180-7000-8000-000000000062';
+  let removed = false;
+  const requests: string[] = [];
+  vi.stubGlobal(
+    'fetch',
+    vi.fn((input: RequestInfo | URL) => {
+      const uri =
+        typeof input === 'string'
+          ? input
+          : input instanceof URL
+            ? input.href
+            : input.url;
+      requests.push(uri);
+      if (uri.includes('/home/chronology-candidates')) {
+        const cursor = new URL(uri, 'http://localhost').searchParams.get(
+          'before_schedule_ref',
+        );
+        const items = removed
+          ? []
+          : [
+              {
+                schedule_ref: cursor ? older : first,
+                end_local_at: `${day}T${cursor ? '10' : '17'}:00:00`,
+                view_date: day,
+              },
+            ];
+        return Promise.resolve(
+          Response.json({
+            items,
+            next_end_local_at: !removed && !cursor ? `${day}T17:00:00` : null,
+            next_schedule_ref: !removed && !cursor ? first : null,
+          }),
+        );
+      }
+      if (uri.includes('/timeline/window')) {
+        const params = new URL(uri, 'http://localhost').searchParams;
+        return Promise.resolve(
+          Response.json({
+            kind: 'window',
+            start_date: params.get('start_date'),
+            end_date_exclusive: params.get('end_date_exclusive'),
+            effective_zone_id: 'Europe/Rome',
+            items: [
+              {
+                kind: 'scheduled_event',
+                event_ref: first,
+                schedule_ref: first,
+                placement_material_state_ref: first,
+                title: 'Incontro',
+                temporal_form: 'floating_local',
+                starts_local_at: `${day}T16:00:00`,
+                ends_local_at: `${day}T17:00:00`,
+              },
+              {
+                kind: 'scheduled_event',
+                event_ref: older,
+                schedule_ref: older,
+                placement_material_state_ref: older,
+                title: 'Concerto speciale',
+                temporal_form: 'floating_local',
+                starts_local_at: `${day}T09:00:00`,
+                ends_local_at: `${day}T10:00:00`,
+              },
+            ],
+          }),
+        );
+      }
+      return Promise.resolve(
+        Response.json(
+          uri.includes('/resolution-queue') ? { items: [], count: 0 } : [],
+        ),
+      );
+    }),
+  );
+  render(<ContextRail />);
+  fireEvent.click(screen.getByRole('tab', { name: 'Cronologia' }));
+  fireEvent.change(
+    screen.getByRole('searchbox', { name: 'Cerca nella Cronologia' }),
+    {
+      target: { value: 'speciale' },
+    },
+  );
+  expect(
+    await screen.findByRole('button', {
+      name: 'Apri Evento Concerto speciale',
+    }),
+  ).toBeTruthy();
+  await waitFor(() =>
+    expect(
+      screen.queryByRole('button', { name: 'Apri Evento Incontro' }),
+    ).toBeNull(),
+  );
+  expect(
+    requests.some((uri) => uri.includes(`before_schedule_ref=${first}`)),
+  ).toBe(true);
+  expect(
+    screen.queryByRole('button', { name: 'Mostra precedenti' }),
+  ).toBeNull();
+  removed = true;
+  fireEvent.click(screen.getByRole('button', { name: 'Aggiorna Cronologia' }));
+  await waitFor(() =>
+    expect(
+      screen.queryByRole('button', { name: 'Apri Evento Concerto speciale' }),
+    ).toBeNull(),
+  );
+  expect(
+    screen.getByRole('searchbox', { name: 'Cerca nella Cronologia' }),
+  ).toBeTruthy();
 });

@@ -1,5 +1,6 @@
 import { Temporal, detectDeviceTimeZone } from '@dante/time';
 
+import { createWebFetch } from '../../../../platform/api/web-fetch';
 import { createRemoteTemporalTimelineDataSource } from '../../../temporal/remote-timeline-read';
 import type { TemporalTimelineScheduledItem } from '../../../temporal/timeline-read';
 
@@ -11,6 +12,113 @@ export type PastWorkItem = Readonly<{
   endedAt: string;
   label: string;
 }>;
+
+export type PastWorkCursor = Readonly<{
+  endLocalAt: string;
+  scheduleRef: string;
+}>;
+
+export type PastWorkPage = Readonly<{
+  items: readonly PastWorkItem[];
+  next: PastWorkCursor | null;
+}>;
+
+type Candidate = Readonly<{
+  schedule_ref: string;
+  end_local_at: string;
+  view_date: string;
+}>;
+
+/** The server selects accepted placements before the browser reads their canonical cards. */
+export async function loadPastWorkCursorPage(
+  cursor: PastWorkCursor | null,
+  signal?: AbortSignal,
+): Promise<PastWorkPage> {
+  const params = new URLSearchParams({
+    limit: '40',
+    view_zone_id: detectDeviceTimeZone(),
+  });
+  if (cursor) {
+    params.set('before_end_local_at', cursor.endLocalAt);
+    params.set('before_schedule_ref', cursor.scheduleRef);
+  }
+  const response = await createWebFetch(globalThis.fetch)(
+    `/api/v1/temporal/home/chronology-candidates?${params}`,
+    signal ? { signal } : undefined,
+  );
+  if (!response.ok) throw new Error(`Cronologia: HTTP ${response.status}`);
+  const body: unknown = await response.json();
+  if (!body || typeof body !== 'object' || !('items' in body))
+    throw new Error('Risposta Cronologia non valida.');
+  const page = body as {
+    items: unknown;
+    next_end_local_at?: unknown;
+    next_schedule_ref?: unknown;
+  };
+  if (!Array.isArray(page.items) || page.items.length > 40)
+    throw new Error('Risposta Cronologia non valida.');
+  const candidates: Candidate[] = page.items.map((raw: unknown) => {
+    if (!raw || typeof raw !== 'object')
+      throw new Error('Elemento Cronologia non valido.');
+    const item = raw as Partial<Candidate>;
+    if (
+      typeof item.schedule_ref !== 'string' ||
+      typeof item.end_local_at !== 'string' ||
+      typeof item.view_date !== 'string'
+    )
+      throw new Error('Elemento Cronologia non valido.');
+    Temporal.PlainDate.from(item.view_date);
+    return item as Candidate;
+  });
+  const next =
+    page.next_end_local_at === null && page.next_schedule_ref === null
+      ? null
+      : typeof page.next_end_local_at === 'string' &&
+          typeof page.next_schedule_ref === 'string'
+        ? {
+            endLocalAt: page.next_end_local_at,
+            scheduleRef: page.next_schedule_ref,
+          }
+        : (() => {
+            throw new Error('Cursore Cronologia non valido.');
+          })();
+  const groups = new Map<string, Set<string>>();
+  for (const candidate of candidates) {
+    const date = Temporal.PlainDate.from(candidate.view_date);
+    const existing = [...groups.keys()].find((endKey) => {
+      const end = Temporal.PlainDate.from(endKey);
+      return (
+        Temporal.PlainDate.compare(date, end) < 0 &&
+        Temporal.PlainDate.compare(
+          date,
+          end.subtract({ days: PAST_WORK_PAGE_DAYS }),
+        ) >= 0
+      );
+    });
+    const endKey = existing ?? date.add({ days: 1 }).toString();
+    groups.set(
+      endKey,
+      new Set([...(groups.get(endKey) ?? []), candidate.schedule_ref]),
+    );
+  }
+  const pages = await Promise.all(
+    [...groups].map(async ([endKey, refs]) =>
+      (await loadPastWorkPage(endKey, signal)).filter(({ item }) =>
+        refs.has(item.scheduleRef),
+      ),
+    ),
+  );
+  const found = new Map(
+    pages.flat().map((entry) => [entry.item.scheduleRef, entry]),
+  );
+  return {
+    items: candidates.flatMap((candidate) => {
+      const item = found.get(candidate.schedule_ref);
+      return item ? [item] : [];
+    }),
+    next,
+  };
+}
 
 /** A page is a bounded read of the same accepted placements as the Timeline. */
 export async function loadPastWorkPage(

@@ -7,7 +7,6 @@ import {
   type CSSProperties,
 } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Temporal, detectDeviceTimeZone } from '@dante/time';
 
 import { formatDateWithCapitalizedMonth } from '../../../../platform/format-localized-date';
 
@@ -27,9 +26,9 @@ import {
   type PendingObjectiveWork,
 } from './context-rail-work-data-source';
 import {
-  loadPastWorkPage,
+  loadPastWorkCursorPage,
   openPastWork,
-  PAST_WORK_PAGE_DAYS,
+  type PastWorkCursor,
   type PastWorkItem,
 } from './past-work';
 import {
@@ -57,15 +56,32 @@ export function ContextRail() {
   const tabs = ['finished', 'review', 'objectives'] as const;
   const touchStart = useRef<{ x: number; y: number } | null>(null);
   const [past, setPast] = useState<readonly PastWorkItem[] | null>(null);
-  const [pastPages, setPastPages] = useState(1);
+  const [pastInput, setPastInput] = useState('');
+  const [pastQuery, setPastQuery] = useState('');
+  const [pastLoadMore, setPastLoadMore] = useState(0);
+  const [pastHasMore, setPastHasMore] = useState(true);
   const [pastRevision, setPastRevision] = useState(0);
   const [pastError, setPastError] = useState<string | null>(null);
   const [pastLoading, setPastLoading] = useState(false);
-  const [pastEnd, setPastEnd] = useState(() =>
-    Temporal.Now.plainDateISO(detectDeviceTimeZone())
-      .add({ days: 1 })
-      .toString(),
+  const visiblePast = useMemo(
+    () =>
+      past?.filter(({ item }) =>
+        item.title.toLocaleLowerCase('it-IT').includes(pastQuery),
+      ),
+    [past, pastQuery],
   );
+  const pastCursorRef = useRef<PastWorkCursor | null>(null);
+  const pastLoadedRef = useRef<readonly PastWorkItem[]>([]);
+  const pastKeyRef = useRef('');
+  const pastPagingRef = useRef(false);
+  const pastExhaustedRef = useRef(false);
+  const pastListRef = useRef<HTMLDivElement>(null);
+  const pastTailRef = useRef<HTMLDivElement>(null);
+  const requestPastPage = useCallback(() => {
+    if (pastPagingRef.current || pastExhaustedRef.current) return;
+    pastPagingRef.current = true;
+    setPastLoadMore((value) => value + 1);
+  }, []);
   const organization = useTimelineOrganization(true);
   const areas = useMemo(
     () =>
@@ -162,32 +178,72 @@ export function ContextRail() {
   );
 
   useEffect(() => {
+    const timeout = window.setTimeout(
+      () => setPastQuery(pastInput.trim().toLocaleLowerCase('it-IT')),
+      180,
+    );
+    return () => window.clearTimeout(timeout);
+  }, [pastInput]);
+
+  useEffect(() => {
     if (tab !== 'finished') return;
     const controller = new AbortController();
-    const end = Temporal.PlainDate.from(pastEnd);
+    const key = `${pastRevision}:${pastQuery}`;
+    const changed = pastKeyRef.current !== key;
+    const oldQuery = pastKeyRef.current.split(':').slice(1).join(':');
+    const previousMatches = pastLoadedRef.current.filter(({ item }) =>
+      item.title.toLocaleLowerCase('it-IT').includes(pastQuery),
+    ).length;
+    const target = changed
+      ? oldQuery === pastQuery
+        ? Math.max(pastQuery ? 12 : 40, previousMatches)
+        : pastQuery
+          ? 12
+          : 40
+      : previousMatches + (pastQuery ? 12 : 40);
+    if (changed) {
+      pastPagingRef.current = false;
+      pastExhaustedRef.current = false;
+      pastKeyRef.current = key;
+      pastCursorRef.current = null;
+      pastLoadedRef.current = [];
+      setPastHasMore(true);
+      if (oldQuery !== pastQuery) setPast([]);
+    }
     setPastLoading(true);
-    void Promise.all(
-      Array.from({ length: pastPages }, (_, index) =>
-        loadPastWorkPage(
-          end.subtract({ days: index * PAST_WORK_PAGE_DAYS }).toString(),
-          controller.signal,
-        ),
-      ),
-    )
-      .then((pages) => {
+    void (async () => {
+      let cursor = pastCursorRef.current;
+      let loaded = [...pastLoadedRef.current];
+      // A query keeps advancing the owner-scoped cursor until there are
+      // matches to display. Empty matches never mean "no older history".
+      do {
+        const page = await loadPastWorkCursorPage(cursor, controller.signal);
         if (controller.signal.aborted) return;
         const unique = new Map(
-          pages.flat().map((entry) => [entry.item.scheduleRef, entry]),
+          [...loaded, ...page.items].map((entry) => [
+            entry.item.scheduleRef,
+            entry,
+          ]),
         );
-        setPast(
-          [...unique.values()].sort(
-            (a, b) =>
-              b.endedAt.localeCompare(a.endedAt) ||
-              a.item.scheduleRef.localeCompare(b.item.scheduleRef),
-          ),
+        loaded = [...unique.values()].sort(
+          (a, b) =>
+            b.endedAt.localeCompare(a.endedAt) ||
+            b.item.scheduleRef.localeCompare(a.item.scheduleRef),
         );
+        cursor = page.next;
+        pastCursorRef.current = cursor;
+        pastExhaustedRef.current = cursor === null;
+        pastLoadedRef.current = loaded;
+        setPast(loaded);
+        setPastHasMore(cursor !== null);
         setPastError(null);
-      })
+      } while (
+        cursor &&
+        loaded.filter(({ item }) =>
+          item.title.toLocaleLowerCase('it-IT').includes(pastQuery),
+        ).length < target
+      );
+    })()
       .catch((reason: unknown) => {
         if (controller.signal.aborted) return;
         setPastError(
@@ -197,21 +253,41 @@ export function ContextRail() {
         );
       })
       .finally(() => {
-        if (!controller.signal.aborted) setPastLoading(false);
+        if (!controller.signal.aborted) {
+          setPastLoading(false);
+          pastPagingRef.current = false;
+        }
       });
     return () => controller.abort();
-  }, [pastEnd, pastPages, pastRevision, tab]);
+  }, [pastLoadMore, pastQuery, pastRevision, tab]);
+
+  useEffect(() => {
+    const root = pastListRef.current;
+    const tail = pastTailRef.current;
+    if (
+      tab !== 'finished' ||
+      !root ||
+      !tail ||
+      !pastHasMore ||
+      pastLoading ||
+      typeof IntersectionObserver === 'undefined'
+    )
+      return;
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry?.isIntersecting && !pastError) requestPastPage();
+      },
+      { root, rootMargin: '180px' },
+    );
+    observer.observe(tail);
+    return () => observer.disconnect();
+  }, [tab, pastHasMore, pastLoading, past, pastError, requestPastPage]);
 
   useEffect(() => {
     const onVisible = () => {
       if (document.visibilityState === 'visible') {
         refresh();
         refreshWork();
-        setPastEnd(
-          Temporal.Now.plainDateISO(detectDeviceTimeZone())
-            .add({ days: 1 })
-            .toString(),
-        );
         setPastRevision((value) => value + 1);
       }
     };
@@ -296,11 +372,46 @@ export function ContextRail() {
             </button>
           ))}
         </div>
+        {tab === 'finished' && (
+          <div className="home-past-toolbar">
+            <input
+              type="search"
+              aria-label="Cerca nella Cronologia"
+              placeholder="Cerca nella Cronologia…"
+              value={pastInput}
+              onChange={(event) => setPastInput(event.target.value)}
+            />
+            <button
+              type="button"
+              aria-label="Aggiorna Cronologia"
+              title="Aggiorna Cronologia"
+              aria-busy={pastLoading}
+              onClick={() => setPastRevision((value) => value + 1)}
+            >
+              <svg
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                aria-hidden="true"
+              >
+                <path d="M20 11a8 8 0 1 1-2.3-5.7M20 4v5h-5" />
+              </svg>
+            </button>
+          </div>
+        )}
         <div
           className="home-resolution-list"
+          ref={pastListRef}
           id="home-work-tabpanel"
           role="tabpanel"
           aria-labelledby={`home-work-tab-${tab}`}
+          onScroll={(event) => {
+            if (tab !== 'finished' || pastLoading || !pastHasMore || pastError)
+              return;
+            const node = event.currentTarget;
+            if (node.scrollHeight - node.scrollTop - node.clientHeight < 180)
+              requestPastPage();
+          }}
           onTouchStart={(event) => {
             const touch = event.touches[0];
             if (touch)
@@ -471,13 +582,12 @@ export function ContextRail() {
                   </button>
                 </p>
               )}
-              {past === null && pastLoading && <p>Caricamento…</p>}
-              {past?.length === 0 && !pastLoading && (
+              {visiblePast?.length === 0 && !pastLoading && !pastHasMore && (
                 <p className="home-resolution-empty">
-                  Nessun elemento passato in questo periodo.
+                  Nessun elemento trovato.
                 </p>
               )}
-              {past?.map(({ item, label }) => {
+              {visiblePast?.map(({ item, label }) => {
                 const kind =
                   item.kind === 'scheduled_event' ||
                   (item.kind === 'scheduled_occurrence' &&
@@ -515,14 +625,18 @@ export function ContextRail() {
                   </article>
                 );
               })}
-              <button
-                className="home-past-more"
-                type="button"
-                disabled={pastLoading}
-                onClick={() => setPastPages((value) => value + 1)}
-              >
-                {pastLoading ? 'Caricamento…' : 'Mostra precedenti'}
-              </button>
+              <div
+                ref={pastTailRef}
+                className="home-past-tail"
+                aria-hidden="true"
+              />
+              {pastLoading && (
+                <span
+                  className="home-past-progress"
+                  role="status"
+                  aria-label="Aggiornamento Cronologia in corso"
+                />
+              )}
             </>
           ) : (
             <>

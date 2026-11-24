@@ -46,6 +46,7 @@ import type {
   AuthorEventRequest,
   AuthoredActivityResponse,
   AuthoredEventResponse,
+  ChronologyCandidatePage,
   ConditionalEvaluationRequest,
   ConditionalEvaluationResponse,
   ConfirmationCommand,
@@ -269,6 +270,7 @@ import type {
   TemporalHardDeletePreview,
   TemporalHardDeleteResult,
   TemporalListConstraintsBySubjectParams,
+  TemporalListHomeChronologyCandidatesParams,
   TemporalListHomeFinishedWorkParams,
   TemporalListHomeObjectiveWorkParams,
   TemporalPreviewHardDeletionParams,
@@ -10023,6 +10025,75 @@ export const temporalPreviewHardDeletion = async (
     status: res.status,
     headers: res.headers,
   } as temporalPreviewHardDeletionResponse;
+};
+
+export type temporalListHomeChronologyCandidatesResponse200 = {
+  data: ChronologyCandidatePage;
+  status: 200;
+};
+
+export type temporalListHomeChronologyCandidatesResponse422 = {
+  data: HTTPValidationError;
+  status: 422;
+};
+
+export type temporalListHomeChronologyCandidatesResponseSuccess =
+  temporalListHomeChronologyCandidatesResponse200 & {
+    headers: Headers;
+  };
+export type temporalListHomeChronologyCandidatesResponseError =
+  temporalListHomeChronologyCandidatesResponse422 & {
+    headers: Headers;
+  };
+
+export type temporalListHomeChronologyCandidatesResponse =
+  | temporalListHomeChronologyCandidatesResponseSuccess
+  | temporalListHomeChronologyCandidatesResponseError;
+
+export const getTemporalListHomeChronologyCandidatesUrl = (
+  params?: TemporalListHomeChronologyCandidatesParams,
+) => {
+  const normalizedParams = new URLSearchParams();
+
+  Object.entries(params || {}).forEach(([key, value]) => {
+    if (value !== undefined) {
+      normalizedParams.append(key, value === null ? 'null' : String(value));
+    }
+  });
+
+  const stringifiedParams = normalizedParams.toString();
+
+  return stringifiedParams.length > 0
+    ? `/api/v1/temporal/home/chronology-candidates?${stringifiedParams}`
+    : `/api/v1/temporal/home/chronology-candidates`;
+};
+
+/**
+ * @summary List Home Chronology Candidates
+ */
+export const temporalListHomeChronologyCandidates = async (
+  params?: TemporalListHomeChronologyCandidatesParams,
+  options?: RequestInit,
+  fetchFn?: typeof globalThis.fetch,
+): Promise<temporalListHomeChronologyCandidatesResponse> => {
+  const res = await (fetchFn ?? fetch)(
+    getTemporalListHomeChronologyCandidatesUrl(params),
+    {
+      ...options,
+      method: 'GET',
+    },
+  );
+
+  const body = [204, 205, 304].includes(res.status) ? null : await res.text();
+
+  const data: temporalListHomeChronologyCandidatesResponse['data'] = body
+    ? JSON.parse(body)
+    : {};
+  return {
+    data,
+    status: res.status,
+    headers: res.headers,
+  } as temporalListHomeChronologyCandidatesResponse;
 };
 
 export type temporalListHomeFinishedWorkResponse200 = {

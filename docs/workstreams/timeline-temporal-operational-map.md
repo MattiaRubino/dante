@@ -1,21 +1,25 @@
 # Timeline / Temporal-Operational — Live Execution Ledger
 
-## 2026-11-24 — Cronologia: color fidelity; historical search decision open
+## 2026-11-24 — Cronologia: color fidelity and historical search
 
 The chronology cards and Timeline now use the same item color resolver,
 including an Event instance that explicitly removes its source Life Area.
 An item with no accepted individual/Area color stays neutral rather than
 inventing the orange accent. The existing Inspector path is unchanged.
 
-The requested fixed search, refresh and infinite historical scroll require
-a complete owner-scoped historical read and a cursor. The current Timeline
-read is bounded to 62 days. In particular, a virtual expected Occurrence has
-no accepted Schedule for the same Inspector until an idempotent checkpoint
-materializes it; that checkpoint is a durable write. This product choice is
-awaiting owner decision before a search or refresh silently mutates history.
-No partial loaded-only search or unbounded automatic checkpoint is published.
-Focused color/component tests and typecheck are candidate checks; real-stack
-acceptance and whole gate remain NOT_RUN.
+Owner chose only cards with an existing accepted Schedule: a virtual expected
+Occurrence is not materialized by searching or refreshing. The new read-only,
+owner-scoped cursor orders accepted past placements by end time and Schedule
+reference, excluding retired/superseded/skipped owners and Activity planned
+rows hidden by the canonical Timeline. Each bounded batch resolves the same
+Timeline cards and opens the unchanged Inspector. Searching a title advances
+through historical batches until a matching card is found or the cursor ends;
+the field and refresh icon stay above the independently scrolling card list.
+Refresh and Timeline invalidation rebuild the list, including after a move,
+removal or deletion. The viewing timezone follows the same explicit device
+projection as the Timeline window. Component and PostgreSQL cursor/owner
+regressions cover the change. Real-stack acceptance and whole gate remain
+pending owner WSL execution; no performance claim is based on fixture tests.
 
 ## 2026-11-24 — Default Scaletta names and bounded add controls
 
