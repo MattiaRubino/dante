@@ -5902,7 +5902,7 @@
       "purpose": "Cross the real Create, Inspector, editor, API and PostgreSQL boundaries; persist and correct one completed attempt with a pause.",
       "invariant": "A recorded Session has one factual identity, a concluded interval and no second Registra action after reload.",
       "status": "QUALIFIED",
-      "audit_note": "Trace on a90a1de confirms POST 201 and canonical GET 200; test itself hung reading the successful response body for an assertion message. Full browser rerun pending after removing that read."
+      "audit_note": "Owner-local authenticated Chromium E2E passed 1/1 in 22.0 s on 9eefa40; verifies recording, correction with pause and unchanged Session identity. Manual visual review and whole gate remain separate."
     },
     {
       "path": "apps/web/e2e/auth/draft-vault-real-lifecycle.spec.ts",

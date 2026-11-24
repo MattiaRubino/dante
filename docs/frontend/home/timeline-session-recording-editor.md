@@ -35,5 +35,6 @@ componente; non è incluso nel candidate di questa prima implementazione.
 
 Il test browser autenticato `temporal-session-recording-editor.spec.ts`
 copre Create → Inspector → Registra → Correggi e rilegge la Sessione dal
-backend dopo entrambi i salvataggi. Va eseguito sullo stack reale con
-PostgreSQL migrato; non è stato eseguito in questo ambiente.
+backend dopo entrambi i salvataggi. L'owner lo ha eseguito sullo stack reale
+con PostgreSQL migrato: **1 passato in 22,0 s** sul commit `9eefa40`.
+La revisione visiva manuale e il gate completo restano separati.

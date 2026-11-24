@@ -21,8 +21,11 @@ I test mirati di modello/OpenAPI passano. L'owner ha eseguito il test PostgreSQL
 su `a90a1de`: **1 passato**. La trace Chromium dello stesso SHA conferma POST
 **201** e rilettura GET **200** della nuova registrazione; il test si bloccava
 prima di verificare la correzione perché valutava `response.text()` dentro
-l'asserzione anche con status corretto. La lettura superflua è stata eliminata;
-il flusso browser completo resta da rieseguire.
+l'asserzione anche con status corretto. La lettura superflua è stata eliminata.
+Sul commit `9eefa40` l'owner ha rieseguito l'E2E autenticato Chromium:
+**1 passato in 22,0 s**, inclusi Registra, Correggi, pausa, identità invariata
+e rilettura canonica. Restano fuori da questi risultati la revisione visiva
+manuale e il gate completo della branch.
 
 La descrizione corrente delle icone della testata, della Cattura rapida e delle
 tre viste del pannello destro è in
