@@ -358,11 +358,13 @@ _CHRONOLOGY_CANDIDATES = text("""
              ))
          ))
            AND (owner.kind <> 'occurrence' OR s.schedule_ref=(
-               SELECT MIN(candidate.schedule_ref)
+               SELECT candidate.schedule_ref
                  FROM dante.schedule AS candidate
                  JOIN dante.schedule_current_placement AS candidate_current
                    ON candidate_current.scoped_owner_ref=candidate.schedule_ref
                 WHERE candidate.subject_native_ref=owner.ref
+                ORDER BY candidate.schedule_ref
+                LIMIT 1
            ))
     )
     SELECT schedule_ref, end_key AS end_local_at,
