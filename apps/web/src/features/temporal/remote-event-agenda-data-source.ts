@@ -10,6 +10,7 @@ import type {
   TemporalEventAgendaReplaceResult,
   TemporalEventDetailRecord,
 } from './event-data-source';
+import { namedEventAgendaParts } from './event-agenda-defaults';
 
 const SESSION_ENDPOINT = '/api/v1/auth/session';
 const EVENT_ENDPOINT = '/api/v1/temporal/events';
@@ -79,17 +80,11 @@ function normalizeAgendaParts(value: readonly string[]): readonly string[] {
   if (value.length > 100) {
     throw new RangeError('Event Agenda may contain at most 100 parts.');
   }
-  return Object.freeze(
-    value.map((part) => {
-      const normalized = part.trim();
-      if (!normalized || normalized.length > 1000) {
-        throw new RangeError(
-          'Event Agenda parts must contain 1 to 1000 non-padding characters.',
-        );
-      }
-      return normalized;
-    }),
-  );
+  const named = namedEventAgendaParts(value);
+  if (named.some((part) => part.length > 1000)) {
+    throw new RangeError('Event Agenda parts must be at most 1000 characters.');
+  }
+  return Object.freeze(named);
 }
 
 function requireExactKeys(

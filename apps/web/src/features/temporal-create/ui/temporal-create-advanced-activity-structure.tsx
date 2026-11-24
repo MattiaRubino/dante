@@ -126,6 +126,7 @@ export function TemporalCreateAdvancedActivityStructure({
     patch({ activityStructure: Object.freeze({ ...structure, ...changes }) });
 
   const addRootSession = () => {
+    if (structure.plannedSlices.length >= 100) return;
     patchStructure({
       plannedSlices: [...structure.plannedSlices, plannedSlice(fields)],
     });
@@ -236,21 +237,23 @@ export function TemporalCreateAdvancedActivityStructure({
         </div>
       ) : null}
 
-      <div
-        className="temporal-create-activity-tree__root-actions"
-        aria-label={
-          italian ? 'Aggiungi Sessione pianificata' : 'Add planned Session'
-        }
-      >
-        <button
-          className="temporal-create-tree-add"
-          type="button"
-          onClick={addRootSession}
+      {structure.plannedSlices.length < 100 ? (
+        <div
+          className="temporal-create-activity-tree__root-actions"
+          aria-label={
+            italian ? 'Aggiungi Sessione pianificata' : 'Add planned Session'
+          }
         >
-          <span aria-hidden="true">＋</span>
-          {italian ? 'Sessione' : 'Session'}
-        </button>
-      </div>
+          <button
+            className="temporal-create-tree-add"
+            type="button"
+            onClick={addRootSession}
+          >
+            <span aria-hidden="true">＋</span>
+            {italian ? 'Sessione' : 'Session'}
+          </button>
+        </div>
+      ) : null}
     </section>
   );
 }

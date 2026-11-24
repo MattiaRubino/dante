@@ -381,7 +381,12 @@ describe('U2 Quick Create submit mapping', () => {
     if (mapped.kind !== 'event') throw new Error('Expected Event request.');
     expect(mapped.request.location).toBe('Sala A');
     expect(mapped.request.description).toBe('Decisioni di progetto');
-    expect(mapped.request.agendaParts).toEqual(['Revisione', 'Decisioni']);
+    expect(mapped.request.agendaParts).toEqual([
+      'Revisione',
+      'Scaletta 2',
+      'Decisioni',
+      'Scaletta 4',
+    ]);
   });
 
   it('keeps all-day multi-day Events on canonical U2 after Start date changes', () => {

@@ -1,5 +1,6 @@
 import { createWebFetch } from '../../platform/api/web-fetch';
 import { createRemoteTemporalEventAgendaDataSource } from './remote-event-agenda-data-source';
+import { namedEventAgendaParts } from './event-agenda-defaults';
 import type { TemporalEventDetailRecord } from './event-data-source';
 import {
   serializeActivityObjectiveEdits,
@@ -104,10 +105,11 @@ export function createRemoteEventProfileDataSource(
       ) {
         throw new Error('Revisione della Scaletta non disponibile.');
       }
-      if (
-        changes.agendaParts?.some((part) => !part.trim() || part.length > 1000)
-      ) {
-        throw new Error('Completa ogni punto della Scaletta.');
+      const agendaParts = changes.agendaParts
+        ? namedEventAgendaParts(changes.agendaParts)
+        : undefined;
+      if (agendaParts?.some((part) => part.length > 1000)) {
+        throw new Error('Un punto della Scaletta supera la lunghezza massima.');
       }
       const title = profile?.title.trim();
       const description = profile?.description?.trim() || null;
@@ -153,12 +155,12 @@ export function createRemoteEventProfileDataSource(
                   },
                 }
               : {}),
-            ...(changes.agendaParts
+            ...(agendaParts
               ? {
                   agenda: {
                     operation_id: `${operationId}:agenda`,
                     expected_revision: current.agendaRevision,
-                    agenda_parts: changes.agendaParts,
+                    agenda_parts: agendaParts,
                   },
                 }
               : {}),

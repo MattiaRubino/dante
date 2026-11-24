@@ -223,11 +223,10 @@ function TimelineEventAgendaEditorInstance({
     setEditingValue('');
   };
   const add = async () => {
-    const value = draft.trim();
-    if (!value || busy) {
+    if (busy || parts.length >= 100) {
       return;
     }
-    const accepted = await replace([...parts, value]);
+    const accepted = await replace([...parts, draft]);
     if (accepted) {
       setDraft('');
     }
@@ -245,7 +244,7 @@ function TimelineEventAgendaEditorInstance({
             {t(($) => $.common.home.timeline.create.eventDetails.agenda)}
           </strong>
         </div>
-        {!readOnly ? (
+        {!readOnly && parts.length < 100 ? (
           <p>
             {t(
               ($) =>
@@ -281,7 +280,7 @@ function TimelineEventAgendaEditorInstance({
               const editing = editingIndex === index;
               const normalizedEditingValue = editingValue.trim();
               const saveEditedPart = () => {
-                if (!editing || busy || !normalizedEditingValue) {
+                if (!editing || busy) {
                   return;
                 }
                 if (normalizedEditingValue === part) {
@@ -357,7 +356,6 @@ function TimelineEventAgendaEditorInstance({
                             type="button"
                             disabled={
                               busy ||
-                              normalizedEditingValue.length === 0 ||
                               normalizedEditingValue === part
                             }
                             onClick={saveEditedPart}
@@ -454,12 +452,12 @@ function TimelineEventAgendaEditorInstance({
           </ol>
         )}
 
-        {!readOnly ? (
+        {!readOnly && parts.length < 100 ? (
           <div className="timeline-event-agenda__add">
             <input
               value={draft}
               maxLength={1000}
-              disabled={busy || parts.length >= 100}
+              disabled={busy}
               aria-label={t(
                 ($) => $.common.home.timeline.create.eventDetails.agendaNewItem,
               )}
@@ -476,13 +474,7 @@ function TimelineEventAgendaEditorInstance({
                 }
               }}
             />
-            <button
-              type="button"
-              disabled={
-                busy || parts.length >= 100 || draft.trim().length === 0
-              }
-              onClick={() => void add()}
-            >
+            <button type="button" disabled={busy} onClick={() => void add()}>
               {t(($) => $.common.home.timeline.create.eventDetails.agendaAdd)}
             </button>
           </div>

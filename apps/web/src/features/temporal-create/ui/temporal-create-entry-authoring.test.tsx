@@ -157,6 +157,18 @@ function renderEntry(
 }
 
 describe('Temporal Create U2 entry', () => {
+  it('hides the planned Session add control at capacity and restores it after removal', () => {
+    renderEntry();
+    fireEvent.click(screen.getByRole('button', { name: /Opzioni avanzate/ }));
+    for (let index = 0; index < 100; index += 1) {
+      const actions = screen.getByLabelText('Aggiungi Sessione pianificata');
+      fireEvent.click(within(actions).getByRole('button', { name: 'Sessione' }));
+    }
+    expect(screen.queryByLabelText('Aggiungi Sessione pianificata')).toBeNull();
+    fireEvent.click(screen.getAllByRole('button', { name: 'Rimuovi Sessione' })[0]!);
+    expect(screen.getByLabelText('Aggiungi Sessione pianificata')).toBeTruthy();
+  });
+
   it('stages Event placement protection in Advanced Create and sends it with Add', async () => {
     const { eventRequests, activityRequests } = renderEntry();
     fireEvent.click(screen.getByRole('radio', { name: 'Evento' }));

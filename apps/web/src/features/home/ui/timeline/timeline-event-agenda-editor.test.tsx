@@ -9,6 +9,7 @@ import {
 import { afterEach, beforeAll, describe, expect, it, vi } from 'vitest';
 
 import { i18n } from '../../../../bootstrap/i18n';
+import { TemporalCreateEventAgenda } from '../../../temporal-create/ui/temporal-create-event-agenda';
 import type { TemporalEventAgendaDataSource } from '../../../temporal/event-data-source';
 import { createDeterministicTemporalIdFactory } from '../../../temporal/model';
 import { TemporalEventAgendaRemoteError } from '../../../temporal/remote-event-agenda-data-source';
@@ -35,6 +36,18 @@ function record(revision: number, agendaParts: readonly string[]) {
 }
 
 describe('B03-D canonical Event Agenda editor', () => {
+  it('hides the add control at capacity and restores it after removing a row', () => {
+    const parts = Array.from({ length: 100 }, (_, index) => `Voce ${index + 1}`);
+    const onChange = vi.fn();
+    render(<TemporalCreateEventAgenda parts={parts} onChange={onChange} editStyle />);
+    expect(screen.queryByRole('button', { name: 'Aggiungi punto alla scaletta' })).toBeNull();
+    fireEvent.click(screen.getAllByRole('button', { name: 'Rimuovi punto' })[0]!);
+    expect(onChange).toHaveBeenCalledWith(expect.arrayContaining(['Voce 2']));
+    cleanup();
+    render(<TemporalCreateEventAgenda parts={parts.slice(1)} onChange={onChange} editStyle />);
+    expect(screen.getByRole('button', { name: 'Aggiungi punto alla scaletta' })).toBeTruthy();
+  });
+
   it('presents numbered Scaletta rows without explanatory copy in the Inspector', async () => {
     render(
       <TimelineEventAgendaEditor

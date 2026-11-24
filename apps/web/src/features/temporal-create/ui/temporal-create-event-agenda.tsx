@@ -159,6 +159,7 @@ export function TemporalCreateEventAgenda({
   };
 
   const addPart = () => {
+    if (parts.length >= 100) return;
     const nextIndex = parts.length;
     publish([...parts, '']);
     focusPart(nextIndex);
@@ -197,19 +198,21 @@ export function TemporalCreateEventAgenda({
         </div>
       ) : null}
 
-      <div className="temporal-create-event-agenda__root-actions">
-        <button
-          className="temporal-create-tree-add"
-          type="button"
-          onClick={addPart}
-          aria-label={
-            italian ? 'Aggiungi punto alla scaletta' : 'Add run of show item'
-          }
-        >
-          <span aria-hidden="true">＋</span>
-          {italian ? 'Scaletta' : 'Run of show'}
-        </button>
-      </div>
+      {parts.length < 100 ? (
+        <div className="temporal-create-event-agenda__root-actions">
+          <button
+            className="temporal-create-tree-add"
+            type="button"
+            onClick={addPart}
+            aria-label={
+              italian ? 'Aggiungi punto alla scaletta' : 'Add run of show item'
+            }
+          >
+            <span aria-hidden="true">＋</span>
+            {italian ? 'Scaletta' : 'Run of show'}
+          </button>
+        </div>
+      ) : null}
     </section>
   );
 }

@@ -1,5 +1,9 @@
 # Timeline / Temporal-Operational — Live Execution Ledger
 
+## 2026-11-24 — Default Scaletta names and bounded add controls
+
+Owner approved persisted `Scaletta N` for a blank Event Agenda row at Save, preserving order and authored names in Advanced Create, ordinary Event Edit, stand-alone Agenda Edit, recurring source and series review. Quick Create, legacy create runtimes and canonical backend application entry points share the same rule; a later reorder does not silently rewrite a previously saved label. The earlier Create filter that discarded empty rows and Edit's bottom-of-panel `Completa ogni punto della Scaletta` rejection are removed. At existing capacity the add control disappears for Event Scaletta and planned Activity Sessions in Create and Edit, with no numeric capacity copy in the product UI. No migration is required. Focused tests and two real-stack browser journeys are candidate evidence; the owner WSL run remains pending.
+
 ## 2026-11-23 — Persistent default planned Session names
 
 Owner choice: keep Create/Edit fields and Session panel layout unchanged. When a planned Session has no supplied name, backend Create and atomic Edit persist `Sessione N` using its Activity-local planned Schedule order; a user name is kept. Clearing an existing name restores that row's default. Recurring Activity templates receive the same defaults before source or series-revision persistence so future Occurrences inherit them. Historical rows with NULL names are not bulk rewritten; their existing read fallback remains available. No Alembic migration or generated-client edit. Focused unit and real PostgreSQL regressions were added; local validation evidence is pending.

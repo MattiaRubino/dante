@@ -51,7 +51,7 @@ describe('owner-scoped Event profile CAS source', () => {
               ? {
                   title: 'Nuova conferenza',
                   agenda_revision: 1,
-                  agenda_parts: ['Apertura'],
+                  agenda_parts: ['Scaletta 1', 'Apertura'],
                 }
               : {}),
           }),
@@ -83,7 +83,7 @@ describe('owner-scoped Event profile CAS source', () => {
           location: null,
           colorCode: null,
         },
-        agendaParts: ['Apertura'],
+        agendaParts: ['', 'Apertura'],
         lifeArea: { ref: null, expectedRevision: 2 },
         reality: { mode: 'review_on_end', expectedStateRef: null },
         placementLock: {
@@ -130,7 +130,7 @@ describe('owner-scoped Event profile CAS source', () => {
         agenda: {
           operation_id: 'event:atomic:1:agenda',
           expected_revision: 0,
-          agenda_parts: ['Apertura'],
+          agenda_parts: ['Scaletta 1', 'Apertura'],
         },
         life_area: {
           life_area_ref: null,
@@ -170,7 +170,7 @@ describe('owner-scoped Event profile CAS source', () => {
         ],
       },
     ]);
-    expect(result.agendaParts).toEqual(['Apertura']);
+    expect(result.agendaParts).toEqual(['Scaletta 1', 'Apertura']);
     expect(result.updatedPlacementStateRef).toBe(UPDATED_MATERIAL);
   });
   // Regression 2026-11-09: a normal Event had no way to create a new

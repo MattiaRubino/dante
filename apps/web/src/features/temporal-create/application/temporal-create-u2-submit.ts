@@ -11,6 +11,7 @@ import type {
 } from '../../temporal/authoring-data-source';
 import type { TemporalSchedulePlacementInput } from '../../temporal/schedule-data-source';
 import type { TemporalValidationIssue } from '../../temporal';
+import { namedEventAgendaParts } from '../../temporal/event-agenda-defaults';
 import {
   buildTemporalCreatePlacement,
   createTemporalCreateFields,
@@ -1056,11 +1057,7 @@ export function buildTemporalCreateU2Request(
       request: Object.freeze({
         ...base,
         placementProtected: draft.eventPlacementProtected === true,
-        agendaParts: Object.freeze(
-          fields.event.agendaParts
-            .map((part) => part.trim())
-            .filter((part) => part.length > 0),
-        ),
+        agendaParts: Object.freeze(namedEventAgendaParts(fields.event.agendaParts)),
       }),
     });
   }

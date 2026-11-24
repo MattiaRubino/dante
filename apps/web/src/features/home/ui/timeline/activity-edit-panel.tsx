@@ -2035,21 +2035,17 @@ export function ActivityEditPanel({
                 ))}
               </div>
             ) : null}
-            {canReplan ? (
+            {canReplan &&
+            settings.schedules.filter(
+              (row) =>
+                row.role === 'planned' &&
+                !deletedPlanned.includes(row.scheduleRef),
+            ).length + newPlanned.length < 100 ? (
               <div className="temporal-create-activity-tree__root-actions">
                 <button
                   type="button"
                   className="temporal-create-tree-add"
-                  disabled={
-                    planPending ||
-                    settings.schedules.filter(
-                      (row) =>
-                        row.role === 'planned' &&
-                        !deletedPlanned.includes(row.scheduleRef),
-                    ).length +
-                      newPlanned.length >=
-                      100
-                  }
+                  disabled={planPending}
                   onClick={() => {
                     setNewPlanned((current) => [
                       ...current,

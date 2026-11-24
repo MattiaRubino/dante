@@ -13,6 +13,8 @@ Examples include appointments, meetings, lessons, exams, hearings, flights, conc
 
 An Event can be all-day or span multiple days. External participants are optional.
 
+An Event's optional ordered Scaletta stores every added row. An unnamed row receives the persisted label `Scaletta N` at Save, where `N` is its position in that accepted order; a user-entered name takes precedence. Subsequent reorder or removal preserves each stored label as text. This applies to ordinary Create/Edit and recurring source/series changes; an empty row is never silently discarded or surfaced as a generic validation message. The add control disappears when the existing Agenda capacity is reached, without displaying a numeric limit.
+
 ## Validation basis
 
 Event v0 was reviewed against:

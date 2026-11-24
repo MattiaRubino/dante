@@ -9,6 +9,7 @@ import {
 import { Temporal } from '@dante/time';
 import { createWebFetch } from '../../../../platform/api/web-fetch';
 import { createRemoteTemporalResponsibilityDataSource } from '../../../temporal/remote-responsibility-data-source';
+import { namedEventAgendaParts } from '../../../temporal/event-agenda-defaults';
 
 import {
   createRemoteRecurringSeriesEdit,
@@ -805,7 +806,7 @@ export function RecurringSeriesEditor({
                 item_color_code: color.trim() || null,
               },
             }
-          : structure;
+          : { ...structure, agenda_parts: [...namedEventAgendaParts(agenda)] };
       const areaIntent = creatingArea
         ? {
             new_life_area: {
@@ -1052,20 +1053,22 @@ export function RecurringSeriesEditor({
                     ))}
                   </div>
                 ) : null}
-                <div className="temporal-create-activity-tree__root-actions">
-                  <button
-                    type="button"
-                    className="temporal-create-tree-add"
-                    onClick={() =>
-                      editRows('planned_slices', [
-                        ...sessions,
-                        { name: '', time_enabled: false },
-                      ])
-                    }
-                  >
-                    <span aria-hidden="true">＋</span>Sessione
-                  </button>
-                </div>
+                {sessions.length < 100 ? (
+                  <div className="temporal-create-activity-tree__root-actions">
+                    <button
+                      type="button"
+                      className="temporal-create-tree-add"
+                      onClick={() =>
+                        editRows('planned_slices', [
+                          ...sessions,
+                          { name: '', time_enabled: false },
+                        ])
+                      }
+                    >
+                      <span aria-hidden="true">＋</span>Sessione
+                    </button>
+                  </div>
+                ) : null}
               </section>
             ) : null}
             <div

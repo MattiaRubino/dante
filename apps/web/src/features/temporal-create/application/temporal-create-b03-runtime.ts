@@ -18,6 +18,7 @@ import {
   type TemporalScheduleDataSource,
   type TemporalSchedulePlacementInput,
 } from '../../temporal';
+import { namedEventAgendaParts } from '../../temporal/event-agenda-defaults';
 import {
   createTemporalCreateFields,
   type TemporalCreateFields,
@@ -469,7 +470,9 @@ class B03TemporalCreateRuntime implements TemporalCreateRuntime {
         ...(isCanonicalLifeAreaRef(prepared.metadata.contextId)
           ? { lifeAreaRef: prepared.metadata.contextId }
           : {}),
-        agendaParts: prepared.metadata.specification.event.agendaParts,
+        agendaParts: namedEventAgendaParts(
+          prepared.metadata.specification.event.agendaParts,
+        ),
         placement: schedulePlacement,
       });
       const projection = scheduledEventProjection(

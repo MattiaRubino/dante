@@ -263,6 +263,7 @@
     "apps/web/e2e/auth/event-create-read.spec.ts",
     "apps/web/e2e/auth/schedule-placement-forms.spec.ts",
     "apps/web/e2e/auth/temporal-create-life-area-golden.spec.ts",
+    "apps/web/e2e/auth/temporal-default-row-names.spec.ts",
     "apps/web/e2e/auth/temporal-runtime-foundation.spec.ts",
     "apps/web/e2e/home-structure.spec.ts",
     "apps/web/e2e/temporal-create-appearance.spec.ts",
@@ -2964,6 +2965,16 @@
       "invariant": "",
       "status": "UNREVIEWED",
       "audit_note": "Needs contract/assertion review, rejection cases, and executable evidence; filename alone is not proof."
+    },
+    {
+      "path": "apps/web/e2e/auth/temporal-default-row-names.spec.ts",
+      "suite": "web-browser-real-stack",
+      "contract_id": "T05",
+      "candidate_behavior": "unnamed Agenda points and planned Sessions across advanced Create and normal Edit",
+      "purpose": "Create Event and Activity with mixed blank and custom rows, edit them, then verify persisted ordinal names before and after browser reload.",
+      "invariant": "Every added blank row persists with its position-based default name; explicit names remain unchanged and additional blank rows receive the next ordinal.",
+      "status": "QUALIFIED",
+      "audit_note": "Reviewed assertions and isolated account boundaries 2026-11-24; owner real-stack run pending."
     },
     {
       "path": "apps/web/e2e/auth/temporal-all-day-regressions.spec.ts",

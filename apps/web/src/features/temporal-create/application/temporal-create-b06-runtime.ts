@@ -10,6 +10,7 @@ import {
   type TemporalPlacement,
   type TemporalProjectionItem,
 } from '../../temporal';
+import { namedEventAgendaParts } from '../../temporal/event-agenda-defaults';
 import { invalidateTemporalTimelineRead } from '../../temporal/timeline-invalidation';
 import {
   createTemporalCreateFields,
@@ -646,7 +647,7 @@ class B06TemporalCreateRuntime implements TemporalCreateRuntime {
         owner === 'event'
           ? await this.authoring.createEvent({
               ...common,
-              agendaParts: fields.event.agendaParts,
+              agendaParts: namedEventAgendaParts(fields.event.agendaParts),
               placementKind:
                 fields.timeSemantics === 'all-day' ? 'all_day' : 'timed',
               durationMinutes:

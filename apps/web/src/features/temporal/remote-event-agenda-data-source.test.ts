@@ -78,13 +78,13 @@ describe('remote Event Agenda data source', () => {
       expect(JSON.parse(fetchRequestBody(init?.body))).toEqual({
         operation_id: 'operation:b03-d:web',
         expected_revision: 2,
-        agenda_parts: ['A', 'B2'],
+        agenda_parts: ['A', 'Scaletta 2'],
       });
       return Promise.resolve(
         jsonResponse({
           event_ref: EVENT_REF,
           agenda_revision: 3,
-          agenda_parts: ['A', 'B2'],
+          agenda_parts: ['A', 'Scaletta 2'],
           replayed: false,
         }),
       );
@@ -98,13 +98,13 @@ describe('remote Event Agenda data source', () => {
       eventRef: EVENT_REF,
       operationId: ' operation:b03-d:web ',
       expectedRevision: 2,
-      agendaParts: [' A ', 'B2'],
+      agendaParts: [' A ', '   '],
     });
 
     expect(result).toEqual({
       eventRef: EVENT_REF,
       agendaRevision: 3,
-      agendaParts: ['A', 'B2'],
+      agendaParts: ['A', 'Scaletta 2'],
       replayed: false,
     });
     expect(fetchFn).toHaveBeenCalledTimes(2);

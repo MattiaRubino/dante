@@ -273,11 +273,11 @@ def _agenda(values: tuple[str, ...] | list[str]) -> tuple[str, ...]:
     if len(values) > 100:
         raise TemporalAuthoringInputError("Event Agenda may contain at most 100 parts.")
     normalized: list[str] = []
-    for value in values:
-        part = value.strip()
-        if not part or len(part) > 1000:
+    for index, value in enumerate(values, start=1):
+        part = value.strip() or f"Scaletta {index}"
+        if len(part) > 1000:
             raise TemporalAuthoringInputError(
-                "Event Agenda parts must contain 1 to 1000 non-padding characters."
+                "Event Agenda parts must contain at most 1000 non-padding characters."
             )
         normalized.append(part)
     return tuple(normalized)

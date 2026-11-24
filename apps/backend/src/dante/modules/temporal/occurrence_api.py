@@ -316,6 +316,15 @@ class RecurringSeriesEditCommand(BaseModel):
                 **self.structure_snapshot,
                 "activity_template": named_planned_session_template(template),
             }
+        agenda = self.structure_snapshot.get("agenda_parts")
+        if isinstance(agenda, list) and all(isinstance(part, str) for part in agenda):
+            self.structure_snapshot = {
+                **self.structure_snapshot,
+                "agenda_parts": [
+                    part.strip() or f"Scaletta {index}"
+                    for index, part in enumerate(agenda, start=1)
+                ],
+            }
         return self
 
 

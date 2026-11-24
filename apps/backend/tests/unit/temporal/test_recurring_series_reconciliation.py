@@ -121,6 +121,19 @@ def test_recurring_all_day_create_rejects_timed_structure_before_persistence() -
     assert revised.structure_snapshot["activity_template"]["planned_slices"] == [
         {"name": "Sessione 1", "time_enabled": False}
     ]
+    event_revision = RecurringSeriesEditCommand.model_validate(
+        {
+            "operation_id": "event:agenda:revision",
+            "expected_revision": 0,
+            "expected_recurrence_state_ref": SOURCE,
+            "scope_code": "this_and_following",
+            "recurrence": request["recurrence"],
+            "structure_snapshot": {"agenda_parts": ["", "Domande", "  "]},
+        }
+    )
+    assert event_revision.structure_snapshot["agenda_parts"] == [
+        "Scaletta 1", "Domande", "Scaletta 3",
+    ]
 
     for change in (
         {"activity_intervals": [{"start_offset_minutes": 0, "duration_minutes": 60}]},

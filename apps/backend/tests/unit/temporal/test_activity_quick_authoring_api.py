@@ -8,6 +8,7 @@ from fastapi.routing import APIRoute
 from pydantic import ValidationError
 
 from dante.modules.temporal.api import FloatingLocalIntervalPlacementRequest
+from dante.modules.temporal.authoring import _agenda
 from dante.modules.temporal.authoring_api import (
     AcceptedFloatingLocalPlacementResponse,
     AuthorActivityRequest,
@@ -15,6 +16,15 @@ from dante.modules.temporal.authoring_api import (
     AuthoringLifeAreaRequest,
     router,
 )
+from dante.modules.temporal.event import _normalize_agenda_parts
+
+
+def test_unnamed_event_agenda_parts_receive_persistable_ordinal_names() -> None:
+    values = ["  ", "Introduzione", ""]
+    expected = ("Scaletta 1", "Introduzione", "Scaletta 3")
+    assert _agenda(values) == expected
+    assert _normalize_agenda_parts(values) == expected
+    assert values == ["  ", "Introduzione", ""]
 
 
 def test_u2_authoring_routes_have_stable_operation_ids() -> None:
