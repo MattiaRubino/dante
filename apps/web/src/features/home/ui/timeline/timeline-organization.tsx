@@ -99,6 +99,34 @@ export function canonicalActivityPresentationColor(
   );
 }
 
+/** The Timeline and History use one presentation rule for the same item. */
+export function canonicalItemPresentationColor(
+  item: TemporalTimelineItem,
+  groups: readonly TimelineGroup[] | null,
+  assignments: ReadonlyMap<string, string | null>,
+): string | null {
+  const groupId = canonicalItemLifeAreaGroup(item, assignments);
+  const group = groups?.find((candidate) => candidate.id === groupId);
+  if (!group) return null;
+  if (groupId !== LEGACY_UNASSIGNED_GROUP) return group.colorCode ?? null;
+  if (
+    (item.kind === 'scheduled_event' ||
+      ((item.kind === 'scheduled_occurrence' ||
+        item.kind === 'expected_occurrence') &&
+        item.sourceKind === 'event')) &&
+    item.lifeAreaOverridePresent &&
+    item.lifeAreaOverrideRef === null
+  )
+    return null;
+  const key =
+    item.kind === 'scheduled_activity'
+      ? `activity:${item.activityRef}`
+      : item.kind === 'scheduled_event'
+        ? `event:${item.eventRef}`
+        : `${item.sourceKind}:${item.sourceNativeRef}`;
+  return group.itemColorCodes?.[key] ?? null;
+}
+
 export function useTimelineOrganization(enabled: boolean) {
   const [snapshot, setSnapshot] = useState<OrganizationSnapshot | null>(null);
   const [error, setError] = useState<string | null>(null);

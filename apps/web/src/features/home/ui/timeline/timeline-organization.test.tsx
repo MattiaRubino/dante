@@ -8,6 +8,7 @@ import {
   canonicalActivityPresentationColor,
   canonicalOrganizationGroups,
   canonicalItemLifeAreaGroup,
+  canonicalItemPresentationColor,
   LEGACY_UNASSIGNED_GROUP,
 } from './timeline-organization';
 
@@ -46,6 +47,29 @@ function snapshot(
 }
 
 describe('Timeline organization groups', () => {
+  it('shares the exact Event/Activity border color with the chronology, respecting an explicit removed Area', () => {
+    const eventRef = snapshot().assignments[0]!.itemRef;
+    const assignments = new Map([[`event:${eventRef}`, AREA_REF]]);
+    const groups = canonicalOrganizationGroups(snapshot());
+    const item = {
+      kind: 'scheduled_event',
+      eventRef,
+    } as TemporalTimelineItem;
+    expect(canonicalItemPresentationColor(item, groups, assignments)).toBe(
+      '#F4C95D',
+    );
+    expect(
+      canonicalItemPresentationColor(
+        {
+          ...item,
+          lifeAreaOverridePresent: true,
+          lifeAreaOverrideRef: null,
+        } as TemporalTimelineItem,
+        groups,
+        assignments,
+      ),
+    ).toBeNull();
+  });
   it('retains canonical Life Area revision/color metadata without manufacturing Personal', () => {
     expect(canonicalOrganizationGroups(snapshot())).toEqual([
       {

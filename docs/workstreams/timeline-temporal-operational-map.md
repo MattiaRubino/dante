@@ -1,5 +1,22 @@
 # Timeline / Temporal-Operational — Live Execution Ledger
 
+## 2026-11-24 — Cronologia: color fidelity; historical search decision open
+
+The chronology cards and Timeline now use the same item color resolver,
+including an Event instance that explicitly removes its source Life Area.
+An item with no accepted individual/Area color stays neutral rather than
+inventing the orange accent. The existing Inspector path is unchanged.
+
+The requested fixed search, refresh and infinite historical scroll require
+a complete owner-scoped historical read and a cursor. The current Timeline
+read is bounded to 62 days. In particular, a virtual expected Occurrence has
+no accepted Schedule for the same Inspector until an idempotent checkpoint
+materializes it; that checkpoint is a durable write. This product choice is
+awaiting owner decision before a search or refresh silently mutates history.
+No partial loaded-only search or unbounded automatic checkpoint is published.
+Focused color/component tests and typecheck are candidate checks; real-stack
+acceptance and whole gate remain NOT_RUN.
+
 ## 2026-11-24 — Default Scaletta names and bounded add controls
 
 Owner approved persisted `Scaletta N` for a blank Event Agenda row at Save, preserving order and authored names in Advanced Create, ordinary Event Edit, stand-alone Agenda Edit, recurring source and series review. Quick Create, legacy create runtimes and canonical backend application entry points share the same rule; a later reorder does not silently rewrite a previously saved label. The earlier Create filter that discarded empty rows and Edit's bottom-of-panel `Completa ogni punto della Scaletta` rejection are removed. At existing capacity the add control disappears for Event Scaletta and planned Activity Sessions in Create and Edit, with no numeric capacity copy in the product UI. No migration is required.

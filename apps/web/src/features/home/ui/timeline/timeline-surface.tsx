@@ -110,6 +110,7 @@ import {
   canonicalActivityPresentationColor,
   canonicalOrganizationGroups,
   canonicalItemLifeAreaGroup,
+  canonicalItemPresentationColor,
   LEGACY_UNASSIGNED_GROUP,
   TimelineOrganizationPanel,
   useTimelineOrganization,
@@ -379,43 +380,19 @@ export function TimelineSurface({
       ),
     [organization.snapshot],
   );
-  const organizationKeyForItem = useCallback(
-    (item: import('../../../temporal/timeline-read').TemporalTimelineItem) =>
-      item.kind === 'scheduled_activity'
-        ? `activity:${item.activityRef}`
-        : item.kind === 'scheduled_event'
-          ? `event:${item.eventRef}`
-          : `${item.sourceKind}:${item.sourceNativeRef}`,
-    [],
-  );
   const resolveGroupId = useCallback(
     (item: import('../../../temporal/timeline-read').TemporalTimelineItem) =>
       canonicalItemLifeAreaGroup(item, assignmentBySubject),
     [assignmentBySubject],
   );
   const resolveAppearanceColorCode = useCallback(
-    (item: import('../../../temporal/timeline-read').TemporalTimelineItem) => {
-      const groupId = resolveGroupId(item);
-      const group = canonicalGroups?.find(
-        (candidate) => candidate.id === groupId,
-      );
-      if (!group) return null;
-      if (groupId === LEGACY_UNASSIGNED_GROUP) {
-        if (
-          (((item.kind === 'scheduled_occurrence' ||
-            item.kind === 'expected_occurrence') &&
-            item.sourceKind === 'event') ||
-            item.kind === 'scheduled_event') &&
-          item.lifeAreaOverridePresent &&
-          item.lifeAreaOverrideRef === null
-        ) {
-          return null; // never reuse the removed source area's color
-        }
-        return group.itemColorCodes?.[organizationKeyForItem(item)] ?? null;
-      }
-      return group.colorCode ?? null;
-    },
-    [canonicalGroups, organizationKeyForItem, resolveGroupId],
+    (item: import('../../../temporal/timeline-read').TemporalTimelineItem) =>
+      canonicalItemPresentationColor(
+        item,
+        canonicalGroups,
+        assignmentBySubject,
+      ),
+    [canonicalGroups, assignmentBySubject],
   );
   const visibleGroups = useMemo(
     () => state.groups.filter((group) => !group.hidden),

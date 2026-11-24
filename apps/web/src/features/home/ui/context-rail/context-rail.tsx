@@ -18,9 +18,8 @@ import { SessionSubjectControls } from '../../../temporal/session-subject-contro
 import { TemporalKindMarker } from '../../../temporal-create/ui/temporal-kind-marker';
 import { subscribeTemporalTimelineInvalidation } from '../../../temporal/timeline-invalidation';
 import {
-  canonicalItemLifeAreaGroup,
+  canonicalItemPresentationColor,
   canonicalOrganizationGroups,
-  LEGACY_UNASSIGNED_GROUP,
   useTimelineOrganization,
 } from '../timeline/timeline-organization';
 import {
@@ -485,25 +484,18 @@ export function ContextRail() {
                     item.sourceKind === 'event')
                     ? 'event'
                     : 'activity';
-                const groupId = canonicalItemLifeAreaGroup(item, assignments);
-                const group = areas.find((area) => area.id === groupId);
-                const key =
-                  item.kind === 'scheduled_activity'
-                    ? `activity:${item.activityRef}`
-                    : item.kind === 'scheduled_event'
-                      ? `event:${item.eventRef}`
-                      : `${item.sourceKind}:${item.sourceNativeRef}`;
-                const color =
-                  groupId === LEGACY_UNASSIGNED_GROUP
-                    ? group?.itemColorCodes?.[key]
-                    : group?.colorCode;
+                const color = canonicalItemPresentationColor(
+                  item,
+                  areas,
+                  assignments,
+                );
                 return (
                   <article
                     key={item.scheduleRef}
                     className={`home-past-card home-past-card--${kind}`}
                     style={
                       {
-                        '--home-past-accent': color ?? '#ea5c12',
+                        '--home-past-accent': color ?? '#7F8B9D',
                       } as CSSProperties
                     }
                   >
