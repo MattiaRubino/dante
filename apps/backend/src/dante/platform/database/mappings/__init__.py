@@ -222,6 +222,7 @@ MAPPED_TABLES: tuple[Table, ...] = cast(
         session.SessionPlannedScheduleLinkRow.__table__,
         session.SessionStartOperationRow.__table__,
         session.SessionManualRecordOperationRow.__table__,
+        session.SessionEditorOperationRow.__table__,
         session.SessionEndOperationRow.__table__,
         session.SessionPauseOperationRow.__table__,
         session.SessionResumeOperationRow.__table__,

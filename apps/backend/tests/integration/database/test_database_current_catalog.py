@@ -256,22 +256,24 @@ def test_current_database_cross_representation_is_exact(migrated_database: Any) 
         "B14-RECORDED-OBJECTIVE-DELETE",
         "B14-SELECTED-SERIES-PROTECTION",
         "B14-OPEN-RENEWAL",
+        "B14-DRAFT-VAULT-CAPACITY",
+        "SESSION-RECORDING-EDITOR",
     ]
     assert current["standalone_entries"] == {
-        "tables": 245,
+        "tables": 246,
         "views": 5,
-        "routines": 269,
-        "total": 519,
+        "routines": 272,
+        "total": 523,
     }
     assert current["embedded_objects"] == {
-        "triggers": 105,
-        "physical_indexes": 502,
+        "triggers": 106,
+        "physical_indexes": 503,
     }
     assert current["constraints"] == {
-        "foreign_keys": 441,
-        "check_constraints": 614,
+        "foreign_keys": 444,
+        "check_constraints": 616,
     }
-    assert len(MAPPED_TABLES) == len(Base.registry.mappers) == len(Base.metadata.tables) == 245
+    assert len(MAPPED_TABLES) == len(Base.registry.mappers) == len(Base.metadata.tables) == 246
     assert all(len(mapper.relationships) == 0 for mapper in Base.registry.mappers)
     assert set(VIEW_METADATA.tables) == {f"dante.{name}" for name in views}
     assert {table.name for table in MAPPED_TABLES} == set(tables)
