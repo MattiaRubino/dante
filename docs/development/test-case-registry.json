@@ -5872,7 +5872,7 @@
       "purpose": "Verify canonical named-zone and absolute instants project into selected display zone without rewriting original temporal values, floating-local stays floating, stored choices are IANA IDs and spring-forward retains factual duration.",
       "invariant": "Changing the Timeline viewing timezone does not mutate canonical Schedule/Session data or coerce IANA zones to fixed numeric offsets.",
       "status": "QUALIFIED",
-      "audit_note": "Focused Vitest passed locally; visual and real-stack acceptance still NOT_RUN."
+      "audit_note": "New focused regression; user local Vitest, visual and real-stack acceptance still NOT_RUN."
     },
     {
       "path": "apps/backend/tests/integration/temporal/test_session_recording_editor.py",
@@ -5892,7 +5892,17 @@
       "purpose": "Verify a completed manual recording refreshes the Inspector editor and permits correction on the same factual Session identity.",
       "invariant": "After save, a registered row cannot offer a second Registra action and its existing timestamps are available for correction.",
       "status": "QUALIFIED",
-      "audit_note": "Focused Vitest run on candidate required after formatting."
+      "audit_note": "78 focused Inspector/editor Vitest cases passed locally; real-stack acceptance remains pending."
+    },
+    {
+      "path": "apps/web/e2e/auth/temporal-session-recording-editor.spec.ts",
+      "suite": "web-browser-real-stack",
+      "contract_id": "T06",
+      "candidate_behavior": "Inspector records and corrects a named Session in an authenticated browser",
+      "purpose": "Cross the real Create, Inspector, editor, API and PostgreSQL boundaries; persist and correct one completed attempt with a pause.",
+      "invariant": "A recorded Session has one factual identity, a concluded interval and no second Registra action after reload.",
+      "status": "QUALIFIED",
+      "audit_note": "New authenticated browser regression; owner-local Docker run pending."
     },
     {
       "path": "apps/web/e2e/auth/draft-vault-real-lifecycle.spec.ts",

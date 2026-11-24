@@ -32,3 +32,8 @@ avviabile per effetto del salvataggio.
 
 Il punto d'ingresso da «Da verificare» è previsto come riuso dello stesso
 componente; non è incluso nel candidate di questa prima implementazione.
+
+Il test browser autenticato `temporal-session-recording-editor.spec.ts`
+copre Create → Inspector → Registra → Correggi e rilegge la Sessione dal
+backend dopo entrambi i salvataggi. Va eseguito sullo stack reale con
+PostgreSQL migrato; non è stato eseguito in questo ambiente.
