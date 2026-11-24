@@ -13,6 +13,8 @@ import {
 } from './temporal-user-journey-support';
 
 test.describe('Timeline — unnamed rows persist through real Create and Edit', () => {
+  test.describe.configure({ mode: 'parallel' });
+
   test('Event Scaletta keeps blank, named and blank rows across Create, Edit and reload', async ({ browser }, info) => {
     test.setTimeout(120_000);
     const user = await signedInPage(browser, info, 6);
@@ -108,7 +110,7 @@ test.describe('Timeline — unnamed rows persist through real Create and Edit', 
       const inspector = await openInspector(page, item);
       await inspector.getByRole('button', { name: 'Modifica' }).click();
       await inspector.locator('.timeline-activity-editor__sessions')
-        .getByRole('button', { name: 'Sessione' }).click();
+        .getByRole('button', { name: 'Sessione', exact: true }).click();
       const saved = page.waitForResponse(
         (response) =>
           response.url().endsWith(`/api/v1/temporal/activities/${item.sourceRef}/atomic-edit`) &&
