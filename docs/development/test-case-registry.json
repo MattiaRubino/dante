@@ -2974,7 +2974,7 @@
       "purpose": "Create Event and Activity with mixed blank and custom rows, edit them, then verify persisted ordinal names before and after browser reload.",
       "invariant": "Every added blank row persists with its position-based default name; explicit names remain unchanged and additional blank rows receive the next ordinal.",
       "status": "QUALIFIED",
-      "audit_note": "Owner Chromium 2026-11-24: Event passed; Activity stopped on a strict-mode test locator matching remove controls. Exact locator corrected and isolated-account parallel mode enabled; Activity rerun pending."
+      "audit_note": "Owner Chromium real-stack run on 8aaf13e, 2026-11-24: both cases passed in 21.9 s with two workers and disposable PostgreSQL 18.6. Event and Activity Create/Edit/reload assertions completed."
     },
     {
       "path": "apps/web/e2e/auth/temporal-all-day-regressions.spec.ts",
