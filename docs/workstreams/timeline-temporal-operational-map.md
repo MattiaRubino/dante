@@ -2109,3 +2109,20 @@ boundary/CHECK, and two `_185` SQL functions absent from the Dictionary and
 mappings. This candidate reconciles those existing objects, the expected
 topology `245|5|269|105|502|441|614`, and the current-head refusal test.
 The four failed checks and the full gate remain NOT_RUN on this correction.
+## 2026-11-24 — Home: Cattura rapida e Cronologia (candidate)
+
+La Cattura rapida, ancora mock, si apre dal controllo nella testata Timeline;
+il pannello destro «Attività e risultati» occupa tutta l'altezza disponibile.
+La prima vista è «Cronologia»: legge le collocazioni accettate dalla stessa
+Timeline in pagine di 62 giorni, mostra Activity/Event il cui intervallo è
+passato, in ordine inverso, e apre il medesimo Inspector dalla card. Non
+introduce Play/Stop o stati di verifica sulla card. Le viste «Da verificare»
+e «Obiettivi» mantengono le funzioni precedenti. Un cambiamento di collocazione,
+un'eliminazione o un'invalidazione della Timeline rilegge la vista; le
+occorrenze solo attese, ancora prive di Schedule materializzato, non hanno
+una card apribile in Inspector. Il solo Stop di una Sessione non dichiara
+terminata l'Activity prima della fine del suo intervallo pianificato.
+
+Typecheck Web e 15 test Vitest mirati sui componenti Home/ContextRail PASS
+nello scratch; browser reale, PostgreSQL e gate complessivo NOT_RUN su questo
+candidate. Il formato più ricco delle altre due viste resta lavoro successivo.

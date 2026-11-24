@@ -162,7 +162,21 @@ describe('HomePage M1 visual materialization', () => {
     expect(screen.getByText('In evidenza')).toBeTruthy();
     expect(screen.getByText('Per te')).toBeTruthy();
     expect(screen.getAllByText('Corpo').length).toBeGreaterThan(0);
-    expect(screen.getByText('Cattura')).toBeTruthy();
+    expect(
+      screen.getByRole('button', { name: 'Apri Cattura rapida' }),
+    ).toBeTruthy();
+    expect(
+      screen.queryByRole('complementary', { name: 'Cattura rapida' }),
+    ).toBeNull();
+    fireEvent.click(
+      screen.getByRole('button', { name: 'Apri Cattura rapida' }),
+    );
+    expect(
+      screen.getByRole('complementary', { name: 'Cattura rapida' }),
+    ).toBeTruthy();
+    expect(
+      container.querySelector('.home-context-rail .home-capture-panel'),
+    ).toBeNull();
     expect(screen.getByText('Da verificare')).toBeTruthy();
   });
 

@@ -9,6 +9,8 @@ import {
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import { ContextRail } from './context-rail';
+import { PAST_WORK_OPEN } from './past-work';
+import { invalidateTemporalTimelineRead } from '../../../temporal/timeline-invalidation';
 import { REVIEW_QUEUE_INVALIDATED } from './review-events';
 
 vi.mock('../../../temporal/objective-controls', () => ({
@@ -423,38 +425,120 @@ it('switches three views and only opens one selected Objective owner', async () 
           : input instanceof URL
             ? input.href
             : input.url;
+      if (uri.includes('/timeline/window')) {
+        const params = new URL(uri, 'http://localhost').searchParams;
+        const date = new Date(Date.now() - 2 * 86_400_000)
+          .toISOString()
+          .slice(0, 10);
+        return Promise.resolve(
+          Response.json({
+            kind: 'window',
+            start_date: params.get('start_date'),
+            end_date_exclusive: params.get('end_date_exclusive'),
+            effective_zone_id: 'Europe/Rome',
+            items: [
+              {
+                kind: 'scheduled_activity',
+                activity_ref: objectiveItem.subject_ref,
+                schedule_ref: '019a45a2-7180-7000-8000-000000000033',
+                placement_material_state_ref:
+                  '019a45a2-7180-7000-8000-000000000034',
+                title: 'Studio inglese',
+                temporal_form: 'floating_local',
+                starts_local_at: `${date}T16:00:00`,
+                ends_local_at: `${date}T17:00:00`,
+              },
+            ],
+          }),
+        );
+      }
       return Promise.resolve(
         Response.json(
           uri.includes('/resolution-queue')
             ? { items: [], count: 0 }
-            : uri.includes('/finished-work')
-              ? [
-                  {
-                    subject_kind: 'activity',
-                    subject_ref: objectiveItem.subject_ref,
-                    session_ref: '019a45a2-7180-7000-8000-000000000033',
-                    title: 'Studio inglese',
-                    started_at: '2026-10-10T16:00:00Z',
-                    ended_at: '2026-10-10T17:00:00Z',
-                    record_kind: 'session_ended',
-                  },
-                ]
-              : uri.includes('/objective-work')
-                ? [objectiveItem]
-                : [],
+            : uri.includes('/objective-work')
+              ? [objectiveItem]
+              : [],
         ),
       );
     }),
   );
   render(<ContextRail />);
-  fireEvent.click(screen.getByRole('tab', { name: 'Conclusi' }));
-  await screen.findByText('Sessione conclusa');
-  expect(screen.getByText('Studio inglese')).toBeTruthy();
+  fireEvent.click(screen.getByRole('tab', { name: 'Cronologia' }));
+  const pastCard = await screen.findByRole('button', {
+    name: 'Apri Attività Studio inglese',
+  });
+  const opened = vi.fn();
+  window.addEventListener(PAST_WORK_OPEN, opened, { once: true });
+  fireEvent.click(pastCard);
+  expect(opened).toHaveBeenCalledOnce();
+  expect(
+    (opened.mock.calls[0]?.[0] as CustomEvent).detail.item.scheduleRef,
+  ).toBe('019a45a2-7180-7000-8000-000000000033');
   fireEvent.click(screen.getByRole('tab', { name: 'Obiettivi' }));
   await screen.findByText('Vocaboli');
   expect(screen.getByText('Bozza salvata')).toBeTruthy();
   fireEvent.click(screen.getByRole('button', { name: 'Compila obiettivi' }));
   expect(screen.getByTestId('objective-owner').textContent).toContain(
     `activity:${objectiveItem.subject_ref}`,
+  );
+});
+
+it('removes a past card when its accepted placement moves into the future', async () => {
+  let moved = false;
+  const date = (offset: number) =>
+    new Date(Date.now() + offset * 86_400_000).toISOString().slice(0, 10);
+  vi.stubGlobal(
+    'fetch',
+    vi.fn((input: RequestInfo | URL) => {
+      const uri =
+        typeof input === 'string'
+          ? input
+          : input instanceof URL
+            ? input.href
+            : input.url;
+      if (uri.includes('/timeline/window')) {
+        const params = new URL(uri, 'http://localhost').searchParams;
+        const placed = moved ? date(2) : date(-2);
+        return Promise.resolve(
+          Response.json({
+            kind: 'window',
+            start_date: params.get('start_date'),
+            end_date_exclusive: params.get('end_date_exclusive'),
+            effective_zone_id: 'Europe/Rome',
+            items: [
+              {
+                kind: 'scheduled_event',
+                event_ref: '019a45a2-7180-7000-8000-000000000051',
+                schedule_ref: '019a45a2-7180-7000-8000-000000000052',
+                placement_material_state_ref:
+                  '019a45a2-7180-7000-8000-000000000053',
+                title: 'Concerto',
+                temporal_form: 'floating_local',
+                starts_local_at: `${placed}T16:00:00`,
+                ends_local_at: `${placed}T17:00:00`,
+              },
+            ],
+          }),
+        );
+      }
+      return Promise.resolve(
+        Response.json(
+          uri.includes('/resolution-queue') ? { items: [], count: 0 } : [],
+        ),
+      );
+    }),
+  );
+  render(<ContextRail />);
+  fireEvent.click(screen.getByRole('tab', { name: 'Cronologia' }));
+  expect(
+    await screen.findByRole('button', { name: 'Apri Evento Concerto' }),
+  ).toBeTruthy();
+  moved = true;
+  invalidateTemporalTimelineRead();
+  await waitFor(() =>
+    expect(
+      screen.queryByRole('button', { name: 'Apri Evento Concerto' }),
+    ).toBeNull(),
   );
 });

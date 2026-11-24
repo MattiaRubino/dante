@@ -45,8 +45,11 @@ import {
   swapTimelinePrimaryZone,
 } from '../../../temporal/timeline-view-zone';
 import { REVIEW_QUEUE_INVALIDATED } from '../context-rail/review-events';
+import { PAST_WORK_OPEN } from '../context-rail/past-work';
+import type { TemporalTimelineScheduledItem } from '../../../temporal/timeline-read';
 import { useSessionPanel } from '../../../temporal/use-session-panel';
 import { useSessionPanelPresentation } from './timeline-session-panel';
+import { useTimelineQuickCapture } from './timeline-quick-capture';
 import { TimelineRecurrenceRenewals } from './timeline-recurrence-renewals';
 import {
   movedVaultSubjectKey,
@@ -97,6 +100,10 @@ import {
   projectTimelineDateLaneSessions,
 } from './timeline-all-day-runtime';
 import { TimelineDayStream } from './timeline-day-stream';
+import {
+  canonicalScheduledDateLaneItem,
+  canonicalScheduledTimelineEvents,
+} from './timeline-authoritative-hydration';
 import { TimelineHeader } from './timeline-header';
 import { RecurringEditScopeDialog } from './recurring-edit-scope-dialog';
 import {
@@ -283,8 +290,8 @@ export function TimelineSurface({
   const locale = i18n.resolvedLanguage ?? i18n.language;
   const prototypeMode = import.meta.env.MODE === 'test';
   const clockZone = viewZoneId ?? effectiveZoneId ?? detectDeviceTimeZone();
-  const [secondaryZones, setSecondaryZones] = useState<readonly string[]>(
-    () => readTimelineSecondaryZones(clockZone),
+  const [secondaryZones, setSecondaryZones] = useState<readonly string[]>(() =>
+    readTimelineSecondaryZones(clockZone),
   );
   const visibleSecondaryZones = useMemo(
     () => normalizeTimelineSecondaryZones(clockZone, secondaryZones),
@@ -454,6 +461,7 @@ export function TimelineSurface({
     sessionPanel,
     sessionActivityColor,
   );
+  const quickCapture = useTimelineQuickCapture();
   const openRealityCount =
     sessionPanel.snapshot?.visuals?.filter((visual) => visual.ended_at === null)
       .length ?? 0;
@@ -468,6 +476,51 @@ export function TimelineSurface({
   }, [openRealityCount]);
   const [calendarOpen, setCalendarOpen] = useState(false);
   const [detailState, setDetailState] = useState<DetailState | null>(null);
+  useEffect(() => {
+    const open = (event: Event) => {
+      const detail = (
+        event as CustomEvent<{
+          item: TemporalTimelineScheduledItem;
+          opener: HTMLElement;
+        }>
+      ).detail;
+      if (!detail?.opener?.isConnected || !detail.item) return;
+      const { item, opener } = detail;
+      const groupId = resolveGroupId(item);
+      const color = resolveAppearanceColorCode(item);
+      const timed = canonicalScheduledTimelineEvents(item, groupId, color)[0];
+      const lane = timed
+        ? null
+        : canonicalScheduledDateLaneItem(item, groupId, color);
+      if (!timed && !lane) return;
+      const entry: TimelineEvent = timed?.event ?? {
+        id: lane!.id,
+        title: lane!.title,
+        groupId: lane!.groupId,
+        startMinute: 0,
+        endMinute: 1440,
+        ...(lane!.canonicalBasis
+          ? { canonicalBasis: lane!.canonicalBasis }
+          : {}),
+        ...(lane!.appearanceColorCode
+          ? { appearanceColorCode: lane!.appearanceColorCode }
+          : {}),
+      };
+      const dateKey = timed?.dateKey ?? lane!.startDateKey;
+      const rect = opener.getBoundingClientRect();
+      setDetailState({
+        event: entry,
+        detail: detailFromEvent(entry, state.groups, dateKey),
+        opener,
+        anchorPoint: {
+          clientX: rect.left,
+          clientY: rect.top + rect.height / 2,
+        },
+      });
+    };
+    window.addEventListener(PAST_WORK_OPEN, open);
+    return () => window.removeEventListener(PAST_WORK_OPEN, open);
+  }, [resolveGroupId, resolveAppearanceColorCode, state.groups]);
   // Confirmed hard moves must not briefly resurrect from an older Timeline
   // window or lose their Life Area colour before being removed.
   const movedVaultSubjectsRef = useRef<Set<string>>(new Set());
@@ -559,8 +612,9 @@ export function TimelineSurface({
   const suppressExpansionClickRef = useRef(false);
   const renderedDaysRef = useRef<readonly TimelineRenderedDay[]>([]);
   const cardContentHeightsRef = useRef<ReadonlyMap<string, number>>(new Map());
-  const [cardContentHeights, setCardContentHeights] =
-    useState<ReadonlyMap<string, number>>(cardContentHeightsRef.current);
+  const [cardContentHeights, setCardContentHeights] = useState<
+    ReadonlyMap<string, number>
+  >(cardContentHeightsRef.current);
   const dragActiveRef = useRef(false);
   const [dragSnapshot, setDragSnapshot] = useState<{
     days: readonly TimelineRenderedDay[];
@@ -631,7 +685,10 @@ export function TimelineSurface({
         type: 'reconcile-authoritative-events',
         projections: projections.filter(
           ({ event }) =>
-            !wasMovedToVault(event.canonicalBasis, movedVaultSubjectsRef.current),
+            !wasMovedToVault(
+              event.canonicalBasis,
+              movedVaultSubjectsRef.current,
+            ),
         ),
       });
     },
@@ -1768,14 +1825,17 @@ export function TimelineSurface({
       data-home-region="timeline"
       data-home-timeline-state={expanded ? 'expanded' : 'normal'}
       data-timeline-card-dragging={dragSnapshot === null ? 'false' : 'true'}
-      style={{
-        '--dante-timeline-extra-ruler-width':
-          String(visibleSecondaryZones.length * 84) + 'px',
-      } as CSSProperties}
+      style={
+        {
+          '--dante-timeline-extra-ruler-width':
+            String(visibleSecondaryZones.length * 84) + 'px',
+        } as CSSProperties
+      }
       aria-label={t(($) => $.common.home.timeline.label)}
     >
       <TimelineHeader
         sessionPanelToggle={sessionPresentation.control}
+        quickCaptureToggle={quickCapture.control}
         locale={locale}
         today={timelineToday}
         viewDate={viewDate}
@@ -1783,14 +1843,14 @@ export function TimelineSurface({
         selectedViewZoneId={viewZoneId}
         secondaryZoneIds={visibleSecondaryZones}
         onAddSecondaryZone={(zoneId) => {
-          commitSecondaryZones(addTimelineSecondaryZone(
-            clockZone, visibleSecondaryZones, zoneId,
-          ));
+          commitSecondaryZones(
+            addTimelineSecondaryZone(clockZone, visibleSecondaryZones, zoneId),
+          );
         }}
         onRemoveSecondaryZone={(zoneId) => {
-          commitSecondaryZones(visibleSecondaryZones.filter(
-            (secondary) => secondary !== zoneId,
-          ));
+          commitSecondaryZones(
+            visibleSecondaryZones.filter((secondary) => secondary !== zoneId),
+          );
         }}
         onReorderSecondaryZones={() => {
           if (visibleSecondaryZones.length === 2) {
@@ -1802,22 +1862,25 @@ export function TimelineSurface({
           // Preserve the observed INSTANT, not the old local hour,
           // when the currently viewed Timeline crosses a timezone boundary.
           const grid = gridRef.current;
-          const anchor = grid && captureTimelineViewportAnchor(
-            renderedDaysRef.current,
-            grid.scrollTop,
-            grid.clientHeight * TIMELINE_POLICY.viewport.contextProbeRatio,
-          );
+          const anchor =
+            grid &&
+            captureTimelineViewportAnchor(
+              renderedDaysRef.current,
+              grid.scrollTop,
+              grid.clientHeight * TIMELINE_POLICY.viewport.contextProbeRatio,
+            );
           const zone = nextZone ?? detectDeviceTimeZone();
           if (anchor) {
             const boundedMinute = Math.min(
-              1439, Math.max(0, Math.floor(anchor.minute)),
+              1439,
+              Math.max(0, Math.floor(anchor.minute)),
             );
             const originalLocal = Temporal.PlainDateTime.from(
               `${anchor.dateKey}T${String(Math.floor(boundedMinute / 60)).padStart(2, '0')}:${String(boundedMinute % 60).padStart(2, '0')}`,
             );
-            const shifted = originalLocal.toZonedDateTime(
-              clockZone, { disambiguation: 'compatible' },
-            ).withTimeZone(zone);
+            const shifted = originalLocal
+              .toZonedDateTime(clockZone, { disambiguation: 'compatible' })
+              .withTimeZone(zone);
             const newDate = shifted.toPlainDate();
             pendingScrollTargetRef.current = {
               dateKey: newDate.toString(),
@@ -1829,9 +1892,9 @@ export function TimelineSurface({
             setViewDate(newDate);
             publishViewportDate(newDate);
           }
-          commitSecondaryZones(swapTimelinePrimaryZone(
-            clockZone, zone, visibleSecondaryZones,
-          ));
+          commitSecondaryZones(
+            swapTimelinePrimaryZone(clockZone, zone, visibleSecondaryZones),
+          );
           setViewZoneId(nextZone);
         }}
         timelineView={timelineView}
@@ -1934,6 +1997,7 @@ export function TimelineSurface({
       <div className="timeline-session-panel__edge-host">
         {sessionPresentation.panel}
       </div>
+      {quickCapture.panel}
 
       {!prototypeMode && (
         <TimelineOrganizationPanel
@@ -2282,25 +2346,23 @@ export function TimelineSurface({
               },
             });
           }
-          setDetailState(
-            (current) => {
-              if (!current) return null;
-              const { appearanceColorCode: _oldColor, ...event } = current.event;
-              void _oldColor;
-              return {
-                ...current,
-                savedAppearanceColorCode: profile.colorCode,
-                event: {
-                  ...event,
-                  title: profile.title,
-                  ...(profile.colorCode
-                    ? { appearanceColorCode: profile.colorCode }
-                    : {}),
-                },
-                detail: { ...current.detail, title: profile.title },
-              };
-            },
-          );
+          setDetailState((current) => {
+            if (!current) return null;
+            const { appearanceColorCode: _oldColor, ...event } = current.event;
+            void _oldColor;
+            return {
+              ...current,
+              savedAppearanceColorCode: profile.colorCode,
+              event: {
+                ...event,
+                title: profile.title,
+                ...(profile.colorCode
+                  ? { appearanceColorCode: profile.colorCode }
+                  : {}),
+              },
+              detail: { ...current.detail, title: profile.title },
+            };
+          });
         }}
         onVaultMoved={(kind, nativeRef) => {
           // Already committed by the backend. Locally remove the card before

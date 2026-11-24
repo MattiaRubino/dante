@@ -133,6 +133,7 @@ type TimelineHeaderProps = Readonly<{
   onRemoveCreatedAllDay: (itemId: string) => void;
   creationEnabled?: boolean;
   sessionPanelToggle?: ReactNode;
+  quickCaptureToggle?: ReactNode;
 }>;
 
 export function TimelineHeader({
@@ -170,6 +171,7 @@ export function TimelineHeader({
   onRemoveCreatedAllDay,
   creationEnabled = true,
   sessionPanelToggle,
+  quickCaptureToggle,
 }: TimelineHeaderProps) {
   const { t } = useTranslation('common');
   const week = buildIsoWeek(viewDate);
@@ -422,6 +424,7 @@ export function TimelineHeader({
 
         <div className="dante-timeline-actions">
           {sessionPanelToggle}
+          {quickCaptureToggle}
           <button
             className={split ? 'is-active' : ''}
             type="button"

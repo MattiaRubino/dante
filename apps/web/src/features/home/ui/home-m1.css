@@ -1191,7 +1191,7 @@
 }
 
 .home-m1 .home-context-rail {
-  grid-template-rows: minmax(0, 0.92fr) minmax(0, 1.08fr);
+  grid-template-rows: minmax(0, 1fr);
 }
 
 .home-m1 .home-context-rail > section {
@@ -1357,6 +1357,63 @@
   margin-top: 7px;
   color: #dce3e4;
   font-size: 10px;
+}
+.home-resolution-list .home-past-card {
+  padding: 0;
+  border: 1px solid var(--home-past-accent);
+  border-left-width: 3px;
+  background: #0d1524;
+}
+.home-resolution-list .home-past-card--event {
+  border-radius: 5px 12px 5px 12px;
+}
+.home-resolution-list .home-past-card--activity {
+  border-radius: 12px;
+}
+.home-past-card button {
+  display: grid;
+  gap: 5px;
+  width: 100%;
+  padding: 12px;
+  border: 0;
+  color: #f3f0ea;
+  background: transparent;
+  text-align: left;
+  cursor: pointer;
+}
+.home-past-card button:hover {
+  background: rgba(255, 255, 255, 0.035);
+}
+.home-past-card button:focus-visible,
+.home-past-more:focus-visible {
+  outline: 2px solid #ea5c12;
+  outline-offset: 2px;
+}
+.home-past-card__title {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  min-width: 0;
+  font-size: 14px;
+}
+.home-past-card__title strong {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.home-past-card__time {
+  padding-top: 5px;
+  border-top: 1px solid rgba(159, 177, 184, 0.22);
+  color: #b3c0d4;
+  font-size: 12px;
+}
+.home-past-more {
+  min-height: 36px;
+  border: 1px solid #4a5e76;
+  border-radius: 8px;
+  color: #f3f0ea;
+  background: #172438;
+  cursor: pointer;
 }
 .home-resolution-list article > p {
   margin: 4px 0 0;

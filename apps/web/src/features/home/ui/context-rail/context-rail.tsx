@@ -1,5 +1,13 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  type CSSProperties,
+} from 'react';
 import { useTranslation } from 'react-i18next';
+import { Temporal, detectDeviceTimeZone } from '@dante/time';
 
 import { formatDateWithCapitalizedMonth } from '../../../../platform/format-localized-date';
 
@@ -7,11 +15,24 @@ import { ActualRealizationControls } from '../../../temporal/actual-realization-
 import { ObjectiveControls } from '../../../temporal/objective-controls';
 import { ReconciliationControls } from '../../../temporal/reconciliation-controls';
 import { SessionSubjectControls } from '../../../temporal/session-subject-controls';
+import { TemporalKindMarker } from '../../../temporal-create/ui/temporal-kind-marker';
+import { subscribeTemporalTimelineInvalidation } from '../../../temporal/timeline-invalidation';
+import {
+  canonicalItemLifeAreaGroup,
+  canonicalOrganizationGroups,
+  LEGACY_UNASSIGNED_GROUP,
+  useTimelineOrganization,
+} from '../timeline/timeline-organization';
 import {
   createContextRailWorkSource,
-  type FinishedWorkItem,
   type PendingObjectiveWork,
 } from './context-rail-work-data-source';
+import {
+  loadPastWorkPage,
+  openPastWork,
+  PAST_WORK_PAGE_DAYS,
+  type PastWorkItem,
+} from './past-work';
 import {
   createResolutionQueueSource,
   type ResolutionItem,
@@ -36,8 +57,33 @@ export function ContextRail() {
   );
   const tabs = ['finished', 'review', 'objectives'] as const;
   const touchStart = useRef<{ x: number; y: number } | null>(null);
-  const [finished, setFinished] = useState<readonly FinishedWorkItem[] | null>(
-    null,
+  const [past, setPast] = useState<readonly PastWorkItem[] | null>(null);
+  const [pastPages, setPastPages] = useState(1);
+  const [pastRevision, setPastRevision] = useState(0);
+  const [pastError, setPastError] = useState<string | null>(null);
+  const [pastLoading, setPastLoading] = useState(false);
+  const [pastEnd, setPastEnd] = useState(() =>
+    Temporal.Now.plainDateISO(detectDeviceTimeZone())
+      .add({ days: 1 })
+      .toString(),
+  );
+  const organization = useTimelineOrganization(true);
+  const areas = useMemo(
+    () =>
+      organization.snapshot
+        ? canonicalOrganizationGroups(organization.snapshot)
+        : [],
+    [organization.snapshot],
+  );
+  const assignments = useMemo(
+    () =>
+      new Map(
+        organization.snapshot?.assignments.map((item) => [
+          `${item.kind}:${item.itemRef}`,
+          item.areaRef,
+        ]) ?? [],
+      ),
+    [organization.snapshot],
   );
   const [objectives, setObjectives] = useState<
     readonly PendingObjectiveWork[] | null
@@ -77,12 +123,9 @@ export function ContextRail() {
 
   const refreshWork = useCallback(
     (signal?: AbortSignal) => {
-      void Promise.all([
-        workSource.listFinished(signal),
-        workSource.listObjectives(signal),
-      ])
-        .then(([history, pending]) => {
-          setFinished(history);
+      void workSource
+        .listObjectives(signal)
+        .then((pending) => {
           setObjectives(pending);
           setWorkError(null);
         })
@@ -111,11 +154,66 @@ export function ContextRail() {
     return () => controller.abort();
   }, [refresh, refreshWork]);
 
+  useEffect(
+    () =>
+      subscribeTemporalTimelineInvalidation(() =>
+        setPastRevision((value) => value + 1),
+      ),
+    [],
+  );
+
+  useEffect(() => {
+    if (tab !== 'finished') return;
+    const controller = new AbortController();
+    const end = Temporal.PlainDate.from(pastEnd);
+    setPastLoading(true);
+    void Promise.all(
+      Array.from({ length: pastPages }, (_, index) =>
+        loadPastWorkPage(
+          end.subtract({ days: index * PAST_WORK_PAGE_DAYS }).toString(),
+          controller.signal,
+        ),
+      ),
+    )
+      .then((pages) => {
+        if (controller.signal.aborted) return;
+        const unique = new Map(
+          pages.flat().map((entry) => [entry.item.scheduleRef, entry]),
+        );
+        setPast(
+          [...unique.values()].sort(
+            (a, b) =>
+              b.endedAt.localeCompare(a.endedAt) ||
+              a.item.scheduleRef.localeCompare(b.item.scheduleRef),
+          ),
+        );
+        setPastError(null);
+      })
+      .catch((reason: unknown) => {
+        if (controller.signal.aborted) return;
+        setPastError(
+          reason instanceof Error
+            ? reason.message
+            : 'Cronologia non disponibile.',
+        );
+      })
+      .finally(() => {
+        if (!controller.signal.aborted) setPastLoading(false);
+      });
+    return () => controller.abort();
+  }, [pastEnd, pastPages, pastRevision, tab]);
+
   useEffect(() => {
     const onVisible = () => {
       if (document.visibilityState === 'visible') {
         refresh();
         refreshWork();
+        setPastEnd(
+          Temporal.Now.plainDateISO(detectDeviceTimeZone())
+            .add({ days: 1 })
+            .toString(),
+        );
+        setPastRevision((value) => value + 1);
       }
     };
     window.addEventListener('focus', onVisible);
@@ -137,62 +235,6 @@ export function ContextRail() {
       data-home-region="context-rail"
       aria-label={t(($) => $.common.home.contextRail.label)}
     >
-      <section className="home-capture-panel" data-home-context="capture">
-        <header className="home-context-heading">
-          <div>
-            <span className="home-context-kicker">INPUT RAPIDO</span>
-            <h2>{t(($) => $.common.home.contextRail.capture)}</h2>
-          </div>
-          <span className="home-context-state-dot" aria-hidden="true" />
-        </header>
-        <div className="home-capture-composer">
-          <textarea
-            aria-label="Cattura rapida"
-            placeholder="Scrivi qualcosa…"
-            readOnly
-          />
-          <div className="home-capture-actions">
-            <button type="button" disabled aria-label="Allega alla cattura">
-              +
-            </button>
-            <button type="button" disabled aria-label="Registra voce">
-              <svg viewBox="0 0 24 24" aria-hidden="true">
-                <path d="M12 3a3 3 0 0 0-3 3v6a3 3 0 0 0 6 0V6a3 3 0 0 0-3-3Z" />
-                <path d="M5.5 11.5a6.5 6.5 0 0 0 13 0M12 18v3M9 21h6" />
-              </svg>
-            </button>
-            <button
-              className="home-capture-send"
-              type="button"
-              disabled
-              aria-label="Registra cattura"
-            >
-              <svg viewBox="0 0 24 24" aria-hidden="true">
-                <path d="M12 19V5M6.5 10.5 12 5l5.5 5.5" />
-              </svg>
-            </button>
-          </div>
-        </div>
-        <div className="home-capture-history">
-          <div>
-            <span className="home-capture-history-dot" aria-hidden="true" />
-            <p>
-              <strong>Idea per il prossimo brano</strong>
-              <small>Registrato · 12 min fa</small>
-            </p>
-          </div>
-          <div>
-            <span className="home-capture-history-dot" aria-hidden="true" />
-            <p>
-              <strong>Controllare itinerario weekend</strong>
-              <small>Registrato · 46 min fa</small>
-            </p>
-          </div>
-        </div>
-        <button className="home-context-link" type="button" disabled>
-          Registro completo <span aria-hidden="true">›</span>
-        </button>
-      </section>
       <section className="home-resolution-panel" data-home-context="resolution">
         <header className="home-context-heading">
           <div>
@@ -201,12 +243,18 @@ export function ContextRail() {
           </div>
           <span
             className="home-resolution-count"
-            aria-label={`${queue?.count ?? 0} elementi da verificare`}
+            aria-label={
+              tab === 'review'
+                ? `${queue?.count ?? 0} elementi da verificare`
+                : tab === 'finished'
+                  ? `${past?.length ?? 0} elementi caricati in Cronologia`
+                  : `${objectives?.length ?? 0} Obiettivi da compilare`
+            }
           >
             {tab === 'review'
               ? (queue?.count ?? '…')
               : tab === 'finished'
-                ? (finished?.length ?? '…')
+                ? (past?.length ?? '…')
                 : (objectives?.length ?? '…')}
           </span>
         </header>
@@ -242,7 +290,7 @@ export function ContextRail() {
               }}
             >
               {value === 'finished'
-                ? 'Conclusi'
+                ? 'Cronologia'
                 : value === 'review'
                   ? 'Da verificare'
                   : 'Obiettivi'}
@@ -413,50 +461,76 @@ export function ContextRail() {
             </>
           ) : tab === 'finished' ? (
             <>
-              <p className="home-resolution-intro">
-                Esecuzioni e realizzazioni effettivamente concluse negli ultimi
-                90 giorni.
-              </p>
-              {workError && <p role="alert">{workError}</p>}
-              {finished === null && !workError && <p>Caricamento…</p>}
-              {finished?.length === 0 && (
-                <p className="home-resolution-empty">
-                  Nessuna esecuzione conclusa.
+              {pastError && (
+                <p role="alert">
+                  {pastError}{' '}
+                  <button
+                    type="button"
+                    onClick={() => setPastRevision((value) => value + 1)}
+                  >
+                    Riprova
+                  </button>
                 </p>
               )}
-              {finished?.map((item, index) => (
-                <article
-                  className="home-resolution-card"
-                  key={`${item.record_kind}:${item.session_ref ?? item.subject_ref}:${index}`}
-                >
-                  <div className="home-resolution-row">
-                    <span className="home-resolution-status is-partial">
-                      {item.record_kind === 'session_ended'
-                        ? 'Sessione conclusa'
-                        : 'Realtà registrata'}
-                    </span>
-                    <time dateTime={item.ended_at}>
-                      {formatDateWithCapitalizedMonth(
-                        new Intl.DateTimeFormat('it-IT', {
-                          day: 'numeric',
-                          month: 'short',
-                          hour: '2-digit',
-                          minute: '2-digit',
-                        }),
-                        new Date(item.ended_at),
-                      )}
-                    </time>
-                  </div>
-                  <strong>{item.title}</strong>
-                  <p>
-                    {item.record_kind === 'session_ended'
-                      ? 'La Sessione è terminata; non implica automaticamente Attività completata.'
-                      : item.subject_kind === 'event'
-                        ? 'Evento confermato come avvenuto.'
-                        : 'Attività registrata come svolta.'}
-                  </p>
-                </article>
-              ))}
+              {past === null && pastLoading && <p>Caricamento…</p>}
+              {past?.length === 0 && !pastLoading && (
+                <p className="home-resolution-empty">
+                  Nessun elemento passato in questo periodo.
+                </p>
+              )}
+              {past?.map(({ item, label }) => {
+                const kind =
+                  item.kind === 'scheduled_event' ||
+                  (item.kind === 'scheduled_occurrence' &&
+                    item.sourceKind === 'event')
+                    ? 'event'
+                    : 'activity';
+                const groupId = canonicalItemLifeAreaGroup(item, assignments);
+                const group = areas.find((area) => area.id === groupId);
+                const key =
+                  item.kind === 'scheduled_activity'
+                    ? `activity:${item.activityRef}`
+                    : item.kind === 'scheduled_event'
+                      ? `event:${item.eventRef}`
+                      : `${item.sourceKind}:${item.sourceNativeRef}`;
+                const color =
+                  groupId === LEGACY_UNASSIGNED_GROUP
+                    ? group?.itemColorCodes?.[key]
+                    : group?.colorCode;
+                return (
+                  <article
+                    key={item.scheduleRef}
+                    className={`home-past-card home-past-card--${kind}`}
+                    style={
+                      {
+                        '--home-past-accent': color ?? '#ea5c12',
+                      } as CSSProperties
+                    }
+                  >
+                    <button
+                      type="button"
+                      aria-label={`Apri ${kind === 'event' ? 'Evento' : 'Attività'} ${item.title}`}
+                      onClick={(event) =>
+                        openPastWork(item, event.currentTarget)
+                      }
+                    >
+                      <span className="home-past-card__title">
+                        <TemporalKindMarker kind={kind} />
+                        <strong>{item.title}</strong>
+                      </span>
+                      <span className="home-past-card__time">{label}</span>
+                    </button>
+                  </article>
+                );
+              })}
+              <button
+                className="home-past-more"
+                type="button"
+                disabled={pastLoading}
+                onClick={() => setPastPages((value) => value + 1)}
+              >
+                {pastLoading ? 'Caricamento…' : 'Mostra precedenti'}
+              </button>
             </>
           ) : (
             <>

@@ -1,0 +1,36 @@
+.timeline-quick-capture {
+  position: absolute;
+  z-index: 1404;
+  top: 80px;
+  right: 14px;
+  width: min(475px, calc(100vw - 28px));
+  max-height: min(660px, calc(100dvh - 100px));
+  overflow-y: auto;
+  box-sizing: border-box;
+  padding: 20px;
+  border: 1px solid var(--dante-semantic-color-home-border-subtle);
+  border-radius: var(--dante-semantic-radius-card);
+  color: #dce5f2;
+  background: var(--dante-semantic-color-home-surface-primary);
+  box-shadow: 0 24px 72px rgba(0, 0, 0, 0.5);
+}
+.timeline-quick-capture .home-context-heading h2 {
+  margin: 0;
+  font-size: 19px;
+}
+.timeline-quick-capture .home-capture-composer textarea {
+  width: 100%;
+}
+.timeline-quick-capture__close {
+  width: 38px;
+  height: 38px;
+  border: 1px solid var(--dante-semantic-color-home-border-subtle);
+  border-radius: 9px;
+  color: #e6ecf5;
+  background: #172438;
+  cursor: pointer;
+}
+.timeline-quick-capture button:focus-visible {
+  outline: 2px solid #ea5c12;
+  outline-offset: 2px;
+}
