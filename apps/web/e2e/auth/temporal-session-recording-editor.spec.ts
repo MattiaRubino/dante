@@ -55,10 +55,11 @@ test('Inspector records and corrects a concluded named Session without offering 
           .endsWith(
             `/api/v1/temporal/activities/${item.sourceRef}/sessions/editor`,
           ) && response.request().method() === 'POST',
+      { timeout: 15_000 },
     );
     await row.getByRole('button', { name: 'Salva registrazione' }).click();
     const firstResponse = await firstWrite;
-    expect(firstResponse.status(), await firstResponse.text()).toBe(201);
+    expect(firstResponse.status()).toBe(201);
     await expect(row.getByRole('button', { name: 'Correggi' })).toBeVisible();
     await expect(row.getByRole('button', { name: 'Registra' })).toHaveCount(0);
 
@@ -86,14 +87,17 @@ test('Inspector records and corrects a concluded named Session without offering 
           .endsWith(
             `/api/v1/temporal/activities/${item.sourceRef}/sessions/editor`,
           ) && response.request().method() === 'POST',
+      { timeout: 15_000 },
     );
     await row.getByRole('button', { name: 'Salva registrazione' }).click();
     const correctionResponse = await correction;
-    expect(correctionResponse.status(), await correctionResponse.text()).toBe(200);
+    expect(correctionResponse.status()).toBe(200);
     const [corrected] = await read();
     expect(corrected?.session_ref).toBe(recorded?.session_ref);
     expect(corrected?.pause_ranges).toHaveLength(1);
   } finally {
-    await user.close();
+    // A test timeout can close the browser before cleanup. Preserve the
+    // original assertion/timeout instead of replacing it with a close error.
+    await user.close().catch(() => {});
   }
 });

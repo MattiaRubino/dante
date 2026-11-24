@@ -55,7 +55,7 @@ export type CreateOptions = Readonly<{
 
 export function scenarioEmail(
   info: TestInfo,
-  slot: 1 | 2 | 3 | 4 | 5 | 6 | 7,
+  slot: 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8,
 ): string {
   const base = ACCOUNT_BASE[info.project.name];
   if (base === undefined) {
@@ -83,7 +83,7 @@ export function uniqueTitle(label: string): string {
 export async function signedInPage(
   browser: Browser,
   info: TestInfo,
-  slot: 1 | 2 | 3 | 4 | 5 | 6 | 7,
+  slot: 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8,
 ): Promise<Readonly<{ page: Page; close: () => Promise<void> }>> {
   const context = await browser.newContext({
     ignoreHTTPSErrors: true,

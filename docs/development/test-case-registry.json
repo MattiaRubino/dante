@@ -5882,7 +5882,7 @@
       "purpose": "Prove concluded main and named Sessions persist factual intervals, pauses and immutable correction states under owner-scoped PostgreSQL commands.",
       "invariant": "Recording cannot create a second attempt for the same configured row; correction retains Session identity and refuses stale writes or a main interval excluding recorded children.",
       "status": "QUALIFIED",
-      "audit_note": "PostgreSQL regression; owner-local Docker run pending."
+      "audit_note": "Owner-local PostgreSQL run passed 1/1 on a90a1de; browser acceptance remains separate."
     },
     {
       "path": "apps/web/src/features/home/ui/timeline/activity-session-recording-editor.test.tsx",
@@ -5902,7 +5902,7 @@
       "purpose": "Cross the real Create, Inspector, editor, API and PostgreSQL boundaries; persist and correct one completed attempt with a pause.",
       "invariant": "A recorded Session has one factual identity, a concluded interval and no second Registra action after reload.",
       "status": "QUALIFIED",
-      "audit_note": "New authenticated browser regression; owner-local Docker run pending."
+      "audit_note": "Trace on a90a1de confirms POST 201 and canonical GET 200; test itself hung reading the successful response body for an assertion message. Full browser rerun pending after removing that read."
     },
     {
       "path": "apps/web/e2e/auth/draft-vault-real-lifecycle.spec.ts",

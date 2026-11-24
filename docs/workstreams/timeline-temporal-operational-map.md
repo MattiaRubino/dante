@@ -11,15 +11,18 @@ comando PostgreSQL `20261124_190` protegge owner, CAS, replay, gerarchia,
 stato aperto e dipendenze Actual. Non è un controllo Play/Pausa/Stop e non
 modifica le Sessioni pianificate. «Da verificare» non è ancora collegato
 all'editor in questo candidate; la vista mantiene il comportamento attuale.
-I test PostgreSQL e browser reale richiedono l'ambiente locale dell'owner;
-non sono dichiarati PASS qui.
+I test PostgreSQL e browser reale richiedono l'ambiente locale dell'owner.
 
 Il primo run reale ha rilevato una colonna ambigua nel ramo di correzione SQL
 e un rifiuto HTTP 422 dei valori data/UUID JSON nel comando API. La migrazione
 forward `20261124_191` qualifica le colonne senza modificare la migrazione
 già applicabile `190`; il comando accetta esplicitamente la conversione JSON.
-I test mirati di modello/OpenAPI passano, mentre PostgreSQL ed E2E vanno
-rieseguiti sul nuovo SHA.
+I test mirati di modello/OpenAPI passano. L'owner ha eseguito il test PostgreSQL
+su `a90a1de`: **1 passato**. La trace Chromium dello stesso SHA conferma POST
+**201** e rilettura GET **200** della nuova registrazione; il test si bloccava
+prima di verificare la correzione perché valutava `response.text()` dentro
+l'asserzione anche con status corretto. La lettura superflua è stata eliminata;
+il flusso browser completo resta da rieseguire.
 
 La descrizione corrente delle icone della testata, della Cattura rapida e delle
 tre viste del pannello destro è in
