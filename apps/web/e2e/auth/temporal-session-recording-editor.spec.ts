@@ -215,7 +215,7 @@ test('Inspector distributes one child Session across two main intervals, pauses 
   browser,
 }, info) => {
   test.setTimeout(120_000);
-  const user = await signedInPage(browser, info, 9);
+  const user = await signedInPage(browser, info, 6);
   const { page } = user;
   try {
     const date = scenarioDate(-1);
