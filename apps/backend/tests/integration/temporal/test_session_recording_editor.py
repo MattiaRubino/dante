@@ -20,6 +20,7 @@ from dante.modules.temporal.schedule import AbsoluteIntervalPlacement
 from dante.modules.temporal.session_runtime import (
     SessionApplication,
     SessionEditorConflictError,
+    SessionEditorWrite,
     SessionInputError,
 )
 from dante.platform.database.runtime import create_database_runtime
@@ -168,5 +169,153 @@ async def test_editor_records_then_corrects_concluded_sessions_without_reopening
                 self_person_ref=actor, subject_native_ref=activity
             )
         ] == [main.session_ref]
+    finally:
+        await runtime.dispose()
+
+
+
+@pytest.mark.asyncio
+async def test_grouped_recording_rolls_back_main_when_child_overlaps_parent_pause(
+    migrated_database: Any,
+) -> None:
+    actor = _seed_self(migrated_database)
+    runtime = create_database_runtime(migrated_database.runtime_settings())
+    end = datetime.now(UTC) - timedelta(hours=2)
+    start = end - timedelta(hours=2)
+    try:
+        created = await TemporalAuthoringApplication(runtime.session_factory).create_activity(
+            self_person_ref=actor,
+            operation_id="editor-batch:create",
+            title="Grouped recording",
+            placement=AbsoluteIntervalPlacement(starts_at=start, ends_at=end),
+            planned_slices=(None,),
+            planned_slice_names=("Reading",),
+            session_capture_mode="record_and_live",
+        )
+        activity = created.item.subject_native_ref
+        async with runtime.session_factory() as session, session.begin():
+            planned = (
+                await session.execute(
+                    text("""SELECT schedule_ref FROM dante.get_self_activity_schedule_roles(
+                        :actor,CAST(ARRAY[:activity] AS uuid[])) WHERE role_code='planned'"""),
+                    {"actor": actor, "activity": activity},
+                )
+            ).scalar_one()
+        application = SessionApplication(runtime.session_factory)
+        main = SessionEditorWrite(
+            operation_id="editor-batch:main",
+            planned_schedule_ref=None,
+            session_ref=None,
+            expected_material_state_ref=None,
+            started_at=start,
+            ended_at=end,
+            pause_ranges=((start + timedelta(minutes=45), start + timedelta(minutes=60)),),
+        )
+        invalid_child = SessionEditorWrite(
+            operation_id="editor-batch:invalid-child",
+            planned_schedule_ref=planned,
+            session_ref=None,
+            expected_material_state_ref=None,
+            started_at=start + timedelta(minutes=30),
+            ended_at=start + timedelta(minutes=65),
+            pause_ranges=(),
+        )
+        with pytest.raises(SessionInputError):
+            await application.write_editor_batch(
+                self_person_ref=actor,
+                activity_ref=activity,
+                commands=(invalid_child, main),
+            )
+        assert not await application.list_for_subject(
+            self_person_ref=actor, subject_native_ref=activity
+        ), "A failed child must roll back the main, not leave a partial recording."
+        valid_child = SessionEditorWrite(
+            operation_id="editor-batch:valid-child",
+            planned_schedule_ref=planned,
+            session_ref=None,
+            expected_material_state_ref=None,
+            started_at=start + timedelta(minutes=10),
+            ended_at=start + timedelta(minutes=35),
+            pause_ranges=(),
+        )
+        records = await application.write_editor_batch(
+            self_person_ref=actor,
+            activity_ref=activity,
+            commands=(valid_child, main),
+        )
+        assert len(records) == 2
+        assert records[0].planned_schedule_ref is None
+        assert records[1].planned_schedule_ref == planned
+        assert all(not record.open for record in records)
+        same = await application.write_editor_batch(
+            self_person_ref=actor,
+            activity_ref=activity,
+            commands=(main, valid_child),
+        )
+        assert [record.session_ref for record in same] == [
+            record.session_ref for record in records
+        ]
+        assert all(record.replayed for record in same)
+        assert len(
+            await application.list_for_subject(
+                self_person_ref=actor, subject_native_ref=activity
+            )
+        ) == 2
+    finally:
+        await runtime.dispose()
+
+
+@pytest.mark.asyncio
+async def test_grouped_editor_records_named_sessions_without_inventing_a_main(
+    migrated_database: Any,
+) -> None:
+    actor = _seed_self(migrated_database)
+    runtime = create_database_runtime(migrated_database.runtime_settings())
+    end = datetime.now(UTC) - timedelta(hours=1)
+    start = end - timedelta(hours=1)
+    try:
+        created = await TemporalAuthoringApplication(runtime.session_factory).create_activity(
+            self_person_ref=actor,
+            operation_id="editor-independent:create",
+            title="Independent sessions",
+            placement=AbsoluteIntervalPlacement(starts_at=start, ends_at=end),
+            planned_slices=(None,),
+            planned_slice_names=("Independent",),
+            session_capture_mode="disabled",
+        )
+        activity = created.item.subject_native_ref
+        async with runtime.session_factory() as session, session.begin():
+            planned = (
+                await session.execute(
+                    text("""SELECT schedule_ref FROM dante.get_self_activity_schedule_roles(
+                        :actor,CAST(ARRAY[:activity] AS uuid[])) WHERE role_code='planned'"""),
+                    {"actor": actor, "activity": activity},
+                )
+            ).scalar_one()
+        application = SessionApplication(runtime.session_factory)
+        result = await application.write_editor_batch(
+            self_person_ref=actor,
+            activity_ref=activity,
+            commands=(
+                SessionEditorWrite(
+                    operation_id="editor-independent:record",
+                    planned_schedule_ref=planned,
+                    session_ref=None,
+                    expected_material_state_ref=None,
+                    started_at=start,
+                    ended_at=end,
+                    pause_ranges=(),
+                ),
+            ),
+        )
+        assert len(result) == 1
+        assert result[0].planned_schedule_ref == planned
+        assert not result[0].open
+        assert [
+            record.planned_schedule_ref
+            for record in await application.list_for_subject(
+                self_person_ref=actor, subject_native_ref=activity
+            )
+        ] == [planned]
     finally:
         await runtime.dispose()

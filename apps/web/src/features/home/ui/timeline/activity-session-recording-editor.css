@@ -498,3 +498,171 @@ body:has(> .timeline-session-editor__backdrop)
     grid-row: 2;
   }
 }
+
+/* The Activity owns the outer group; active slices own the nested child slots. */
+.timeline-session-editor__activity-name {
+  margin: 0 0 16px;
+  color: #e4f0ff;
+  font-size: 16px;
+  font-weight: 650;
+}
+
+.timeline-session-editor__independent {
+  display: grid;
+  gap: 14px;
+}
+
+.timeline-session-editor__group.has-main {
+  display: grid;
+  gap: 15px;
+  padding: 18px;
+}
+
+.timeline-session-editor__group.has-main > .timeline-session-editor__row-header {
+  padding-bottom: 14px;
+  border-bottom: 1px solid #344b63;
+}
+
+.timeline-session-editor__parent-interval {
+  min-width: 0;
+  margin: 0;
+}
+
+.timeline-session-editor__interval-block {
+  min-width: 0;
+}
+
+.timeline-session-editor__recorded-interval {
+  display: grid;
+  grid-template-columns: minmax(92px, 0.45fr) minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 12px;
+  min-height: 42px;
+}
+
+.timeline-session-editor__recorded-interval strong {
+  color: #adc3d9;
+  font-size: 12px;
+  text-transform: uppercase;
+}
+
+.timeline-session-editor__recorded-interval > span {
+  color: #e1edf9;
+  overflow-wrap: anywhere;
+  font-size: 13px;
+}
+
+.timeline-session-editor__recorded-interval button {
+  min-height: 34px;
+  padding: 6px 12px;
+  border: 1px solid #547998;
+  border-radius: 8px;
+  color: #d5eafe;
+  background: #1d3451;
+  font: inherit;
+  font-size: 12px;
+  font-weight: 650;
+}
+
+.timeline-session-editor__recorded-interval button:hover {
+  background: #284767;
+}
+
+.timeline-session-editor__group .timeline-session-editor__row.is-child,
+.timeline-session-editor__independent .timeline-session-editor__row.is-child {
+  min-width: 0;
+  padding: 14px;
+  border: 1px solid #47617c;
+  border-left: 3px solid #789abb;
+  border-radius: 10px;
+  background: #112034;
+}
+
+.timeline-session-editor__independent .timeline-session-editor__row.is-child {
+  border-left-color: #fa6925;
+}
+
+.timeline-session-editor__row.is-child .timeline-session-editor__intervals {
+  margin-top: 14px;
+}
+
+.timeline-session-editor__row.is-child .timeline-session-editor__interval-block +
+.timeline-session-editor__interval-block,
+.timeline-session-editor__group.has-main > .timeline-session-editor__parent-interval +
+.timeline-session-editor__parent-interval {
+  margin-top: 10px;
+}
+
+.timeline-session-editor__row.is-child .timeline-session-editor__add-interval,
+.timeline-session-editor__group.has-main > .timeline-session-editor__add-interval {
+  margin-top: 12px;
+}
+
+.timeline-session-editor__interval-block[data-invalid] {
+  border: 1px solid #fb6875;
+  border-radius: 8px;
+  padding: 6px;
+}
+
+.timeline-session-editor__interval-block[data-invalid]
+  .temporal-create-date-picker__trigger,
+.timeline-session-editor__interval-block[data-invalid]
+  .temporal-create-time-control__field {
+  border-color: #fb6875;
+}
+
+.timeline-session-editor__clamp-note {
+  color: #ffadba;
+  margin: 7px 0 0;
+  font-size: 12px;
+}
+
+.timeline-session-editor__group.has-main
+  .timeline-session-editor__parent-interval .timeline-session-editor__child-slot {
+  margin-top: 12px;
+  min-width: 0;
+}
+
+.timeline-session-editor__group.has-main
+  .timeline-session-editor__parent-interval .timeline-session-editor__child-slot:empty {
+  display: none;
+}
+
+.timeline-session-editor__row-header h3 {
+  font-size: 16px;
+  overflow-wrap: anywhere;
+}
+
+.timeline-session-editor__row-header small {
+  color: #aabed4;
+  font-size: 12px;
+}
+
+@media (max-width: 780px) {
+  .timeline-session-editor__recorded-interval {
+    grid-template-columns: minmax(0, 1fr) auto;
+  }
+
+  .timeline-session-editor__recorded-interval strong {
+    grid-column: 1 / -1;
+  }
+}
+
+@media (max-width: 650px) {
+  .timeline-session-editor__group.has-main {
+    padding: 12px;
+  }
+
+  .timeline-session-editor__parent-interval {
+    padding: 10px;
+  }
+
+  .timeline-session-editor__group.has-main
+    .timeline-session-editor__parent-interval .timeline-session-editor__child-slot {
+    padding-left: 7px;
+  }
+
+  .timeline-session-editor__group .timeline-session-editor__row.is-child {
+    padding: 10px;
+  }
+}

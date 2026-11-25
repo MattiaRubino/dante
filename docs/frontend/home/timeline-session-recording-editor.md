@@ -31,25 +31,49 @@ fattuali già previste dall'API. La barra distingue tempo attivo e pause.
 Il campo non rappresenta l'orario pianificato della Sessione interna.
 
 Il pannello usa gli stessi selettori data e ora di Crea/Modifica, con il fuso
-dell'Attività fisso. Quando è presente la Sessione attività, principale e
-secondarie formano un unico gruppo: ogni secondaria registrata appare sotto
-l'intervallo attivo della principale in cui inizia. Sotto ciascun intervallo
-«+ Sessione» permette di scegliere una secondaria ancora da registrare e
-precompila i limiti del tratto; resta disabilitato finché la principale non è
-conclusa. Una secondaria che attraversa più tratti conserva un'unica identità
-e le proprie pause; il grafico comune mostra tutti i suoi tratti attivi.
-Dopo il salvataggio i campi si richiudono. «Correggi» riapre i controlli
-senza creare una seconda registrazione. Senza principale, ogni secondaria
-conserva il proprio riepilogo indipendente. Prima della richiesta, gli errori
-di ordine e di contenimento nella principale sono evidenziati sull'intervallo.
+dell'Attività fisso. Quando è presente la Sessione attività, l'editor usa due livelli:
+ogni intervallo attivo della principale è un padre, sotto il quale l'azione
+«Registra sessione» sceglie una Sessione secondaria già configurata.
+La scelta non crea una nuova definizione. La principale e le secondarie
+ancora da registrare sono configurabili nella stessa bozza, senza dover
+salvare prima la principale. Ogni secondaria conserva una sola SessionRef,
+anche se possiede più intervalli attivi distribuiti su diversi tratti
+della principale. Le pause sono i vuoti tra intervalli attivi e non esiste
+un editor separato delle pause. Due secondarie possono sovrapporsi tra
+loro; due intervalli della stessa Sessione no.
+
+Una secondaria deve restare dentro i tratti attivi della principale:
+la UI restringe l'orario che supera il limite e mostra il bordo rosso
+localizzato; la conferma rivalida sempre i vincoli in PostgreSQL.
+Con principale disabilitata, le secondarie usano blocchi autonomi con gli
+stessi controlli, senza limiti di padre inventati.
+
+Il salvataggio di principale e secondarie avviene tramite un comando
+di gruppo atomico, in una transazione SERIALIZABLE, ordinando principale
+prima delle secondarie e riportando qualsiasi errore senza scritture
+parziali. Il vecchio comando di una Sessione per volta rimane disponibile
+per compatibilità, ma non è più usato dal nuovo pannello. Il client
+verifica le ricevute e la rilettura canonica prima di abbandonare i dati
+temporanei. Le registrazioni salvate sono mostrate in sola lettura;
+«Correggi» è accanto all'intervallo e apre la modifica della stessa
+Sessione. Correggere mantiene SessionRef e storico MaterialState.
+Una Sessione live aperta non è correggibile qui.
+
+Il pannello mantiene la stessa riga data/ora di Create/Edit ma
+rimuove il testo decorativo sul fuso. Il nome dell'Attività è sopra
+la card principale. Aggiungi intervallo modifica soltanto i tratti
+attivi della registrazione, mai gli Schedule dell'Activity.
+Il punto d'ingresso da «Da verificare» resta fuori da questa candidata.
 
 Il calendario usa orari locali nel fuso indicato e converte in istanti
 assoluti prima della scrittura. Un'ora inesistente durante il cambio d'ora
 è rifiutata; per un'ora ripetuta l'utente sceglie «Prima volta» o «Seconda
 volta». Una correzione ripropone la scelta corrispondente all'istante già
 registrato. Gli errori di input o del server
-restano accanto al modulo attivo. Il salvataggio è per tentativo e non cambia
-la configurazione di Activity, Schedule o delle altre Sessioni. Dopo il
+restano accanto al modulo attivo. Il salvataggio del pannello è atomico per il gruppo di registrazioni
+modificate, ma ogni Sessione conserva il proprio tentativo e la propria
+identità. Non cambia la configurazione di Activity, Schedule o delle altre
+Sessioni non incluse nella richiesta. Dopo il
 successo, il pannello rilegge la fonte canonica e notifica Timeline,
 Inspector e pannello destro. Una registrazione già conclusa non torna
 avviabile per effetto del salvataggio.

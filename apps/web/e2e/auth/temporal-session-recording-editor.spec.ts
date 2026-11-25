@@ -73,7 +73,6 @@ test('Inspector records and corrects a concluded named Session without offering 
     });
     await expect(editor).toBeVisible();
     const row = editor.locator('article').filter({ hasText: 'Lettura' });
-    await row.getByRole('button', { name: 'Registra' }).click();
     await setClock(row, 1, 'Inizio', date, '09:05');
     await setClock(row, 1, 'Fine', date, '09:25');
     const firstWrite = page.waitForResponse(
@@ -81,11 +80,11 @@ test('Inspector records and corrects a concluded named Session without offering 
         response
           .url()
           .endsWith(
-            `/api/v1/temporal/activities/${item.sourceRef}/sessions/editor`,
+            `/api/v1/temporal/activities/${item.sourceRef}/sessions/editor/batch`,
           ) && response.request().method() === 'POST',
       { timeout: 15_000 },
     );
-    await row.getByRole('button', { name: 'Salva registrazione' }).click();
+    await editor.getByRole('button', { name: 'Salva registrazioni' }).click();
     const firstResponse = await firstWrite;
     expect(firstResponse.status()).toBe(201);
     await expect(row.getByRole('button', { name: 'Correggi' })).toBeVisible();
@@ -114,11 +113,11 @@ test('Inspector records and corrects a concluded named Session without offering 
         response
           .url()
           .endsWith(
-            `/api/v1/temporal/activities/${item.sourceRef}/sessions/editor`,
+            `/api/v1/temporal/activities/${item.sourceRef}/sessions/editor/batch`,
           ) && response.request().method() === 'POST',
       { timeout: 15_000 },
     );
-    await row.getByRole('button', { name: 'Salva registrazione' }).click();
+    await editor.getByRole('button', { name: 'Salva registrazioni' }).click();
     const correctionResponse = await correction;
     expect(correctionResponse.status()).toBe(200);
     const [corrected] = await read();
@@ -131,7 +130,7 @@ test('Inspector records and corrects a concluded named Session without offering 
   }
 });
 
-test('Inspector records a main Session with an inferred pause and places a child inside its second active interval', async ({
+test('Inspector configures main and named child together with one atomic save and canonical readback', async ({
   browser,
 }, info) => {
   test.setTimeout(120_000);
@@ -143,84 +142,57 @@ test('Inspector records a main Session with an inferred pause and places a child
     const title = uniqueTitle('Intervalli Sessione attività');
     const composer = await openCreate(page, 'activity');
     await configureCreate(composer, {
-      kind: 'activity',
-      title,
-      date,
-      clock: '09:00',
-      plannedSession: 'Lettura',
+      kind: 'activity', title, date, clock: '09:00', plannedSession: 'Lettura',
     });
-    await composer
-      .getByRole('checkbox', { name: 'Sessione', exact: true })
-      .check();
+    await composer.getByRole('checkbox', { name: 'Sessione', exact: true }).check();
     const item = await submitCreate(page, composer, {
-      kind: 'activity',
-      title,
-      recurring: false,
+      kind: 'activity', title, recurring: false,
     });
     await openHome(page, date);
     const inspector = await openInspector(page, item);
-    await inspector
-      .getByRole('button', { name: 'Registrazioni delle Sessioni' })
-      .click();
-    const editor = page.getByRole('dialog', {
-      name: 'Registrazioni delle Sessioni',
-    });
-    const main = editor.locator('article.is-main');
-    await main.getByRole('button', { name: 'Registra' }).click();
+    await inspector.getByRole('button', { name: 'Registrazioni delle Sessioni' }).click();
+    const editor = page.getByRole('dialog', { name: 'Registrazioni delle Sessioni' });
+    const main = editor.locator('section.timeline-session-editor__group.has-main');
     await setClock(main, 1, 'Inizio', date, '09:05');
     await setClock(main, 1, 'Fine', date, '09:15');
     await main.getByRole('button', { name: /Aggiungi intervallo/ }).click();
     await setClock(main, 2, 'Inizio', date, '09:20');
     await setClock(main, 2, 'Fine', date, '09:30');
-    const mainWrite = page.waitForResponse(
-      (response) =>
-        response
-          .url()
-          .endsWith(
-            `/api/v1/temporal/activities/${item.sourceRef}/sessions/editor`,
-          ) && response.request().method() === 'POST',
-    );
-    await main.getByRole('button', { name: 'Salva registrazione' }).click();
-    expect((await mainWrite).status()).toBe(201);
-    const intervals = editor.locator(
-      '.timeline-session-editor__parent-interval',
-    );
+    const intervals = editor.locator('.timeline-session-editor__parent-interval');
     await expect(intervals).toHaveCount(2);
-    await intervals.nth(1).getByRole('button', { name: '+ Sessione' }).click();
+    await intervals.nth(1).getByRole('button', { name: /Registra sessione/ }).click();
     await intervals.nth(1).getByRole('button', { name: 'Lettura' }).click();
     const child = intervals.nth(1).locator('article.is-child');
     await expect(child).toBeVisible();
     await setClock(child, 1, 'Inizio', date, '09:22');
     await setClock(child, 1, 'Fine', date, '09:27');
-    const childWrite = page.waitForResponse(
-      (response) =>
-        response
-          .url()
-          .endsWith(
-            `/api/v1/temporal/activities/${item.sourceRef}/sessions/editor`,
-          ) && response.request().method() === 'POST',
+
+    const target = '/api/v1/temporal/activities/' + item.sourceRef + '/sessions/editor/batch';
+    const groupWrite = page.waitForResponse(
+      (response) => response.url().endsWith(target) && response.request().method() === 'POST',
     );
-    await child.getByRole('button', { name: 'Salva registrazione' }).click();
-    expect((await childWrite).status()).toBe(201);
-    await expect(
-      intervals
-        .nth(1)
-        .locator('article.is-child')
-        .getByRole('button', { name: 'Correggi' }),
-    ).toBeVisible();
+    await editor.getByRole('button', { name: 'Salva registrazioni' }).click();
+    const groupReceipt = await groupWrite;
+    expect(groupReceipt.status()).toBe(201);
+    const submitted = groupReceipt.request().postDataJSON() as {
+      commands: Array<{ planned_schedule_ref: string | null }>;
+    };
+    expect(submitted.commands).toHaveLength(2);
+    expect(submitted.commands[0]?.planned_schedule_ref).toBeNull();
+    expect(submitted.commands[1]?.planned_schedule_ref).not.toBeNull();
+    await expect(editor.locator('article.is-child').getByRole('button', { name: 'Correggi' })).toBeVisible();
     const recordings = (await serverRead(
-      page,
-      `/api/v1/temporal/activities/${item.sourceRef}/sessions/editor`,
+      page, '/api/v1/temporal/activities/' + item.sourceRef + '/sessions/editor',
     )) as Array<{
+      session_ref: string;
       planned_schedule_ref: string | null;
       pause_ranges: unknown[];
+      ended_at: string | null;
     }>;
-    expect(
-      recordings.find((row) => row.planned_schedule_ref === null)?.pause_ranges,
-    ).toHaveLength(1);
-    expect(
-      recordings.filter((row) => row.planned_schedule_ref !== null),
-    ).toHaveLength(1);
+    expect(recordings).toHaveLength(2);
+    expect(recordings.find((row) => row.planned_schedule_ref === null)?.pause_ranges).toHaveLength(1);
+    expect(recordings.filter((row) => row.planned_schedule_ref !== null)).toHaveLength(1);
+    expect(recordings.every((row) => Boolean(row.ended_at))).toBe(true);
   } finally {
     await user.close().catch(() => {});
   }

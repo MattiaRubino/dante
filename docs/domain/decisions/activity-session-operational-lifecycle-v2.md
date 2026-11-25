@@ -97,6 +97,20 @@ tentativi fattuali ancora esistenti. L'editor è dedicato agli intervalli
 il timer live e non aggiunge/rimuove configurazioni pianificate. Mostra tutti
 i tentativi della stessa Attività, distinguendo principale e secondarie.
 
+**Editor di gruppo approvato il 25 novembre:** l'utente può configurare
+in una sola bozza principale e secondarie, con gerarchia visiva per
+intervallo attivo della principale. Registra sessione sceglie una
+Sessione pianificata già configurata, non crea una seconda configurazione.
+Ogni Sessione conserva un unico tentativo con fino a 100 intervalli attivi
+e pause derivate dagli spazi fra i tratti. Quando la principale è
+disabilitata, le secondarie sono blocchi autonomi. Il salvataggio
+di gruppo è atomico; PostgreSQL revalida contenimento, storia,
+idempotenza, proprietario e revisioni. Una correzione non può
+invalidare una secondaria già registrata. La UI può restringere
+il valore immesso ai limiti del padre, ma non può aggirare
+la verifica transazionale. Il nuovo editor non modifica
+Play/Pausa/Stop, Schedule o le regole di ricorrenza.
+
 «Registra» accetta inizio/fine nel passato e pause ordinate. Il risultato è
 una Sessione conclusa, non una Sessione pronta per Play. Una configurazione
 già registrata non offre una seconda registrazione manuale; resta «Correggi»

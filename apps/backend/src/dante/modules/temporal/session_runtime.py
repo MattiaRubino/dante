@@ -63,6 +63,20 @@ class SessionPersistenceError(RuntimeError):
     """Canonical Session persistence could not complete safely."""
 
 
+
+@dataclass(frozen=True, slots=True)
+class SessionEditorWrite:
+    """One factual Session edit inside an atomic Activity recording group."""
+
+    operation_id: str
+    planned_schedule_ref: ScopedRecordRef | None
+    session_ref: NativeRef | None
+    expected_material_state_ref: MaterialStateRef | None
+    started_at: datetime
+    ended_at: datetime
+    pause_ranges: tuple[tuple[datetime, datetime], ...]
+
+
 @dataclass(frozen=True, slots=True)
 class SessionDurationEvaluation:
     """Current direct Activity rule evaluated against this Session's active time."""
@@ -281,6 +295,8 @@ class SessionApplication:
             or (session_ref is None) != (expected_material_state_ref is None)
         ):
             raise SessionInputError("Inserisci un intervallo concluso e valido.")
+        if len(pause_ranges) > 99:
+            raise SessionInputError("Sono ammessi al massimo 100 intervalli attivi.")
         previous = started_at
         for pause_start, pause_end in sorted(pause_ranges):
             if (
@@ -337,6 +353,119 @@ class SessionApplication:
             },
         )
         return await self._hydrate(self_person_ref, view)
+
+
+    async def write_editor_batch(
+        self,
+        *,
+        self_person_ref: NativeRef,
+        activity_ref: NativeRef,
+        commands: Sequence[SessionEditorWrite],
+    ) -> tuple[SessionView, ...]:
+        """Apply all intended factual edits in one PostgreSQL transaction.
+
+        A child can be recorded in this request only after its real main
+        recording has been written. If any command fails, the whole
+        transaction—including already inserted main attempts—is rolled back.
+        """
+        if not commands or len(commands) > 101:
+            raise SessionInputError("Inserisci da 1 a 101 registrazioni.")
+        planned_seen: set[ScopedRecordRef | None] = set()
+        operation_seen: set[str] = set()
+        ordered = sorted(commands, key=lambda command: command.planned_schedule_ref is not None)
+        prepared: list[dict[str, object]] = []
+        for command in ordered:
+            normalized = _normalize_operation_id(command.operation_id)
+            if normalized in operation_seen:
+                raise SessionInputError("Gli identificativi delle operazioni devono essere distinti.")
+            operation_seen.add(normalized)
+            if command.planned_schedule_ref in planned_seen:
+                raise SessionInputError("Una Sessione può comparire una sola volta nel salvataggio.")
+            planned_seen.add(command.planned_schedule_ref)
+            if (
+                command.started_at.tzinfo is None
+                or command.ended_at.tzinfo is None
+                or command.started_at >= command.ended_at
+                or command.ended_at > datetime.now(UTC)
+                or (command.session_ref is None)
+                != (command.expected_material_state_ref is None)
+            ):
+                raise SessionInputError("Inserisci intervalli conclusi e validi.")
+            if len(command.pause_ranges) > 99:
+                raise SessionInputError("Sono ammessi al massimo 100 intervalli attivi.")
+            previous = command.started_at
+            for pause_start, pause_end in sorted(command.pause_ranges):
+                if (
+                    pause_start.tzinfo is None
+                    or pause_end.tzinfo is None
+                    or pause_start <= previous
+                    or pause_start >= pause_end
+                    or pause_end > command.ended_at
+                ):
+                    raise SessionInputError("Le pause devono essere ordinate e interne alla Sessione.")
+                previous = pause_end
+            normalized_pauses = [
+                {
+                    "started_at": start.astimezone(UTC).isoformat(),
+                    "ended_at": end.astimezone(UTC).isoformat(),
+                }
+                for start, end in sorted(command.pause_ranges)
+            ]
+            fingerprint = _fingerprint(
+                {
+                    "version": "1",
+                    "command": "session_editor",
+                    "activity_ref": str(activity_ref),
+                    "planned_schedule_ref": str(command.planned_schedule_ref),
+                    "session_ref": str(command.session_ref),
+                    "expected_material_state_ref": str(command.expected_material_state_ref),
+                    "started_at": command.started_at.astimezone(UTC).isoformat(),
+                    "ended_at": command.ended_at.astimezone(UTC).isoformat(),
+                    "pause_ranges": json.dumps(normalized_pauses, sort_keys=True),
+                }
+            )
+            prepared.append(
+                {
+                    "actor": self_person_ref,
+                    "operation_id": normalized,
+                    "fingerprint": fingerprint,
+                    "activity": activity_ref,
+                    "planned": command.planned_schedule_ref,
+                    "session": command.session_ref or new_native_ref(),
+                    "expected_state": command.expected_material_state_ref,
+                    "result_state": new_material_state_ref(),
+                    "started_at": command.started_at,
+                    "ended_at": command.ended_at,
+                    "pauses": json.dumps(normalized_pauses),
+                }
+            )
+        statement = text(
+            """SELECT session_ref,subject_native_ref,timing_material_state_ref,
+                      started_at,ended_at,replayed
+                 FROM dante.write_self_activity_session_editor(
+                     :actor,:operation_id,:fingerprint,:activity,:planned,:session,
+                     :expected_state,:result_state,:started_at,:ended_at,CAST(:pauses AS jsonb)
+                 )"""
+        )
+        views: list[SessionView] = []
+        try:
+            async with self._session_factory() as database_session, database_session.begin():
+                await database_session.execute(
+                    text("SET TRANSACTION ISOLATION LEVEL SERIALIZABLE")
+                )
+                for parameters in prepared:
+                    result = await database_session.execute(statement, parameters)
+                    row = result.mappings().one()
+                    views.append(_view(row, replayed=bool(row["replayed"])))
+        except (IntegrityError, DBAPIError) as exc:
+            self._raise_known(exc)
+            raise SessionPersistenceError("Salvataggio delle registrazioni annullato.") from exc
+        except SQLAlchemyError as exc:
+            raise SessionPersistenceError("Salvataggio delle registrazioni annullato.") from exc
+        hydrated: list[SessionView] = []
+        for view in views:
+            hydrated.append(await self._hydrate(self_person_ref, view))
+        return tuple(hydrated)
 
     async def end(
         self,

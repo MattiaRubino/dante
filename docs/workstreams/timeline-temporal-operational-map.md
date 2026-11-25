@@ -1,5 +1,24 @@
 # Timeline / Temporal-Operational — Live Execution Ledger
 
+## 2026-11-25 — Editor registrazioni: due livelli e gruppo atomico (candidate)
+
+Decisione approvata dall'owner sul prototipo HTML v3/v4:
+principale con intervalli attivi padre e secondarie configurabili sotto
+ciascun intervallo, senza scrittura preventiva; senza principale,
+le Sessioni secondarie hanno card indipendenti. Correggi appare a
+destra degli orari salvati e mantiene SessionRef e storico.
+L'editor riutilizza le celle data/ora Dante e usa un solo pulsante
+Salva registrazioni. L'operazione di gruppo usa le routine SQL
+già esistenti, in una transazione SERIALIZABLE con rollback totale.
+I controlli includono intervalli ordinati, pause, contenimento,
+CAS, owner, replay e lettura dopo la scrittura.
+Nuovi/regrediti test PostgreSQL, component e Playwright sono
+candidate, NOT_RUN: niente PASS fino alla verifica in WSL sullo
+SHA pubblicato. Il nuovo contratto API richiede rigenerazione
+OpenAPI e client generato dal tooling ufficiale. Nessuna migrazione
+SQL è stata modificata.
+
+
 ## 2026-11-24 — Editor registrazioni delle Sessioni (candidate)
 
 L'Inspector Activity espone un'azione Sessioni solo per attività con

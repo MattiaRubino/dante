@@ -147,7 +147,7 @@ describe('Activity Session recording editor', () => {
     expect(await activityHasSessionRecordings(ACTIVITY)).toBe(true);
   });
 
-  it('records the main attempt once and then offers correction on the same factual identity', async () => {
+  it('records the main once and corrects its intervals with the same Session identity', async () => {
     let recorded: unknown[] = [];
     const submitted: Record<string, unknown>[] = [];
     const fetcher = vi.fn((input: RequestInfo | URL, init?: RequestInit) => {
@@ -159,27 +159,29 @@ describe('Activity Session recording editor', () => {
           schedules: [],
         });
       }
-      if (path.endsWith('/sessions/editor') && init?.method === 'POST') {
+      if (path.endsWith('/sessions/editor/batch') && init?.method === 'POST') {
         const body = JSON.parse(
           typeof init.body === 'string' ? init.body : '',
-        ) as Record<string, unknown>;
-        submitted.push(body);
+        ) as { commands: Record<string, unknown>[] };
+        expect(body.commands).toHaveLength(1);
+        const command = body.commands[0]!;
+        submitted.push(command);
         recorded = [
           {
             session_ref: MAIN,
             planned_schedule_ref: null,
             timing_material_state_ref: '019b0000-0000-7000-8000-000000000003',
-            started_at: body.started_at,
-            ended_at: body.ended_at,
-            pause_ranges: body.pause_ranges,
+            started_at: command.started_at,
+            ended_at: command.ended_at,
+            pause_ranges: command.pause_ranges,
           },
         ];
-        return mockResponse({});
+        return mockResponse(recorded);
       }
       if (path.endsWith('/sessions/editor')) return mockResponse(recorded);
       if (path.endsWith('/auth/session'))
         return mockResponse({ csrf_token: 'test' });
-      throw new Error(`Unexpected request: ${path}`);
+      throw new Error('Unexpected request: ' + path);
     });
     vi.stubGlobal('fetch', fetcher);
     render(
@@ -190,68 +192,45 @@ describe('Activity Session recording editor', () => {
         onClose={vi.fn()}
       />,
     );
-    const row = await screen.findByText('Sessione attività');
-    const card = row.closest('article');
-    expect(card).not.toBeNull();
-    fireEvent.click(within(card!).getByRole('button', { name: 'Registra' }));
+    const main = await screen.findByText('Sessione attività');
+    const group = main.closest('section.timeline-session-editor__group');
+    expect(group).not.toBeNull();
     const yesterday = new Date(Date.now() - 86_400_000)
       .toISOString()
       .slice(0, 10);
-    setClock(card!, 1, 'Inizio', yesterday, '09:00');
-    setClock(card!, 1, 'Fine', yesterday, '10:00');
-    fireEvent.click(
-      within(card!).getByRole('button', { name: 'Salva registrazione' }),
-    );
+    setClock(group!, 1, 'Inizio', yesterday, '09:00');
+    setClock(group!, 1, 'Fine', yesterday, '10:00');
+    fireEvent.click(screen.getByRole('button', { name: 'Salva registrazioni' }));
     const correct = await screen.findByRole('button', { name: 'Correggi' });
-    const recordedCard = correct.closest('article');
-    expect(recordedCard).not.toBeNull();
-    expect(
-      within(recordedCard!).queryByRole('button', { name: 'Registra' }),
-    ).toBeNull();
     expect(submitted).toHaveLength(1);
     expect(submitted[0]?.session_ref).toBeNull();
     fireEvent.click(correct);
     fireEvent.click(
-      within(recordedCard!).getByRole('button', {
-        name: /Aggiungi intervallo/,
-      }),
+      within(group!).getByRole('button', { name: /Aggiungi intervallo/ }),
     );
     expect(
-      within(recordedCard!)
+      within(group!)
         .getByRole('button', { name: /^Intervallo 1 · Data inizio:/ })
         .getAttribute('data-temporal-date'),
     ).toBe(yesterday);
-    setClock(recordedCard!, 1, 'Fine', yesterday, '09:20');
-    setClock(recordedCard!, 2, 'Inizio', yesterday, '09:30');
-    setClock(recordedCard!, 2, 'Fine', yesterday, '09:40');
+    setClock(group!, 1, 'Fine', yesterday, '09:20');
+    setClock(group!, 2, 'Inizio', yesterday, '09:30');
+    setClock(group!, 2, 'Fine', yesterday, '09:40');
     fireEvent.click(
-      within(recordedCard!).getByRole('button', {
-        name: /Aggiungi intervallo/,
-      }),
+      within(group!).getByRole('button', { name: /Aggiungi intervallo/ }),
     );
-    setClock(recordedCard!, 3, 'Inizio', yesterday, '09:50');
-    setClock(recordedCard!, 3, 'Fine', yesterday, '10:00');
-    fireEvent.click(
-      within(recordedCard!).getByRole('button', {
-        name: 'Salva registrazione',
-      }),
-    );
+    setClock(group!, 3, 'Inizio', yesterday, '09:50');
+    setClock(group!, 3, 'Fine', yesterday, '10:00');
+    fireEvent.click(screen.getByRole('button', { name: 'Salva registrazioni' }));
     await waitFor(() => expect(submitted).toHaveLength(2));
     expect(submitted[1]?.session_ref).toBe(MAIN);
-    expect(submitted[1]?.pause_ranges).toHaveLength(2);
     expect(submitted[1]?.pause_ranges).toEqual([
-      {
-        started_at: `${yesterday}T09:20:00.000Z`,
-        ended_at: `${yesterday}T09:30:00.000Z`,
-      },
-      {
-        started_at: `${yesterday}T09:40:00.000Z`,
-        ended_at: `${yesterday}T09:50:00.000Z`,
-      },
+      { started_at: yesterday + 'T09:20:00.000Z', ended_at: yesterday + 'T09:30:00.000Z' },
+      { started_at: yesterday + 'T09:40:00.000Z', ended_at: yesterday + 'T09:50:00.000Z' },
     ]);
   });
 
-  it('preserves which repeated local hour was recorded during the autumn clock change', async () => {
+  it('preserves the repeated local hour when correcting a recorded Session', async () => {
     vi.stubGlobal(
       'fetch',
       vi.fn((input: RequestInfo | URL) =>
@@ -262,17 +241,14 @@ describe('Activity Session recording editor', () => {
                 session_capture_mode: 'record_and_live',
                 schedules: [],
               }
-            : [
-                {
-                  session_ref: MAIN,
-                  planned_schedule_ref: null,
-                  timing_material_state_ref:
-                    '019b0000-0000-7000-8000-000000000003',
-                  started_at: '2020-10-25T00:30:00Z',
-                  ended_at: '2020-10-25T02:30:00Z',
-                  pause_ranges: [],
-                },
-              ],
+            : [{
+                session_ref: MAIN,
+                planned_schedule_ref: null,
+                timing_material_state_ref: '019b0000-0000-7000-8000-000000000003',
+                started_at: '2020-10-25T00:30:00Z',
+                ended_at: '2020-10-25T02:30:00Z',
+                pause_ranges: [],
+              }],
         ),
       ),
     );
@@ -290,46 +266,38 @@ describe('Activity Session recording editor', () => {
     ).toHaveProperty('value', 'earlier');
   });
 
-  it('shows the main and child recordings on one time axis and rejects a child outside the active parent', async () => {
-    const yesterday = new Date(Date.now() - 86_400_000)
-      .toISOString()
-      .slice(0, 10);
+  it('configures a child before saving its main, then submits one atomic group', async () => {
+    const yesterday = new Date(Date.now() - 86_400_000).toISOString().slice(0, 10);
+    const sent: Record<string, unknown>[][] = [];
+    let records: Record<string, unknown>[] = [];
     const fetcher = vi.fn((input: RequestInfo | URL, init?: RequestInit) => {
       const path = fetchPath(input);
-      if (path.endsWith('/children'))
-        return mockResponse({
-          parent_activity_ref: ACTIVITY,
-          session_capture_mode: 'record_and_live',
-          schedules: [
-            {
-              schedule_ref: MAIN,
-              role_code: 'planned',
-              presentation_order: 1,
-              display_name: 'Lettura',
-            },
-          ],
-        });
-      if (path.endsWith('/sessions/editor') && !init?.method)
-        return mockResponse([
-          {
-            session_ref: 'parent',
-            planned_schedule_ref: null,
-            timing_material_state_ref: 'parent-state',
-            started_at: `${yesterday}T09:00:00Z`,
-            ended_at: `${yesterday}T10:00:00Z`,
-            pause_ranges: [
-              {
-                started_at: `${yesterday}T09:20:00Z`,
-                ended_at: `${yesterday}T09:30:00Z`,
-              },
-              {
-                started_at: `${yesterday}T09:40:00Z`,
-                ended_at: `${yesterday}T09:45:00Z`,
-              },
-            ],
-          },
-        ]);
-      throw new Error(`Unexpected request: ${path}`);
+      if (path.endsWith('/children')) return mockResponse({
+        parent_activity_ref: ACTIVITY,
+        session_capture_mode: 'record_and_live',
+        schedules: [{
+          schedule_ref: MAIN,
+          role_code: 'planned',
+          presentation_order: 1,
+          display_name: 'Lettura',
+        }],
+      });
+      if (path.endsWith('/sessions/editor/batch') && init?.method === 'POST') {
+        const body = JSON.parse(String(init.body)) as { commands: Record<string, unknown>[] };
+        sent.push(body.commands);
+        records = body.commands.map((command, index) => ({
+          session_ref: index ? MAIN : '019b0000-0000-7000-8000-000000000004',
+          planned_schedule_ref: command.planned_schedule_ref,
+          timing_material_state_ref: '019b0000-0000-7000-8000-000000000005',
+          started_at: command.started_at,
+          ended_at: command.ended_at,
+          pause_ranges: command.pause_ranges,
+        }));
+        return mockResponse(records);
+      }
+      if (path.endsWith('/sessions/editor')) return mockResponse(records);
+      if (path.endsWith('/auth/session')) return mockResponse({ csrf_token: 'test' });
+      throw new Error('Unexpected request: ' + path);
     });
     vi.stubGlobal('fetch', fetcher);
     render(
@@ -340,34 +308,128 @@ describe('Activity Session recording editor', () => {
         onClose={vi.fn()}
       />,
     );
-    expect(
-      await screen.findByLabelText(
-        'Intervalli delle Sessioni sulla stessa scala oraria',
-      ),
-    ).toBeTruthy();
-    expect(screen.getAllByRole('button', { name: '+ Sessione' })).toHaveLength(
-      3,
-    );
-    fireEvent.click(screen.getAllByRole('button', { name: '+ Sessione' })[0]!);
-    fireEvent.click(screen.getByRole('button', { name: 'Lettura' }));
-    const child = screen
-      .getByText('Lettura', { selector: 'h3' })
-      .closest('article')!;
+    const main = await screen.findByText('Sessione attività');
+    const group = main.closest('section.timeline-session-editor__group')!;
+    setClock(group, 1, 'Inizio', yesterday, '09:00');
+    setClock(group, 1, 'Fine', yesterday, '10:00');
+    fireEvent.click(within(group).getByRole('button', { name: /Registra sessione/ }));
+    fireEvent.click(within(group).getByRole('button', { name: 'Lettura' }));
+    const child = within(group).getByText('Lettura', { selector: 'h3' }).closest('article')!;
     setClock(child, 1, 'Inizio', yesterday, '09:15');
     setClock(child, 1, 'Fine', yesterday, '09:35');
-    fireEvent.click(
-      within(child).getByRole('button', { name: 'Salva registrazione' }),
+    fireEvent.click(screen.getByRole('button', { name: 'Salva registrazioni' }));
+    await waitFor(() => expect(sent).toHaveLength(1));
+    expect(sent[0]).toHaveLength(2);
+    expect(sent[0]?.[0]?.planned_schedule_ref).toBeNull();
+    expect(sent[0]?.[1]?.planned_schedule_ref).toBe(MAIN);
+    expect(sent[0]?.[0]?.session_ref).toBeNull();
+    expect(sent[0]?.[1]?.session_ref).toBeNull();
+    await waitFor(() => expect(within(group).getAllByRole('button', { name: 'Correggi' })).toHaveLength(2));
+  });
+
+  it('clamps a child outside the parent and localizes the warning to its interval', async () => {
+    const yesterday = new Date(Date.now() - 86_400_000).toISOString().slice(0, 10);
+    const fetcher = vi.fn((input: RequestInfo | URL, init?: RequestInit) => {
+      const path = fetchPath(input);
+      if (path.endsWith('/children')) return mockResponse({
+        parent_activity_ref: ACTIVITY,
+        session_capture_mode: 'record_and_live',
+        schedules: [{
+          schedule_ref: MAIN,
+          role_code: 'planned',
+          presentation_order: 1,
+          display_name: 'Lettura',
+        }],
+      });
+      if (path.endsWith('/sessions/editor')) return mockResponse([{
+        session_ref: 'parent',
+        planned_schedule_ref: null,
+        timing_material_state_ref: 'parent-state',
+        started_at: yesterday + 'T09:00:00Z',
+        ended_at: yesterday + 'T10:00:00Z',
+        pause_ranges: [{
+          started_at: yesterday + 'T09:20:00Z',
+          ended_at: yesterday + 'T09:30:00Z',
+        }],
+      }]);
+      throw new Error('Unexpected request: ' + path);
+    });
+    vi.stubGlobal('fetch', fetcher);
+    render(
+      <ActivitySessionRecordingEditor
+        activityRef={ACTIVITY}
+        activityTitle="Scrivere"
+        timeZone="Etc/UTC"
+        onClose={vi.fn()}
+      />,
     );
-    expect(within(child).getByRole('alert').textContent).toContain(
-      'tratti attivi',
+    const options = await screen.findAllByRole('button', { name: /Registra sessione/ });
+    expect(options).toHaveLength(2);
+    fireEvent.click(options[0]!);
+    fireEvent.click(screen.getByRole('button', { name: 'Lettura' }));
+    const child = screen.getByText('Lettura', { selector: 'h3' }).closest('article')!;
+    setClock(child, 1, 'Inizio', yesterday, '09:15');
+    setClock(child, 1, 'Fine', yesterday, '09:35');
+    expect(within(child).getByText(/Orario riportato entro i limiti/)).toBeTruthy();
+    expect(child.querySelector('[data-invalid]')).not.toBeNull();
+    expect(fetcher.mock.calls.some(([, init]) => init?.method === 'POST')).toBe(false);
+  });
+
+  it('treats three unrecorded named Sessions as independent editable blocks when main is disabled', async () => {
+    const planned = [MAIN, '019b0000-0000-7000-8000-000000000006', '019b0000-0000-7000-8000-000000000007'];
+    const submissions: Record<string, unknown>[][] = [];
+    let stored: Record<string, unknown>[] = [];
+    const fetcher = vi.fn((input: RequestInfo | URL, init?: RequestInit) => {
+      const path = fetchPath(input);
+      if (path.endsWith('/children')) return mockResponse({
+        parent_activity_ref: ACTIVITY,
+        session_capture_mode: 'disabled',
+        schedules: planned.map((schedule_ref, index) => ({
+          schedule_ref,
+          role_code: 'planned',
+          presentation_order: index + 1,
+          display_name: 'Sessione ' + (index + 1),
+        })),
+      });
+      if (path.endsWith('/sessions/editor/batch') && init?.method === 'POST') {
+        const payload = JSON.parse(String(init.body)) as { commands: Record<string, unknown>[] };
+        submissions.push(payload.commands);
+        stored = payload.commands.map((command, index) => ({
+          session_ref: planned[index],
+          planned_schedule_ref: command.planned_schedule_ref,
+          timing_material_state_ref: planned[index],
+          started_at: command.started_at,
+          ended_at: command.ended_at,
+          pause_ranges: command.pause_ranges,
+        }));
+        return mockResponse(stored);
+      }
+      if (path.endsWith('/sessions/editor')) return mockResponse(stored);
+      if (path.endsWith('/auth/session')) return mockResponse({ csrf_token: 'test' });
+      throw new Error('Unexpected request: ' + path);
+    });
+    vi.stubGlobal('fetch', fetcher);
+    render(
+      <ActivitySessionRecordingEditor
+        activityRef={ACTIVITY}
+        activityTitle="Scrivere"
+        timeZone="Etc/UTC"
+        onClose={vi.fn()}
+      />,
     );
-    expect(
-      within(child)
-        .getByRole('button', { name: /^Intervallo 1 · Data fine:/ })
-        .getAttribute('aria-invalid'),
-    ).toBe('true');
-    expect(fetcher.mock.calls.some(([, init]) => init?.method === 'POST')).toBe(
-      false,
-    );
+    const independent = await screen.findByText('Sessione 1');
+    const list = independent.closest('.timeline-session-editor__independent');
+    expect(list).not.toBeNull();
+    const yesterday = new Date(Date.now() - 86_400_000).toISOString().slice(0, 10);
+    for (const [index, title] of ['Sessione 1','Sessione 2','Sessione 3'].entries()) {
+      const card = within(list as HTMLElement).getByText(title, { selector: 'h3' }).closest('article')!;
+      setClock(card, 1, 'Inizio', yesterday, '09:00');
+      setClock(card, 1, 'Fine', yesterday, '10:00');
+      expect(index).toBeGreaterThanOrEqual(0);
+    }
+    fireEvent.click(screen.getByRole('button', { name: 'Salva registrazioni' }));
+    await waitFor(() => expect(submissions).toHaveLength(1));
+    expect(submissions[0]).toHaveLength(3);
+    expect(submissions[0]!.map((command) => command.planned_schedule_ref)).toEqual(planned);
   });
 });

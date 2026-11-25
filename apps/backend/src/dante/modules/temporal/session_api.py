@@ -17,6 +17,7 @@ from dante.modules.temporal.session_runtime import (
     SessionApplication,
     SessionCaptureDisabledError,
     SessionEditorConflictError,
+    SessionEditorWrite,
     SessionEndConflictError,
     SessionInputError,
     SessionNotFoundError,
@@ -65,7 +66,16 @@ class SessionEditorCommand(SessionCommand):
     planned_schedule_ref: UUID | None = Field(default=None, strict=False)
     session_ref: UUID | None = Field(default=None, strict=False)
     expected_material_state_ref: UUID | None = Field(default=None, strict=False)
-    pause_ranges: list[SessionEditorPauseInput] = Field(default_factory=list)
+    pause_ranges: list[SessionEditorPauseInput] = Field(default_factory=list, max_length=99)
+
+
+
+class SessionEditorBatchCommand(BaseModel):
+    """Atomic group of corrections and new concluded recordings."""
+
+    model_config = ConfigDict(extra="forbid", strict=True)
+
+    commands: list[SessionEditorCommand] = Field(min_length=1, max_length=101)
 
 
 class SessionEditorAttempt(BaseModel):
@@ -341,6 +351,65 @@ async def record_manual_activity_session(
         raise _problem(exc) from exc
     response.status_code = 200 if view.replayed else 201
     return _response(view)
+
+
+
+@router.post(
+    "/activities/{activity_ref}/sessions/editor/batch",
+    response_model=list[SessionResponse],
+    operation_id="temporal_write_activity_session_editor_batch",
+)
+async def write_activity_session_editor_batch(
+    activity_ref: UUID,
+    payload: SessionEditorBatchCommand,
+    context: MutatingContext,
+    application: Application,
+    response: Response,
+) -> list[SessionResponse]:
+    try:
+        views = await application.write_editor_batch(
+            self_person_ref=context.self_person_ref,
+            activity_ref=NativeRef(activity_ref),
+            commands=tuple(
+                SessionEditorWrite(
+                    operation_id=command.operation_id,
+                    planned_schedule_ref=(
+                        ScopedRecordRef(command.planned_schedule_ref)
+                        if command.planned_schedule_ref is not None
+                        else None
+                    ),
+                    session_ref=NativeRef(command.session_ref) if command.session_ref else None,
+                    expected_material_state_ref=(
+                        MaterialStateRef(command.expected_material_state_ref)
+                        if command.expected_material_state_ref
+                        else None
+                    ),
+                    started_at=command.started_at,
+                    ended_at=command.ended_at,
+                    pause_ranges=tuple(
+                        (item.started_at, item.ended_at) for item in command.pause_ranges
+                    ),
+                )
+                for command in payload.commands
+            ),
+        )
+    except (
+        SessionInputError,
+        SessionNotFoundError,
+        SessionOperationReuseError,
+        SessionPersistenceError,
+        SessionCaptureDisabledError,
+        SessionEditorConflictError,
+    ) as exc:
+        raise _problem(exc) from exc
+    response.status_code = (
+        200
+        if all(view.replayed for view in views)
+        or all(command.session_ref is not None for command in payload.commands)
+        else 201
+    )
+    response.headers["Cache-Control"] = "no-store"
+    return [_response(view) for view in views]
 
 
 @router.get(
