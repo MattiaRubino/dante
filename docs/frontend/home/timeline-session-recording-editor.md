@@ -1,7 +1,7 @@
 # Editor delle registrazioni delle Sessioni
 
-**Stato:** candidate sul branch Timeline; prova PostgreSQL e revisione visiva
-locale ancora aperte. Regole di dominio:
+**Stato:** candidate sul branch Timeline; E2E con PostgreSQL superato,
+revisione visiva locale ancora aperta. Regole di dominio:
 [`activity-session-operational-lifecycle-v2.md`](../../domain/decisions/activity-session-operational-lifecycle-v2.md).
 
 L'Inspector di un'Attività mostra l'azione «Registrazioni delle Sessioni»
@@ -55,5 +55,6 @@ componente; non è incluso nel candidate di questa prima implementazione.
 Il test browser autenticato `temporal-session-recording-editor.spec.ts`
 copre Create → Inspector → Registra → Correggi e rilegge la Sessione dal
 backend dopo entrambi i salvataggi. L'owner lo ha eseguito sullo stack reale
-con PostgreSQL migrato: **1 passato in 22,0 s** sul commit `9eefa40`.
+con PostgreSQL migrato: **1 passato in 22,0 s** sul commit `9eefa40` e
+**1 passato in 20,9 s** dopo il riordino grafico del commit `e1e4d6c`.
 La revisione visiva manuale e il gate completo restano separati.
