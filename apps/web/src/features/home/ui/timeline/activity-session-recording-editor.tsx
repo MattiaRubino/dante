@@ -152,9 +152,12 @@ function IntervalFields({
         window.requestAnimationFrame?.(() => {
           // The picker lives inside our fixed-height scrolling region.
           // Scroll it into view rather than letting the footer clip it.
-          intervalRoot.querySelector<HTMLElement>(
+          const popover = intervalRoot.querySelector<HTMLElement>(
             '.temporal-create-date-picker__popover',
-          )?.scrollIntoView({ block: 'nearest', inline: 'nearest' });
+          );
+          if (popover && typeof popover.scrollIntoView === 'function') {
+            popover.scrollIntoView({ block: 'nearest', inline: 'nearest' });
+          }
         });
       }}
     >
