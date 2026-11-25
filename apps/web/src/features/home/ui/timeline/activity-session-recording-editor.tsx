@@ -542,13 +542,14 @@ function clampToMain(
   return {
     draft: {
       intervals: draft.intervals.map((item, index) => {
+        let parsed: ResolvedInterval | undefined;
         try {
-          const parsed = resolveIntervals({ intervals: [item] }, zone)[0];
-          if (!parsed || !Number.isFinite(parsed.start) || !Number.isFinite(parsed.end))
-            return item;
+          parsed = resolveIntervals({ intervals: [item] }, zone)[0];
         } catch {
           return item;
         }
+        if (!parsed || !Number.isFinite(parsed.start) || !Number.isFinite(parsed.end))
+          return item;
         const within = parents.findIndex(
           (parent) => parsed.start >= parent.start && parsed.start < parent.end,
         );
