@@ -50,6 +50,7 @@ export function ActivityInspectorActions({
   onVaultMoved,
   onCancelScope,
   onVaultReviewChange,
+  onSessionSaved,
   toolbarTarget = null,
   timeZone,
 }: Readonly<{
@@ -64,6 +65,7 @@ export function ActivityInspectorActions({
   onDuplicate: (seed: ActivityDuplicateSeed) => void;
   onCancelScope?: () => void;
   onVaultReviewChange?: (active: boolean) => void;
+  onSessionSaved?: () => void;
   toolbarTarget?: HTMLElement | null;
   timeZone?: string;
 }>) {
@@ -402,6 +404,10 @@ export function ActivityInspectorActions({
           onClose={() => {
             setSessionEditorOpen(false);
             requestAnimationFrame(() => sessionEditorButton.current?.focus());
+          }}
+          onSaved={() => {
+            setSessionEditorOpen(false);
+            onSessionSaved?.();
           }}
         />
       ) : null}

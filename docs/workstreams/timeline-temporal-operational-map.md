@@ -1,5 +1,37 @@
 # Timeline / Temporal-Operational — Live Execution Ledger
 
+## 2026-11-25 — Registrazioni Sessioni: scroll interno, ripresa su più padri, chiusura dopo Save (candidate)
+
+Dopo l'accettazione visiva preliminare, l'owner ha eseguito i test mirati
+TypeScript e Vitest **9/9**, poi Playwright reale **2/2 in 23,5 s** sul
+commit `f76dda4`. La prova manuale ha mostrato tre modifiche necessarie:
+spostare la scrollbar nell'area centrale senza far scorrere testata e
+footer Salva; consentire che **una stessa** Sessione secondaria abbia
+tratti nei diversi intervalli della principale con una pausa fra essi;
+chiudere editor e Inspector tornando alla Home dopo una scrittura accettata.
+
+Candidata: «Registra sessione» nell'intervallo successivo espone
+«Nome · Riprendi» per le secondarie già scelte. Il nuovo tratto viene
+aggiunto ordinatamente alla stessa bozza o correzione; è una sola
+SessionRef anche alla lettura canonica dopo il salvataggio. La ripresa
+di una Sessione già salvata conserva SessionRef e aggiorna solo
+MaterialState. La riga è visualizzata nel padre pertinente; il vincolo
+di pause/contenimento rimane verificato sul server. La scrollbar è
+interna al corpo, il pulsante Salva rimane nel footer fisso, e il pannello
+chiude anche l'Inspector **solo dopo** conferma di receipts + rilettura.
+In caso di errore, il pannello resta aperto.
+
+Regressioni aggiunte: Vitest per i due tratti della stessa Sessione,
+ripresa dopo registrazione, e footer fuori dallo scroller; nuovo E2E
+real-stack con continuazione nel secondo intervallo, salvataggio,
+rilettura distribuita, correzione della stessa identità e chiusura
+verso Home; PostgreSQL per la pausa secondaria che copre quella del
+padre e correzione senza nuovo tentativo. **NOT_RUN** sul commit
+di questa candidata fino al prossimo risultato dell'owner; il precedente
+2/2 non prova queste novità. Nessuna migrazione DB aggiunta e nessuna
+modifica ai controlli live, al piano o alla ricorrenza.
+
+
 ## 2026-11-25 — Editor registrazioni: due livelli e gruppo atomico (candidate)
 
 Decisione approvata dall'owner sul prototipo HTML v3/v4:

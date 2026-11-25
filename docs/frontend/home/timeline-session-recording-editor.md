@@ -8,8 +8,11 @@ L'Inspector di un'Attività mostra l'azione «Registrazioni delle Sessioni»
 accanto alle altre azioni solo quando esiste la principale, una secondaria
 configurata o almeno un tentativo storico. Il pannello separato riusa il nome
 dell'Attività, il fuso di visualizzazione della Timeline e il linguaggio
-grafico degli editor Dante. Scorrono soltanto le registrazioni, non la testata.
-Su schermi stretti i campi inizio/fine sono impilati.
+grafico degli editor Dante. La testata e il titolo dell'Attività restano fissi:
+**solo il corpo delle registrazioni scorre** in un'area dedicata. Anche il
+footer con «Salva registrazioni» ed eventuali errori rimane sempre visibile,
+fuori dallo scorrimento; date, orari, menu e pulsanti mantengono gli stessi
+controlli interattivi. Su schermi stretti i campi inizio/fine sono impilati.
 
 La presenza dell'azione deriva dalla struttura Activity (`/children`) e dalle
 Sessioni già presenti (`/sessions`), anche se una delle due letture non è
@@ -36,9 +39,17 @@ ogni intervallo attivo della principale è un padre, sotto il quale l'azione
 «Registra sessione» sceglie una Sessione secondaria già configurata.
 La scelta non crea una nuova definizione. La principale e le secondarie
 ancora da registrare sono configurabili nella stessa bozza, senza dover
-salvare prima la principale. Ogni secondaria conserva una sola SessionRef,
-anche se possiede più intervalli attivi distribuiti su diversi tratti
-della principale. Le pause sono i vuoti tra intervalli attivi e non esiste
+salvare prima la principale. Se una Sessione già scelta per l'intervallo 1
+riprende nell'intervallo 2, il menu offre **«Nome · Riprendi»**:
+aggiunge un altro intervallo attivo **alla stessa registrazione**, non
+crea un nuovo tentativo. Ogni tratto della secondaria è presentato sotto
+il relativo intervallo attivo padre, con la propria riga data/ora.
+La pausa fra due tratti secondari include necessariamente la pausa della
+principale. La secondaria conserva una sola SessionRef, un'unica bozza e
+un'unica scrittura, anche se appare in più intervalli padre. Una
+registrazione già conclusa può essere ripresa retroattivamente tramite
+correzione della stessa SessionRef e nuovo MaterialState, mai con
+un secondo tentativo fittizio. Le pause sono i vuoti tra intervalli attivi e non esiste
 un editor separato delle pause. Due secondarie possono sovrapporsi tra
 loro; due intervalli della stessa Sessione no.
 
@@ -54,7 +65,9 @@ prima delle secondarie e riportando qualsiasi errore senza scritture
 parziali. Il vecchio comando di una Sessione per volta rimane disponibile
 per compatibilità, ma non è più usato dal nuovo pannello. Il client
 verifica le ricevute e la rilettura canonica prima di abbandonare i dati
-temporanei. Le registrazioni salvate sono mostrate in sola lettura;
+temporanei e, **solo dopo conferma**, chiude il pannello e l'Inspector
+riportando alla Home. In caso di errore o riscontro incompleto, il pannello
+resta aperto e conserva le modifiche. Le registrazioni salvate sono mostrate in sola lettura;
 «Correggi» è accanto all'intervallo e apre la modifica della stessa
 Sessione. Correggere mantiene SessionRef e storico MaterialState.
 Una Sessione live aperta non è correggibile qui.
@@ -74,8 +87,8 @@ restano accanto al modulo attivo. Il salvataggio del pannello è atomico per il 
 modificate, ma ogni Sessione conserva il proprio tentativo e la propria
 identità. Non cambia la configurazione di Activity, Schedule o delle altre
 Sessioni non incluse nella richiesta. Dopo il
-successo, il pannello rilegge la fonte canonica e notifica Timeline,
-Inspector e pannello destro. Una registrazione già conclusa non torna
+successo, il pannello rilegge la fonte canonica, notifica Timeline,
+Inspector e pannello destro e chiude l'Inspector. Una registrazione già conclusa non torna
 avviabile per effetto del salvataggio.
 
 Il punto d'ingresso da «Da verificare» è previsto come riuso dello stesso

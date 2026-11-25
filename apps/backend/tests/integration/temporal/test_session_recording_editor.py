@@ -319,3 +319,96 @@ async def test_grouped_editor_records_named_sessions_without_inventing_a_main(
         ] == [planned]
     finally:
         await runtime.dispose()
+
+
+@pytest.mark.asyncio
+async def test_grouped_child_resumes_in_second_main_interval_as_one_attempt(
+    migrated_database: Any,
+) -> None:
+    """A named child may pause across the main gap and resume without a second attempt."""
+    actor = _seed_self(migrated_database)
+    runtime = create_database_runtime(migrated_database.runtime_settings())
+    end = datetime.now(UTC) - timedelta(hours=2)
+    start = end - timedelta(minutes=75)
+    try:
+        created = await TemporalAuthoringApplication(runtime.session_factory).create_activity(
+            self_person_ref=actor,
+            operation_id="editor-multi-parent:create",
+            title="Child resumes after main pause",
+            placement=AbsoluteIntervalPlacement(starts_at=start, ends_at=end),
+            planned_slices=(None,),
+            planned_slice_names=("Reading",),
+            session_capture_mode="record_and_live",
+        )
+        activity = created.item.subject_native_ref
+        async with runtime.session_factory() as session, session.begin():
+            planned = (
+                await session.execute(
+                    text("""SELECT schedule_ref FROM dante.get_self_activity_schedule_roles(
+                        :actor,CAST(ARRAY[:activity] AS uuid[])) WHERE role_code='planned'"""),
+                    {"actor": actor, "activity": activity},
+                )
+            ).scalar_one()
+        main = SessionEditorWrite(
+            operation_id="editor-multi-parent:main",
+            planned_schedule_ref=None,
+            session_ref=None,
+            expected_material_state_ref=None,
+            started_at=start,
+            ended_at=end,
+            pause_ranges=((start + timedelta(minutes=25), start + timedelta(minutes=35)),),
+        )
+        child = SessionEditorWrite(
+            operation_id="editor-multi-parent:child",
+            planned_schedule_ref=planned,
+            session_ref=None,
+            expected_material_state_ref=None,
+            started_at=start + timedelta(minutes=5),
+            ended_at=start + timedelta(minutes=65),
+            pause_ranges=((start + timedelta(minutes=20), start + timedelta(minutes=40)),),
+        )
+        application = SessionApplication(runtime.session_factory)
+        records = await application.write_editor_batch(
+            self_person_ref=actor,
+            activity_ref=activity,
+            commands=(child, main),
+        )
+        assert len(records) == 2
+        main_record, child_record = records
+        assert main_record.planned_schedule_ref is None
+        assert child_record.planned_schedule_ref == planned
+        assert child_record.paused_seconds == pytest.approx(20 * 60, abs=1)
+        assert child_record.active_seconds == pytest.approx(40 * 60, abs=1)
+        assert len(
+            await application.list_for_subject(
+                self_person_ref=actor, subject_native_ref=activity
+            )
+        ) == 2
+
+        correction = await application.write_editor_batch(
+            self_person_ref=actor,
+            activity_ref=activity,
+            commands=(
+                SessionEditorWrite(
+                    operation_id="editor-multi-parent:correct-child",
+                    planned_schedule_ref=planned,
+                    session_ref=child_record.session_ref,
+                    expected_material_state_ref=child_record.timing_material_state_ref,
+                    started_at=start + timedelta(minutes=6),
+                    ended_at=start + timedelta(minutes=65),
+                    pause_ranges=((start + timedelta(minutes=20), start + timedelta(minutes=40)),),
+                ),
+            ),
+        )
+        assert len(correction) == 1
+        assert correction[0].session_ref == child_record.session_ref
+        assert correction[0].timing_material_state_ref != child_record.timing_material_state_ref
+        assert correction[0].paused_seconds == pytest.approx(20 * 60, abs=1)
+        assert len(
+            await application.list_for_subject(
+                self_person_ref=actor, subject_native_ref=activity
+            )
+        ) == 2
+    finally:
+        await runtime.dispose()
+

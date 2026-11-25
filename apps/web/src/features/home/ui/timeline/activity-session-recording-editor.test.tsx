@@ -432,4 +432,197 @@ describe('Activity Session recording editor', () => {
     expect(submissions[0]).toHaveLength(3);
     expect(submissions[0]!.map((command) => command.planned_schedule_ref)).toEqual(planned);
   });
+
+
+  it('resumes one child in both main intervals, persists a single paused attempt, and keeps Save outside the scroller', async () => {
+    const yesterday = new Date(Date.now() - 86_400_000).toISOString().slice(0, 10);
+    const onSaved = vi.fn();
+    const onClose = vi.fn();
+    const posted: Array<{ commands: Array<Record<string, unknown>> }> = [];
+    let stored: Record<string, unknown>[] = [];
+    const fetcher = vi.fn((input: RequestInfo | URL, init?: RequestInit) => {
+      const path = fetchPath(input);
+      if (path.endsWith('/children')) return mockResponse({
+        parent_activity_ref: ACTIVITY,
+        session_capture_mode: 'record_and_live',
+        schedules: [{
+          schedule_ref: MAIN,
+          role_code: 'planned',
+          presentation_order: 1,
+          display_name: 'Lettura',
+        }],
+      });
+      if (path.endsWith('/auth/session')) return mockResponse({ csrf_token: 'test' });
+      if (path.endsWith('/sessions/editor/batch') && init?.method === 'POST') {
+        const request = JSON.parse(String(init.body)) as {
+          commands: Array<Record<string, unknown>>;
+        };
+        posted.push(request);
+        stored = request.commands.map((command, index) => ({
+          session_ref: index === 0
+            ? '019b0000-0000-7000-8000-000000000004'
+            : '019b0000-0000-7000-8000-000000000005',
+          timing_material_state_ref: index === 0
+            ? '019b0000-0000-7000-8000-000000000006'
+            : '019b0000-0000-7000-8000-000000000007',
+          planned_schedule_ref: command.planned_schedule_ref,
+          started_at: command.started_at,
+          ended_at: command.ended_at,
+          pause_ranges: command.pause_ranges,
+        }));
+        return mockResponse(stored);
+      }
+      if (path.endsWith('/sessions/editor')) return mockResponse(stored);
+      throw new Error('Unexpected request: ' + path);
+    });
+    vi.stubGlobal('fetch', fetcher);
+    render(
+      <ActivitySessionRecordingEditor
+        activityRef={ACTIVITY}
+        activityTitle="test1"
+        timeZone="Etc/UTC"
+        onClose={onClose}
+        onSaved={onSaved}
+      />,
+    );
+    const mainTitle = await screen.findByText('Sessione attività');
+    const group = mainTitle.closest<HTMLElement>('section.timeline-session-editor__group')!;
+    setClock(group, 1, 'Inizio', yesterday, '09:00');
+    setClock(group, 1, 'Fine', yesterday, '09:15');
+    fireEvent.click(within(group).getByRole('button', { name: /Aggiungi intervallo/ }));
+    setClock(group, 2, 'Inizio', yesterday, '09:20');
+    setClock(group, 2, 'Fine', yesterday, '09:35');
+    const parents = group.querySelectorAll<HTMLElement>('.timeline-session-editor__parent-interval');
+    expect(parents).toHaveLength(2);
+
+    fireEvent.click(within(parents[0]!).getByRole('button', { name: /Registra sessione/ }));
+    fireEvent.click(within(parents[0]!).getByRole('button', { name: 'Lettura' }));
+    const firstChild = parents[0]!.querySelector<HTMLElement>('article.is-child')!;
+    setClock(firstChild, 1, 'Inizio', yesterday, '09:02');
+    setClock(firstChild, 1, 'Fine', yesterday, '09:12');
+
+    fireEvent.click(within(parents[1]!).getByRole('button', { name: /Registra sessione/ }));
+    fireEvent.click(within(parents[1]!).getByRole('button', { name: 'Lettura · Riprendi' }));
+    const secondChild = parents[1]!.querySelector<HTMLElement>('article.is-child')!;
+    expect(secondChild).not.toBeNull();
+    setClock(secondChild, 2, 'Inizio', yesterday, '09:22');
+    setClock(secondChild, 2, 'Fine', yesterday, '09:32');
+    expect(parents[0]!.querySelectorAll('article.is-child')).toHaveLength(1);
+    expect(parents[1]!.querySelectorAll('article.is-child')).toHaveLength(1);
+    expect(group.querySelectorAll('article.is-child')).toHaveLength(2);
+
+    const region = screen.getByRole('region', { name: 'Intervalli e Sessioni' });
+    const save = screen.getByRole('button', { name: 'Salva registrazioni' });
+    expect(region.contains(save)).toBe(false);
+    expect(save.closest('footer')?.className).toContain('timeline-session-editor__footer');
+    fireEvent.click(save);
+    await waitFor(() => expect(onSaved).toHaveBeenCalledOnce());
+    expect(onClose).not.toHaveBeenCalled();
+    expect(posted).toHaveLength(1);
+    expect(posted[0]!.commands).toHaveLength(2);
+    expect(posted[0]!.commands[0]!.planned_schedule_ref).toBeNull();
+    expect(posted[0]!.commands[1]!.planned_schedule_ref).toBe(MAIN);
+    expect(posted[0]!.commands[1]!.pause_ranges).toEqual([
+      {
+        started_at: yesterday + 'T09:12:00.000Z',
+        ended_at: yesterday + 'T09:22:00.000Z',
+      },
+    ]);
+    expect(stored).toHaveLength(2);
+    expect(group.querySelectorAll('article.is-child')).toHaveLength(2);
+  });
+
+  it('continues an already recorded child across a parent pause by correcting the same attempt', async () => {
+    const yesterday = new Date(Date.now() - 86_400_000).toISOString().slice(0, 10);
+    const mainRef = '019b0000-0000-7000-8000-000000000004';
+    const childRef = '019b0000-0000-7000-8000-000000000005';
+    const mainState = '019b0000-0000-7000-8000-000000000006';
+    const childState = '019b0000-0000-7000-8000-000000000007';
+    const onSaved = vi.fn();
+    const parent = {
+      session_ref: mainRef,
+      timing_material_state_ref: mainState,
+      planned_schedule_ref: null,
+      started_at: yesterday + 'T09:00:00Z',
+      ended_at: yesterday + 'T09:35:00Z',
+      pause_ranges: [{
+        started_at: yesterday + 'T09:15:00Z',
+        ended_at: yesterday + 'T09:20:00Z',
+      }],
+    };
+    let records: Record<string, unknown>[] = [
+      parent,
+      {
+        session_ref: childRef,
+        timing_material_state_ref: childState,
+        planned_schedule_ref: MAIN,
+        started_at: yesterday + 'T09:02:00Z',
+        ended_at: yesterday + 'T09:12:00Z',
+        pause_ranges: [],
+      },
+    ];
+    const corrections: Array<Record<string, unknown>> = [];
+    vi.stubGlobal('fetch', vi.fn((input: RequestInfo | URL, init?: RequestInit) => {
+      const path = fetchPath(input);
+      if (path.endsWith('/children')) return mockResponse({
+        parent_activity_ref: ACTIVITY,
+        session_capture_mode: 'record_and_live',
+        schedules: [{
+          schedule_ref: MAIN,
+          role_code: 'planned',
+          presentation_order: 1,
+          display_name: 'Lettura',
+        }],
+      });
+      if (path.endsWith('/auth/session')) return mockResponse({ csrf_token: 'test' });
+      if (path.endsWith('/sessions/editor/batch') && init?.method === 'POST') {
+        const payload = JSON.parse(String(init.body)) as {
+          commands: Array<Record<string, unknown>>;
+        };
+        expect(payload.commands).toHaveLength(1);
+        corrections.push(payload.commands[0]!);
+        records = [
+          parent,
+          {
+            ...payload.commands[0]!,
+            session_ref: childRef,
+            timing_material_state_ref: '019b0000-0000-7000-8000-000000000008',
+          },
+        ];
+        return mockResponse(records.slice(1));
+      }
+      if (path.endsWith('/sessions/editor')) return mockResponse(records);
+      throw new Error('Unexpected request: ' + path);
+    }));
+    render(
+      <ActivitySessionRecordingEditor
+        activityRef={ACTIVITY}
+        activityTitle="test1"
+        timeZone="Etc/UTC"
+        onClose={vi.fn()}
+        onSaved={onSaved}
+      />,
+    );
+    const first = await screen.findByText('Sessione attività');
+    const group = first.closest<HTMLElement>('section.timeline-session-editor__group')!;
+    const parents = group.querySelectorAll<HTMLElement>('.timeline-session-editor__parent-interval');
+    expect(parents).toHaveLength(2);
+    expect(parents[0]!.querySelectorAll('article.is-child')).toHaveLength(1);
+    expect(parents[1]!.querySelectorAll('article.is-child')).toHaveLength(0);
+    fireEvent.click(within(parents[1]!).getByRole('button', { name: /Registra sessione/ }));
+    fireEvent.click(within(parents[1]!).getByRole('button', { name: 'Lettura · Riprendi' }));
+    const secondChild = parents[1]!.querySelector<HTMLElement>('article.is-child')!;
+    expect(secondChild).not.toBeNull();
+    setClock(secondChild, 2, 'Inizio', yesterday, '09:22');
+    setClock(secondChild, 2, 'Fine', yesterday, '09:32');
+    fireEvent.click(screen.getByRole('button', { name: 'Salva registrazioni' }));
+    await waitFor(() => expect(onSaved).toHaveBeenCalledOnce());
+    expect(corrections).toHaveLength(1);
+    expect(corrections[0]?.session_ref).toBe(childRef);
+    expect(corrections[0]?.expected_material_state_ref).toBe(childState);
+    expect(corrections[0]?.pause_ranges).toHaveLength(1);
+    expect(records).toHaveLength(2);
+    expect(group.querySelectorAll('article.is-child')).toHaveLength(2);
+  });
+
 });

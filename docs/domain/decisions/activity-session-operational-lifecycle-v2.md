@@ -102,7 +102,15 @@ in una sola bozza principale e secondarie, con gerarchia visiva per
 intervallo attivo della principale. Registra sessione sceglie una
 Sessione pianificata già configurata, non crea una seconda configurazione.
 Ogni Sessione conserva un unico tentativo con fino a 100 intervalli attivi
-e pause derivate dagli spazi fra i tratti. Quando la principale è
+e pause derivate dagli spazi fra i tratti.
+Se una secondaria è presente nell'intervallo 1 e riprende
+nell'intervallo 2 della principale, «Riprendi» aggiunge un **nuovo tratto
+attivo alla stessa SessionRef**, senza duplicare il tentativo.
+Lo spazio fra i tratti è pausa anche per la secondaria; deve contenere
+tutta la pausa della principale. Ogni tratto secondario compare nella
+rispettiva sezione padre anche dopo la rilettura canonica. Una ripresa
+retroattiva di un tentativo già concluso è una **correzione**, con un
+nuovo MaterialState e stessa SessionRef. Quando la principale è
 disabilitata, le secondarie sono blocchi autonomi. Il salvataggio
 di gruppo è atomico; PostgreSQL revalida contenimento, storia,
 idempotenza, proprietario e revisioni. Una correzione non può

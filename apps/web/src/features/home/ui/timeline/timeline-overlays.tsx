@@ -1119,6 +1119,7 @@ export function EventDetailDialog({
                   setEditingProfile(profile);
                 }}
                 onCancelScope={onClose}
+                onSessionSaved={onClose}
                 onDeleted={onActivityDeleted}
                 {...(onVaultMoved ? { onVaultMoved } : {})}
                 onDuplicate={(seed) => {

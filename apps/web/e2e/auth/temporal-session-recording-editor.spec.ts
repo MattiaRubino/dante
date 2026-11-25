@@ -87,6 +87,11 @@ test('Inspector records and corrects a concluded named Session without offering 
     await editor.getByRole('button', { name: 'Salva registrazioni' }).click();
     const firstResponse = await firstWrite;
     expect(firstResponse.status()).toBe(201);
+    await expect(editor).toBeHidden();
+    await expect(inspector).toBeHidden();
+    await openHome(page, date);
+    const reopened = await openInspector(page, item);
+    await reopened.getByRole('button', { name: 'Registrazioni delle Sessioni' }).click();
     await expect(row.getByRole('button', { name: 'Correggi' })).toBeVisible();
     await expect(row.getByRole('button', { name: 'Registra' })).toHaveCount(0);
 
@@ -120,6 +125,8 @@ test('Inspector records and corrects a concluded named Session without offering 
     await editor.getByRole('button', { name: 'Salva registrazioni' }).click();
     const correctionResponse = await correction;
     expect(correctionResponse.status()).toBe(200);
+    await expect(editor).toBeHidden();
+    await expect(reopened).toBeHidden();
     const [corrected] = await read();
     expect(corrected?.session_ref).toBe(recorded?.session_ref);
     expect(corrected?.pause_ranges).toHaveLength(1);
@@ -180,6 +187,11 @@ test('Inspector configures main and named child together with one atomic save an
     expect(submitted.commands).toHaveLength(2);
     expect(submitted.commands[0]?.planned_schedule_ref).toBeNull();
     expect(submitted.commands[1]?.planned_schedule_ref).not.toBeNull();
+    await expect(editor).toBeHidden();
+    await expect(inspector).toBeHidden();
+    await openHome(page, date);
+    const reopened = await openInspector(page, item);
+    await reopened.getByRole('button', { name: 'Registrazioni delle Sessioni' }).click();
     await expect(editor.locator('article.is-child').getByRole('button', { name: 'Correggi' })).toBeVisible();
     const recordings = (await serverRead(
       page, '/api/v1/temporal/activities/' + item.sourceRef + '/sessions/editor',
@@ -193,6 +205,125 @@ test('Inspector configures main and named child together with one atomic save an
     expect(recordings.find((row) => row.planned_schedule_ref === null)?.pause_ranges).toHaveLength(1);
     expect(recordings.filter((row) => row.planned_schedule_ref !== null)).toHaveLength(1);
     expect(recordings.every((row) => Boolean(row.ended_at))).toBe(true);
+  } finally {
+    await user.close().catch(() => {});
+  }
+});
+
+
+test('Inspector distributes one child Session across two main intervals, pauses it, corrects it, and closes to Home', async ({
+  browser,
+}, info) => {
+  test.setTimeout(120_000);
+  const user = await signedInPage(browser, info, 9);
+  const { page } = user;
+  try {
+    const date = scenarioDate(-1);
+    await openHome(page, date);
+    const title = uniqueTitle('Sessione secondaria ripresa');
+    const composer = await openCreate(page, 'activity');
+    await configureCreate(composer, {
+      kind: 'activity',
+      title,
+      date,
+      clock: '09:00',
+      plannedSession: 'Lettura',
+    });
+    await composer.getByRole('checkbox', { name: 'Sessione', exact: true }).check();
+    const item = await submitCreate(page, composer, {
+      kind: 'activity', title, recurring: false,
+    });
+    await openHome(page, date);
+    const inspector = await openInspector(page, item);
+    await inspector.getByRole('button', { name: 'Registrazioni delle Sessioni' }).click();
+    const editor = page.getByRole('dialog', { name: 'Registrazioni delle Sessioni' });
+    const main = editor.locator('section.timeline-session-editor__group.has-main');
+    await setClock(main, 1, 'Inizio', date, '09:05');
+    await setClock(main, 1, 'Fine', date, '09:15');
+    await main.getByRole('button', { name: /Aggiungi intervallo/ }).click();
+    await setClock(main, 2, 'Inizio', date, '09:20');
+    await setClock(main, 2, 'Fine', date, '09:30');
+    const intervals = editor.locator('.timeline-session-editor__parent-interval');
+    await expect(intervals).toHaveCount(2);
+
+    await intervals.nth(0).getByRole('button', { name: /Registra sessione/ }).click();
+    await intervals.nth(0).getByRole('button', { name: 'Lettura' }).click();
+    const first = intervals.nth(0).locator('article.is-child');
+    await setClock(first, 1, 'Inizio', date, '09:06');
+    await setClock(first, 1, 'Fine', date, '09:14');
+
+    await intervals.nth(1).getByRole('button', { name: /Registra sessione/ }).click();
+    await intervals.nth(1).getByRole('button', { name: 'Lettura · Riprendi' }).click();
+    const second = intervals.nth(1).locator('article.is-child');
+    await expect(first).toBeVisible();
+    await expect(second).toBeVisible();
+    await setClock(second, 2, 'Inizio', date, '09:21');
+    await setClock(second, 2, 'Fine', date, '09:29');
+
+    // Only the middle section scrolls: title/header and Save stay fixed.
+    const scrolling = editor.getByRole('region', { name: 'Intervalli e Sessioni' });
+    await expect(scrolling).toHaveCSS('overflow-y', 'auto');
+    expect(await scrolling.evaluate((element) => element.scrollHeight > element.clientHeight)).toBe(true);
+    await scrolling.evaluate((element) => { element.scrollTop = element.scrollHeight; });
+    await expect(editor.locator('.timeline-session-editor__footer')).toBeVisible();
+    await expect(editor.getByRole('button', { name: 'Salva registrazioni' })).toBeVisible();
+
+    const target = '/api/v1/temporal/activities/' + item.sourceRef + '/sessions/editor/batch';
+    const write = page.waitForResponse(
+      (response) => response.url().endsWith(target) && response.request().method() === 'POST',
+    );
+    await editor.getByRole('button', { name: 'Salva registrazioni' }).click();
+    const receipt = await write;
+    expect(receipt.status()).toBe(201);
+    const submitted = receipt.request().postDataJSON() as {
+      commands: Array<{
+        planned_schedule_ref: string | null;
+        pause_ranges: Array<{ started_at: string; ended_at: string }>;
+      }>;
+    };
+    expect(submitted.commands).toHaveLength(2);
+    expect(submitted.commands[0]?.planned_schedule_ref).toBeNull();
+    expect(submitted.commands[1]?.planned_schedule_ref).not.toBeNull();
+    expect(submitted.commands[1]?.pause_ranges).toHaveLength(1);
+    await expect(editor).toBeHidden();
+    await expect(inspector).toBeHidden();
+
+    const read = () => serverRead(
+      page, '/api/v1/temporal/activities/' + item.sourceRef + '/sessions/editor',
+    ) as Promise<Array<{
+      session_ref: string;
+      planned_schedule_ref: string | null;
+      timing_material_state_ref: string;
+      pause_ranges: unknown[];
+    }>>;
+    const stored = await read();
+    expect(stored).toHaveLength(2);
+    const child = stored.find((record) => record.planned_schedule_ref !== null);
+    expect(child?.pause_ranges).toHaveLength(1);
+
+    await openHome(page, date);
+    const inspectedAgain = await openInspector(page, item);
+    await inspectedAgain.getByRole('button', { name: 'Registrazioni delle Sessioni' }).click();
+    await expect(intervals).toHaveCount(2);
+    await expect(intervals.nth(0).locator('article.is-child')).toHaveCount(1);
+    await expect(intervals.nth(1).locator('article.is-child')).toHaveCount(1);
+    await intervals.nth(0).locator('article.is-child')
+      .getByRole('button', { name: 'Correggi' }).click();
+    const correctionRow = intervals.nth(0).locator('article.is-child');
+    await setClock(correctionRow, 1, 'Inizio', date, '09:07');
+    const correction = page.waitForResponse(
+      (response) => response.url().endsWith(target) && response.request().method() === 'POST',
+    );
+    await editor.getByRole('button', { name: 'Salva registrazioni' }).click();
+    expect((await correction).status()).toBe(200);
+    await expect(editor).toBeHidden();
+    await expect(inspectedAgain).toBeHidden();
+    const after = await read();
+    expect(after).toHaveLength(2);
+    const corrected = after.find((record) => record.planned_schedule_ref !== null);
+    expect(corrected?.session_ref).toBe(child?.session_ref);
+    expect(corrected?.timing_material_state_ref).not.toBe(child?.timing_material_state_ref);
+    expect(corrected?.pause_ranges).toHaveLength(1);
   } finally {
     await user.close().catch(() => {});
   }
