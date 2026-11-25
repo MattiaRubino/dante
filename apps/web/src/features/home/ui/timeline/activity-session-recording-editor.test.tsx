@@ -193,7 +193,7 @@ describe('Activity Session recording editor', () => {
       />,
     );
     const main = await screen.findByText('Sessione attività');
-    const group = main.closest('section.timeline-session-editor__group');
+    const group = main.closest<HTMLElement>('section.timeline-session-editor__group');
     expect(group).not.toBeNull();
     const yesterday = new Date(Date.now() - 86_400_000)
       .toISOString()
@@ -309,7 +309,7 @@ describe('Activity Session recording editor', () => {
       />,
     );
     const main = await screen.findByText('Sessione attività');
-    const group = main.closest('section.timeline-session-editor__group')!;
+    const group = main.closest<HTMLElement>('section.timeline-session-editor__group')!;
     setClock(group, 1, 'Inizio', yesterday, '09:00');
     setClock(group, 1, 'Fine', yesterday, '10:00');
     fireEvent.click(within(group).getByRole('button', { name: /Registra sessione/ }));

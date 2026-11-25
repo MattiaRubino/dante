@@ -542,9 +542,8 @@ function clampToMain(
   return {
     draft: {
       intervals: draft.intervals.map((item, index) => {
-        let parsed: ResolvedInterval;
         try {
-          [parsed] = resolveIntervals({ intervals: [item] }, zone);
+          const parsed = resolveIntervals({ intervals: [item] }, zone)[0];
           if (!parsed || !Number.isFinite(parsed.start) || !Number.isFinite(parsed.end))
             return item;
         } catch {
@@ -962,7 +961,8 @@ export function ActivitySessionRecordingEditor({
   }
 
   function childAnchor(row: Row): number {
-    if (anchors[row.key] !== undefined) return Math.min(anchors[row.key], Math.max(0, parentRanges.length - 1));
+    const anchor = anchors[row.key];
+    if (anchor !== undefined) return Math.min(anchor, Math.max(0, parentRanges.length - 1));
     const active = row.attempt?.ended_at
       ? readonlyIntervals(row.attempt)
       : pending[row.key]?.intervals;
@@ -1070,13 +1070,15 @@ export function ActivitySessionRecordingEditor({
           : null
         : mainRecorded?.attempt ?? null
       : null;
-    const factualChildren = children.flatMap((row) => {
+    const factualChildren: Array<Pick<Attempt, 'started_at' | 'ended_at' | 'pause_ranges'>> = [];
+    for (const row of children) {
       if (pending[row.key]) {
         const ranges = safeRanges(pending[row.key], timeZone);
-        return ranges.length ? [attemptFromRanges(ranges)] : [];
+        if (ranges.length) factualChildren.push(attemptFromRanges(ranges));
+      } else if (row.attempt?.ended_at) {
+        factualChildren.push(row.attempt);
       }
-      return row.attempt?.ended_at ? [row.attempt] : [];
-    });
+    }
     const errors: EditorIssues = {};
     for (const { row, draft } of changes) {
       const issue = validateDraft(
