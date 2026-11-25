@@ -80,7 +80,11 @@ temporaneamente invalida di un intervallo padre non deve far sparire,
 spostare o rimontare le secondarie: l'appartenenza visiva dei singoli
 tratti è stabile durante la bozza, anche quando si modifica prima
 l'inizio e poi la fine. Dopo un salvataggio valido, la gerarchia si
-ricostruisce dagli intervalli effettivi salvati.
+ricostruisce dagli intervalli effettivi salvati. Anche «Registra sessione»
+resta selezionabile quando il padre è momentaneamente invalido: viene
+predisposto un intervallo secondario provvisorio da correggere insieme
+al padre prima del salvataggio. Nessuna bozza provvisoria viene scritta
+senza la verifica temporale finale.
 Con principale disabilitata, le secondarie usano blocchi autonomi con gli
 stessi controlli, senza limiti di padre inventati.
 

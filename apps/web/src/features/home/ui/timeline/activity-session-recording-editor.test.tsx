@@ -1233,4 +1233,57 @@ describe('Activity Session recording editor', () => {
     expect(fetcher).toHaveBeenCalledTimes(2);
   });
 
+
+  it('lets an unrecorded child be drafted while the main end clock is temporarily before its start', async () => {
+    const yesterday = new Date(Date.now() - 86_400_000).toISOString().slice(0, 10);
+    const writes: unknown[] = [];
+    const fetcher = vi.fn((input: RequestInfo | URL, init?: RequestInit) => {
+      const path = fetchPath(input);
+      if (path.endsWith('/children')) return mockResponse({
+        parent_activity_ref: ACTIVITY,
+        session_capture_mode: 'record_and_live',
+        schedules: [{
+          schedule_ref: MAIN,
+          role_code: 'planned',
+          presentation_order: 1,
+          display_name: 'Lettura',
+        }],
+      });
+      if (path.endsWith('/sessions/editor')) return mockResponse([]);
+      if (init?.method === 'POST') writes.push(init);
+      throw new Error('Unexpected request: ' + path);
+    });
+    vi.stubGlobal('fetch', fetcher);
+    render(
+      <ActivitySessionRecordingEditor
+        activityRef={ACTIVITY}
+        activityTitle="test1"
+        timeZone="Etc/UTC"
+        onClose={vi.fn()}
+      />,
+    );
+    const group = (await screen.findByText('Sessione attività'))
+      .closest<HTMLElement>('section.timeline-session-editor__group')!;
+    setClock(group, 1, 'Inizio', yesterday, '09:00');
+    setClock(group, 1, 'Fine', yesterday, '08:50');
+    const parent = group.querySelector<HTMLElement>('.timeline-session-editor__parent-interval')!;
+    const add = within(parent).getByRole('button', { name: /Registra sessione/ });
+    expect(add).not.toHaveProperty('disabled', true);
+    fireEvent.click(add);
+    fireEvent.click(within(parent).getByRole('button', { name: 'Lettura' }));
+    const child = parent.querySelector<HTMLElement>('article.is-child')!;
+    expect(child).not.toBeNull();
+    const mainFields = parent.querySelector<HTMLElement>(
+      ':scope > .timeline-session-editor__interval-block',
+    )!;
+    setClock(mainFields, 1, 'Fine', yesterday, '09:30');
+    expect(parent.querySelector('article.is-child')).toBe(child);
+    setClock(child, 1, 'Inizio', yesterday, '09:05');
+    setClock(child, 1, 'Fine', yesterday, '09:20');
+    expect(within(child).getByRole('textbox', {
+      name: 'Intervallo 1 · Fine: minuti',
+    })).toHaveProperty('value', '20');
+    expect(writes).toHaveLength(0);
+  });
+
 });

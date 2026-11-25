@@ -23,7 +23,9 @@ non validi, rendere l'errore rosso specifico della riga, offrire
 prima di POST. Add/rimuovi/riprendi/correggi aggiornano coerentemente
 anche l'assegnazione dei tratti. I calendar popup dentro la zona
 scrollabile devono poter essere aperti e selezionati fino in fondo,
-senza sovrapporsi al footer fisso.
+senza sovrapporsi al footer fisso. Il parent con ora
+provvisoriamente invertita permette comunque di scegliere la secondaria
+e di aggiungere sue righe provvisorie, senza mutare registrazioni reali.
 
 Regressioni aggiunte: Vitest per digitazione fuori limite seguita
 da correzione, modifica temporaneamente invalida del padre senza

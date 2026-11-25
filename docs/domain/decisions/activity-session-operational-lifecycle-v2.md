@@ -120,6 +120,9 @@ restare editabile e il suo componente non può smontarsi né cambiare
 intervallo padre. La UI segnala localmente il superamento e offre
 «Adatta ai limiti» per applicare il minimo/massimo volontariamente;
 il salvataggio rifiuta valori fuori limite senza modificare i fatti.
+La scelta di una secondaria e l'aggiunta dei suoi intervalli restano
+possibili anche se l'ora del padre è provvisoriamente incompleta:
+si genera solo una bozza, mai un fatto valido prima della verifica.
 La verifica transazionale resta autorevole. Il nuovo editor non modifica
 Play/Pausa/Stop, Schedule o le regole di ricorrenza.
 

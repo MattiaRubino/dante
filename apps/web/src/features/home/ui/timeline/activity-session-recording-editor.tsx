@@ -775,7 +775,9 @@ export function ActivitySessionRecordingEditor({
     return Boolean(range && Number.isFinite(range.start) &&
       Number.isFinite(range.end) && range.end > range.start);
   };
-  const mainCanAcceptChildren = !mainEnabled || parentRanges.some((_, index) => validParent(index));
+  // A parent row can be temporarily invalid while its two clocks are edited.
+  // Child drafting stays available; only Save needs a valid factual range.
+  const mainCanAcceptChildren = !mainEnabled || Boolean(mainDraft?.intervals.length);
   const hasEdits = Object.keys(pending).length > 0;
 
   function changeDraft(row: Row, updated: Draft) {
@@ -902,9 +904,17 @@ export function ActivitySessionRecordingEditor({
 
   function intervalWithinParent(parentIndex: number): ActiveInterval | null {
     const range = parentRanges[parentIndex];
-    if (!range || !validParent(parentIndex)) return null;
-    const start = new Date(range.start).toISOString();
-    const end = new Date(range.end).toISOString();
+    if (!range) return null;
+    // The main may be mid-edit. Give a new child a provisional clock
+    // anchored to its parent start instead of blocking the entire card.
+    const startMillis = Number.isFinite(range.start)
+      ? range.start
+      : Temporal.Now.instant().subtract({ minutes: 30 }).epochMilliseconds;
+    const endMillis = validParent(parentIndex)
+      ? range.end
+      : startMillis + 30 * 60_000;
+    const start = new Date(startMillis).toISOString();
+    const end = new Date(endMillis).toISOString();
     return {
       start: local(start, timeZone),
       end: local(end, timeZone),
@@ -1001,7 +1011,11 @@ export function ActivitySessionRecordingEditor({
         return;
       }
       const parent = parentRanges[parentIndex];
-      if (!parent || !validParent(parentIndex)) return;
+      if (!parent) return;
+      if (!validParent(parentIndex)) {
+        insertChildInterval(row, existing, parentIndex, nextInterval(existing, timeZone));
+        return;
+      }
       const owners = ownersFor(row, existing);
       const used = existing.intervals.flatMap((interval, index) => {
         if (owners[index] !== parentIndex) return [];
@@ -1298,7 +1312,7 @@ export function ActivitySessionRecordingEditor({
             <button
               type="button"
               aria-expanded={sessionMenu === index}
-              disabled={!mainCanAcceptChildren || !validParent(index)}
+              disabled={!mainCanAcceptChildren || !parentRanges[index]}
               onClick={() =>
                 setSessionMenu((current) => (current === index ? null : index))
               }

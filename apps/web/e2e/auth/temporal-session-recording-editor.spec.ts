@@ -353,11 +353,17 @@ test('Inspector preserves editable child clock and parent placement across inval
     const editor = page.getByRole('dialog', { name: 'Registrazioni delle Sessioni' });
     const main = editor.locator('section.timeline-session-editor__group.has-main');
     await setClock(main, 1, 'Inizio', date, '09:00');
-    await setClock(main, 1, 'Fine', date, '09:30');
+    await setClock(main, 1, 'Fine', date, '08:50');
     const parent = editor.locator('.timeline-session-editor__parent-interval').first();
+    // Preparing a child must remain possible while the main's end time is
+    // temporarily earlier than its start.
+    await expect(parent.getByRole('button', { name: /Registra sessione/ })).toBeEnabled();
     await parent.getByRole('button', { name: /Registra sessione/ }).click();
     await parent.getByRole('button', { name: 'Lettura' }).click();
     const child = parent.locator('article.is-child');
+    await expect(child).toBeVisible();
+    const mainFieldsBefore = parent.locator(':scope > .timeline-session-editor__interval-block');
+    await setClock(mainFieldsBefore, 1, 'Fine', date, '09:30');
 
     // Typed values outside the main are not immediately clamped or unmounted.
     await setClock(child, 1, 'Inizio', date, '08:10');
