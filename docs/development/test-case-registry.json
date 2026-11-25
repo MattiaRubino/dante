@@ -5889,10 +5889,10 @@
       "suite": "web-unit-component",
       "contract_id": "T06",
       "candidate_behavior": "Session recording editor derives factual pauses from active intervals and places named Sessions within their parent interval",
-      "purpose": "Verify completion and correction preserve factual Session identity, multiple active ranges, inferred pauses, clock disambiguation and parent containment.",
-      "invariant": "Intervals remain ordered, positive and limited to 100; a named Session outside the active main range is rejected before POST; a recorded row cannot offer Registra again.",
+      "purpose": "Verify completion and correction preserve factual Session identity, multiple active ranges, editable intermediate rows, inferred pauses, clock disambiguation and parent containment.",
+      "invariant": "Add keeps an editable row available even without immediate past or parent space; Save refuses overlaps, future actual time and child ranges outside active main time before POST; a recorded row cannot offer Registra again.",
       "status": "QUALIFIED",
-      "audit_note": "Seven focused editor Vitest cases passed in scratch after active-interval rewrite; expanded real-stack browser acceptance remains pending."
+      "audit_note": "Fourteen focused editor Vitest cases passed in scratch on the uncommitted Add-row correction; owner visual and expanded real-stack browser acceptance remain pending."
     },
     {
       "path": "apps/web/e2e/auth/temporal-session-recording-editor.spec.ts",

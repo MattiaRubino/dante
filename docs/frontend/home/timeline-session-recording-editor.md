@@ -53,10 +53,14 @@ un secondo tentativo fittizio. Le pause sono i vuoti tra intervalli attivi e non
 un editor separato delle pause. Due secondarie possono sovrapporsi tra
 loro; due intervalli della stessa Sessione no.
 
-«Aggiungi intervallo» propone un tratto concluso nel passato, delimitato
-dall'ora corrente. Se l'ultimo tratto arriva già fino a ora, non aggiunge
-un intervallo impossibile e chiede di anticiparne la fine. Anche nel caso
-senza principale vale la stessa regola. Dopo un POST accettato, la rilettura
+«Aggiungi intervallo» aggiunge sempre una riga modificabile fino al limite
+di 100, anche quando il tratto precedente arriva all'ora corrente o occupa
+tutto il tratto della principale. In assenza di spazio propone un intervallo
+nel passato che si sovrappone temporaneamente al precedente: si possono
+ridurre e separare entrambi prima di salvare. Il controllo al salvataggio
+evidenzia l'intervallo sovrapposto e non invia il gruppo al server. La
+secondaria rimane visibile sotto il suo intervallo padre durante la modifica.
+Dopo un POST accettato, la rilettura
 deve confermare tutte le ricevute prima di sostituire le righe e cancellare
 la bozza: una risposta incompleta lascia visibili gli input e conserva gli
 identificativi delle operazioni per un tentativo idempotente.

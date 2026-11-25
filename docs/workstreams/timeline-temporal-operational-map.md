@@ -1,5 +1,20 @@
 # Timeline / Temporal-Operational — Live Execution Ledger
 
+## 2026-11-25 — Editor registrazioni: aggiunta intervalli alla prova manuale (candidate)
+
+La prova manuale su `9e2393c` ha mostrato che il pulsante «Aggiungi
+intervallo» bloccava la principale quando il tratto predefinito arrivava a
+ora, e la secondaria quando il primo tratto riempiva l'intervallo padre.
+Il vincolo appartiene al salvataggio, non alla creazione di una riga di
+bozza: il pannello ora aggiunge una riga nel passato anche in quei casi,
+lasciando correggere i due orari. Fino alla separazione, Save evidenzia la
+sovrapposizione e non invia il gruppo. Il limite di 100 resta invariato;
+nessuna modifica al database o alle Sessioni già registrate. Due regressioni
+component sono state riprodotte RED prima della correzione. Sul diff corrente:
+Vitest editor 14/14 PASS, Web typecheck PASS, ESLint mirato PASS; PostgreSQL
+NON_APPLICABILE (nessun contratto DB modificato), Playwright NOT_RUN e prova
+visiva dell'owner ancora aperta. Questo risultato non è un gate completo.
+
 ## 2026-11-25 — Registrazioni: correzioni prima della suite E2E estesa (candidate)
 
 Il controllo su `e0f50f8` ha trovato tre difetti non coperti dai precedenti

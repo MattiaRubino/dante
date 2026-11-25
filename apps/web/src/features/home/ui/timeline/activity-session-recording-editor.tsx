@@ -272,13 +272,14 @@ function nextInterval(draft: Draft, zone: string): ActiveInterval {
   ).epochMilliseconds;
   const latestEnd =
     Math.floor(Temporal.Now.instant().epochMilliseconds / 60_000) * 60_000;
-  if (previousEnd + 60_000 >= latestEnd) {
-    throw new Error(
-      'Anticipa la fine dell’ultimo intervallo: non c’è spazio per un altro tratto nel passato.',
-    );
-  }
-  const start = Math.min(previousEnd + 30 * 60_000, latestEnd - 60_000);
-  const end = Math.min(start + 60 * 60_000, latestEnd);
+  // A new row is an editable draft, not yet a factual recording. When the
+  // previous interval reaches "now", offer a past row that the user can
+  // separate by adjusting the earlier interval before Save.
+  const hasRoom = previousEnd + 60_000 < latestEnd;
+  const start = hasRoom
+    ? Math.min(previousEnd + 30 * 60_000, latestEnd - 60_000)
+    : latestEnd - 30 * 60_000;
+  const end = hasRoom ? Math.min(start + 60 * 60_000, latestEnd) : latestEnd;
   const startInstant = new Date(start).toISOString();
   const endInstant = new Date(end).toISOString();
   return {
@@ -1010,14 +1011,18 @@ export function ActivitySessionRecordingEditor({
       const latestEnd = used.length
         ? Math.max(...used.map((interval) => interval.end))
         : parent.start;
-      const start = used.length ? latestEnd + 60_000 : latestEnd;
-      const end = Math.min(parent.end, start + 30 * 60_000);
-      if (end <= start) {
-        setError(
-          'Non c’è spazio per un altro intervallo: riduci quello precedente.',
-        );
-        return;
-      }
+      const proposed = used.length ? latestEnd + 60_000 : latestEnd;
+      // Keep the new child visible under this parent even when the current
+      // child fills it. Overlap is an editable intermediate state; Save still
+      // refuses it until both rows have been separated.
+      const start =
+        proposed < parent.end
+          ? proposed
+          : Math.max(parent.start, parent.end - 30 * 60_000);
+      const end =
+        proposed < parent.end
+          ? Math.min(parent.end, start + 30 * 60_000)
+          : parent.end;
       const startIso = new Date(start).toISOString();
       const endIso = new Date(end).toISOString();
       const candidate: ActiveInterval = {

@@ -242,7 +242,7 @@ describe('Activity Session recording editor', () => {
     ]);
   });
 
-  it('does not invent a future interval when the latest actual one ends now', async () => {
+  it('keeps Add available when the last interval ends now and refuses overlap only on Save', async () => {
     vi.stubGlobal(
       'fetch',
       vi.fn((input: RequestInfo | URL) => {
@@ -273,20 +273,91 @@ describe('Activity Session recording editor', () => {
     );
     expect(
       group.querySelectorAll('.timeline-session-editor__parent-interval'),
+    ).toHaveLength(2);
+    expect(screen.queryByRole('alert')).toBeNull();
+    fireEvent.click(
+      screen.getByRole('button', { name: 'Salva registrazioni' }),
+    );
+    expect(within(group).getByText(/ordinati e separati/)).toBeTruthy();
+    expect(
+      group.querySelectorAll(
+        '.timeline-session-editor__interval[data-invalid]',
+      ),
     ).toHaveLength(1);
-    expect(screen.getByRole('alert').textContent).toContain('non c’è spazio');
 
     const yesterday = new Date(Date.now() - 86_400_000)
       .toISOString()
       .slice(0, 10);
     setClock(group, 1, 'Inizio', yesterday, '09:00');
     setClock(group, 1, 'Fine', yesterday, '09:15');
-    fireEvent.click(
-      within(group).getByRole('button', { name: /Aggiungi intervallo/ }),
-    );
+    setClock(group, 2, 'Inizio', yesterday, '09:20');
+    setClock(group, 2, 'Fine', yesterday, '09:30');
     expect(
       group.querySelectorAll('.timeline-session-editor__parent-interval'),
     ).toHaveLength(2);
+    expect(screen.queryByRole('alert')).toBeNull();
+  });
+
+  it('adds a second editable child row even when the first fills its main interval', async () => {
+    const yesterday = new Date(Date.now() - 86_400_000)
+      .toISOString()
+      .slice(0, 10);
+    const fetcher = vi.fn((input: RequestInfo | URL, init?: RequestInit) => {
+      const path = fetchPath(input);
+      if (path.endsWith('/children'))
+        return mockResponse({
+          parent_activity_ref: ACTIVITY,
+          session_capture_mode: 'record_and_live',
+          schedules: [
+            {
+              schedule_ref: MAIN,
+              role_code: 'planned',
+              presentation_order: 1,
+              display_name: 'Lettura',
+            },
+          ],
+        });
+      if (path.endsWith('/sessions/editor')) return mockResponse([]);
+      if (init?.method === 'POST')
+        throw new Error('Invalid child must not be submitted');
+      throw new Error('Unexpected request: ' + path);
+    });
+    vi.stubGlobal('fetch', fetcher);
+    render(
+      <ActivitySessionRecordingEditor
+        activityRef={ACTIVITY}
+        activityTitle="Scrivere"
+        timeZone="Etc/UTC"
+        onClose={vi.fn()}
+      />,
+    );
+    const group = (
+      await screen.findByText('Sessione attività')
+    ).closest<HTMLElement>('section.timeline-session-editor__group')!;
+    setClock(group, 1, 'Inizio', yesterday, '09:00');
+    setClock(group, 1, 'Fine', yesterday, '09:30');
+    fireEvent.click(
+      within(group).getByRole('button', { name: /Registra sessione/ }),
+    );
+    fireEvent.click(within(group).getByRole('button', { name: 'Lettura' }));
+    const child = within(group)
+      .getByText('Lettura', { selector: 'h3' })
+      .closest('article')!;
+    fireEvent.click(
+      within(child).getByRole('button', { name: /Aggiungi intervallo/ }),
+    );
+    expect(within(child).getByText('Intervallo 2')).toBeTruthy();
+    expect(screen.queryByRole('alert')).toBeNull();
+    fireEvent.click(
+      screen.getByRole('button', { name: 'Salva registrazioni' }),
+    );
+    expect(within(child).getByText(/ordinati e separati/)).toBeTruthy();
+    expect(fetcher.mock.calls.some(([, init]) => init?.method === 'POST')).toBe(
+      false,
+    );
+    setClock(child, 1, 'Fine', yesterday, '09:10');
+    setClock(child, 2, 'Inizio', yesterday, '09:15');
+    setClock(child, 2, 'Fine', yesterday, '09:25');
     expect(screen.queryByRole('alert')).toBeNull();
   });
 
