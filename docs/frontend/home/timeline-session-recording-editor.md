@@ -53,6 +53,14 @@ un secondo tentativo fittizio. Le pause sono i vuoti tra intervalli attivi e non
 un editor separato delle pause. Due secondarie possono sovrapporsi tra
 loro; due intervalli della stessa Sessione no.
 
+«Aggiungi intervallo» propone un tratto concluso nel passato, delimitato
+dall'ora corrente. Se l'ultimo tratto arriva già fino a ora, non aggiunge
+un intervallo impossibile e chiede di anticiparne la fine. Anche nel caso
+senza principale vale la stessa regola. Dopo un POST accettato, la rilettura
+deve confermare tutte le ricevute prima di sostituire le righe e cancellare
+la bozza: una risposta incompleta lascia visibili gli input e conserva gli
+identificativi delle operazioni per un tentativo idempotente.
+
 Una secondaria deve restare dentro i tratti attivi della principale:
 la UI restringe l'orario che supera il limite e mostra il bordo rosso
 localizzato; la conferma rivalida sempre i vincoli in PostgreSQL.
@@ -71,6 +79,10 @@ resta aperto e conserva le modifiche. Le registrazioni salvate sono mostrate in 
 «Correggi» è accanto all'intervallo e apre la modifica della stessa
 Sessione. Correggere mantiene SessionRef e storico MaterialState.
 Una Sessione live aperta non è correggibile qui.
+La correzione simultanea di principale e secondarie verifica il loro stato
+finale alla fine della transazione: spostarle insieme non viene respinto a
+causa dei vecchi orari. Il comando singolo mantiene lo stesso vincolo alla
+fine della propria transazione.
 
 Il pannello mantiene la stessa riga data/ora di Create/Edit ma
 rimuove il testo decorativo sul fuso. Il nome dell'Attività è sopra

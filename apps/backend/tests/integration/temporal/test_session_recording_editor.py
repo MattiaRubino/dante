@@ -173,7 +173,6 @@ async def test_editor_records_then_corrects_concluded_sessions_without_reopening
         await runtime.dispose()
 
 
-
 @pytest.mark.asyncio
 async def test_grouped_recording_rolls_back_main_when_child_overlaps_parent_pause(
     migrated_database: Any,
@@ -252,15 +251,16 @@ async def test_grouped_recording_rolls_back_main_when_child_overlaps_parent_paus
             activity_ref=activity,
             commands=(main, valid_child),
         )
-        assert [record.session_ref for record in same] == [
-            record.session_ref for record in records
-        ]
+        assert [record.session_ref for record in same] == [record.session_ref for record in records]
         assert all(record.replayed for record in same)
-        assert len(
-            await application.list_for_subject(
-                self_person_ref=actor, subject_native_ref=activity
+        assert (
+            len(
+                await application.list_for_subject(
+                    self_person_ref=actor, subject_native_ref=activity
+                )
             )
-        ) == 2
+            == 2
+        )
     finally:
         await runtime.dispose()
 
@@ -379,11 +379,14 @@ async def test_grouped_child_resumes_in_second_main_interval_as_one_attempt(
         assert child_record.planned_schedule_ref == planned
         assert child_record.paused_seconds == pytest.approx(20 * 60, abs=1)
         assert child_record.active_seconds == pytest.approx(40 * 60, abs=1)
-        assert len(
-            await application.list_for_subject(
-                self_person_ref=actor, subject_native_ref=activity
+        assert (
+            len(
+                await application.list_for_subject(
+                    self_person_ref=actor, subject_native_ref=activity
+                )
             )
-        ) == 2
+            == 2
+        )
 
         correction = await application.write_editor_batch(
             self_person_ref=actor,
@@ -404,11 +407,128 @@ async def test_grouped_child_resumes_in_second_main_interval_as_one_attempt(
         assert correction[0].session_ref == child_record.session_ref
         assert correction[0].timing_material_state_ref != child_record.timing_material_state_ref
         assert correction[0].paused_seconds == pytest.approx(20 * 60, abs=1)
-        assert len(
-            await application.list_for_subject(
-                self_person_ref=actor, subject_native_ref=activity
+        assert (
+            len(
+                await application.list_for_subject(
+                    self_person_ref=actor, subject_native_ref=activity
+                )
             )
-        ) == 2
+            == 2
+        )
     finally:
         await runtime.dispose()
 
+
+@pytest.mark.asyncio
+async def test_grouped_correction_moves_main_and_child_together_without_exposing_an_invalid_final_state(
+    migrated_database: Any,
+) -> None:
+    actor = _seed_self(migrated_database)
+    runtime = create_database_runtime(migrated_database.runtime_settings())
+    start = datetime.now(UTC) - timedelta(hours=6)
+    end = start + timedelta(hours=1)
+    try:
+        created = await TemporalAuthoringApplication(runtime.session_factory).create_activity(
+            self_person_ref=actor,
+            operation_id="editor-move:create",
+            title="Move both actual recordings",
+            placement=AbsoluteIntervalPlacement(starts_at=start, ends_at=end),
+            planned_slices=(None,),
+            planned_slice_names=("Reading",),
+            session_capture_mode="record_and_live",
+        )
+        activity = created.item.subject_native_ref
+        async with runtime.session_factory() as session, session.begin():
+            planned = (
+                await session.execute(
+                    text("""SELECT schedule_ref FROM dante.get_self_activity_schedule_roles(
+                        :actor,CAST(ARRAY[:activity] AS uuid[])) WHERE role_code='planned'"""),
+                    {"actor": actor, "activity": activity},
+                )
+            ).scalar_one()
+        application = SessionApplication(runtime.session_factory)
+        original = await application.write_editor_batch(
+            self_person_ref=actor,
+            activity_ref=activity,
+            commands=(
+                SessionEditorWrite(
+                    operation_id="editor-move:main",
+                    planned_schedule_ref=None,
+                    session_ref=None,
+                    expected_material_state_ref=None,
+                    started_at=start,
+                    ended_at=end,
+                    pause_ranges=(),
+                ),
+                SessionEditorWrite(
+                    operation_id="editor-move:child",
+                    planned_schedule_ref=planned,
+                    session_ref=None,
+                    expected_material_state_ref=None,
+                    started_at=start + timedelta(minutes=10),
+                    ended_at=start + timedelta(minutes=30),
+                    pause_ranges=(),
+                ),
+            ),
+        )
+        shifted = start + timedelta(hours=2)
+        main, child = original
+        with pytest.raises(SessionInputError):
+            await application.write_editor_batch(
+                self_person_ref=actor,
+                activity_ref=activity,
+                commands=(
+                    SessionEditorWrite(
+                        operation_id="editor-move:main-alone",
+                        planned_schedule_ref=None,
+                        session_ref=main.session_ref,
+                        expected_material_state_ref=main.timing_material_state_ref,
+                        started_at=shifted,
+                        ended_at=shifted + timedelta(hours=1),
+                        pause_ranges=(),
+                    ),
+                ),
+            )
+        corrected = await application.write_editor_batch(
+            self_person_ref=actor,
+            activity_ref=activity,
+            commands=(
+                SessionEditorWrite(
+                    operation_id="editor-move:main-and-child",
+                    planned_schedule_ref=None,
+                    session_ref=main.session_ref,
+                    expected_material_state_ref=main.timing_material_state_ref,
+                    started_at=shifted,
+                    ended_at=shifted + timedelta(hours=1),
+                    pause_ranges=(),
+                ),
+                SessionEditorWrite(
+                    operation_id="editor-move:child-with-main",
+                    planned_schedule_ref=planned,
+                    session_ref=child.session_ref,
+                    expected_material_state_ref=child.timing_material_state_ref,
+                    started_at=shifted + timedelta(minutes=10),
+                    ended_at=shifted + timedelta(minutes=30),
+                    pause_ranges=(),
+                ),
+            ),
+        )
+        assert [row.session_ref for row in corrected] == [
+            main.session_ref,
+            child.session_ref,
+        ]
+        assert [row.started_at for row in corrected] == [
+            shifted,
+            shifted + timedelta(minutes=10),
+        ]
+        assert (
+            len(
+                await application.list_for_subject(
+                    self_person_ref=actor,
+                    subject_native_ref=activity,
+                )
+            )
+            == 2
+        )
+    finally:
+        await runtime.dispose()

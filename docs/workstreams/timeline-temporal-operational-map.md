@@ -1,5 +1,26 @@
 # Timeline / Temporal-Operational — Live Execution Ledger
 
+## 2026-11-25 — Registrazioni: correzioni prima della suite E2E estesa (candidate)
+
+Il controllo su `e0f50f8` ha trovato tre difetti non coperti dai precedenti
+E2E: l'aggiunta di un intervallo vicino a ora ne creava uno nel futuro; una
+correzione valida di principale e secondaria insieme era rifiutata dal
+controllo immediato della secondaria vecchia; una rilettura incompleta dopo
+POST poteva sostituire le righe prima della conferma delle ricevute.
+La UI ora propone soltanto intervalli conclusi e conserva la bozza e
+l'operation ID finché la rilettura non è confermata. La migrazione forward
+`20261125_192` sposta il guardiano principale/secondarie su un constraint
+trigger differito della ricevuta, verificando lo stato finale anche per il
+comando singolo. Nessuna migrazione applicata viene modificata. Lo schema
+OpenAPI e il client Orval sono stati rigenerati con il tooling ufficiale.
+Il catalogo e il Dictionary candidati diventano `246|5|273|107|503|444|616`.
+
+Nello scratch Web typecheck PASS e Vitest mirato 13/13 PASS; Python/PostgreSQL
+NOT_RUN (Docker non disponibile in questo ambiente). Il test PostgreSQL
+regressivo prova sia il rifiuto della principale spostata da sola sia la
+correzione atomica di principale e secondaria. Il nuovo SHA e la suite E2E
+dedicata richiedono ancora la verifica nello stack locale dell'owner.
+
 ## 2026-11-25 — Registrazioni Sessioni: scroll interno, ripresa su più padri, chiusura dopo Save (candidate)
 
 Dopo l'accettazione visiva preliminare, l'owner ha eseguito i test mirati

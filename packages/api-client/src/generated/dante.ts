@@ -241,6 +241,7 @@ import type {
   ScopedProfileEditStateResponse,
   SessionCommand,
   SessionEditorAttempt,
+  SessionEditorBatchCommand,
   SessionEditorCommand,
   SessionEndCommand,
   SessionManualCommand,
@@ -5992,6 +5993,77 @@ export const temporalWriteActivitySessionEditorAttempt = async (
     status: res.status,
     headers: res.headers,
   } as temporalWriteActivitySessionEditorAttemptResponse;
+};
+
+export type temporalWriteActivitySessionEditorBatchResponse200 = {
+  data: SessionResponse[];
+  status: 200;
+};
+
+export type temporalWriteActivitySessionEditorBatchResponse422 = {
+  data: HTTPValidationError;
+  status: 422;
+};
+
+export type temporalWriteActivitySessionEditorBatchResponseSuccess =
+  temporalWriteActivitySessionEditorBatchResponse200 & {
+    headers: Headers;
+  };
+export type temporalWriteActivitySessionEditorBatchResponseError =
+  temporalWriteActivitySessionEditorBatchResponse422 & {
+    headers: Headers;
+  };
+
+export type temporalWriteActivitySessionEditorBatchResponse =
+  | temporalWriteActivitySessionEditorBatchResponseSuccess
+  | temporalWriteActivitySessionEditorBatchResponseError;
+
+export const getTemporalWriteActivitySessionEditorBatchUrl = (
+  activityRef: string,
+) => {
+  return `/api/v1/temporal/activities/${activityRef}/sessions/editor/batch`;
+};
+
+/**
+ * @summary Write Activity Session Editor Batch
+ */
+export const temporalWriteActivitySessionEditorBatch = async (
+  activityRef: string,
+  sessionEditorBatchCommand: SessionEditorBatchCommand,
+  options?: RequestInit,
+  fetchFn?: typeof globalThis.fetch,
+): Promise<temporalWriteActivitySessionEditorBatchResponse> => {
+  const getHeaders = (
+    h?: NonNullable<RequestInit['headers']>,
+  ): Record<string, string | readonly string[]> => {
+    if (!h) return {};
+    if (h instanceof Headers) return Object.fromEntries(h.entries());
+    if (Array.isArray(h)) return Object.fromEntries(h);
+    return h;
+  };
+  const res = await (fetchFn ?? fetch)(
+    getTemporalWriteActivitySessionEditorBatchUrl(activityRef),
+    {
+      ...options,
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        ...getHeaders(options?.headers),
+      },
+      body: JSON.stringify(sessionEditorBatchCommand),
+    },
+  );
+
+  const body = [204, 205, 304].includes(res.status) ? null : await res.text();
+
+  const data: temporalWriteActivitySessionEditorBatchResponse['data'] = body
+    ? JSON.parse(body)
+    : {};
+  return {
+    data,
+    status: res.status,
+    headers: res.headers,
+  } as temporalWriteActivitySessionEditorBatchResponse;
 };
 
 export type temporalRecordManualActivitySessionResponse200 = {

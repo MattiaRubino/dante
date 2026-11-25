@@ -113,11 +113,11 @@
     "standalone_entries": {
       "tables": 246,
       "views": 5,
-      "routines": 272,
-      "total": 523
+      "routines": 273,
+      "total": 524
     },
     "embedded_objects": {
-      "triggers": 106,
+      "triggers": 107,
       "physical_indexes": 503
     },
     "constraints": {

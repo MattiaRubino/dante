@@ -63,7 +63,6 @@ class SessionPersistenceError(RuntimeError):
     """Canonical Session persistence could not complete safely."""
 
 
-
 @dataclass(frozen=True, slots=True)
 class SessionEditorWrite:
     """One factual Session edit inside an atomic Activity recording group."""
@@ -354,7 +353,6 @@ class SessionApplication:
         )
         return await self._hydrate(self_person_ref, view)
 
-
     async def write_editor_batch(
         self,
         *,
@@ -377,18 +375,21 @@ class SessionApplication:
         for command in ordered:
             normalized = _normalize_operation_id(command.operation_id)
             if normalized in operation_seen:
-                raise SessionInputError("Gli identificativi delle operazioni devono essere distinti.")
+                raise SessionInputError(
+                    "Gli identificativi delle operazioni devono essere distinti."
+                )
             operation_seen.add(normalized)
             if command.planned_schedule_ref in planned_seen:
-                raise SessionInputError("Una Sessione può comparire una sola volta nel salvataggio.")
+                raise SessionInputError(
+                    "Una Sessione può comparire una sola volta nel salvataggio."
+                )
             planned_seen.add(command.planned_schedule_ref)
             if (
                 command.started_at.tzinfo is None
                 or command.ended_at.tzinfo is None
                 or command.started_at >= command.ended_at
                 or command.ended_at > datetime.now(UTC)
-                or (command.session_ref is None)
-                != (command.expected_material_state_ref is None)
+                or (command.session_ref is None) != (command.expected_material_state_ref is None)
             ):
                 raise SessionInputError("Inserisci intervalli conclusi e validi.")
             if len(command.pause_ranges) > 99:
@@ -402,7 +403,9 @@ class SessionApplication:
                     or pause_start >= pause_end
                     or pause_end > command.ended_at
                 ):
-                    raise SessionInputError("Le pause devono essere ordinate e interne alla Sessione.")
+                    raise SessionInputError(
+                        "Le pause devono essere ordinate e interne alla Sessione."
+                    )
                 previous = pause_end
             normalized_pauses = [
                 {
@@ -450,9 +453,7 @@ class SessionApplication:
         views: list[SessionView] = []
         try:
             async with self._session_factory() as database_session, database_session.begin():
-                await database_session.execute(
-                    text("SET TRANSACTION ISOLATION LEVEL SERIALIZABLE")
-                )
+                await database_session.execute(text("SET TRANSACTION ISOLATION LEVEL SERIALIZABLE"))
                 for parameters in prepared:
                     result = await database_session.execute(statement, parameters)
                     row = result.mappings().one()
@@ -462,9 +463,7 @@ class SessionApplication:
             raise SessionPersistenceError("Salvataggio delle registrazioni annullato.") from exc
         except SQLAlchemyError as exc:
             raise SessionPersistenceError("Salvataggio delle registrazioni annullato.") from exc
-        hydrated: list[SessionView] = []
-        for view in views:
-            hydrated.append(await self._hydrate(self_person_ref, view))
+        hydrated = [await self._hydrate(self_person_ref, view) for view in views]
         return tuple(hydrated)
 
     async def end(

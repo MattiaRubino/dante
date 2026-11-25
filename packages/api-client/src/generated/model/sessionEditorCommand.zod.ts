@@ -8,6 +8,8 @@ import * as zod from 'zod/mini';
 
 export const sessionEditorCommandOperationIdMax = 200;
 
+export const sessionEditorCommandPauseRangesMax = 99;
+
 export const SessionEditorCommand = /*#__PURE__*/ zod.object({
   ended_at: /*#__PURE__*/ zod.iso.datetime({ offset: true }),
   expected_material_state_ref: /*#__PURE__*/ zod.optional(
@@ -21,12 +23,14 @@ export const SessionEditorCommand = /*#__PURE__*/ zod.object({
     .check(/*#__PURE__*/ zod.minLength(1))
     .check(/*#__PURE__*/ zod.maxLength(sessionEditorCommandOperationIdMax)),
   pause_ranges: /*#__PURE__*/ zod.optional(
-    /*#__PURE__*/ zod.array(
-      /*#__PURE__*/ zod.object({
-        ended_at: /*#__PURE__*/ zod.iso.datetime({ offset: true }),
-        started_at: /*#__PURE__*/ zod.iso.datetime({ offset: true }),
-      }),
-    ),
+    /*#__PURE__*/ zod
+      .array(
+        /*#__PURE__*/ zod.object({
+          ended_at: /*#__PURE__*/ zod.iso.datetime({ offset: true }),
+          started_at: /*#__PURE__*/ zod.iso.datetime({ offset: true }),
+        }),
+      )
+      .check(/*#__PURE__*/ zod.maxLength(sessionEditorCommandPauseRangesMax)),
   ),
   planned_schedule_ref: /*#__PURE__*/ zod.optional(
     /*#__PURE__*/ zod.union([

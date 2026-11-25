@@ -8,6 +8,8 @@ import * as zod from 'zod/mini';
 
 export const temporalWriteActivitySessionEditorAttemptBodyOperationIdMax = 200;
 
+export const temporalWriteActivitySessionEditorAttemptBodyPauseRangesMax = 99;
+
 export const TemporalWriteActivitySessionEditorAttemptBody =
   /*#__PURE__*/ zod.object({
     ended_at: /*#__PURE__*/ zod.iso.datetime({ offset: true }),
@@ -26,12 +28,18 @@ export const TemporalWriteActivitySessionEditorAttemptBody =
         ),
       ),
     pause_ranges: /*#__PURE__*/ zod.optional(
-      /*#__PURE__*/ zod.array(
-        /*#__PURE__*/ zod.object({
-          ended_at: /*#__PURE__*/ zod.iso.datetime({ offset: true }),
-          started_at: /*#__PURE__*/ zod.iso.datetime({ offset: true }),
-        }),
-      ),
+      /*#__PURE__*/ zod
+        .array(
+          /*#__PURE__*/ zod.object({
+            ended_at: /*#__PURE__*/ zod.iso.datetime({ offset: true }),
+            started_at: /*#__PURE__*/ zod.iso.datetime({ offset: true }),
+          }),
+        )
+        .check(
+          /*#__PURE__*/ zod.maxLength(
+            temporalWriteActivitySessionEditorAttemptBodyPauseRangesMax,
+          ),
+        ),
     ),
     planned_schedule_ref: /*#__PURE__*/ zod.optional(
       /*#__PURE__*/ zod.union([

@@ -265,14 +265,27 @@ function resolveIntervals(draft: Draft, zone: string): ResolvedInterval[] {
   }));
 }
 
-function nextInterval(draft: Draft): ActiveInterval {
+function nextInterval(draft: Draft, zone: string): ActiveInterval {
   const last = draft.intervals.at(-1)!;
-  const start = Temporal.PlainDateTime.from(last.end).add({ minutes: 30 });
+  const previousEnd = Temporal.Instant.from(
+    instant(last.end, zone, last.endChoice),
+  ).epochMilliseconds;
+  const latestEnd =
+    Math.floor(Temporal.Now.instant().epochMilliseconds / 60_000) * 60_000;
+  if (previousEnd + 60_000 >= latestEnd) {
+    throw new Error(
+      'Anticipa la fine dell’ultimo intervallo: non c’è spazio per un altro tratto nel passato.',
+    );
+  }
+  const start = Math.min(previousEnd + 30 * 60_000, latestEnd - 60_000);
+  const end = Math.min(start + 60 * 60_000, latestEnd);
+  const startInstant = new Date(start).toISOString();
+  const endInstant = new Date(end).toISOString();
   return {
-    start: start.toString({ smallestUnit: 'minute' }),
-    end: start.add({ hours: 1 }).toString({ smallestUnit: 'minute' }),
-    startChoice: 'reject',
-    endChoice: 'reject',
+    start: local(startInstant, zone),
+    end: local(endInstant, zone),
+    startChoice: choiceFor(startInstant, zone),
+    endChoice: choiceFor(endInstant, zone),
   };
 }
 
@@ -348,7 +361,10 @@ function validateDraft(
   draft: Draft,
   zone: string,
   main: Pick<Attempt, 'started_at' | 'ended_at' | 'pause_ranges'> | null,
-  children: readonly Pick<Attempt, 'started_at' | 'ended_at' | 'pause_ranges'>[],
+  children: readonly Pick<
+    Attempt,
+    'started_at' | 'ended_at' | 'pause_ranges'
+  >[],
 ): Issue | null {
   if (!draft.intervals.length || draft.intervals.length > 100)
     return {
@@ -500,11 +516,13 @@ export async function activityHasSessionRecordings(
   );
 }
 
-
 type EditorPending = Record<string, Draft>;
 type EditorIssues = Record<string, Issue>;
 
-function safeRanges(draft: Draft | null | undefined, zone: string): ResolvedInterval[] {
+function safeRanges(
+  draft: Draft | null | undefined,
+  zone: string,
+): ResolvedInterval[] {
   if (!draft) return [];
   try {
     const ranges = resolveIntervals(draft, zone);
@@ -519,16 +537,6 @@ function safeRanges(draft: Draft | null | undefined, zone: string): ResolvedInte
   } catch {
     return [];
   }
-}
-
-function readonlyIntervals(attempt: Attempt): Array<{ start: string; end: string }> {
-  if (!attempt.ended_at) return [];
-  return activeSlices(attempt.started_at, attempt.ended_at, attempt.pause_ranges).map(
-    (range) => ({
-      start: new Date(range.start).toISOString(),
-      end: new Date(range.end).toISOString(),
-    }),
-  );
 }
 
 function clampToMain(
@@ -549,15 +557,27 @@ function clampToMain(
         } catch {
           return item;
         }
-        if (!parsed || !Number.isFinite(parsed.start) || !Number.isFinite(parsed.end))
+        if (
+          !parsed ||
+          !Number.isFinite(parsed.start) ||
+          !Number.isFinite(parsed.end)
+        )
           return item;
-        const within = pinned && pinned.intervalIndex === index
-          ? pinned.parentIndex
-          : parents.findIndex(
-              (parent) => parsed.start >= parent.start && parsed.start < parent.end,
-            );
-        const parent = parents[within >= 0 ? within : Math.min(preferred, parents.length - 1)]!;
-        const start = Math.min(parent.end, Math.max(parent.start, parsed.start));
+        const within =
+          pinned && pinned.intervalIndex === index
+            ? pinned.parentIndex
+            : parents.findIndex(
+                (parent) =>
+                  parsed.start >= parent.start && parsed.start < parent.end,
+              );
+        const parent =
+          parents[
+            within >= 0 ? within : Math.min(preferred, parents.length - 1)
+          ]!;
+        const start = Math.min(
+          parent.end,
+          Math.max(parent.start, parsed.start),
+        );
         const end = Math.min(parent.end, Math.max(parent.start, parsed.end));
         if (start === parsed.start && end === parsed.end) return item;
         clamped.push(index);
@@ -593,7 +613,9 @@ async function saveEditorGroup(
     ...attemptFromRanges(resolveIntervals(draft, zone)),
   }));
   const response = await webFetch(
-    '/api/v1/temporal/activities/' + encodeURIComponent(activityRef) + '/sessions/editor/batch',
+    '/api/v1/temporal/activities/' +
+      encodeURIComponent(activityRef) +
+      '/sessions/editor/batch',
     {
       method: 'POST',
       headers: {
@@ -604,24 +626,32 @@ async function saveEditorGroup(
     },
   );
   if (!response.ok) {
-    const problem = (await response.json().catch(() => ({}))) as { detail?: string };
+    const problem = (await response.json().catch(() => ({}))) as {
+      detail?: string;
+    };
     throw new Error(problem.detail || 'Registrazioni non salvate. Riprova.');
   }
   const receipts = (await response.json()) as unknown;
   if (
     !Array.isArray(receipts) ||
     receipts.length !== updates.length ||
-    receipts.some(
-      (receipt) =>
-        !receipt ||
-        typeof receipt !== 'object' ||
-        typeof receipt.session_ref !== 'string' ||
-        typeof receipt.timing_material_state_ref !== 'string',
-    )
+    receipts.some((receipt: unknown) => {
+      if (!receipt || typeof receipt !== 'object') return true;
+      const value = receipt as Record<string, unknown>;
+      return (
+        typeof value.session_ref !== 'string' ||
+        typeof value.timing_material_state_ref !== 'string'
+      );
+    })
   ) {
-    throw new Error('Risposta incompleta: ricarica le registrazioni prima di riprovare.');
+    throw new Error(
+      'Risposta incompleta: ricarica le registrazioni prima di riprovare.',
+    );
   }
-  return receipts as Array<{ session_ref: string; timing_material_state_ref: string }>;
+  return receipts as Array<{
+    session_ref: string;
+    timing_material_state_ref: string;
+  }>;
 }
 
 export function ActivitySessionRecordingEditor({
@@ -637,7 +667,9 @@ export function ActivitySessionRecordingEditor({
   onClose: () => void;
   onSaved?: () => void;
 }>) {
-  const [structure, setStructure] = useState<PlannedSessionStructure | null>(null);
+  const [structure, setStructure] = useState<PlannedSessionStructure | null>(
+    null,
+  );
   const [mainEnabled, setMainEnabled] = useState(false);
   const [attempts, setAttempts] = useState<Attempt[]>([]);
   const [pending, setPending] = useState<EditorPending>({});
@@ -651,76 +683,111 @@ export function ActivitySessionRecordingEditor({
   const operation = useRef<string | null>(null);
   const closeButton = useRef<HTMLButtonElement>(null);
 
-  async function reload() {
-    const base = '/api/v1/temporal/activities/' + encodeURIComponent(activityRef);
+  async function reload(publish = true) {
+    const base =
+      '/api/v1/temporal/activities/' + encodeURIComponent(activityRef);
     const [structureValue, attemptsValue] = await Promise.all([
       readJson(base + '/children'),
       readJson(base + '/sessions/editor'),
     ]);
     const configured = parsePlannedSessions(structureValue, activityRef);
     const raw = structureValue as { session_capture_mode?: string };
-    const enabled = raw.session_capture_mode === 'live' ||
+    const enabled =
+      raw.session_capture_mode === 'live' ||
       raw.session_capture_mode === 'record_and_live';
     const recorded = parseAttempts(attemptsValue);
-    setStructure(configured);
-    setMainEnabled(enabled);
-    setAttempts(recorded);
+    if (publish) {
+      setStructure(configured);
+      setMainEnabled(enabled);
+      setAttempts(recorded);
+    }
     return { configured, enabled, recorded };
   }
 
   useEffect(() => {
     closeButton.current?.focus();
     let active = true;
-    const base = '/api/v1/temporal/activities/' + encodeURIComponent(activityRef);
-    void Promise.all([readJson(base + '/children'), readJson(base + '/sessions/editor')])
+    const base =
+      '/api/v1/temporal/activities/' + encodeURIComponent(activityRef);
+    void Promise.all([
+      readJson(base + '/children'),
+      readJson(base + '/sessions/editor'),
+    ])
       .then(([value, attemptsValue]) => {
         if (!active) return;
         const configured = parsePlannedSessions(value, activityRef);
         const raw = value as { session_capture_mode?: string };
-        const enabled = raw.session_capture_mode === 'live' ||
+        const enabled =
+          raw.session_capture_mode === 'live' ||
           raw.session_capture_mode === 'record_and_live';
         const recorded = parseAttempts(attemptsValue);
         setStructure(configured);
         setMainEnabled(enabled);
         setAttempts(recorded);
         const initial: EditorPending = {};
-        if (enabled && !recorded.some((item) => item.planned_schedule_ref === null))
+        if (
+          enabled &&
+          !recorded.some((item) => item.planned_schedule_ref === null)
+        )
           initial.main = draftFrom(null, timeZone);
         if (!enabled) {
           for (const planned of configured.rows) {
-            if (!recorded.some((item) => item.planned_schedule_ref === planned.scheduleRef))
+            if (
+              !recorded.some(
+                (item) => item.planned_schedule_ref === planned.scheduleRef,
+              )
+            )
               initial[planned.scheduleRef] = draftFrom(null, timeZone);
           }
         }
         setPending(initial);
       })
       .catch((reason: unknown) => {
-        if (active) setError(reason instanceof Error ? reason.message : 'Caricamento non riuscito.');
+        if (active)
+          setError(
+            reason instanceof Error
+              ? reason.message
+              : 'Caricamento non riuscito.',
+          );
       })
-      .finally(() => { if (active) setLoading(false); });
-    return () => { active = false; };
+      .finally(() => {
+        if (active) setLoading(false);
+      });
+    return () => {
+      active = false;
+    };
   }, [activityRef, timeZone]);
 
   const forConfigured = (plannedRef: string | null, name: string): Row[] => {
-    const found = attempts.filter((attempt) => attempt.planned_schedule_ref === plannedRef);
+    const found = attempts.filter(
+      (attempt) => attempt.planned_schedule_ref === plannedRef,
+    );
     return found.length
       ? found.map((attempt) => ({
-          key: attempt.session_ref, plannedRef, name, attempt,
+          key: attempt.session_ref,
+          plannedRef,
+          name,
+          attempt,
         }))
       : [{ key: plannedRef ?? 'main', plannedRef, name, attempt: null }];
   };
-  const mainRows = mainEnabled ||
+  const mainRows =
+    mainEnabled ||
     attempts.some((attempt) => attempt.planned_schedule_ref === null)
-    ? forConfigured(null, 'Sessione attività') : [];
+      ? forConfigured(null, 'Sessione attività')
+      : [];
   const mainRow = mainRows[0] ?? null;
-  const children: Row[] = structure?.rows.flatMap(
-    (planned) => forConfigured(planned.scheduleRef, planned.name),
-  ) ?? [];
+  const children: Row[] =
+    structure?.rows.flatMap((planned) =>
+      forConfigured(planned.scheduleRef, planned.name),
+    ) ?? [];
   const allRows = [...mainRows, ...children];
   const mainRecorded = mainRows.find((row) => row.attempt?.ended_at) ?? null;
   const mainDraft = mainRow
-    ? pending[mainRow.key] ??
-      (mainRecorded?.attempt?.ended_at ? draftFrom(mainRecorded.attempt, timeZone) : null)
+    ? (pending[mainRow.key] ??
+      (mainRecorded?.attempt?.ended_at
+        ? draftFrom(mainRecorded.attempt, timeZone)
+        : null))
     : null;
   const parentRanges = safeRanges(mainDraft, timeZone);
   const mainCanAcceptChildren = !mainEnabled || parentRanges.length > 0;
@@ -732,15 +799,21 @@ export function ActivitySessionRecordingEditor({
     limit = true,
     pinned?: { intervalIndex: number; parentIndex: number },
   ) {
-    let next = updated;
+    if (saving) return;
+    if (JSON.stringify(pending[row.key]) === JSON.stringify(updated)) return;
     const adjusted: Record<string, number[]> = {};
     const nextPending: EditorPending = { ...pending, [row.key]: updated };
     if (limit && row.plannedRef !== null && mainEnabled) {
-      const result = clampToMain(updated, timeZone, parentRanges, anchors[row.key] ?? 0, pinned);
-      next = result.draft;
+      const result = clampToMain(
+        updated,
+        timeZone,
+        parentRanges,
+        anchors[row.key] ?? 0,
+        pinned,
+      );
       adjusted[row.key] = result.clamped;
-      nextPending[row.key] = next;
-      const start = safeRanges(next, timeZone)[0]?.start;
+      nextPending[row.key] = result.draft;
+      const start = safeRanges(result.draft, timeZone)[0]?.start;
       if (start !== undefined) {
         const index = parentRanges.findIndex(
           (parent) => start >= parent.start && start < parent.end,
@@ -755,7 +828,10 @@ export function ActivitySessionRecordingEditor({
         const childDraft = pending[child.key];
         if (!childDraft || child.attempt) continue;
         const result = clampToMain(
-          childDraft, timeZone, bounds, anchors[child.key] ?? 0,
+          childDraft,
+          timeZone,
+          bounds,
+          anchors[child.key] ?? 0,
         );
         nextPending[child.key] = result.draft;
         adjusted[child.key] = result.clamped;
@@ -816,30 +892,37 @@ export function ActivitySessionRecordingEditor({
   }
 
   function sortedIntervals(intervals: ActiveInterval[]): ActiveInterval[] {
-    return intervals.sort((left, right) =>
-      Date.parse(instant(left.start, timeZone, left.startChoice)) -
-      Date.parse(instant(right.start, timeZone, right.startChoice)),
+    return intervals.sort(
+      (left, right) =>
+        Date.parse(instant(left.start, timeZone, left.startChoice)) -
+        Date.parse(instant(right.start, timeZone, right.startChoice)),
     );
   }
 
   function assignChild(row: Row, parentIndex: number) {
     const added = intervalWithinParent(parentIndex);
     if (!mainCanAcceptChildren || !added) return;
-    const existing = pending[row.key] ??
+    const existing =
+      pending[row.key] ??
       (row.attempt?.ended_at ? draftFrom(row.attempt, timeZone) : null);
     if (existing && existing.intervals.length >= 100) {
       setError('Sono ammessi al massimo 100 intervalli per Sessione.');
       return;
     }
     try {
-      const intervals = sortedIntervals([...(existing?.intervals ?? []), added]);
+      const intervals = sortedIntervals([
+        ...(existing?.intervals ?? []),
+        added,
+      ]);
       if (!existing) {
         setAnchors((current) => ({ ...current, [row.key]: parentIndex }));
       }
       changeDraft(row, { intervals }, true);
       setSessionMenu(null);
     } catch {
-      setError('Controlla gli intervalli già presenti prima di riprendere la Sessione.');
+      setError(
+        'Controlla gli intervalli già presenti prima di riprendere la Sessione.',
+      );
     }
   }
 
@@ -892,7 +975,9 @@ export function ActivitySessionRecordingEditor({
         ),
       },
       true,
-      parentIndex === undefined ? undefined : { intervalIndex: index, parentIndex },
+      parentIndex === undefined
+        ? undefined
+        : { intervalIndex: index, parentIndex },
     );
   }
 
@@ -900,18 +985,27 @@ export function ActivitySessionRecordingEditor({
     const existing = pending[row.key];
     if (!existing || existing.intervals.length >= 100) return;
     try {
-      if (parentIndex === undefined || row.plannedRef === null || !mainEnabled) {
-        const candidate = nextInterval(existing);
+      if (
+        parentIndex === undefined ||
+        row.plannedRef === null ||
+        !mainEnabled
+      ) {
+        const candidate = nextInterval(existing, timeZone);
         changeDraft(row, { intervals: [...existing.intervals, candidate] });
         return;
       }
       const parent = parentRanges[parentIndex];
       if (!parent) return;
       const used = existing.intervals.flatMap((interval) => {
-        const resolved = resolveIntervals({ intervals: [interval] }, timeZone)[0];
+        const resolved = resolveIntervals(
+          { intervals: [interval] },
+          timeZone,
+        )[0];
         return resolved &&
-          resolved.start >= parent.start && resolved.start < parent.end
-          ? [resolved] : [];
+          resolved.start >= parent.start &&
+          resolved.start < parent.end
+          ? [resolved]
+          : [];
       });
       const latestEnd = used.length
         ? Math.max(...used.map((interval) => interval.end))
@@ -919,7 +1013,9 @@ export function ActivitySessionRecordingEditor({
       const start = used.length ? latestEnd + 60_000 : latestEnd;
       const end = Math.min(parent.end, start + 30 * 60_000);
       if (end <= start) {
-        setError('Non c’è spazio per un altro intervallo: riduci quello precedente.');
+        setError(
+          'Non c’è spazio per un altro intervallo: riduci quello precedente.',
+        );
         return;
       }
       const startIso = new Date(start).toISOString();
@@ -933,8 +1029,12 @@ export function ActivitySessionRecordingEditor({
       changeDraft(row, {
         intervals: sortedIntervals([...existing.intervals, candidate]),
       });
-    } catch {
-      setError('Completa gli intervalli prima di aggiungerne un altro.');
+    } catch (reason) {
+      setError(
+        reason instanceof Error
+          ? reason.message
+          : 'Completa gli intervalli prima di aggiungerne un altro.',
+      );
     }
   }
 
@@ -960,7 +1060,8 @@ export function ActivitySessionRecordingEditor({
         className="timeline-session-editor__interval-block"
         data-invalid={
           issue?.field === 'interval-' + index ||
-          clamped[row.key]?.includes(index) || undefined
+          clamped[row.key]?.includes(index) ||
+          undefined
         }
       >
         {readonly ? (
@@ -982,7 +1083,9 @@ export function ActivitySessionRecordingEditor({
             zone={timeZone}
             fieldPath={'session-recording.' + row.key}
             issue={issue?.field === 'interval-' + index ? issue : null}
-            onChange={(updated) => updateInterval(row, index, updated, parentIndex)}
+            onChange={(updated) =>
+              updateInterval(row, index, updated, parentIndex)
+            }
             onRemove={
               pending[row.key]?.intervals.length &&
               pending[row.key]!.intervals.length > 1
@@ -997,16 +1100,19 @@ export function ActivitySessionRecordingEditor({
           </p>
         ) : null}
         {issue?.field === 'interval-' + index ? (
-          <p className="timeline-session-editor__error" role="alert">{issue.message}</p>
+          <p className="timeline-session-editor__error" role="alert">
+            {issue.message}
+          </p>
         ) : null}
       </div>
     );
   }
 
-
   function childDraft(row: Row): Draft | null {
-    return pending[row.key] ??
-      (row.attempt?.ended_at ? draftFrom(row.attempt, timeZone) : null);
+    return (
+      pending[row.key] ??
+      (row.attempt?.ended_at ? draftFrom(row.attempt, timeZone) : null)
+    );
   }
 
   function parentOfChildInterval(row: Row, interval: ActiveInterval): number {
@@ -1015,7 +1121,8 @@ export function ActivitySessionRecordingEditor({
       const resolved = resolveIntervals({ intervals: [interval] }, timeZone)[0];
       if (resolved) {
         const within = parentRanges.findIndex(
-          (parent) => resolved.start >= parent.start && resolved.start < parent.end,
+          (parent) =>
+            resolved.start >= parent.start && resolved.start < parent.end,
         );
         if (within >= 0) return within;
       }
@@ -1044,10 +1151,13 @@ export function ActivitySessionRecordingEditor({
     const draft = pending[row.key];
     const readOnly = !draft && Boolean(row.attempt?.ended_at);
     const visible = childDraft(row);
-    const indices = visible?.intervals.flatMap((interval, index) =>
-      parentIndex === undefined || parentOfChildInterval(row, interval) === parentIndex
-        ? [index] : [],
-    ) ?? [];
+    const indices =
+      visible?.intervals.flatMap((interval, index) =>
+        parentIndex === undefined ||
+        parentOfChildInterval(row, interval) === parentIndex
+          ? [index]
+          : [],
+      ) ?? [];
     const localDraft = visible
       ? { intervals: indices.map((index) => visible.intervals[index]!) }
       : null;
@@ -1058,11 +1168,26 @@ export function ActivitySessionRecordingEditor({
         data-recorded={readOnly || undefined}
       >
         <div className="timeline-session-editor__row-header">
-          <div><h3>{row.name}</h3></div>
+          <div>
+            <h3>{row.name}</h3>
+          </div>
           {row.attempt?.ended_at && draft ? (
-            <button type="button" onClick={() => cancelCorrection(row)}>Annulla</button>
-          ) : !row.attempt && draft && mainEnabled && parentIndex !== undefined ? (
-            <button type="button" onClick={() => removeChildFromParent(row, parentIndex)} aria-label={'Rimuovi ' + row.name + ' da intervallo ' + (parentIndex + 1)}>×</button>
+            <button type="button" onClick={() => cancelCorrection(row)}>
+              Annulla
+            </button>
+          ) : !row.attempt &&
+            draft &&
+            mainEnabled &&
+            parentIndex !== undefined ? (
+            <button
+              type="button"
+              onClick={() => removeChildFromParent(row, parentIndex)}
+              aria-label={
+                'Rimuovi ' + row.name + ' da intervallo ' + (parentIndex + 1)
+              }
+            >
+              ×
+            </button>
           ) : null}
           {row.attempt && !row.attempt.ended_at ? (
             <small>In corso · usa i controlli live</small>
@@ -1071,7 +1196,13 @@ export function ActivitySessionRecordingEditor({
         {localDraft && localDraft.intervals.length > 0 ? (
           <div className="timeline-session-editor__intervals">
             {indices.map((index) =>
-              renderRange(row, index, visible!.intervals[index]!, readOnly, parentIndex),
+              renderRange(
+                row,
+                index,
+                visible!.intervals[index]!,
+                readOnly,
+                parentIndex,
+              ),
             )}
           </div>
         ) : null}
@@ -1081,7 +1212,9 @@ export function ActivitySessionRecordingEditor({
             className="timeline-session-editor__add-interval"
             disabled={draft.intervals.length >= 100}
             onClick={() => addInterval(row, parentIndex)}
-          >＋ Aggiungi intervallo</button>
+          >
+            ＋ Aggiungi intervallo
+          </button>
         ) : null}
         {localDraft && localDraft.intervals.length > 0 ? (
           <SessionSegmentPreview draft={localDraft} zone={timeZone} />
@@ -1089,7 +1222,6 @@ export function ActivitySessionRecordingEditor({
       </article>
     );
   }
-
 
   function renderChildSlot(index: number) {
     const allocated = children.filter(
@@ -1109,15 +1241,26 @@ export function ActivitySessionRecordingEditor({
               type="button"
               aria-expanded={sessionMenu === index}
               disabled={!mainCanAcceptChildren || !parentRanges[index]}
-              onClick={() => setSessionMenu((current) => current === index ? null : index)}
+              onClick={() =>
+                setSessionMenu((current) => (current === index ? null : index))
+              }
             >
               ＋ Registra sessione
             </button>
             {sessionMenu === index ? (
-              <div className="timeline-session-editor__session-options" role="group" aria-label={'Scegli Sessione per intervallo ' + (index + 1)}>
+              <div
+                className="timeline-session-editor__session-options"
+                role="group"
+                aria-label={'Scegli Sessione per intervallo ' + (index + 1)}
+              >
                 {available.map((row) => (
-                  <button key={row.key} type="button" onClick={() => assignChild(row, index)}>
-                    {row.name}{pending[row.key] || row.attempt ? ' · Riprendi' : ''}
+                  <button
+                    key={row.key}
+                    type="button"
+                    onClick={() => assignChild(row, index)}
+                  >
+                    {row.name}
+                    {pending[row.key] || row.attempt ? ' · Riprendi' : ''}
                   </button>
                 ))}
               </div>
@@ -1130,23 +1273,34 @@ export function ActivitySessionRecordingEditor({
 
   function renderMain() {
     if (!mainRow) return null;
+    // This callback runs on click; renderMain only creates the button.
+    // eslint-disable-next-line react-hooks/refs
+    const cancelMain = () => cancelCorrection(mainRow);
     const editing = pending[mainRow.key];
-    const display = editing ?? (mainRecorded?.attempt?.ended_at
-      ? draftFrom(mainRecorded.attempt, timeZone) : null);
+    const display =
+      editing ??
+      (mainRecorded?.attempt?.ended_at
+        ? draftFrom(mainRecorded.attempt, timeZone)
+        : null);
     const readonly = !editing && Boolean(mainRecorded?.attempt?.ended_at);
     return (
       <section className="timeline-session-editor__group has-main">
         <div className="timeline-session-editor__row-header">
           <h3>Sessione attività</h3>
           {editing && mainRow.attempt?.ended_at ? (
-            <button type="button" onClick={() => cancelCorrection(mainRow)}>Annulla</button>
+            <button type="button" onClick={cancelMain}>
+              Annulla
+            </button>
           ) : null}
           {mainRow.attempt && !mainRow.attempt.ended_at ? (
             <small>In corso · usa i controlli live</small>
           ) : null}
         </div>
         {display?.intervals.map((interval, index) => (
-          <section className="timeline-session-editor__parent-interval" key={index}>
+          <section
+            className="timeline-session-editor__parent-interval"
+            key={index}
+          >
             {renderRange(mainRow, index, interval, readonly)}
             {renderChildSlot(index)}
           </section>
@@ -1157,11 +1311,18 @@ export function ActivitySessionRecordingEditor({
             className="timeline-session-editor__add-interval"
             disabled={editing.intervals.length >= 100}
             onClick={() => addInterval(mainRow)}
-          >＋ Aggiungi intervallo</button>
+          >
+            ＋ Aggiungi intervallo
+          </button>
         ) : null}
-        {display ? <SessionSegmentPreview draft={display} zone={timeZone} /> : null}
+        {display ? (
+          <SessionSegmentPreview draft={display} zone={timeZone} />
+        ) : null}
         {!display && !mainRow.attempt ? (
-          <button type="button" onClick={() => changeDraft(mainRow, draftFrom(null, timeZone))}>
+          <button
+            type="button"
+            onClick={() => changeDraft(mainRow, draftFrom(null, timeZone))}
+          >
             Registra
           </button>
         ) : null}
@@ -1171,19 +1332,23 @@ export function ActivitySessionRecordingEditor({
 
   async function commitAll() {
     if (saving || !hasEdits) return;
-    const changes = allRows.filter((row) => Boolean(pending[row.key]))
+    const changes = allRows
+      .filter((row) => Boolean(pending[row.key]))
       .map((row) => ({ row, draft: pending[row.key]! }));
-    const currentMainRanges = mainRow && pending[mainRow.key]
-      ? safeRanges(pending[mainRow.key], timeZone)
-      : [];
+    const currentMainRanges =
+      mainRow && pending[mainRow.key]
+        ? safeRanges(pending[mainRow.key], timeZone)
+        : [];
     const main = mainRow
       ? pending[mainRow.key]
         ? currentMainRanges.length
           ? attemptFromRanges(currentMainRanges)
           : null
-        : mainRecorded?.attempt ?? null
+        : (mainRecorded?.attempt ?? null)
       : null;
-    const factualChildren: Array<Pick<Attempt, 'started_at' | 'ended_at' | 'pause_ranges'>> = [];
+    const factualChildren: Array<
+      Pick<Attempt, 'started_at' | 'ended_at' | 'pause_ranges'>
+    > = [];
     for (const row of children) {
       if (pending[row.key]) {
         const ranges = safeRanges(pending[row.key], timeZone);
@@ -1195,7 +1360,11 @@ export function ActivitySessionRecordingEditor({
     const errors: EditorIssues = {};
     for (const { row, draft } of changes) {
       const issue = validateDraft(
-        row, draft, timeZone, mainEnabled ? main : null, factualChildren,
+        row,
+        draft,
+        timeZone,
+        mainEnabled ? main : null,
+        factualChildren,
       );
       if (issue) errors[row.key] = issue;
     }
@@ -1208,17 +1377,31 @@ export function ActivitySessionRecordingEditor({
     setError('');
     operation.current ??= crypto.randomUUID();
     try {
-      const receipts = await saveEditorGroup(activityRef, changes, timeZone, operation.current);
-      const { recorded } = await reload();
-      if (receipts.some(
-        (receipt) => !recorded.some(
-          (attempt) =>
-            attempt.session_ref === receipt.session_ref &&
-            attempt.timing_material_state_ref === receipt.timing_material_state_ref,
-        ),
-      )) {
-        throw new Error('Registrazione non confermata dalla rilettura: aggiorna il pannello.');
+      const receipts = await saveEditorGroup(
+        activityRef,
+        changes,
+        timeZone,
+        operation.current,
+      );
+      const { configured, enabled, recorded } = await reload(false);
+      if (
+        receipts.some(
+          (receipt) =>
+            !recorded.some(
+              (attempt) =>
+                attempt.session_ref === receipt.session_ref &&
+                attempt.timing_material_state_ref ===
+                  receipt.timing_material_state_ref,
+            ),
+        )
+      ) {
+        throw new Error(
+          'Registrazione non confermata dalla rilettura: aggiorna il pannello.',
+        );
       }
+      setStructure(configured);
+      setMainEnabled(enabled);
+      setAttempts(recorded);
       setPending({});
       setIssues({});
       setClamped({});
@@ -1231,7 +1414,9 @@ export function ActivitySessionRecordingEditor({
       if (onSaved) onSaved();
       else onClose();
     } catch (reason) {
-      setError(reason instanceof Error ? reason.message : 'Registrazioni non salvate.');
+      setError(
+        reason instanceof Error ? reason.message : 'Registrazioni non salvate.',
+      );
     } finally {
       setSaving(false);
     }
@@ -1243,7 +1428,8 @@ export function ActivitySessionRecordingEditor({
       onKeyDown={(event) => {
         if (event.key === 'Escape' && !saving) onClose();
         if (event.key !== 'Tab') return;
-        const dialog = event.currentTarget.querySelector<HTMLElement>('[role="dialog"]');
+        const dialog =
+          event.currentTarget.querySelector<HTMLElement>('[role="dialog"]');
         const controls = Array.from(
           dialog?.querySelectorAll<HTMLElement>(
             'button:not(:disabled), input:not(:disabled), select:not(:disabled), [tabindex]:not([tabindex="-1"])',
@@ -1254,7 +1440,11 @@ export function ActivitySessionRecordingEditor({
         if (event.shiftKey && document.activeElement === first && last) {
           event.preventDefault();
           last.focus();
-        } else if (!event.shiftKey && document.activeElement === last && first) {
+        } else if (
+          !event.shiftKey &&
+          document.activeElement === last &&
+          first
+        ) {
           event.preventDefault();
           first.focus();
         }
@@ -1274,10 +1464,14 @@ export function ActivitySessionRecordingEditor({
             aria-label="Chiudi registrazioni"
             onClick={onClose}
             disabled={saving}
-          >×</button>
+          >
+            ×
+          </button>
         </header>
         <div className="timeline-session-editor__content">
-          <h3 className="timeline-session-editor__activity-name">{activityTitle}</h3>
+          <h3 className="timeline-session-editor__activity-name">
+            {activityTitle}
+          </h3>
           <div
             className="timeline-session-editor__scroll-area"
             role="region"
@@ -1285,7 +1479,9 @@ export function ActivitySessionRecordingEditor({
             tabIndex={0}
           >
             {loading ? <p>Caricamento Sessioni…</p> : null}
-            {!loading && allRows.length === 0 ? <p>Nessuna Sessione configurata.</p> : null}
+            {!loading && allRows.length === 0 ? (
+              <p>Nessuna Sessione configurata.</p>
+            ) : null}
             {!loading && mainRow ? renderMain() : null}
             {!loading && !mainRow ? (
               <div className="timeline-session-editor__independent">
@@ -1296,10 +1492,20 @@ export function ActivitySessionRecordingEditor({
         </div>
         {hasEdits || error ? (
           <footer className="timeline-session-editor__footer">
-            {error ? <p className="timeline-session-editor__error" role="alert">{error}</p> : <span />}
+            {error ? (
+              <p className="timeline-session-editor__error" role="alert">
+                {error}
+              </p>
+            ) : (
+              <span />
+            )}
             {hasEdits ? (
               <div className="timeline-session-editor__save">
-                <button type="button" disabled={saving || loading} onClick={() => void commitAll()}>
+                <button
+                  type="button"
+                  disabled={saving || loading}
+                  onClick={() => void commitAll()}
+                >
                   {saving ? 'Salvataggio…' : 'Salva registrazioni'}
                 </button>
               </div>

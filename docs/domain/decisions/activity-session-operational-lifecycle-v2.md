@@ -119,6 +119,11 @@ il valore immesso ai limiti del padre, ma non può aggirare
 la verifica transazionale. Il nuovo editor non modifica
 Play/Pausa/Stop, Schedule o le regole di ricorrenza.
 
+Se principale e secondaria già registrate sono corrette nello stesso gruppo,
+PostgreSQL valuta il contenimento sullo stato finale della transazione. Il
+controllo differito si applica anche alla correzione singola: nessun commit
+può lasciare una secondaria fuori dai tratti attivi della principale.
+
 «Registra» accetta inizio/fine nel passato e pause ordinate. Il risultato è
 una Sessione conclusa, non una Sessione pronta per Play. Una configurazione
 già registrata non offre una seconda registrazione manuale; resta «Correggi»

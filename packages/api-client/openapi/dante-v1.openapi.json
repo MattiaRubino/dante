@@ -17416,6 +17416,24 @@
         "title": "SessionEditorAttempt",
         "type": "object"
       },
+      "SessionEditorBatchCommand": {
+        "additionalProperties": false,
+        "description": "Atomic group of corrections and new concluded recordings.",
+        "properties": {
+          "commands": {
+            "items": {
+              "$ref": "#/components/schemas/SessionEditorCommand"
+            },
+            "maxItems": 101,
+            "minItems": 1,
+            "title": "Commands",
+            "type": "array"
+          }
+        },
+        "required": ["commands"],
+        "title": "SessionEditorBatchCommand",
+        "type": "object"
+      },
       "SessionEditorCommand": {
         "additionalProperties": false,
         "properties": {
@@ -17446,6 +17464,7 @@
             "items": {
               "$ref": "#/components/schemas/SessionEditorPauseInput"
             },
+            "maxItems": 99,
             "title": "Pause Ranges",
             "type": "array"
           },
@@ -31549,6 +31568,61 @@
           }
         },
         "summary": "Write Activity Session Editor Attempt",
+        "tags": ["temporal"]
+      }
+    },
+    "/api/v1/temporal/activities/{activity_ref}/sessions/editor/batch": {
+      "post": {
+        "operationId": "temporal_write_activity_session_editor_batch",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "activity_ref",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Activity Ref",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SessionEditorBatchCommand"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/SessionResponse"
+                  },
+                  "title": "Response Temporal Write Activity Session Editor Batch",
+                  "type": "array"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Write Activity Session Editor Batch",
         "tags": ["temporal"]
       }
     },

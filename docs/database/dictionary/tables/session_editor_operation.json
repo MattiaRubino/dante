@@ -237,7 +237,26 @@
         "live": true
       }
     ],
-    "triggers": [],
+    "triggers": [
+      {
+        "name": "ctrg_session_editor_main_children",
+        "routine": "dante.enforce_session_editor_main_children",
+        "events": [
+          "INSERT"
+        ],
+        "timing": "AFTER",
+        "orientation": "ROW",
+        "constraint_trigger": true,
+        "deferrable": true,
+        "initially_deferred": true,
+        "enabled_mode": "ORIGIN",
+        "update_columns": [],
+        "when_condition": null,
+        "arguments": [],
+        "invariant_role": "session_child_active_containment",
+        "reason": "Check all recorded children against the final main timing after grouped corrections."
+      }
+    ],
     "table": {
       "persistence": "permanent",
       "access_method": "heap",
