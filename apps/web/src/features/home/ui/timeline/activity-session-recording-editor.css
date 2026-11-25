@@ -54,8 +54,7 @@ body:has(> .timeline-session-editor__backdrop)
 
 .timeline-session-editor__header > button,
 .timeline-session-editor__row-header button,
-.timeline-session-editor__pause-heading button,
-.timeline-session-editor__pause-row > button,
+.timeline-session-editor__add-session button,
 .timeline-session-editor__save button {
   min-height: 38px;
   padding: 7px 13px;
@@ -69,8 +68,7 @@ body:has(> .timeline-session-editor__backdrop)
 }
 .timeline-session-editor__header > button:hover:not(:disabled),
 .timeline-session-editor__row-header button:hover:not(:disabled),
-.timeline-session-editor__pause-heading button:hover:not(:disabled),
-.timeline-session-editor__pause-row > button:hover:not(:disabled),
+.timeline-session-editor__add-session > button:hover:not(:disabled),
 .timeline-session-editor__save button:hover:not(:disabled) {
   border-color: #fc7734;
 }
@@ -136,26 +134,6 @@ body:has(> .timeline-session-editor__backdrop)
   + .timeline-session-editor__row {
   margin-top: 0;
 }
-.timeline-session-editor__group.has-main > .is-child {
-  margin-left: 22px;
-  border-left-color: #6e8aa6;
-  background: #152239;
-}
-.timeline-session-editor__group.has-main > .is-child::before {
-  content: '';
-  position: absolute;
-  left: -24px;
-  top: 28px;
-  width: 22px;
-  height: 1px;
-  background: #607d99;
-}
-.timeline-session-editor__group.has-main > .is-child {
-  position: relative;
-}
-.timeline-session-editor__group.has-main > .is-child:first-of-type {
-  margin-top: 0;
-}
 .timeline-session-editor__row.is-editing {
   border-color: #fa6925;
 }
@@ -184,16 +162,6 @@ body:has(> .timeline-session-editor__backdrop)
   padding-top: 18px;
   border-top: 1px solid #31435c;
 }
-.timeline-session-editor__time-grid,
-.timeline-session-editor__pause-row {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 14px;
-}
-.timeline-session-editor__time-grid > *,
-.timeline-session-editor__pause-row > * {
-  min-width: 0;
-}
 .timeline-session-editor label {
   display: grid;
   gap: 7px;
@@ -201,60 +169,117 @@ body:has(> .timeline-session-editor__backdrop)
   font-size: 13px;
   font-weight: 600;
 }
-.timeline-session-editor__clock select {
-  box-sizing: border-box;
-  width: 100%;
-  min-height: 42px;
-  padding: 8px 11px;
-  border: 1px solid #40546d;
-  border-radius: 9px;
-  color: #f4f7fa;
-  color-scheme: dark;
-  background: #19283e;
-  font: inherit;
-}
-.timeline-session-editor__clock {
+.timeline-session-editor__intervals {
   display: grid;
-  align-content: start;
+  gap: 16px;
+}
+.timeline-session-editor__interval-block {
+  min-width: 0;
+}
+.timeline-session-editor__interval {
+  display: grid;
+  gap: 7px;
+}
+.timeline-session-editor__interval-label {
+  color: #adc3d9;
+  font-size: 12px;
+  font-weight: 650;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+}
+.timeline-session-editor__interval-fields {
+  display: grid;
+  grid-template-columns:
+    minmax(105px, 0.8fr) minmax(135px, 1.2fr) 20px minmax(135px, 1.2fr)
+    minmax(105px, 0.8fr) 32px;
+  align-items: center;
   gap: 8px;
   min-width: 0;
 }
-.timeline-session-editor__field-label {
-  font-size: 12px;
-  font-weight: 650;
-  color: #b7c9da;
+.timeline-session-editor__interval-fields > * {
+  min-width: 0;
 }
-.timeline-session-editor__clock-controls {
+.timeline-session-editor__interval-fields .temporal-create-date-picker__trigger,
+.timeline-session-editor__interval-fields .temporal-create-time-control__field {
+  box-sizing: border-box;
+  width: 100%;
+  height: 46px;
+  min-height: 46px;
+  border: 1px solid #40546d;
+  border-radius: 11px;
+  background: #19283e;
+  font-variant-numeric: tabular-nums;
+}
+.timeline-session-editor__interval-fields
+  .temporal-create-date-picker__trigger {
   display: grid;
-  grid-template-columns: minmax(100px, 0.85fr) minmax(136px, 1.15fr);
-  align-items: start;
-  gap: 7px;
-  min-width: 0;
+  place-items: center;
+  color: #f4f7fa;
+  font-size: 14px;
 }
-.timeline-session-editor__clock-controls > * {
-  min-width: 0;
+.timeline-session-editor__interval-fields .temporal-create-time-control__field {
+  grid-template-columns: minmax(0, 1fr) 28px;
 }
-.timeline-session-editor__clock-controls[data-invalid]
-  .temporal-create-date-picker__trigger,
-.timeline-session-editor__clock-controls[data-invalid]
-  .temporal-create-time-control__field {
+.timeline-session-editor__interval-fields .temporal-create-time-picker {
+  z-index: 100;
+  background: #0d1a2d;
+}
+.timeline-session-editor__interval-fields
+  .temporal-create-date-picker__popover {
+  z-index: 100;
+}
+.timeline-session-editor__interval-fields .temporal-create-time-list > button {
+  min-height: 38px;
+  font-size: 14px;
+}
+.timeline-session-editor__interval-fields
+  :is(
+    .temporal-create-date-picker__trigger,
+    .temporal-create-time-control__field
+  ):focus-within {
+  border-color: #fa6925;
+}
+.timeline-session-editor__interval[data-invalid]
+  .timeline-session-editor__interval-fields
+  :is(
+    .temporal-create-date-picker__trigger,
+    .temporal-create-time-control__field
+  ) {
   border-color: #fa5968;
 }
-.timeline-session-editor__clock-controls .temporal-create-date-picker__trigger,
-.timeline-session-editor__clock-controls .temporal-create-time-control__field {
-  height: 46px;
-  box-sizing: border-box;
+.timeline-session-editor__interval select {
+  width: 100%;
+  min-height: 42px;
+  border: 1px solid #40546d;
+  border-radius: 9px;
+  color: #f4f7fa;
   background: #19283e;
 }
-.timeline-session-editor__clock-controls .temporal-create-date-picker__popover,
-.timeline-session-editor__clock-controls
-  .temporal-create-time-control__dropdown {
-  z-index: 5;
+.timeline-session-editor__arrow {
+  text-align: center;
+  color: #ff8744;
 }
-.timeline-session-editor__pauses {
-  display: grid;
-  gap: 10px;
-  margin-top: 18px;
+.timeline-session-editor__remove {
+  width: 32px;
+  height: 40px;
+  padding: 0 !important;
+  border: 1px solid #40546d;
+  border-radius: 9px;
+  color: #ff9888;
+  background: #17253a;
+  cursor: pointer;
+}
+.timeline-session-editor__add-interval {
+  justify-self: start;
+  margin-left: 20px;
+  min-height: 38px;
+  padding: 7px 13px;
+  border: 1px solid #40546d;
+  border-radius: 9px;
+  color: #f4f7fa;
+  background: #17253a;
+  font: inherit;
+  cursor: pointer;
 }
 .timeline-session-editor__preview {
   display: grid;
@@ -264,30 +289,79 @@ body:has(> .timeline-session-editor__backdrop)
   font-size: 13px;
 }
 .timeline-session-editor__track {
-  display: flex;
+  position: relative;
   height: 12px;
   overflow: hidden;
   border: 1px solid #455a72;
   border-radius: 999px;
-  background: #1b2b3e;
+  background: #354358;
 }
 .timeline-session-editor__track span.is-active {
+  position: absolute;
+  top: 0;
+  height: 100%;
   background: #f77a36;
 }
-.timeline-session-editor__track span.is-pause {
-  background: repeating-linear-gradient(110deg, #8293a9 0 3px, #36465e 3px 6px);
+.timeline-session-editor__parent-intervals {
+  display: grid;
+  gap: 16px;
+  margin-top: 18px;
 }
-.timeline-session-editor__pause-heading {
+.timeline-session-editor__parent-interval {
+  padding: 15px;
+  border: 1px solid #344b66;
+  border-radius: 11px;
+  background: #152239;
+}
+.timeline-session-editor__parent-interval h4 {
   display: flex;
   justify-content: space-between;
-  align-items: center;
+  gap: 12px;
+  margin: 0 0 12px;
+  font-size: 14px;
 }
-.timeline-session-editor__pause-row {
-  grid-template-columns: repeat(2, minmax(0, 1fr)) auto;
-  align-items: end;
+.timeline-session-editor__parent-interval h4 span {
+  color: #b6c9dc;
+  font-size: 12px;
+  font-weight: 500;
 }
-.timeline-session-editor__pause-row > button {
-  align-self: end;
+.timeline-session-editor__child-slot {
+  display: grid;
+  gap: 10px;
+  padding-left: 18px;
+  border-left: 1px solid #607d99;
+}
+.timeline-session-editor__child-slot:empty {
+  display: none;
+}
+.timeline-session-editor__child-slot .timeline-session-editor__row {
+  background: #112034;
+  border-left-color: #6e8aa6;
+}
+.timeline-session-editor__session-options {
+  display: grid;
+  max-height: 210px;
+  overflow: auto;
+  margin-top: 7px;
+  border: 1px solid #40546d;
+  border-radius: 9px;
+  background: #112034;
+}
+.timeline-session-editor__session-options button {
+  padding: 9px 12px;
+  border: 0;
+  color: #f4f7fa;
+  background: transparent;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+.timeline-session-editor__session-options button:hover {
+  background: #1d334f;
+}
+.timeline-session-editor__waiting {
+  color: #aabed4;
+  font-size: 13px;
 }
 .timeline-session-editor__shared {
   display: grid;
@@ -360,23 +434,67 @@ body:has(> .timeline-session-editor__backdrop)
   .timeline-session-editor__content {
     padding: 16px 22px 24px 16px;
   }
-  .timeline-session-editor__time-grid,
-  .timeline-session-editor__pause-row {
-    grid-template-columns: minmax(0, 1fr);
+  .timeline-session-editor__interval-fields {
+    grid-template-columns:
+      minmax(0, 1fr) minmax(0, 1.25fr) 18px minmax(0, 1.25fr)
+      minmax(0, 1fr) 30px;
+    gap: 5px;
+  }
+  .timeline-session-editor__interval-fields
+    .temporal-create-date-picker__trigger {
+    font-size: 11px;
+  }
+  .timeline-session-editor__parent-interval h4 {
+    display: grid;
+  }
+  .timeline-session-editor__child-slot {
+    padding-left: 8px;
   }
   .timeline-session-editor__row-header {
     align-items: flex-start;
-  }
-  .timeline-session-editor__group.has-main > .is-child {
-    margin-left: 8px;
-  }
-  .timeline-session-editor__clock-controls {
-    grid-template-columns: minmax(0, 1fr) minmax(0, 1.25fr);
   }
   .timeline-session-editor__lane {
     grid-template-columns: minmax(75px, 90px) minmax(0, 1fr);
   }
   .timeline-session-editor__shared-hours {
     padding-left: 100px;
+  }
+}
+
+@media (max-width: 780px) {
+  .timeline-session-editor__interval-fields {
+    grid-template-columns:
+      minmax(0, 1fr) minmax(0, 1.2fr) 16px minmax(0, 1.2fr)
+      minmax(0, 1fr) 30px;
+    gap: 5px;
+  }
+}
+@media (max-width: 540px) {
+  .timeline-session-editor__interval-fields {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) 24px;
+    row-gap: 8px;
+  }
+  .timeline-session-editor__interval-fields > :nth-child(1) {
+    grid-column: 1;
+    grid-row: 1;
+  }
+  .timeline-session-editor__interval-fields > :nth-child(2) {
+    grid-column: 2;
+    grid-row: 1;
+  }
+  .timeline-session-editor__arrow {
+    display: none;
+  }
+  .timeline-session-editor__interval-fields > :nth-child(4) {
+    grid-column: 1;
+    grid-row: 2;
+  }
+  .timeline-session-editor__interval-fields > :nth-child(5) {
+    grid-column: 2;
+    grid-row: 2;
+  }
+  .timeline-session-editor__remove {
+    grid-column: 3;
+    grid-row: 2;
   }
 }

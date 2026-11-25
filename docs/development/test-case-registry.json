@@ -5888,21 +5888,21 @@
       "path": "apps/web/src/features/home/ui/timeline/activity-session-recording-editor.test.tsx",
       "suite": "web-unit-component",
       "contract_id": "T06",
-      "candidate_behavior": "Session recording editor replaces Registra with Correggi and disambiguates repeated clock hours",
-      "purpose": "Verify a completed manual recording refreshes the Inspector editor and permits correction on the same factual Session identity.",
-      "invariant": "After save, a registered row cannot offer a second Registra action and its existing timestamps are available for correction.",
+      "candidate_behavior": "Session recording editor derives factual pauses from active intervals and places named Sessions within their parent interval",
+      "purpose": "Verify completion and correction preserve factual Session identity, multiple active ranges, inferred pauses, clock disambiguation and parent containment.",
+      "invariant": "Intervals remain ordered, positive and limited to 100; a named Session outside the active main range is rejected before POST; a recorded row cannot offer Registra again.",
       "status": "QUALIFIED",
-      "audit_note": "78 focused Inspector/editor Vitest cases passed locally; real-stack acceptance remains pending."
+      "audit_note": "Seven focused editor Vitest cases passed in scratch after active-interval rewrite; expanded real-stack browser acceptance remains pending."
     },
     {
       "path": "apps/web/e2e/auth/temporal-session-recording-editor.spec.ts",
       "suite": "web-browser-real-stack",
       "contract_id": "T06",
-      "candidate_behavior": "Inspector records and corrects a named Session in an authenticated browser",
-      "purpose": "Cross the real Create, Inspector, editor, API and PostgreSQL boundaries; persist and correct one completed attempt with a pause.",
-      "invariant": "A recorded Session has one factual identity, a concluded interval and no second Registra action after reload.",
+      "candidate_behavior": "Inspector records and corrects named and main Sessions through active-interval rows in an authenticated browser",
+      "purpose": "Cross real Create, Inspector, editor, API and PostgreSQL boundaries; persist one named correction and a main Session whose inferred pause separates child placement.",
+      "invariant": "A recorded Session has one factual identity and no second Registra action; a child can be selected under and recorded within a concluded main active interval.",
       "status": "QUALIFIED",
-      "audit_note": "Owner-local authenticated Chromium E2E passed 1/1 in 22.0 s on 9eefa40; verifies recording, correction with pause and unchanged Session identity. Manual visual review and whole gate remain separate."
+      "audit_note": "Earlier Chromium E2E passed 1/1 in 22.0 s on 9eefa40 and 1/1 in 20.9 s on e1e4d6c. The expanded two-case active-interval candidate is NOT_RUN in the owner-local stack; visual review and whole gate remain separate."
     },
     {
       "path": "apps/web/e2e/auth/draft-vault-real-lifecycle.spec.ts",

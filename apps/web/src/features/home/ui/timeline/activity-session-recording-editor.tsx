@@ -29,18 +29,13 @@ type Row = {
   name: string;
   attempt: Attempt | null;
 };
-type Draft = {
+type ActiveInterval = {
   start: string;
   end: string;
   startChoice: ClockChoice;
   endChoice: ClockChoice;
-  pauses: {
-    start: string;
-    end: string;
-    startChoice: ClockChoice;
-    endChoice: ClockChoice;
-  }[];
 };
+type Draft = { intervals: ActiveInterval[] };
 type ClockChoice = 'reject' | 'earlier' | 'later';
 type Issue = Readonly<{ field: string; message: string }>;
 
@@ -92,24 +87,27 @@ function instant(value: string, zone: string, choice: ClockChoice): string {
 }
 
 function draftFrom(attempt: Attempt | null, zone: string): Draft {
-  return attempt
-    ? {
-        start: local(attempt.started_at, zone),
-        end: attempt.ended_at ? local(attempt.ended_at, zone) : '',
-        startChoice: choiceFor(attempt.started_at, zone),
-        endChoice: attempt.ended_at
-          ? choiceFor(attempt.ended_at, zone)
-          : 'reject',
-        pauses: attempt.pause_ranges
-          .filter((pause) => pause.ended_at !== null)
-          .map((pause) => ({
-            start: local(pause.started_at, zone),
-            end: local(pause.ended_at!, zone),
-            startChoice: choiceFor(pause.started_at, zone),
-            endChoice: choiceFor(pause.ended_at!, zone),
-          })),
-      }
-    : {
+  if (attempt?.ended_at) {
+    return {
+      intervals: activeSlices(
+        attempt.started_at,
+        attempt.ended_at,
+        attempt.pause_ranges,
+      ).map(({ start, end }) => {
+        const startInstant = new Date(start).toISOString();
+        const endInstant = new Date(end).toISOString();
+        return {
+          start: local(startInstant, zone),
+          end: local(endInstant, zone),
+          startChoice: choiceFor(startInstant, zone),
+          endChoice: choiceFor(endInstant, zone),
+        };
+      }),
+    };
+  }
+  return {
+    intervals: [
+      {
         start: local(
           Temporal.Now.instant().subtract({ minutes: 30 }).toString(),
           zone,
@@ -117,63 +115,129 @@ function draftFrom(attempt: Attempt | null, zone: string): Draft {
         end: local(Temporal.Now.instant().toString(), zone).slice(0, 16),
         startChoice: 'reject',
         endChoice: 'reject',
-        pauses: [],
-      };
+      },
+    ],
+  };
 }
 
-function ClockField({
-  label,
-  value,
-  choice,
+function IntervalFields({
+  interval,
+  index,
   zone,
-  invalid = false,
+  issue,
   onChange,
+  onRemove,
 }: Readonly<{
-  label: string;
-  value: string;
-  choice: ClockChoice;
+  interval: ActiveInterval;
+  index: number;
   zone: string;
-  invalid?: boolean;
-  onChange: (value: string, choice: ClockChoice) => void;
+  issue: Issue | null;
+  onChange: (interval: ActiveInterval) => void;
+  onRemove?: (() => void) | undefined;
 }>) {
-  const date =
-    value.slice(0, 10) ||
-    Temporal.Now.instant().toZonedDateTimeISO(zone).toPlainDate().toString();
-  const time = value.slice(11, 16) || '00:00';
+  const label = `Intervallo ${index + 1}`;
+  const invalid = issue?.field === `interval-${index}`;
+  const patch = (field: keyof ActiveInterval, value: string) =>
+    onChange({ ...interval, [field]: value });
   return (
-    <div className="timeline-session-editor__clock">
-      <span className="timeline-session-editor__field-label">{label}</span>
-      <div
-        className="timeline-session-editor__clock-controls"
-        data-invalid={invalid || undefined}
-      >
+    <div
+      className="timeline-session-editor__interval"
+      data-invalid={invalid || undefined}
+    >
+      <span className="timeline-session-editor__interval-label">{label}</span>
+      <div className="timeline-session-editor__interval-fields temporal-schedule-time-grid">
         <TemporalCreateDatePicker
-          label={`${label} · Data`}
+          label={`${label} · Data inizio`}
           locale="it"
-          value={date}
+          value={interval.start.slice(0, 10)}
           invalid={invalid}
-          onChange={(next) =>
-            onChange(`${next}T${value.slice(11) || time}`, 'reject')
+          onChange={(date) =>
+            onChange({
+              ...interval,
+              start: `${date}T${interval.start.slice(11)}`,
+              startChoice: 'reject',
+            })
           }
         />
         <TimeControl
-          label={`${label} · Ora`}
-          value={time}
-          dataPath={`session-recording.${label}`}
+          label={`${label} · Inizio`}
+          value={interval.start.slice(11, 16)}
+          dataPath={`session-recording.${index}.start`}
           invalid={invalid}
-          onChange={(next) => onChange(`${date}T${next}:00`, 'reject')}
+          onChange={(time) =>
+            onChange({
+              ...interval,
+              start: `${interval.start.slice(0, 10)}T${time}:00`,
+              startChoice: 'reject',
+            })
+          }
         />
+        <span className="timeline-session-editor__arrow" aria-hidden="true">
+          →
+        </span>
+        <TimeControl
+          label={`${label} · Fine`}
+          value={interval.end.slice(11, 16)}
+          dataPath={`session-recording.${index}.end`}
+          invalid={invalid}
+          onChange={(time) =>
+            onChange({
+              ...interval,
+              end: `${interval.end.slice(0, 10)}T${time}:00`,
+              endChoice: 'reject',
+            })
+          }
+        />
+        <TemporalCreateDatePicker
+          label={`${label} · Data fine`}
+          align="end"
+          locale="it"
+          value={interval.end.slice(0, 10)}
+          invalid={invalid}
+          onChange={(date) =>
+            onChange({
+              ...interval,
+              end: `${date}T${interval.end.slice(11)}`,
+              endChoice: 'reject',
+            })
+          }
+        />
+        {onRemove ? (
+          <button
+            className="timeline-session-editor__remove"
+            type="button"
+            aria-label={`Rimuovi intervallo ${index + 1}`}
+            onClick={onRemove}
+          >
+            ×
+          </button>
+        ) : null}
       </div>
-      {ambiguous(value, zone) ? (
+      {ambiguous(interval.start, zone) ? (
         <label>
-          Ora nel cambio d’ora
+          {label} · Inizio nel cambio d’ora
           <select
-            aria-label={`${label} · occorrenza dell’ora`}
+            aria-label={`${label} · Inizio · occorrenza dell’ora`}
             required
-            value={choice}
-            onChange={(event) =>
-              onChange(value, event.target.value as ClockChoice)
-            }
+            value={interval.startChoice}
+            onChange={(event) => patch('startChoice', event.target.value)}
+          >
+            <option value="reject" disabled>
+              Scegli quale ora
+            </option>
+            <option value="earlier">Prima volta</option>
+            <option value="later">Seconda volta</option>
+          </select>
+        </label>
+      ) : null}
+      {ambiguous(interval.end, zone) ? (
+        <label>
+          {label} · Fine nel cambio d’ora
+          <select
+            aria-label={`${label} · Fine · occorrenza dell’ora`}
+            required
+            value={interval.endChoice}
+            onChange={(event) => patch('endChoice', event.target.value)}
           >
             <option value="reject" disabled>
               Scegli quale ora
@@ -187,80 +251,77 @@ function ClockField({
   );
 }
 
+type ResolvedInterval = { start: number; end: number };
+
+function resolveIntervals(draft: Draft, zone: string): ResolvedInterval[] {
+  return draft.intervals.map((interval) => ({
+    start: Temporal.Instant.from(
+      instant(interval.start, zone, interval.startChoice),
+    ).epochMilliseconds,
+    end: Temporal.Instant.from(instant(interval.end, zone, interval.endChoice))
+      .epochMilliseconds,
+  }));
+}
+
+function nextInterval(draft: Draft): ActiveInterval {
+  const last = draft.intervals.at(-1)!;
+  const start = Temporal.PlainDateTime.from(last.end).add({ minutes: 30 });
+  return {
+    start: start.toString({ smallestUnit: 'minute' }),
+    end: start.add({ hours: 1 }).toString({ smallestUnit: 'minute' }),
+    startChoice: 'reject',
+    endChoice: 'reject',
+  };
+}
+
 function SessionSegmentPreview({
   draft,
   zone,
 }: Readonly<{ draft: Draft; zone: string }>) {
+  let ranges: ResolvedInterval[];
   try {
-    if (
-      !draft.start ||
-      !draft.end ||
-      draft.pauses.some((pause) => !pause.start || !pause.end)
-    )
-      return null;
-    const start = Temporal.Instant.from(
-      instant(draft.start, zone, draft.startChoice),
-    ).epochMilliseconds;
-    const end = Temporal.Instant.from(
-      instant(draft.end, zone, draft.endChoice),
-    ).epochMilliseconds;
-    if (end <= start) return null;
-    const pauses = draft.pauses
-      .map((pause) => ({
-        start: Temporal.Instant.from(
-          instant(pause.start, zone, pause.startChoice),
-        ).epochMilliseconds,
-        end: Temporal.Instant.from(instant(pause.end, zone, pause.endChoice))
-          .epochMilliseconds,
-      }))
-      .sort((left, right) => left.start - right.start);
-    if (
-      pauses.some(
-        (pause, index) =>
-          pause.start < (index ? pauses[index - 1]!.end : start) ||
-          pause.end <= pause.start ||
-          pause.end > end,
-      )
-    )
-      return null;
-    const segments: { kind: 'active' | 'pause'; duration: number }[] = [];
-    let cursor = start;
-    for (const pause of pauses) {
-      if (pause.start > cursor)
-        segments.push({ kind: 'active', duration: pause.start - cursor });
-      segments.push({ kind: 'pause', duration: pause.end - pause.start });
-      cursor = pause.end;
-    }
-    if (cursor < end) segments.push({ kind: 'active', duration: end - cursor });
-    const activeMinutes = Math.round(
-      segments
-        .filter((part) => part.kind === 'active')
-        .reduce((total, part) => total + part.duration, 0) / 60000,
-    );
-    return (
-      <div
-        className="timeline-session-editor__preview"
-        aria-label={`Tempo attivo ${activeMinutes} minuti; ${pauses.length} pause`}
-      >
-        <div className="timeline-session-editor__track" aria-hidden="true">
-          {segments.map((part, index) => (
-            <span
-              key={index}
-              className={`is-${part.kind}`}
-              style={{ flexGrow: part.duration }}
-            />
-          ))}
-        </div>
-        <span>
-          Tempo attivo {Math.floor(activeMinutes / 60)} h{' '}
-          {String(activeMinutes % 60).padStart(2, '0')} min · {pauses.length}{' '}
-          {pauses.length === 1 ? 'pausa' : 'pause'}
-        </span>
-      </div>
-    );
+    ranges = resolveIntervals(draft, zone);
   } catch {
     return null;
   }
+  if (
+    !ranges.length ||
+    ranges.some(
+      (range, index) =>
+        range.end <= range.start ||
+        (index > 0 && range.start <= ranges[index - 1]!.end),
+    )
+  )
+    return null;
+  const start = ranges[0]!.start;
+  const end = ranges.at(-1)!.end;
+  const activeMinutes = Math.round(
+    ranges.reduce((total, range) => total + range.end - range.start, 0) / 60000,
+  );
+  return (
+    <div
+      className="timeline-session-editor__preview"
+      aria-label={`Tempo attivo ${activeMinutes} minuti; ${ranges.length - 1} pause`}
+    >
+      <div className="timeline-session-editor__track" aria-hidden="true">
+        {ranges.map((range, index) => (
+          <span
+            key={index}
+            className="is-active"
+            style={{
+              left: `${((range.start - start) / (end - start)) * 100}%`,
+              width: `${((range.end - range.start) / (end - start)) * 100}%`,
+            }}
+          />
+        ))}
+      </div>
+      <span>
+        Tempo attivo {Math.floor(activeMinutes / 60)} h{' '}
+        {String(activeMinutes % 60).padStart(2, '0')} min · {ranges.length - 1}{' '}
+        {ranges.length === 2 ? 'pausa' : 'pause'}
+      </span>
+    </div>
+  );
 }
 
 function activeSlices(
@@ -278,52 +339,6 @@ function activeSlices(
   if (cursor < Date.parse(end))
     result.push({ start: cursor, end: Date.parse(end) });
   return result;
-}
-
-function suggestPause(draft: Draft, zone: string): Draft['pauses'][number] {
-  try {
-    const start = Temporal.Instant.from(
-      instant(draft.start, zone, draft.startChoice),
-    ).epochMilliseconds;
-    const end = Temporal.Instant.from(
-      instant(draft.end, zone, draft.endChoice),
-    ).epochMilliseconds;
-    const existing: Pause[] = draft.pauses.map((pause) => ({
-      started_at: instant(pause.start, zone, pause.startChoice),
-      ended_at: instant(pause.end, zone, pause.endChoice),
-    }));
-    const available = activeSlices(
-      new Date(start).toISOString(),
-      new Date(end).toISOString(),
-      existing,
-    ).find((slice) => slice.end - slice.start >= 3 * 60_000);
-    if (available) {
-      const from =
-        Math.ceil(
-          (available.start + (available.end - available.start) / 3) / 60_000,
-        ) * 60_000;
-      const to =
-        Math.floor(
-          (available.start + (2 * (available.end - available.start)) / 3) /
-            60_000,
-        ) * 60_000;
-      if (to > from)
-        return {
-          start: local(new Date(from).toISOString(), zone).slice(0, 16),
-          end: local(new Date(to).toISOString(), zone).slice(0, 16),
-          startChoice: choiceFor(new Date(from).toISOString(), zone),
-          endChoice: choiceFor(new Date(to).toISOString(), zone),
-        };
-    }
-  } catch {
-    // The existing inline validation identifies invalid or incomplete ranges.
-  }
-  return {
-    start: draft.start.slice(0, 16),
-    end: draft.end.slice(0, 16),
-    startChoice: draft.startChoice,
-    endChoice: draft.endChoice,
-  };
 }
 
 function SessionSharedTimeline({
@@ -390,71 +405,70 @@ function validateDraft(
   main: Attempt | null,
   children: readonly Attempt[],
 ): Issue | null {
-  if (!draft.start) return { field: 'start', message: 'Inserisci l’inizio.' };
-  if (!draft.end) return { field: 'end', message: 'Inserisci la fine.' };
-  let start: string;
-  let end: string;
-  try {
-    start = instant(draft.start, zone, draft.startChoice);
-    end = instant(draft.end, zone, draft.endChoice);
-  } catch (reason) {
+  if (!draft.intervals.length || draft.intervals.length > 100)
     return {
-      field: 'end',
-      message:
-        reason instanceof Error ? reason.message : 'Controlla gli orari.',
+      field: 'interval-0',
+      message: 'Sono ammessi da 1 a 100 intervalli.',
     };
-  }
-  if (Temporal.Instant.compare(start, end) >= 0)
-    return { field: 'end', message: 'La fine deve essere dopo l’inizio.' };
-  if (Temporal.Instant.compare(end, Temporal.Now.instant()) > 0)
-    return { field: 'end', message: 'La fine deve essere nel passato.' };
-  const pauses: Pause[] = [];
-  let previous = start;
-  for (const [index, pause] of draft.pauses.entries()) {
-    const field = `pause-${index}`;
-    if (!pause.start || !pause.end)
-      return { field, message: 'Completa inizio e fine della pausa.' };
+  const ranges: ResolvedInterval[] = [];
+  for (const [index, interval] of draft.intervals.entries()) {
+    const field = `interval-${index}`;
+    if (!interval.start || !interval.end)
+      return { field, message: `Completa l’intervallo ${index + 1}.` };
     try {
-      const pauseStart = instant(pause.start, zone, pause.startChoice);
-      const pauseEnd = instant(pause.end, zone, pause.endChoice);
-      if (
-        Temporal.Instant.compare(pauseStart, previous) <= 0 ||
-        Temporal.Instant.compare(pauseStart, pauseEnd) >= 0 ||
-        Temporal.Instant.compare(pauseEnd, end) > 0
-      )
+      const [resolved] = resolveIntervals({ intervals: [interval] }, zone);
+      if (!resolved) throw new Error('Orario non valido.');
+      if (resolved.end <= resolved.start)
+        return {
+          field,
+          message: `La fine dell’intervallo ${index + 1} deve seguire l’inizio.`,
+        };
+      if (resolved.end > Temporal.Now.instant().epochMilliseconds)
+        return {
+          field,
+          message: 'Gli intervalli effettivi devono essere nel passato.',
+        };
+      if (ranges.length && resolved.start <= ranges.at(-1)!.end)
         return {
           field,
           message:
-            'Le pause devono essere interne, ordinate e senza sovrapposizioni.',
+            'Gli intervalli devono essere ordinati e separati da una pausa.',
         };
-      pauses.push({ started_at: pauseStart, ended_at: pauseEnd });
-      previous = pauseEnd;
+      ranges.push(resolved);
     } catch (reason) {
       return {
         field,
         message:
-          reason instanceof Error ? reason.message : 'Controlla la pausa.',
+          reason instanceof Error ? reason.message : 'Controlla gli orari.',
       };
     }
   }
-  const candidate = { started_at: start, ended_at: end, pause_ranges: pauses };
+  const candidate = attemptFromRanges(ranges);
   if (row.plannedRef !== null && main?.ended_at && !fitsMain(candidate, main))
     return {
-      field: 'end',
+      field: 'interval-0',
       message: 'La Sessione deve rientrare nei tratti attivi della principale.',
     };
-  if (row.plannedRef === null) {
-    const conflict = children.find(
-      (child) => child.ended_at && !fitsMain(child, candidate),
-    );
-    if (conflict)
-      return {
-        field: 'end',
-        message:
-          'La correzione esclude una Sessione secondaria già registrata.',
-      };
-  }
+  if (
+    row.plannedRef === null &&
+    children.some((child) => child.ended_at && !fitsMain(child, candidate))
+  )
+    return {
+      field: 'interval-0',
+      message: 'La correzione esclude una Sessione secondaria già registrata.',
+    };
   return null;
+}
+
+function attemptFromRanges(ranges: readonly ResolvedInterval[]) {
+  return {
+    started_at: new Date(ranges[0]!.start).toISOString(),
+    ended_at: new Date(ranges.at(-1)!.end).toISOString(),
+    pause_ranges: ranges.slice(1).map((range, index) => ({
+      started_at: new Date(ranges[index]!.end).toISOString(),
+      ended_at: new Date(range.start).toISOString(),
+    })),
+  };
 }
 
 function fitsMain(
@@ -523,39 +537,10 @@ async function save(
   zone: string,
   operationId: string,
 ): Promise<void> {
-  if (
-    !draft.start ||
-    !draft.end ||
-    draft.pauses.some((pause) => !pause.start || !pause.end)
-  ) {
-    throw new Error('Inserisci inizio e fine di ogni intervallo.');
-  }
-  const start = instant(draft.start, zone, draft.startChoice);
-  const end = instant(draft.end, zone, draft.endChoice);
-  const pauses = draft.pauses.map((pause) => ({
-    started_at: instant(pause.start, zone, pause.startChoice),
-    ended_at: instant(pause.end, zone, pause.endChoice),
-  }));
-  const sorted = [...pauses].sort((a, b) =>
-    a.started_at.localeCompare(b.started_at),
-  );
-  if (
-    Temporal.Instant.compare(start, end) >= 0 ||
-    Temporal.Instant.compare(end, Temporal.Now.instant()) > 0 ||
-    sorted.some(
-      (pause, index) =>
-        Temporal.Instant.compare(
-          pause.started_at,
-          index ? sorted[index - 1]!.ended_at : start,
-        ) <= 0 ||
-        Temporal.Instant.compare(pause.started_at, pause.ended_at) >= 0 ||
-        Temporal.Instant.compare(pause.ended_at, end) > 0,
-    )
-  ) {
-    throw new Error(
-      'Controlla inizio, fine e pause: devono essere nel passato e in ordine.',
-    );
-  }
+  const candidate = attemptFromRanges(resolveIntervals(draft, zone));
+  const start = candidate.started_at;
+  const end = candidate.ended_at;
+  const pauses = candidate.pause_ranges;
   const csrfResponse = await webFetch('/api/v1/auth/session');
   if (!csrfResponse.ok) throw new Error('Sessione di accesso scaduta.');
   const authentication = (await csrfResponse.json()) as { csrf_token?: string };
@@ -632,6 +617,8 @@ export function ActivitySessionRecordingEditor({
   const [error, setError] = useState('');
   const [issue, setIssue] = useState<Issue | null>(null);
   const [selected, setSelected] = useState<string | null>(null);
+  const [selectedParent, setSelectedParent] = useState<number | null>(null);
+  const [sessionMenu, setSessionMenu] = useState<number | null>(null);
   const [draft, setDraft] = useState<Draft | null>(null);
   const [saving, setSaving] = useState(false);
   const operation = useRef<string | null>(null);
@@ -722,10 +709,38 @@ export function ActivitySessionRecordingEditor({
       attempt.planned_schedule_ref !== null && attempt.ended_at !== null,
   );
 
-  function choose(row: Row) {
+  function choose(
+    row: Row,
+    parentIndex: number | null = null,
+    parentRange?: ResolvedInterval,
+  ) {
     if (row.attempt?.ended_at === null) return;
     setSelected(row.key);
-    setDraft(draftFrom(row.attempt, timeZone));
+    setSelectedParent(parentIndex);
+    setSessionMenu(null);
+    setDraft(
+      parentRange && !row.attempt
+        ? {
+            intervals: [
+              {
+                start: local(
+                  new Date(parentRange.start).toISOString(),
+                  timeZone,
+                ),
+                end: local(new Date(parentRange.end).toISOString(), timeZone),
+                startChoice: choiceFor(
+                  new Date(parentRange.start).toISOString(),
+                  timeZone,
+                ),
+                endChoice: choiceFor(
+                  new Date(parentRange.end).toISOString(),
+                  timeZone,
+                ),
+              },
+            ],
+          }
+        : draftFrom(row.attempt, timeZone),
+    );
     setError('');
     setIssue(null);
     operation.current = null;
@@ -763,6 +778,7 @@ export function ActivitySessionRecordingEditor({
         new CustomEvent('dante:session-changed', { detail: activityRef }),
       );
       setSelected(null);
+      setSelectedParent(null);
       setDraft(null);
       setIssue(null);
       operation.current = null;
@@ -773,6 +789,237 @@ export function ActivitySessionRecordingEditor({
     } finally {
       setSaving(false);
     }
+  }
+
+  const children = rows.filter((row) => row.plannedRef !== null);
+  const parentRanges = mainAttempt?.ended_at
+    ? activeSlices(
+        mainAttempt.started_at,
+        mainAttempt.ended_at,
+        mainAttempt.pause_ranges,
+      )
+    : [];
+  const childParentIndex = (row: Row) => {
+    if (!row.attempt) return selected === row.key ? selectedParent : null;
+    const started = Date.parse(row.attempt.started_at);
+    const index = parentRanges.findIndex(
+      (range) => started >= range.start && started < range.end,
+    );
+    return index >= 0 ? index : 0;
+  };
+
+  function renderChildSlot(index: number, allowAdd: boolean) {
+    const assigned = children.filter((row) => childParentIndex(row) === index);
+    const remaining = children.filter(
+      (row) => !row.attempt && row.key !== selected,
+    );
+    return (
+      <div
+        className="timeline-session-editor__child-slot"
+        aria-label={`Sessioni nell’intervallo ${index + 1}`}
+      >
+        {assigned.map((row) => renderRow(row))}
+        {allowAdd && remaining.length > 0 ? (
+          <div className="timeline-session-editor__add-session">
+            <button
+              type="button"
+              aria-expanded={sessionMenu === index}
+              onClick={() =>
+                setSessionMenu(sessionMenu === index ? null : index)
+              }
+            >
+              + Sessione
+            </button>
+            {sessionMenu === index ? (
+              <div
+                className="timeline-session-editor__session-options"
+                role="group"
+                aria-label={`Scegli Sessione per intervallo ${index + 1}`}
+              >
+                {remaining.map((row) => (
+                  <button
+                    key={row.key}
+                    type="button"
+                    onClick={() => choose(row, index, parentRanges[index])}
+                  >
+                    {row.name}
+                  </button>
+                ))}
+              </div>
+            ) : null}
+          </div>
+        ) : null}
+      </div>
+    );
+  }
+
+  function renderRow(row: Row) {
+    const editing = selected === row.key && draft !== null;
+    const mainRow = row.plannedRef === null;
+    const waitingForMain = !mainRow && mainEnabled && !mainReady;
+    return (
+      <article
+        key={row.key}
+        className={`timeline-session-editor__row${mainRow ? ' is-main' : ' is-child'}${editing ? ' is-editing' : ''}`}
+      >
+        <div className="timeline-session-editor__row-header">
+          <div>
+            <h3>{row.name}</h3>
+            <span>
+              {row.attempt?.ended_at
+                ? `${local(row.attempt.started_at, timeZone).replace('T', ' ')} – ${local(row.attempt.ended_at, timeZone).replace('T', ' ')}`
+                : row.attempt
+                  ? 'In corso · termina la Sessione prima di correggerla'
+                  : waitingForMain
+                    ? 'Registra prima la Sessione attività'
+                    : 'Da registrare'}
+            </span>
+          </div>
+          {row.attempt?.ended_at === null ? null : (
+            <button
+              type="button"
+              disabled={waitingForMain}
+              onClick={() => {
+                if (editing) {
+                  setSelected(null);
+                  setDraft(null);
+                  setSelectedParent(null);
+                } else choose(row, mainRow ? null : childParentIndex(row));
+              }}
+            >
+              {editing ? 'Annulla' : row.attempt ? 'Correggi' : 'Registra'}
+            </button>
+          )}
+        </div>
+        {!editing && mainRow && mainAttempt ? (
+          <SessionSharedTimeline
+            main={mainAttempt}
+            children={children}
+            zone={timeZone}
+          />
+        ) : !editing && row.attempt?.ended_at && !mainRow ? (
+          <SessionSegmentPreview
+            draft={draftFrom(row.attempt, timeZone)}
+            zone={timeZone}
+          />
+        ) : null}
+        {!editing && mainRow && mainAttempt ? (
+          <div className="timeline-session-editor__parent-intervals">
+            {parentRanges.map((range, index) => (
+              <section
+                key={index}
+                className="timeline-session-editor__parent-interval"
+              >
+                <h4>
+                  Intervallo {index + 1}{' '}
+                  <span>
+                    {local(
+                      new Date(range.start).toISOString(),
+                      timeZone,
+                    ).replace('T', ' ')}{' '}
+                    →{' '}
+                    {local(new Date(range.end).toISOString(), timeZone).replace(
+                      'T',
+                      ' ',
+                    )}
+                  </span>
+                </h4>
+                {renderChildSlot(index, true)}
+              </section>
+            ))}
+          </div>
+        ) : null}
+        {editing ? (
+          <form
+            onSubmit={(event) => {
+              event.preventDefault();
+              void commit(row);
+            }}
+          >
+            <div className="timeline-session-editor__intervals">
+              {draft.intervals.map((interval, index) => (
+                <div
+                  key={index}
+                  className="timeline-session-editor__interval-block"
+                >
+                  <IntervalFields
+                    interval={interval}
+                    index={index}
+                    zone={timeZone}
+                    issue={issue}
+                    onChange={(next) =>
+                      updateDraft({
+                        intervals: draft.intervals.map((item, position) =>
+                          position === index ? next : item,
+                        ),
+                      })
+                    }
+                    onRemove={
+                      draft.intervals.length > 1
+                        ? () =>
+                            updateDraft({
+                              intervals: draft.intervals.filter(
+                                (_, position) => position !== index,
+                              ),
+                            })
+                        : undefined
+                    }
+                  />
+                  {mainRow && mainReady ? renderChildSlot(index, false) : null}
+                  {mainRow && !mainReady && children.length > 0 ? (
+                    <div className="timeline-session-editor__child-slot">
+                      <button
+                        type="button"
+                        disabled
+                        title="Registra prima la Sessione attività"
+                      >
+                        + Sessione
+                      </button>
+                    </div>
+                  ) : null}
+                </div>
+              ))}
+              {draft.intervals.length < 100 ? (
+                <button
+                  className="timeline-session-editor__add-interval"
+                  type="button"
+                  onClick={() => {
+                    try {
+                      updateDraft({
+                        intervals: [...draft.intervals, nextInterval(draft)],
+                      });
+                    } catch {
+                      setError(
+                        'Completa l’ultimo intervallo prima di aggiungerne un altro.',
+                      );
+                    }
+                  }}
+                >
+                  ＋ Aggiungi intervallo
+                </button>
+              ) : null}
+            </div>
+            <SessionSegmentPreview draft={draft} zone={timeZone} />
+            {error ? (
+              <p className="timeline-session-editor__error" role="alert">
+                {error}
+              </p>
+            ) : null}
+            <div className="timeline-session-editor__save">
+              <button type="submit" disabled={saving}>
+                {saving ? 'Salvataggio…' : 'Salva registrazione'}
+              </button>
+            </div>
+          </form>
+        ) : null}
+        {mainRow && !mainReady && children.length > 0 ? (
+          <p className="timeline-session-editor__waiting">
+            Dopo aver registrato la Sessione attività potrai collocare le
+            secondarie nei suoi intervalli attivi.
+          </p>
+        ) : null}
+      </article>
+    );
   }
 
   return createPortal(
@@ -842,185 +1089,9 @@ export function ActivitySessionRecordingEditor({
                 : 'timeline-session-editor__group'
             }
           >
-            {rows.map((row) => {
-              const editing = selected === row.key && draft !== null;
-              const mainRow = row.plannedRef === null;
-              const waitingForMain =
-                row.plannedRef !== null && mainEnabled && !mainReady;
-              return (
-                <article
-                  key={row.key}
-                  className={`timeline-session-editor__row${mainRow ? ' is-main' : ' is-child'}${editing ? ' is-editing' : ''}`}
-                >
-                  <div className="timeline-session-editor__row-header">
-                    <div>
-                      <h3>{row.name}</h3>
-                      <span>
-                        {row.attempt?.ended_at
-                          ? `${local(row.attempt.started_at, timeZone).replace('T', ' ')} – ${local(row.attempt.ended_at, timeZone).replace('T', ' ')}`
-                          : row.attempt
-                            ? 'In corso · termina la Sessione prima di correggerla'
-                            : waitingForMain
-                              ? 'Registra prima la Sessione attività'
-                              : 'Da registrare'}
-                      </span>
-                    </div>
-                    {row.attempt?.ended_at === null ? null : (
-                      <button
-                        type="button"
-                        disabled={waitingForMain}
-                        onClick={() =>
-                          editing ? setSelected(null) : choose(row)
-                        }
-                      >
-                        {editing
-                          ? 'Annulla'
-                          : row.attempt
-                            ? 'Correggi'
-                            : 'Registra'}
-                      </button>
-                    )}
-                  </div>
-                  {!editing && row.attempt?.pause_ranges.length ? (
-                    <p className="timeline-session-editor__summary">
-                      {row.attempt.pause_ranges.length}{' '}
-                      {row.attempt.pause_ranges.length === 1
-                        ? 'pausa registrata'
-                        : 'pause registrate'}
-                    </p>
-                  ) : null}
-                  {!editing && mainRow && mainAttempt ? (
-                    <SessionSharedTimeline
-                      main={mainAttempt}
-                      children={rows.filter((item) => item.plannedRef !== null)}
-                      zone={timeZone}
-                    />
-                  ) : !editing && row.attempt?.ended_at && !mainEnabled ? (
-                    <SessionSegmentPreview
-                      draft={draftFrom(row.attempt, timeZone)}
-                      zone={timeZone}
-                    />
-                  ) : null}
-                  {editing ? (
-                    <form
-                      onSubmit={(event) => {
-                        event.preventDefault();
-                        void commit(row);
-                      }}
-                    >
-                      <div className="timeline-session-editor__time-grid">
-                        <ClockField
-                          label={`${row.name} · Inizio`}
-                          value={draft.start}
-                          choice={draft.startChoice}
-                          zone={timeZone}
-                          invalid={issue?.field === 'start'}
-                          onChange={(start, startChoice) =>
-                            updateDraft({ ...draft, start, startChoice })
-                          }
-                        />
-                        <ClockField
-                          label={`${row.name} · Fine`}
-                          value={draft.end}
-                          choice={draft.endChoice}
-                          zone={timeZone}
-                          invalid={issue?.field === 'end'}
-                          onChange={(end, endChoice) =>
-                            updateDraft({ ...draft, end, endChoice })
-                          }
-                        />
-                      </div>
-                      <div className="timeline-session-editor__pauses">
-                        <div className="timeline-session-editor__pause-heading">
-                          <strong>Pause</strong>
-                          <button
-                            type="button"
-                            onClick={() =>
-                              updateDraft({
-                                ...draft,
-                                pauses: [
-                                  ...draft.pauses,
-                                  suggestPause(draft, timeZone),
-                                ],
-                              })
-                            }
-                          >
-                            + Pausa
-                          </button>
-                        </div>
-                        {draft.pauses.map((pause, index) => (
-                          <div
-                            className="timeline-session-editor__pause-row"
-                            key={index}
-                          >
-                            <ClockField
-                              label={`Pausa ${index + 1} · Da`}
-                              value={pause.start}
-                              choice={pause.startChoice}
-                              zone={timeZone}
-                              invalid={issue?.field === `pause-${index}`}
-                              onChange={(start, startChoice) =>
-                                updateDraft({
-                                  ...draft,
-                                  pauses: draft.pauses.map((p, i) =>
-                                    i === index
-                                      ? { ...p, start, startChoice }
-                                      : p,
-                                  ),
-                                })
-                              }
-                            />
-                            <ClockField
-                              label={`Pausa ${index + 1} · A`}
-                              value={pause.end}
-                              choice={pause.endChoice}
-                              zone={timeZone}
-                              invalid={issue?.field === `pause-${index}`}
-                              onChange={(end, endChoice) =>
-                                updateDraft({
-                                  ...draft,
-                                  pauses: draft.pauses.map((p, i) =>
-                                    i === index ? { ...p, end, endChoice } : p,
-                                  ),
-                                })
-                              }
-                            />
-                            <button
-                              type="button"
-                              aria-label={`Rimuovi pausa ${index + 1}`}
-                              onClick={() =>
-                                updateDraft({
-                                  ...draft,
-                                  pauses: draft.pauses.filter(
-                                    (_, i) => i !== index,
-                                  ),
-                                })
-                              }
-                            >
-                              ×
-                            </button>
-                          </div>
-                        ))}
-                      </div>
-                      <SessionSegmentPreview draft={draft} zone={timeZone} />
-                      {error ? (
-                        <p
-                          className="timeline-session-editor__error"
-                          role="alert"
-                        >
-                          {error}
-                        </p>
-                      ) : null}
-                      <div className="timeline-session-editor__save">
-                        <button type="submit" disabled={saving}>
-                          {saving ? 'Salvataggio…' : 'Salva registrazione'}
-                        </button>
-                      </div>
-                    </form>
-                  ) : null}
-                </article>
-              );
-            })}
+            {mainEnabled
+              ? rows.filter((row) => row.plannedRef === null).map(renderRow)
+              : rows.map(renderRow)}
           </div>
           {error && selected === null ? (
             <p className="timeline-session-editor__error" role="alert">

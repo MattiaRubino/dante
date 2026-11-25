@@ -2199,3 +2199,20 @@ storia di `/sessions`, tollerando il fallimento di una delle due letture.
 mostra lì un eventuale errore. L'editor richiede comunque la migrazione
 `20261124_191` sul database persistente. Typecheck Web e 82 test Vitest mirati
 PASS nello scratch; la verifica browser sul DB locale resta aperta.
+
+## 2026-11-25 — Editor registrazioni: intervalli effettivi e secondarie per tratto
+
+La revisione visiva dell'owner ha respinto la UI a campi Inizio/Fine più
+«+ Pausa» e le secondarie raccolte in fondo al gruppo. Il nuovo candidate
+usa le righe data/ora di Crea/Modifica per 1–100 intervalli attivi: le lacune
+tra righe diventano le pause fattuali al salvataggio, senza cambiare l'API o
+la storia delle Sessioni. Dopo la registrazione della principale, le
+secondarie compaiono sotto il tratto attivo nel quale iniziano; «+ Sessione»
+in ciascun tratto sceglie quelle ancora da registrare. Le secondarie senza
+principale restano indipendenti. Correzione, CAS, controllo della dipendenza
+dei figli e limite temporale della principale rimangono sul backend canonico.
+
+Typecheck, ESLint mirato, 7 test Vitest e test registry PASS nello scratch;
+due scenari browser real-stack sul candidate aggiornato restano **NOT_RUN**
+in WSL. La precedente prova browser 1/1 sul layout respinto non qualifica
+questa revisione visiva né il gate completo.

@@ -23,20 +23,25 @@ Ogni tentativo conserva il proprio identificativo. La riga vuota offre
 «Registra»; dopo la lettura canonica del salvataggio offre «Correggi» sulla
 stessa Sessione. Un tentativo ancora aperto è visibile ma non editabile qui:
 Play/Pausa/Riprendi/Stop restano nei controlli live. L'editor consente di
-specificare inizio, fine e intervalli di pausa; la barra di riepilogo
-distingue visivamente il tempo attivo dalle pause e calcola il totale attivo.
+specificare gli intervalli **attivi** con la stessa riga data/ora di Crea e
+Modifica, fino a 100 intervalli per registrazione. Lo spazio tra la fine di
+un intervallo e l'inizio del successivo è una pausa: non esiste un modulo
+separato «+ Pausa». Il salvataggio converte queste lacune nelle `pause_ranges`
+fattuali già previste dall'API. La barra distingue tempo attivo e pause.
 Il campo non rappresenta l'orario pianificato della Sessione interna.
 
 Il pannello usa gli stessi selettori data e ora di Crea/Modifica, con il fuso
 dell'Attività fisso. Quando è presente la Sessione attività, principale e
-secondarie formano un unico gruppo: le secondarie sono rientrate sotto la
-principale. Dopo il salvataggio i campi si richiudono; una scala temporale
-comune mostra i tratti attivi della principale e le secondarie registrate,
-lasciando vuoti i tratti in pausa. «Correggi» riapre i controlli senza creare
-una seconda registrazione. Senza principale, ogni secondaria conserva il
-proprio riepilogo. «+ Pausa» propone un tratto interno modificabile, se gli
-orari lo permettono. Prima della richiesta, gli errori di ordine e di
-contenimento nella principale sono evidenziati vicino agli orari coinvolti.
+secondarie formano un unico gruppo: ogni secondaria registrata appare sotto
+l'intervallo attivo della principale in cui inizia. Sotto ciascun intervallo
+«+ Sessione» permette di scegliere una secondaria ancora da registrare e
+precompila i limiti del tratto; resta disabilitato finché la principale non è
+conclusa. Una secondaria che attraversa più tratti conserva un'unica identità
+e le proprie pause; il grafico comune mostra tutti i suoi tratti attivi.
+Dopo il salvataggio i campi si richiudono. «Correggi» riapre i controlli
+senza creare una seconda registrazione. Senza principale, ogni secondaria
+conserva il proprio riepilogo indipendente. Prima della richiesta, gli errori
+di ordine e di contenimento nella principale sono evidenziati sull'intervallo.
 
 Il calendario usa orari locali nel fuso indicato e converte in istanti
 assoluti prima della scrittura. Un'ora inesistente durante il cambio d'ora
