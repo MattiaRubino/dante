@@ -41,6 +41,70 @@ describe('Activity Session recording editor', () => {
     expect(await activityHasSessionRecordings(ACTIVITY)).toBe(false);
   });
 
+  it('exposes a configured main Session even if the recordings endpoint is unavailable', async () => {
+    const fetcher = vi.fn(async (input: RequestInfo | URL) => {
+      const path = String(input);
+      if (path.endsWith('/children'))
+        return Response.json({
+          parent_activity_ref: ACTIVITY,
+          session_capture_mode: 'live',
+          schedules: [],
+        });
+      if (path.endsWith('/sessions'))
+        return Response.json({ detail: 'Unavailable' }, { status: 503 });
+      throw new Error(`Unexpected request: ${path}`);
+    });
+    vi.stubGlobal('fetch', fetcher);
+    expect(await activityHasSessionRecordings(ACTIVITY)).toBe(true);
+    expect(
+      fetcher.mock.calls.some(([path]) =>
+        String(path).endsWith('/sessions/editor'),
+      ),
+    ).toBe(false);
+  });
+
+  it('exposes planned Sessions without depending on the editor endpoint', async () => {
+    const fetcher = vi.fn(async (input: RequestInfo | URL) => {
+      const path = String(input);
+      if (path.endsWith('/children'))
+        return Response.json({
+          parent_activity_ref: ACTIVITY,
+          session_capture_mode: 'disabled',
+          schedules: [
+            {
+              schedule_ref: MAIN,
+              role_code: 'planned',
+              presentation_order: 1,
+              display_name: 'Sessione 1',
+            },
+          ],
+        });
+      if (path.endsWith('/sessions')) return Response.json([]);
+      throw new Error(`Unexpected request: ${path}`);
+    });
+    vi.stubGlobal('fetch', fetcher);
+    expect(await activityHasSessionRecordings(ACTIVITY)).toBe(true);
+    expect(fetcher).toHaveBeenCalledTimes(2);
+  });
+
+  it('exposes historical attempts even when capture is disabled now', async () => {
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(async (input: RequestInfo | URL) =>
+        Response.json(
+          String(input).endsWith('/children')
+            ? {
+                parent_activity_ref: ACTIVITY,
+                session_capture_mode: 'disabled',
+                schedules: [],
+              }
+            : [{ session_ref: MAIN }],
+        ),
+      ),
+    );
+    expect(await activityHasSessionRecordings(ACTIVITY)).toBe(true);
+  });
+
   it('records the main attempt once and then offers correction on the same factual identity', async () => {
     let recorded: unknown[] = [];
     const submitted: Record<string, unknown>[] = [];

@@ -338,17 +338,24 @@ export async function activityHasSessionRecordings(
   activityRef: string,
 ): Promise<boolean> {
   const base = `/api/v1/temporal/activities/${encodeURIComponent(activityRef)}`;
-  const [structureValue, attemptsValue] = await Promise.all([
+  const [structureResult, attemptsResult] = await Promise.allSettled([
     readJson(`${base}/children`),
-    readJson(`${base}/sessions/editor`),
+    readJson(`${base}/sessions`),
   ]);
-  const structure = parsePlannedSessions(structureValue, activityRef);
-  const raw = structureValue as { session_capture_mode?: string };
+  if (structureResult.status === 'fulfilled') {
+    const structure = parsePlannedSessions(structureResult.value, activityRef);
+    const raw = structureResult.value as { session_capture_mode?: string };
+    if (
+      structure.rows.length > 0 ||
+      (raw.session_capture_mode !== undefined &&
+        raw.session_capture_mode !== 'disabled')
+    )
+      return true;
+  }
   return (
-    structure.rows.length > 0 ||
-    (raw.session_capture_mode !== undefined &&
-      raw.session_capture_mode !== 'disabled') ||
-    parseAttempts(attemptsValue).length > 0
+    attemptsResult.status === 'fulfilled' &&
+    Array.isArray(attemptsResult.value) &&
+    attemptsResult.value.length > 0
   );
 }
 

@@ -11,6 +11,14 @@ dell'Attività, il fuso di visualizzazione della Timeline e il linguaggio
 grafico degli editor Dante. Scorrono soltanto le registrazioni, non la testata.
 Su schermi stretti i campi inizio/fine sono impilati.
 
+La presenza dell'azione deriva dalla struttura Activity (`/children`) e dalle
+Sessioni già presenti (`/sessions`), anche se una delle due letture non è
+disponibile. La lettura specifica dell'editor (`/sessions/editor`) avviene
+soltanto quando si apre il pannello; un suo errore viene mostrato lì, senza
+nascondere preventivamente l'azione nell'Inspector. Il database persistente
+deve comunque avere la migrazione dell'editor applicata per leggere e salvare
+le registrazioni; lo stack E2E usa un database temporaneo migrato.
+
 Ogni tentativo conserva il proprio identificativo. La riga vuota offre
 «Registra»; dopo la lettura canonica del salvataggio offre «Correggi» sulla
 stessa Sessione. Un tentativo ancora aperto è visibile ma non editabile qui:

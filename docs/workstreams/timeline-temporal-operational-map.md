@@ -2186,3 +2186,16 @@ terminata l'Activity prima della fine del suo intervallo pianificato.
 Typecheck Web e 15 test Vitest mirati sui componenti Home/ContextRail PASS
 nello scratch; browser reale, PostgreSQL e gate complessivo NOT_RUN su questo
 candidate. Il formato più ricco delle altre due viste resta lavoro successivo.
+
+## 2026-11-25 — Inspector: visibilità dell'editor Sessioni
+
+Due verifiche visive locali hanno mostrato l'azione assente anche con la
+Sessione principale registrata o quattro Sessioni pianificate visibili. La
+condizione precedente richiedeva il successo di `/sessions/editor` già
+all'apertura dell'Inspector; un errore della nuova lettura nascondeva l'icona.
+Ora la presenza deriva dalle capacità e definizioni di `/children` e dalla
+storia di `/sessions`, tollerando il fallimento di una delle due letture.
+`/sessions/editor` viene richiesto soltanto all'apertura del pannello e
+mostra lì un eventuale errore. L'editor richiede comunque la migrazione
+`20261124_191` sul database persistente. Typecheck Web e 82 test Vitest mirati
+PASS nello scratch; la verifica browser sul DB locale resta aperta.

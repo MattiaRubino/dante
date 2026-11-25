@@ -271,6 +271,7 @@ const profile = {
 afterEach(() => {
   cleanup();
   vi.clearAllMocks();
+  vi.unstubAllGlobals();
 });
 
 async function submitEditor() {
@@ -1566,6 +1567,52 @@ describe('Objective correction in Activity Editor', () => {
 });
 
 describe('Activity Inspector', () => {
+  it('shows the recording action beside Edit for planned Sessions even when the editor read fails', async () => {
+    get.mockResolvedValue(profile);
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(async (input: RequestInfo | URL) => {
+        const path = String(input);
+        if (path.endsWith('/children'))
+          return Response.json({
+            parent_activity_ref: ref,
+            session_capture_mode: 'disabled',
+            schedules: [
+              {
+                schedule_ref: '0199a222-2222-7222-8222-222222222222',
+                role_code: 'planned',
+                display_name: 'Sessione 1',
+              },
+            ],
+          });
+        if (path.endsWith('/sessions')) return Response.json([]);
+        return Response.json({ detail: 'Unavailable' }, { status: 503 });
+      }),
+    );
+    render(
+      <ActivityInspectorActions
+        activityRef={ref}
+        onEdit={() => undefined}
+        onDeleted={() => undefined}
+        onDuplicate={() => undefined}
+      />,
+    );
+    const action = await screen.findByRole('button', {
+      name: 'Registrazioni delle Sessioni',
+    });
+    expect(
+      action.parentElement?.contains(
+        screen.getByRole('button', { name: 'Modifica' }),
+      ),
+    ).toBe(true);
+    fireEvent.click(action);
+    expect(
+      await screen.findByRole('dialog', {
+        name: 'Registrazioni delle Sessioni',
+      }),
+    ).toBeTruthy();
+  });
+
   it('keeps profile description and location out of the header actions', async () => {
     get.mockResolvedValue(profile);
     render(
