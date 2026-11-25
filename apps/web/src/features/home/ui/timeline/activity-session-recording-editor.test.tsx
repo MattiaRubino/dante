@@ -17,6 +17,36 @@ import {
 const ACTIVITY = '019b0000-0000-7000-8000-000000000001';
 const MAIN = '019b0000-0000-7000-8000-000000000002';
 
+function setClock(
+  card: HTMLElement,
+  label: string,
+  date: string,
+  time: string,
+) {
+  const dateTrigger = within(card).getByRole('button', {
+    name: new RegExp(`^${label} · Data:`),
+  });
+  if (dateTrigger.getAttribute('data-temporal-date') !== date) {
+    fireEvent.click(dateTrigger);
+    const picker = screen.getByRole('dialog', { name: `${label} · Data` });
+    const day = picker.querySelector<HTMLButtonElement>(
+      `button[data-temporal-date="${date}"]`,
+    );
+    expect(day).not.toBeNull();
+    fireEvent.click(day!);
+  }
+  fireEvent.change(
+    within(card).getByRole('textbox', { name: `${label} · Ora: ore` }),
+    {
+      target: { value: time.slice(0, 2) },
+    },
+  );
+  fireEvent.change(
+    within(card).getByRole('textbox', { name: `${label} · Ora: minuti` }),
+    { target: { value: time.slice(3) } },
+  );
+}
+
 afterEach(() => {
   cleanup();
   vi.unstubAllGlobals();
@@ -152,15 +182,11 @@ describe('Activity Session recording editor', () => {
     const card = row.closest('article');
     expect(card).not.toBeNull();
     fireEvent.click(within(card!).getByRole('button', { name: 'Registra' }));
-    fireEvent.change(
-      within(card!).getByLabelText('Sessione attività · Inizio'),
-      {
-        target: { value: '2020-01-01T09:00:00' },
-      },
-    );
-    fireEvent.change(within(card!).getByLabelText('Sessione attività · Fine'), {
-      target: { value: '2020-01-01T10:00:00' },
-    });
+    const yesterday = new Date(Date.now() - 86_400_000)
+      .toISOString()
+      .slice(0, 10);
+    setClock(card!, 'Sessione attività · Inizio', yesterday, '09:00');
+    setClock(card!, 'Sessione attività · Fine', yesterday, '10:00');
     fireEvent.click(
       within(card!).getByRole('button', { name: 'Salva registrazione' }),
     );
@@ -176,13 +202,13 @@ describe('Activity Session recording editor', () => {
     fireEvent.click(
       within(recordedCard!).getByRole('button', { name: '+ Pausa' }),
     );
-    const pauseStart = within(recordedCard!).getByLabelText('Pausa 1 · Da');
-    const pauseEnd = within(recordedCard!).getByLabelText('Pausa 1 · A');
     expect(
-      within(recordedCard!).getByLabelText('Sessione attività · Inizio'),
-    ).toHaveProperty('value', '2020-01-01T09:00');
-    fireEvent.change(pauseStart, { target: { value: '2020-01-01T09:20' } });
-    fireEvent.change(pauseEnd, { target: { value: '2020-01-01T09:30' } });
+      within(recordedCard!)
+        .getByRole('button', { name: /^Sessione attività · Inizio · Data:/ })
+        .getAttribute('data-temporal-date'),
+    ).toBe(yesterday);
+    setClock(recordedCard!, 'Pausa 1 · Da', yesterday, '09:20');
+    setClock(recordedCard!, 'Pausa 1 · A', yesterday, '09:30');
     fireEvent.click(
       within(recordedCard!).getByRole('button', {
         name: 'Salva registrazione',
@@ -230,5 +256,78 @@ describe('Activity Session recording editor', () => {
     expect(
       screen.getByLabelText('Sessione attività · Inizio · occorrenza dell’ora'),
     ).toHaveProperty('value', 'earlier');
+  });
+
+  it('shows the main and child recordings on one time axis and rejects a child outside the active parent', async () => {
+    const yesterday = new Date(Date.now() - 86_400_000)
+      .toISOString()
+      .slice(0, 10);
+    const fetcher = vi.fn(
+      async (input: RequestInfo | URL, init?: RequestInit) => {
+        const path = String(input);
+        if (path.endsWith('/children'))
+          return Response.json({
+            parent_activity_ref: ACTIVITY,
+            session_capture_mode: 'record_and_live',
+            schedules: [
+              {
+                schedule_ref: MAIN,
+                role_code: 'planned',
+                presentation_order: 1,
+                display_name: 'Lettura',
+              },
+            ],
+          });
+        if (path.endsWith('/sessions/editor') && !init?.method)
+          return Response.json([
+            {
+              session_ref: 'parent',
+              planned_schedule_ref: null,
+              timing_material_state_ref: 'parent-state',
+              started_at: `${yesterday}T09:00:00Z`,
+              ended_at: `${yesterday}T10:00:00Z`,
+              pause_ranges: [
+                {
+                  started_at: `${yesterday}T09:20:00Z`,
+                  ended_at: `${yesterday}T09:30:00Z`,
+                },
+              ],
+            },
+          ]);
+        throw new Error(`Unexpected request: ${path}`);
+      },
+    );
+    vi.stubGlobal('fetch', fetcher);
+    render(
+      <ActivitySessionRecordingEditor
+        activityRef={ACTIVITY}
+        activityTitle="Scrivere"
+        timeZone="Etc/UTC"
+        onClose={vi.fn()}
+      />,
+    );
+    expect(
+      await screen.findByLabelText(
+        'Intervalli delle Sessioni sulla stessa scala oraria',
+      ),
+    ).toBeTruthy();
+    const child = screen.getByText('Lettura').closest('article')!;
+    fireEvent.click(within(child).getByRole('button', { name: 'Registra' }));
+    setClock(child, 'Lettura · Inizio', yesterday, '09:15');
+    setClock(child, 'Lettura · Fine', yesterday, '09:35');
+    fireEvent.click(
+      within(child).getByRole('button', { name: 'Salva registrazione' }),
+    );
+    expect(within(child).getByRole('alert').textContent).toContain(
+      'tratti attivi',
+    );
+    expect(
+      within(child)
+        .getByRole('button', { name: /^Lettura · Fine · Data:/ })
+        .getAttribute('aria-invalid'),
+    ).toBe('true');
+    expect(fetcher.mock.calls.some(([, init]) => init?.method === 'POST')).toBe(
+      false,
+    );
   });
 });

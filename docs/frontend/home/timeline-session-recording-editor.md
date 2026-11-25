@@ -27,6 +27,17 @@ specificare inizio, fine e intervalli di pausa; la barra di riepilogo
 distingue visivamente il tempo attivo dalle pause e calcola il totale attivo.
 Il campo non rappresenta l'orario pianificato della Sessione interna.
 
+Il pannello usa gli stessi selettori data e ora di Crea/Modifica, con il fuso
+dell'Attività fisso. Quando è presente la Sessione attività, principale e
+secondarie formano un unico gruppo: le secondarie sono rientrate sotto la
+principale. Dopo il salvataggio i campi si richiudono; una scala temporale
+comune mostra i tratti attivi della principale e le secondarie registrate,
+lasciando vuoti i tratti in pausa. «Correggi» riapre i controlli senza creare
+una seconda registrazione. Senza principale, ogni secondaria conserva il
+proprio riepilogo. «+ Pausa» propone un tratto interno modificabile, se gli
+orari lo permettono. Prima della richiesta, gli errori di ordine e di
+contenimento nella principale sono evidenziati vicino agli orari coinvolti.
+
 Il calendario usa orari locali nel fuso indicato e converte in istanti
 assoluti prima della scrittura. Un'ora inesistente durante il cambio d'ora
 è rifiutata; per un'ora ripetuta l'utente sceglie «Prima volta» o «Seconda

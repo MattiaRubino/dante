@@ -1,4 +1,5 @@
 import { expect, test } from '@playwright/test';
+import type { Locator } from '@playwright/test';
 
 import {
   configureCreate,
@@ -11,6 +12,30 @@ import {
   submitCreate,
   uniqueTitle,
 } from './temporal-user-journey-support';
+
+async function setClock(
+  row: Locator,
+  label: string,
+  date: string,
+  time: string,
+) {
+  const dateTrigger = row.getByRole('button', {
+    name: new RegExp(`^${label} · Data:`),
+  });
+  if ((await dateTrigger.getAttribute('data-temporal-date')) !== date) {
+    await dateTrigger.click();
+    await row
+      .getByRole('dialog', { name: `${label} · Data` })
+      .locator(`button[data-temporal-date="${date}"]`)
+      .click();
+  }
+  await row
+    .getByRole('textbox', { name: `${label} · Ora: ore` })
+    .fill(time.slice(0, 2));
+  await row
+    .getByRole('textbox', { name: `${label} · Ora: minuti` })
+    .fill(time.slice(3));
+}
 
 test('Inspector records and corrects a concluded named Session without offering Registra again', async ({
   browser,
@@ -46,8 +71,8 @@ test('Inspector records and corrects a concluded named Session without offering 
     await expect(editor).toBeVisible();
     const row = editor.locator('article').filter({ hasText: 'Lettura' });
     await row.getByRole('button', { name: 'Registra' }).click();
-    await row.getByLabel('Lettura · Inizio').fill(`${date}T09:05`);
-    await row.getByLabel('Lettura · Fine').fill(`${date}T09:25`);
+    await setClock(row, 'Lettura · Inizio', date, '09:05');
+    await setClock(row, 'Lettura · Fine', date, '09:25');
     const firstWrite = page.waitForResponse(
       (response) =>
         response
@@ -78,8 +103,8 @@ test('Inspector records and corrects a concluded named Session without offering 
     expect(recorded?.ended_at).toBeTruthy();
     await row.getByRole('button', { name: 'Correggi' }).click();
     await row.getByRole('button', { name: '+ Pausa' }).click();
-    await row.getByLabel('Pausa 1 · Da').fill(`${date}T09:15`);
-    await row.getByLabel('Pausa 1 · A').fill(`${date}T09:20`);
+    await setClock(row, 'Pausa 1 · Da', date, '09:15');
+    await setClock(row, 'Pausa 1 · A', date, '09:20');
     const correction = page.waitForResponse(
       (response) =>
         response
