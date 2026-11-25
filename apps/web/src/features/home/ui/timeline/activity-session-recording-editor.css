@@ -109,6 +109,14 @@ body:has(> .timeline-session-editor__backdrop)
   outline: 2px solid #668eb8;
   outline-offset: -2px;
 }
+.timeline-session-editor__scroll-area:has(
+  .temporal-create-date-picker__popover,
+  .temporal-create-time-picker
+) {
+  /* Leave enough scrollable space for the bottommost clock/calendar.
+     The header and Save footer remain outside this scroll region. */
+  padding-bottom: min(45dvh, 350px);
+}
 .timeline-session-editor__footer {
   display: flex;
   align-items: center;
@@ -649,9 +657,26 @@ body:has(> .timeline-session-editor__backdrop)
 }
 
 .timeline-session-editor__clamp-note {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
   color: #ffadba;
   margin: 7px 0 0;
   font-size: 12px;
+}
+.timeline-session-editor__clamp-note button {
+  min-height: 30px;
+  padding: 5px 9px;
+  border: 1px solid #d96b7b;
+  border-radius: 7px;
+  background: #342031;
+  color: #ffe1e6;
+  font: inherit;
+  cursor: pointer;
+}
+.timeline-session-editor__clamp-note button:hover {
+  background: #482c40;
 }
 
 .timeline-session-editor__group.has-main

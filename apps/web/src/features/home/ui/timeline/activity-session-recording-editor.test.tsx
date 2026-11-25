@@ -558,7 +558,7 @@ describe('Activity Session recording editor', () => {
     );
   });
 
-  it('clamps a child outside the parent and localizes the warning to its interval', async () => {
+  it('keeps a child outside its parent editable, highlights its range and offers explicit bounds correction', async () => {
     const yesterday = new Date(Date.now() - 86_400_000)
       .toISOString()
       .slice(0, 10);
@@ -617,9 +617,25 @@ describe('Activity Session recording editor', () => {
     setClock(child, 1, 'Inizio', yesterday, '09:15');
     setClock(child, 1, 'Fine', yesterday, '09:35');
     expect(
-      within(child).getByText(/Orario riportato entro i limiti/),
+      within(child).getByText(/supera il tratto attivo/),
     ).toBeTruthy();
     expect(child.querySelector('[data-invalid]')).not.toBeNull();
+    expect(
+      within(child).getByRole('textbox', { name: 'Intervallo 1 · Fine: ore' }),
+    ).toHaveProperty('value', '09');
+    expect(
+      within(child).getByRole('textbox', { name: 'Intervallo 1 · Fine: minuti' }),
+    ).toHaveProperty('value', '35');
+    // The date/time is not snapped back while typing; the explicit command
+    // limits it only after the user has completed editing.
+    fireEvent.click(within(child).getByRole('button', { name: 'Adatta ai limiti' }));
+    expect(
+      within(child).getByRole('textbox', { name: 'Intervallo 1 · Fine: ore' }),
+    ).toHaveProperty('value', '09');
+    expect(
+      within(child).getByRole('textbox', { name: 'Intervallo 1 · Fine: minuti' }),
+    ).toHaveProperty('value', '20');
+    expect(within(child).queryByText(/supera il tratto attivo/)).toBeNull();
     expect(fetcher.mock.calls.some(([, init]) => init?.method === 'POST')).toBe(
       false,
     );
@@ -952,4 +968,269 @@ describe('Activity Session recording editor', () => {
     expect(records).toHaveLength(2);
     expect(group.querySelectorAll('article.is-child')).toHaveLength(2);
   });
+
+  it('keeps a child attached and all its clock fields writable while the main interval becomes temporarily invalid', async () => {
+    const yesterday = new Date(Date.now() - 86_400_000).toISOString().slice(0, 10);
+    const posted: unknown[] = [];
+    const fetcher = vi.fn((input: RequestInfo | URL, init?: RequestInit) => {
+      const path = fetchPath(input);
+      if (path.endsWith('/children')) return mockResponse({
+        parent_activity_ref: ACTIVITY,
+        session_capture_mode: 'record_and_live',
+        schedules: [{
+          schedule_ref: MAIN,
+          role_code: 'planned',
+          presentation_order: 1,
+          display_name: 'Lettura',
+        }],
+      });
+      if (path.endsWith('/sessions/editor')) return mockResponse([]);
+      if (init?.method === 'POST') posted.push(init);
+      throw new Error('Unexpected request: ' + path);
+    });
+    vi.stubGlobal('fetch', fetcher);
+    render(
+      <ActivitySessionRecordingEditor
+        activityRef={ACTIVITY} activityTitle="test1" timeZone="Etc/UTC" onClose={vi.fn()}
+      />,
+    );
+    const group = (await screen.findByText('Sessione attività'))
+      .closest<HTMLElement>('section.timeline-session-editor__group')!;
+    setClock(group, 1, 'Inizio', yesterday, '09:00');
+    setClock(group, 1, 'Fine', yesterday, '10:00');
+    fireEvent.click(within(group).getByRole('button', { name: /Registra sessione/ }));
+    fireEvent.click(within(group).getByRole('button', { name: 'Lettura' }));
+    const parent = group.querySelector<HTMLElement>('.timeline-session-editor__parent-interval')!;
+    const child = parent.querySelector<HTMLElement>('article.is-child')!;
+    setClock(child, 1, 'Inizio', yesterday, '09:10');
+    setClock(child, 1, 'Fine', yesterday, '09:40');
+    // A temporarily inverted parent interval must not unmount the child,
+    // reset its time inputs, or close its edit controls.
+    const mainFields = parent.querySelector<HTMLElement>(':scope > .timeline-session-editor__interval-block')!;
+    setClock(mainFields, 1, 'Fine', yesterday, '08:55');
+    expect(parent.querySelector('article.is-child')).toBe(child);
+    expect(
+      within(child).getByRole('textbox', { name: 'Intervallo 1 · Inizio: ore' }),
+    ).toHaveProperty('value', '09');
+    expect(
+      within(child).getByRole('textbox', { name: 'Intervallo 1 · Fine: minuti' }),
+    ).toHaveProperty('value', '40');
+    setClock(mainFields, 1, 'Fine', yesterday, '10:15');
+    expect(parent.querySelector('article.is-child')).toBe(child);
+    setClock(child, 1, 'Fine', yesterday, '09:50');
+    expect(
+      within(child).getByRole('textbox', { name: 'Intervallo 1 · Fine: minuti' }),
+    ).toHaveProperty('value', '50');
+    expect(posted).toHaveLength(0);
+  });
+
+  it('does not move a resumed child between main slices while editing its clock across a parent boundary', async () => {
+    const yesterday = new Date(Date.now() - 86_400_000).toISOString().slice(0, 10);
+    vi.stubGlobal('fetch', vi.fn((input: RequestInfo | URL) => {
+      const path = fetchPath(input);
+      if (path.endsWith('/children')) return mockResponse({
+        parent_activity_ref: ACTIVITY,
+        session_capture_mode: 'record_and_live',
+        schedules: [{
+          schedule_ref: MAIN,
+          role_code: 'planned',
+          presentation_order: 1,
+          display_name: 'Lettura',
+        }],
+      });
+      if (path.endsWith('/sessions/editor')) return mockResponse([]);
+      throw new Error('Unexpected request: ' + path);
+    }));
+    render(
+      <ActivitySessionRecordingEditor
+        activityRef={ACTIVITY} activityTitle="test1" timeZone="Etc/UTC" onClose={vi.fn()}
+      />,
+    );
+    const group = (await screen.findByText('Sessione attività'))
+      .closest<HTMLElement>('section.timeline-session-editor__group')!;
+    setClock(group, 1, 'Inizio', yesterday, '09:00');
+    setClock(group, 1, 'Fine', yesterday, '09:15');
+    fireEvent.click(within(group).getByRole('button', { name: /Aggiungi intervallo/ }));
+    setClock(group, 2, 'Inizio', yesterday, '09:20');
+    setClock(group, 2, 'Fine', yesterday, '09:40');
+    const parents = group.querySelectorAll<HTMLElement>('.timeline-session-editor__parent-interval');
+    fireEvent.click(within(parents[1]!).getByRole('button', { name: /Registra sessione/ }));
+    fireEvent.click(within(parents[1]!).getByRole('button', { name: 'Lettura' }));
+    const child = parents[1]!.querySelector<HTMLElement>('article.is-child')!;
+    setClock(child, 1, 'Inizio', yesterday, '09:25');
+    setClock(child, 1, 'Fine', yesterday, '09:35');
+    // The edited time now starts in the *first* parent slice, but the row
+    // must not jump away from the second parent while it is incomplete.
+    setClock(child, 1, 'Inizio', yesterday, '09:10');
+    expect(parents[1]!.querySelector('article.is-child')).toBe(child);
+    expect(parents[0]!.querySelectorAll('article.is-child')).toHaveLength(0);
+    expect(within(child).getByText(/supera il tratto attivo/)).toBeTruthy();
+    setClock(child, 1, 'Inizio', yesterday, '09:25');
+    expect(parents[1]!.querySelector('article.is-child')).toBe(child);
+    expect(within(child).queryByText(/supera il tratto attivo/)).toBeNull();
+    // Even while a main clock is temporarily inverted, the other parent
+    // and its child remain reachable and independently editable.
+    const firstMain = parents[0]!.querySelector<HTMLElement>(':scope > .timeline-session-editor__interval-block')!;
+    setClock(firstMain, 1, 'Fine', yesterday, '08:30');
+    expect(parents[1]!.querySelector('article.is-child')).toBe(child);
+    setClock(firstMain, 1, 'Fine', yesterday, '09:15');
+    expect(parents[1]!.querySelector('article.is-child')).toBe(child);
+  });
+
+
+  it('allows all three named children to be edited independently without locking the others when one is invalid', async () => {
+    const yesterday = new Date(Date.now() - 86_400_000).toISOString().slice(0, 10);
+    const planned = [
+      MAIN,
+      '019b0000-0000-7000-8000-000000000006',
+      '019b0000-0000-7000-8000-000000000007',
+    ];
+    const onSaved = vi.fn();
+    const submitted: Array<Array<Record<string, unknown>>> = [];
+    let records: Record<string, unknown>[] = [];
+    vi.stubGlobal('fetch', vi.fn((input: RequestInfo | URL, init?: RequestInit) => {
+      const path = fetchPath(input);
+      if (path.endsWith('/children')) return mockResponse({
+        parent_activity_ref: ACTIVITY,
+        session_capture_mode: 'record_and_live',
+        schedules: planned.map((schedule_ref, index) => ({
+          schedule_ref,
+          role_code: 'planned',
+          presentation_order: index + 1,
+          display_name: 'Sessione ' + (index + 1),
+        })),
+      });
+      if (path.endsWith('/auth/session')) return mockResponse({ csrf_token: 'test' });
+      if (path.endsWith('/sessions/editor/batch') && init?.method === 'POST') {
+        const payload = JSON.parse(String(init.body)) as {
+          commands: Array<Record<string, unknown>>;
+        };
+        submitted.push(payload.commands);
+        records = payload.commands.map((command, index) => ({
+          ...command,
+          session_ref: '019b0000-0000-7000-8000-0000000000' + String(index + 10),
+          timing_material_state_ref: '019b0000-0000-7000-8000-0000000000' + String(index + 20),
+        }));
+        return mockResponse(records);
+      }
+      if (path.endsWith('/sessions/editor')) return mockResponse(records);
+      throw new Error('Unexpected request: ' + path);
+    }));
+    render(
+      <ActivitySessionRecordingEditor
+        activityRef={ACTIVITY}
+        activityTitle="test1"
+        timeZone="Etc/UTC"
+        onClose={vi.fn()}
+        onSaved={onSaved}
+      />,
+    );
+    const group = (await screen.findByText('Sessione attività'))
+      .closest<HTMLElement>('section.timeline-session-editor__group')!;
+    setClock(group, 1, 'Inizio', yesterday, '09:00');
+    setClock(group, 1, 'Fine', yesterday, '10:00');
+    const parent = group.querySelector<HTMLElement>('.timeline-session-editor__parent-interval')!;
+    for (const name of ['Sessione 1', 'Sessione 2', 'Sessione 3']) {
+      fireEvent.click(within(parent).getByRole('button', { name: /Registra sessione/ }));
+      fireEvent.click(within(parent).getByRole('button', { name }));
+    }
+    expect(parent.querySelectorAll('article.is-child')).toHaveLength(3);
+    const cards = ['Sessione 1', 'Sessione 2', 'Sessione 3'].map((name) =>
+      within(parent).getByText(name, { selector: 'h3' }).closest<HTMLElement>('article')!,
+    );
+    setClock(cards[0]!, 1, 'Inizio', yesterday, '09:05');
+    setClock(cards[0]!, 1, 'Fine', yesterday, '09:15');
+    setClock(cards[1]!, 1, 'Inizio', yesterday, '10:15');
+    setClock(cards[1]!, 1, 'Fine', yesterday, '10:30');
+    expect(within(cards[1]!).getByText(/supera il tratto attivo/)).toBeTruthy();
+    setClock(cards[2]!, 1, 'Inizio', yesterday, '09:20');
+    setClock(cards[2]!, 1, 'Fine', yesterday, '09:30');
+    expect(parent.querySelectorAll('article.is-child')).toHaveLength(3);
+    expect(within(cards[0]!).getByRole('textbox', {
+      name: 'Intervallo 1 · Fine: minuti',
+    })).toHaveProperty('value', '15');
+    expect(within(cards[2]!).getByRole('textbox', {
+      name: 'Intervallo 1 · Fine: minuti',
+    })).toHaveProperty('value', '30');
+    setClock(cards[1]!, 1, 'Inizio', yesterday, '09:35');
+    setClock(cards[1]!, 1, 'Fine', yesterday, '09:45');
+    expect(within(cards[1]!).queryByText(/supera il tratto attivo/)).toBeNull();
+    fireEvent.click(screen.getByRole('button', { name: 'Salva registrazioni' }));
+    await waitFor(() => expect(onSaved).toHaveBeenCalledOnce());
+    expect(submitted).toHaveLength(1);
+    expect(submitted[0]).toHaveLength(4);
+    expect(submitted[0]!.map((command) => command.planned_schedule_ref)).toEqual([
+      null, ...planned,
+    ]);
+    expect(new Set(submitted[0]!.map((command) => command.planned_schedule_ref)).size).toBe(4);
+  });
+
+
+  it('restores child placement when a recorded main interval deletion is cancelled', async () => {
+    const yesterday = new Date(Date.now() - 86_400_000).toISOString().slice(0, 10);
+    const main = {
+      session_ref: '019b0000-0000-7000-8000-000000000004',
+      planned_schedule_ref: null,
+      timing_material_state_ref: '019b0000-0000-7000-8000-000000000009',
+      started_at: yesterday + 'T09:00:00Z',
+      ended_at: yesterday + 'T09:35:00Z',
+      pause_ranges: [{
+        started_at: yesterday + 'T09:15:00Z',
+        ended_at: yesterday + 'T09:20:00Z',
+      }],
+    };
+    const child = {
+      session_ref: '019b0000-0000-7000-8000-000000000005',
+      planned_schedule_ref: MAIN,
+      timing_material_state_ref: '019b0000-0000-7000-8000-000000000010',
+      started_at: yesterday + 'T09:22:00Z',
+      ended_at: yesterday + 'T09:32:00Z',
+      pause_ranges: [],
+    };
+    const fetcher = vi.fn((input: RequestInfo | URL) => {
+      const path = fetchPath(input);
+      if (path.endsWith('/children')) return mockResponse({
+        parent_activity_ref: ACTIVITY,
+        session_capture_mode: 'record_and_live',
+        schedules: [{
+          schedule_ref: MAIN,
+          role_code: 'planned',
+          presentation_order: 1,
+          display_name: 'Lettura',
+        }],
+      });
+      if (path.endsWith('/sessions/editor')) return mockResponse([main, child]);
+      throw new Error('Unexpected request: ' + path);
+    });
+    vi.stubGlobal('fetch', fetcher);
+    render(
+      <ActivitySessionRecordingEditor
+        activityRef={ACTIVITY}
+        activityTitle="test1"
+        timeZone="Etc/UTC"
+        onClose={vi.fn()}
+      />,
+    );
+    const group = (await screen.findByText('Sessione attività'))
+      .closest<HTMLElement>('section.timeline-session-editor__group')!;
+    let parents = group.querySelectorAll<HTMLElement>('.timeline-session-editor__parent-interval');
+    expect(parents).toHaveLength(2);
+    expect(parents[0]!.querySelectorAll('article.is-child')).toHaveLength(0);
+    expect(parents[1]!.querySelectorAll('article.is-child')).toHaveLength(1);
+    const firstMain = parents[0]!.querySelector<HTMLElement>(
+      ':scope > .timeline-session-editor__interval-block',
+    )!;
+    fireEvent.click(within(firstMain).getByRole('button', { name: 'Correggi' }));
+    fireEvent.click(within(firstMain).getByRole('button', { name: 'Rimuovi intervallo 1' }));
+    parents = group.querySelectorAll<HTMLElement>('.timeline-session-editor__parent-interval');
+    expect(parents).toHaveLength(1);
+    expect(parents[0]!.querySelectorAll('article.is-child')).toHaveLength(1);
+    fireEvent.click(within(group).getByRole('button', { name: 'Annulla' }));
+    parents = group.querySelectorAll<HTMLElement>('.timeline-session-editor__parent-interval');
+    expect(parents).toHaveLength(2);
+    expect(parents[0]!.querySelectorAll('article.is-child')).toHaveLength(0);
+    expect(parents[1]!.querySelectorAll('article.is-child')).toHaveLength(1);
+    expect(fetcher).toHaveBeenCalledTimes(2);
+  });
+
 });

@@ -114,9 +114,13 @@ nuovo MaterialState e stessa SessionRef. Quando la principale è
 disabilitata, le secondarie sono blocchi autonomi. Il salvataggio
 di gruppo è atomico; PostgreSQL revalida contenimento, storia,
 idempotenza, proprietario e revisioni. Una correzione non può
-invalidare una secondaria già registrata. La UI può restringere
-il valore immesso ai limiti del padre, ma non può aggirare
-la verifica transazionale. Il nuovo editor non modifica
+invalidare una secondaria già registrata. Durante l'immissione di ore/minuti la UI **non può** restringere
+in modo sincrono il campo: un valore ancora parziale, valido o no, deve
+restare editabile e il suo componente non può smontarsi né cambiare
+intervallo padre. La UI segnala localmente il superamento e offre
+«Adatta ai limiti» per applicare il minimo/massimo volontariamente;
+il salvataggio rifiuta valori fuori limite senza modificare i fatti.
+La verifica transazionale resta autorevole. Il nuovo editor non modifica
 Play/Pausa/Stop, Schedule o le regole di ricorrenza.
 
 Se principale e secondaria già registrate sono corrette nello stesso gruppo,

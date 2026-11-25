@@ -12,7 +12,10 @@ grafico degli editor Dante. La testata e il titolo dell'Attività restano fissi:
 **solo il corpo delle registrazioni scorre** in un'area dedicata. Anche il
 footer con «Salva registrazioni» ed eventuali errori rimane sempre visibile,
 fuori dallo scorrimento; date, orari, menu e pulsanti mantengono gli stessi
-controlli interattivi. Su schermi stretti i campi inizio/fine sono impilati.
+controlli interattivi.
+I popup di calendario e orario vicini al fondo della regione scorrono
+automaticamente in vista, senza portare via dal footer il tasto Salva.
+ Su schermi stretti i campi inizio/fine sono impilati.
 
 La presenza dell'azione deriva dalla struttura Activity (`/children`) e dalle
 Sessioni già presenti (`/sessions`), anche se una delle due letture non è
@@ -65,9 +68,19 @@ deve confermare tutte le ricevute prima di sostituire le righe e cancellare
 la bozza: una risposta incompleta lascia visibili gli input e conserva gli
 identificativi delle operazioni per un tentativo idempotente.
 
-Una secondaria deve restare dentro i tratti attivi della principale:
-la UI restringe l'orario che supera il limite e mostra il bordo rosso
-localizzato; la conferma rivalida sempre i vincoli in PostgreSQL.
+Una secondaria deve restare dentro i tratti attivi della principale.
+**Durante la digitazione la UI non riscrive automaticamente l'orario:**
+i componenti DANTE acquisiscono ore e minuti separatamente e il valore
+intermedio non è ancora una registrazione. Una riga fuori limite rimane
+editabile e al suo posto, con bordo rosso e azione **Adatta ai limiti**
+che restringe inizio/fine al proprio padre su richiesta. Salva rifiuta
+l'eventuale violazione ancora presente, evidenziando il singolo intervallo
+sbagliato; PostgreSQL ripete la verifica autorevole. Una modifica
+temporaneamente invalida di un intervallo padre non deve far sparire,
+spostare o rimontare le secondarie: l'appartenenza visiva dei singoli
+tratti è stabile durante la bozza, anche quando si modifica prima
+l'inizio e poi la fine. Dopo un salvataggio valido, la gerarchia si
+ricostruisce dagli intervalli effettivi salvati.
 Con principale disabilitata, le secondarie usano blocchi autonomi con gli
 stessi controlli, senza limiti di padre inventati.
 

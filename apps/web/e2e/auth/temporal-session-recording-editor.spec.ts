@@ -328,3 +328,88 @@ test('Inspector distributes one child Session across two main intervals, pauses 
     await user.close().catch(() => {});
   }
 });
+
+test('Inspector preserves editable child clock and parent placement across invalid drafts and a date popup', async ({
+  browser,
+}, info) => {
+  test.setTimeout(120_000);
+  const user = await signedInPage(browser, info, 5);
+  const { page } = user;
+  try {
+    const date = scenarioDate(-1);
+    await openHome(page, date);
+    const title = uniqueTitle('Registrazioni editabili');
+    const composer = await openCreate(page, 'activity');
+    await configureCreate(composer, {
+      kind: 'activity', title, date, clock: '09:00', plannedSession: 'Lettura',
+    });
+    await composer.getByRole('checkbox', { name: 'Sessione', exact: true }).check();
+    const item = await submitCreate(page, composer, {
+      kind: 'activity', title, recurring: false,
+    });
+    await openHome(page, date);
+    const inspector = await openInspector(page, item);
+    await inspector.getByRole('button', { name: 'Registrazioni delle Sessioni' }).click();
+    const editor = page.getByRole('dialog', { name: 'Registrazioni delle Sessioni' });
+    const main = editor.locator('section.timeline-session-editor__group.has-main');
+    await setClock(main, 1, 'Inizio', date, '09:00');
+    await setClock(main, 1, 'Fine', date, '09:30');
+    const parent = editor.locator('.timeline-session-editor__parent-interval').first();
+    await parent.getByRole('button', { name: /Registra sessione/ }).click();
+    await parent.getByRole('button', { name: 'Lettura' }).click();
+    const child = parent.locator('article.is-child');
+
+    // Typed values outside the main are not immediately clamped or unmounted.
+    await setClock(child, 1, 'Inizio', date, '08:10');
+    await expect(child.getByRole('textbox', { name: 'Intervallo 1 · Inizio: ore' })).toHaveValue('08');
+    await expect(child.getByText(/supera il tratto attivo della principale/)).toBeVisible();
+    await expect(child).toHaveCount(1);
+    await child.getByRole('button', { name: 'Adatta ai limiti' }).click();
+    await expect(child.getByRole('textbox', { name: 'Intervallo 1 · Inizio: ore' })).toHaveValue('09');
+    await expect(child.getByText(/supera il tratto attivo/)).toHaveCount(0);
+    await setClock(child, 1, 'Fine', date, '09:20');
+
+    // Inverting a main interval is allowed temporarily while editing.
+    const mainFields = parent.locator(':scope > .timeline-session-editor__interval-block');
+    await setClock(mainFields, 1, 'Fine', date, '08:50');
+    await expect(child).toHaveCount(1);
+    await expect(child.getByRole('textbox', { name: 'Intervallo 1 · Fine: minuti' })).toHaveValue('20');
+    await setClock(mainFields, 1, 'Fine', date, '09:30');
+    await expect(child).toHaveCount(1);
+
+    // The last inline calendar must be usable inside the scrolling body.
+    const scrolling = editor.getByRole('region', { name: 'Intervalli e Sessioni' });
+    await scrolling.evaluate((element) => { element.scrollTop = element.scrollHeight; });
+    await child.getByRole('button', { name: /^Intervallo 1 · Data fine:/ }).click();
+    const picker = child.getByRole('dialog', { name: 'Intervallo 1 · Data fine' });
+    await expect(picker).toBeVisible();
+    const [pickerBox, scrollBox] = await Promise.all([picker.boundingBox(), scrolling.boundingBox()]);
+    expect(pickerBox).not.toBeNull();
+    expect(scrollBox).not.toBeNull();
+    expect(pickerBox!.y + pickerBox!.height).toBeLessThanOrEqual(
+      scrollBox!.y + scrollBox!.height + 3,
+    );
+    await picker.locator('button[data-temporal-date="' + date + '"]').click();
+    await expect(picker).toBeHidden();
+
+    const target = '/api/v1/temporal/activities/' + item.sourceRef + '/sessions/editor/batch';
+    const writing = page.waitForResponse(
+      (response) => response.url().endsWith(target) && response.request().method() === 'POST',
+    );
+    await editor.getByRole('button', { name: 'Salva registrazioni' }).click();
+    expect((await writing).status()).toBe(201);
+    await expect(editor).toBeHidden();
+    await expect(inspector).toBeHidden();
+    const records = (await serverRead(
+      page, '/api/v1/temporal/activities/' + item.sourceRef + '/sessions/editor',
+    )) as Array<{
+      session_ref: string;
+      planned_schedule_ref: string | null;
+      pause_ranges: unknown[];
+    }>;
+    expect(records).toHaveLength(2);
+    expect(records.filter((record) => record.planned_schedule_ref !== null)).toHaveLength(1);
+  } finally {
+    await user.close().catch(() => {});
+  }
+});

@@ -1,5 +1,42 @@
 # Timeline / Temporal-Operational — Live Execution Ledger
 
+## 2026-11-25 — Riparazione editor registrazioni: modifica locale stabile (candidate)
+
+Audit sul branch `feature/timeline-temporal-operational` HEAD
+`68c662e` dopo le due correzioni dell'altro thread
+(`9e2393c` con migrazione differita `20261125_192` e
+`68c662e` con Add riga). L'owner segnala blocchi diffusi
+nei campi e errori casuali in prova visiva. Il problema confermato
+nel codice è la mutazione a ogni onChange di TimeControl: il
+clamp immediato riscrive ore/minuti mentre vengono digitati e
+l'assegnazione della secondaria è dedotta dall'ora parziale.
+Quando l'ora produce per un istante una sequenza invalida,
+`safeRanges` svuota tutti i padri, nascondendo/ricreando le
+secondarie e rendendo impossibile completare l'input.
+
+Candidate frontend: conservare per ogni tratto secondario una
+assegnazione padre stabile durante la bozza, non eseguire clamp
+nel change handler, non ordinare gli intervalli mentre si digitano,
+mantenere visibili i padri anche nei valori locali intermedi
+non validi, rendere l'errore rosso specifico della riga, offrire
+«Adatta ai limiti» solo come correzione esplicita e validare tutto
+prima di POST. Add/rimuovi/riprendi/correggi aggiornano coerentemente
+anche l'assegnazione dei tratti. I calendar popup dentro la zona
+scrollabile devono poter essere aperti e selezionati fino in fondo,
+senza sovrapporsi al footer fisso.
+
+Regressioni aggiunte: Vitest per digitazione fuori limite seguita
+da correzione, modifica temporaneamente invalida del padre senza
+smontare secondarie, ripresa in un secondo padre con input che
+attraversa il confine e tre secondarie indipendenti configurate
+insieme; Playwright autenticato con ora fuori limite, correzione
+esplicita, calendario all'estremità dello scroller e conferma
+della registrazione in PostgreSQL. Il contratto backend e la
+migrazione `192` restano invariati e richiedono accettazione su
+DB migrato. **NOT_RUN** finché non vengono eseguiti dal proprietario
+sul nuovo commit. I precedenti test verdi non certificano la correzione.
+
+
 ## 2026-11-25 — Editor registrazioni: aggiunta intervalli alla prova manuale (candidate)
 
 La prova manuale su `9e2393c` ha mostrato che il pulsante «Aggiungi
