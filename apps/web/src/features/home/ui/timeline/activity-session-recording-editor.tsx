@@ -316,7 +316,7 @@ function intervalFromMillis(
   start: number,
   end: number,
   zone: string,
-  id = crypto.randomUUID(),
+  id: string = crypto.randomUUID(),
 ): ActiveInterval {
   const startInstant = new Date(start).toISOString();
   const endInstant = new Date(end).toISOString();
