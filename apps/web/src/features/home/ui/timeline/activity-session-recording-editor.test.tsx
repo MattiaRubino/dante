@@ -1,5 +1,6 @@
 // @vitest-environment jsdom
 import {
+  act,
   cleanup,
   fireEvent,
   render,
@@ -328,9 +329,7 @@ describe('Activity Session recording editor', () => {
       .closest<HTMLElement>('article')!;
     fireEvent.click(within(child).getByRole('button', { name: /Aggiungi intervallo/ }));
     expect(within(child).getByText('Intervallo 2 · Da impostare')).toBeTruthy();
-    expect(within(child).getByRole('textbox', {
-      name: 'Intervallo 2 · Inizio',
-    })).toHaveProperty('value', '');
+    expect(within(child).getByLabelText('Intervallo 2 · Inizio')).toHaveProperty('value', '');
     fireEvent.click(screen.getByRole('button', { name: 'Salva registrazioni' }));
     expect(within(child).getByText('Imposta intervallo 2.')).toBeTruthy();
     expect(fetcher.mock.calls.some(([, init]) => init?.method === 'POST')).toBe(false);
@@ -1380,26 +1379,40 @@ describe('Activity Session recording editor', () => {
     fireEvent.click(within(group).getByRole('button', { name: /Aggiungi intervallo/ }));
     expect(group.querySelectorAll('.timeline-session-editor__parent-interval')).toHaveLength(3);
 
+    // TimeControl schedules focus to the minute field after editing the hour.
+    // Drain those tasks, then use real focus transitions rather than dispatching
+    // a synthetic blur while document.activeElement still points inside it.
+    await act(async () => {});
+    expect(within(group).getByRole('textbox', {
+      name: 'Intervallo 2 · Inizio: minuti',
+    })).toHaveProperty('value', '11');
+
+    const confirmClock = async (interval: number, edge: 'Inizio' | 'Fine') => {
+      await act(async () => {});
+      const field = within(group).getByRole('textbox', {
+        name: 'Intervallo ' + interval + ' · ' + edge + ': minuti',
+      });
+      await act(async () => {
+        field.focus();
+        field.blur();
+      });
+      expect(document.activeElement).not.toBe(field);
+    };
+
     setClock(group, 3, 'Inizio', yesterday, '09:18');
-    fireEvent.blur(within(group).getByRole('textbox', {
-      name: 'Intervallo 3 · Inizio: minuti',
-    }));
+    await confirmClock(3, 'Inizio');
     await waitFor(() => expect(within(group).getByRole('textbox', {
       name: 'Intervallo 3 · Inizio: minuti',
     })).toHaveProperty('value', '21'));
 
     setClock(group, 2, 'Fine', yesterday, '09:30');
-    fireEvent.blur(within(group).getByRole('textbox', {
-      name: 'Intervallo 2 · Fine: minuti',
-    }));
+    await confirmClock(2, 'Fine');
     await waitFor(() => expect(within(group).getByRole('textbox', {
       name: 'Intervallo 2 · Fine: minuti',
     })).toHaveProperty('value', '20'));
 
     setClock(group, 1, 'Fine', yesterday, '09:19');
-    fireEvent.blur(within(group).getByRole('textbox', {
-      name: 'Intervallo 1 · Fine: minuti',
-    }));
+    await confirmClock(1, 'Fine');
     await waitFor(() => expect(within(group).getByRole('textbox', {
       name: 'Intervallo 1 · Fine: minuti',
     })).toHaveProperty('value', '10'));
