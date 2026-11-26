@@ -60,12 +60,11 @@ loro; due intervalli della stessa Sessione no.
 esiste spazio nel passato: inizio minimo = fine del precedente + 1 minuto,
 fine massima = ora attuale e, nelle secondarie, anche fine del padre.
 Durata e pausa minime delle nuove registrazioni: 1 minuto.
-Senza spazio crea «Da impostare» con date/orari modificabili ma senza
-duplicare il precedente. «Applica orari» normalizza la nuova riga nei
-limiti ammessi. «Crea spazio» mostra l'anteprima di una divisione del
-precedente, separata da un minuto di pausa: conferma o annulla espliciti.
-Una divisione che invaliderebbe registrazioni secondarie storiche richiede
-prima la loro correzione.
+Senza spazio crea una riga nello stesso layout, con i consueti selettori
+DANTE, gli orari vuoti e la stessa X di rimozione. Il nuovo intervallo
+si completa automaticamente alla conferma dei campi, senza pulsanti
+aggiuntivi. Per liberare spazio si modificano esplicitamente gli
+intervalli esistenti: nessuna divisione automatica del precedente.
 Dopo un POST accettato, la rilettura
 deve confermare tutte le ricevute prima di sostituire le righe e cancellare
 la bozza: una risposta incompleta lascia visibili gli input e conserva gli

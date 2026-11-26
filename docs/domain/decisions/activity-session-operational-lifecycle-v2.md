@@ -128,9 +128,10 @@ Per nuovi intervalli manuali: durata minima e pausa minima
 di 1 minuto, con precisione al minuto. La conferma di un singolo
 campo può normalizzarlo al minimo/massimo calcolato da precedente,
 successivo, padre e ora attuale; la digitazione parziale resta libera.
-Se non c'è spazio, Aggiungi produce una bozza Da impostare, non
-una copia temporalmente sovrapposta. Modificare un altro intervallo
-tramite Crea spazio richiede un'anteprima e conferma esplicita.
+Se non c'è spazio, Aggiungi produce una riga con orari vuoti nei
+controlli standard, non una copia sovrapposta. Per liberare spazio si
+modifica esplicitamente l'intervallo precedente; nessun taglio automatico
+né pulsante aggiuntivo.
 Non si alterano silenziosamente gli storici né altre SessionRef:
 correzioni coordinate sono atomiche e producono revisioni MaterialState.
 Il minimo nuovo non si applica retroattivamente ai fatti non corretti. Il nuovo editor non modifica

@@ -74,6 +74,8 @@ type TimeControlProps = Readonly<{
   value: string;
   dataPath: string;
   onChange: (value: string) => void;
+  allowEmpty?: boolean;
+  onCommit?: () => void;
   helper?: ReactNode;
   invalid?: boolean;
   zoneId?: string | null | undefined;
@@ -178,10 +180,12 @@ export function TimeControl({
   onChange,
   helper,
   invalid = false,
+  allowEmpty = false,
+  onCommit,
 }: TimeControlProps) {
   const parsedValue = timeToMinute(value);
   const normalizedValue =
-    parsedValue === null ? '00:00' : minuteToTime(parsedValue);
+    parsedValue === null ? (allowEmpty ? '' : '00:00') : minuteToTime(parsedValue);
   const [hourDraft, setHourDraft] = useState(normalizedValue.slice(0, 2));
   const [minuteDraft, setMinuteDraft] = useState(normalizedValue.slice(3, 5));
   const [committedValue, setCommittedValue] = useState(normalizedValue);
@@ -198,7 +202,7 @@ export function TimeControl({
   // and does not remount the inputs while the user types.
   if (previousValue !== value) {
     setPreviousValue(value);
-    if (parsedValue !== null) {
+    if (parsedValue !== null || allowEmpty) {
       setCommittedValue(normalizedValue);
       setHourDraft(normalizedValue.slice(0, 2));
       setMinuteDraft(normalizedValue.slice(3, 5));
@@ -208,7 +212,8 @@ export function TimeControl({
   useEffect(() => {
     const parsed = timeToMinute(value);
     if (parsed !== null) lastValidRef.current = minuteToTime(parsed);
-  }, [value]);
+    else if (allowEmpty) lastValidRef.current = '';
+  }, [value, allowEmpty]);
 
   useEffect(() => {
     if (!pickerOpen) return;
@@ -255,7 +260,14 @@ export function TimeControl({
     setMinuteDraft(lastValidRef.current.slice(3, 5));
   };
 
+  const commitSelection = (next: string) => {
+    syncDraft(next);
+    if (onCommit) queueMicrotask(onCommit);
+  };
+
   const commitParts = (hourValue: string, minuteValue: string) => {
+    // Preserve incomplete segmented input in a new blank factual row.
+    if (allowEmpty && (!hourValue || !minuteValue)) return false;
     if (!/^\d{1,2}$/.test(hourValue) || !/^\d{1,2}$/.test(minuteValue)) {
       restore();
       return false;
@@ -312,7 +324,7 @@ export function TimeControl({
             <button
               type="button"
               aria-label={`${label}: aumenta ora`}
-              onClick={() => syncDraft(shiftTime(lastValidRef.current, 60))}
+              onClick={() => commitSelection(shiftTime(lastValidRef.current, 60))}
             >
               ▲
             </button>
@@ -322,6 +334,7 @@ export function TimeControl({
               maxLength={2}
               aria-label={`${label}: ore`}
               value={hourDraft}
+              placeholder={allowEmpty ? '--' : undefined}
               onFocus={(event) => {
                 setPickerOpen(false);
                 event.currentTarget.select();
@@ -346,7 +359,7 @@ export function TimeControl({
             <button
               type="button"
               aria-label={`${label}: diminuisci ora`}
-              onClick={() => syncDraft(shiftTime(lastValidRef.current, -60))}
+              onClick={() => commitSelection(shiftTime(lastValidRef.current, -60))}
             >
               ▼
             </button>
@@ -361,7 +374,7 @@ export function TimeControl({
             <button
               type="button"
               aria-label={`${label}: aumenta 1 minuto`}
-              onClick={() => syncDraft(shiftTime(lastValidRef.current, 1))}
+              onClick={() => commitSelection(shiftTime(lastValidRef.current, 1))}
             >
               ▲
             </button>
@@ -372,6 +385,7 @@ export function TimeControl({
               maxLength={2}
               aria-label={`${label}: minuti`}
               value={minuteDraft}
+              placeholder={allowEmpty ? '--' : undefined}
               onFocus={(event) => {
                 setPickerOpen(false);
                 event.currentTarget.select();
@@ -392,7 +406,7 @@ export function TimeControl({
             <button
               type="button"
               aria-label={`${label}: diminuisci 1 minuto`}
-              onClick={() => syncDraft(shiftTime(lastValidRef.current, -1))}
+              onClick={() => commitSelection(shiftTime(lastValidRef.current, -1))}
             >
               ▼
             </button>
@@ -416,13 +430,13 @@ export function TimeControl({
           aria-label={label}
         >
           <div ref={listRef} className="temporal-create-time-list">
-            {!TIME_OPTIONS.includes(committedValue) ? (
+            {committedValue && !TIME_OPTIONS.includes(committedValue) ? (
               <button
                 type="button"
                 data-time-value={committedValue}
                 className="is-selected"
                 onClick={() => {
-                  syncDraft(committedValue);
+                  commitSelection(committedValue);
                   setPickerOpen(false);
                 }}
               >
@@ -436,7 +450,7 @@ export function TimeControl({
                 data-time-value={option}
                 className={committedValue === option ? 'is-selected' : ''}
                 onClick={() => {
-                  syncDraft(option);
+                  commitSelection(option);
                   setPickerOpen(false);
                 }}
               >

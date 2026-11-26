@@ -1,5 +1,15 @@
 # Timeline / Temporal-Operational — Live Execution Ledger
 
+## 2026-11-26 — Ripristino layout registrazioni (candidate; NOT_RUN)
+
+Su richiesta owner, eliminato il layout separato degli intervalli
+incompleti e le azioni Applica orari / Crea spazio. Le righe usano i
+controlli DANTE standard, con ore/minuti vuoti quando non c'è spazio,
+stessa X e normalizzazione alla conferma. Nessuna modifica automatica
+del precedente. Questa decisione sostituisce la proposta di divisione
+descritta nell'entry sottostante. Aggiornati i test componente, puri
+ed E2E; nessuna modifica backend o migrazione. Owner WSL pending.
+
 ## 2026-11-26 — Inspector lifecycle after Save (candidate; NOT_RUN)
 
 Closing the Inspector after a successful Activity or Event edit returns

@@ -421,7 +421,7 @@ test('Inspector preserves editable child clock and parent placement across inval
   }
 });
 
-test('Inspector adds an unconfigured interval near now, previews Create space and saves real pauses', async ({
+test('Inspector adds an unconfigured interval near now, uses the original controls and saves real pauses', async ({
   browser,
 }, info) => {
   test.setTimeout(120_000);
@@ -461,12 +461,18 @@ test('Inspector adds an unconfigured interval near now, previews Create space an
     const editor = page.getByRole('dialog', { name: 'Registrazioni delle Sessioni' });
     const main = editor.locator('section.timeline-session-editor__group.has-main');
     await main.getByRole('button', { name: /Aggiungi intervallo/ }).click();
-    await expect(main.getByText('Intervallo 2 · Da impostare')).toBeVisible();
-    await expect(main.getByLabel('Intervallo 2 · Inizio')).toHaveValue('');
-    await main.getByRole('button', { name: 'Crea spazio' }).click();
-    await expect(main.getByText(/fino alle/)).toBeVisible();
-    await main.getByRole('button', { name: 'Conferma' }).click();
-    await expect(main.getByText('Intervallo 2 · Da impostare')).toHaveCount(0);
+    await expect(main.getByRole('textbox', { name: 'Intervallo 2 · Inizio: ore' })).toHaveValue('');
+    await expect(main.getByRole('textbox', { name: 'Intervallo 2 · Fine: minuti' })).toHaveValue('');
+    await expect(main.getByRole('button', { name: 'Rimuovi intervallo 2' })).toBeVisible();
+    await expect(main.getByRole('button', { name: /Crea spazio|Applica orari/ })).toHaveCount(0);
+    await expect(main.locator('input[type="time"], input[type="date"]')).toHaveCount(0);
+    await setClock(main, 1, 'Inizio', date, '09:00');
+    await setClock(main, 1, 'Fine', date, '09:10');
+    await setClock(main, 2, 'Inizio', date, '09:11');
+    await setClock(main, 2, 'Fine', date, '09:20');
+    await main.getByRole('textbox', { name: 'Intervallo 2 · Fine: minuti' }).blur();
+    await expect(main.getByText('Imposta gli orari.')).toHaveCount(0);
+    await expect(main.getByRole('textbox', { name: 'Intervallo 1 · Fine: minuti' })).toHaveValue('10');
     await expect(main.locator('.timeline-session-editor__parent-interval')).toHaveCount(2);
 
     const endpoint =

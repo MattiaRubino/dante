@@ -8,7 +8,6 @@ import { TemporalCreateDatePicker } from '../../../temporal-create/ui/temporal-c
 import {
   nextFactualInterval,
   normalizeSessionBoundary,
-  proposeSessionSpace,
   SESSION_MINUTE_MS,
   sessionBounds,
   type SessionBoundary,
@@ -210,6 +209,8 @@ function IntervalFields({
         <TimeControl
           label={`${label} · Inizio`}
           value={interval.start.slice(11, 16)}
+          allowEmpty={Boolean(interval.unconfigured && !interval.start.slice(11, 16))}
+          onCommit={() => onBoundaryCommit?.('start')}
           dataPath={fieldPath + '.' + index + '.start'}
           invalid={invalid}
           onChange={(time) =>
@@ -226,6 +227,8 @@ function IntervalFields({
         <TimeControl
           label={`${label} · Fine`}
           value={interval.end.slice(11, 16)}
+          allowEmpty={Boolean(interval.unconfigured && !interval.end.slice(11, 16))}
+          onCommit={() => onBoundaryCommit?.('end')}
           dataPath={fieldPath + '.' + index + '.end'}
           invalid={invalid}
           onChange={(time) =>
@@ -329,11 +332,12 @@ function intervalFromMillis(
   };
 }
 
-function intervalUnconfigured(date = ''): ActiveInterval {
+function intervalUnconfigured(date: string, zone: string): ActiveInterval {
+  const day = date || local(Temporal.Now.instant().toString(), zone).slice(0, 10);
   return {
     id: crypto.randomUUID(),
-    start: date ? date + 'T' : '',
-    end: date ? date + 'T' : '',
+    start: day + 'T',
+    end: day + 'T',
     startChoice: 'reject',
     endChoice: 'reject',
     unconfigured: true,
@@ -343,7 +347,7 @@ function intervalUnconfigured(date = ''): ActiveInterval {
 function nextInterval(draft: Draft, zone: string): ActiveInterval {
   const last = draft.intervals.at(-1);
   if (!last || last.unconfigured || !last.end)
-    return intervalUnconfigured(last?.end.slice(0, 10) ?? '');
+    return intervalUnconfigured(last?.end.slice(0, 10) ?? '', zone);
   try {
     const previousEnd = Temporal.Instant.from(
       instant(last.end, zone, last.endChoice),
@@ -354,9 +358,9 @@ function nextInterval(draft: Draft, zone: string): ActiveInterval {
     });
     return next
       ? intervalFromMillis(next.start, next.end, zone)
-      : intervalUnconfigured(last.end.slice(0, 10));
+      : intervalUnconfigured(last.end.slice(0, 10), zone);
   } catch {
-    return intervalUnconfigured(last.end.slice(0, 10));
+    return intervalUnconfigured(last.end.slice(0, 10), zone);
   }
 }
 
@@ -705,13 +709,6 @@ export function ActivitySessionRecordingEditor({
   const [pending, setPending] = useState<EditorPending>({});
   const pendingRef = useRef<EditorPending>({});
   useEffect(() => { pendingRef.current = pending; }, [pending]);
-  const [spacePreview, setSpacePreview] = useState<{
-    key: string;
-    index: number;
-    previousIndex: number;
-    previous: SessionSpan;
-    created: SessionSpan;
-  } | null>(null);
   // The parent of an edited child slice is a UI identity, not something
   // recalculated on every keystroke from an incomplete clock value.
   const [assignments, setAssignments] = useState<Record<string, number[]>>({});
@@ -866,7 +863,6 @@ export function ActivitySessionRecordingEditor({
       return next;
     });
     setError('');
-    setSpacePreview(null);
     operation.current = null;
   }
 
@@ -1087,7 +1083,7 @@ export function ActivitySessionRecordingEditor({
       const parent = parentSlice(parentIndex);
       if (!parent) {
         const date = mainDraft?.intervals[parentIndex]?.start.slice(0, 10) ?? '';
-        insertChildInterval(row, existing, parentIndex, intervalUnconfigured(date));
+        insertChildInterval(row, existing, parentIndex, intervalUnconfigured(date, timeZone));
         return;
       }
       const owners = ownersFor(row, existing);
@@ -1110,7 +1106,7 @@ export function ActivitySessionRecordingEditor({
         parentIndex,
         candidate
           ? intervalFromMillis(candidate.start, candidate.end, timeZone)
-          : intervalUnconfigured(local(new Date(parent.start).toISOString(), timeZone).slice(0, 10)),
+          : intervalUnconfigured(local(new Date(parent.start).toISOString(), timeZone).slice(0, 10), timeZone),
       );
     } catch {
       setError('Controlla gli intervalli.');
@@ -1176,6 +1172,10 @@ export function ActivitySessionRecordingEditor({
   ) {
     const draft = pendingRef.current[row.key];
     if (!draft) return;
+    if (draft.intervals[index]?.unconfigured) {
+      completeUnconfigured(row, index, parentIndex);
+      return;
+    }
     const current = parseSlice(draft.intervals[index]);
     if (!current) return;
     const bounds = sessionBounds({
@@ -1209,20 +1209,6 @@ export function ActivitySessionRecordingEditor({
     });
   }
 
-  function changeUnconfigured(
-    row: Row, index: number, boundary: SessionBoundary,
-    part: 'date' | 'time', value: string,
-  ) {
-    const draft = pendingRef.current[row.key];
-    const interval = draft?.intervals[index];
-    if (!draft || !interval?.unconfigured) return;
-    const original = interval[boundary];
-    const date = part === 'date' ? value : original.slice(0, 10);
-    const time = part === 'time' ? value : original.slice(11, 16);
-    const combined = date ? date + 'T' + (time ? time + ':00' : '') : '';
-    updateInterval(row, index, { ...interval, [boundary]: combined });
-  }
-
   function completeUnconfigured(row: Row, index: number, parentIndex?: number) {
     const draft = pendingRef.current[row.key];
     const entry = draft?.intervals[index];
@@ -1233,7 +1219,8 @@ export function ActivitySessionRecordingEditor({
       startChoice: entry.startChoice,
       endChoice: entry.endChoice,
     });
-    if (!candidate || candidate.end <= candidate.start) {
+    if (!candidate) return;
+    if (candidate.end <= candidate.start) {
       setIssues((old) => ({
         ...old, [row.key]: {
           field: 'interval-' + index, message: 'Imposta inizio e fine.',
@@ -1279,105 +1266,6 @@ export function ActivitySessionRecordingEditor({
     });
   }
 
-  function previewSpace(row: Row, index: number) {
-    const draft = pendingRef.current[row.key];
-    const before = parseSlice(draft?.intervals[index - 1]);
-    const field = 'interval-' + index;
-    if (!before) {
-      setIssues((old) => ({
-        ...old, [row.key]: { field, message: 'Imposta prima il precedente.' },
-      }));
-      return;
-    }
-    const proposal = proposeSessionSpace(before);
-    if (mainEnabled && row.plannedRef !== null && draft) {
-      const owners = ownersFor(row, draft);
-      if (owners[index] !== owners[index - 1]) {
-        setIssues((old) => ({
-          ...old, [row.key]: {
-            field, message: 'Nessuno spazio in questo tratto.',
-          },
-        }));
-        return;
-      }
-    }
-    if (!proposal) {
-      setIssues((old) => ({
-        ...old, [row.key]: { field, message: 'Servono almeno 3 min.' },
-      }));
-      return;
-    }
-    if (row.plannedRef === null && children.some((child) => {
-      const actual = child.attempt;
-      return actual?.ended_at &&
-        activeSlices(actual.started_at, actual.ended_at, actual.pause_ranges)
-          .some((slice) =>
-            slice.end > proposal.previous.end &&
-            slice.start < proposal.created.start,
-          );
-    })) {
-      setIssues((old) => ({
-        ...old, [row.key]: { field, message: 'Correggi prima le secondarie.' },
-      }));
-      return;
-    }
-    setSpacePreview({
-      key: row.key, index, previousIndex: index - 1,
-      previous: proposal.previous, created: proposal.created,
-    });
-  }
-
-  function confirmSpace(row: Row) {
-    const proposal = spacePreview;
-    if (!proposal || proposal.key !== row.key) return;
-    const draft = pendingRef.current[row.key];
-    const target = draft?.intervals[proposal.index];
-    const previous = draft?.intervals[proposal.previousIndex];
-    if (!draft || !target?.unconfigured || !previous) return;
-    const endIso = new Date(proposal.previous.end).toISOString();
-    const shorter: ActiveInterval = {
-      ...previous,
-      end: local(endIso, timeZone),
-      endChoice: choiceFor(endIso, timeZone),
-    };
-    const created = intervalFromMillis(
-      proposal.created.start, proposal.created.end, timeZone, target.id,
-    );
-    changeDraft(row, {
-      intervals: draft.intervals.map((interval, index) =>
-        index === proposal.previousIndex ? shorter :
-        index === proposal.index ? created : interval,
-      ),
-    });
-    if (mainEnabled && row.plannedRef === null) {
-      const nextParents = draft.intervals.map((item, index) =>
-        index === proposal.previousIndex
-          ? parseSlice(shorter)
-          : index === proposal.index
-            ? parseSlice(created)
-            : parseSlice(item),
-      );
-      setAssignments((current) => {
-        const revised = { ...current };
-        for (const child of children) {
-          const childItem = childDraft(child);
-          if (!childItem) continue;
-          const oldOwners = current[child.key] ??
-            childItem.intervals.map((interval) => inferParent(interval));
-          revised[child.key] = childItem.intervals.map((interval, index) => {
-            const value = parseSlice(interval);
-            if (!value) return oldOwners[index] ?? 0;
-            const parent = nextParents.findIndex(
-              (slice) => slice && value.start >= slice.start && value.start < slice.end,
-            );
-            return parent < 0 ? oldOwners[index] ?? 0 : parent;
-          });
-        }
-        return revised;
-      });
-    }
-  }
-
   function fitChildToParent(row: Row, index: number, parentIndex: number) {
     const interval = pending[row.key]?.intervals[index];
     const parent = parentRanges[parentIndex];
@@ -1412,77 +1300,6 @@ export function ActivitySessionRecordingEditor({
     parentIndex?: number,
   ) {
     const issue = issues[row.key] ?? null;
-    if (!readonly && interval.unconfigured) {
-      const label = 'Intervallo ' + (index + 1);
-      const proposal = spacePreview?.key === row.key &&
-        spacePreview.index === index ? spacePreview : null;
-      const asClock = (value: number) =>
-        local(new Date(value).toISOString(), timeZone).slice(11, 16);
-      return (
-        <div
-          key={interval.id ?? index}
-          className="timeline-session-editor__interval-block timeline-session-editor__unconfigured"
-          data-invalid={issue?.field === 'interval-' + index || undefined}
-        >
-          <div className="timeline-session-editor__unconfigured-heading">
-            <strong>{label} · Da impostare</strong>
-            {index > 0 ? <small>Nessun orario libero</small> : null}
-          </div>
-          <div className="timeline-session-editor__draft-fields">
-            {(['start', 'end'] as const).map((boundary) => (
-              <div className="timeline-session-editor__draft-field" key={boundary}>
-                <input
-                  type="date"
-                  aria-label={label + (boundary === 'start' ? ' · Data inizio' : ' · Data fine')}
-                  value={interval[boundary].slice(0, 10)}
-                  onChange={(event) =>
-                    changeUnconfigured(row, index, boundary, 'date', event.target.value)}
-                />
-                <input
-                  type="time"
-                  step={60}
-                  aria-label={label + (boundary === 'start' ? ' · Inizio' : ' · Fine')}
-                  value={interval[boundary].slice(11, 16)}
-                  onChange={(event) =>
-                    changeUnconfigured(row, index, boundary, 'time', event.target.value)}
-                />
-              </div>
-            ))}
-          </div>
-          <div className="timeline-session-editor__draft-actions">
-            <button type="button" onClick={() => completeUnconfigured(row, index, parentIndex)}>
-              Applica orari
-            </button>
-            {index > 0 ? (
-              <button type="button" onClick={() => previewSpace(row, index)}>
-                Crea spazio
-              </button>
-            ) : null}
-            {pending[row.key]?.intervals.length &&
-            pending[row.key]!.intervals.length > 1 ? (
-              <button type="button" onClick={() => removeInterval(row, index)}>
-                Rimuovi
-              </button>
-            ) : null}
-          </div>
-          {proposal ? (
-            <div className="timeline-session-editor__space-preview" role="status">
-              <span>
-                {'Intervallo ' + (proposal.previousIndex + 1) +
-                  ' fino alle ' + asClock(proposal.previous.end) +
-                  '; nuovo ' + asClock(proposal.created.start) +
-                  '–' + asClock(proposal.created.end) + '.'}
-              </span>
-              <button type="button" onClick={() => confirmSpace(row)}>Conferma</button>
-              <button type="button" onClick={() => setSpacePreview(null)}>Annulla</button>
-            </div>
-          ) : null}
-          {issue?.field === 'interval-' + index ? (
-            <p className="timeline-session-editor__error" role="alert">{issue.message}</p>
-          ) : null}
-        </div>
-      );
-    }
     let outsideParent = false;
     let parentHint = '';
     if (
@@ -1543,6 +1360,9 @@ export function ActivitySessionRecordingEditor({
             }
           />
         )}
+        {!readonly && interval.unconfigured && issue?.field !== 'interval-' + index ? (
+          <p className="timeline-session-editor__clamp-note">Imposta gli orari.</p>
+        ) : null}
         {outsideParent ? (
           <div className="timeline-session-editor__clamp-note" role="status">
             <span>{parentHint}</span>

@@ -5889,30 +5889,30 @@
       "suite": "web-unit-component",
       "contract_id": "T06",
       "candidate_behavior": "Session recording editor normalizes confirmed min/max time fields and preserves parent-scoped historical Session identity",
-      "purpose": "Verify factual main/child ranges support stable editing, parent-scoped resumes, one-minute duration and pause minima, editable unconfigured rows and explicit Create space confirmation.",
+      "purpose": "Verify stable factual editing, parent-scoped resumes, one-minute duration and pause minima, and editable blank rows using the standard controls.",
       "invariant": "Add never invents overlapping real times when no past or parent space exists; a confirmed clock is clamped within adjacent slices and parent bounds; one historical Session remains one attempt.",
       "status": "QUALIFIED",
-      "audit_note": "Fourteen focused editor Vitest cases passed in scratch on the uncommitted Add-row correction; owner visual and expanded real-stack browser acceptance remain pending. New interval-policy component scenarios on afcbe4e are NOT_RUN until owner WSL verification."
+      "audit_note": "Owner verified 22/22 on 1f03aa3; standard-layout blank-row correction candidate NOT_RUN."
     },
     {
       "path": "apps/web/src/features/home/ui/timeline/session-recording-time-rules.test.ts",
       "suite": "web-unit-component",
       "contract_id": "T06",
-      "candidate_behavior": "Pure factual Session interval bounds and gap proposal engine",
+      "candidate_behavior": "Pure factual Session interval bounds and available-slot engine",
       "purpose": "Calculate factual interval start/end clamps against previous, next, parent and current time, with explicit one-minute duration and pause minima.",
-      "invariant": "A new factual slice never overlaps its predecessor; an impossible slot yields null instead of a duplicate; explicit splitting changes no persisted facts and leaves a full minute gap.",
+      "invariant": "A new factual slice never overlaps its predecessor; an impossible slot yields null and the preceding interval is unchanged.",
       "status": "QUALIFIED",
-      "audit_note": "New eight-case pure rule suite and negative boundary assertions added on afcbe4e; execution NOT_RUN pending owner WSL tests."
+      "audit_note": "Owner verified 8/8 on 1f03aa3; replacement of withdrawn split scenario with minimum-space boundary NOT_RUN."
     },
     {
       "path": "apps/web/e2e/auth/temporal-session-recording-editor.spec.ts",
       "suite": "web-browser-real-stack",
       "contract_id": "T06",
-      "candidate_behavior": "Authenticated Inspector factual Session editing with guarded interval creation and approved gap splitting",
-      "purpose": "Exercise real Create, Inspector, editor, API and PostgreSQL for factual recordings, named resumes, correction, navigation and Create space without duplicate times.",
-      "invariant": "A named Session remains one factual attempt across parent slices; a new interval at now is blank instead of duplicated; Create space requires confirmation and persists a real pause.",
+      "candidate_behavior": "Authenticated Inspector factual Session editing with original blank-row controls and guarded interval creation",
+      "purpose": "Exercise real Create, Inspector, editor, API and PostgreSQL for factual recordings, named resumes, correction, navigation and explicit editing without duplicate times.",
+      "invariant": "One named Session remains one factual attempt across parent slices; a new interval at now is blank in standard controls and explicit manual edits persist a real pause.",
       "status": "QUALIFIED",
-      "audit_note": "Earlier Chromium E2E passed 1/1 in 22.0 s on 9eefa40 and 1/1 in 20.9 s on e1e4d6c. The expanded two-case active-interval candidate is NOT_RUN in the owner-local stack; visual review and whole gate remain separate. Owner verified 4/4 scenarios on c49385d; the added Create space E2E on afcbe4e is NOT_RUN."
+      "audit_note": "Owner verified 5/5 across 1f03aa3 and d636055; revised original-control blank-row scenario NOT_RUN."
     },
     {
       "path": "apps/web/e2e/auth/draft-vault-real-lifecycle.spec.ts",

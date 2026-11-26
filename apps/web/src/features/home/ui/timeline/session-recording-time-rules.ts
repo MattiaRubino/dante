@@ -72,23 +72,3 @@ export function nextFactualInterval(input: Readonly<{
     end: Math.min(latest, start + minutes * SESSION_MINUTE_MS),
   };
 }
-
-/** Explicit, previewable split of a preceding interval; never implicit. */
-export function proposeSessionSpace(previous: SessionSpan): Readonly<{
-  previous: SessionSpan;
-  created: SessionSpan;
-}> | null {
-  const duration = previous.end - previous.start;
-  if (duration < SESSION_MINUTE_MS * 3) return null;
-  const firstMinutes = Math.max(
-    1,
-    Math.floor(duration / SESSION_MINUTE_MS / 2),
-  );
-  const previousEnd = previous.start + firstMinutes * SESSION_MINUTE_MS;
-  const createdStart = previousEnd + SESSION_MINUTE_MS;
-  if (createdStart + SESSION_MINUTE_MS > previous.end) return null;
-  return {
-    previous: { start: previous.start, end: previousEnd },
-    created: { start: createdStart, end: previous.end },
-  };
-}

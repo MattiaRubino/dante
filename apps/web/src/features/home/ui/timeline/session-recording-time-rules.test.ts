@@ -3,7 +3,6 @@ import { describe, expect, it } from 'vitest';
 import {
   nextFactualInterval,
   normalizeSessionBoundary,
-  proposeSessionSpace,
   SESSION_MINUTE_MS,
   sessionBounds,
 } from './session-recording-time-rules';
@@ -78,11 +77,11 @@ describe('Session recording temporal rules', () => {
     })).toBeNull();
   });
 
-  it('splits only after explicit approval and leaves a full minute between', () => {
-    expect(proposeSessionSpace({ start: 0, end: 20 * m })).toEqual({
-      previous: { start: 0, end: 10 * m },
-      created: { start: 11 * m, end: 20 * m },
+  it('creates only the available minute without modifying the previous interval', () => {
+    expect(nextFactualInterval({ previousEnd: 10 * m, now: 12 * m })).toEqual({
+      start: 11 * m,
+      end: 12 * m,
     });
-    expect(proposeSessionSpace({ start: 0, end: 2 * m })).toBeNull();
+    expect(nextFactualInterval({ previousEnd: 10 * m, now: 11 * m })).toBeNull();
   });
 });
