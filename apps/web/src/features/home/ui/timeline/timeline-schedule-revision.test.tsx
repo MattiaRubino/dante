@@ -319,30 +319,45 @@ afterEach(() => {
 
 describe('Activity Timeline coordinated replan', () => {
   it('moves through the whole Activity plan and waits for accepted current truth', async () => {
+    // Hold the write acknowledgement until the pre-acceptance projection
+    // has been asserted. An immediately resolved mock races waitFor().
+    let acceptReplan!: () => void;
+    const acceptance = new Promise<void>((resolve) => {
+      acceptReplan = resolve;
+    });
+    const applyReplan = remote.applyReplan.getMockImplementation()!;
+    remote.applyReplan.mockImplementationOnce(async (...args) => {
+      await acceptance;
+      return applyReplan(...args);
+    });
     const { container, loadWindow, reviseSchedule } = renderTimeline();
     const card = await moveCard(container);
-    await waitFor(() => expect(remote.applyReplan).toHaveBeenCalledTimes(1));
-    expect(remote.load).toHaveBeenCalledWith(ACTIVITY_REF);
-    expect(remote.applyReplan.mock.calls[0]?.slice(0, 3)).toEqual([
-      ACTIVITY_REF,
-      settings(),
-      {
-        times: {
-          [SCHEDULE_REF]: {
-            start: '2026-09-09T10:15:00',
-            end: '2026-09-09T11:15:00',
+    try {
+      await waitFor(() => expect(remote.applyReplan).toHaveBeenCalledTimes(1));
+      expect(remote.load).toHaveBeenCalledWith(ACTIVITY_REF);
+      expect(remote.applyReplan.mock.calls[0]?.slice(0, 3)).toEqual([
+        ACTIVITY_REF,
+        settings(),
+        {
+          times: {
+            [SCHEDULE_REF]: {
+              start: '2026-09-09T10:15:00',
+              end: '2026-09-09T11:15:00',
+            },
           },
+          removedIntervals: [],
+          newIntervals: [],
+          removedPlanned: [],
+          deletedPlanned: [],
+          newPlanned: [],
         },
-        removedIntervals: [],
-        newIntervals: [],
-        removedPlanned: [],
-        deletedPlanned: [],
-        newPlanned: [],
-      },
-    ]);
-    expect(remote.applyReplan.mock.calls[0]?.[4]).toBeUndefined();
-    expect(reviseSchedule).not.toHaveBeenCalled();
-    expect(card.getAttribute('aria-label')).toContain('10:00 – 11:00 (9 Set)');
+      ]);
+      expect(remote.applyReplan.mock.calls[0]?.[4]).toBeUndefined();
+      expect(reviseSchedule).not.toHaveBeenCalled();
+      expect(card.getAttribute('aria-label')).toContain('10:00 – 11:00 (9 Set)');
+    } finally {
+      acceptReplan();
+    }
     await waitFor(() => expect(loadWindow).toHaveBeenCalledTimes(2));
     await waitFor(() =>
       expect(

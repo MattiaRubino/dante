@@ -75,10 +75,14 @@ const moveDraft = vi.fn(
   },
 );
 const loadVaultOrganization = vi.fn().mockResolvedValue({ areas: [] });
-vi.mock('../../../temporal-create/application/remote-draft-vault', () => ({
-  createRemoteDraftVault: () => ({ move: moveDraft }),
-  notifyDraftVaultUpdated: vi.fn(),
-}));
+vi.mock(
+  '../../../temporal-create/application/remote-draft-vault',
+  async (importOriginal) => ({
+    ...(await importOriginal<typeof import('../../../temporal-create/application/remote-draft-vault')>()),
+    createRemoteDraftVault: () => ({ move: moveDraft }),
+    notifyDraftVaultUpdated: vi.fn(),
+  }),
+);
 vi.mock('../../../temporal/remote-organization', () => ({
   createRemoteTemporalOrganizationDataSource: () => ({
     load: loadVaultOrganization,
