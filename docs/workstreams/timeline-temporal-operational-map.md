@@ -1,5 +1,36 @@
 # Timeline / Temporal-Operational — Live Execution Ledger
 
+
+## 2026-11-26 — Registrazioni Sessioni: motore min/max e nuova riga senza duplicati (candidate; NOT_RUN)
+
+Decisione finale: normalizzazione automatica soltanto alla conferma
+del campo (non fra ore/minuti), durata minima e pausa minima di 1
+minuto per nuove registrazioni. I limiti sono bidirezionali:
+intervallo precedente, successivo, padre (solo secondarie) e ora
+attuale. Motore puro in session-recording-time-rules.ts, test dedicati.
+Nessuna correzione automatica occulta di altri intervalli o di
+registrazioni già salvate.
+
+Aggiungi propone un intervallo valido se esiste nel passato,
+altrimenti «Da impostare» senza orari duplicati. È possibile
+compilare il tratto da zero o approvare una proposta «Crea spazio»
+che divide il precedente e lascia una pausa minima.
+Blocco dei tagli che invalidano secondarie già registrate;
+correzioni coordinate vanno confermate e salvate atomicamente,
+preservando SessionRef e storico MaterialState. Verifica delle
+assegnazioni stabili al padre prima del POST. Messaggi brevi e
+specifici vicino al campo.
+
+Sostituiti i test che accettavano esplicitamente la duplicazione;
+regressioni pure e di componente su bounds min/max, modifica
+dal basso, secondo intervallo non configurato, preview e
+normalizzazione su blur. Nuovo E2E browser per duplicazione
+in prossimità dell'ora attuale, conferma Create space e
+scrittura della pausa. Nessuna nuova migrazione, mantenuta la
+20261125_192 precedente. TEST DA ESEGUIRE NEL WSL DELL'OWNER;
+nessun PASS attribuito alla candidata.
+
+
 ## 2026-11-25 — Riparazione editor registrazioni: modifica locale stabile (candidate)
 
 Audit sul branch `feature/timeline-temporal-operational` HEAD

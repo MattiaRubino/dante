@@ -56,24 +56,32 @@ un secondo tentativo fittizio. Le pause sono i vuoti tra intervalli attivi e non
 un editor separato delle pause. Due secondarie possono sovrapporsi tra
 loro; due intervalli della stessa Sessione no.
 
-«Aggiungi intervallo» aggiunge sempre una riga modificabile fino al limite
-di 100, anche quando il tratto precedente arriva all'ora corrente o occupa
-tutto il tratto della principale. In assenza di spazio propone un intervallo
-nel passato che si sovrappone temporaneamente al precedente: si possono
-ridurre e separare entrambi prima di salvare. Il controllo al salvataggio
-evidenzia l'intervallo sovrapposto e non invia il gruppo al server. La
-secondaria rimane visibile sotto il suo intervallo padre durante la modifica.
+«Aggiungi intervallo» crea una riga già valida solo quando
+esiste spazio nel passato: inizio minimo = fine del precedente + 1 minuto,
+fine massima = ora attuale e, nelle secondarie, anche fine del padre.
+Durata e pausa minime delle nuove registrazioni: 1 minuto.
+Senza spazio crea «Da impostare» con date/orari modificabili ma senza
+duplicare il precedente. «Applica orari» normalizza la nuova riga nei
+limiti ammessi. «Crea spazio» mostra l'anteprima di una divisione del
+precedente, separata da un minuto di pausa: conferma o annulla espliciti.
+Una divisione che invaliderebbe registrazioni secondarie storiche richiede
+prima la loro correzione.
 Dopo un POST accettato, la rilettura
 deve confermare tutte le ricevute prima di sostituire le righe e cancellare
 la bozza: una risposta incompleta lascia visibili gli input e conserva gli
 identificativi delle operazioni per un tentativo idempotente.
 
 Una secondaria deve restare dentro i tratti attivi della principale.
-**Durante la digitazione la UI non riscrive automaticamente l'orario:**
-i componenti DANTE acquisiscono ore e minuti separatamente e il valore
-intermedio non è ancora una registrazione. Una riga fuori limite rimane
-editabile e al suo posto, con bordo rosso e azione **Adatta ai limiti**
-che restringe inizio/fine al proprio padre su richiesta. Salva rifiuta
+**Durante la digitazione la UI non riscrive l'orario:**
+i componenti DANTE acquisiscono ore e minuti separatamente.
+Alla conferma (uscita dal controllo, Invio o scelta della data)
+il motore temporale applica minimo e massimo da precedente,
+successivo, padre e ora attuale, correggendo **solo il campo confermato**.
+Se non esiste un valore ammissibile, la riga resta editabile con
+messaggio locale breve («Nessuno spazio (min 1 min)»,
+«Inizio minimo: 10:32», «Fine massima: 11:00»).
+«Adatta ai limiti» resta disponibile quando una modifica del
+padre lascia una secondaria fuori dal suo tratto. Salva rifiuta
 l'eventuale violazione ancora presente, evidenziando il singolo intervallo
 sbagliato; PostgreSQL ripete la verifica autorevole. Una modifica
 temporaneamente invalida di un intervallo padre non deve far sparire,

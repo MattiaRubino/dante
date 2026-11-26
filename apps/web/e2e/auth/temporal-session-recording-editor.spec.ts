@@ -368,11 +368,12 @@ test('Inspector preserves editable child clock and parent placement across inval
     // Typed values outside the main are not immediately clamped or unmounted.
     await setClock(child, 1, 'Inizio', date, '08:10');
     await expect(child.getByRole('textbox', { name: 'Intervallo 1 · Inizio: ore' })).toHaveValue('08');
-    await expect(child.getByText(/supera il tratto attivo della principale/)).toBeVisible();
     await expect(child).toHaveCount(1);
-    await child.getByRole('button', { name: 'Adatta ai limiti' }).click();
+    // No silent correction mid-typing; confirming the clock applies the
+    // parent's earliest allowed start automatically.
+    await child.getByRole('textbox', { name: 'Intervallo 1 · Inizio: minuti' }).blur();
     await expect(child.getByRole('textbox', { name: 'Intervallo 1 · Inizio: ore' })).toHaveValue('09');
-    await expect(child.getByText(/supera il tratto attivo/)).toHaveCount(0);
+    await expect(child.getByText(/Inizio minimo|Fine massima/)).toHaveCount(0);
     await setClock(child, 1, 'Fine', date, '09:20');
 
     // Inverting a main interval is allowed temporarily while editing.
@@ -415,6 +416,66 @@ test('Inspector preserves editable child clock and parent placement across inval
     }>;
     expect(records).toHaveLength(2);
     expect(records.filter((record) => record.planned_schedule_ref !== null)).toHaveLength(1);
+  } finally {
+    await user.close().catch(() => {});
+  }
+});
+
+test('Inspector adds an unconfigured interval near now, previews Create space and saves real pauses', async ({
+  browser,
+}, info) => {
+  test.setTimeout(120_000);
+  const user = await signedInPage(browser, info, 4);
+  const { page } = user;
+  try {
+    const date = scenarioDate(-1);
+    await openHome(page, date);
+    const title = uniqueTitle('Registrazioni senza duplicati');
+    const composer = await openCreate(page, 'activity');
+    await configureCreate(composer, {
+      kind: 'activity',
+      title,
+      date,
+      clock: '09:00',
+    });
+    await composer.getByRole('checkbox', { name: 'Sessione', exact: true }).check();
+    const item = await submitCreate(page, composer, {
+      kind: 'activity', title, recurring: false,
+    });
+    await openHome(page, date);
+    const inspector = await openInspector(page, item);
+    await inspector.getByRole('button', { name: 'Registrazioni delle Sessioni' }).click();
+    const editor = page.getByRole('dialog', { name: 'Registrazioni delle Sessioni' });
+    const main = editor.locator('section.timeline-session-editor__group.has-main');
+    await main.getByRole('button', { name: /Aggiungi intervallo/ }).click();
+    await expect(main.getByText('Intervallo 2 · Da impostare')).toBeVisible();
+    await expect(main.getByLabel('Intervallo 2 · Inizio')).toHaveValue('');
+    await main.getByRole('button', { name: 'Crea spazio' }).click();
+    await expect(main.getByText(/fino alle/)).toBeVisible();
+    await main.getByRole('button', { name: 'Conferma' }).click();
+    await expect(main.getByText('Intervallo 2 · Da impostare')).toHaveCount(0);
+    await expect(main.locator('.timeline-session-editor__parent-interval')).toHaveCount(2);
+
+    const endpoint =
+      '/api/v1/temporal/activities/' + item.sourceRef + '/sessions/editor/batch';
+    const writing = page.waitForResponse(
+      (response) => response.url().endsWith(endpoint) &&
+        response.request().method() === 'POST',
+    );
+    await editor.getByRole('button', { name: 'Salva registrazioni' }).click();
+    expect((await writing).status()).toBe(201);
+    await expect(editor).toBeHidden();
+    await expect(inspector).toBeHidden();
+    const records = (await serverRead(
+      page, '/api/v1/temporal/activities/' + item.sourceRef + '/sessions/editor',
+    )) as Array<{
+      session_ref: string;
+      planned_schedule_ref: string | null;
+      pause_ranges: unknown[];
+    }>;
+    expect(records).toHaveLength(1);
+    expect(records[0]?.planned_schedule_ref).toBeNull();
+    expect(records[0]?.pause_ranges).toHaveLength(1);
   } finally {
     await user.close().catch(() => {});
   }

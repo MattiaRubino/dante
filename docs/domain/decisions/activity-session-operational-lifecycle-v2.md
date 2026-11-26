@@ -123,7 +123,17 @@ il salvataggio rifiuta valori fuori limite senza modificare i fatti.
 La scelta di una secondaria e l'aggiunta dei suoi intervalli restano
 possibili anche se l'ora del padre è provvisoriamente incompleta:
 si genera solo una bozza, mai un fatto valido prima della verifica.
-La verifica transazionale resta autorevole. Il nuovo editor non modifica
+La verifica transazionale resta autorevole.
+Per nuovi intervalli manuali: durata minima e pausa minima
+di 1 minuto, con precisione al minuto. La conferma di un singolo
+campo può normalizzarlo al minimo/massimo calcolato da precedente,
+successivo, padre e ora attuale; la digitazione parziale resta libera.
+Se non c'è spazio, Aggiungi produce una bozza Da impostare, non
+una copia temporalmente sovrapposta. Modificare un altro intervallo
+tramite Crea spazio richiede un'anteprima e conferma esplicita.
+Non si alterano silenziosamente gli storici né altre SessionRef:
+correzioni coordinate sono atomiche e producono revisioni MaterialState.
+Il minimo nuovo non si applica retroattivamente ai fatti non corretti. Il nuovo editor non modifica
 Play/Pausa/Stop, Schedule o le regole di ricorrenza.
 
 Se principale e secondaria già registrate sono corrette nello stesso gruppo,
