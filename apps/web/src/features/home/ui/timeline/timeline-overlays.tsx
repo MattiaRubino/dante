@@ -693,7 +693,14 @@ function inspectorIntervalRows(
   );
 }
 
-export function EventDetailDialog({
+export function EventDetailDialog(props: EventDetailDialogProps) {
+  // Closing an Inspector ends its local editing session. Keep the mounted
+  // dialog stable while it is open, but discard its state and pending effects
+  // when the Timeline closes it (save, cancel, delete or move to Vault).
+  return props.detail ? <OpenEventDetailDialog {...props} /> : null;
+}
+
+function OpenEventDetailDialog({
   detail,
   appearance,
   opener,

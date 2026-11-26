@@ -18,6 +18,7 @@ import {
 } from 'vitest';
 
 import { i18n } from '../../../../bootstrap/i18n';
+import type { ActivityProfile } from '../../../temporal/remote-activity-inspector';
 import type {
   ActivityEditSettings,
   ActivityReplanDraft,
@@ -35,15 +36,22 @@ import { TimelineSurface } from './timeline-surface';
 vi.mock('./activity-edit-panel', () => ({
   ActivityEditPanel: ({
     onCancel,
+    onSaved,
+    profile,
     initialScope,
   }: {
     onCancel: () => void;
+    onSaved: (profile: ActivityProfile) => void;
+    profile: ActivityProfile;
     initialScope?: string;
   }) => (
     <div data-testid="activity-edit-panel" data-scope={initialScope}>
       Modifica attività
       <button type="button" onClick={onCancel}>
         Chiudi modifica di test
+      </button>
+      <button type="button" onClick={() => onSaved(profile)}>
+        Salva modifica di test
       </button>
     </div>
   ),
@@ -381,6 +389,39 @@ describe('Activity Timeline coordinated replan', () => {
       );
     },
   );
+
+  it('reopens the same Activity in Inspector after saving Edit without reloading the Timeline', async () => {
+    remote.sessionImpact.mockResolvedValue({
+      fingerprint,
+      attempts: [{
+        sessionRef: 'session-1',
+        plannedScheduleRef: null,
+        timingMaterialStateRef: 'state-1',
+        status: 'conclusa',
+      }],
+    });
+    const { container } = renderTimeline();
+    await moveCard(container);
+    await screen.findByTestId('activity-edit-panel');
+    fireEvent.click(screen.getByRole('button', { name: 'Salva modifica di test' }));
+    await waitFor(() => {
+      expect(screen.queryByTestId('activity-edit-panel')).toBeNull();
+      expect(document.querySelector('.timeline-event-modal')).toBeNull();
+    });
+
+    const card = await waitFor(() => {
+      const current = container.querySelector<HTMLElement>(
+        '[data-timeline-event="' + SCHEDULE_REF + '"]',
+      );
+      expect(current).not.toBeNull();
+      return current!;
+    });
+    fireEvent.click(within(card).getByRole('button', { name: 'Attività coordinata', exact: true }));
+    await screen.findByRole('heading', { name: 'Attività coordinata' });
+    expect(document.querySelector('.timeline-event-modal--inspector')).not.toBeNull();
+    expect(screen.queryByTestId('activity-edit-panel')).toBeNull();
+    expect(screen.getByRole('button', { name: 'Chiudi Inspector' })).toBeTruthy();
+  });
 
   it('asks for the recurring scope before opening Edit after a recorded drag', async () => {
     remote.loadRecurring.mockResolvedValue({

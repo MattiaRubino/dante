@@ -346,9 +346,18 @@ test.describe('Timeline — real user Activity/Event lifecycle matrix', () => {
             .getByRole('button', { name: 'Salva modifiche' })
             .click();
           await assertPersistedTitle(page, original, editedTitle);
+          await expect(inspector).toHaveCount(0);
+          const edited = { ...original, title: editedTitle };
+
+          // Reopen on the same live Timeline, before navigation can discard
+          // a stale editor state and hide the regression.
+          const reopened = await openInspector(page, edited);
+          await expect(reopened).toHaveClass(/\btimeline-event-modal--inspector\b/);
+          await expect(reopened.getByRole('button', { name: 'Salva modifiche' })).toHaveCount(0);
+          await reopened.getByRole('button', { name: 'Chiudi Inspector' }).click();
+          await expect(reopened).toHaveCount(0);
 
           await openHome(page, day);
-          const edited = { ...original, title: editedTitle };
           const copiedTitle = uniqueTitle(kind + ' duplicato');
           const duplicate = await duplicateFromInspector(
             page,

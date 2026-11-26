@@ -1,5 +1,19 @@
 # Timeline / Temporal-Operational — Live Execution Ledger
 
+## 2026-11-26 — Inspector lifecycle after Save (candidate; NOT_RUN)
+
+Closing the Inspector after a successful Activity or Event edit returns
+to the Timeline and ends the local dialog instance. Reopening the same
+card starts a fresh read-only Inspector, not the previous Edit or scope
+state. Cancel inside an open Edit still returns to its Inspector;
+explicit drag-to-Edit entry remains supported. The shared dialog
+boundary now mounts the stateful content only while detail exists.
+The coordinated-replan component test exercises Save → reopen on the
+same card; the existing real-stack one-off Activity/Event lifecycle
+journeys assert the same transition before any reload.
+No backend or Session recording logic changed. Owner verification pending.
+
+
 
 ## 2026-11-26 — Registrazioni Sessioni: motore min/max e nuova riga senza duplicati (candidate; NOT_RUN)
 
