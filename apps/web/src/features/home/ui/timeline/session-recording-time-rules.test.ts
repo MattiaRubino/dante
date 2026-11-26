@@ -5,6 +5,7 @@ import {
   normalizeSessionBoundary,
   SESSION_MINUTE_MS,
   sessionBounds,
+  sessionSlot,
 } from './session-recording-time-rules';
 
 const m = SESSION_MINUTE_MS;
@@ -75,6 +76,13 @@ describe('Session recording temporal rules', () => {
       previous: { start: 1 * m, end: 10 * m },
       now: 20 * m,
     })).toBeNull();
+  });
+
+  it('keeps an absolute end cap even when the previous interval leaves no valid slot', () => {
+    expect(sessionSlot({ previous: { start: 10 * m, end: 13 * m }, now: 14 * m }))
+      .toEqual({ min: 14 * m, max: 14 * m });
+    expect(sessionSlot({ previous: { start: 10 * m, end: 13 * m }, now: 25 * m }))
+      .toEqual({ min: 14 * m, max: 25 * m });
   });
 
   it('creates only the available minute without modifying the previous interval', () => {

@@ -9,7 +9,7 @@ import {
   nextFactualInterval,
   normalizeSessionBoundary,
   SESSION_MINUTE_MS,
-  sessionBounds,
+  sessionSlot,
   type SessionBoundary,
   type SessionSpan,
 } from './session-recording-time-rules';
@@ -43,7 +43,6 @@ type ActiveInterval = {
   end: string;
   startChoice: ClockChoice;
   endChoice: ClockChoice;
-  unconfigured?: true;
 };
 type Draft = { intervals: ActiveInterval[] };
 type ClockChoice = 'reject' | 'earlier' | 'later';
@@ -62,6 +61,14 @@ function local(instant: string, zone: string): string {
     .toZonedDateTimeISO(zone)
     .toPlainDateTime()
     .toString({ smallestUnit: 'second' });
+}
+
+function limitLabel(value: number, reference: number, zone: string): string {
+  const clock = local(new Date(value).toISOString(), zone);
+  const date = local(new Date(reference).toISOString(), zone);
+  return clock.slice(0, 10) === date.slice(0, 10)
+    ? clock.slice(11, 16)
+    : clock.slice(0, 16).replace('T', ' ');
 }
 
 function ambiguous(value: string, zone: string): boolean {
@@ -214,7 +221,7 @@ function IntervalFields({
         <TimeControl
           label={`${label} · Inizio`}
           value={interval.start.slice(11, 16)}
-          allowEmpty={Boolean(interval.unconfigured && !interval.start.slice(11, 16))}
+          allowEmpty={!interval.start.slice(11, 16)}
           onCommit={() => onBoundaryCommit?.('start')}
           dataPath={fieldPath + '.' + index + '.start'}
           invalid={startInvalid}
@@ -233,7 +240,7 @@ function IntervalFields({
         <TimeControl
           label={`${label} · Fine`}
           value={interval.end.slice(11, 16)}
-          allowEmpty={Boolean(interval.unconfigured && !interval.end.slice(11, 16))}
+          allowEmpty={!interval.end.slice(11, 16)}
           onCommit={() => onBoundaryCommit?.('end')}
           dataPath={fieldPath + '.' + index + '.end'}
           invalid={endInvalid}
@@ -346,14 +353,13 @@ function intervalUnconfigured(date: string, zone: string, latest?: number): Acti
     end: latest === undefined ? day + 'T' : local(new Date(latest).toISOString(), zone),
     startChoice: 'reject',
     endChoice: latest === undefined ? 'reject' : choiceFor(new Date(latest).toISOString(), zone),
-    unconfigured: true,
   };
 }
 
 function nextInterval(draft: Draft, zone: string): ActiveInterval {
   const last = draft.intervals.at(-1);
   const latest = Math.floor(Temporal.Now.instant().epochMilliseconds / SESSION_MINUTE_MS) * SESSION_MINUTE_MS;
-  if (!last || draft.intervals.some((item) => item.unconfigured) || !last.end)
+  if (!last || draft.intervals.some((item) => !item.start.slice(11, 16) || !item.end.slice(11, 16)) || !last.end)
     return intervalUnconfigured(last?.end.slice(0, 10) ?? '', zone, latest);
   try {
     const previousEnd = Temporal.Instant.from(
@@ -380,7 +386,7 @@ function SessionSegmentPreview({
   draft,
   zone,
 }: Readonly<{ draft: Draft; zone: string }>) {
-  if (draft.intervals.some((item) => item.unconfigured)) return null;
+  if (draft.intervals.some((item) => !item.start.slice(11, 16) || !item.end.slice(11, 16))) return null;
   let ranges: ResolvedInterval[];
   try {
     ranges = resolveIntervals(draft, zone);
@@ -462,18 +468,24 @@ function validateDraft(
   const ranges: ResolvedInterval[] = [];
   for (const [index, interval] of draft.intervals.entries()) {
     const field = `interval-${index}`;
-    if (interval.unconfigured || !interval.start || !interval.end)
-      return { field, boundary: !interval.start.slice(11, 16) ? 'start' : 'end', message: !interval.start.slice(11, 16) ? 'Inizio mancante.' : !interval.end.slice(11, 16) ? 'Fine mancante.' : 'Intervallo fuori limite.' };
+    if (!interval.start.slice(11, 16) || !interval.end.slice(11, 16))
+      return { field, boundary: !interval.start.slice(11, 16) ? 'start' : 'end', message: !interval.start.slice(11, 16) ? 'Inizio mancante.' : 'Fine mancante.' };
     try {
       const [resolved] = resolveIntervals({ intervals: [interval] }, zone);
       if (!resolved) throw new Error('Orario non valido.');
-      if (resolved.end - resolved.start < SESSION_MINUTE_MS)
+
+      const now = Temporal.Now.instant().epochMilliseconds;
+      const previous = ranges.at(-1) ?? null;
+      const slot = sessionSlot({ previous, now });
+      if (previous && slot.min + SESSION_MINUTE_MS > slot.max)
         return {
           field,
-          boundary: 'end',
-          message: 'Durata minima: 1 min.',
+          boundary: 'start',
+          message: 'Intervallo ' + index + ': fine max ' + limitLabel(
+            slot.max - 2 * SESSION_MINUTE_MS, previous.end, zone,
+          ) + '.',
         };
-      if (resolved.end > Temporal.Now.instant().epochMilliseconds)
+      if (resolved.end > now)
         return {
           field,
           boundary: 'end',
@@ -490,6 +502,12 @@ function validateDraft(
             new Date(ranges.at(-1)!.end + SESSION_MINUTE_MS).toISOString(),
             zone,
           ).slice(0, 16).replace('T', ' '),
+        };
+      if (resolved.end - resolved.start < SESSION_MINUTE_MS)
+        return {
+          field,
+          boundary: resolved.start >= resolved.end ? 'start' : 'end',
+          message: 'Durata minima: 1 min.',
         };
       ranges.push(resolved);
     } catch (reason) {
@@ -1164,10 +1182,10 @@ export function ActivitySessionRecordingEditor({
 
 
   function parseSlice(item: ActiveInterval | undefined): SessionSpan | null {
-    if (!item || item.unconfigured || !item.start || !item.end) return null;
+    if (!item || !item.start || !item.end) return null;
     try {
       const slice = resolveIntervals({ intervals: [item] }, timeZone)[0];
-      return slice && Number.isFinite(slice.start) && Number.isFinite(slice.end)
+      return slice && Number.isFinite(slice.start) && Number.isFinite(slice.end) && slice.end > slice.start
         ? slice : null;
     } catch {
       return null;
@@ -1183,123 +1201,80 @@ export function ActivitySessionRecordingEditor({
     return span && span.end > span.start ? span : null;
   }
 
+  function clockLabel(value: number, reference: number): string {
+    return limitLabel(value, reference, timeZone);
+  }
+
   function commitBoundary(
     row: Row, index: number, boundary: SessionBoundary, parentIndex?: number,
   ) {
     const draft = pendingRef.current[row.key];
-    if (!draft) return;
-    if (draft.intervals[index]?.unconfigured) {
-      completeUnconfigured(row, index, boundary, parentIndex);
-      return;
-    }
-    const current = parseSlice(draft.intervals[index]);
-    if (!current) return;
+    const interval = draft?.intervals[index];
+    if (!draft || !interval) return;
+    const valueOf = (edge: SessionBoundary): number | null => {
+      try {
+        return Temporal.Instant.from(instant(interval[edge], timeZone,
+          edge === 'start' ? interval.startChoice : interval.endChoice)).epochMilliseconds;
+      } catch {
+        return null;
+      }
+    };
+    const value = valueOf(boundary);
+    if (value === null) return;
     const previous = parseSlice(draft.intervals[index - 1]);
     const following = parseSlice(draft.intervals[index + 1]);
     const parent = row.plannedRef === null ? null : parentSlice(parentIndex);
-    const now = Temporal.Now.instant().epochMilliseconds;
-    const bounds = sessionBounds({ boundary, current, previous, next: following, parent, now });
-    if (!bounds) {
-      const earliest = Math.max(
-        previous ? previous.end + SESSION_MINUTE_MS : Number.NEGATIVE_INFINITY,
-        parent?.start ?? Number.NEGATIVE_INFINITY,
-      );
-      const latest = Math.min(
-        Math.floor(now / SESSION_MINUTE_MS) * SESSION_MINUTE_MS,
-        following ? following.start - SESSION_MINUTE_MS : Number.POSITIVE_INFINITY,
-        parent?.end ?? Number.POSITIVE_INFINITY,
-      );
-      const message = earliest + SESSION_MINUTE_MS > latest
-        ? 'Inizio minimo: ' + clockLabel(earliest, current.start) +
-          ' · Fine massima: ' + clockLabel(latest, current.end)
-        : boundary === 'start'
-          ? 'Fine minima: ' + clockLabel(earliest + SESSION_MINUTE_MS, current.end)
-          : 'Inizio massimo: ' + clockLabel(latest - SESSION_MINUTE_MS, current.start);
-      setIssues((old) => ({
-        ...old,
-        [row.key]: { field: 'interval-' + index, boundary, message },
-      }));
-      return;
-    }
-    const adjusted = normalizeSessionBoundary(current[boundary], bounds);
-    if (adjusted === null) return;
-    if (adjusted === current[boundary]) {
-      setIssues((old) => {
-        if (old[row.key]?.field !== 'interval-' + index) return old;
-        const next = { ...old };
-        delete next[row.key];
-        return next;
+    const slot = sessionSlot({
+      previous, next: following, parent, now: Temporal.Now.instant().epochMilliseconds,
+    });
+    const opposite = valueOf(boundary === 'start' ? 'end' : 'start');
+    const outer = boundary === 'start'
+      ? { min: slot.min, max: slot.max - SESSION_MINUTE_MS }
+      : { min: slot.min + SESSION_MINUTE_MS, max: slot.max };
+    const inner = boundary === 'start'
+      ? { ...outer, max: Math.min(outer.max, opposite === null ? outer.max : opposite - SESSION_MINUTE_MS) }
+      : { ...outer, min: Math.max(outer.min, opposite === null ? outer.min : opposite + SESSION_MINUTE_MS) };
+
+    // Absolute limits are independent of whether the other clock is valid.
+    // A future end must never survive merely because Start cannot yet fit.
+    const feasible = slot.min + SESSION_MINUTE_MS <= slot.max;
+    const bounds = inner.min <= inner.max ? inner : outer.min <= outer.max ? outer : null;
+    const adjusted = bounds
+      ? normalizeSessionBoundary(value, bounds)!
+      : boundary === 'end' ? Math.min(value, slot.max) : value;
+    if (adjusted !== value) {
+      const iso = new Date(adjusted).toISOString();
+      updateInterval(row, index, {
+        ...interval,
+        [boundary]: local(iso, timeZone),
+        [boundary === 'start' ? 'startChoice' : 'endChoice']: choiceFor(iso, timeZone),
       });
-      return;
     }
-    const iso = new Date(adjusted).toISOString();
-    const interval = draft.intervals[index]!;
-    const next: ActiveInterval = {
-      ...interval,
-      [boundary]: local(iso, timeZone),
-      [boundary === 'start' ? 'startChoice' : 'endChoice']: choiceFor(iso, timeZone),
-    };
-    changeDraft(row, {
-      intervals: draft.intervals.map((item, position) =>
-        position === index ? next : item,
-      ),
-    });
-  }
-
-  function clockLabel(value: number, reference: number): string {
-    const clock = local(new Date(value).toISOString(), timeZone);
-    const date = local(new Date(reference).toISOString(), timeZone);
-    return clock.slice(0, 10) === date.slice(0, 10) ? clock.slice(11, 16) : clock.slice(0, 16).replace('T', ' ');
-  }
-
-  function completeUnconfigured(row: Row, index: number, boundary: SessionBoundary, parentIndex?: number) {
-    const draft = pendingRef.current[row.key];
-    const entry = draft?.intervals[index];
-    if (!draft || !entry?.unconfigured) return;
-    const candidate = parseSlice({
-      start: entry.start,
-      end: entry.end,
-      startChoice: entry.startChoice,
-      endChoice: entry.endChoice,
-    });
-    if (!candidate) return;
-    const previous = parseSlice(draft.intervals[index - 1]);
-    const next = parseSlice(draft.intervals[index + 1]);
-    const parent = row.plannedRef === null ? null : parentSlice(parentIndex);
-    const now = Math.floor(
-      Temporal.Now.instant().epochMilliseconds / SESSION_MINUTE_MS,
-    ) * SESSION_MINUTE_MS;
-    const earliest = Math.max(
-      previous ? previous.end + SESSION_MINUTE_MS : Number.NEGATIVE_INFINITY,
-      parent?.start ?? Number.NEGATIVE_INFINITY,
-    );
-    const latest = Math.min(
-      now,
-      next ? next.start - SESSION_MINUTE_MS : Number.POSITIVE_INFINITY,
-      parent?.end ?? Number.POSITIVE_INFINITY,
-    );
-    if (earliest + SESSION_MINUTE_MS > latest) {
-      setIssues((old) => ({
-        ...old, [row.key]: {
-          field: 'interval-' + index,
-          boundary,
-          message: 'Inizio minimo: ' + clockLabel(earliest, candidate.start) + ' · Fine massima: ' + clockLabel(latest, candidate.end),
-        },
-      }));
-      return;
+    const start = boundary === 'start' ? adjusted : opposite;
+    const end = boundary === 'end' ? adjusted : opposite;
+    let issue: Issue | null = null;
+    if (!feasible) {
+      const message = previous && previous.end + SESSION_MINUTE_MS >= (parent?.start ?? Number.NEGATIVE_INFINITY)
+        ? 'Intervallo ' + index + ': fine max ' + clockLabel(slot.max - 2 * SESSION_MINUTE_MS, previous.end) + '.'
+        : 'Spazio insufficiente: fine max ' + clockLabel(slot.max, value) + '.';
+      issue = { field: 'interval-' + index, boundary: 'start', message };
+    } else if (start !== null && end !== null) {
+      if (start < slot.min || start > slot.max - SESSION_MINUTE_MS) {
+        issue = { field: 'interval-' + index, boundary: 'start', message:
+          start < slot.min ? 'Inizio minimo: ' + clockLabel(slot.min, start) :
+          'Inizio massimo: ' + clockLabel(slot.max - SESSION_MINUTE_MS, start) };
+      } else if (end > slot.max) {
+        issue = { field: 'interval-' + index, boundary: 'end', message: 'Fine massima: ' + clockLabel(slot.max, end) };
+      } else if (end < start + SESSION_MINUTE_MS) {
+        issue = { field: 'interval-' + index, boundary: 'end', message: 'Fine minima: ' + clockLabel(start + SESSION_MINUTE_MS, end) };
+      }
     }
-    const start = Math.max(
-      earliest, Math.min(candidate.start, latest - SESSION_MINUTE_MS),
-    );
-    const end = Math.max(
-      start + SESSION_MINUTE_MS, Math.min(candidate.end, latest),
-    );
-    changeDraft(row, {
-      intervals: draft.intervals.map((item, position) =>
-        position === index
-          ? intervalFromMillis(start, end, timeZone, entry.id)
-          : item,
-      ),
+    setIssues((old) => {
+      if (issue) return { ...old, [row.key]: issue };
+      if (old[row.key]?.field !== 'interval-' + index) return old;
+      const next = { ...old };
+      delete next[row.key];
+      return next;
     });
   }
 

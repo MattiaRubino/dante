@@ -1,5 +1,17 @@
 # Timeline / Temporal-Operational — Live Execution Ledger
 
+## 2026-11-26 — Revalidate incomplete factual ranges without a latched draft flag (candidate; NOT_RUN)
+
+A near-now interval with no feasible minute must still respect its absolute
+end cap when the user confirms that clock. Missing values are derived from
+the actual controls, not a persistent unconfigured flag. Save revalidates
+actual times, including the minimum gap, against the current clock. An
+impossible slot reports the preceding interval's latest end instead of a
+generic outside-limit error. Existing neighboring ranges are not silently
+rewritten. Added frozen-clock component regression for 19:13 / 19:14 /
+19:23 and recovery after time advances; pure slot boundary regression.
+No layout, API or PostgreSQL changes. Owner-local tests pending.
+
 ## 2026-11-26 — Factual interval feedback and shared clock (candidate; NOT_RUN)
 
 Conferma del campo con clamp automatico; rimosso Adatta ai limiti.

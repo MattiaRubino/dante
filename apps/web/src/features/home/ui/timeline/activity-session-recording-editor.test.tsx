@@ -9,6 +9,7 @@ import {
   within,
 } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
+import { Temporal } from '@dante/time';
 
 import {
   activityHasSessionRecordings,
@@ -296,6 +297,45 @@ describe('Activity Session recording editor', () => {
     expect(firstEnd).toHaveProperty('value', '10');
     expect(end).toHaveProperty('value', '20');
     expect(screen.queryByRole('alert')).toBeNull();
+  });
+
+  it('caps a future end even when no slot exists and revalidates after time advances', async () => {
+    const day = new Date().toISOString().slice(0, 10);
+    const clock = vi.spyOn(Temporal.Now, 'instant').mockReturnValue(Temporal.Instant.from(day + 'T19:14:00Z'));
+    try {
+      vi.stubGlobal('fetch', vi.fn((input: RequestInfo | URL) => {
+        const path = fetchPath(input);
+        if (path.endsWith('/children')) return mockResponse({
+          parent_activity_ref: ACTIVITY, session_capture_mode: 'record_and_live', schedules: [],
+        });
+        if (path.endsWith('/sessions/editor')) return mockResponse([]);
+        throw new Error('Unexpected request: ' + path);
+      }));
+      render(<ActivitySessionRecordingEditor activityRef={ACTIVITY} activityTitle="Test" timeZone="Etc/UTC" onClose={vi.fn()} />);
+      const group = (await screen.findByText('Sessione attività')).closest<HTMLElement>('section')!;
+      const confirm = async (interval: number, edge: 'Inizio' | 'Fine') => {
+        await act(async () => {});
+        const field = within(group).getByRole('textbox', { name: 'Intervallo ' + interval + ' · ' + edge + ': minuti' });
+        await act(async () => { field.focus(); field.blur(); });
+        return field;
+      };
+      setClock(group, 1, 'Fine', day, '19:13');
+      await confirm(1, 'Fine');
+      fireEvent.click(within(group).getByRole('button', { name: /Aggiungi intervallo/ }));
+      setClock(group, 2, 'Inizio', day, '19:17');
+      await confirm(2, 'Inizio');
+      setClock(group, 2, 'Fine', day, '19:23');
+      expect(await confirm(2, 'Fine')).toHaveProperty('value', '14');
+      expect(within(group).getByText(/Intervallo 1: fine max 19:12/)).toBeTruthy();
+      clock.mockReturnValue(Temporal.Instant.from(day + 'T19:25:00Z'));
+      setClock(group, 2, 'Fine', day, '19:23');
+      expect(await confirm(2, 'Fine')).toHaveProperty('value', '23');
+      expect(within(group).getByRole('textbox', { name: 'Intervallo 2 · Inizio: minuti' })).toHaveProperty('value', '17');
+      expect(within(group).queryByText(/Intervallo 1: fine max/)).toBeNull();
+      expect(screen.queryByRole('alert')).toBeNull();
+    } finally {
+      clock.mockRestore();
+    }
   });
 
   it('keeps a child with no remaining parent time editable, without creating duplicate clocks', async () => {
