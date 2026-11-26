@@ -416,7 +416,9 @@ describe('Activity Timeline coordinated replan', () => {
       expect(current).not.toBeNull();
       return current!;
     });
-    fireEvent.click(within(card).getByRole('button', { name: 'Attività coordinata', exact: true }));
+    fireEvent.click(
+      within(card).getByRole('button', { name: /^Attività coordinata$/ }),
+    );
     await screen.findByRole('heading', { name: 'Attività coordinata' });
     expect(document.querySelector('.timeline-event-modal--inspector')).not.toBeNull();
     expect(screen.queryByTestId('activity-edit-panel')).toBeNull();
