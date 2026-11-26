@@ -438,7 +438,20 @@ test('Inspector adds an unconfigured interval near now, previews Create space an
       date,
       clock: '09:00',
     });
-    await composer.getByRole('checkbox', { name: 'Sessione', exact: true }).check();
+    // With no named Session, configureCreate leaves the quick form open.
+    // The main Session toggle is available in the advanced form.
+    await composer.getByRole('button', { name: /Opzioni avanzate/ }).click();
+    await expect(composer).toHaveAttribute(
+      'data-temporal-create-surface',
+      'advanced',
+    );
+    const mainSession = composer.getByRole('checkbox', {
+      name: 'Sessione',
+      exact: true,
+    });
+    await expect(mainSession).toBeVisible({ timeout: 10_000 });
+    await mainSession.check();
+    await expect(mainSession).toBeChecked();
     const item = await submitCreate(page, composer, {
       kind: 'activity', title, recurring: false,
     });
