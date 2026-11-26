@@ -462,7 +462,7 @@ test('Inspector adds an unconfigured interval near now, uses the original contro
     const main = editor.locator('section.timeline-session-editor__group.has-main');
     await main.getByRole('button', { name: /Aggiungi intervallo/ }).click();
     await expect(main.getByRole('textbox', { name: 'Intervallo 2 · Inizio: ore' })).toHaveValue('');
-    await expect(main.getByRole('textbox', { name: 'Intervallo 2 · Fine: minuti' })).toHaveValue('');
+    await expect(main.getByRole('textbox', { name: 'Intervallo 2 · Fine: minuti' })).toHaveValue(/^\d{2}$/);
     await expect(main.getByRole('button', { name: 'Rimuovi intervallo 2' })).toBeVisible();
     await expect(main.getByRole('button', { name: /Crea spazio|Applica orari/ })).toHaveCount(0);
     await expect(main.locator('input[type="time"], input[type="date"]')).toHaveCount(0);
@@ -471,8 +471,14 @@ test('Inspector adds an unconfigured interval near now, uses the original contro
     await setClock(main, 2, 'Inizio', date, '09:11');
     await setClock(main, 2, 'Fine', date, '09:20');
     await main.getByRole('textbox', { name: 'Intervallo 2 · Fine: minuti' }).blur();
-    await expect(main.getByText('Imposta gli orari.')).toHaveCount(0);
+    await expect(main.getByText('Inizio mancante.')).toHaveCount(0);
     await expect(main.getByRole('textbox', { name: 'Intervallo 1 · Fine: minuti' })).toHaveValue('10');
+    await main.getByRole('button', { name: 'Intervallo 1 · Fine: scegli orario' }).click();
+    const clock = main.getByRole('dialog', { name: 'Intervallo 1 · Fine', exact: true });
+    const clockList = clock.locator('.temporal-create-time-list');
+    await expect.poll(() => clockList.evaluate((node) => node.scrollTop)).toBeGreaterThan(0);
+    await expect(clock.getByRole('button', { name: '09:10', exact: true })).toBeVisible();
+    await main.getByRole('button', { name: 'Intervallo 1 · Fine: scegli orario' }).click();
     await expect(main.locator('.timeline-session-editor__parent-interval')).toHaveCount(2);
 
     const endpoint =

@@ -276,12 +276,9 @@ body:has(> .timeline-session-editor__backdrop)
   ):focus-within {
   border-color: #fa6925;
 }
-.timeline-session-editor__interval[data-invalid]
-  .timeline-session-editor__interval-fields
-  :is(
-    .temporal-create-date-picker__trigger,
-    .temporal-create-time-control__field
-  ) {
+.timeline-session-editor__interval-fields
+  .temporal-create-time-control[data-time-invalid]
+  .temporal-create-time-control__field {
   border-color: #fa5968;
 }
 .timeline-session-editor__interval select {
@@ -647,36 +644,6 @@ body:has(> .timeline-session-editor__backdrop)
   border: 1px solid #fb6875;
   border-radius: 8px;
   padding: 6px;
-}
-
-.timeline-session-editor__interval-block[data-invalid]
-  .temporal-create-date-picker__trigger,
-.timeline-session-editor__interval-block[data-invalid]
-  .temporal-create-time-control__field {
-  border-color: #fb6875;
-}
-
-.timeline-session-editor__clamp-note {
-  display: flex;
-  align-items: center;
-  flex-wrap: wrap;
-  gap: 8px;
-  color: #ffadba;
-  margin: 7px 0 0;
-  font-size: 12px;
-}
-.timeline-session-editor__clamp-note button {
-  min-height: 30px;
-  padding: 5px 9px;
-  border: 1px solid #d96b7b;
-  border-radius: 7px;
-  background: #342031;
-  color: #ffe1e6;
-  font: inherit;
-  cursor: pointer;
-}
-.timeline-session-editor__clamp-note button:hover {
-  background: #482c40;
 }
 
 .timeline-session-editor__group.has-main

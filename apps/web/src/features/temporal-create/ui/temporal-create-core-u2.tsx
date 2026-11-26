@@ -182,6 +182,7 @@ export function TimeControl({
   invalid = false,
   allowEmpty = false,
   onCommit,
+  zoneId,
 }: TimeControlProps) {
   const parsedValue = timeToMinute(value);
   const normalizedValue =
@@ -232,20 +233,20 @@ export function TimeControl({
   useEffect(() => {
     if (!pickerOpen) return;
     const frame = requestAnimationFrame(() => {
-      const selected = nearestQuarter(lastValidRef.current);
-      Array.from(
-        listRef.current?.querySelectorAll<HTMLElement>('[data-time-value]') ??
-          [],
-      )
-        .find(
-          (candidate) =>
-            candidate.dataset.timeValue === lastValidRef.current ||
-            candidate.dataset.timeValue === selected,
-        )
-        ?.scrollIntoView({ block: 'center' });
+      const list = listRef.current;
+      if (!list) return;
+      const clock = lastValidRef.current ||
+        Temporal.Now.zonedDateTimeISO(zoneId ?? undefined).toPlainTime().toString({ smallestUnit: 'minute' });
+      const selected = clock > '23:45' ? '23:45' : nearestQuarter(clock);
+      const candidates = Array.from(list.querySelectorAll<HTMLElement>('[data-time-value]'));
+      const target = candidates.find((candidate) => candidate.dataset.timeValue === clock) ??
+        candidates.find((candidate) => candidate.dataset.timeValue === selected);
+      if (!target) return;
+      list.scrollTop += target.getBoundingClientRect().top -
+        list.getBoundingClientRect().top - (list.clientHeight - target.offsetHeight) / 2;
     });
     return () => cancelAnimationFrame(frame);
-  }, [pickerOpen]);
+  }, [pickerOpen, zoneId]);
 
   const syncDraft = (next: string) => {
     lastValidRef.current = next;
@@ -430,20 +431,9 @@ export function TimeControl({
           aria-label={label}
         >
           <div ref={listRef} className="temporal-create-time-list">
-            {committedValue && !TIME_OPTIONS.includes(committedValue) ? (
-              <button
-                type="button"
-                data-time-value={committedValue}
-                className="is-selected"
-                onClick={() => {
-                  commitSelection(committedValue);
-                  setPickerOpen(false);
-                }}
-              >
-                {committedValue}
-              </button>
-            ) : null}
-            {TIME_OPTIONS.map((option) => (
+            {(committedValue && !TIME_OPTIONS.includes(committedValue)
+              ? [...TIME_OPTIONS, committedValue].sort()
+              : TIME_OPTIONS).map((option) => (
               <button
                 key={option}
                 type="button"

@@ -341,6 +341,10 @@ describe('Temporal Create U1 top controls', () => {
       const picker = screen.getByRole('dialog', { name: 'Fine' });
       const custom = within(picker).getByRole('button', { name: '10:31' });
       expect(custom.classList.contains('is-selected')).toBe(true);
+      const orderedTimes = Array.from(picker.querySelectorAll<HTMLElement>('[data-time-value]'))
+        .map((option) => option.dataset.timeValue);
+      expect(orderedTimes.indexOf('10:31')).toBe(orderedTimes.indexOf('10:30') + 1);
+      expect(orderedTimes.indexOf('10:45')).toBe(orderedTimes.indexOf('10:31') + 1);
       expect(
         within(picker)
           .getByRole('button', { name: '10:30' })

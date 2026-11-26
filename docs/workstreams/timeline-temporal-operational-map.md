@@ -1,5 +1,15 @@
 # Timeline / Temporal-Operational — Live Execution Ledger
 
+## 2026-11-26 — Factual interval feedback and shared clock (candidate; NOT_RUN)
+
+Conferma del campo con clamp automatico; rimosso Adatta ai limiti.
+Messaggi locali con limite reale, bordo riga e solo orario interessato.
+Nessuno spazio: precompilare la fine massima se disponibile, non
+inventare un inizio incompatibile né replicare un intervallo completo.
+Picker TimeControl condiviso: minuti esatti in ordine cronologico,
+apertura centrata sul valore o sull'ora locale se vuoto. Nessuna
+modifica al backend; regressioni componente e browser da eseguire.
+
 ## 2026-11-26 — Ripristino layout registrazioni (candidate; NOT_RUN)
 
 Su richiesta owner, eliminato il layout separato degli intervalli

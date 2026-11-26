@@ -117,8 +117,8 @@ idempotenza, proprietario e revisioni. Una correzione non può
 invalidare una secondaria già registrata. Durante l'immissione di ore/minuti la UI **non può** restringere
 in modo sincrono il campo: un valore ancora parziale, valido o no, deve
 restare editabile e il suo componente non può smontarsi né cambiare
-intervallo padre. La UI segnala localmente il superamento e offre
-«Adatta ai limiti» per applicare il minimo/massimo volontariamente;
+intervallo padre. La UI segnala localmente il superamento e applica
+il minimo/massimo alla conferma dell'orario, senza pulsante dedicato;
 il salvataggio rifiuta valori fuori limite senza modificare i fatti.
 La scelta di una secondaria e l'aggiunta dei suoi intervalli restano
 possibili anche se l'ora del padre è provvisoriamente incompleta:
@@ -128,7 +128,7 @@ Per nuovi intervalli manuali: durata minima e pausa minima
 di 1 minuto, con precisione al minuto. La conferma di un singolo
 campo può normalizzarlo al minimo/massimo calcolato da precedente,
 successivo, padre e ora attuale; la digitazione parziale resta libera.
-Se non c'è spazio, Aggiungi produce una riga con orari vuoti nei
+Se non c'è spazio, Aggiungi produce una riga con fine massima precompilata se nota e inizio vuoto nei
 controlli standard, non una copia sovrapposta. Per liberare spazio si
 modifica esplicitamente l'intervallo precedente; nessun taglio automatico
 né pulsante aggiuntivo.

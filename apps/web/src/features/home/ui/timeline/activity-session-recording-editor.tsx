@@ -47,7 +47,11 @@ type ActiveInterval = {
 };
 type Draft = { intervals: ActiveInterval[] };
 type ClockChoice = 'reject' | 'earlier' | 'later';
-type Issue = Readonly<{ field: string; message: string }>;
+type Issue = Readonly<{
+  field: string;
+  message: string;
+  boundary?: SessionBoundary;
+}>;
 
 function webFetch(path: string, init?: RequestInit): Promise<Response> {
   return createWebFetch(globalThis.fetch)(path, init);
@@ -154,6 +158,8 @@ function IntervalFields({
 }>) {
   const label = `Intervallo ${index + 1}`;
   const invalid = issue?.field === `interval-${index}`;
+  const startInvalid = invalid && issue?.boundary === 'start';
+  const endInvalid = invalid && issue?.boundary === 'end';
   const patch = (field: keyof ActiveInterval, value: string) =>
     onChange({ ...interval, [field]: value });
   return (
@@ -196,7 +202,6 @@ function IntervalFields({
           label={`${label} · Data inizio`}
           locale="it"
           value={interval.start.slice(0, 10)}
-          invalid={invalid}
           onChange={(date) => {
             onChange({
               ...interval,
@@ -212,7 +217,8 @@ function IntervalFields({
           allowEmpty={Boolean(interval.unconfigured && !interval.start.slice(11, 16))}
           onCommit={() => onBoundaryCommit?.('start')}
           dataPath={fieldPath + '.' + index + '.start'}
-          invalid={invalid}
+          invalid={startInvalid}
+          zoneId={zone}
           onChange={(time) =>
             onChange({
               ...interval,
@@ -230,7 +236,8 @@ function IntervalFields({
           allowEmpty={Boolean(interval.unconfigured && !interval.end.slice(11, 16))}
           onCommit={() => onBoundaryCommit?.('end')}
           dataPath={fieldPath + '.' + index + '.end'}
-          invalid={invalid}
+          invalid={endInvalid}
+          zoneId={zone}
           onChange={(time) =>
             onChange({
               ...interval,
@@ -244,7 +251,6 @@ function IntervalFields({
           align="end"
           locale="it"
           value={interval.end.slice(0, 10)}
-          invalid={invalid}
           onChange={(date) => {
             onChange({
               ...interval,
@@ -332,35 +338,41 @@ function intervalFromMillis(
   };
 }
 
-function intervalUnconfigured(date: string, zone: string): ActiveInterval {
+function intervalUnconfigured(date: string, zone: string, latest?: number): ActiveInterval {
   const day = date || local(Temporal.Now.instant().toString(), zone).slice(0, 10);
   return {
     id: crypto.randomUUID(),
     start: day + 'T',
-    end: day + 'T',
+    end: latest === undefined ? day + 'T' : local(new Date(latest).toISOString(), zone),
     startChoice: 'reject',
-    endChoice: 'reject',
+    endChoice: latest === undefined ? 'reject' : choiceFor(new Date(latest).toISOString(), zone),
     unconfigured: true,
   };
 }
 
 function nextInterval(draft: Draft, zone: string): ActiveInterval {
   const last = draft.intervals.at(-1);
-  if (!last || last.unconfigured || !last.end)
-    return intervalUnconfigured(last?.end.slice(0, 10) ?? '', zone);
+  const latest = Math.floor(Temporal.Now.instant().epochMilliseconds / SESSION_MINUTE_MS) * SESSION_MINUTE_MS;
+  if (!last || draft.intervals.some((item) => item.unconfigured) || !last.end)
+    return intervalUnconfigured(last?.end.slice(0, 10) ?? '', zone, latest);
   try {
     const previousEnd = Temporal.Instant.from(
       instant(last.end, zone, last.endChoice),
     ).epochMilliseconds;
+    const previousStart = Temporal.Instant.from(
+      instant(last.start, zone, last.startChoice),
+    ).epochMilliseconds;
+    if (previousEnd <= previousStart)
+      return intervalUnconfigured(last.end.slice(0, 10), zone, latest);
     const next = nextFactualInterval({
       previousEnd,
       now: Temporal.Now.instant().epochMilliseconds,
     });
     return next
       ? intervalFromMillis(next.start, next.end, zone)
-      : intervalUnconfigured(last.end.slice(0, 10), zone);
+      : intervalUnconfigured(last.end.slice(0, 10), zone, latest);
   } catch {
-    return intervalUnconfigured(last.end.slice(0, 10), zone);
+    return intervalUnconfigured(last.end.slice(0, 10), zone, latest);
   }
 }
 
@@ -451,18 +463,20 @@ function validateDraft(
   for (const [index, interval] of draft.intervals.entries()) {
     const field = `interval-${index}`;
     if (interval.unconfigured || !interval.start || !interval.end)
-      return { field, message: `Imposta intervallo ${index + 1}.` };
+      return { field, boundary: !interval.start.slice(11, 16) ? 'start' : 'end', message: !interval.start.slice(11, 16) ? 'Inizio mancante.' : !interval.end.slice(11, 16) ? 'Fine mancante.' : 'Intervallo fuori limite.' };
     try {
       const [resolved] = resolveIntervals({ intervals: [interval] }, zone);
       if (!resolved) throw new Error('Orario non valido.');
       if (resolved.end - resolved.start < SESSION_MINUTE_MS)
         return {
           field,
+          boundary: 'end',
           message: 'Durata minima: 1 min.',
         };
       if (resolved.end > Temporal.Now.instant().epochMilliseconds)
         return {
           field,
+          boundary: 'end',
           message: 'Fine massima: ' + local(
             new Date(Math.floor(Temporal.Now.instant().epochMilliseconds / SESSION_MINUTE_MS) * SESSION_MINUTE_MS).toISOString(),
             zone,
@@ -471,6 +485,7 @@ function validateDraft(
       if (ranges.length && resolved.start < ranges.at(-1)!.end + SESSION_MINUTE_MS)
         return {
           field,
+          boundary: 'start',
           message: 'Inizio minimo: ' + local(
             new Date(ranges.at(-1)!.end + SESSION_MINUTE_MS).toISOString(),
             zone,
@@ -495,7 +510,7 @@ function validateDraft(
       )) {
         return {
           field: 'interval-' + index,
-          message: 'Il tratto deve rientrare in un intervallo attivo della principale.',
+          message: 'Fuori orario della principale.',
         };
       }
     }
@@ -506,7 +521,7 @@ function validateDraft(
   )
     return {
       field: 'interval-0',
-      message: 'Adatta la secondaria salvata.',
+      message: 'Correggi la secondaria registrata.',
     };
   return null;
 }
@@ -1087,13 +1102,14 @@ export function ActivitySessionRecordingEditor({
         return;
       }
       const owners = ownersFor(row, existing);
-      const used = existing.intervals.flatMap((item, index) => {
-        if (owners[index] !== parentIndex) return [];
-        const slice = parseSlice(item);
-        return slice ? [slice] : [];
-      });
+      const latest = Math.min(parent.end, Math.floor(Temporal.Now.instant().epochMilliseconds / SESSION_MINUTE_MS) * SESSION_MINUTE_MS);
+      const used = existing.intervals.filter((_, index) => owners[index] === parentIndex).map(parseSlice);
+      if (used.some((slice) => !slice || slice.end <= slice.start)) {
+        insertChildInterval(row, existing, parentIndex, intervalUnconfigured(local(new Date(parent.start).toISOString(), timeZone).slice(0, 10), timeZone, latest));
+        return;
+      }
       const lastEnd = used.length
-        ? Math.max(...used.map((slice) => slice.end))
+        ? Math.max(...used.map((slice) => slice!.end))
         : parent.start - SESSION_MINUTE_MS;
       const candidate = nextFactualInterval({
         previousEnd: lastEnd,
@@ -1106,7 +1122,7 @@ export function ActivitySessionRecordingEditor({
         parentIndex,
         candidate
           ? intervalFromMillis(candidate.start, candidate.end, timeZone)
-          : intervalUnconfigured(local(new Date(parent.start).toISOString(), timeZone).slice(0, 10), timeZone),
+          : intervalUnconfigured(local(new Date(parent.start).toISOString(), timeZone).slice(0, 10), timeZone, latest),
       );
     } catch {
       setError('Controlla gli intervalli.');
@@ -1173,28 +1189,49 @@ export function ActivitySessionRecordingEditor({
     const draft = pendingRef.current[row.key];
     if (!draft) return;
     if (draft.intervals[index]?.unconfigured) {
-      completeUnconfigured(row, index, parentIndex);
+      completeUnconfigured(row, index, boundary, parentIndex);
       return;
     }
     const current = parseSlice(draft.intervals[index]);
     if (!current) return;
-    const bounds = sessionBounds({
-      boundary,
-      current,
-      previous: parseSlice(draft.intervals[index - 1]),
-      next: parseSlice(draft.intervals[index + 1]),
-      parent: row.plannedRef === null ? null : parentSlice(parentIndex),
-      now: Temporal.Now.instant().epochMilliseconds,
-    });
+    const previous = parseSlice(draft.intervals[index - 1]);
+    const following = parseSlice(draft.intervals[index + 1]);
+    const parent = row.plannedRef === null ? null : parentSlice(parentIndex);
+    const now = Temporal.Now.instant().epochMilliseconds;
+    const bounds = sessionBounds({ boundary, current, previous, next: following, parent, now });
     if (!bounds) {
+      const earliest = Math.max(
+        previous ? previous.end + SESSION_MINUTE_MS : Number.NEGATIVE_INFINITY,
+        parent?.start ?? Number.NEGATIVE_INFINITY,
+      );
+      const latest = Math.min(
+        Math.floor(now / SESSION_MINUTE_MS) * SESSION_MINUTE_MS,
+        following ? following.start - SESSION_MINUTE_MS : Number.POSITIVE_INFINITY,
+        parent?.end ?? Number.POSITIVE_INFINITY,
+      );
+      const message = earliest + SESSION_MINUTE_MS > latest
+        ? 'Inizio minimo: ' + clockLabel(earliest, current.start) +
+          ' · Fine massima: ' + clockLabel(latest, current.end)
+        : boundary === 'start'
+          ? 'Fine minima: ' + clockLabel(earliest + SESSION_MINUTE_MS, current.end)
+          : 'Inizio massimo: ' + clockLabel(latest - SESSION_MINUTE_MS, current.start);
       setIssues((old) => ({
         ...old,
-        [row.key]: { field: 'interval-' + index, message: 'Nessuno spazio (min 1 min).' },
+        [row.key]: { field: 'interval-' + index, boundary, message },
       }));
       return;
     }
     const adjusted = normalizeSessionBoundary(current[boundary], bounds);
-    if (adjusted === null || adjusted === current[boundary]) return;
+    if (adjusted === null) return;
+    if (adjusted === current[boundary]) {
+      setIssues((old) => {
+        if (old[row.key]?.field !== 'interval-' + index) return old;
+        const next = { ...old };
+        delete next[row.key];
+        return next;
+      });
+      return;
+    }
     const iso = new Date(adjusted).toISOString();
     const interval = draft.intervals[index]!;
     const next: ActiveInterval = {
@@ -1209,7 +1246,13 @@ export function ActivitySessionRecordingEditor({
     });
   }
 
-  function completeUnconfigured(row: Row, index: number, parentIndex?: number) {
+  function clockLabel(value: number, reference: number): string {
+    const clock = local(new Date(value).toISOString(), timeZone);
+    const date = local(new Date(reference).toISOString(), timeZone);
+    return clock.slice(0, 10) === date.slice(0, 10) ? clock.slice(11, 16) : clock.slice(0, 16).replace('T', ' ');
+  }
+
+  function completeUnconfigured(row: Row, index: number, boundary: SessionBoundary, parentIndex?: number) {
     const draft = pendingRef.current[row.key];
     const entry = draft?.intervals[index];
     if (!draft || !entry?.unconfigured) return;
@@ -1220,14 +1263,6 @@ export function ActivitySessionRecordingEditor({
       endChoice: entry.endChoice,
     });
     if (!candidate) return;
-    if (candidate.end <= candidate.start) {
-      setIssues((old) => ({
-        ...old, [row.key]: {
-          field: 'interval-' + index, message: 'Imposta inizio e fine.',
-        },
-      }));
-      return;
-    }
     const previous = parseSlice(draft.intervals[index - 1]);
     const next = parseSlice(draft.intervals[index + 1]);
     const parent = row.plannedRef === null ? null : parentSlice(parentIndex);
@@ -1246,7 +1281,9 @@ export function ActivitySessionRecordingEditor({
     if (earliest + SESSION_MINUTE_MS > latest) {
       setIssues((old) => ({
         ...old, [row.key]: {
-          field: 'interval-' + index, message: 'Nessuno spazio (min 1 min).',
+          field: 'interval-' + index,
+          boundary,
+          message: 'Inizio minimo: ' + clockLabel(earliest, candidate.start) + ' · Fine massima: ' + clockLabel(latest, candidate.end),
         },
       }));
       return;
@@ -1266,32 +1303,6 @@ export function ActivitySessionRecordingEditor({
     });
   }
 
-  function fitChildToParent(row: Row, index: number, parentIndex: number) {
-    const interval = pending[row.key]?.intervals[index];
-    const parent = parentRanges[parentIndex];
-    if (!interval || !parent || !validParent(parentIndex)) return;
-    try {
-      const resolved = resolveIntervals({ intervals: [interval] }, timeZone)[0];
-      if (!resolved) return;
-      const start = Math.max(parent.start, Math.min(resolved.start, parent.end));
-      const end = Math.max(parent.start, Math.min(resolved.end, parent.end));
-      // A range completely outside the parent is restored to the parent's
-      // bounds rather than replaced by an invalid zero-duration interval.
-      const safeStart = end > start ? start : parent.start;
-      const safeEnd = end > start ? end : parent.end;
-      const startInstant = new Date(safeStart).toISOString();
-      const endInstant = new Date(safeEnd).toISOString();
-      updateInterval(row, index, {
-        start: local(startInstant, timeZone),
-        end: local(endInstant, timeZone),
-        startChoice: choiceFor(startInstant, timeZone),
-        endChoice: choiceFor(endInstant, timeZone),
-      });
-    } catch {
-      setError('Completa prima la data e l’orario dell’intervallo.');
-    }
-  }
-
   function renderRange(
     row: Row,
     index: number,
@@ -1301,7 +1312,7 @@ export function ActivitySessionRecordingEditor({
   ) {
     const issue = issues[row.key] ?? null;
     let outsideParent = false;
-    let parentHint = '';
+    let parentIssue: Issue | null = null;
     if (
       !readonly && row.plannedRef !== null && mainEnabled &&
       parentIndex !== undefined && validParent(parentIndex)
@@ -1316,13 +1327,18 @@ export function ActivitySessionRecordingEditor({
           const bound = isEarly ? parent.start : parent.end;
           const date = local(new Date(bound).toISOString(), timeZone);
           const relative = date.slice(0, 10) === interval[isEarly ? 'start' : 'end'].slice(0, 10);
-          parentHint = (isEarly ? 'Inizio minimo: ' : 'Fine massima: ') +
-            (relative ? date.slice(11, 16) : date.slice(0, 16).replace('T', ' '));
+          parentIssue = {
+            field: 'interval-' + index,
+            boundary: isEarly ? 'start' : 'end',
+            message: (isEarly ? 'Inizio minimo: ' : 'Fine massima: ') +
+              (relative ? date.slice(11, 16) : date.slice(0, 16).replace('T', ' ')),
+          };
         }
       } catch {
         // An incomplete local-time value is validated when saved.
       }
     }
+    const localIssue = issue?.field === 'interval-' + index ? issue : parentIssue;
     return (
       <div
         key={interval.id ?? index}
@@ -1349,7 +1365,7 @@ export function ActivitySessionRecordingEditor({
             index={index}
             zone={timeZone}
             fieldPath={'session-recording.' + row.key}
-            issue={issue?.field === 'interval-' + index ? issue : null}
+            issue={localIssue}
             onChange={(updated) => updateInterval(row, index, updated)}
             onBoundaryCommit={(boundary) => commitBoundary(row, index, boundary, parentIndex)}
             onRemove={
@@ -1360,20 +1376,9 @@ export function ActivitySessionRecordingEditor({
             }
           />
         )}
-        {!readonly && interval.unconfigured && issue?.field !== 'interval-' + index ? (
-          <p className="timeline-session-editor__clamp-note">Imposta gli orari.</p>
-        ) : null}
-        {outsideParent ? (
-          <div className="timeline-session-editor__clamp-note" role="status">
-            <span>{parentHint}</span>
-            <button type="button" onClick={() => fitChildToParent(row, index, parentIndex!)}>
-              Adatta ai limiti
-            </button>
-          </div>
-        ) : null}
-        {issue?.field === 'interval-' + index ? (
-          <p className="timeline-session-editor__error" role="alert">
-            {issue.message}
+        {localIssue ? (
+          <p className="timeline-session-editor__error" role={issue === localIssue ? 'alert' : 'status'}>
+            {localIssue.message}
           </p>
         ) : null}
       </div>

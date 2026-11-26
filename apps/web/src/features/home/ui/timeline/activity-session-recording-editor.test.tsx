@@ -275,14 +275,14 @@ describe('Activity Session recording editor', () => {
     ).toHaveLength(2);
     const firstEnd = within(group).getByRole('textbox', { name: 'Intervallo 1 · Fine: minuti' });
     expect(within(group).getByRole('textbox', { name: 'Intervallo 2 · Inizio: ore' })).toHaveProperty('value', '');
-    expect(within(group).getByRole('textbox', { name: 'Intervallo 2 · Fine: minuti' })).toHaveProperty('value', '');
+    expect((within(group).getByRole('textbox', { name: 'Intervallo 2 · Fine: minuti' }) as HTMLInputElement).value).toMatch(/^\d{2}$/);
     expect(within(group).getByRole('button', { name: 'Rimuovi intervallo 2' })).toBeTruthy();
     expect(within(group).queryByRole('button', { name: /Crea spazio|Applica orari/ })).toBeNull();
     expect(group.querySelector('input[type="time"], input[type="date"]')).toBeNull();
     expect(screen.queryByRole('alert')).toBeNull();
 
     fireEvent.click(screen.getByRole('button', { name: 'Salva registrazioni' }));
-    expect(within(group).getByText('Imposta intervallo 2.')).toBeTruthy();
+    expect(within(group).getByText('Inizio mancante.')).toBeTruthy();
     const yesterday = new Date(Date.now() - 86_400_000).toISOString().slice(0, 10);
     setClock(group, 1, 'Inizio', yesterday, '09:00');
     setClock(group, 1, 'Fine', yesterday, '09:10');
@@ -292,7 +292,7 @@ describe('Activity Session recording editor', () => {
     await act(async () => {});
     const end = within(group).getByRole('textbox', { name: 'Intervallo 2 · Fine: minuti' });
     await act(async () => { end.focus(); end.blur(); });
-    expect(within(group).queryByText('Imposta gli orari.')).toBeNull();
+    expect(within(group).queryByText('Inizio mancante.')).toBeNull();
     expect(firstEnd).toHaveProperty('value', '10');
     expect(end).toHaveProperty('value', '20');
     expect(screen.queryByRole('alert')).toBeNull();
@@ -337,7 +337,7 @@ describe('Activity Session recording editor', () => {
     expect(within(child).getByRole('textbox', { name: 'Intervallo 2 · Inizio: ore' })).toHaveProperty('value', '');
     expect(within(child).getByRole('button', { name: 'Rimuovi intervallo 2' })).toBeTruthy();
     fireEvent.click(screen.getByRole('button', { name: 'Salva registrazioni' }));
-    expect(within(child).getByText('Imposta intervallo 2.')).toBeTruthy();
+    expect(within(child).getByText('Inizio mancante.')).toBeTruthy();
     expect(fetcher.mock.calls.some(([, init]) => init?.method === 'POST')).toBe(false);
 
     setClock(child, 1, 'Fine', yesterday, '09:10');
@@ -347,7 +347,7 @@ describe('Activity Session recording editor', () => {
     await act(async () => {});
     const secondEnd = within(child).getByRole('textbox', { name: 'Intervallo 2 · Fine: minuti' });
     await act(async () => { secondEnd.focus(); secondEnd.blur(); });
-    expect(within(child).queryByText('Imposta gli orari.')).toBeNull();
+    expect(within(child).queryByText('Inizio mancante.')).toBeNull();
     expect(secondEnd).toHaveProperty('value', '25');
     expect(screen.queryByRole('alert')).toBeNull();
   });
@@ -617,9 +617,13 @@ describe('Activity Session recording editor', () => {
     expect(
       within(child).getByRole('textbox', { name: 'Intervallo 1 · Fine: minuti' }),
     ).toHaveProperty('value', '35');
-    // The date/time is not snapped back while typing; the explicit command
-    // limits it only after the user has completed editing.
-    fireEvent.click(within(child).getByRole('button', { name: 'Adatta ai limiti' }));
+    // Only the invalid end control is marked, and blur clamps it.
+    expect(child.querySelector('[data-time-field$=".start"][data-time-invalid]')).toBeNull();
+    expect(child.querySelector('[data-time-field$=".end"][data-time-invalid]')).not.toBeNull();
+    expect(within(child).queryByRole('button', { name: 'Adatta ai limiti' })).toBeNull();
+    await act(async () => {});
+    const endField = within(child).getByRole('textbox', { name: 'Intervallo 1 · Fine: minuti' });
+    await act(async () => { endField.focus(); endField.blur(); });
     expect(
       within(child).getByRole('textbox', { name: 'Intervallo 1 · Fine: ore' }),
     ).toHaveProperty('value', '09');

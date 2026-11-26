@@ -61,7 +61,7 @@ esiste spazio nel passato: inizio minimo = fine del precedente + 1 minuto,
 fine massima = ora attuale e, nelle secondarie, anche fine del padre.
 Durata e pausa minime delle nuove registrazioni: 1 minuto.
 Senza spazio crea una riga nello stesso layout, con i consueti selettori
-DANTE, gli orari vuoti e la stessa X di rimozione. Il nuovo intervallo
+DANTE, la fine massima precompilata se nota, l'inizio vuoto quando non esiste un valore ammissibile e la stessa X di rimozione. Il nuovo intervallo
 si completa automaticamente alla conferma dei campi, senza pulsanti
 aggiuntivi. Per liberare spazio si modificano esplicitamente gli
 intervalli esistenti: nessuna divisione automatica del precedente.
@@ -77,10 +77,10 @@ Alla conferma (uscita dal controllo, Invio o scelta della data)
 il motore temporale applica minimo e massimo da precedente,
 successivo, padre e ora attuale, correggendo **solo il campo confermato**.
 Se non esiste un valore ammissibile, la riga resta editabile con
-messaggio locale breve («Nessuno spazio (min 1 min)»,
-«Inizio minimo: 10:32», «Fine massima: 11:00»).
-«Adatta ai limiti» resta disponibile quando una modifica del
-padre lascia una secondaria fuori dal suo tratto. Salva rifiuta
+messaggio locale con i limiti effettivi («Inizio minimo: 10:32»,
+«Fine massima: 11:00»). Il bordo della riga e il solo orario
+responsabile sono evidenziati. Nessun pulsante Adatta ai limiti:
+la normalizzazione avviene alla conferma del campo. Salva rifiuta
 l'eventuale violazione ancora presente, evidenziando il singolo intervallo
 sbagliato; PostgreSQL ripete la verifica autorevole. Una modifica
 temporaneamente invalida di un intervallo padre non deve far sparire,
