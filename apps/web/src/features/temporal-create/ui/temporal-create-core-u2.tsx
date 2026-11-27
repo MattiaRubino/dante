@@ -75,7 +75,7 @@ type TimeControlProps = Readonly<{
   dataPath: string;
   onChange: (value: string) => void;
   allowEmpty?: boolean;
-  onCommit?: () => void;
+  onCommit?: () => string | undefined;
   helper?: ReactNode;
   invalid?: boolean;
   zoneId?: string | null | undefined;
@@ -261,9 +261,20 @@ export function TimeControl({
     setMinuteDraft(lastValidRef.current.slice(3, 5));
   };
 
+  const confirmClock = () => {
+    const normalized = onCommit?.();
+    if (normalized === undefined) return;
+    // The parent has already written the normalized value. Reconcile the
+    // segmented draft even when the controlled prop returns to its old value.
+    lastValidRef.current = normalized;
+    setCommittedValue(normalized);
+    setHourDraft(normalized.slice(0, 2));
+    setMinuteDraft(normalized.slice(3, 5));
+  };
+
   const commitSelection = (next: string) => {
     syncDraft(next);
-    if (onCommit) queueMicrotask(onCommit);
+    confirmClock();
   };
 
   const commitParts = (hourValue: string, minuteValue: string) => {
@@ -300,6 +311,14 @@ export function TimeControl({
   return (
     <div
       ref={rootRef}
+      onBlur={(event) => {
+        if (!onCommit) return;
+        const next = event.relatedTarget;
+        if (next instanceof Node && event.currentTarget.contains(next)) return;
+        // Child input onBlur has already committed the final segments.
+        // Confirm in the same event, while the parent draft ref is current.
+        confirmClock();
+      }}
       className="temporal-create-time-control"
       data-time-field={dataPath}
       data-time-invalid={invalid || undefined}
@@ -346,10 +365,14 @@ export function TimeControl({
                 setHourDraft(next);
                 if (next.length === 2 && Number(next) <= 23) {
                   commitParts(next, minuteDraft);
-                  queueMicrotask(() => {
-                    minuteRef.current?.focus();
-                    minuteRef.current?.select();
-                  });
+                  const hourInput = event.currentTarget;
+                  if (!onCommit || document.activeElement === hourInput) {
+                    queueMicrotask(() => {
+                      if (onCommit && document.activeElement !== hourInput) return;
+                      minuteRef.current?.focus();
+                      minuteRef.current?.select();
+                    });
+                  }
                 }
               }}
               onBlur={() => commitParts(hourDraft, minuteDraft)}

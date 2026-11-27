@@ -161,7 +161,7 @@ function IntervalFields({
   issue: Issue | null;
   onChange: (interval: ActiveInterval) => void;
   onRemove?: (() => void) | undefined;
-  onBoundaryCommit?: ((boundary: SessionBoundary) => void) | undefined;
+  onBoundaryCommit?: ((boundary: SessionBoundary) => string | undefined) | undefined;
 }>) {
   const label = `Intervallo ${index + 1}`;
   const invalid = issue?.field === `interval-${index}`;
@@ -173,20 +173,6 @@ function IntervalFields({
     <div
       className="timeline-session-editor__interval"
       data-invalid={invalid || undefined}
-      onBlurCapture={(event) => {
-        const target = event.target;
-        if (!(target instanceof HTMLElement)) return;
-        const control = target.closest<HTMLElement>('.temporal-create-time-control');
-        if (!control) return;
-        const focus = event.relatedTarget;
-        if (focus instanceof Node && control.contains(focus)) return;
-        const boundary: SessionBoundary =
-          control.getAttribute('data-time-field')?.endsWith('.start')
-            ? 'start' : 'end';
-        queueMicrotask(() => {
-          if (!control.contains(document.activeElement)) onBoundaryCommit?.(boundary);
-        });
-      }}
       onClickCapture={(event) => {
         if (!(event.target instanceof Element) ||
           !event.target.closest('.temporal-create-date-picker__trigger')) return;
@@ -1288,6 +1274,7 @@ export function ActivitySessionRecordingEditor({
       delete next[row.key];
       return next;
     });
+    return local(new Date(adjusted).toISOString(), timeZone).slice(11, 16);
   }
 
   function renderRange(

@@ -1,5 +1,19 @@
 # Timeline / Temporal-Operational — Live Execution Ledger
 
+## 2026-11-27 — Confirm the segmented clock as one control (candidate; NOT_RUN)
+
+Owner run at ef40e305f: typecheck and registry PASS, 274/276 Vitest
+(21/23 recording editor). The confirmed future end and earlier-than-minimum
+start did not normalize. The shared clock now invokes the recording
+normalizer after the child segment blur, as one synchronous confirmation.
+Focus transitions within a clock do not confirm it; selecting a clock
+option or spinner does. The normalized value reconciles local segments
+even when the parent controlled value returns to its former value.
+Existing clock callers without a normalizer retain their focus behavior.
+Both regression expectations are retained, with real focus transitions
+and checks that preceding values remain unchanged. No CSS, API or DB changes.
+Owner verification pending.
+
 ## 2026-11-27 — Restore start-first interval defaults (candidate; NOT_RUN)
 
 Add defaults the next start to the preceding end plus one minute.

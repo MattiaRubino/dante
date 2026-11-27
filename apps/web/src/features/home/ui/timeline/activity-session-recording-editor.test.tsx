@@ -328,8 +328,16 @@ describe('Activity Session recording editor', () => {
       setClock(group, 2, 'Inizio', day, '19:17');
       await confirm(2, 'Inizio');
       setClock(group, 2, 'Fine', day, '19:23');
-      expect(await confirm(2, 'Fine')).toHaveProperty('value', '14');
+      await confirm(2, 'Fine');
+      await waitFor(() => {
+        expect(within(group).getByRole('textbox', {
+          name: 'Intervallo 2 · Fine: minuti',
+        })).toHaveProperty('value', '14');
+      });
       expect(within(group).getByText(/Intervallo 1: fine max 19:12/)).toBeTruthy();
+      expect(within(group).getByRole('textbox', {
+        name: 'Intervallo 1 · Fine: minuti',
+      })).toHaveProperty('value', '13');
       clock.mockReturnValue(Temporal.Instant.from(day + 'T19:25:00Z'));
       setClock(group, 2, 'Fine', day, '19:23');
       expect(await confirm(2, 'Fine')).toHaveProperty('value', '23');
@@ -1353,9 +1361,16 @@ describe('Activity Session recording editor', () => {
     expect(within(group).getByRole('textbox', {
       name: 'Intervallo 2 · Inizio: minuti',
     })).toHaveProperty('value', '05');
-    fireEvent.blur(within(group).getByRole('textbox', {
+    expect(within(group).getByRole('textbox', {
+      name: 'Intervallo 1 · Fine: minuti',
+    })).toHaveProperty('value', '15');
+    const startField = within(group).getByRole('textbox', {
       name: 'Intervallo 2 · Inizio: minuti',
-    }));
+    });
+    await act(async () => {
+      startField.focus();
+      startField.blur();
+    });
     await waitFor(() => {
       expect(within(group).getByRole('textbox', {
         name: 'Intervallo 2 · Inizio: minuti',
@@ -1398,9 +1413,13 @@ describe('Activity Session recording editor', () => {
     expect(within(child).getByRole('textbox', {
       name: 'Intervallo 1 · Fine: minuti',
     })).toHaveProperty('value', '40');
-    fireEvent.blur(within(child).getByRole('textbox', {
+    const endField = within(child).getByRole('textbox', {
       name: 'Intervallo 1 · Fine: minuti',
-    }));
+    });
+    await act(async () => {
+      endField.focus();
+      endField.blur();
+    });
     await waitFor(() => {
       expect(within(child).getByRole('textbox', {
         name: 'Intervallo 1 · Fine: minuti',
