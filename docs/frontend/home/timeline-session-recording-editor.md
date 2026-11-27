@@ -61,7 +61,7 @@ esiste spazio nel passato: inizio minimo = fine del precedente + 1 minuto,
 fine massima = ora attuale e, nelle secondarie, anche fine del padre.
 Durata e pausa minime delle nuove registrazioni: 1 minuto.
 Senza spazio crea una riga nello stesso layout, con i consueti selettori
-DANTE, la fine massima precompilata se nota, l'inizio vuoto quando non esiste un valore ammissibile e la stessa X di rimozione. Il nuovo intervallo
+DANTE, l'inizio precompilato a fine precedente + 1 minuto se noto, la fine vuota quando non esiste spazio ammissibile e la stessa X di rimozione. Il nuovo intervallo
 si completa automaticamente alla conferma dei campi, senza pulsanti
 aggiuntivi. Per liberare spazio si modificano esplicitamente gli
 intervalli esistenti: nessuna divisione automatica del precedente.

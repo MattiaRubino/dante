@@ -1,5 +1,15 @@
 # Timeline / Temporal-Operational — Live Execution Ledger
 
+## 2026-11-27 — Restore start-first interval defaults (candidate; NOT_RUN)
+
+Add defaults the next start to the preceding end plus one minute.
+When there is no feasible duration, leave the end empty, never the
+start when the preceding end is known. Applies to main, independent
+and parent-scoped named Sessions. Provisional starts outside available
+space are not valid facts; Save still checks the minimum pause,
+duration, current time and parent bounds. No layout or backend change.
+Updated component and real-stack assertions; owner verification pending.
+
 ## 2026-11-26 — Revalidate incomplete factual ranges without a latched draft flag (candidate; NOT_RUN)
 
 A near-now interval with no feasible minute must still respect its absolute

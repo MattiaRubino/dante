@@ -461,8 +461,12 @@ test('Inspector adds an unconfigured interval near now, uses the original contro
     const editor = page.getByRole('dialog', { name: 'Registrazioni delle Sessioni' });
     const main = editor.locator('section.timeline-session-editor__group.has-main');
     await main.getByRole('button', { name: /Aggiungi intervallo/ }).click();
-    await expect(main.getByRole('textbox', { name: 'Intervallo 2 · Inizio: ore' })).toHaveValue('');
-    await expect(main.getByRole('textbox', { name: 'Intervallo 2 · Fine: minuti' })).toHaveValue(/^\d{2}$/);
+    const previousEnd = await main.getByRole('group', { name: 'Intervallo 1 · Fine', exact: true }).locator('.temporal-create-time-raw-input').inputValue();
+    const [hour, minute] = previousEnd.split(':').map(Number);
+    const nextMinute = (hour! * 60 + minute! + 1) % 1440;
+    await expect(main.getByRole('textbox', { name: 'Intervallo 2 · Inizio: ore' })).toHaveValue(String(Math.floor(nextMinute / 60)).padStart(2, '0'));
+    await expect(main.getByRole('textbox', { name: 'Intervallo 2 · Inizio: minuti' })).toHaveValue(String(nextMinute % 60).padStart(2, '0'));
+    await expect(main.getByRole('textbox', { name: 'Intervallo 2 · Fine: minuti' })).toHaveValue('');
     await expect(main.getByRole('button', { name: 'Rimuovi intervallo 2' })).toBeVisible();
     await expect(main.getByRole('button', { name: /Crea spazio|Applica orari/ })).toHaveCount(0);
     await expect(main.locator('input[type="time"], input[type="date"]')).toHaveCount(0);
@@ -471,7 +475,7 @@ test('Inspector adds an unconfigured interval near now, uses the original contro
     await setClock(main, 2, 'Inizio', date, '09:11');
     await setClock(main, 2, 'Fine', date, '09:20');
     await main.getByRole('textbox', { name: 'Intervallo 2 · Fine: minuti' }).blur();
-    await expect(main.getByText('Inizio mancante.')).toHaveCount(0);
+    await expect(main.getByText('Fine mancante.')).toHaveCount(0);
     await expect(main.getByRole('textbox', { name: 'Intervallo 1 · Fine: minuti' })).toHaveValue('10');
     await main.getByRole('button', { name: 'Intervallo 1 · Fine: scegli orario' }).click();
     const clock = main.getByRole('dialog', { name: 'Intervallo 1 · Fine', exact: true });

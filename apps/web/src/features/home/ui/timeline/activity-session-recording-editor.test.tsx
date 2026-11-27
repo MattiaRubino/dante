@@ -275,15 +275,18 @@ describe('Activity Session recording editor', () => {
       group.querySelectorAll('.timeline-session-editor__parent-interval'),
     ).toHaveLength(2);
     const firstEnd = within(group).getByRole('textbox', { name: 'Intervallo 1 · Fine: minuti' });
-    expect(within(group).getByRole('textbox', { name: 'Intervallo 2 · Inizio: ore' })).toHaveProperty('value', '');
-    expect((within(group).getByRole('textbox', { name: 'Intervallo 2 · Fine: minuti' }) as HTMLInputElement).value).toMatch(/^\d{2}$/);
+    const previousClock = within(group).getByRole('group', { name: 'Intervallo 1 · Fine' }).querySelector<HTMLInputElement>('.temporal-create-time-raw-input')!;
+    const expectedStart = Temporal.PlainTime.from(previousClock.value).add({ minutes: 1 }).toString({ smallestUnit: 'minute' });
+    expect(within(group).getByRole('textbox', { name: 'Intervallo 2 · Inizio: ore' })).toHaveProperty('value', expectedStart.slice(0, 2));
+    expect(within(group).getByRole('textbox', { name: 'Intervallo 2 · Inizio: minuti' })).toHaveProperty('value', expectedStart.slice(3));
+    expect(within(group).getByRole('textbox', { name: 'Intervallo 2 · Fine: minuti' })).toHaveProperty('value', '');
     expect(within(group).getByRole('button', { name: 'Rimuovi intervallo 2' })).toBeTruthy();
     expect(within(group).queryByRole('button', { name: /Crea spazio|Applica orari/ })).toBeNull();
     expect(group.querySelector('input[type="time"], input[type="date"]')).toBeNull();
     expect(screen.queryByRole('alert')).toBeNull();
 
     fireEvent.click(screen.getByRole('button', { name: 'Salva registrazioni' }));
-    expect(within(group).getByText('Inizio mancante.')).toBeTruthy();
+    expect(within(group).getByText('Fine mancante.')).toBeTruthy();
     const yesterday = new Date(Date.now() - 86_400_000).toISOString().slice(0, 10);
     setClock(group, 1, 'Inizio', yesterday, '09:00');
     setClock(group, 1, 'Fine', yesterday, '09:10');
@@ -293,7 +296,7 @@ describe('Activity Session recording editor', () => {
     await act(async () => {});
     const end = within(group).getByRole('textbox', { name: 'Intervallo 2 · Fine: minuti' });
     await act(async () => { end.focus(); end.blur(); });
-    expect(within(group).queryByText('Inizio mancante.')).toBeNull();
+    expect(within(group).queryByText('Fine mancante.')).toBeNull();
     expect(firstEnd).toHaveProperty('value', '10');
     expect(end).toHaveProperty('value', '20');
     expect(screen.queryByRole('alert')).toBeNull();
@@ -374,10 +377,12 @@ describe('Activity Session recording editor', () => {
     const child = within(group).getByText('Lettura', { selector: 'h3' })
       .closest<HTMLElement>('article')!;
     fireEvent.click(within(child).getByRole('button', { name: /Aggiungi intervallo/ }));
-    expect(within(child).getByRole('textbox', { name: 'Intervallo 2 · Inizio: ore' })).toHaveProperty('value', '');
+    expect(within(child).getByRole('textbox', { name: 'Intervallo 2 · Inizio: ore' })).toHaveProperty('value', '09');
+    expect(within(child).getByRole('textbox', { name: 'Intervallo 2 · Inizio: minuti' })).toHaveProperty('value', '31');
+    expect(within(child).getByRole('textbox', { name: 'Intervallo 2 · Fine: minuti' })).toHaveProperty('value', '');
     expect(within(child).getByRole('button', { name: 'Rimuovi intervallo 2' })).toBeTruthy();
     fireEvent.click(screen.getByRole('button', { name: 'Salva registrazioni' }));
-    expect(within(child).getByText('Inizio mancante.')).toBeTruthy();
+    expect(within(child).getByText('Fine mancante.')).toBeTruthy();
     expect(fetcher.mock.calls.some(([, init]) => init?.method === 'POST')).toBe(false);
 
     setClock(child, 1, 'Fine', yesterday, '09:10');
@@ -387,7 +392,7 @@ describe('Activity Session recording editor', () => {
     await act(async () => {});
     const secondEnd = within(child).getByRole('textbox', { name: 'Intervallo 2 · Fine: minuti' });
     await act(async () => { secondEnd.focus(); secondEnd.blur(); });
-    expect(within(child).queryByText('Inizio mancante.')).toBeNull();
+    expect(within(child).queryByText('Fine mancante.')).toBeNull();
     expect(secondEnd).toHaveProperty('value', '25');
     expect(screen.queryByRole('alert')).toBeNull();
   });

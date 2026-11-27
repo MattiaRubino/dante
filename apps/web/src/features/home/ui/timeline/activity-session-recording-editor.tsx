@@ -345,40 +345,42 @@ function intervalFromMillis(
   };
 }
 
-function intervalUnconfigured(date: string, zone: string, latest?: number): ActiveInterval {
+function intervalUnconfigured(date: string, zone: string, earliest?: number): ActiveInterval {
   const day = date || local(Temporal.Now.instant().toString(), zone).slice(0, 10);
   return {
     id: crypto.randomUUID(),
-    start: day + 'T',
-    end: latest === undefined ? day + 'T' : local(new Date(latest).toISOString(), zone),
-    startChoice: 'reject',
-    endChoice: latest === undefined ? 'reject' : choiceFor(new Date(latest).toISOString(), zone),
+    start: earliest === undefined ? day + 'T' : local(new Date(earliest).toISOString(), zone),
+    end: (earliest === undefined ? day : local(new Date(earliest).toISOString(), zone).slice(0, 10)) + 'T',
+    startChoice: earliest === undefined ? 'reject' : choiceFor(new Date(earliest).toISOString(), zone),
+    endChoice: 'reject',
   };
 }
 
 function nextInterval(draft: Draft, zone: string): ActiveInterval {
   const last = draft.intervals.at(-1);
-  const latest = Math.floor(Temporal.Now.instant().epochMilliseconds / SESSION_MINUTE_MS) * SESSION_MINUTE_MS;
-  if (!last || draft.intervals.some((item) => !item.start.slice(11, 16) || !item.end.slice(11, 16)) || !last.end)
-    return intervalUnconfigured(last?.end.slice(0, 10) ?? '', zone, latest);
+  const date = last?.end.slice(0, 10) ?? '';
+  if (!last) return intervalUnconfigured(date, zone);
   try {
     const previousEnd = Temporal.Instant.from(
       instant(last.end, zone, last.endChoice),
     ).epochMilliseconds;
+    const earliest = previousEnd + SESSION_MINUTE_MS;
+    if (draft.intervals.some((item) => !item.start.slice(11, 16) || !item.end.slice(11, 16)))
+      return intervalUnconfigured(date, zone, earliest);
     const previousStart = Temporal.Instant.from(
       instant(last.start, zone, last.startChoice),
     ).epochMilliseconds;
     if (previousEnd <= previousStart)
-      return intervalUnconfigured(last.end.slice(0, 10), zone, latest);
+      return intervalUnconfigured(date, zone, earliest);
     const next = nextFactualInterval({
       previousEnd,
       now: Temporal.Now.instant().epochMilliseconds,
     });
     return next
       ? intervalFromMillis(next.start, next.end, zone)
-      : intervalUnconfigured(last.end.slice(0, 10), zone, latest);
+      : intervalUnconfigured(date, zone, earliest);
   } catch {
-    return intervalUnconfigured(last.end.slice(0, 10), zone, latest);
+    return intervalUnconfigured(date, zone);
   }
 }
 
@@ -1120,10 +1122,20 @@ export function ActivitySessionRecordingEditor({
         return;
       }
       const owners = ownersFor(row, existing);
-      const latest = Math.min(parent.end, Math.floor(Temporal.Now.instant().epochMilliseconds / SESSION_MINUTE_MS) * SESSION_MINUTE_MS);
-      const used = existing.intervals.filter((_, index) => owners[index] === parentIndex).map(parseSlice);
+      const date = local(new Date(parent.start).toISOString(), timeZone).slice(0, 10);
+      const assigned = existing.intervals.filter((_, index) => owners[index] === parentIndex);
+      const used = assigned.map(parseSlice);
       if (used.some((slice) => !slice || slice.end <= slice.start)) {
-        insertChildInterval(row, existing, parentIndex, intervalUnconfigured(local(new Date(parent.start).toISOString(), timeZone).slice(0, 10), timeZone, latest));
+        const last = assigned.at(-1);
+        let earliest: number | undefined;
+        try {
+          if (last) earliest = Math.max(parent.start, Temporal.Instant.from(
+            instant(last.end, timeZone, last.endChoice),
+          ).epochMilliseconds + SESSION_MINUTE_MS);
+        } catch {
+          // No known previous end: do not invent a start.
+        }
+        insertChildInterval(row, existing, parentIndex, intervalUnconfigured(date, timeZone, earliest));
         return;
       }
       const lastEnd = used.length
@@ -1140,7 +1152,7 @@ export function ActivitySessionRecordingEditor({
         parentIndex,
         candidate
           ? intervalFromMillis(candidate.start, candidate.end, timeZone)
-          : intervalUnconfigured(local(new Date(parent.start).toISOString(), timeZone).slice(0, 10), timeZone, latest),
+          : intervalUnconfigured(date, timeZone, lastEnd + SESSION_MINUTE_MS),
       );
     } catch {
       setError('Controlla gli intervalli.');

@@ -128,7 +128,7 @@ Per nuovi intervalli manuali: durata minima e pausa minima
 di 1 minuto, con precisione al minuto. La conferma di un singolo
 campo può normalizzarlo al minimo/massimo calcolato da precedente,
 successivo, padre e ora attuale; la digitazione parziale resta libera.
-Se non c'è spazio, Aggiungi produce una riga con fine massima precompilata se nota e inizio vuoto nei
+Se non c'è spazio, Aggiungi produce una riga con inizio precompilato a fine precedente + 1 minuto se noto e fine vuota nei
 controlli standard, non una copia sovrapposta. Per liberare spazio si
 modifica esplicitamente l'intervallo precedente; nessun taglio automatico
 né pulsante aggiuntivo.
