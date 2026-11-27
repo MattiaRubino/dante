@@ -1,5 +1,14 @@
 # Timeline / Temporal-Operational — Live Execution Ledger
 
+## 2026-11-27 — Keep an impossible recording end empty (candidate; owner review pending)
+
+When the previous interval ends too close to the current or parent cap,
+confirming the next end no longer displays an end earlier than its start.
+The end stays empty while the user adjusts the existing intervals; no
+neighboring factual clock is rewritten. The frozen-clock component regression
+now checks this state and recovery once time advances. Scratch Web typecheck
+and focused Vitest passed (32/32); owner real-app review remains pending.
+
 ## 2026-11-27 — Confirm the segmented clock as one control (candidate; NOT_RUN)
 
 Owner run at ef40e305f: typecheck and registry PASS, 274/276 Vitest

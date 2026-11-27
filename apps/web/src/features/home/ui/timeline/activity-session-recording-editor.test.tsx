@@ -302,7 +302,7 @@ describe('Activity Session recording editor', () => {
     expect(screen.queryByRole('alert')).toBeNull();
   });
 
-  it('caps a future end even when no slot exists and revalidates after time advances', async () => {
+  it('leaves an impossible end empty when no slot exists and revalidates after time advances', async () => {
     const day = new Date().toISOString().slice(0, 10);
     const clock = vi.spyOn(Temporal.Now, 'instant').mockReturnValue(Temporal.Instant.from(day + 'T19:14:00Z'));
     try {
@@ -332,9 +332,12 @@ describe('Activity Session recording editor', () => {
       await waitFor(() => {
         expect(within(group).getByRole('textbox', {
           name: 'Intervallo 2 · Fine: minuti',
-        })).toHaveProperty('value', '14');
+        })).toHaveProperty('value', '');
       });
-      expect(within(group).getByText(/Intervallo 1: fine max 19:12/)).toBeTruthy();
+      expect(within(group).getByRole('textbox', {
+        name: 'Intervallo 2 · Inizio: minuti',
+      })).toHaveProperty('value', '17');
+      expect(within(group).getByText(/intervallo 2 servono 1 min di pausa e 1 min di durata: termina l’intervallo 1 entro le 19:12/)).toBeTruthy();
       expect(within(group).getByRole('textbox', {
         name: 'Intervallo 1 · Fine: minuti',
       })).toHaveProperty('value', '13');
@@ -342,7 +345,7 @@ describe('Activity Session recording editor', () => {
       setClock(group, 2, 'Fine', day, '19:23');
       expect(await confirm(2, 'Fine')).toHaveProperty('value', '23');
       expect(within(group).getByRole('textbox', { name: 'Intervallo 2 · Inizio: minuti' })).toHaveProperty('value', '17');
-      expect(within(group).queryByText(/Intervallo 1: fine max/)).toBeNull();
+      expect(within(group).queryByText(/termina l’intervallo 1 entro le/)).toBeNull();
       expect(screen.queryByRole('alert')).toBeNull();
     } finally {
       clock.mockRestore();
@@ -389,6 +392,12 @@ describe('Activity Session recording editor', () => {
     expect(within(child).getByRole('textbox', { name: 'Intervallo 2 · Inizio: minuti' })).toHaveProperty('value', '31');
     expect(within(child).getByRole('textbox', { name: 'Intervallo 2 · Fine: minuti' })).toHaveProperty('value', '');
     expect(within(child).getByRole('button', { name: 'Rimuovi intervallo 2' })).toBeTruthy();
+    setClock(child, 2, 'Fine', yesterday, '09:45');
+    await act(async () => {});
+    const impossibleChildEnd = within(child).getByRole('textbox', { name: 'Intervallo 2 · Fine: minuti' });
+    await act(async () => { impossibleChildEnd.focus(); impossibleChildEnd.blur(); });
+    expect(impossibleChildEnd).toHaveProperty('value', '');
+    expect(within(child).getByRole('textbox', { name: 'Intervallo 2 · Inizio: minuti' })).toHaveProperty('value', '31');
     fireEvent.click(screen.getByRole('button', { name: 'Salva registrazioni' }));
     expect(within(child).getByText('Fine mancante.')).toBeTruthy();
     expect(fetcher.mock.calls.some(([, init]) => init?.method === 'POST')).toBe(false);

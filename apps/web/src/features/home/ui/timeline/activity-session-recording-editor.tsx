@@ -71,6 +71,12 @@ function limitLabel(value: number, reference: number, zone: string): string {
     : clock.slice(0, 16).replace('T', ' ');
 }
 
+function noRoomAfterPrevious(index: number, maximum: number, previousEnd: number, zone: string): string {
+  return 'Per l’intervallo ' + (index + 1) +
+    ' servono 1 min di pausa e 1 min di durata: termina l’intervallo ' + index +
+    ' entro le ' + limitLabel(maximum - 2 * SESSION_MINUTE_MS, previousEnd, zone) + '.';
+}
+
 function ambiguous(value: string, zone: string): boolean {
   if (!value) return false;
   try {
@@ -469,9 +475,7 @@ function validateDraft(
         return {
           field,
           boundary: 'start',
-          message: 'Intervallo ' + index + ': fine max ' + limitLabel(
-            slot.max - 2 * SESSION_MINUTE_MS, previous.end, zone,
-          ) + '.',
+          message: noRoomAfterPrevious(index, slot.max, previous.end, zone),
         };
       if (resolved.end > now)
         return {
@@ -1237,10 +1241,22 @@ export function ActivitySessionRecordingEditor({
     // A future end must never survive merely because Start cannot yet fit.
     const feasible = slot.min + SESSION_MINUTE_MS <= slot.max;
     const bounds = inner.min <= inner.max ? inner : outer.min <= outer.max ? outer : null;
+    // A factual end cannot precede its start. When the current/parent cap
+    // leaves no minute for this interval, keep the end unconfigured while
+    // the user adjusts the neighboring ranges instead of displaying an
+    // impossible start -> end pair.
+    const endHasNoRoom = boundary === 'end' && opposite !== null &&
+      slot.max < opposite + SESSION_MINUTE_MS;
     const adjusted = bounds
       ? normalizeSessionBoundary(value, bounds)!
       : boundary === 'end' ? Math.min(value, slot.max) : value;
-    if (adjusted !== value) {
+    if (endHasNoRoom) {
+      updateInterval(row, index, {
+        ...interval,
+        end: interval.end.slice(0, 10) + 'T',
+        endChoice: 'reject',
+      });
+    } else if (adjusted !== value) {
       const iso = new Date(adjusted).toISOString();
       updateInterval(row, index, {
         ...interval,
@@ -1249,11 +1265,11 @@ export function ActivitySessionRecordingEditor({
       });
     }
     const start = boundary === 'start' ? adjusted : opposite;
-    const end = boundary === 'end' ? adjusted : opposite;
+    const end = boundary === 'end' ? (endHasNoRoom ? null : adjusted) : opposite;
     let issue: Issue | null = null;
     if (!feasible) {
       const message = previous && previous.end + SESSION_MINUTE_MS >= (parent?.start ?? Number.NEGATIVE_INFINITY)
-        ? 'Intervallo ' + index + ': fine max ' + clockLabel(slot.max - 2 * SESSION_MINUTE_MS, previous.end) + '.'
+        ? noRoomAfterPrevious(index, slot.max, previous.end, timeZone)
         : 'Spazio insufficiente: fine max ' + clockLabel(slot.max, value) + '.';
       issue = { field: 'interval-' + index, boundary: 'start', message };
     } else if (start !== null && end !== null) {
@@ -1274,7 +1290,7 @@ export function ActivitySessionRecordingEditor({
       delete next[row.key];
       return next;
     });
-    return local(new Date(adjusted).toISOString(), timeZone).slice(11, 16);
+    return endHasNoRoom ? '' : local(new Date(adjusted).toISOString(), timeZone).slice(11, 16);
   }
 
   function renderRange(

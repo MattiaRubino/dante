@@ -65,6 +65,11 @@ DANTE, l'inizio precompilato a fine precedente + 1 minuto se noto, la fine vuota
 si completa automaticamente alla conferma dei campi, senza pulsanti
 aggiuntivi. Per liberare spazio si modificano esplicitamente gli
 intervalli esistenti: nessuna divisione automatica del precedente.
+Se confermare la fine non lascia nemmeno un minuto tra l'inizio provvisorio
+e il limite attuale o del padre, la fine resta vuota: non si visualizza una
+fine precedente all'inizio. Il messaggio spiega il minuto di pausa e quello
+di durata necessari e indica la fine massima dell'intervallo precedente.
+Le altre righe non sono corrette automaticamente.
 Dopo un POST accettato, la rilettura
 deve confermare tutte le ricevute prima di sostituire le righe e cancellare
 la bozza: una risposta incompleta lascia visibili gli input e conserva gli
